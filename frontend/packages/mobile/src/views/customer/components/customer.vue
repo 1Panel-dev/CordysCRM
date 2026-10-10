@@ -47,12 +47,7 @@
       :transform="transformFormData"
     >
       <template #item="{ item }">
-        <CrmListCommonItem
-          :item="item"
-          :actions="getListItemActions(item.collaborationType)"
-          name-key="ownerName"
-          @click="goDetail"
-        ></CrmListCommonItem>
+        <CrmListCommonItem :item="item" :actions="getListItemActions(item)" @click="goDetail"></CrmListCommonItem>
       </template>
     </CrmList>
   </div>
@@ -65,12 +60,14 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { CollaborationType } from '@lib/shared/models/customer';
+  import type { CollaborationType, CustomerListItem } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteCustomer, getCustomerList } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
 
@@ -109,6 +106,16 @@
   });
 
   const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CUSTOMER);
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CUSTOMER,
+  });
+
+  const refreshList = () => crmListRef.value?.loadList(true);
+  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<CustomerListItem>({
+    formType: FormDesignKeyEnum.CUSTOMER,
+    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+  });
 
   const actions = [
     {
@@ -167,13 +174,13 @@
         showConfirmDialog({
           title: t('customer.deleteTitle'),
           message: t('customer.deleteTip'),
-          confirmButtonText: t('common.confirmDelete'),
+          confirmButtonText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
           confirmButtonColor: 'var(--error-red)',
           beforeClose: async (action) => {
             if (action === 'confirm') {
               try {
                 await deleteCustomer(item.id);
-                showSuccessToast(t('common.deleteSuccess'));
+                showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
                 crmListRef.value?.loadList(true);
                 return Promise.resolve(true);
               } catch (error) {
@@ -190,11 +197,14 @@
     },
   ];
 
-  function getListItemActions(collaborationType: CollaborationType) {
+  function getListItemActions(item: CustomerListItem & { collaborationType: CollaborationType }) {
     if (activeFilter.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
-      return collaborationType === 'COLLABORATION' ? actions.filter((item) => item.key === 'writeRecord') : [];
+      const collaborationActions =
+        item.collaborationType === 'COLLABORATION' ? actions.filter((action) => action.key === 'writeRecord') : [];
+
+      return resolveRowActions(item, collaborationActions);
     }
-    return actions;
+    return resolveRowActions(item, actions);
   }
 
   watch(
@@ -207,7 +217,12 @@
   );
 
   onActivated(() => {
+    initApprovalPermission();
     crmListRef.value?.loadList(true);
+  });
+
+  onBeforeMount(() => {
+    initApprovalPermission();
   });
 
   async function search() {

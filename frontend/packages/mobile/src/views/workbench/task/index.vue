@@ -263,6 +263,12 @@
 
   function getResourcePermission(item: ApprovalTodoItem) {
     switch (item.resourceType) {
+      case ApprovalResourceTypeEnum.CLUE:
+        return hasAnyPermission(['CLUE_MANAGEMENT:READ']);
+      case ApprovalResourceTypeEnum.CUSTOMER:
+        return hasAnyPermission(['CUSTOMER_MANAGEMENT:READ']);
+      case ApprovalResourceTypeEnum.OPPORTUNITY:
+        return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']);
       case ApprovalResourceTypeEnum.CONTRACT:
         return hasAnyPermission(['CONTRACT:READ']);
       case ApprovalResourceTypeEnum.INVOICE:
@@ -382,6 +388,9 @@
     });
   }
   const formKeyMap: Partial<Record<string, FormDesignKeyEnum>> = {
+    [ApprovalResourceTypeEnum.CLUE]: FormDesignKeyEnum.CLUE,
+    [ApprovalResourceTypeEnum.CUSTOMER]: FormDesignKeyEnum.CUSTOMER,
+    [ApprovalResourceTypeEnum.OPPORTUNITY]: FormDesignKeyEnum.BUSINESS,
     [ApprovalResourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT,
     [ApprovalResourceTypeEnum.CONTRACT]: FormDesignKeyEnum.CONTRACT_SNAPSHOT,
     [ApprovalResourceTypeEnum.ORDER]: FormDesignKeyEnum.ORDER_SNAPSHOT,

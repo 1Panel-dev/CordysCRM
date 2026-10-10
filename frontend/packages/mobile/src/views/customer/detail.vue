@@ -8,7 +8,11 @@
           </div>
         </template>
         <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
-          <CrmDescription :description="descriptions" :source-id="sourceId" />
+          <CrmDescription :description="renderDescriptions" :source-id="sourceId">
+            <template #approvalStatus>
+              <ApprovalStatus :status="approvalStatus" />
+            </template>
+          </CrmDescription>
         </div>
         <CrmContactList
           v-else-if="tab.name === 'contact'"
@@ -40,20 +44,39 @@
           :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
         />
         <collaborator v-else-if="tab.name === 'collaborator'" ref="collaboratorListRef" :source-id="sourceId" />
+        <div v-else-if="tab.name === 'approval'" class="flex h-full bg-[var(--text-n9)] p-[16px]">
+          <CrmApprovalLine
+            :nodes="approvalInfo?.nodes || []"
+            :submitter="{
+              submitAvatar: approvalInfo?.submitAvatar,
+              submitter: approvalInfo?.submitter,
+              submitTime: approvalInfo?.submitTime,
+              submitterId: approvalInfo?.submitterId,
+              comment: approvalInfo?.comment,
+            }"
+            :currentApprovalNode="currentApprovalNode"
+            :currentApprovalNodeIndex="currentApprovalNodeIndex"
+            :finally-result="approvalInfo?.approvalStatus"
+          />
+        </div>
         <CrmHeaderList v-else :source-id="sourceId" :load-list-api="getCustomerHeaderList" />
       </van-tab>
     </van-tabs>
-    <template
-      v-if="
-        activeTab === 'info' &&
-        hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE', 'CUSTOMER_MANAGEMENT:RECYCLE'])
-      "
-      #footer
-    >
+    <template v-if="showFooterActions" #footer>
       <CrmActionButtons
-        :show-edit-button="hasAllPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
-        :actions="actions"
+        v-if="activeTab === 'info'"
+        :show-edit-button="showEditButton"
+        :actions="operationActions"
         @select="handleMoreSelect"
+      />
+      <CrmApprovalRecordActions
+        v-if="activeTab === 'approval' && approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING"
+        :source-id="sourceId"
+        :form-key="FormDesignKeyEnum.CUSTOMER"
+        :approval-info="approvalInfo"
+        :current-approval-node="currentApprovalNode"
+        :current-approval-node-index="currentApprovalNodeIndex"
+        @refresh="refreshDetail"
       />
     </template>
   </CrmPageWrapper>
@@ -64,11 +87,16 @@
   import { showConfirmDialog, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ApprovalDetail, ApprovalNode } from '@lib/shared/models/system/process';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import ApprovalStatus from '@/components/business/crm-approval/crm-approval-status.vue';
+  import CrmApprovalLine from '@/components/business/crm-approval/crm-approval-line.vue';
+  import CrmApprovalRecordActions from '@/components/business/crm-approval/crm-approval-record-actions.vue';
   import CrmActionButtons, { CrmActionButtonsItem } from '@/components/business/crm-action-buttons/index.vue';
   import CrmContactList from '@/components/business/crm-contact-list/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
@@ -77,9 +105,11 @@
   import collaborator from './components/collaborator.vue';
   import relation from './components/relation.vue';
 
-  import { deleteCustomer, getCustomerHeaderList } from '@/api/modules';
+  import { deleteCustomer, getApprovalResourceDetail, getCustomerHeaderList } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -91,11 +121,26 @@
   const { t } = useI18n();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
-  const { sourceName, descriptions, collaborationType, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, collaborationType, detail, initFormConfig, initFormDescription } = useFormCreateApi(
+    {
+      formKey: FormDesignKeyEnum.CUSTOMER,
+      sourceId,
+      needInitDetail: true,
+    }
+  );
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CUSTOMER,
-    sourceId,
-    needInitDetail: true,
   });
+  const refreshDetail = async () => {
+    initFormDescription();
+    await initApprovalDetail();
+  };
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, enableApproval } =
+    useApprovalOperation({
+      formType: FormDesignKeyEnum.CUSTOMER,
+      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
+      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshDetail }),
+    });
 
   const activeTab = ref('info');
   const tabList = computed(() => {
@@ -128,6 +173,14 @@
         name: 'collaborator',
         title: t('customer.collaborator'),
       },
+      ...(approvalInfo.value
+        ? [
+            {
+              name: 'approval',
+              title: t('workbench.approval.record'),
+            },
+          ]
+        : []),
     ];
     if (collaborationType.value) {
       return fullTabList.filter((item) => item.name !== 'collaborator');
@@ -153,6 +206,28 @@
       permission: ['CUSTOMER_MANAGEMENT:DELETE'],
     },
   ]);
+  const approvalStatus = computed(() => approvalInfo.value?.approvalStatus ?? detail.value.approvalStatus);
+  const renderDescriptions = computed(() => {
+    const approvalStatusDescription =
+      enableApproval.value && approvalStatus.value && approvalStatus.value !== ProcessStatusEnum.NONE
+        ? [
+            {
+              label: t('workbench.approvalStatus'),
+              value: approvalStatus.value,
+              valueSlotName: 'approvalStatus',
+            },
+          ]
+        : [];
+
+    return [...approvalStatusDescription, ...descriptions.value];
+  });
+  const showEditButton = computed(() => hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE']));
+  const operationActions = computed(() => resolveRowActions(detail.value, actions.value));
+  const showFooterActions = computed(
+    () =>
+      (activeTab.value === 'info' && (showEditButton.value || operationActions.value.length)) ||
+      (activeTab.value === 'approval' && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING)
+  );
 
   function handleEdit(id: string) {
     router.push({
@@ -179,13 +254,13 @@
     showConfirmDialog({
       title: t('customer.deleteTitle'),
       message: t('customer.deleteTip'),
-      confirmButtonText: t('common.confirmDelete'),
+      confirmButtonText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       confirmButtonColor: 'var(--error-red)',
       beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
             await deleteCustomer(id);
-            showSuccessToast(t('common.deleteSuccess'));
+            showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
             router.back();
             return Promise.resolve(true);
           } catch (error) {
@@ -225,6 +300,12 @@
       case 'moveToPool':
         handleMoveToPool();
         break;
+      case 'review':
+        reviewByResourceId(sourceId.value, { onSuccess: refreshDetail });
+        break;
+      case 'revoke':
+        revokeByResourceId(sourceId.value, { onSuccess: refreshDetail });
+        break;
       default:
         break;
     }
@@ -234,10 +315,33 @@
   const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();
   const relationListRef = ref<InstanceType<typeof relation>[]>();
   const collaboratorListRef = ref<InstanceType<typeof collaborator>[]>();
+  const approvalInfo = ref<ApprovalDetail>();
+  const currentApprovalNode = ref<ApprovalNode>();
+  const currentApprovalNodeIndex = ref(0);
+
+  async function initApprovalDetail() {
+    if (!sourceId.value) {
+      return;
+    }
+
+    try {
+      approvalInfo.value = await getApprovalResourceDetail(sourceId.value);
+      currentApprovalNodeIndex.value =
+        approvalInfo.value?.nodes.findIndex((node) => node.nodeId === approvalInfo.value?.currentNodeId) ?? 0;
+      currentApprovalNode.value = approvalInfo.value?.nodes[currentApprovalNodeIndex.value];
+    } catch (error) {
+      approvalInfo.value = undefined;
+      currentApprovalNode.value = undefined;
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   onBeforeMount(async () => {
+    initApprovalPermission();
     await initFormConfig();
     initFormDescription();
+    initApprovalDetail();
   });
 
   onActivated(() => {
@@ -251,6 +355,7 @@
       collaboratorListRef.value?.[0].initList();
     } else if (activeTab.value === 'info') {
       initFormDescription();
+      initApprovalDetail();
     }
   });
 </script>

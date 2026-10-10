@@ -6,13 +6,9 @@
           <component
             :is="getItemComponent(item.type)"
             v-if="item.show !== false && item.readable"
-            :id="item.id"
             v-model:value="formDetail[item.id]"
             :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
-            :origin-form-detail="originFormDetail"
-            :form-detail="formDetail"
-            :need-init-detail="route.query.needInitDetail === 'Y'"
-            :source-id="route.query.id"
+            v-bind="getItemExtraProps(item)"
             @change="($event: any) => handleFieldChange($event, item)"
           />
         </template>
@@ -38,6 +34,16 @@
         >
           {{ route.query.needInitDetail === 'Y' ? t('common.update') : t('common.create') }}
         </van-button>
+        <van-button
+          v-if="reviewAction.visible"
+          type="primary"
+          class="!rounded-[var(--border-radius-small)] !text-[16px]"
+          :loading="loading || reviewLoading"
+          block
+          @click="handleReview"
+        >
+          {{ reviewAction.text }}
+        </van-button>
       </div>
     </template>
   </CrmPageWrapper>
@@ -55,7 +61,9 @@
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
 
   import { checkRepeat } from '@/api/modules';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useFormReviewAction from '@/hooks/useFormReviewAction';
   import useUserStore from '@/store/modules/user';
 
   import { rules } from '@cordys/web/src/components/business/crm-form-create/config';
@@ -65,6 +73,8 @@
   const router = useRouter();
   const { t } = useI18n();
   const userStore = useUserStore();
+  const formKey = computed(() => route.query.formKey as FormDesignKeyEnum);
+  const isEdit = computed(() => route.query.needInitDetail === 'Y');
 
   const formRef = ref<FormInstance>();
 
@@ -80,12 +90,22 @@
     initFormDetail,
     saveForm,
     initFormShowControl,
+    detail,
   } = useFormCreateApi({
-    formKey: route.query.formKey as FormDesignKeyEnum,
+    formKey: formKey.value,
     sourceId: ref(route.query.id as string),
-    needInitDetail: route.query.needInitDetail === 'Y',
+    needInitDetail: isEdit.value,
     initialSourceName: route.query.initialSourceName as string,
     otherSaveParams: lastPageParams,
+  });
+  const { reviewLoading, reviewByResourceId } = useApprovalResourceAction({
+    formKey,
+  });
+  const { reviewAction, initApprovalReviewConfig } = useFormReviewAction({
+    formKey,
+    isEdit,
+    approvalStatus: computed(() => detail.value?.approvalStatus),
+    detail,
   });
 
   const mobileFieldList = computed(() => {
@@ -159,6 +179,46 @@
     }
   }
 
+  function getItemExtraProps(item: FormCreateField) {
+    const extraProps: Record<string, any> = {};
+
+    if (
+      [
+        FieldTypeEnum.INPUT,
+        FieldTypeEnum.TEXTAREA,
+        FieldTypeEnum.INPUT_NUMBER,
+        FieldTypeEnum.DATE_TIME,
+        FieldTypeEnum.RADIO,
+        FieldTypeEnum.CHECKBOX,
+        FieldTypeEnum.SELECT,
+        FieldTypeEnum.SELECT_MULTIPLE,
+        FieldTypeEnum.LOCATION,
+        FieldTypeEnum.PHONE,
+        FieldTypeEnum.INDUSTRY,
+        FieldTypeEnum.MEMBER,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        FieldTypeEnum.DATA_SOURCE,
+        FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        FieldTypeEnum.STATISTIC,
+      ].includes(item.type)
+    ) {
+      extraProps.needInitDetail = route.query.needInitDetail === 'Y';
+    }
+
+    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE, FieldTypeEnum.STATISTIC].includes(item.type)) {
+      extraProps.formDetail = formDetail.value;
+    }
+
+    if (item.type === FieldTypeEnum.STATISTIC) {
+      extraProps.path = item.id;
+      extraProps.sourceId = route.query.id;
+    }
+
+    return extraProps;
+  }
+
   function handleFieldChange(value: any, item: FormCreateField) {
     // 控制显示规则
     if (item.showControlRules?.length) {
@@ -166,26 +226,40 @@
     }
   }
 
+  function buildSavePayload() {
+    const result = cloneDeep(formDetail.value);
+    fieldList.value.forEach((item) => {
+      if (item.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(result[item.id])) {
+        // 处理数据源字段，单选传单个值
+        result[item.id] = result[item.id]?.[0] || '';
+      }
+      if (item.type === FieldTypeEnum.PHONE) {
+        // 去空格
+        result[item.id] = result[item.id]?.replace(/[\s\uFEFF\xA0]+/g, '');
+      }
+      if (item.type === FieldTypeEnum.INPUT_NUMBER && result[item.id] === '-') {
+        result[item.id] = null;
+      }
+      if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
+        result[item.id] = result[item.id] || [];
+      }
+    });
+
+    return result;
+  }
+
+  function getSavedResourceId(res: any) {
+    if (typeof res === 'string') {
+      return res;
+    }
+
+    return res?.id || res?.data?.id || route.query.id?.toString() || '';
+  }
+
   async function handleSave() {
     try {
       await formRef.value?.validate();
-      const result = cloneDeep(formDetail.value);
-      fieldList.value.forEach((item) => {
-        if (item.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(result[item.id])) {
-          // 处理数据源字段，单选传单个值
-          result[item.id] = result[item.id]?.[0] || '';
-        }
-        if (item.type === FieldTypeEnum.PHONE) {
-          // 去空格
-          result[item.id] = result[item.id]?.replace(/[\s\uFEFF\xA0]+/g, '');
-        }
-        if (item.type === FieldTypeEnum.INPUT_NUMBER && result[item.id] === '-') {
-          result[item.id] = null;
-        }
-        if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
-          result[item.id] = result[item.id] || [];
-        }
-      });
+      const result = buildSavePayload();
       saveForm(result, () => router.back());
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -193,7 +267,25 @@
     }
   }
 
+  async function handleReview() {
+    try {
+      await formRef.value?.validate();
+      const result = buildSavePayload();
+      const res = await saveForm(result, undefined, true);
+      const resourceId = getSavedResourceId(res);
+      await reviewByResourceId(resourceId, {
+        onSuccess: async () => {
+          await router.back();
+        },
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   onBeforeMount(async () => {
+    initApprovalReviewConfig();
     await initFormConfig();
     if (route.query.id && route.query.needInitDetail === 'Y') {
       // 编辑页需要等详情和 originFormDetail 初始化完成，否则保存校验可能拿不到旧值而误触发 repeat 接口。
@@ -286,7 +378,8 @@
         });
         item.rules = fullRules;
         if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
-          item.defaultValue = userStore.userInfo.id;
+          item.defaultValue =
+            item.type === FieldTypeEnum.MEMBER_MULTIPLE ? [userStore.userInfo.id] : userStore.userInfo.id;
           item.initialOptions = [
             ...(item.initialOptions || []),
             {
@@ -298,7 +391,10 @@
           [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
           item.hasCurrentUserDept
         ) {
-          item.defaultValue = userStore.userInfo.departmentId;
+          item.defaultValue =
+            item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE
+              ? [userStore.userInfo.departmentId]
+              : userStore.userInfo.departmentId;
           item.initialOptions = [
             ...(item.initialOptions || []),
             {

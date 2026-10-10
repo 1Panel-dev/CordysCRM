@@ -478,6 +478,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const asyncApi = getFormDetailApiMap[props.formKey];
       if (!asyncApi || !props.sourceId?.value) return;
       const res = await asyncApi(props.sourceId?.value);
+      detail.value = res;
       collaborationType.value = res.collaborationType;
       sourceName.value = res.name;
       fieldList.value = fieldList.value.map((item) => {
@@ -829,7 +830,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  async function saveForm(form: Record<string, any>, callback?: () => void) {
+  async function saveForm(form: Record<string, any>, callback?: (res?: any) => void, isReview = false) {
     try {
       loading.value = true;
       const params: Record<string, any> = {
@@ -848,21 +849,27 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         }
       });
+      let res;
       if (props.sourceId?.value && props.needInitDetail) {
-        await updateFormApi[props.formKey](params);
-        showSuccessToast(t('common.updateSuccess'));
+        res = await updateFormApi[props.formKey](params);
+        if (!isReview) {
+          showSuccessToast(t('common.updateSuccess'));
+        }
       } else {
-        await createFormApi[props.formKey](params);
-        if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
-          showSuccessToast(t('clue.transferredToCustomer'));
-        } else {
-          showSuccessToast(t('common.createSuccess'));
+        res = await createFormApi[props.formKey](params);
+        if (!isReview) {
+          if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
+            showSuccessToast(t('clue.transferredToCustomer'));
+          } else {
+            showSuccessToast(t('common.createSuccess'));
+          }
         }
       }
       if (callback) {
         await sleep(300);
-        callback();
+        callback(res);
       }
+      return res;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
