@@ -1,21 +1,26 @@
 <template>
   <div class="crm-list-common-item" @click="emit('click', item)">
     <div class="crm-list-common-item-header">
-      <div class="one-line-text text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
-      <CrmTag
-        v-if="item.stageName && !props.hiddenStage"
-        class="flex-shrink-0"
-        :bg-color="getStage(item.stage)?.bgColor"
-        :tag="item.stageName ?? ''"
-        :text-color="getStage(item.stage)?.color"
-      />
-      <CrmTag
-        v-if="item.frozen"
-        bg-color="var(--warning-5)"
-        text-color="var(--warning-yellow)"
-        :tag="t('common.frozen')"
-        @click.stop="frozenPopupShow = true"
-      />
+      <div class="one-line-text min-w-0 flex-1 text-[14px] font-semibold text-[var(--text-n1)]">
+        {{ props.item.name }}
+      </div>
+      <div class="flex shrink-0 items-center gap-[8px]">
+        <CrmTag
+          v-if="item.stageName && !props.hiddenStage"
+          class="flex-shrink-0"
+          :bg-color="getStage(item.stage)?.bgColor"
+          :tag="item.stageName ?? ''"
+          :text-color="getStage(item.stage)?.color"
+        />
+        <ApprovalStatus v-if="item.approvalStatus" :status="item.approvalStatus" />
+        <CrmTag
+          v-if="item.frozen"
+          bg-color="var(--warning-5)"
+          text-color="var(--warning-yellow)"
+          :tag="t('common.frozen')"
+          @click.stop="frozenPopupShow = true"
+        />
+      </div>
     </div>
     <div class="crm-list-common-item-content">
       <div
@@ -31,12 +36,23 @@
     <van-divider v-if="actionList?.length" class="!m-0" />
     <div v-if="actionList?.length" class="crm-list-common-item-actions">
       <CrmTextButton
-        v-for="btn of actionList"
+        v-for="btn of visibleActionList"
         :key="btn.label"
         :text="btn.label"
         :icon="btn.icon"
         @click="btn.action(item)"
       />
+      <van-popover
+        v-if="moreActionList.length"
+        v-model:show="showActionPopover"
+        placement="top-end"
+        :actions="morePopoverActions"
+        @select="handleMoreActionSelect"
+      >
+        <template #reference>
+          <CrmTextButton icon="iconicon_ellipsis" :text="t('common.more')" @click="showActionPopover = true" />
+        </template>
+      </van-popover>
     </div>
   </div>
   <van-popup v-model:show="frozenPopupShow" position="bottom" class="rounded-[12px_12px_0_0]" closeable>
@@ -61,6 +77,7 @@
 <script setup lang="ts">
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
+  import ApprovalStatus from '@/components/business/crm-approval/crm-approval-status.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import useAppStore from '@/store/modules/app';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
@@ -74,7 +91,7 @@
     key?: string;
     label: string;
     icon: string;
-    permission: string[];
+    permission?: string[];
     allPermission?: boolean;
     action: (data: any) => void;
   }
@@ -118,16 +135,42 @@
   }
 
   const actionList = computed(() => {
-    return props.actions?.filter((e) => {
+    return (props.actions || []).filter((e) => {
       if (props.item.frozen && ['pick', 'distribute'].includes(e.key || '')) {
         return false;
+      }
+
+      if (!e.permission?.length) {
+        return true;
       }
 
       return e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission);
     });
   });
 
+  const visibleActionList = computed(() => {
+    if (actionList.value.length <= 4) {
+      return actionList.value;
+    }
+    return actionList.value.slice(0, 3);
+  });
+
+  const moreActionList = computed(() => {
+    if (actionList.value.length <= 4) {
+      return [];
+    }
+    return actionList.value.slice(3);
+  });
+
+  const morePopoverActions = computed(() => moreActionList.value.map((action) => ({ ...action, text: action.label })));
+
+  const showActionPopover = ref(false);
   const frozenPopupShow = ref(false);
+
+  function handleMoreActionSelect(action: CrmListCommonItemActionsItem) {
+    showActionPopover.value = false;
+    action.action(props.item);
+  }
 </script>
 
 <style lang="less" scoped>
@@ -138,7 +181,11 @@
     border-radius: var(--border-radius-small);
     background-color: var(--text-n10);
     gap: 8px;
-    .crm-list-common-item-header,
+    .crm-list-common-item-header {
+      @apply flex items-center;
+
+      gap: 8px;
+    }
     .crm-list-common-item-content {
       @apply flex items-center justify-between;
     }
