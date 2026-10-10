@@ -15,18 +15,28 @@
         {{ `${titleName}${subTitleName ? `(${subTitleName})` : ''}` }}
       </n-tooltip>
     </template>
+    <template #titleLeft>
+      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+    </template>
     <template #titleRight>
-      <CrmButtonGroup
+      <CrmOperationButton
         class="gap-[12px]"
-        :list="buttonList"
-        not-show-divider
+        :group-list="detailActions.groupList"
+        :more-list="detailActions.moreList"
+        :not-show-divider="true"
         @pop-update="handleTransferPopUpdate"
         @select="handleSelect"
       >
+        <template #more>
+          <n-button type="primary" ghost class="n-btn-outline-primary">
+            {{ t('common.more') }}
+            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+          </n-button>
+        </template>
         <template #transferPopContent>
           <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
         </template>
-      </CrmButtonGroup>
+      </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
       <CrmWorkflowCard
@@ -57,21 +67,35 @@
       </CrmCard>
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 170 : 90" no-content-padding>
         <div v-show="activeTab === 'opportunity'" class="h-full overflow-hidden">
-          <CrmFormDescription
-            ref="formDescriptionRef"
+          <CrmApprovalDetail
             :form-key="FormDesignKeyEnum.BUSINESS"
             :source-id="sourceId"
             :refresh-key="refreshKey"
-            class="p-[24px]"
-            :column="2"
-            label-width="auto"
-            value-align="start"
-            tooltip-position="top-start"
-            :readonly="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
-            @init="handleDescriptionInit"
-            @open-customer-detail="emit('openCustomerDrawer', $event)"
-            @refresh="emit('refresh')"
-          />
+            :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+            @saveApproval="handleSaveApproval"
+          >
+            <template #left="{ fieldPermissions, taskNode }">
+              <CrmFormDescription
+                ref="formDescriptionRef"
+                :form-key="FormDesignKeyEnum.BUSINESS"
+                :source-id="sourceId"
+                :refresh-key="refreshKey"
+                class="p-[24px]"
+                :column="2"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+                :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  approvalTaskId: taskNode?.taskId,
+                }"
+                @init="handleDescriptionInit"
+                @open-customer-detail="emit('openCustomerDrawer', $event)"
+                @refresh="emit('refresh')"
+              />
+            </template>
+          </CrmApprovalDetail>
         </div>
         <FollowDetail
           v-if="['followRecord', 'followPlan'].includes(activeTab)"
@@ -115,29 +139,34 @@
       :source-id="sourceId"
       need-init-detail
       @saved="refreshList"
+      @review="handleFormReview"
     />
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { NTooltip, useMessage } from 'naive-ui';
+  import { NButton, NTooltip, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
-  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
@@ -146,6 +175,8 @@
 
   import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -199,61 +230,81 @@
   );
 
   const transferLoading = ref(false);
+  const detailInfo = ref<Record<string, any>>({});
 
-  const buttonList = computed<ActionsItem[]>(() => {
-    const transferAction: ActionsItem[] = [
-      {
-        label: t('common.transfer'),
-        key: 'transfer',
+  const opportunityDataActionMap = computed<Record<string, ActionsItem>>(() => ({
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+      permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+    },
+    transfer: {
+      label: t('common.transfer'),
+      key: 'transfer',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+      popConfirmProps: {
+        loading: transferLoading.value,
+        title: t('common.transfer'),
+        positiveText: t('common.confirm'),
+        iconType: 'primary',
+      },
+      popSlotName: 'transferPopTitle',
+      popSlotContent: 'transferPopContent',
+      permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      text: false,
+      ghost: true,
+      danger: true,
+      class: 'n-btn-outline-primary',
+      permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+    },
+  }));
+
+  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+    useApprovalOperation<Record<string, any>>({
+      formType: FormDesignKeyEnum.BUSINESS,
+      dataActionMap: () => opportunityDataActionMap.value,
+      isDetail: true,
+      specialActionFilter: (_row: Record<string, any>, actionKeys: string[]) => {
+        if (isFail.value) {
+          return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+        }
+
+        if (isSuccess.value && !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])) {
+          return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+        }
+
+        return actionKeys;
+      },
+    });
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.BUSINESS,
+  });
+
+  const detailActions = computed<{
+    groupList: ActionsItem[];
+    moreList: ActionsItem[];
+  }>(() => {
+    const detailAction = resolveRowOperation(detailInfo.value);
+
+    return {
+      ...detailAction,
+      groupList: detailAction.groupList.map((e) => ({
+        ...e,
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
-        popConfirmProps: {
-          loading: transferLoading.value,
-          title: t('common.transfer'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary',
-        },
-        popSlotName: 'transferPopTitle',
-        popSlotContent: 'transferPopContent',
-        permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
-      },
-    ];
-
-    const editAction: ActionsItem[] = [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
-    ];
-
-    const deleteAction: ActionsItem[] = [
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        text: false,
-        ghost: true,
-        danger: true,
-        class: 'n-btn-outline-primary',
-        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-      },
-    ];
-
-    if (isFail.value) {
-      return [...transferAction, ...deleteAction];
-    }
-
-    if (isSuccess.value) {
-      return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
-        ? [...editAction, ...transferAction, ...deleteAction]
-        : [...transferAction, ...deleteAction];
-    }
-
-    return [...editAction, ...transferAction, ...deleteAction];
+      })),
+    };
   });
 
   const formConfig = ref<FormConfig>();
@@ -381,12 +432,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(titleName.value) }),
       content: t('opportunity.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteOpt(sourceId.value);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           showOptOverviewDrawer.value = false;
           emit('remove');
         } catch (error) {
@@ -397,10 +448,39 @@
     });
   }
 
+  function refreshList() {
+    refreshKey.value += 1;
+    emit('refresh');
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: refreshList,
+    });
+  }
+
+  function handleReview() {
+    reviewByResourceId(sourceId.value, {
+      onSuccess: refreshList,
+    });
+  }
+
+  function handleRevoke() {
+    revokeByResourceId(sourceId.value, {
+      onSuccess: refreshList,
+    });
+  }
+
   function handleSelect(key: string, done?: () => void) {
     switch (key) {
       case 'edit':
         formCreateDrawerVisible.value = true;
+        break;
+      case 'review':
+        handleReview();
+        break;
+      case 'revoke':
+        handleRevoke();
         break;
       case 'pop-transfer':
         handleTransfer(done);
@@ -413,9 +493,16 @@
     }
   }
 
-  function refreshList() {
-    refreshKey.value += 1;
-    emit('refresh');
+  async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
+    if (hasFieldPermission) {
+      formDescriptionRef.value?.handleFormChange(async () => {
+        await callback();
+        refreshList();
+      });
+    } else {
+      await callback();
+      refreshList();
+    }
   }
 
   const formViewSize = ref<FormViewSize>('large');
@@ -426,6 +513,7 @@
     config?: FormConfig
   ) {
     formConfig.value = config;
+    detailInfo.value = detail ?? {};
     if (detail) {
       const { customerName, customerId, name, stage, failureReason } = detail;
       // 商机阶段
@@ -449,7 +537,11 @@
     (val) => {
       if (val) {
         initStageConfig();
+        initApprovalPermission();
+      } else {
+        detailInfo.value = {};
       }
-    }
+    },
+    { immediate: true }
   );
 </script>

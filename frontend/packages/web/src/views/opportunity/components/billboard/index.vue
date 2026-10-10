@@ -85,6 +85,8 @@
     advanceFilter?: FilterResult;
     viewId?: string;
     keyword?: string;
+    enableApproval?: boolean;
+    hasStagePermission?: (item: OpportunityItem) => boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;
@@ -227,6 +229,10 @@
   }
 
   function canMoveItem(payload: StageBoardMoveCheckPayload) {
+    if (props.enableApproval && (!payload.item || !props.hasStagePermission?.(payload.item as OpportunityItem))) {
+      return false;
+    }
+
     const targetIndex = stageConfig.value?.stageConfigList.findIndex((item) => item.id === payload.toStageId) ?? -1;
     const fromIndex = stageConfig.value?.stageConfigList.findIndex((item) => item.id === payload.fromStageId) ?? -1;
     const currentStage = stageConfig.value?.stageConfigList.find((item) => item.id === payload.toStageId);

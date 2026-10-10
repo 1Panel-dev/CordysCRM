@@ -941,8 +941,8 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
-  [FormDesignKeyEnum.CUSTOMER]: updateCustomer,
-  [FormDesignKeyEnum.BUSINESS]: updateOpportunity,
+  [FormDesignKeyEnum.CUSTOMER]: (data) => updateCustomer(data, data.approvalTaskId),
+  [FormDesignKeyEnum.BUSINESS]: (data) => updateOpportunity(data, data.approvalTaskId),
   [FormDesignKeyEnum.CONTACT]: updateCustomerContact,
   [FormDesignKeyEnum.CUSTOMER_CONTACT]: updateCustomerContact,
   [FormDesignKeyEnum.BUSINESS_CONTACT]: updateCustomerContact,
@@ -952,7 +952,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: updateClueFollowRecord,
   [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: updateOptFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: updateOptFollowRecord,
-  [FormDesignKeyEnum.CLUE]: updateClue,
+  [FormDesignKeyEnum.CLUE]: (data) => updateClue(data, data.approvalTaskId),
   [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: async () => ({}),
   [FormDesignKeyEnum.CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.PRODUCT]: updateProduct,

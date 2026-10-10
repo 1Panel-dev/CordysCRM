@@ -319,6 +319,9 @@
   }
 
   const standardResourceTypes = [
+    ApprovalResourceTypeEnum.CLUE,
+    ApprovalResourceTypeEnum.CUSTOMER,
+    ApprovalResourceTypeEnum.OPPORTUNITY,
     ApprovalResourceTypeEnum.CONTRACT,
     ApprovalResourceTypeEnum.INVOICE,
     ApprovalResourceTypeEnum.ORDER,
@@ -331,6 +334,12 @@
 
   function getResourcePermission(item: ApprovalTodoItem) {
     switch (item.resourceType) {
+      case ApprovalResourceTypeEnum.CLUE:
+        return hasAnyPermission(['CLUE_MANAGEMENT:READ']);
+      case ApprovalResourceTypeEnum.CUSTOMER:
+        return hasAnyPermission(['CUSTOMER_MANAGEMENT:READ']);
+      case ApprovalResourceTypeEnum.OPPORTUNITY:
+        return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']);
       case ApprovalResourceTypeEnum.CONTRACT:
         return hasAnyPermission(['CONTRACT:READ']);
       case ApprovalResourceTypeEnum.INVOICE:

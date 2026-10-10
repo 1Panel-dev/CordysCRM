@@ -41,6 +41,9 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
   const createExecute = ref(false);
   const updateExecute = ref(false);
   const approvalFormKeys = [
+    FormDesignKeyEnum.CLUE,
+    FormDesignKeyEnum.CUSTOMER,
+    FormDesignKeyEnum.BUSINESS,
     FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
     FormDesignKeyEnum.CONTRACT,
     FormDesignKeyEnum.ORDER,

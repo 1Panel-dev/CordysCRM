@@ -123,6 +123,28 @@
     @open-contract-drawer="handleOpenContractDetail"
     @open-customer-drawer="handleOpenCustomerDetail"
   />
+  <CustomerOverviewDrawer
+    v-model:show="customerDetailVisible"
+    :source-id="activeResourceId"
+    @saved="handleApproveSuccess"
+    @deleted="handleApproveSuccess"
+    @refresh="handleApproveSuccess"
+  />
+  <ClueOverviewDrawer
+    v-model:show="clueDetailVisible"
+    :detail="activeResourceDetail"
+    @saved="handleApproveSuccess"
+    @remove="handleApproveSuccess"
+    @refresh="handleApproveSuccess"
+    @open-customer-drawer="handleOpenCustomerDetail"
+  />
+  <OptOverviewDrawer
+    v-model:show="opportunityDetailVisible"
+    :detail="activeResourceDetail"
+    @remove="handleApproveSuccess"
+    @refresh="handleApproveSuccess"
+    @open-customer-drawer="handleOpenCustomerDetail"
+  />
   <CustomFormDetailDrawer
     v-model:visible="customFormDetailVisible"
     :source-id="activeResourceId"
@@ -158,9 +180,12 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import approvalModal from './approvalModal.vue';
   import taskList from './taskList.vue';
+  import ClueOverviewDrawer from '@/views/clueManagement/clue/components/clueOverviewDrawer.vue';
   import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
   import InvoiceDetailDrawer from '@/views/contract/invoice/components/detail.vue';
+  import CustomerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import CustomFormDetailDrawer from '@/views/customForm/components/detail.vue';
+  import OptOverviewDrawer from '@/views/opportunity/components/optOverviewDrawer.vue';
   import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
   import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
 
@@ -402,11 +427,15 @@
   const quotationDetailVisible = ref(false);
   const orderDetailVisible = ref(false);
   const invoiceDetailVisible = ref(false);
+  const customerDetailVisible = ref(false);
+  const clueDetailVisible = ref(false);
+  const opportunityDetailVisible = ref(false);
   const customFormDetailVisible = ref(false);
   const customFormEditVisible = ref(false);
   const customFormRefreshKey = ref(0);
   const approvalTaskId = ref('');
   const resourceType = ref('');
+  const activeResourceDetail = computed(() => ({ id: activeResourceId.value }));
   const { reviewByFormResult } = useApprovalResourceAction({
     formKey: resourceType,
   });
@@ -415,7 +444,17 @@
     activeResourceId.value = resourceId;
     approvalTaskId.value = _approvalTaskId;
     resourceType.value = _resourceType;
+
     switch (_resourceType) {
+      case ApprovalResourceTypeEnum.CLUE:
+        clueDetailVisible.value = true;
+        break;
+      case ApprovalResourceTypeEnum.CUSTOMER:
+        customerDetailVisible.value = true;
+        break;
+      case ApprovalResourceTypeEnum.OPPORTUNITY:
+        opportunityDetailVisible.value = true;
+        break;
       case ApprovalResourceTypeEnum.CONTRACT:
         contractDetailVisible.value = true;
         break;

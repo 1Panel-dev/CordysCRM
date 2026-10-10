@@ -131,8 +131,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 更新线索
-  function updateClue(data: UpdateClueParams) {
-    return CDR.post({ url: UpdateClueUrl, data });
+  function updateClue(data: UpdateClueParams, approvalTaskId?: string) {
+    return CDR.post({ url: UpdateClueUrl, data, params: { approvalTaskId } });
   }
 
   // 更新线索状态
@@ -191,8 +191,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取线索详情
-  function getClue(id: string) {
-    return CDR.get<ClueDetail>({ url: `${GetClueUrl}/${id}` });
+  function getClue(id: string, approvalTaskId?: string) {
+    return CDR.get<ClueDetail>({ url: `${GetClueUrl}/${id}`, params: { approvalTaskId } });
   }
 
   // 删除线索

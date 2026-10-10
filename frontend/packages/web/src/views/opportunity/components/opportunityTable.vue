@@ -95,6 +95,8 @@
         :keyword="keyword"
         :view-id="activeTab"
         :advance-filter="advanceFilter"
+        :enable-approval="enableApproval"
+        :has-stage-permission="(item) => hasApprovalScopedPermission(item, ['OPPORTUNITY_MANAGEMENT:RESIGN'])"
         @change="getStatistic()"
         @open-detail="handleOpenDetail"
         @init="handleBillboardInit"
@@ -149,6 +151,7 @@
     :link-form-key="linkFormKey"
     :link-scenario="linkScenario"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -171,6 +174,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.BUSINESS"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
 </template>
@@ -181,6 +185,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
@@ -197,6 +202,8 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -213,6 +220,9 @@
   import { batchDeleteOpt, deleteOpt, getOpportunityStageConfig, getOptStatistic, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, getOptHomeConditions } from '@/config/opportunity';
+  import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -286,6 +296,81 @@
   const failureStage = computed(() =>
     stageConfig.value?.stageConfigList.find((item) => item.type === 'END' && item.rate === '0')
   );
+  const transferForm = ref<TransferParams>({
+    owner: null,
+    ids: [],
+  });
+  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+  const transferLoading = ref(false);
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+
+  const opportunityDataActionMap = computed<Record<string, ActionsItem>>(() => ({
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+    },
+    followUp: {
+      label: t('opportunity.followUp'),
+      key: 'followUp',
+      permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+    },
+    transfer: {
+      label: t('common.transfer'),
+      key: 'transfer',
+      popConfirmProps: {
+        loading: transferLoading.value,
+        title: t('common.transfer'),
+        positiveText: t('common.confirm'),
+        iconType: 'primary',
+      },
+      popSlotContent: 'transferPopContent',
+      permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+    },
+  }));
+
+  const hasBackStagePermission = computed(() =>
+    hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
+  );
+
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    deleteExecute,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<OpportunityItem>({
+    formType: FormDesignKeyEnum.BUSINESS,
+    dataActionMap: () => opportunityDataActionMap.value,
+    specialActionFilter: (row, actionKeys) => {
+      if (row.stage === failureStage.value?.id) {
+        return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+      }
+
+      if (row.stage === successStage.value?.id && !hasBackStagePermission.value) {
+        return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+      }
+
+      return actionKeys;
+    },
+  });
+  const batchEditApprovalTip = computed(() =>
+    getApprovalActionTip(['OPPORTUNITY_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
+  );
+  const batchDeleteApprovalTip = computed(() =>
+    getApprovalActionTip(['OPPORTUNITY_MANAGEMENT:DELETE'], 'common.batchDeleteApprovalTip')
+  );
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.BUSINESS,
+  });
 
   const actionConfig = computed<BatchActionConfig>(() => {
     if (props.readonly) {
@@ -343,9 +428,10 @@
   function handleBatchDelete() {
     openModal({
       type: 'error',
+      size: 'medium',
       title: t('opportunity.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('opportunity.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      content: renderApprovalConfirmContent(t('opportunity.batchDeleteContentTip'), batchDeleteApprovalTip.value),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
@@ -467,12 +553,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('opportunity.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteOpt(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -481,14 +567,6 @@
       },
     });
   }
-
-  const transferForm = ref<TransferParams>({
-    owner: null,
-    ids: [],
-  });
-
-  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
-  const transferLoading = ref(false);
 
   function resetTransferForm() {
     transferForm.value = { ...defaultTransferForm };
@@ -524,9 +602,23 @@
     });
   }
 
+  function refreshAfterApproval(resourceId?: string) {
+    handleSearchData.value?.(undefined, resourceId);
+  }
+
   function handleActionSelect(row: OpportunityItem, actionKey: string, done?: () => void) {
     activeSourceId.value = row.id;
     switch (actionKey) {
+      case 'review':
+        reviewByResourceId(row.id, {
+          onSuccess: refreshAfterApproval,
+        });
+        break;
+      case 'revoke':
+        revokeByResourceId(row.id, {
+          onSuccess: refreshAfterApproval,
+        });
+        break;
       case 'edit':
         handleEdit(row.id);
         break;
@@ -544,69 +636,8 @@
     }
   }
 
-  const hasBackStagePermission = computed(() =>
-    hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
-  );
-
-  function getOperationGroupList(row: OpportunityItem): ActionsItem[] {
-    const transferAction: ActionsItem[] = [
-      {
-        label: t('common.transfer'),
-        key: 'transfer',
-        popConfirmProps: {
-          loading: transferLoading.value,
-          title: t('common.transfer'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary',
-        },
-        popSlotContent: 'transferPopContent',
-        permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
-      },
-    ];
-
-    const editAction: ActionsItem[] = [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
-    ];
-
-    const deleteAction: ActionsItem[] = [
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-      },
-    ];
-
-    if (row.stage === failureStage.value?.id) {
-      return [...transferAction, ...deleteAction];
-    }
-
-    if (row.stage === successStage.value?.id) {
-      return hasBackStagePermission.value
-        ? [...editAction, ...transferAction, ...deleteAction]
-        : [...transferAction, ...deleteAction];
-    }
-
-    return [
-      ...editAction,
-      {
-        label: t('opportunity.followUp'),
-        key: 'followUp',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
-      ...transferAction,
-      ...deleteAction,
-    ];
-  }
-
   const showOpenSeaOverviewDrawer = ref<boolean>(false);
   const openSea = ref<string | number>('');
-
-  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
-  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
 
   defineExpose({
     handleAdvanceFilter,
@@ -632,6 +663,8 @@
   }
 
   await initStageConfig();
+  await initApprovalPermission();
+
   const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     tableKey: props.tableKey,
@@ -647,27 +680,29 @@
           key: 'operation',
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
-          render: (row: OpportunityItem) =>
-            row.stage === successStage.value?.id && !hasBackStagePermission.value
-              ? '-'
-              : h(
+          render: (row: OpportunityItem) => {
+            const operation = resolveRowOperation(row);
+            return operation.groupList.length
+              ? h(
                   CrmOperationButton,
                   {
-                    groupList: getOperationGroupList(row),
+                    groupList: operation.groupList,
+                    moreList: operation.moreList,
                     onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
                     onCancel: resetTransferForm,
                     onPopUpdate: handleTransferPopUpdate,
                   },
                   {
-                    transferPopContent: () => {
-                      return h(TransferForm, {
+                    transferPopContent: () =>
+                      h(TransferForm, {
                         class: 'w-[320px] mt-[16px]',
                         form: transferForm.value,
                         ref: transferFormRef,
-                      });
-                    },
+                      }),
                   }
-                ),
+                )
+              : '-';
+          },
         },
     specialRender: {
       name: (row: OpportunityItem) => {
@@ -686,9 +721,13 @@
           );
 
         if (props.isLimitShowDetail) {
-          return row.hasPermission ? createNameButton() : h(CrmNameTooltip, { text: row.name });
+          return row.hasPermission && hasApprovalScopedPermission(row, ['OPPORTUNITY_MANAGEMENT:READ'])
+            ? createNameButton()
+            : h(CrmNameTooltip, { text: row.name });
         }
-        return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
+        return !props.readonly && hasApprovalScopedPermission(row, ['OPPORTUNITY_MANAGEMENT:READ'])
+          ? createNameButton()
+          : h(CrmNameTooltip, { text: row.name });
       },
       customerId: (row: OpportunityItem) => {
         if (
@@ -720,11 +759,26 @@
       stage: (row: OpportunityItem) => {
         return row.stageName || '-';
       },
+      approvalStatus: (row: OpportunityItem) =>
+        h(CrmApprovalPopover, {
+          status: row.approvalStatus ?? ProcessStatusEnum.NONE,
+          formKey: FormDesignKeyEnum.BUSINESS,
+          sourceId: row.id,
+          showMore: hasApprovalScopedPermission(row, ['OPPORTUNITY_MANAGEMENT:READ']),
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            activeSourceId.value = row.id;
+            activeOpportunity.value = row;
+            realFormKey.value = FormDesignKeyEnum.BUSINESS;
+            showOverviewDrawer.value = true;
+          },
+        }),
     },
     permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE', 'OPPORTUNITY_MANAGEMENT:TRANSFER'],
     hiddenTotal: computed(() => !!props.hiddenTotal),
     readonly: props.readonly,
     opportunityStage: stageConfig.value?.stageConfigList || [],
+    enableApproval,
   });
   const {
     propsRes,
@@ -804,6 +858,14 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
+      {
+        title: t('common.approvalStatus'),
+        dataIndex: 'approvalStatus',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options: processStatusOptions,
+        },
+      },
       {
         title: t('opportunity.opportunityStage'),
         dataIndex: 'stage',
@@ -1071,7 +1133,21 @@
     }
   }
 
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved(res);
+      },
+    });
+  }
+
   function removeItemFromList(id: string) {
+    if (deleteExecute.value) {
+      searchData();
+      getStatistic();
+      return;
+    }
+
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
       getStatistic();

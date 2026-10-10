@@ -7,6 +7,7 @@
           :options="selectBusinessTypeOptions"
           :disabled="props.needDetail"
           :placeholder="t('common.pleaseSelect')"
+          filterable
         />
       </n-form-item>
       <n-form-item

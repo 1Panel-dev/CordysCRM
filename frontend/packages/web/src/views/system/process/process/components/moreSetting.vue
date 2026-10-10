@@ -176,6 +176,8 @@
     permissions: Record<string, boolean>;
   };
 
+  const disabledApprovingPermissionSuffixes = ['UPDATE', 'DELETE', 'TRANSFER', 'RESIGN'] as const;
+
   function isReadPermission(permissionId: string) {
     return permissionId === 'READ' || permissionId.endsWith(':READ');
   }
@@ -187,7 +189,7 @@
   function isStatusPermissionDisabled(status: ProcessStatusEnum, permissionId: string) {
     return (
       status === ProcessStatusEnum.APPROVING &&
-      (matchPermissionBySuffix(permissionId, 'UPDATE') || matchPermissionBySuffix(permissionId, 'DELETE'))
+      disabledApprovingPermissionSuffixes.some((suffix) => matchPermissionBySuffix(permissionId, suffix))
     );
   }
 

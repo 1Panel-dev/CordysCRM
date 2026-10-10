@@ -1,4 +1,5 @@
 import type { CustomerSearchTypeEnum } from '../../enums/customerEnum';
+import type { ProcessStatusEnum } from '../../enums/process';
 import type { ModuleField, TableQueryParams } from '../common';
 import type { SaveCustomerParams } from '@lib/shared/models/customer';
 
@@ -9,6 +10,7 @@ export interface SaveClueParams extends SaveCustomerParams {
 
 export interface UpdateClueParams extends SaveClueParams {
   id: string;
+  approvalTaskId?: string;
 }
 
 export interface ClueTransitionCustomerParams extends SaveCustomerParams {
@@ -34,6 +36,10 @@ export interface ClueDetail {
   updateUserName: string;
   moduleFields: ModuleField[];
   transitionType?: 'CUSTOMER' | 'OPPORTUNITY';
+  approvalStatus?: ProcessStatusEnum;
+  approved?: boolean;
+  firstApproved?: boolean;
+  submitterId?: string;
 }
 
 export interface ClueListItem extends ClueDetail {

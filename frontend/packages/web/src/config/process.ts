@@ -202,6 +202,18 @@ export const defaultWebHookConfig: ApprovalWebhookConfig = {
 
 export const businessTypeOptions = [
   {
+    label: t('crmFormDesign.clue'),
+    value: FormDesignKeyEnum.CLUE,
+  },
+  {
+    label: t('crmFormDesign.customer'),
+    value: FormDesignKeyEnum.CUSTOMER,
+  },
+  {
+    label: t('crmFormDesign.opportunity'),
+    value: FormDesignKeyEnum.BUSINESS,
+  },
+  {
     label: t('crmFormCreate.drawer.quotation'),
     value: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
   },
