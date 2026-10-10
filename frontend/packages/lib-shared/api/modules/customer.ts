@@ -13,6 +13,7 @@ import {
   AssignOpenSeaCustomerUrl,
   BatchAssignOpenSeaCustomerUrl,
   BatchDeleteCustomerCollaborationUrl,
+  BatchDeleteCustomerContactUrl,
   BatchDeleteCustomerUrl,
   BatchDeleteOpenSeaCustomerUrl,
   BatchMoveCustomerUrl,
@@ -384,6 +385,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 删除客户联系人
   function deleteCustomerContact(id: string) {
     return CDR.get({ url: `${DeleteCustomerContactUrl}/${id}` });
+  }
+
+  // 批量删除客户联系人
+  function batchDeleteCustomerContact(ids: string[]) {
+    return CDR.post({ url: BatchDeleteCustomerContactUrl, data: ids });
   }
 
   // 生成客户联系人图表
@@ -874,6 +880,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getCustomerContact,
     enableCustomerContact,
     deleteCustomerContact,
+    batchDeleteCustomerContact,
     checkOpportunity,
     getContactListUnderCustomer,
     addCustomerOpenSea,

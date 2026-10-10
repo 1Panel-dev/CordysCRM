@@ -410,6 +410,7 @@ export const {
   updateCustomerContact,
   enableCustomerContact,
   deleteCustomerContact,
+  batchDeleteCustomerContact,
   updateCustomerOpenSea,
   switchCustomerOpenSea,
   deleteCustomerOpenSea,

@@ -17,6 +17,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
@@ -399,6 +400,48 @@ public class CustomerContactService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(originCustomerContact.getName());
+    }
+
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+
+        List<CustomerContact> contacts = customerContactMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(contacts)) {
+            return;
+        }
+
+        List<String> contactIds = contacts.stream().map(CustomerContact::getId).toList();
+        List<Opportunity> relatedOpportunities = opportunityMapper.selectListByLambda(
+                new LambdaQueryWrapper<Opportunity>().in(Opportunity::getContactId, contactIds));
+        if (CollectionUtils.isNotEmpty(relatedOpportunities)) {
+            Set<String> relatedContactIds = relatedOpportunities.stream()
+                    .map(Opportunity::getContactId)
+                    .collect(Collectors.toSet());
+            Map<String, String> messageDetail = new LinkedHashMap<>();
+            contacts.stream()
+                    .filter(contact -> relatedContactIds.contains(contact.getId()))
+                    .forEach(contact -> messageDetail.put(contact.getId(),
+                            Translator.getWithArgs("customer.contact.ref_opportunity", contact.getName())));
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, messageDetail);
+        }
+
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTACT.getKey(), contactIds, orgId);
+        customerContactMapper.deleteByIds(contactIds);
+        customerContactFieldService.deleteByResourceIds(contactIds);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
+
+        List<LogDTO> logs = contacts.stream()
+                .map(contact -> {
+                    LogDTO logDTO = new LogDTO(orgId, contact.getId(), userId, LogType.DELETE,
+                            LogModule.CUSTOMER_CONTACT, contact.getName());
+                    logDTO.setOriginalValue(contact);
+                    return logDTO;
+                })
+                .toList();
+        logService.batchAdd(logs);
     }
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.UPDATE, resourceId = "{#id}")

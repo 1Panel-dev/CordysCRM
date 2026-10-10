@@ -195,6 +195,7 @@
   import ContactDetailDrawer from '@/views/customer/components/contactDetailDrawer.vue';
 
   import {
+    batchDeleteCustomerContact,
     checkOpportunity,
     deleteCustomerContact,
     disableCustomerContact,
@@ -277,6 +278,16 @@
             key: 'batchEdit',
             permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
           },
+          ...(props.formKey === FormDesignKeyEnum.CONTACT
+            ? [
+                {
+                  label: t('common.batchDelete'),
+                  key: 'batchDelete',
+                  danger: true,
+                  permission: ['CUSTOMER_MANAGEMENT_CONTACT:DELETE'],
+                },
+              ]
+            : []),
         ]
       : [],
   }));
@@ -526,6 +537,27 @@
     showEditModal.value = true;
   }
 
+  function handleBatchDelete() {
+    openModal({
+      type: 'error',
+      title: t('customer.contact.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
+      content: t('customer.contact.deleteContentTip'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchDeleteCustomerContact(checkedRowKeys.value.map(String));
+          checkedRowKeys.value = [];
+          tableRefreshId.value += 1;
+          Message.success(t('common.deleteSuccess'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'exportChecked':
@@ -534,6 +566,9 @@
         break;
       case 'batchEdit':
         handleBatchEdit();
+        break;
+      case 'batchDelete':
+        handleBatchDelete();
         break;
       default:
         break;
