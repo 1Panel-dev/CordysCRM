@@ -12,4 +12,16 @@
             #{id}
         </foreach>
     </update>
+
+    <!-- 审批回退时删掉转移写入的那条变更记录。owner + collection_time 取自编辑前快照,
+         正是 batchAdd 从转移前的 clue 行抄下来的值; 按 end_time 取最新一条, 避免误删
+         同一负责人历史上更早的记录 (<=> 兼容 collection_time 为 null 的老数据) -->
+    <delete id="deleteTransferHistory">
+        delete from clue_owner
+        where clue_id = #{clueId}
+          and owner = #{owner}
+          and collection_time &lt;=&gt; #{collectionTime}
+        order by end_time desc
+        limit 1
+    </delete>
 </mapper>

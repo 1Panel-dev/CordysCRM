@@ -24,6 +24,7 @@ import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -113,8 +114,8 @@ public class OpportunityController {
     @PostMapping("/batch/transfer")
     @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "批量转移商机")
-    public void batchTransfer(@RequestBody OpportunityTransferRequest request) {
-        opportunityService.transfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchTransfer(@RequestBody OpportunityTransferRequest request) {
+        return opportunityService.transfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
@@ -143,8 +144,8 @@ public class OpportunityController {
     @PostMapping("/batch/update")
     @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "批量更新商机")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        opportunityService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        return opportunityService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")

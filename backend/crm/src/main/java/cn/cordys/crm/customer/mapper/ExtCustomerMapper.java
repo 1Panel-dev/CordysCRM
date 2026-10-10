@@ -37,6 +37,16 @@ public interface ExtCustomerMapper extends StatisticSqlMapper {
 
     void batchTransfer(@Param("request") CustomerBatchTransferRequest request, @Param("userId") String userId);
 
+    /**
+     * 审批驳回/撤回时回退转移重置的领取时间
+     * <p>
+     * 负责人由编辑回退还原, 此处只还原转移改写的领取时间。
+     *
+     * @param id             客户ID
+     * @param collectionTime 转移前的领取时间
+     */
+    void revertTransferByApproval(@Param("id") String id, @Param("collectionTime") Long collectionTime);
+
     List<AdvancedCustomerResponse> checkRepeatCustomer(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
                                                        @Param("userId") String userId);
 

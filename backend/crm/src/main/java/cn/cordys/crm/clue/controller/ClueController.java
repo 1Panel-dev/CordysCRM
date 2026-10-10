@@ -28,6 +28,7 @@ import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -128,15 +129,15 @@ public class ClueController {
     @PostMapping("/batch/transfer")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "批量转移线索")
-    public void batchTransfer(@RequestBody ClueBatchTransferRequest request) {
-        clueService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchTransfer(@RequestBody ClueBatchTransferRequest request) {
+        return clueService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "批量更新线索")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        clueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        return clueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

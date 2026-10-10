@@ -80,6 +80,7 @@ import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -513,7 +514,10 @@ public class ClueService implements ApprovalResourceHandler {
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
         productService.checkProductList(request.getProducts());
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
-        if (!Strings.CS.equals(originClue.getOwner(), request.getOwner())) {
+        // 审批回退是把线索还给原负责人, 不是一次新的分配, 不该受负责人容量限制;
+        // 若在这里抛异常, 会被 revertToSnapshot 的 catch 吞掉, 业务数据会原地不动
+        if (!Strings.CS.equals(originClue.getOwner(), request.getOwner())
+                && !isApprovalRevert(request.getUpdateType())) {
             poolClueService.validateCapacity(1, request.getOwner(), orgId);
         }
 
@@ -527,7 +531,10 @@ public class ClueService implements ApprovalResourceHandler {
         if (StringUtils.isNotBlank(request.getOwner())) {
             if (!Strings.CS.equals(request.getOwner(), originClue.getOwner())) {
                 // 如果责任人有修改，则添加责任人历史
-                clueOwnerHistoryService.add(originClue, userId, false);
+                // 审批回退的负责人变更是回退动作本身, 不再记一条, 否则历史里会残留一次并未真正发生的负责人变更
+                if (!isApprovalRevert(request.getUpdateType())) {
+                    clueOwnerHistoryService.add(originClue, userId, false);
+                }
                 sendTransferNotice(List.of(originClue), request.getOwner(), userId, orgId);
             }
         }
@@ -673,10 +680,23 @@ public class ClueService implements ApprovalResourceHandler {
 
     }
 
-    public void batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
+    public BatchAffectReasonResponse batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(clues)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("clue.not.exist")).build();
+        }
         long processCount = clues.stream().filter(clue -> !Strings.CS.equals(clue.getOwner(), request.getOwner())).count();
         poolClueService.validateCapacity((int) processCount, request.getOwner(), orgId);
+
+        // 转移 SQL 只写负责人真正发生变化的线索, 审批同样只对这些线索触发, 避免给原本就是这个负责人的线索凭空建一条审批
+        List<String> changedIds = clues.stream()
+                .filter(clue -> !Strings.CS.equals(clue.getOwner(), request.getOwner()))
+                .map(Clue::getId)
+                .toList();
+        // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
+        CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
+                changedIds, BusinessModuleField.CLUE_OWNER, FormKey.CLUE, orgId, userId, request.getOwner());
 
         // 添加责任人历史
         clueOwnerHistoryService.batchAdd(request, userId);
@@ -698,6 +718,27 @@ public class ClueService implements ApprovalResourceHandler {
         logService.batchAdd(logs);
 
         sendTransferNotice(clues, request.getOwner(), userId, orgId);
+
+        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里有查不到的线索
+        return BatchAffectReasonResponse.builder()
+                .success((int) processCount)
+                .fail(CollectionUtils.size(request.getIds()) - clues.size())
+                .skip(clues.size() - (int) processCount)
+                .errorMessages(Translator.get("batch.transfer.reason"))
+                .build();
+    }
+
+    /**
+     * 是否为审批驳回/撤回触发的回退更新
+     * <p>
+     * 回退复用的是编辑接口, 但语义是"把数据还原回去"而非一次新的编辑:
+     * 不该占用负责人容量, 也不该再产生一条负责人变更记录。
+     *
+     * @param updateType 更新类型
+     * @return true 表示这是回退
+     */
+    private boolean isApprovalRevert(String updateType) {
+        return ApprovalResourceUpdateType.APPROVAL.getValue().equals(updateType);
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
@@ -1407,9 +1448,13 @@ public class ClueService implements ApprovalResourceHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
         List<Clue> originClues = clueMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originClues)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("clue.not.exist")).build();
+        }
         // 状态权限校验: 过滤出当前用户有权编辑的线索。放在各分支之前, 是因为下面还有一条走批量转移
         // 的路径, 它同样是一次编辑 —— 否则处在无权编辑状态(如审批中)的线索会从这条路径绕过去
         List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
@@ -1421,7 +1466,8 @@ public class ClueService implements ApprovalResourceHandler {
                 Clue::getApprovalStatus
         );
         if (CollectionUtils.isEmpty(permittedIds)) {
-            throw new GenericException(Translator.get("no.operation.permission"));
+            return BatchAffectReasonResponse.builder().success(0).fail(originClues.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
         }
 
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
@@ -1429,8 +1475,7 @@ public class ClueService implements ApprovalResourceHandler {
             ClueBatchTransferRequest batchTransferRequest = new ClueBatchTransferRequest();
             batchTransferRequest.setIds(permittedIds);
             batchTransferRequest.setOwner(request.getFieldValue().toString());
-            batchTransfer(batchTransferRequest, userId, organizationId);
-            return;
+            return batchTransfer(batchTransferRequest, userId, organizationId);
         }
 
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())) {
@@ -1456,6 +1501,13 @@ public class ClueService implements ApprovalResourceHandler {
         clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
+
+        return BatchAffectReasonResponse.builder()
+                .success(permittedIds.size())
+                .fail(originClues.size() - permittedIds.size())
+                .skip(0)
+                .errorMessages(Translator.get("batch.update.reason"))
+                .build();
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -1589,7 +1641,7 @@ public class ClueService implements ApprovalResourceHandler {
             return null;
         }
         List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(resourceId);
-        ClueUpdateRequest snapshotReq = BeanUtils.copyBean(new ClueUpdateRequest(), clue);
+        ClueApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new ClueApprovalSnapshotRequest(), clue);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         ModuleFormConfigDTO clueFormConfig = getFormConfig(clue.getOrganizationId());
         // 获取模块字段
@@ -1600,11 +1652,16 @@ public class ClueService implements ApprovalResourceHandler {
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
         try {
-            ClueUpdateRequest request = JSON.parseObject(snapshotData, ClueUpdateRequest.class);
+            ClueApprovalSnapshotRequest request = JSON.parseObject(snapshotData, ClueApprovalSnapshotRequest.class);
             if (request == null) {
                 return;
             }
             CommonBeanFactory.getBean(ClueService.class).update(request, userId, orgId);
+            // 阶段与领取时间不需要单独回退: 快照子类多出的这两个字段会被 update() 的 BeanUtils 拷贝带进实体,
+            // 随 clueMapper.update() 一起写回。改动 update() 的字段拷贝方式时须留意这里。
+            // 转移时 batchAdd 按转移前的负责人+领取时间写了一条变更记录, 回退要把它删掉,
+            // 否则历史里会残留一次并未真正生效的负责人变更
+            clueOwnerHistoryService.deleteTransferHistory(request.getId(), request.getOwner(), request.getCollectionTime());
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }

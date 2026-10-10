@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.service;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
@@ -684,15 +685,68 @@ public class ApprovalResourceService {
             return;
         }
 
-        String valueName = fieldValue instanceof List ? JSON.toJSONString(fieldValue) : fieldValue.toString();
-        for (BaseField field : moduleFormCacheService.getConfig(formKey.getKey(), organizationId).getFields()) {
-            if (Strings.CS.equals(field.getId(), fieldId) || Strings.CS.equals(field.getBusinessKey(), fieldId)) {
-                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-                // 将数据库中的字符串值,转换为对应的对象值
-                valueName = customFieldResolver.transformToValue(field, valueName).toString();
-            }
+        List<BaseField> fields = moduleFormCacheService.getConfig(formKey.getKey(), organizationId).getFields();
+        String valueName = resolveFieldValueName(fields, fieldId, fieldValue);
+        triggerUpdateApproval(resourceIds, formKey.getKey(), formKey, fieldId, organizationId, userId,
+                Translator.getWithArgs("approval.update.field", fieldName, valueName));
+    }
+
+    /**
+     * 批量转移触发审批流
+     * <p>
+     * 转移本质是负责人单个字段的批量编辑, 判定与 {@link #batchEditTriggerApproval} 一致:
+     * 历史上审批通过过的资源存编辑前快照后直接提审（UPDATE时机）, 未通过过的置为待提审（CREATE时机）。
+     * 区别只在变更字段: 审批流节点条件保存的是业务字段 key（负责人即 {@code owner}）, 批量编辑传的是表单字段 id,
+     * 故此处按业务字段 key 写入 updateFields, 否则负责人变更匹配不到条件节点。
+     *
+     * @param resourceIds    资源ID集合（调用方需先剔除负责人未发生变化的资源）
+     * @param ownerField     负责人业务字段
+     * @param formKey        业务模块（表单类型）
+     * @param organizationId 组织ID
+     * @param userId         操作人ID
+     * @param fieldValue     转移后的负责人ID
+     */
+    public void batchTransferTriggerApproval(List<String> resourceIds, BusinessModuleField ownerField, FormKey formKey,
+                                             String organizationId, String userId, Object fieldValue) {
+        if (CollectionUtils.isEmpty(resourceIds) || ownerField == null || formKey == null
+                || StringUtils.isBlank(organizationId) || fieldValue == null) {
+            return;
         }
 
+        // 检查是否命中审批流
+        if (!checkHitApprovalFlowEditTrigger(formKey.getKey(), organizationId)) {
+            return;
+        }
+
+        List<BaseField> fields = moduleFormCacheService.getConfig(formKey.getKey(), organizationId).getFields();
+        String ownerKey = ownerField.getBusinessKey();
+        // 负责人字段可能被自定义表单删除, 取不到字段名时退回业务字段 key, 保证审批说明不为空
+        String fieldName = fields.stream()
+                .filter(field -> Strings.CS.equals(field.getBusinessKey(), ownerKey))
+                .map(BaseField::getName)
+                .findFirst()
+                .orElse(ownerKey);
+        String valueName = resolveFieldValueName(fields, ownerKey, fieldValue);
+        triggerUpdateApproval(resourceIds, formKey.getKey(), formKey, ownerKey, organizationId, userId,
+                Translator.getWithArgs("approval.update.field", fieldName, valueName));
+    }
+
+    /**
+     * 按资源逐个触发编辑审批流
+     * <p>
+     * 历史上审批通过过的资源存编辑前快照后直接提审（UPDATE时机）, 未通过过的置为待提审（CREATE时机）。
+     * 快照必须在业务数据变更前落库, 否则审批驳回/撤回时回退到的是变更后的值。
+     *
+     * @param resourceIds   资源ID集合
+     * @param formType      表单类型（标准枚举 key 或自定义表单 customFormId）
+     * @param formKey       业务模块（表单类型）, 自定义表单为 null
+     * @param updateFieldId 变更字段, 用于审批节点条件匹配
+     * @param organizationId 组织ID
+     * @param userId        操作人ID
+     * @param comment       变更说明
+     */
+    private void triggerUpdateApproval(List<String> resourceIds, String formType, FormKey formKey, String updateFieldId,
+                                       String organizationId, String userId, String comment) {
         for (String resourceId : resourceIds) {
             boolean approved = isResourceApproved(formKey, resourceId);
             if (approved) {
@@ -708,10 +762,10 @@ public class ApprovalResourceService {
                         .orgId(organizationId)
                         .userId(userId)
                         .resourceId(resourceId)
-                        .formKey(formKey.getKey())
+                        .formKey(formType)
                         .executeTimingEnum(ExecuteTimingEnum.UPDATE)
-                        .updateFields(JSON.toJSONString(List.of(fieldId)))
-                        .comment(Translator.getWithArgs("approval.update.field", fieldName, valueName))
+                        .updateFields(JSON.toJSONString(List.of(updateFieldId)))
+                        .comment(comment)
                         .build();
                 push(pushParam);
             } else {
@@ -719,6 +773,30 @@ public class ApprovalResourceService {
                 updateResourceApprovalStatus(formKey, resourceId, ApprovalStatus.PENDING.name(), userId, organizationId);
             }
         }
+    }
+
+    /**
+     * 解析字段值的显示名称
+     * <p>
+     * 审批说明展示的是业务可读值（如负责人显示用户名, 选项字段显示选项名）,
+     * 需按字段类型把库里存的原始值转换一次; 字段找不到时退回原始值,
+     * 保证字段被删除后审批说明仍可读。
+     *
+     * @param fields     表单字段集合
+     * @param fieldId    字段ID或业务字段 key
+     * @param fieldValue 字段值
+     * @return 字段值显示名称
+     */
+    private String resolveFieldValueName(List<BaseField> fields, String fieldId, Object fieldValue) {
+        String valueName = fieldValue instanceof List ? JSON.toJSONString(fieldValue) : fieldValue.toString();
+        for (BaseField field : fields) {
+            if (Strings.CS.equals(field.getId(), fieldId) || Strings.CS.equals(field.getBusinessKey(), fieldId)) {
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                // 将数据库中的字符串值,转换为对应的对象值
+                valueName = customFieldResolver.transformToValue(field, valueName).toString();
+            }
+        }
+        return valueName;
     }
 
     /**
@@ -821,41 +899,10 @@ public class ApprovalResourceService {
             return;
         }
 
-        String valueName = fieldValue instanceof List ? JSON.toJSONString(fieldValue) : fieldValue.toString();
-        for (BaseField field : moduleFormCacheService.getConfig(formType, organizationId).getFields()) {
-            if (Strings.CS.equals(field.getId(), fieldId) || Strings.CS.equals(field.getBusinessKey(), fieldId)) {
-                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-                // 将数据库中的字符串值,转换为对应的对象值
-                valueName = customFieldResolver.transformToValue(field, valueName).toString();
-            }
-        }
-
-        for (String resourceId : resourceIds) {
-            boolean approved = isResourceApproved(null, resourceId);
-            if (approved) {
-                // 已审批通过过：UPDATE时机，直接提审
-                ApprovalResourceHandler handler = resolveApprovalHandler(null);
-                if (handler != null) {
-                    String snapshotData = handler.getPreUpdateSnapshotData(resourceId, userId, organizationId);
-                    if (StringUtils.isNotBlank(snapshotData)) {
-                        savePreUpdateSnapshot(null, resourceId, userId, snapshotData);
-                    }
-                }
-                ApprovalPushParam pushParam = ApprovalPushParam.builder()
-                        .orgId(organizationId)
-                        .userId(userId)
-                        .resourceId(resourceId)
-                        .formKey(formType)
-                        .executeTimingEnum(ExecuteTimingEnum.UPDATE)
-                        .updateFields(JSON.toJSONString(List.of(fieldId)))
-                        .comment(Translator.getWithArgs("approval.update.field", fieldName, valueName))
-                        .build();
-                push(pushParam);
-            } else {
-                // 未审批通过过：CREATE时机，设为待提审
-                updateResourceApprovalStatus(null, resourceId, ApprovalStatus.PENDING.name(), userId, organizationId);
-            }
-        }
+        List<BaseField> fields = moduleFormCacheService.getConfig(formType, organizationId).getFields();
+        String valueName = resolveFieldValueName(fields, fieldId, fieldValue);
+        triggerUpdateApproval(resourceIds, formType, null, fieldId, organizationId, userId,
+                Translator.getWithArgs("approval.update.field", fieldName, valueName));
     }
 
     /**
