@@ -33,5 +33,8 @@ SET pos = (SELECT rn
 ALTER TABLE approval_instance
     ADD COLUMN resource_name VARCHAR(255) NULL COMMENT '资源名称(提审时快照)';
 
+
+ALTER TABLE approval_node_condition MODIFY COLUMN condition_config TEXT COMMENT '条件配置JSON';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
