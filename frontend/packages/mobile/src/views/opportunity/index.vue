@@ -70,6 +70,8 @@
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
 
   import { deleteOpt, getOpportunityList, getOpportunityStageConfig } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import { hasAllPermission } from '@/utils/permission';
@@ -119,6 +121,16 @@
     },
   ];
   const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.BUSINESS);
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.BUSINESS,
+  });
+
+  const refreshList = () => crmListRef.value?.loadList(true);
+  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<OpportunityItem>({
+    formType: FormDesignKeyEnum.BUSINESS,
+    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+  });
 
   const listParams = computed(() => {
     return {
@@ -145,6 +157,7 @@
     return (row: OpportunityItem) => {
       const transferAction = [
         {
+          key: 'transfer',
           label: t('common.transfer'),
           icon: 'iconicon_jump',
           permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
@@ -156,6 +169,7 @@
 
       const editAction = [
         {
+          key: 'edit',
           label: t('common.edit'),
           icon: 'iconicon_handwritten_signature',
           permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
@@ -173,16 +187,17 @@
       ];
 
       if (row.stage === failureStage.value?.id) {
-        return transferAction;
+        return resolveRowActions(row, transferAction);
       }
 
       if (row.stage === successStage.value?.id) {
-        return hasBackStagePermission.value ? editAction : [];
+        return hasBackStagePermission.value ? resolveRowActions(row, editAction) : resolveRowActions(row, []);
       }
 
-      return [
+      return resolveRowActions(row, [
         ...editAction,
         {
+          key: 'writeRecord',
           label: t('common.writeRecord'),
           icon: 'iconicon_handwritten_signature',
           permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
@@ -205,6 +220,7 @@
         },
         ...transferAction,
         {
+          key: 'delete',
           label: t('common.delete'),
           icon: 'iconicon_delete',
           permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
@@ -212,13 +228,15 @@
             showConfirmDialog({
               title: t('opportunity.deleteTitle'),
               message: t('opportunity.deleteContentTip'),
-              confirmButtonText: t('common.confirmDelete'),
+              confirmButtonText: deleteExecute.value
+                ? t('crm.approval.confirmAndSubmitReview')
+                : t('common.confirmDelete'),
               confirmButtonColor: 'var(--error-red)',
               beforeClose: async (action) => {
                 if (action === 'confirm') {
                   try {
                     await deleteOpt(item.id);
-                    showSuccessToast(t('common.deleteSuccess'));
+                    showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
                     crmListRef.value?.loadList(true);
                     return Promise.resolve(true);
                   } catch (error) {
@@ -233,7 +251,7 @@
             });
           },
         },
-      ];
+      ]);
     };
   });
 
@@ -281,8 +299,13 @@
   );
 
   onActivated(() => {
+    initApprovalPermission();
     initStageConfig();
     crmListRef.value?.loadList(true);
+  });
+
+  onBeforeMount(() => {
+    initApprovalPermission();
   });
 </script>
 

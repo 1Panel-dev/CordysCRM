@@ -1,5 +1,7 @@
 <template>
-  <span v-if="!processStatusMap[props.status] || processStatusMap[props.status].label === '-'">-</span>
+  <span v-if="!props.status || !processStatusMap[props.status] || processStatusMap[props.status].label === '-'">
+    -
+  </span>
   <CrmTag
     v-else
     plain
@@ -13,7 +15,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   const props = defineProps<{
-    status: ProcessStatusEnum;
+    status?: ProcessStatusEnum;
   }>();
 
   const { t } = useI18n();

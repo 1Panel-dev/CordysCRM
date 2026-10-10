@@ -68,6 +68,8 @@
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteClue, getClueList } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
 
@@ -100,6 +102,16 @@
 
   const activeClue = ref<ClueListItem>();
   const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CLUE);
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CLUE,
+  });
+
+  const refreshList = () => crmListRef.value?.loadList(true);
+  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<ClueListItem>({
+    formType: FormDesignKeyEnum.CLUE,
+    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+  });
 
   function handleEdit(id: string) {
     router.push({
@@ -136,13 +148,13 @@
     showConfirmDialog({
       title: t('clue.deleteTitle'),
       message: t('clue.batchDeleteContentTip'),
-      confirmButtonText: t('common.confirmDelete'),
+      confirmButtonText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       confirmButtonColor: 'var(--error-red)',
       beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
             await deleteClue(id);
-            showSuccessToast(t('common.deleteSuccess'));
+            showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
             crmListRef.value?.loadList(true);
             return Promise.resolve(true);
           } catch (error) {
@@ -160,8 +172,10 @@
   const actions = computed(() => {
     return (row: ClueListItem) => {
       if (row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)) return [];
-      return [
+
+      return resolveRowActions(row, [
         {
+          key: 'edit',
           label: t('common.edit'),
           icon: 'iconicon_handwritten_signature',
           permission: ['CLUE_MANAGEMENT:UPDATE'],
@@ -170,6 +184,7 @@
           },
         },
         {
+          key: 'transfer',
           label: t('common.transfer'),
           icon: 'iconicon_jump',
           permission: ['CLUE_MANAGEMENT:TRANSFER'],
@@ -178,6 +193,7 @@
           },
         },
         {
+          key: 'convert',
           label: t('clue.convert'),
           icon: 'iconicon_edit1',
           permission: ['CLUE_MANAGEMENT:UPDATE'],
@@ -186,6 +202,7 @@
           },
         },
         {
+          key: 'delete',
           label: t('common.delete'),
           icon: 'iconicon_delete',
           permission: ['CLUE_MANAGEMENT:DELETE'],
@@ -193,7 +210,7 @@
             handleDelete(item.id);
           },
         },
-      ];
+      ]);
     };
   });
 
@@ -204,7 +221,12 @@
   }
 
   onActivated(() => {
+    initApprovalPermission();
     search();
+  });
+
+  onBeforeMount(() => {
+    initApprovalPermission();
   });
 
   watch(

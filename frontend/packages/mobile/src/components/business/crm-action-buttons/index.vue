@@ -1,10 +1,20 @@
 <template>
-  <div v-if="actionList?.length || props.showEditButton" class="flex items-center justify-center gap-[16px]">
+  <div v-if="buttonList.length" class="flex items-center justify-center gap-[16px]">
+    <van-button
+      v-for="button of visibleButtonList"
+      :key="button.key"
+      :type="button.danger ? 'danger' : 'primary'"
+      :plain="true"
+      class="flex-1 !rounded-[var(--border-radius-small)] !text-[16px]"
+      @click="emit('select', button.key)"
+    >
+      {{ button.text }}
+    </van-button>
     <van-popover
-      v-if="actionList?.length"
+      v-if="moreButtonList.length"
       v-model:show="showPopover"
       placement="top"
-      :actions="actionList"
+      :actions="moreButtonList"
       @select="handleSelect"
     >
       <template #reference>
@@ -21,16 +31,6 @@
         </div>
       </template>
     </van-popover>
-
-    <van-button
-      v-if="props.showEditButton"
-      type="primary"
-      :plain="true"
-      class="flex-1 !rounded-[var(--border-radius-small)] !text-[16px]"
-      @click="emit('select', 'edit')"
-    >
-      {{ t('common.edit') }}
-    </van-button>
   </div>
 </template>
 
@@ -44,9 +44,13 @@
   import type { PopoverAction } from 'vant';
 
   export interface CrmActionButtonsItem extends PopoverAction {
-    permission: string[];
+    permission?: string[];
     key: string;
     allPermission?: boolean;
+  }
+  interface CrmActionButtonRenderItem extends CrmActionButtonsItem {
+    text: string;
+    danger: boolean;
   }
 
   const props = defineProps<{
@@ -61,14 +65,38 @@
   const { t } = useI18n();
 
   const actionList = computed(() => {
-    return props.actions?.filter((e) =>
-      e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission)
-    );
+    return (props.actions || []).filter((e) => {
+      if (!e.permission?.length) {
+        return true;
+      }
+
+      return e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission);
+    });
+  });
+  const buttonList = computed<CrmActionButtonRenderItem[]>(() => [
+    ...(props.showEditButton ? [{ key: 'edit', text: t('common.edit'), danger: false }] : []),
+    ...actionList.value.map((action) => ({
+      ...action,
+      text: action.text || action.name || '',
+      danger: action.color === 'var(--error-red)',
+    })),
+  ]);
+  const visibleButtonList = computed(() => {
+    if (buttonList.value.length <= 3) {
+      return buttonList.value;
+    }
+    return buttonList.value.slice(0, 2);
+  });
+  const moreButtonList = computed(() => {
+    if (buttonList.value.length <= 3) {
+      return [];
+    }
+    return buttonList.value.slice(2);
   });
 
   const showPopover = ref(false);
 
-  function handleSelect(action: CrmActionButtonsItem) {
+  function handleSelect(action: CrmActionButtonsItem & { text?: string }) {
     showPopover.value = false;
     emit('select', action.key);
   }
