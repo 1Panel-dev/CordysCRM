@@ -403,7 +403,7 @@ export default async function useFormCreateSystemColumns(
   ];
 
   const internalColumnMap: Record<string, CrmDataTableColumn[]> = {
-    [FormDesignKeyEnum.CUSTOMER]: customerInternalColumns,
+    [FormDesignKeyEnum.CUSTOMER]: [...approvalStatusColumn, ...customerInternalColumns],
     [FormDesignKeyEnum.CONTACT]: contactInternalColumns,
     [FormDesignKeyEnum.CUSTOMER_CONTACT]: [
       {
@@ -465,8 +465,9 @@ export default async function useFormCreateSystemColumns(
         render: (row: any) => row.departmentName || '-',
       },
     ],
-    [FormDesignKeyEnum.BUSINESS]: opportunityInternalColumns,
+    [FormDesignKeyEnum.BUSINESS]: [...approvalStatusColumn, ...opportunityInternalColumns],
     [FormDesignKeyEnum.CLUE]: [
+      ...approvalStatusColumn,
       {
         title: t('org.department'),
         width: 120,
@@ -613,11 +614,11 @@ export default async function useFormCreateSystemColumns(
         render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
       },
     ],
-    [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalColumns,
+    [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: [...approvalStatusColumn, ...opportunityInternalColumns],
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalColumns,
     [FormDesignKeyEnum.FOLLOW_RECORD]: recordInternalColumns,
     [FormDesignKeyEnum.FOLLOW_PLAN]: planInternalColumns,
-    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: [],
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: approvalStatusColumn,
     [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: [
       {
         title: t('workbench.duplicateCheck.relatedOpportunity'),
@@ -631,6 +632,7 @@ export default async function useFormCreateSystemColumns(
         width: 60,
         render: props.specialRender?.clueCount,
       },
+      ...approvalStatusColumn,
       ...customerInternalColumns,
     ],
     [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: contactInternalColumns,
@@ -686,7 +688,7 @@ export default async function useFormCreateSystemColumns(
         render: (row: any) => row.poolName || '-',
       },
     ],
-    [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: opportunityInternalColumns,
+    [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: [...approvalStatusColumn, ...opportunityInternalColumns],
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: [
       {
         title: t('org.department'),

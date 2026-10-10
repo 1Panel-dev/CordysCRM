@@ -1,13 +1,23 @@
 <template>
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
+    <template #titleLeft>
+      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+    </template>
     <template #titleRight>
       <CrmOperationButton
-        :group-list="buttonList"
         class="gap-[12px]"
+        :group-list="detailActions.groupList"
+        :more-list="detailActions.moreList"
         :not-show-divider="true"
         @pop-update="handleTransferPopUpdate"
         @select="handleButtonSelect"
       >
+        <template #more>
+          <n-button type="primary" ghost class="n-btn-outline-primary">
+            {{ t('common.more') }}
+            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+          </n-button>
+        </template>
         <template #transferPopContent>
           <TransferForm
             ref="transferFormRef"
@@ -32,20 +42,34 @@
       </CrmCard>
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 64 : 0" no-content-padding>
         <div v-show="activeTab === 'customer'" class="h-full overflow-hidden">
-          <CrmFormDescription
-            ref="descriptionRef"
+          <CrmApprovalDetail
             :form-key="FormDesignKeyEnum.CUSTOMER"
             :source-id="props.sourceId"
-            :refresh-key="refreshKey"
-            class="p-[24px]"
-            :column="2"
-            label-width="auto"
-            value-align="start"
-            tooltip-position="top-start"
-            :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
-            @init="handleDescriptionInit"
-            @refresh="emit('refresh')"
-          />
+            :refresh-key="approvalDetailRefreshKey"
+            :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+            @saveApproval="handleSaveApproval"
+          >
+            <template #left="{ fieldPermissions, taskNode }">
+              <CrmFormDescription
+                ref="descriptionRef"
+                :form-key="FormDesignKeyEnum.CUSTOMER"
+                :source-id="props.sourceId"
+                :refresh-key="refreshKey"
+                class="p-[24px]"
+                :column="2"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                :readonly="!hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
+                :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  approvalTaskId: taskNode?.taskId,
+                }"
+                @init="handleDescriptionInit"
+                @refresh="emit('refresh')"
+              />
+            </template>
+          </CrmApprovalDetail>
         </div>
         <div v-if="activeTab === 'contact'" class="h-full px-[24px] pt-[24px]">
           <ContactTable
@@ -146,23 +170,28 @@
       :source-id="props.sourceId"
       need-init-detail
       @saved="handleSaved"
+      @review="handleFormReview"
     />
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
+  import { NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
@@ -180,6 +209,8 @@
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -208,57 +239,89 @@
   });
 
   const refreshKey = ref(0);
+  const approvalDetailRefreshKey = ref(0);
   const formConfig = ref<FormConfig>();
+  const detailInfo = ref<Record<string, any>>({});
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
-  const buttonList = computed<ActionsItem[]>(() => {
+  const customerDataActionMap = computed<Record<string, ActionsItem>>(() => ({
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+    },
+    transfer: {
+      label: t('common.transfer'),
+      key: 'transfer',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
+      popConfirmProps: {
+        loading: transferLoading.value,
+        title: t('common.transfer'),
+        positiveText: t('common.confirm'),
+        iconType: 'primary' as const,
+      },
+      popSlotContent: 'transferPopContent',
+    },
+    moveToOpenSea: {
+      label: t('customer.moveToOpenSea'),
+      key: 'moveToOpenSea',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      text: false,
+      ghost: true,
+      danger: true,
+      class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+    },
+  }));
+
+  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+    useApprovalOperation<Record<string, any>>({
+      formType: FormDesignKeyEnum.CUSTOMER,
+      dataActionMap: () => customerDataActionMap.value,
+      isDetail: true,
+    });
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CUSTOMER,
+  });
+
+  const detailActions = computed<{
+    groupList: ActionsItem[];
+    moreList: ActionsItem[];
+  }>(() => {
     if (collaborationType.value || props.readonly) {
-      return [];
+      return {
+        groupList: [],
+        moreList: [],
+      };
     }
-    return [
-      {
-        label: t('common.edit'),
-        key: 'edit',
+
+    const detailAction = resolveRowOperation(detailInfo.value);
+
+    return {
+      ...detailAction,
+      groupList: detailAction.groupList.map((e) => ({
+        ...e,
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('common.transfer'),
-        key: 'transfer',
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
-        popConfirmProps: {
-          loading: transferLoading.value,
-          title: t('common.transfer'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary',
-        },
-        popSlotContent: 'transferPopContent',
-      },
-      {
-        label: t('customer.moveToOpenSea'),
-        key: 'moveToOpenSea',
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
-      },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        text: false,
-        ghost: true,
-        danger: true,
-        class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:DELETE'],
-      },
-    ];
+      })),
+    };
   });
 
   const activeTab = ref('customer');
@@ -440,12 +503,12 @@
       type: 'error',
       title: t('customer.deleteTitleTip'),
       content: t('customer.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteCustomer(props.sourceId);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           emit('deleted');
           show.value = false;
         } catch (error) {
@@ -462,9 +525,51 @@
     showMoveModal.value = true;
   }
 
+  function handleSaved(_res?: any, isUpdateReview?: boolean) {
+    if (isUpdateReview) {
+      approvalDetailRefreshKey.value += 1;
+    }
+    refreshKey.value += 1;
+    emit('saved');
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: handleSaved,
+    });
+  }
+
+  function handleReview() {
+    reviewByResourceId(props.sourceId, {
+      onSuccess: handleSaved,
+    });
+  }
+
+  function handleRevoke() {
+    revokeByResourceId(props.sourceId, {
+      onSuccess: handleSaved,
+    });
+  }
+
+  async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
+    if (hasFieldPermission) {
+      descriptionRef.value?.handleFormChange(async () => {
+        await callback();
+        handleSaved();
+      });
+    } else {
+      await callback();
+      handleSaved();
+    }
+  }
+
   function handleButtonSelect(key: string) {
     if (key === 'edit') {
       formCreateDrawerVisible.value = true;
+    } else if (key === 'review') {
+      handleReview();
+    } else if (key === 'revoke') {
+      handleRevoke();
     } else if (key === 'delete') {
       handleDelete();
     } else if (key === 'pop-transfer') {
@@ -472,11 +577,6 @@
     } else if (key === 'moveToOpenSea') {
       handleMoveToPublicPool();
     }
-  }
-
-  function handleSaved() {
-    refreshKey.value += 1;
-    emit('saved');
   }
 
   const formViewSize = ref<FormViewSize>('large');
@@ -488,6 +588,7 @@
   ) {
     collaborationType.value = _collaborationType;
     sourceName.value = _sourceName || '';
+    detailInfo.value = detail ?? {};
     formConfig.value = config;
     formViewSize.value = config?.viewSize || 'large';
   }
@@ -507,6 +608,18 @@
   function handleOpenCustomerDrawer() {
     showContractDetailDrawer.value = false;
   }
+
+  watch(
+    () => show.value,
+    (val) => {
+      if (val) {
+        initApprovalPermission();
+      } else {
+        detailInfo.value = {};
+      }
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less" scoped></style>

@@ -27,6 +27,11 @@ export interface OpportunityItem {
   hasPermission?: boolean;
   moduleFields: ModuleField[]; // 自定义字段
   amount: number; // 金额
+  owner: string;
+  approvalStatus?: ProcessStatusEnum;
+  approved?: boolean;
+  firstApproved?: boolean;
+  submitterId?: string;
 }
 
 export interface SaveOpportunityParams {
@@ -42,6 +47,7 @@ export interface SaveOpportunityParams {
 
 export interface UpdateOpportunityParams extends SaveOpportunityParams {
   id: string;
+  approvalTaskId?: string;
 }
 
 export interface OpportunityDetail extends OpportunityItem {

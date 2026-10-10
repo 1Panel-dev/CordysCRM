@@ -366,6 +366,8 @@ export default {
   'common.copyTo': 'Copy to',
   'common.exportApprovalTip': 'Only data with approval statuses {statuses} can be exported',
   'common.batchEditApprovalTip': 'Only data with approval statuses {statuses} can be batch edited',
+  'common.batchDeleteApprovalTip': 'Only data with approval statuses {statuses} can be batch deleted',
+  'common.batchMergeApprovalTip': 'Only data with approval statuses {statuses} can be batch merged',
   'common.batchVoidApprovalTip': 'Only data with approval statuses {statuses} can be batch voided',
   'common.testLink': 'Test link',
   'common.batchDeleteTitle': 'Confirm delete {count} data?',

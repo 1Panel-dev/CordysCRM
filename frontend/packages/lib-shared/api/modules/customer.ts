@@ -203,8 +203,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 更新客户
-  function updateCustomer(data: UpdateCustomerParams) {
-    return CDR.post({ url: UpdateCustomerUrl, data });
+  function updateCustomer(data: UpdateCustomerParams, approvalTaskId?: string) {
+    return CDR.post({ url: UpdateCustomerUrl, data, params: { approvalTaskId } });
   }
 
   // 获取客户列表

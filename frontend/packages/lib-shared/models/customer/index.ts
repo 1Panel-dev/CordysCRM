@@ -1,4 +1,5 @@
 import type { CustomerFollowPlanStatusEnum, CustomerSearchTypeEnum } from '../../enums/customerEnum';
+import type { ProcessStatusEnum } from '../../enums/process';
 import type { ModuleField, TableExportParams, TableQueryParams } from '../common';
 
 export interface SaveCustomerParams {
@@ -9,6 +10,7 @@ export interface SaveCustomerParams {
 
 export interface UpdateCustomerParams extends SaveCustomerParams {
   id: string;
+  approvalTaskId?: string;
 }
 
 export interface FreezeOpenSeaCustomerParams {
@@ -44,6 +46,10 @@ export interface CustomerListItem {
   collectionTime: number;
   reservedDays: number; // 剩余归属天数
   moduleFields: ModuleField[];
+  approvalStatus?: ProcessStatusEnum;
+  approved?: boolean;
+  firstApproved?: boolean;
+  submitterId?: string;
 }
 
 export interface CustomerDetail {
@@ -57,6 +63,10 @@ export interface CustomerDetail {
   createUserName: string;
   updateUserName: string;
   moduleFields: ModuleField[];
+  approvalStatus?: ProcessStatusEnum;
+  approved?: boolean;
+  firstApproved?: boolean;
+  submitterId?: string;
 }
 
 export interface SaveCustomerFollowRecordParams {

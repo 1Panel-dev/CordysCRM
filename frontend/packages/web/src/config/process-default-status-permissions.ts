@@ -1,13 +1,46 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 
-export type PermissionSuffix = 'READ' | 'UPDATE' | 'DELETE' | 'DOWNLOAD' | 'EXPORT' | 'VOIDED' | 'STAGE' | 'PAYMENT';
+export type PermissionSuffix =
+  | 'READ'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'DOWNLOAD'
+  | 'EXPORT'
+  | 'VOIDED'
+  | 'STAGE'
+  | 'PAYMENT'
+  | 'TRANSFER'
+  | 'RECYCLE'
+  | 'MERGE'
+  | 'RESIGN';
 
 type PartialModuleDefaultPermissionConfig = Partial<Record<ProcessStatusEnum, PermissionSuffix[]>>;
 
 export const processDefaultStatusPermissionMap: Partial<
   Record<FormDesignKeyEnum | string, PartialModuleDefaultPermissionConfig>
 > = {
+  [FormDesignKeyEnum.CLUE]: {
+    [ProcessStatusEnum.APPROVED]: ['READ', 'EXPORT', 'TRANSFER', 'RECYCLE'],
+    [ProcessStatusEnum.APPROVING]: ['READ'],
+    [ProcessStatusEnum.UNAPPROVED]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RECYCLE'],
+    [ProcessStatusEnum.REVOKED]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RECYCLE'],
+    [ProcessStatusEnum.PENDING]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RECYCLE'],
+  },
+  [FormDesignKeyEnum.CUSTOMER]: {
+    [ProcessStatusEnum.APPROVED]: ['READ', 'EXPORT', 'MERGE', 'TRANSFER', 'RECYCLE'],
+    [ProcessStatusEnum.APPROVING]: ['READ'],
+    [ProcessStatusEnum.UNAPPROVED]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RECYCLE', 'MERGE'],
+    [ProcessStatusEnum.REVOKED]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RECYCLE', 'MERGE'],
+    [ProcessStatusEnum.PENDING]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RECYCLE', 'MERGE'],
+  },
+  [FormDesignKeyEnum.BUSINESS]: {
+    [ProcessStatusEnum.APPROVED]: ['READ', 'EXPORT', 'RESIGN', 'TRANSFER'],
+    [ProcessStatusEnum.APPROVING]: ['READ'],
+    [ProcessStatusEnum.UNAPPROVED]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RESIGN'],
+    [ProcessStatusEnum.REVOKED]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RESIGN'],
+    [ProcessStatusEnum.PENDING]: ['READ', 'UPDATE', 'DELETE', 'TRANSFER', 'RESIGN'],
+  },
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: {
     [ProcessStatusEnum.APPROVED]: ['READ', 'DOWNLOAD', 'VOIDED'],
     [ProcessStatusEnum.APPROVING]: ['READ', 'VOIDED'],

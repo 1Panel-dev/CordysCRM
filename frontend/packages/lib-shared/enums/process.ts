@@ -83,6 +83,9 @@ export enum ApprovalFieldPermissionModeEnum {
 }
 
 export enum ApprovalResourceTypeEnum {
+  CLUE = 'CLUE',
+  CUSTOMER = 'CUSTOMER',
+  OPPORTUNITY = 'OPPORTUNITY',
   QUOTATION = 'QUOTATION',
   CONTRACT = 'CONTRACT',
   ORDER = 'ORDER',

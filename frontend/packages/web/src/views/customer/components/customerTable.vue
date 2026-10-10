@@ -106,6 +106,7 @@
       activeFormKey === FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER ? FormLinkScenarioEnum.CUSTOMER_TO_RECORD : undefined
     "
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -129,6 +130,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CUSTOMER"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="() => (tableRefreshId += 1)"
   />
   <mergeAccountModal v-model:show="showMergeModal" :selected-rows="selectedRows" @saved="() => (tableRefreshId += 1)" />
@@ -141,6 +143,7 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
@@ -156,6 +159,8 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -170,6 +175,9 @@
 
   import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -264,14 +272,99 @@
 
   const tableRefreshId = ref(0);
   const tableRemoveRefreshId = ref('');
+  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+  const transferLoading = ref(false);
+  const transferForm = ref<any>({
+    owner: null,
+  });
+
+  const customerDataActionMap = computed<Record<string, ActionsItem>>(() => {
+    const actions: Record<string, ActionsItem> = {
+      followUp: {
+        label: t('opportunity.followUp'),
+        key: 'followUp',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      },
+    };
+
+    if (activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
+      actions.edit = {
+        label: t('common.edit'),
+        key: 'edit',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      };
+      actions.transfer = {
+        label: t('common.transfer'),
+        key: 'transfer',
+        popConfirmProps: {
+          loading: transferLoading.value,
+          title: t('common.transfer'),
+          positiveText: t('common.confirm'),
+          iconType: 'primary' as CrmPopConfirmIconType,
+        },
+        popSlotName: 'transferPopTitle',
+        popSlotContent: 'transferPopContent',
+        permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
+      };
+      actions.moveToOpenSea = {
+        label: t('customer.moveToOpenSea'),
+        key: 'moveToOpenSea',
+        permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
+      };
+      actions.delete = {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+      };
+    }
+
+    return actions;
+  });
+
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    deleteExecute,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.CUSTOMER,
+    dataActionMap: () => customerDataActionMap.value,
+  });
+  const batchEditApprovalTip = computed(() =>
+    getApprovalActionTip(['CUSTOMER_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
+  );
+  const batchDeleteApprovalTip = computed(() =>
+    getApprovalActionTip(['CUSTOMER_MANAGEMENT:DELETE'], 'common.batchDeleteApprovalTip')
+  );
+  const batchMergeApprovalTip = computed(() =>
+    getApprovalActionTip(['CUSTOMER_MANAGEMENT:MERGE'], 'common.batchMergeApprovalTip')
+  );
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CUSTOMER,
+  });
+
+  // 概览
+  const showOverviewDrawer = ref(false);
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+
+  defineExpose({
+    handleAdvanceFilter,
+    handleSearchData,
+  });
 
   // 批量删除
   function handleBatchDelete() {
     openModal({
       type: 'error',
+      size: 'medium',
       title: t('customer.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('customer.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      content: renderApprovalConfirmContent(t('customer.batchDeleteContentTip'), batchDeleteApprovalTip.value),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
@@ -313,6 +406,7 @@
   function handleMergeAccount() {
     openModal({
       type: 'error',
+      size: 'medium',
       icon: () => {
         return h(CrmIcon, {
           type: 'iconicon_error_circle_filled',
@@ -321,7 +415,7 @@
         });
       },
       title: t('customer.mergeConfirmTitle'),
-      content: t('customer.mergeConfirmContent'),
+      content: renderApprovalConfirmContent(t('customer.mergeConfirmContent'), batchMergeApprovalTip.value),
       positiveText: t('customer.confirmMerge'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
@@ -371,12 +465,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('customer.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteCustomer(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -387,12 +481,6 @@
   }
 
   // 转移
-  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
-  const transferLoading = ref(false);
-  const transferForm = ref<any>({
-    owner: null,
-  });
-
   function resetTransferForm() {
     transferForm.value.owner = null;
   }
@@ -435,6 +523,16 @@
 
   async function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
+      case 'review':
+        reviewByResourceId(row.id, {
+          onSuccess: (resourceId) => handleSearchData.value?.(undefined, resourceId),
+        });
+        break;
+      case 'revoke':
+        revokeByResourceId(row.id, {
+          onSuccess: (resourceId) => handleSearchData.value?.(undefined, resourceId),
+        });
+        break;
       case 'edit':
         activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
         activeSourceId.value = row.id;
@@ -470,53 +568,8 @@
     }
   }
 
-  const operationGroupList = computed<ActionsItem[]>(() => {
-    return [
-      {
-        label: t('opportunity.followUp'),
-        key: 'followUp',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
-      ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
-        ? [
-            {
-              label: t('common.edit'),
-              key: 'edit',
-              permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-            },
-            {
-              label: t('common.transfer'),
-              key: 'transfer',
-              popConfirmProps: {
-                loading: transferLoading.value,
-                title: t('common.transfer'),
-                positiveText: t('common.confirm'),
-                iconType: 'primary' as CrmPopConfirmIconType,
-              },
-              popSlotName: 'transferPopTitle',
-              popSlotContent: 'transferPopContent',
-              permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
-            },
-            {
-              label: 'more',
-              key: 'more',
-              slotName: 'more',
-            },
-          ]
-        : []),
-    ];
-  });
+  await initApprovalPermission();
 
-  // 概览
-  const showOverviewDrawer = ref(false);
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
-  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
-
-  defineExpose({
-    handleAdvanceFilter,
-    handleSearchData,
-  });
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     tableKey: props.tableKey,
@@ -533,52 +586,46 @@
           key: 'operation',
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
-          render: (row: any) =>
-            ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||
-            row.collaborationType === 'READ_ONLY'
-              ? '-'
-              : h(
+          render: (row: any) => {
+            if (
+              ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||
+              row.collaborationType === 'READ_ONLY'
+            ) {
+              return '-';
+            }
+
+            const operation = resolveRowOperation(row);
+            return operation.groupList.length
+              ? h(
                   CrmOperationButton,
                   {
-                    groupList: operationGroupList.value,
-                    moreList: [
-                      ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
-                        ? [
-                            {
-                              label: t('customer.moveToOpenSea'),
-                              key: 'moveToOpenSea',
-                              permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
-                            },
-                            {
-                              label: t('common.delete'),
-                              key: 'delete',
-                              danger: true,
-                              permission: ['CUSTOMER_MANAGEMENT:DELETE'],
-                            },
-                          ]
-                        : []),
-                    ],
+                    groupList: operation.groupList,
+                    moreList: operation.moreList,
                     onSelect: (key: string) => handleActionSelect(row, key),
                     onCancel: resetTransferForm,
                     onPopUpdate: handleTransferPopUpdate,
                   },
                   {
-                    transferPopContent: () => {
-                      return h(TransferForm, {
+                    transferPopContent: () =>
+                      h(TransferForm, {
                         class: 'w-[320px] mt-[16px]',
                         form: transferForm.value,
                         ref: transferFormRef,
                         moduleType: ModuleConfigEnum.CLUE_MANAGEMENT,
-                      });
-                    },
+                      }),
                   }
-                ),
+                )
+              : '-';
+          },
         },
     specialRender: {
       name: (row: any) => {
-        return props.isLimitShowDetail && row.hasPermission === false
-          ? h(CrmNameTooltip, { text: row.name })
-          : h(
+        if (props.isLimitShowDetail && row.hasPermission === false) {
+          return h(CrmNameTooltip, { text: row.name });
+        }
+
+        return hasApprovalScopedPermission(row, ['CUSTOMER_MANAGEMENT:READ'])
+          ? h(
               CrmTableButton,
               {
                 onClick: () => {
@@ -588,7 +635,8 @@
                 },
               },
               { trigger: () => row.name, default: () => row.name }
-            );
+            )
+          : h(CrmNameTooltip, { text: row.name });
       },
       opportunityCount: (row: any) => {
         return !row.opportunityCount
@@ -623,6 +671,19 @@
               { default: () => row.clueCount }
             );
       },
+      approvalStatus: (row: any) =>
+        h(CrmApprovalPopover, {
+          status: row.approvalStatus,
+          formKey: FormDesignKeyEnum.CUSTOMER,
+          sourceId: row.id,
+          showMore: hasApprovalScopedPermission(row, ['CUSTOMER_MANAGEMENT:READ']),
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
+            activeSourceId.value = row.id;
+            showOverviewDrawer.value = true;
+          },
+        }),
     },
     permission: [
       'CUSTOMER_MANAGEMENT:RECYCLE',
@@ -633,6 +694,7 @@
     containerClass: '.crm-customer-table',
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
+    enableApproval,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const tableColumns = computed(() => {
@@ -665,6 +727,14 @@
   }
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('common.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: processStatusOptions,
+      },
+    },
     {
       title: t('opportunity.department'),
       dataIndex: 'departmentId',
@@ -730,7 +800,7 @@
     } else {
       searchData();
     }
-    if (activeFormKey.value === FormDesignKeyEnum.CUSTOMER && !needInitDetail.value && !isContinue) {
+    if (activeFormKey.value === FormDesignKeyEnum.CUSTOMER && !needInitDetail.value && !isContinue && !isUpdateReview) {
       // 新建客户后打开新建联系人
       activeSourceId.value = res.id;
       initialSourceName.value = res.name;
@@ -739,6 +809,14 @@
         formCreateDrawerVisible.value = true;
       });
     }
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved(res, true);
+      },
+    });
   }
 
   function handleGeneratedChart(res: FilterResult, form: FilterForm) {
@@ -781,6 +859,11 @@
   );
 
   function removeItemFromList(id: string) {
+    if (deleteExecute.value) {
+      searchData();
+      return;
+    }
+
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
     propsRes.value.crmPagination = {
       ...propsRes.value.crmPagination,

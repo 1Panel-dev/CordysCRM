@@ -96,6 +96,7 @@
     :link-form-key="FormDesignKeyEnum.CLUE"
     :link-scenario="formKey === FormDesignKeyEnum.FOLLOW_RECORD_CLUE ? FormLinkScenarioEnum.CLUE_TO_RECORD : undefined"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -136,6 +137,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CLUE"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
 </template>
@@ -148,6 +150,7 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
@@ -163,6 +166,8 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -177,6 +182,9 @@
   import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules';
   import { baseFilterConfigList, getLeadHomeConditions } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
+  import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -274,6 +282,84 @@
 
   const tableRefreshId = ref(0);
   const tableRemoveRefreshId = ref('');
+  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+  const transferLoading = ref(false);
+  const transferForm = ref<TransferParams>({
+    ...defaultTransferForm,
+  });
+
+  const clueDataActionMap = computed<Record<string, ActionsItem>>(() => ({
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
+    },
+    followUp: {
+      label: t('opportunity.followUp'),
+      key: 'followUp',
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
+    },
+    convert: {
+      label: t('clue.convert'),
+      key: 'convert',
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
+    },
+    moveIntoCluePool: {
+      label: t('clue.moveIntoCluePool'),
+      key: 'moveIntoCluePool',
+      permission: ['CLUE_MANAGEMENT:RECYCLE'],
+    },
+    transfer: {
+      label: t('common.transfer'),
+      key: 'transfer',
+      permission: ['CLUE_MANAGEMENT:TRANSFER'],
+      popConfirmProps: {
+        loading: transferLoading.value,
+        title: t('common.transfer'),
+        positiveText: t('common.confirm'),
+        iconType: 'primary',
+      },
+      popSlotContent: 'transferPopContent',
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['CLUE_MANAGEMENT:DELETE'],
+    },
+  }));
+
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    deleteExecute,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<ClueListItem>({
+    formType: FormDesignKeyEnum.CLUE,
+    dataActionMap: () => clueDataActionMap.value,
+  });
+  const batchEditApprovalTip = computed(() =>
+    getApprovalActionTip(['CLUE_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
+  );
+  const batchDeleteApprovalTip = computed(() =>
+    getApprovalActionTip(['CLUE_MANAGEMENT:DELETE'], 'common.batchDeleteApprovalTip')
+  );
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CLUE,
+  });
+
+  // 概览
+  const isInitOverviewDrawer = ref(false);
+  const showOverviewDrawer = ref(false);
+
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+  defineExpose({
+    handleAdvanceFilter,
+    handleSearchData,
+  });
 
   const showExportModal = ref<boolean>(false);
   const activeRowName = ref('');
@@ -300,9 +386,10 @@
     moveIds.value = [];
     openModal({
       type: 'error',
+      size: 'medium',
       title: t('clue.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('clue.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      content: renderApprovalConfirmContent(t('clue.batchDeleteContentTip'), batchDeleteApprovalTip.value),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
@@ -388,12 +475,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('clue.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteClue(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -404,12 +491,6 @@
   }
 
   // 转移
-  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
-  const transferLoading = ref(false);
-  const transferForm = ref<TransferParams>({
-    ...defaultTransferForm,
-  });
-
   function resetTransferForm() {
     transferForm.value = { ...defaultTransferForm };
   }
@@ -448,6 +529,13 @@
     isInitFormCreateDrawer.value = true;
     formKey.value = FormDesignKeyEnum.CLUE;
     activeClueId.value = '';
+    activeRowName.value = '';
+    needInitDetail.value = false;
+    otherFollowRecordSaveParams.value = {
+      type: 'CLUE',
+      clueId: '',
+      id: '',
+    };
     formCreateDrawerVisible.value = true;
   }
 
@@ -471,6 +559,16 @@
   async function handleActionSelect(row: ClueListItem, actionKey: string, done?: () => void) {
     activeClueId.value = row.id;
     switch (actionKey) {
+      case 'review':
+        reviewByResourceId(row.id, {
+          onSuccess: (resourceId) => handleSearchData.value?.(undefined, resourceId),
+        });
+        break;
+      case 'revoke':
+        revokeByResourceId(row.id, {
+          onSuccess: (resourceId) => handleSearchData.value?.(undefined, resourceId),
+        });
+        break;
       case 'edit':
         isInitFormCreateDrawer.value = true;
         otherFollowRecordSaveParams.value.id = row.id;
@@ -507,16 +605,7 @@
     }
   }
 
-  // 概览
-  const isInitOverviewDrawer = ref(false);
-  const showOverviewDrawer = ref(false);
-
-  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
-  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
-  defineExpose({
-    handleAdvanceFilter,
-    handleSearchData,
-  });
+  await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.tableFormKey,
@@ -532,79 +621,42 @@
           key: 'operation',
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
-          render: (row: ClueListItem) =>
-            row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)
-              ? '-'
-              : h(
+          render: (row: ClueListItem) => {
+            if (row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)) {
+              return '-';
+            }
+
+            const operation = resolveRowOperation(row);
+            return operation.groupList.length
+              ? h(
                   CrmOperationButton,
                   {
-                    groupList: [
-                      {
-                        label: t('common.edit'),
-                        key: 'edit',
-                        permission: ['CLUE_MANAGEMENT:UPDATE'],
-                      },
-                      {
-                        label: t('opportunity.followUp'),
-                        key: 'followUp',
-                        permission: ['CLUE_MANAGEMENT:UPDATE'],
-                      },
-                      {
-                        label: t('clue.convert'),
-                        key: 'convert',
-                        permission: ['CLUE_MANAGEMENT:UPDATE'],
-                      },
-                      {
-                        label: 'more',
-                        key: 'more',
-                        slotName: 'more',
-                      },
-                    ],
-                    moreList: [
-                      {
-                        label: t('clue.moveIntoCluePool'),
-                        key: 'moveIntoCluePool',
-                        permission: ['CLUE_MANAGEMENT:RECYCLE'],
-                      },
-                      {
-                        label: t('common.transfer'),
-                        key: 'transfer',
-                        permission: ['CLUE_MANAGEMENT:TRANSFER'],
-                        popConfirmProps: {
-                          loading: transferLoading.value,
-                          title: t('common.transfer'),
-                          positiveText: t('common.confirm'),
-                          iconType: 'primary',
-                        },
-                        popSlotContent: 'transferPopContent',
-                      },
-                      {
-                        label: t('common.delete'),
-                        key: 'delete',
-                        danger: true,
-                        permission: ['CLUE_MANAGEMENT:DELETE'],
-                      },
-                    ],
+                    groupList: operation.groupList,
+                    moreList: operation.moreList,
                     onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
                     onCancel: resetTransferForm,
                     onPopUpdate: handleTransferPopUpdate,
                   },
                   {
-                    transferPopContent: () => {
-                      return h(TransferForm, {
+                    transferPopContent: () =>
+                      h(TransferForm, {
                         class: 'w-[320px] mt-[16px]',
                         form: transferForm.value,
                         ref: transferFormRef,
-                      });
-                    },
+                      }),
                   }
-                ),
+                )
+              : '-';
+          },
         },
     specialRender: {
       name: (row: ClueListItem) => {
-        return props.isLimitShowDetail && row.hasPermission === false
-          ? h(CrmNameTooltip, { text: row.name })
-          : h(
+        if (props.isLimitShowDetail && row.hasPermission === false) {
+          return h(CrmNameTooltip, { text: row.name });
+        }
+
+        return hasApprovalScopedPermission(row, ['CLUE_MANAGEMENT:READ'])
+          ? h(
               CrmTableButton,
               {
                 onClick: () => {
@@ -615,8 +667,22 @@
                 },
               },
               { default: () => row.name, trigger: () => row.name }
-            );
+            )
+          : h(CrmNameTooltip, { text: row.name });
       },
+      approvalStatus: (row: ClueListItem) =>
+        h(CrmApprovalPopover, {
+          status: row.approvalStatus ?? ProcessStatusEnum.NONE,
+          formKey: FormDesignKeyEnum.CLUE,
+          sourceId: row.id,
+          showMore: hasApprovalScopedPermission(row, ['CLUE_MANAGEMENT:READ']),
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            activeClue.value = row;
+            isInitOverviewDrawer.value = true;
+            showOverviewDrawer.value = true;
+          },
+        }),
     },
     permission: [
       'CLUE_MANAGEMENT:RECYCLE',
@@ -626,6 +692,7 @@
     ],
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
+    enableApproval,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const exportParams = computed(() => {
@@ -636,6 +703,14 @@
   });
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('common.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: processStatusOptions,
+      },
+    },
     {
       title: t('opportunity.department'),
       dataIndex: 'departmentId',
@@ -755,7 +830,20 @@
     }
   }
 
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved(res);
+      },
+    });
+  }
+
   function removeItemFromList(id: string) {
+    if (deleteExecute.value) {
+      searchData();
+      return;
+    }
+
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
     propsRes.value.crmPagination = {
       ...propsRes.value.crmPagination,

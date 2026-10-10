@@ -2,6 +2,7 @@ import { computed, type MaybeRefOrGetter, ref, toValue } from 'vue';
 
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
@@ -14,7 +15,9 @@ import {
   getContractStatusConfig,
   getDatasourceFieldConfig,
   getFieldDeptTree,
+  getOpportunityStageConfig,
   getOrderStatusConfig,
+  getReasonConfig,
   getUserOptions,
 } from '@/api/modules';
 import { baseFilterConfigList } from '@/config/clue';
@@ -60,6 +63,7 @@ export default function useConditionFilterConfig(options: {
   const departmentOptions = ref<Array<{ id: string; name: string }>>([]);
   const userOptions = ref<Array<{ id: string; name: string }>>([]);
   const businessStageConfig = ref<OpportunityStageConfig | null>(null);
+  const businessFailureReasonOptions = ref<Array<{ label: string; value: string }>>([]);
 
   // 已保存条件里可能存 dataIndex，也可能存字段 id；两种 key 都指向同一份字段配置，避免回显 raw id。
   const fieldConfigMap = computed<Record<string, FilterFormItem>>(() =>
@@ -84,6 +88,8 @@ export default function useConditionFilterConfig(options: {
       departmentId: departmentOptions.value,
       createUser: userOptions.value,
       updateUser: userOptions.value,
+      follower: userOptions.value,
+      failureReason: businessFailureReasonOptions.value,
     },
     fieldConfigMap: fieldConfigMap.value,
   }));
@@ -130,7 +136,77 @@ export default function useConditionFilterConfig(options: {
     };
   }
 
+  function createFollowerFilterItem(): FilterFormItem {
+    return {
+      title: t('customer.lastFollowUps'),
+      dataIndex: 'follower',
+      type: FieldTypeEnum.USER_SELECT,
+    };
+  }
+
+  function createFollowTimeFilterItem(): FilterFormItem {
+    return {
+      title: t('customer.lastFollowUpDate'),
+      dataIndex: 'followTime',
+      type: FieldTypeEnum.TIME_RANGE_PICKER,
+    };
+  }
+
   const formTypeConfigMap: Partial<Record<FormDesignKeyEnum, () => FilterFormItem[]>> = {
+    [FormDesignKeyEnum.CLUE]: () => [
+      createApprovalStatusFilterItem(t('common.approvalStatus')),
+      createDepartmentFilterItem(),
+      createFollowerFilterItem(),
+      createFollowTimeFilterItem(),
+      {
+        title: t('customer.collectionTime'),
+        dataIndex: 'collectionTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+      },
+      ...baseFilterConfigList,
+    ],
+
+    [FormDesignKeyEnum.CUSTOMER]: () => [
+      createApprovalStatusFilterItem(t('common.approvalStatus')),
+      createDepartmentFilterItem(),
+      createFollowerFilterItem(),
+      createFollowTimeFilterItem(),
+      ...baseFilterConfigList,
+    ],
+
+    [FormDesignKeyEnum.BUSINESS]: () => [
+      createApprovalStatusFilterItem(t('common.approvalStatus')),
+      {
+        title: t('opportunity.opportunityStage'),
+        dataIndex: 'stage',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options:
+            businessStageConfig.value?.stageConfigList.map((item) => ({
+              label: item.name,
+              value: item.id,
+            })) ?? [],
+        },
+      },
+      {
+        title: t('opportunity.failureReason'),
+        dataIndex: 'failureReason',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options: businessFailureReasonOptions.value,
+        },
+      },
+      createDepartmentFilterItem(),
+      createFollowerFilterItem(),
+      createFollowTimeFilterItem(),
+      {
+        title: t('opportunity.actualEndTime'),
+        dataIndex: 'actualEndTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+      },
+      ...baseFilterConfigList,
+    ],
+
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: () => [
       {
         title: t('common.status'),
@@ -258,14 +334,20 @@ export default function useConditionFilterConfig(options: {
     try {
       const formType = toValue(options.formType) as FormDesignKeyEnum;
       const stageConfigApiMap: Partial<Record<FormDesignKeyEnum, () => Promise<OpportunityStageConfig>>> = {
+        [FormDesignKeyEnum.BUSINESS]: getOpportunityStageConfig,
         [FormDesignKeyEnum.CONTRACT]: getContractStatusConfig,
         [FormDesignKeyEnum.ORDER]: getOrderStatusConfig,
       };
       const stageConfigApi = stageConfigApiMap[formType];
+      const reasonConfigApi =
+        formType === FormDesignKeyEnum.BUSINESS
+          ? () => getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS)
+          : () => Promise.resolve(null);
 
-      const [stageConfig, formConfig] = await Promise.all([
+      const [stageConfig, formConfig, reasonConfig] = await Promise.all([
         stageConfigApi?.() ?? Promise.resolve(null),
         getDatasourceFieldConfig(formType),
+        reasonConfigApi(),
       ]);
       // 例如先加载报价、马上切到发票：报价请求如果晚回来，不能再写入发票页面的描述上下文
       if (loadId !== latestLoadId) {
@@ -273,6 +355,11 @@ export default function useConditionFilterConfig(options: {
       }
 
       businessStageConfig.value = stageConfig;
+      businessFailureReasonOptions.value =
+        reasonConfig?.dictList.map((item) => ({
+          label: item.name,
+          value: item.id,
+        })) ?? [];
       filterConfigList.value = createSystemFilterConfigList(formType).map(appendFieldChangedOperator);
       customFieldsFilterConfig.value = [
         ...getFilterListConfig(formConfig, true),

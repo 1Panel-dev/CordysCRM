@@ -138,13 +138,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 更新商机
-  function updateOpportunity(data: UpdateOpportunityParams) {
-    return CDR.post({ url: OptUpdateUrl, data });
+  function updateOpportunity(data: UpdateOpportunityParams, approvalTaskId?: string) {
+    return CDR.post({ url: OptUpdateUrl, data, params: { approvalTaskId } });
   }
 
   // 商机详情
-  function getOpportunityDetail(id: string) {
-    return CDR.get<OpportunityDetail>({ url: `${GetOptDetailUrl}/${id}` });
+  function getOpportunityDetail(id: string, approvalTaskId?: string) {
+    return CDR.get<OpportunityDetail>({ url: `${GetOptDetailUrl}/${id}`, params: { approvalTaskId } });
   }
 
   // 商机看板拖拽排序
