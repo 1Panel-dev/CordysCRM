@@ -26,7 +26,7 @@
   import CrmSysUpgradeTip from '@/components/pure/crm-sys-upgrade-tip/index.vue';
   import CrmLicenseFeatureNotice from '@/components/business/crm-license-feature-notice/index.vue';
 
-  import { getThirdOauthCallback } from '@/api/modules';
+  import { getOauthState, getThirdOauthCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
@@ -61,8 +61,12 @@
       const codeKey = isDingBrowser ? 'authCode' : 'code';
       const authParams = isDingBrowser ? ['code', 'authCode', 'state'] : ['code', 'state'];
       const code = getQueryVariable(codeKey);
-      const state = getQueryVariable('state') ?? '';
+      let state = getQueryVariable('state') ?? '';
       if (code) {
+        // 钉钉/企微/飞书工作台免登时由客户端直接注入 code，没有 state，需先向后端申请一个再回调
+        if (!state) {
+          state = await getOauthState(type);
+        }
         const res = await getThirdOauthCallback(code, type, state);
         const boolean = userStore.qrCodeLogin(res.data.data);
         if (boolean) {

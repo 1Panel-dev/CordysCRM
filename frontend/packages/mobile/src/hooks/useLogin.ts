@@ -104,8 +104,12 @@ export default function useLogin() {
   async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig) {
     const platform = platformConfig[platformKey];
     const code = getQueryVariable(platform.codeKey) ?? '';
-    const state = getQueryVariable('state') ?? '';
+    let state = getQueryVariable('state') ?? '';
     if (code) {
+      // 钉钉/企微/飞书工作台免登时由客户端直接注入 code，没有 state，需先向后端申请一个再回调
+      if (!state) {
+        state = await getOauthState(platform.type);
+      }
       await thirdAuthLogin(code, state, platform.type, platform.authLoginType);
 
       // 清理参数
