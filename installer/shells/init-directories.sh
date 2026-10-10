@@ -12,6 +12,7 @@ DIRS=(
   "/opt/cordys/conf/mysql"
   "/opt/cordys/logs/cordys-crm"
   "/opt/cordys/logs/mcp-server"
+  "/opt/cordys/logs/cockpit"
   "/opt/cordys/data/files"
   "/opt/cordys/data/redis"
   "/opt/cordys/conf/redis"
