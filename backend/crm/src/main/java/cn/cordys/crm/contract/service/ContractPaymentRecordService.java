@@ -215,6 +215,33 @@ public class ContractPaymentRecordService extends BaseExportService {
         OperationLogContext.setResourceName(oldRecord.getName());
     }
 
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+        List<ContractPaymentRecord> records = contractPaymentRecordMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(records)) {
+            return;
+        }
+
+        List<String> recordIds = records.stream().map(ContractPaymentRecord::getId).toList();
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTRACT_PAYMENT_RECORD.getKey(), recordIds, orgId);
+        contractPaymentRecordMapper.deleteByIds(recordIds);
+        contractPaymentRecordFieldService.deleteByResourceIds(recordIds);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
+
+        List<LogDTO> logs = records.stream()
+                .map(record -> {
+                    LogDTO logDTO = new LogDTO(orgId, record.getId(), userId, LogType.DELETE,
+                            LogModule.CONTRACT_PAYMENT_RECORD, record.getName());
+                    logDTO.setOriginalValue(record);
+                    return logDTO;
+                })
+                .toList();
+        logService.batchAdd(logs);
+    }
+
     public ContractPaymentRecordGetResponse get(String id) {
         ContractPaymentRecord paymentRecord = contractPaymentRecordMapper.selectByPrimaryKey(id);
         if (paymentRecord == null) {

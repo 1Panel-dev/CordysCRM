@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -93,6 +94,13 @@ public class ContractPaymentRecordController {
     @Operation(summary = "删除回款记录")
     public void delete(@PathVariable String id) {
         contractPaymentRecordService.delete(id);
+    }
+
+    @PostMapping("/batch/delete")
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
+    @Operation(summary = "批量删除回款记录")
+    public void batchDelete(@RequestBody @NotNull List<String> ids) {
+        contractPaymentRecordService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")

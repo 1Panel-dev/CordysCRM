@@ -142,7 +142,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { deletePaymentRecord, getPaymentRecordStatistic } from '@/api/modules';
+  import { batchDeletePaymentRecord, deletePaymentRecord, getPaymentRecordStatistic } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -237,14 +237,44 @@
         key: 'exportChecked',
         permission: ['CONTRACT_PAYMENT_RECORD:EXPORT'],
       },
+      {
+        label: t('common.batchDelete'),
+        key: 'batchDelete',
+        permission: ['CONTRACT_PAYMENT_RECORD:DELETE'],
+      },
     ],
   };
+
+  function handleBatchDelete() {
+    openModal({
+      type: 'error',
+      title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
+      content: t('contract.paymentRecord.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchDeletePaymentRecord(checkedRowKeys.value.map(String));
+          checkedRowKeys.value = [];
+          tableRefreshId.value += 1;
+          Message.success(t('common.deleteSuccess'));
+          emit('refresh');
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'exportChecked':
         isExportAll.value = false;
         showExportModal.value = true;
+        break;
+      case 'batchDelete':
+        handleBatchDelete();
         break;
       default:
         break;
