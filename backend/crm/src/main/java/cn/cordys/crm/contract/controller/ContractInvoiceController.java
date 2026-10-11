@@ -164,7 +164,7 @@ public class ContractInvoiceController {
 
     @PostMapping("/batch/delete")
     @CsBatchPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.INVOICE)
-    @Operation(summary = "批量删除客户")
+    @Operation(summary = "批量删除发票")
     public void batchDelete(@RequestBody @NotNull List<String> ids) {
         contractInvoiceService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }

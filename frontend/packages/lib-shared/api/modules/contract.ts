@@ -30,6 +30,7 @@ import {
   ContractPaymentPlanPageUrl,
   PaymentPlanUpdateUrl,
   PaymentPlanDeleteUrl,
+  PaymentPlanBatchDeleteUrl,
   GetPaymentPlanDetailUrl,
   GetPaymentPlanFormConfigUrl,
   GetPaymentPlanTabUrl,
@@ -52,6 +53,7 @@ import {
   PaymentRecordAddUrl,
   PaymentRecordUpdateUrl,
   PaymentRecordDeleteUrl,
+  PaymentRecordBatchDeleteUrl,
   GetPaymentRecordDetailUrl,
   GetPaymentRecordFormConfigUrl,
   GetPaymentRecordTabUrl,
@@ -336,6 +338,10 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.get({ url: `${PaymentPlanDeleteUrl}/${id}` });
   }
 
+  function batchDeletePaymentPlan(ids: string[]) {
+    return CDR.post({ url: PaymentPlanBatchDeleteUrl, data: ids });
+  }
+
   // 回款计划详情
   function getPaymentPlanDetail(id: string) {
     return CDR.get<PaymentPlanDetail>({ url: `${GetPaymentPlanDetailUrl}/${id}` });
@@ -429,6 +435,10 @@ export default function useContractApi(CDR: CordysAxios) {
   // 删除回款记录
   function deletePaymentRecord(id: string) {
     return CDR.get({ url: `${PaymentRecordDeleteUrl}/${id}` });
+  }
+
+  function batchDeletePaymentRecord(ids: string[]) {
+    return CDR.post({ url: PaymentRecordBatchDeleteUrl, data: ids });
   }
 
   // 回款记录详情
@@ -879,6 +889,7 @@ export default function useContractApi(CDR: CordysAxios) {
     addPaymentPlan,
     updatePaymentPlan,
     deletePaymentPlan,
+    batchDeletePaymentPlan,
     getPaymentPlanDetail,
     getPaymentPlanFormConfig,
     getPaymentPlanTab,
@@ -900,6 +911,7 @@ export default function useContractApi(CDR: CordysAxios) {
     getPaymentRecordDetail,
     getPaymentRecordList,
     deletePaymentRecord,
+    batchDeletePaymentRecord,
     getPaymentRecordTab,
     exportPaymentRecordAll,
     exportPaymentRecordSelected,

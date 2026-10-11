@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -100,6 +101,13 @@ public class ContractPaymentPlanController {
     @Operation(summary = "删除合同回款计划")
     public void delete(@PathVariable String id) {
         contractPaymentPlanService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/delete")
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_PLAN_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_PLAN)
+    @Operation(summary = "批量删除合同回款计划")
+    public void batchDelete(@RequestBody @NotNull List<String> ids) {
+        contractPaymentPlanService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")

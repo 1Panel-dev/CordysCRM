@@ -125,7 +125,7 @@
   import ContractStatus from './contractPaymentStatus.vue';
   import DetailDrawer from './detail.vue';
 
-  import { deletePaymentPlan, updatePaymentPlan } from '@/api/modules';
+  import { batchDeletePaymentPlan, deletePaymentPlan, updatePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -221,14 +221,43 @@
         key: 'exportChecked',
         permission: ['CONTRACT_PAYMENT_PLAN:EXPORT'],
       },
+      {
+        label: t('common.batchDelete'),
+        key: 'batchDelete',
+        permission: ['CONTRACT_PAYMENT_PLAN:DELETE'],
+      },
     ],
   };
+
+  function handleBatchDelete() {
+    openModal({
+      type: 'error',
+      title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchDeletePaymentPlan(checkedRowKeys.value.map(String));
+          checkedRowKeys.value = [];
+          tableRefreshId.value += 1;
+          Message.success(t('common.deleteSuccess'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'exportChecked':
         isExportAll.value = false;
         showExportModal.value = true;
+        break;
+      case 'batchDelete':
+        handleBatchDelete();
         break;
       default:
         break;

@@ -374,12 +374,53 @@ public class ContractPaymentPlanService extends BaseExportService {
         // 删除会同时毁掉关联字段的值, 所以「这条回款计划关联了谁」只能删前先捕; 重算又要等删完才准。
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.CONTRACT_PAYMENT_PLAN.getKey(), List.of(id), orgId);
+        contractPaymentPlanFieldService.deleteByResourceId(id);
         contractPaymentPlanMapper.deleteByPrimaryKey(id);
         // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 设置操作对象
         OperationLogContext.setResourceName(resourceName);
+    }
+
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+        List<ContractPaymentPlan> plans = contractPaymentPlanMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(plans)) {
+            return;
+        }
+
+        List<String> planIds = plans.stream().map(ContractPaymentPlan::getId).toList();
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTRACT_PAYMENT_PLAN.getKey(), planIds, orgId);
+        contractPaymentPlanFieldService.deleteByResourceIds(planIds);
+        contractPaymentPlanMapper.deleteByIds(planIds);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
+
+        List<String> contractIds = plans.stream()
+                .map(ContractPaymentPlan::getContractId)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        Map<String, String> contractNameMap = contractIds.isEmpty()
+                ? Map.of()
+                : contractMapper.selectByIds(contractIds).stream()
+                        .collect(Collectors.toMap(Contract::getId, Contract::getName));
+        List<LogDTO> logs = plans.stream()
+                .map(plan -> {
+                    String contractId = plan.getContractId();
+                    String resourceName = StringUtils.isBlank(contractId)
+                            ? plan.getId()
+                            : contractNameMap.getOrDefault(contractId, contractId);
+                    LogDTO logDTO = new LogDTO(orgId, plan.getId(), userId, LogType.DELETE,
+                            LogModule.CONTRACT_PAYMENT, resourceName);
+                    logDTO.setOriginalValue(plan);
+                    return logDTO;
+                })
+                .toList();
+        logService.batchAdd(logs);
     }
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
