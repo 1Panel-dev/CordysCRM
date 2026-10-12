@@ -9,6 +9,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +50,14 @@ public class HttpClientUtils {
     private static final RestTemplate restTemplate;
 
     static {
-        var factory = new SimpleClientHttpRequestFactory();
+        var factory = new SimpleClientHttpRequestFactory() {
+            @Override
+            protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
+                super.prepareConnection(connection, httpMethod);
+                // 禁止自动跟随 3xx 重定向: 重定向目标不会再经过 SSRFValidator 校验,
+                connection.setInstanceFollowRedirects(false);
+            }
+        };
         factory.setConnectTimeout(CONNECT_TIMEOUT);
         factory.setReadTimeout(READ_TIMEOUT);
         restTemplate = new RestTemplate(factory);
