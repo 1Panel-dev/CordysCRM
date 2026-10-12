@@ -205,6 +205,7 @@
 
   const showExportModal = ref<boolean>(false);
   const isExportAll = ref(false);
+  const tableRefreshId = ref(0);
 
   function handleExportAllClick() {
     isExportAll.value = true;
@@ -312,7 +313,6 @@
     ];
   });
 
-  const tableRefreshId = ref(0);
   const tableRemoveRefreshId = ref('');
   const tableItemRefreshId = ref('');
   const showDetailDrawer = ref(false);

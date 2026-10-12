@@ -829,9 +829,7 @@
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.SUB_PRICE,
             FieldTypeEnum.SUB_PRODUCT,
-            FieldTypeEnum.ATTACHMENT,
             FieldTypeEnum.FORMULA,
-            FieldTypeEnum.PICTURE,
             FieldTypeEnum.INPUT,
           ].includes(e.type) &&
             !e.resourceFieldId &&
