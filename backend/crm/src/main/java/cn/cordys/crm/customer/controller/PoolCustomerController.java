@@ -138,8 +138,11 @@ public class PoolCustomerController {
     @Operation(summary = "批量分配客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN})
     public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
-        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getBatchIds().getFirst());
-        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        // 先校验全部记录，避免首条合法记录授权整批操作。
+        for (String id : request.getBatchIds()) {
+            String poolId = poolCustomerService.getPoolIdByCustomerId(id);
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
@@ -147,8 +150,10 @@ public class PoolCustomerController {
     @Operation(summary = "批量删除客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
     public void batchDelete(@Validated @RequestBody PoolBatchRequest request) {
-        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getBatchIds().getFirst());
-        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        for (String id : request.getBatchIds()) {
+            String poolId = poolCustomerService.getPoolIdByCustomerId(id);
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -156,8 +161,10 @@ public class PoolCustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_UPDATE)
     @Operation(summary = "批量更新客户")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getIds().getFirst());
-        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        for (String id : request.getIds()) {
+            String poolId = poolCustomerService.getPoolIdByCustomerId(id);
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

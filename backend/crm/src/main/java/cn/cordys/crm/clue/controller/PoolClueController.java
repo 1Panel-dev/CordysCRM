@@ -138,8 +138,11 @@ public class PoolClueController {
     @Operation(summary = "批量分配线索")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN})
     public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
-        String poolId = poolClueService.getPoolIdByClueId(request.getBatchIds().getFirst());
-        poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        // 先校验全部记录，避免首条合法记录授权整批操作。
+        for (String id : request.getBatchIds()) {
+            String poolId = poolClueService.getPoolIdByClueId(id);
+            poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         poolClueService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
@@ -147,8 +150,10 @@ public class PoolClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_UPDATE)
     @Operation(summary = "批量更新线索")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        String poolId = poolClueService.getPoolIdByClueId(request.getIds().getFirst());
-        poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        for (String id : request.getIds()) {
+            String poolId = poolClueService.getPoolIdByClueId(id);
+            poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         poolClueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -156,8 +161,10 @@ public class PoolClueController {
     @Operation(summary = "批量删除线索")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE})
     public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
-        String poolId = poolClueService.getPoolIdByClueId(ids.getFirst());
-        poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        for (String id : ids) {
+            String poolId = poolClueService.getPoolIdByClueId(id);
+            poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         poolClueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
