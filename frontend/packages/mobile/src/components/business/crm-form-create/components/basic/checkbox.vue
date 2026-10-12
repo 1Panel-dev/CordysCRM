@@ -10,7 +10,7 @@
         direction="horizontal"
         shape="square"
         class="gap-y-[8px]"
-        :disabled="props.fieldConfig.editable === false"
+        :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
         @change="($event) => emit('change', $event)"
       >
         <van-checkbox v-for="item in props.fieldConfig.options" :key="item.value" :name="item.value">

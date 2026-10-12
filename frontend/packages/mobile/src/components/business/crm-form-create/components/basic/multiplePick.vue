@@ -10,7 +10,7 @@
     rows="1"
     autosize
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
-    :disabled="props.fieldConfig.editable === false"
+    :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
     @click="handleClick"
   >
   </van-field>

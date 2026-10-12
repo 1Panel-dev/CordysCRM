@@ -7,7 +7,7 @@
     :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
     :placeholder="props.fieldConfig.placeholder || t('formCreate.advanced.selectLocation')"
-    :disabled="props.fieldConfig.editable === false"
+    :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
     clearable
     @click="show = true"
   />
