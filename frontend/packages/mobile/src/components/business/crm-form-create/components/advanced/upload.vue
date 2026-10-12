@@ -3,6 +3,7 @@
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :required="required"
     :rules="props.fieldConfig.rules as FieldRule[]"
+    :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
   >
     <template #input>
       <van-uploader

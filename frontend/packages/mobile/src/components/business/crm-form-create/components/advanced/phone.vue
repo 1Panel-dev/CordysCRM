@@ -6,7 +6,7 @@
     :name="props.fieldConfig.id"
     :rules="mergedRules"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
-    :disabled="props.fieldConfig.editable === false"
+    :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
     :maxlength="30"
     clearable
     @update:model-value="($event) => emit('change', $event)"

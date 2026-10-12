@@ -7,7 +7,7 @@
     is-link
     readonly
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
-    :disabled="props.fieldConfig.editable === false"
+    :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
     clearable
     @click="handleClick"
   >

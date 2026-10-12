@@ -6,7 +6,7 @@
     :rules="props.fieldConfig.rules as FieldRule[]"
     type="text"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
-    :disabled="props.fieldConfig.editable === false"
+    :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
     clearable
     @blur="onBlur"
     @focus="onFocus"
