@@ -151,8 +151,8 @@ public class AnalyticsService {
                     number(values.getFirst(), "_matched_rows"), System.currentTimeMillis(), request, access.scope(), rows, List.copyOf(warnings),
                     catalog.response().grain(), request.getDimensions().stream().anyMatch(d -> catalog.require(d.getField()).schema().multiple())
                     ? "EXPLODE_MULTI_VALUE" : "SINGLE_VALUE", relatedFormKey, related == null ? null : related.scope(),
-                    request.getDimensions().stream().filter(d -> catalog.require(d.getField()).schema().numeric())
-                            .map(AnalyticsQueryRequest.Dimension::getField).toList());
+                    request.getDimensions().stream().map(AnalyticsQueryRequest.Dimension::getField)
+                            .filter(field -> catalog.require(field).schema().numeric()).toList());
             success = true;
             return response;
         } finally {
