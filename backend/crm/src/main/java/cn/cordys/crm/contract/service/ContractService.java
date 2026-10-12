@@ -798,6 +798,11 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
                 contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId());
+
+                // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
+                Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
+                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(), (v1, v2) -> v2));
+                contractFieldService.processAttachmentFields(contract.getOrganizationId(), contract.getId(), userId, fields, fieldValueMap);
             });
         }
         ContractSnapshot snapshotCriteria = new ContractSnapshot();

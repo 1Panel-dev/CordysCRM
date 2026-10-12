@@ -1117,6 +1117,39 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
+     * 处理字段值中的附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
+     *
+     * @param orgId         组织ID
+     * @param resourceId    资源ID
+     * @param userId        当前用户ID
+     * @param fields        表单字段配置
+     * @param fieldValueMap 提交的字段值(以字段ID为键)
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void processAttachmentFields(String orgId, String resourceId, String userId,
+                                        List<BaseField> fields, Map<String, BaseModuleFieldValue> fieldValueMap) {
+        if (CollectionUtils.isEmpty(fields) || MapUtils.isEmpty(fieldValueMap)) {
+            return;
+        }
+        List<BaseModuleFieldValue> attachmentFieldValues = fields.stream()
+                .filter(field -> {
+                    BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
+                    return fieldValue != null && fieldValue.valid() && field.isAttachment();
+                })
+                .map(field -> fieldValueMap.get(field.getId()))
+                .toList();
+        // 请求未包含附件字段时不做处理, 避免 processTemp 误删该资源下其它附件字段的附件
+        if (CollectionUtils.isEmpty(attachmentFieldValues)) {
+            return;
+        }
+        List processVal = attachmentFieldValues.stream()
+                .map(val -> (List) val.getFieldValue())
+                .flatMap(List::stream)
+                .toList();
+        preProcessTempAttachment(orgId, resourceId, userId, processVal);
+    }
+
+    /**
      * 处理临时附件
      */
     @SuppressWarnings("unchecked")
