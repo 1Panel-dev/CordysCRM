@@ -26,7 +26,7 @@ public class ClueResourceAccessContextProvider implements ResourceAccessContextP
     @Override
     public ResourceAccessContext getAccessContext(String resourceId, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(resourceId);
-        if (clue == null) {
+        if (clue == null || orgId == null || !orgId.equals(clue.getOrganizationId())) {
             return null;
         }
         ResourceAccessContext context = new ResourceAccessContext();
@@ -41,6 +41,7 @@ public class ClueResourceAccessContextProvider implements ResourceAccessContextP
             return Map.of();
         }
         return clueMapper.selectByIds(resourceIds).stream()
+                .filter(clue -> orgId != null && orgId.equals(clue.getOrganizationId()))
                 .filter(clue -> clue.getOwner() != null)
                 .collect(Collectors.toMap(Clue::getId, Clue::getOwner, (a, b) -> a));
     }

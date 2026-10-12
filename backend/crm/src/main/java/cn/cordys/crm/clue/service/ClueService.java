@@ -20,8 +20,10 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
@@ -173,6 +175,8 @@ public class ClueService implements ApprovalResourceHandler {
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private PoolClueService poolClueService;
     @Resource
@@ -606,8 +610,16 @@ public class ClueService implements ApprovalResourceHandler {
      * @param orgId   组织ID
      */
     public void transitionCustomer(ClueTransitionCustomerRequest request, String userId, String orgId) {
-        Customer customer = customerService.add(request, userId, orgId);
+        // 转换会复制线索数据，所有授权校验必须先于客户和联系人创建。
+        resourcePermissionService.checkPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD);
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        if (clue == null || orgId == null || !orgId.equals(clue.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        resourcePermissionService.checkResourcePermissionWithoutApprovalTask(PermissionConstants.CLUE_MANAGEMENT_UPDATE,
+                request.getClueId(), FormKey.CLUE.getKey(), userId, orgId);
+
+        Customer customer = customerService.add(request, userId, orgId);
         clue.setTransitionId(customer.getId());
         clue.setTransitionType(FormKey.CUSTOMER.name());
         clue.setUpdateTime(System.currentTimeMillis());
@@ -616,7 +628,8 @@ public class ClueService implements ApprovalResourceHandler {
 
         // 同步添加联系人
         LambdaQueryWrapper<CustomerContact> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomerContact::getPhone, clue.getPhone());
+        wrapper.eq(CustomerContact::getPhone, clue.getPhone())
+                .eq(CustomerContact::getOrganizationId, orgId);
         List<CustomerContact> contacts = customerContactMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(contacts)) {
             CustomerContact contact = new CustomerContact();
