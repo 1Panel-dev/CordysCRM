@@ -89,6 +89,7 @@ public class ApprovalTodoService {
             return PageUtils.setPageInfo(page, Collections.<ApprovalTodoItemResponse>emptyList());
         }
 
+        fillSharedPoolFlag(items);
         // 返回分页待办列表。
         return PageUtils.setPageInfo(page, items);
     }
@@ -141,6 +142,7 @@ public class ApprovalTodoService {
                 resolveResourceTypeFilter(filterType, request.getResourceType()),
                 keyword
         );
+        fillSharedPoolFlag(items);
         return PageUtils.setPageInfo(page, items);
     }
 
@@ -163,6 +165,7 @@ public class ApprovalTodoService {
                 resolveResourceTypeFilter(filterType, request.getResourceType()),
                 keyword
         );
+        fillSharedPoolFlag(items);
         // 返回分页结果，分页元信息沿用 PageHelper 查询结果。
         return PageUtils.setPageInfo(page, items);
     }
@@ -186,6 +189,7 @@ public class ApprovalTodoService {
                 resolveResourceTypeFilter(filterType, request.getResourceType()),
                 keyword
         );
+        fillSharedPoolFlag(items);
         return PageUtils.setPageInfo(page, items);
     }
 
@@ -269,6 +273,60 @@ public class ApprovalTodoService {
             }
         });
         return resourceNameMap;
+    }
+
+    /**
+     * 回填资源是否位于公海（客户）或线索池（线索）。
+     * 仅客户、线索类型需要该标记，其他类型保持为空；资源已删除时同样保持为空。
+     *
+     * @param items 待回填的分页数据
+     */
+    private void fillSharedPoolFlag(List<ApprovalTodoItemResponse> items) {
+        if (CollectionUtils.isEmpty(items)) {
+            return;
+        }
+        // 先按类型收集资源ID，避免对无关类型做多余查询。
+        List<String> customerIds = new ArrayList<>();
+        List<String> clueIds = new ArrayList<>();
+        for (ApprovalTodoItemResponse item : items) {
+            if (StringUtils.isBlank(item.getResourceId())) {
+                continue;
+            }
+            ApprovalFormTypeEnum formType = parseFormType(item.getResourceType());
+            if (formType == ApprovalFormTypeEnum.CUSTOMER) {
+                customerIds.add(item.getResourceId());
+            } else if (formType == ApprovalFormTypeEnum.CLUE) {
+                clueIds.add(item.getResourceId());
+            }
+        }
+        if (customerIds.isEmpty() && clueIds.isEmpty()) {
+            return;
+        }
+
+        // 按类型批量查询，构造 资源ID -> 是否在公海/线索池 的映射。
+        // 注意 inSharedPool 可能为 null，不能使用 Collectors.toMap（值为 null 会抛 NPE）。
+        Map<String, Boolean> customerPoolMap = new HashMap<>();
+        Map<String, Boolean> cluePoolMap = new HashMap<>();
+        if (!customerIds.isEmpty()) {
+            for (Customer customer : customerMapper.selectByIds(customerIds.stream().distinct().toList())) {
+                customerPoolMap.put(customer.getId(), customer.getInSharedPool());
+            }
+        }
+        if (!clueIds.isEmpty()) {
+            for (Clue clue : clueMapper.selectByIds(clueIds.stream().distinct().toList())) {
+                cluePoolMap.put(clue.getId(), clue.getInSharedPool());
+            }
+        }
+
+        // 回填标记。
+        for (ApprovalTodoItemResponse item : items) {
+            ApprovalFormTypeEnum formType = parseFormType(item.getResourceType());
+            if (formType == ApprovalFormTypeEnum.CUSTOMER && customerPoolMap.containsKey(item.getResourceId())) {
+                item.setInSharedPool(customerPoolMap.get(item.getResourceId()));
+            } else if (formType == ApprovalFormTypeEnum.CLUE && cluePoolMap.containsKey(item.getResourceId())) {
+                item.setInSharedPool(cluePoolMap.get(item.getResourceId()));
+            }
+        }
     }
 
     private ApprovalFormTypeEnum parseFormType(String type) {
