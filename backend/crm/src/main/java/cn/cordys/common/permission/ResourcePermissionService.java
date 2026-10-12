@@ -88,6 +88,23 @@ public class ResourcePermissionService {
             return;
         }
 
+        checkResourcePermissionWithoutApprovalTask(permission, resourceId, formType, userId, orgId);
+    }
+
+    /**
+     * 按普通业务权限校验资源，审批待办授权不能替代转换等业务操作的权限。
+     *
+     * @param permission 权限码
+     * @param resourceId 资源ID，不能为空
+     * @param formType   表单类型
+     * @param userId     当前用户ID
+     * @param orgId      组织ID
+     */
+    public void checkResourcePermissionWithoutApprovalTask(String permission, String resourceId, String formType, String userId, String orgId) {
+        if (StringUtils.isBlank(resourceId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+
         ResourceAccessContextProvider provider = getProvider(formType);
         ResourceAccessContext context = provider != null ? provider.getAccessContext(resourceId, orgId) : null;
         boolean permitted = checkRoleAndDataAndStatusPermission(permission, formType, userId, orgId, context,

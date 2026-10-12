@@ -292,7 +292,8 @@ class ClueControllerTests extends BaseTest {
         this.requestPostWithOk(TRANSITION_CUSTOMER, request);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ADD, TRANSITION_CUSTOMER, request);
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_ADD,
+                PermissionConstants.CLUE_MANAGEMENT_UPDATE), TRANSITION_CUSTOMER, request);
     }
 
     @Test
