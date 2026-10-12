@@ -1,7 +1,6 @@
 <template>
   <CrmModal
     v-model:show="showModal"
-    size="small"
     :title="title"
     show-icon
     :mask-closable="false"
@@ -12,6 +11,12 @@
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
+    <n-alert v-if="props.showApprovalTip" type="warning" class="mb-[16px]">
+      <template #icon>
+        <CrmIcon type="iconicon_info_circle_filled" :size="20" />
+      </template>
+      {{ props.showApprovalTip }}
+    </n-alert>
     <div class="mb-[16px]">{{ contentTip }}</div>
     <n-form
       v-if="enableReason || isPoolReason"
@@ -55,13 +60,14 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, FormInst, NButton, NForm, NFormItem, NSelect } from 'naive-ui';
+  import { DataTableRowKey, FormInst, NAlert, NButton, NForm, NFormItem, NSelect } from 'naive-ui';
 
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { BatchMoveToPublicPoolParams, MoveToPublicPoolParams } from '@lib/shared/models/customer';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import toPublicPoolResultModal from './toPublicPoolResultModal.vue';
@@ -89,6 +95,7 @@
     name: string;
     sourceId: DataTableRowKey[] | DataTableRowKey;
     type?: 'error' | 'success' | 'warning' | 'info';
+    showApprovalTip?: string;
   }>();
 
   const showModal = defineModel<boolean>('show', {

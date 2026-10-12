@@ -114,6 +114,7 @@
   import type { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -410,6 +411,9 @@
   const batchEditApprovalTip = computed(() =>
     getApprovalActionTip([CUSTOM_FORM_DATA_PERMISSIONS.update], 'common.batchEditApprovalTip')
   );
+  const batchDeleteApprovalTip = computed(() =>
+    getApprovalActionTip([CUSTOM_FORM_DATA_PERMISSIONS.delete], 'common.batchDeleteApprovalTip')
+  );
   // CUSTOM_FORM_DATA:* 只用于审批状态权限，不在角色权限树中，批量按钮需要绕开通用 permission 过滤。
   const canExportCustomFormData = computed(() =>
     enableApproval.value ? getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.export]).length > 0 : !props.readonly
@@ -483,8 +487,9 @@
   function handleBatchDelete() {
     openModal({
       type: 'error',
+      size: 'medium',
       title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
-      content: t('common.deleteConfirmContent'),
+      content: renderApprovalConfirmContent(t('common.deleteConfirmContent'), batchDeleteApprovalTip.value),
       positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {

@@ -131,6 +131,7 @@
     :is-batch="true"
     :source-ids="checkedRowKeys"
     :save-api="transferOpt"
+    :show-approval-tip="batchTransferApprovalTip"
     @load-list="handleRefresh"
   />
   <OptOverviewDrawer
@@ -366,6 +367,9 @@
   );
   const batchDeleteApprovalTip = computed(() =>
     getApprovalActionTip(['OPPORTUNITY_MANAGEMENT:DELETE'], 'common.batchDeleteApprovalTip')
+  );
+  const batchTransferApprovalTip = computed(() =>
+    getApprovalActionTip(['OPPORTUNITY_MANAGEMENT:TRANSFER'], 'common.batchTransferApprovalTip')
   );
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({

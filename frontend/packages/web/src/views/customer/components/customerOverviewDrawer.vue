@@ -55,7 +55,6 @@
                 :form-key="FormDesignKeyEnum.CUSTOMER"
                 :source-id="props.sourceId"
                 :refresh-key="refreshKey"
-                class="p-[24px]"
                 :column="2"
                 label-width="auto"
                 value-align="start"
