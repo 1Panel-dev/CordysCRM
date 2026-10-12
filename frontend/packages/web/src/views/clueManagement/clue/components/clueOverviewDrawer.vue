@@ -51,7 +51,6 @@
                 :refresh-key="refreshKey"
                 :form-key="FormDesignKeyEnum.CLUE"
                 :source-id="sourceId"
-                class="p-[24px]"
                 :column="2"
                 label-width="auto"
                 value-align="start"

@@ -73,6 +73,7 @@
     v-model:show="showTransferModal"
     :source-ids="checkedRowKeys"
     :save-api="batchTransferClue"
+    :show-approval-tip="batchTransferApprovalTip"
     @load-list="handleRefresh"
   />
   <ClueOverviewDrawer
@@ -118,6 +119,7 @@
     :source-id="moveIds"
     :name="activeRowName"
     type="warning"
+    :show-approval-tip="Array.isArray(moveIds) ? batchMoveToPoolApprovalTip : ''"
     @refresh="() => handleRefresh()"
   />
   <customerOverviewDrawer
@@ -344,6 +346,12 @@
   );
   const batchDeleteApprovalTip = computed(() =>
     getApprovalActionTip(['CLUE_MANAGEMENT:DELETE'], 'common.batchDeleteApprovalTip')
+  );
+  const batchTransferApprovalTip = computed(() =>
+    getApprovalActionTip(['CLUE_MANAGEMENT:TRANSFER'], 'common.batchTransferApprovalTip')
+  );
+  const batchMoveToPoolApprovalTip = computed(() =>
+    getApprovalActionTip(['CLUE_MANAGEMENT:RECYCLE'], 'common.batchMoveToPoolApprovalTip')
   );
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({

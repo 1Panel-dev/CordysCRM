@@ -197,6 +197,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -407,12 +408,16 @@
 
   const exportApprovalTip = computed(() => getApprovalActionTip(['ORDER:EXPORT'], 'common.exportApprovalTip'));
   const batchEditApprovalTip = computed(() => getApprovalActionTip(['ORDER:UPDATE'], 'common.batchEditApprovalTip'));
+  const batchDeleteApprovalTip = computed(() =>
+    getApprovalActionTip(['ORDER:DELETE'], 'common.batchDeleteApprovalTip')
+  );
 
   function handleBatchDelete() {
     openModal({
       type: 'error',
+      size: 'medium',
       title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
-      content: t('common.deleteConfirmContent'),
+      content: renderApprovalConfirmContent(t('common.deleteConfirmContent'), batchDeleteApprovalTip.value),
       positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {

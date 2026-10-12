@@ -1,22 +1,28 @@
 <template>
   <CrmModal
     v-model:show="showModal"
-    size="small"
     :title="title"
     :ok-loading="loading"
     :positive-text="props.positiveText || t('common.transfer')"
     @confirm="confirmHandler"
   >
+    <n-alert v-if="props.showApprovalTip" type="warning" class="mb-[16px]">
+      <template #icon>
+        <CrmIcon type="iconicon_info_circle_filled" :size="20" />
+      </template>
+      {{ props.showApprovalTip }}
+    </n-alert>
     <TransferForm ref="transferFormRef" v-model:form="form" />
   </CrmModal>
 </template>
 
 <script lang="ts" setup>
-  import { DataTableRowKey, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NAlert, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import TransferForm from './transferForm.vue';
 
@@ -30,6 +36,7 @@
     sourceIds: DataTableRowKey[];
     isBatch?: boolean;
     positiveText?: string;
+    showApprovalTip?: string;
     saveApi?: (params: TransferParams) => Promise<any>;
   }
 

@@ -46,6 +46,7 @@
         class="mb-[16px]"
         :stageConfig="stageConfig"
         is-limit-back
+        :readonly="!canUpdateStage"
         :failure-reason="lastFailureReason"
         :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
         :source-id="sourceId"
@@ -80,7 +81,6 @@
                 :form-key="FormDesignKeyEnum.BUSINESS"
                 :source-id="sourceId"
                 :refresh-key="refreshKey"
-                class="p-[24px]"
                 :column="2"
                 label-width="auto"
                 value-align="start"
@@ -285,6 +285,18 @@
         return actionKeys;
       },
     });
+
+  const canUpdateStage = computed(() => {
+    if (!detailInfo.value) {
+      return false;
+    }
+
+    const permissions = isSuccess.value
+      ? ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']
+      : ['OPPORTUNITY_MANAGEMENT:UPDATE'];
+
+    return hasApprovalScopedPermission(detailInfo.value, permissions);
+  });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.BUSINESS,

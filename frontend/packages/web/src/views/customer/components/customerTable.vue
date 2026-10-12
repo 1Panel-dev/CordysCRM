@@ -83,6 +83,7 @@
     v-model:show="showTransferModal"
     :source-ids="checkedRowKeys"
     :save-api="batchTransferCustomer"
+    :show-approval-tip="batchTransferApprovalTip"
     @load-list="searchData"
   />
   <customerOverviewDrawer
@@ -122,6 +123,7 @@
     :source-id="moveIds"
     :name="initialSourceName"
     type="warning"
+    :show-approval-tip="Array.isArray(moveIds) ? batchMoveToOpenSeaApprovalTip : ''"
     @refresh="Array.isArray(moveIds) ? (tableRefreshId += 1) : removeItemFromList(moveIds.toString())"
   />
 
@@ -338,8 +340,14 @@
   const batchDeleteApprovalTip = computed(() =>
     getApprovalActionTip(['CUSTOMER_MANAGEMENT:DELETE'], 'common.batchDeleteApprovalTip')
   );
+  const batchTransferApprovalTip = computed(() =>
+    getApprovalActionTip(['CUSTOMER_MANAGEMENT:TRANSFER'], 'common.batchTransferApprovalTip')
+  );
   const batchMergeApprovalTip = computed(() =>
     getApprovalActionTip(['CUSTOMER_MANAGEMENT:MERGE'], 'common.batchMergeApprovalTip')
+  );
+  const batchMoveToOpenSeaApprovalTip = computed(() =>
+    getApprovalActionTip(['CUSTOMER_MANAGEMENT:RECYCLE'], 'common.batchMoveToOpenSeaApprovalTip')
   );
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
