@@ -860,6 +860,11 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
                 updateRequest.setFieldValue(field.getFieldValue());
                 opportunityFieldService.batchUpdate(updateRequest, baseField, List.of(opportunity), Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, opportunity.getOrganizationId());
             });
+
+            // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
+            Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
+                    .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(), (v1, v2) -> v2));
+            opportunityFieldService.processAttachmentFields(opportunity.getOrganizationId(), opportunity.getId(), userId, fields, fieldValueMap);
         }
     }
 

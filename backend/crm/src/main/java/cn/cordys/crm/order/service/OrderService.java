@@ -956,6 +956,11 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
                 orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId());
+
+                // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
+                Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
+                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(), (v1, v2) -> v2));
+                orderFieldService.processAttachmentFields(order.getOrganizationId(), order.getId(), userId, fields, fieldValueMap);
             });
         }
         OrderSnapshot snapshotCriteria = new OrderSnapshot();
