@@ -165,16 +165,22 @@
             >
               <n-select
                 v-model:value="item.valueType"
-                :options="[
-                  {
-                    label: t('crmStatusConfigDrawer.fieldValue'),
-                    value: CirculationValueTypeEnum.FIELD_VALUE,
-                  },
-                  {
-                    label: t('crmStatusConfigDrawer.fixedValue'),
-                    value: CirculationValueTypeEnum.FIXED_VALUE,
-                  },
-                ]"
+                :options="
+                  [
+                    {
+                      label: t('crmStatusConfigDrawer.fieldValue'),
+                      value: CirculationValueTypeEnum.FIELD_VALUE,
+                    },
+                    {
+                      label: t('crmStatusConfigDrawer.fixedValue'),
+                      value: CirculationValueTypeEnum.FIXED_VALUE,
+                    },
+                  ].filter((e) =>
+                    item.fieldProps && [FieldTypeEnum.ATTACHMENT, FieldTypeEnum.PICTURE].includes(item.fieldProps.type)
+                      ? e.value !== CirculationValueTypeEnum.FIXED_VALUE
+                      : true
+                  )
+                "
                 :disabled="!item.fieldId"
               />
             </n-form-item>
