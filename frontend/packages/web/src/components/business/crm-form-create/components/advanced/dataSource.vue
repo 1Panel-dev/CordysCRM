@@ -42,14 +42,13 @@
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { transformData } from '@lib/shared/method/formCreate';
+  import { getDataSourceFormKey, isCustomDataSourceType, transformData } from '@lib/shared/method/formCreate';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import { formKeyMap, sourceApi } from '@/components/business/crm-data-source-select/config';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
-  import { getDataSourceFormKey, isCustomDataSourceType } from '@/components/business/crm-data-source-select/utils';
 
   import { getFieldCustomFormList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';

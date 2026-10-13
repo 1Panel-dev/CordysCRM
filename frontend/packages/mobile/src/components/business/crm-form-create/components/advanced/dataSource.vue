@@ -10,7 +10,7 @@
     :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
     :list-params="getParams()"
     :multiple="props.fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
-    @change="($event) => emit('change', $event)"
+    @change="(value, selectedRows, fields) => emit('change', value, selectedRows, fields)"
   >
   </CrmDataSource>
 </template>
@@ -33,7 +33,7 @@
     needInitDetail?: boolean; // 判断是否编辑情况
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: string | string[]): void;
+    (e: 'change', value: string | string[], selectedRows: Record<string, any>[], fields?: FormCreateField[]): void;
   }>();
 
   const { t } = useI18n();
@@ -48,7 +48,7 @@
     (val) => {
       if (!props.needInitDetail) {
         value.value = val || value.value;
-        emit('change', value.value);
+        emit('change', value.value, props.fieldConfig.initialOptions || []);
       }
     },
     {

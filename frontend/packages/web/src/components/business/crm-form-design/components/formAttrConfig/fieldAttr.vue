@@ -1689,6 +1689,7 @@
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getDataSourceFormKey, isCustomDataSourceType } from '@lib/shared/method/formCreate.js';
   import { CustomFormItem } from '@lib/shared/models/customForm';
 
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
@@ -1699,11 +1700,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { formKeyMap } from '@/components/business/crm-data-source-select/config.js';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
-  import {
-    type DataSourceOption,
-    getDataSourceFormKey,
-    isCustomDataSourceType,
-  } from '@/components/business/crm-data-source-select/utils';
+  import { type DataSourceOption } from '@/components/business/crm-data-source-select/utils';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import CrmFormCreateInputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
   import CrmTextArea from '@/components/business/crm-form-create/components/basic/textarea.vue';

@@ -58,7 +58,7 @@
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { transformData } from '@lib/shared/method/formCreate';
+  import { getDataSourceFormKey, isCustomDataSourceType, transformData } from '@lib/shared/method/formCreate';
   import type { ContractItem, PaymentPlanItem } from '@lib/shared/models/contract';
   import { CustomerContractListItem } from '@lib/shared/models/customer';
   import { OpportunityItem, OpportunityStageConfig, QuotationItem } from '@lib/shared/models/opportunity';
@@ -95,7 +95,6 @@
   import { fullFormSettingList } from '../crm-form-create/config';
   import type { DataSourceType, FormCreateField } from '../crm-form-create/types';
   import { formKeyMap, sourceApi } from './config';
-  import { getDataSourceFormKey, isCustomDataSourceType } from './utils';
   import type { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = withDefaults(

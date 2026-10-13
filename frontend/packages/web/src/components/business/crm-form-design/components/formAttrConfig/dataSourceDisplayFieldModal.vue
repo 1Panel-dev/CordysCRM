@@ -44,10 +44,10 @@
   import { ColumnTypeEnum } from '@lib/shared/enums/commonEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getDataSourceFormKey, isCustomDataSourceType } from '@lib/shared/method/formCreate';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import { getDataSourceFormKey, isCustomDataSourceType } from '@/components/business/crm-data-source-select/utils';
   import { dataSourceFilterFormKeyMap } from '@/components/business/crm-form-create/config';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import FieldSection from '@/components/business/crm-table-export-modal/components/fieldSection.vue';

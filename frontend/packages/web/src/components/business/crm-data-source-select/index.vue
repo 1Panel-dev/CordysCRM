@@ -46,6 +46,7 @@
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { isCustomDataSourceType } from '@lib/shared/method/formCreate.js';
   import { CustomFormItem } from '@lib/shared/models/customForm';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -56,7 +57,7 @@
   import { getCustomFormOptions } from '@/api/modules';
 
   import type { DataSourceType, FormCreateField } from '../crm-form-create/types';
-  import { getCustomDataSourceName, isCustomDataSourceType } from './utils';
+  import { getCustomDataSourceName } from './utils';
   import type { InternalRowData, RowKey } from 'naive-ui/es/data-table/src/interface';
 
   interface DataSourceTableProps {

@@ -13,7 +13,6 @@
     rows="1"
     autosize
     @click="handleClick"
-    @update:model-value="($event) => emit('change', $event)"
   >
   </van-field>
   <van-popup
@@ -88,7 +87,7 @@
 <script setup lang="ts">
   import { FieldRule } from 'vant';
 
-  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CommonList } from '@lib/shared/models/common';
 
@@ -112,6 +111,10 @@
     getFieldQuotationList,
     getUserOptions,
   } from '@/api/modules';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { getDataSourceFormKey, isCustomDataSourceType } from '@lib/shared/method/formCreate';
+  import { dataSourceFilterFormKeyMap } from '@cordys/web/src/components/business/crm-form-create/config';
+  import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
     dataSourceType?: FieldDataSourceTypeEnum;
@@ -127,7 +130,7 @@
     listParams?: Record<string, any>;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: string | string[]): void;
+    (e: 'change', value: string | string[], selectedRows: Record<string, any>[], fields: FormCreateField[]): void;
   }>();
 
   const { t } = useI18n();
@@ -182,12 +185,34 @@
     [FieldDataSourceTypeEnum.INVOICE]: getFieldInvoiceList,
   };
 
+  const isCustomForm = computed(() => isCustomDataSourceType(props.dataSourceType));
+  const isDatasourceFormConfig = computed(() => props.dataSourceType !== FieldDataSourceTypeEnum.BUSINESS_TITLE);
+  const { fieldList, initFormConfig } = useFormCreateApi({
+    formKey: getDataSourceFormKey(props.dataSourceType, dataSourceFilterFormKeyMap, FormDesignKeyEnum.CUSTOMER)!,
+    customFormId: computed(() => (isCustomForm.value ? (props.dataSourceType as string | undefined) : undefined)),
+    isDatasource: isDatasourceFormConfig.value,
+  });
+
+  watch(
+    () => props.dataSourceType,
+    () => {
+      if (props.dataSourceType) {
+        initFormConfig();
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
+
   function onConfirm() {
     showPicker.value = false;
     selectedRows.value = pickerSelectedRows.value;
     fieldValue.value = pickerSelectedRows.value.map((item) => item.name).join('；');
     value.value = props.multiple ? pickerSelectedRows.value.map((item) => item.id) : pickerSelectedRows.value[0].id;
-    emit('change', value.value);
+    nextTick(() => {
+      emit('change', value.value, selectedRows.value, fieldList.value);
+    });
   }
 
   function onCancel() {

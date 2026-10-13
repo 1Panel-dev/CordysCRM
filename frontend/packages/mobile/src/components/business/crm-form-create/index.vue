@@ -9,7 +9,7 @@
             v-model:value="formDetail[item.id]"
             :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
             v-bind="getItemExtraProps(item)"
-            @change="($event: any) => handleFieldChange($event, item)"
+            @change="(value: any, source: Record<string, any>[], dataSourceFormFields?: FormCreateField[]) => handleFieldChange(value, source, item, dataSourceFormFields)"
           />
         </template>
       </van-cell-group>
@@ -68,6 +68,12 @@
 
   import { rules } from '@cordys/web/src/components/business/crm-form-create/config';
   import { FormCreateField, FormCreateFieldRule } from '@cordys/web/src/components/business/crm-form-create/types';
+  import {
+    formatFormulaResultValue,
+    getDisplayFieldText,
+    getFieldItemId,
+    specialBusinessKeyMap,
+  } from '@lib/shared/method/formCreate';
 
   const route = useRoute();
   const router = useRouter();
@@ -219,10 +225,30 @@
     return extraProps;
   }
 
-  function handleFieldChange(value: any, item: FormCreateField) {
+  function handleFieldChange(
+    value: any,
+    source: Record<string, any>[],
+    item: FormCreateField,
+    dataSourceFormFields?: FormCreateField[]
+  ) {
     // 控制显示规则
     if (item.showControlRules?.length) {
       initFormShowControl();
+    }
+    if (item.type === FieldTypeEnum.DATA_SOURCE && item.showFields?.length) {
+      // 数据源显示字段联动
+      const showFields = fieldList.value.filter((f) => f.resourceFieldId === item.id);
+      showFields.forEach((field) => {
+        const target = source.find((s) => value.includes(s.id));
+        const fieldValue =
+          field.businessKey && specialBusinessKeyMap[field.businessKey]
+            ? target?.[specialBusinessKeyMap[field.businessKey]]
+            : target?.[field.businessKey || getFieldItemId(field)];
+        formDetail.value[field.id] =
+          field.type === FieldTypeEnum.FORMULA
+            ? formatFormulaResultValue(fieldValue, field)
+            : getDisplayFieldText(field, fieldValue);
+      });
     }
   }
 
