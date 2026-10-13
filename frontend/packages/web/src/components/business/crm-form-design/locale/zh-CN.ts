@@ -131,8 +131,11 @@ export default {
   'crmFormDesign.formActionButton': '表单操作按钮',
   'crmFormDesign.formActionButtonPosition': '表单操作按钮位置',
   'crmFormDesign.serialNumberRule': '流水号规则',
-  'crmFormDesign.serialNumberRuleTip': '更改规则会重新计数',
-  'crmFormDesign.serialNumberRuleAutoCountTip': '{number} 位数字，不自动重置',
+  'crmFormDesign.serialNumberRuleTip':
+    '按日期格式中最细的年、月或日周期计数，新周期从 1 开始。同一前缀和周期内，仅更改日期分隔符会沿用原计数',
+  'crmFormDesign.serialNumberRuleAutoCountTip': '{number} 位数字，按日期规则的年、月或日周期计数',
+  'crmFormDesign.serialNumberDateInvalid': '日期格式不合法，仅支持完整的 yyyy、yyyyMM 或 yyyyMMdd，可添加分隔符',
+  'crmFormDesign.serialNumberDatePreviewFailed': '日期预览暂不可用，请稍后重试',
   'crmFormDesign.fixedChar': '固定字符',
   'crmFormDesign.submitDate': '提交日期',
   'crmFormDesign.autoCount': '自动计数',
