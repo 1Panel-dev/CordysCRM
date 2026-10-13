@@ -249,7 +249,7 @@
           key: 'exportChecked',
           permission: ['CLUE_MANAGEMENT:EXPORT'],
         },
-        ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_TRANSITION
+        ...(activeTab.value !== CustomerSearchTypeEnum.CLUE_TRANSITION
           ? [
               {
                 label: t('common.batchTransfer'),
@@ -630,7 +630,10 @@
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
           render: (row: ClueListItem) => {
-            if (row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)) {
+            if (
+              activeTab.value === CustomerSearchTypeEnum.CLUE_TRANSITION ||
+              (row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType))
+            ) {
               return '-';
             }
 

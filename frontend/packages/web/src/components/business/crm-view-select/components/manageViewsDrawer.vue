@@ -59,7 +59,7 @@
   import useModal from '@/hooks/useModal';
   import useViewStore from '@/store/modules/view';
 
-  import { viewApiMap } from '../config';
+  import { nonCopyableInternalViewIds, viewApiMap } from '../config';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -237,10 +237,14 @@
                   },
                 ]
               : []),
-            {
-              label: t('common.copy'),
-              key: 'copy',
-            },
+            ...(nonCopyableInternalViewIds.has(row.id)
+              ? []
+              : [
+                  {
+                    label: t('common.copy'),
+                    key: 'copy',
+                  },
+                ]),
             ...(row.type !== 'internal'
               ? [
                   {

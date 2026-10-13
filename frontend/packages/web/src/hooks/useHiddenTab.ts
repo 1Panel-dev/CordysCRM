@@ -70,6 +70,10 @@ export default function useHiddenTab(type?: TabType) {
       name: CustomerSearchTypeEnum.DEPARTMENT,
       tab: t('clue.departmentClues'),
     },
+    {
+      name: CustomerSearchTypeEnum.CLUE_TRANSITION,
+      tab: t('clue.convertedClues'),
+    },
   ];
 
   const allContactTabList: TabPaneProps[] = [

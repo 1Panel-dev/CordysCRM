@@ -3,6 +3,7 @@ export default {
   'clue.allClues': '全部线索',
   'clue.myClues': '我的线索',
   'clue.departmentClues': '部门线索',
+  'clue.convertedClues': '已转换线索',
   'clue.convertedTo': '已转',
   'clue.convertedToCustomer': '已转客户',
   'clue.transferredToCustomer': '已转为客户',

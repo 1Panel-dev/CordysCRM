@@ -137,7 +137,6 @@
   } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
-  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCopiedName } from '@lib/shared/method';
@@ -155,6 +154,7 @@
   import useAppStore from '@/store/modules/app';
   import useViewStore from '@/store/modules/view';
 
+  import { nonCopyableInternalViewIds } from './config';
   import Sortable from 'sortablejs';
 
   const chartsDrawer = defineAsyncComponent(() => import('./components/chartsDrawer.vue'));
@@ -315,7 +315,7 @@
           }),
         ]),
         // 右侧内容：复制图标
-        ...(option.id === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
+        ...(nonCopyableInternalViewIds.has(option.id)
           ? []
           : [
               h(CrmIcon, {
