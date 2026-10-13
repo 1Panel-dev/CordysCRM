@@ -16,6 +16,7 @@ import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.*;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
+import cn.cordys.crm.clue.dto.response.ClueTransitionCustomerListResponse;
 import cn.cordys.crm.clue.service.ClueExportService;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.customer.dto.request.BatchReTransitionCustomerRequest;
@@ -219,6 +220,13 @@ public class ClueController {
     public PagerWithOption<List<CustomerListResponse>> transitionCustomerPage(@Validated @RequestBody CustomerPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return customerService.transitionList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/transition/account/list/{id}")
+    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_READ, resourceId = "{#id}", formType = FormKeyConstants.CLUE)
+    @Operation(summary = "查询线索转换关联的客户记录")
+    public ClueTransitionCustomerListResponse transitionCustomerList(@PathVariable String id) {
+        return clueService.getTransitionCustomerList(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/re-transition/account")

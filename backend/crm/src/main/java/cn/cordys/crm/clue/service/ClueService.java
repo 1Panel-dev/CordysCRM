@@ -53,10 +53,13 @@ import cn.cordys.crm.clue.dto.TransformCsAssociateDTO;
 import cn.cordys.crm.clue.dto.request.*;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
+import cn.cordys.crm.clue.dto.response.ClueTransitionCustomerListResponse;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.dto.request.*;
+import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
@@ -600,6 +603,77 @@ public class ClueService implements ApprovalResourceHandler {
         clueFieldService.deleteByResourceId(clue.getId());
         // 再保存
         clueFieldService.saveModuleField(clue, orgId, userId, moduleFields, true);
+    }
+
+    /**
+     * 按线索保存的转换关系查询客户，无客户权限时仅返回基础展示字段。
+     */
+    public ClueTransitionCustomerListResponse getTransitionCustomerList(String id, String userId, String orgId) {
+        Clue clue = clueMapper.selectByPrimaryKey(id);
+        if (clue == null || StringUtils.isBlank(orgId) || !orgId.equals(clue.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        ClueTransitionCustomerListResponse response = new ClueTransitionCustomerListResponse();
+        if (!FormKey.CUSTOMER.name().equals(clue.getTransitionType()) || StringUtils.isBlank(clue.getTransitionId())) {
+            return response;
+        }
+
+        Customer customer = customerMapper.selectByPrimaryKey(clue.getTransitionId());
+        if (customer == null || !orgId.equals(customer.getOrganizationId())) {
+            return response;
+        }
+        CustomerListResponse item = new CustomerListResponse();
+        boolean hasPermission = hasTransitionCustomerPermission(customer, item, userId, orgId);
+        List<CustomerListResponse> list = List.of(item);
+        if (hasPermission) {
+            BeanUtils.copyBean(item, customer);
+            // 与客户列表保持一致，自动解冻时间已到时不再按冻结客户展示。
+            item.setFrozen(BooleanUtils.isTrue(customer.getFrozen())
+                    && (customer.getUnfreezeTime() == null || customer.getUnfreezeTime() > System.currentTimeMillis()));
+            list = customerService.buildListData(list, orgId);
+            response.setOptionMap(customerService.buildOptionMap(orgId, list, list));
+        } else {
+            // 使用字段白名单，避免自定义字段、审批及冻结信息随基础记录泄露。
+            item.setId(customer.getId());
+            item.setName(customer.getName());
+            item.setOwner(customer.getOwner());
+            item.setFollowTime(customer.getFollowTime());
+            item.setCreateTime(customer.getCreateTime());
+            if (StringUtils.isNotBlank(customer.getOwner())) {
+                item.setOwnerName(baseService.getUserName(customer.getOwner()));
+                UserDeptDTO userDept = baseService.getUserDeptMapByUserId(customer.getOwner(), orgId);
+                if (userDept != null) {
+                    item.setDepartmentId(userDept.getDeptId());
+                    item.setDepartmentName(userDept.getDeptName());
+                }
+            }
+        }
+        response.setList(list);
+        response.setHasPermission(hasPermission);
+        return response;
+    }
+
+    /**
+     * 判断关联客户的访问权限，协作访问时保留协作类型供操作权限使用。
+     */
+    private boolean hasTransitionCustomerPermission(Customer customer, CustomerListResponse item, String userId, String orgId) {
+        if (BooleanUtils.isTrue(customer.getInSharedPool())) {
+            return PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
+                    && poolCustomerService.hasPoolMember(customer.getPoolId(), userId, orgId);
+        }
+        if (!PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)) {
+            return false;
+        }
+        if (StringUtils.isNotBlank(customer.getOwner()) && dataScopeService.hasDataPermission(
+                userId, orgId, customer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ)) {
+            return true;
+        }
+        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(customer.getId(), userId);
+        if (CollectionUtils.isEmpty(collaborations)) {
+            return false;
+        }
+        item.setCollaborationType(collaborations.getFirst().getCollaborationType());
+        return true;
     }
 
     /**
