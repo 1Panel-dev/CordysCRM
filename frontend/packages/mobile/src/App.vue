@@ -10,8 +10,6 @@
   import { showLoadingToast } from 'vant';
 
   import useLocale from '@lib/shared/locale/useLocale';
-  import { getQueryVariable } from '@lib/shared/method';
-  import { hasToken } from '@lib/shared/method/auth';
   import { LocaleType } from '@lib/shared/types/global';
 
   import useLicenseStore from '@/store/modules/setting/license';
@@ -31,21 +29,23 @@
   onBeforeMount(async () => {
     try {
       changeLocale(navigator.language as LocaleType);
-      const loginStatus = await userStore.isLogin(true);
+      await router.isReady();
+      const params = new URLSearchParams(window.location.search);
+      const flow = params.get('state')?.split('.')[0];
+      const hasCallback = ['code', 'authCode', 'state', 'error', 'error_description'].some((param) =>
+        params.has(param)
+      );
+      // 回调优先于登录态检查，避免旧 Token 或旧会话跳过本次授权。
+      const loginStatus = hasCallback ? false : await userStore.isLogin(true);
 
       const ua = navigator.userAgent.toLowerCase();
-      const isWXWork = ua.includes('wxwork');
+      const isWXWork = ua.includes('wxwork') || flow === 'wecom';
 
-      const isDingTalk =
-        ua.includes('dingtalk') ||
-        ua.includes('aliapp(dingtalk') ||
-        (getQueryVariable('authCode') !== '' &&
-          getQueryVariable('authCode') !== undefined &&
-          getQueryVariable('authCode') !== null);
+      const isDingTalk = ua.includes('dingtalk') || !!params.get('authCode') || flow === 'ding-talk';
 
-      const isLark = ua.includes('feishu') || ua.includes('lark') || getQueryVariable('state') === 'LARK';
+      const isLark = ua.includes('feishu') || ua.includes('lark') || flow === 'lark-mobile';
 
-      if (!loginStatus && !hasToken() && (isWXWork || isDingTalk || isLark)) {
+      if (!loginStatus && (isWXWork || isDingTalk || isLark)) {
         await oAuthLogin();
         await licenseStore.getValidateLicense();
         return;
