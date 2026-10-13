@@ -19,6 +19,7 @@
     <template #left>
       <div class="h-full overflow-hidden">
         <CrmFormDescription
+          ref="formDescription"
           :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
           :source-id="props.sourceId"
           :hidden-fields="hiddenColumns"
@@ -89,6 +90,7 @@
     poolId: string | number;
     readonly?: boolean;
     hiddenColumns: string[];
+    refreshDetailKey?: number;
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;
@@ -293,6 +295,16 @@
         break;
     }
   }
+
+  const formDescription = ref<InstanceType<typeof CrmFormDescription>>();
+
+  watch(
+    () => props.refreshDetailKey,
+    () => {
+      refreshKey.value += 1;
+      formDescription.value?.refreshFormDescription();
+    }
+  );
 
   const formViewSize = ref<FormViewSize>('large');
   function handleDescriptionInit(

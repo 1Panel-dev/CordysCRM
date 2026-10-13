@@ -728,14 +728,18 @@
     }
   }
 
+  async function refreshFormDescription() {
+    if (props.refreshFormConfig) {
+      await initFormConfig();
+    }
+    await initFormDetail(true);
+    emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
+  }
+
   watch(
     () => props.refreshKey,
-    async () => {
-      if (props.refreshFormConfig) {
-        await initFormConfig();
-      }
-      await initFormDetail(true);
-      emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
+    () => {
+      refreshFormDescription();
     }
   );
 
@@ -755,6 +759,7 @@
     initFormDescription,
     handleFormChange,
     moduleFormConfig,
+    refreshFormDescription,
   });
 </script>
 
