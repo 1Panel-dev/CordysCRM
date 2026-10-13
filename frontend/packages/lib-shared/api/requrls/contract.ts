@@ -49,6 +49,7 @@ export const PaymentPlanBatchDeleteUrl = '/contract/payment-plan/batch/delete'; 
 export const GetPaymentPlanDetailUrl = '/contract/payment-plan/get'; // 获取回款计划详情
 export const GetPaymentPlanFormConfigUrl = '/contract/payment-plan/module/form'; // 回款计划表单配置
 export const GetPaymentPlanTabUrl = '/contract/payment-plan/tab'; // 回款计划tab显隐
+export const PaymentPlanBatchUpdateUrl = '/contract/payment-plan/batch/update'; // 回款计划批量更新
 
 // 回款计划导入
 export const PreCheckPaymentPlanImportUrl = '/contract/payment-plan/import/pre-check';
@@ -82,6 +83,7 @@ export const GetPaymentRecordDetailUrl = '/contract/payment-record/get'; // 获�
 export const GetPaymentRecordFormConfigUrl = '/contract/payment-record/module/form'; // 回款记录表单配置
 export const GetPaymentRecordTabUrl = '/contract/payment-record/tab'; // 回款记录tab显隐
 export const GetPaymentRecordStatisticUrl = '/contract/payment-record/statistic'; // 回款记录统计
+export const PaymentRecordBatchUpdateUrl = '/contract/payment-record/batch/update'; // 回款记录批量更新
 
 // 回款记录导出
 export const ExportPaymentRecordAllUrl = '/contract/payment-record/export-all'; // 回款记录导出全量

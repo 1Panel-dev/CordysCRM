@@ -616,6 +616,8 @@ export const {
   preCheckImportContractPaymentPlan,
   importContractPaymentPlan,
   downloadContractPaymentPlanTemplate,
+  batchUpdatePaymentPlan,
+  batchUpdatePaymentRecord,
 } = contractApi;
 
 export const {
