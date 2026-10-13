@@ -1,5 +1,5 @@
 import type { CommonList, ModuleField } from '../models/common';
-import { FieldTypeEnum } from '../enums/formDesignEnum';
+import { FieldTypeEnum, FieldDataSourceTypeEnum, FormDesignKeyEnum } from '../enums/formDesignEnum';
 import type { FormCreateField, FormDetail } from '@cordys/web/src/components/business/crm-form-create/types';
 import { formatTimeValue, getCityPath, getIndustryPath } from './index';
 import { useI18n } from '../hooks/useI18n';
@@ -700,4 +700,37 @@ export function formatFormulaResultValue(result: any, fieldConfig: FormCreateFie
   }
 
   return precision > 0 ? num.toFixed(precision) : num.toString();
+}
+
+/**
+ * 数据源是否自定义表单
+ * @param dataSourceType
+ */
+export function isCustomDataSourceType(dataSourceType?: FieldDataSourceTypeEnum | string) {
+  if (!dataSourceType) {
+    return false;
+  }
+
+  return !Object.values(FieldDataSourceTypeEnum).includes(dataSourceType as FieldDataSourceTypeEnum);
+}
+/**
+ * 获取数据源表单 key
+ * @param dataSourceType
+ * @param map
+ * @param fallback
+ */
+export function getDataSourceFormKey(
+  dataSourceType: FieldDataSourceTypeEnum | string | undefined,
+  map: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>>,
+  fallback?: FormDesignKeyEnum
+) {
+  if (isCustomDataSourceType(dataSourceType)) {
+    return FormDesignKeyEnum.CUSTOM_FORM;
+  }
+
+  if (!dataSourceType) {
+    return fallback;
+  }
+
+  return map[dataSourceType as FieldDataSourceTypeEnum] || fallback;
 }

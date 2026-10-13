@@ -40,6 +40,7 @@
   import type { CommonList } from '@lib/shared/models/common';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
     data?: Record<string, any>[];

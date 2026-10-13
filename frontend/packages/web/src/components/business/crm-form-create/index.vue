@@ -73,6 +73,7 @@
     dataSourceTypes,
     getDisplayFieldText,
     getFieldItemId,
+    isCustomDataSourceType,
     linkAllAcceptTypes,
     mergeUniqueOptions,
     multipleTypes,
@@ -92,7 +93,6 @@
   import useModal from '@/hooks/useModal';
 
   import { formKeyMap } from '../crm-data-source-select/config';
-  import { isCustomDataSourceType } from '../crm-data-source-select/utils';
   import { FormulaDataSourceMap } from '../crm-formula/formula-runtime/types';
   import { formatFormulaResultValue } from '../crm-formula/utils';
   import { safeParseFormula } from '../crm-formula-editor/utils';

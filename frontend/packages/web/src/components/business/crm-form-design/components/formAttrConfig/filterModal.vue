@@ -28,15 +28,11 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getDataSourceFormKey, isCustomDataSourceType } from '@lib/shared/method/formCreate.js';
   import { CustomFormItem } from '@lib/shared/models/customForm';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import {
-    getCustomDataSourceName,
-    getDataSourceFormKey,
-    getDataSourceType,
-    isCustomDataSourceType,
-  } from '@/components/business/crm-data-source-select/utils';
+  import { getCustomDataSourceName, getDataSourceType } from '@/components/business/crm-data-source-select/utils';
   import { dataSourceFilterFormKeyMap } from '@/components/business/crm-form-create/config';
   import {
     DataSourceFilterCombine,

@@ -189,7 +189,6 @@
       },
       ...renderColumns.value,
     ];
-    console.log(props.subFields);
 
     return cols;
   });

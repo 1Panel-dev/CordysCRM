@@ -77,6 +77,7 @@
   import type { RoleItem } from '@lib/shared/models/system/role';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
@@ -109,11 +110,21 @@
 
   function renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     if (node.option.internal) {
-      return h(roleTreeNodePrefix, {
-        text: t('role.sys'),
-        tooltip: t('role.systemInit'),
-      });
+      return [
+        h(CrmIcon, {
+          type: 'iconicon_move',
+          class: 'cursor-move mr-[4px]',
+        }),
+        h(roleTreeNodePrefix, {
+          text: t('role.sys'),
+          tooltip: t('role.systemInit'),
+        }),
+      ];
     }
+    return h(CrmIcon, {
+      type: 'iconicon_move',
+      class: 'cursor-move mr-[4px]',
+    });
   }
 
   function updateRoleName(node: CrmTreeNodeData) {
@@ -257,7 +268,7 @@
       loading.value = true;
       await roleSort({
         start: startIndex,
-        end: endIndex,
+        end: dropPosition === 'before' ? endIndex - 1 : endIndex + 1,
         dragModuleId: dragNode.id,
       });
       roles.value = await getRoles();

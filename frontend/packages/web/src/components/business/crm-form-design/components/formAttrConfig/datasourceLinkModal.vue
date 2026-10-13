@@ -324,7 +324,9 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import {
     dataSourceTypes,
+    getDataSourceFormKey,
     hiddenTypes,
+    isCustomDataSourceType,
     linkAllAcceptTypes,
     multipleTypes,
     needSameTypes,
@@ -333,7 +335,6 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import { getDataSourceFormKey, isCustomDataSourceType } from '@/components/business/crm-data-source-select/utils';
   import {
     dataSourceFilterFormKeyMap,
     getFieldIcon,

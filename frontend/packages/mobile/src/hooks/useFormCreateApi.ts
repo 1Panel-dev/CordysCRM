@@ -19,6 +19,7 @@ import {
 } from '@lib/shared/method/formCreate';
 import type { ModuleField } from '@lib/shared/models/common';
 import type { CollaborationType } from '@lib/shared/models/customer';
+import type { CustomFormDetail } from '@lib/shared/models/customForm';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
@@ -43,6 +44,7 @@ export interface FormCreateApiProps {
   linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
   linkScenario?: Ref<FormLinkScenarioEnum | undefined>; // 关联表单场景
   customFormId?: Ref<string | undefined>;
+  isDatasource?: boolean; // 是否数据源表单配置
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -78,6 +80,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const unsaved = ref(false);
   const formDetail = ref<Record<string, any>>({});
   const originFormDetail = ref<Record<string, any>>({});
+  const customFormConfig = ref<CustomFormDetail>();
   const detail = ref<Record<string, any>>({}); // 详情
   const opportunityInternalFields = [
     {
@@ -774,51 +777,67 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  function initFormFieldConfig(fields: FormCreateField[]) {
+    fieldList.value = fields.map((item) => {
+      const { defaultValue, initialOptions } = specialFormFieldInit(item);
+      if (item.showControlRules?.length) {
+        // 将字段的控制显隐规则存储到 fieldShowControlMap 中
+        item.showControlRules?.forEach((rule) => {
+          rule.fieldIds.forEach((fieldId) => {
+            // 按字段 ID 存储规则，key 为字段 ID，value 为规则映射集合
+            if (!fieldShowControlMap.value[fieldId]) {
+              fieldShowControlMap.value[fieldId] = {};
+            }
+            // value 映射以控制显示隐藏的字段 id 为 key，字段值为 value 集合
+            if (!fieldShowControlMap.value[fieldId][item.id]) {
+              fieldShowControlMap.value[fieldId][item.id] = [];
+            }
+            /**
+             * 最终结构为：
+             * fieldShowControlMap.value = {
+             *   [fieldId]: {
+             *     [item.id]: [rule.value]
+             *   }
+             * }
+             * 这样最外层存储每个字段的 key，value 为该字段的所有的控制规则集合
+             */
+            fieldShowControlMap.value[fieldId][item.id].push(rule.value);
+          });
+        });
+      }
+      return {
+        ...item,
+        defaultValue,
+        initialOptions,
+        fieldWidth: safeFractionConvert(item.fieldWidth),
+      };
+    });
+  }
+
   async function initFormConfig() {
     try {
       loading.value = true;
       const isCustomFormApprovalDetail =
         props.formKey === FormDesignKeyEnum.CUSTOM_FORM && Boolean(props.otherSaveParams?.approvalTaskId);
-      const api = isCustomFormApprovalDetail ? getDatasourceFieldConfig : getFormConfigApiMap[props.formKey];
-      const res =
-        props.formKey === FormDesignKeyEnum.CUSTOM_FORM
-          ? await api(props.customFormId?.value ?? '')
-          : await api(props.sourceId?.value ?? '', props.otherSaveParams?.approvalTaskId);
-      formConfig.value = res.formProp;
-      fieldList.value = res.fields.map((item) => {
-        const { defaultValue, initialOptions } = specialFormFieldInit(item);
-        if (item.showControlRules?.length) {
-          // 将字段的控制显隐规则存储到 fieldShowControlMap 中
-          item.showControlRules?.forEach((rule) => {
-            rule.fieldIds.forEach((fieldId) => {
-              // 按字段 ID 存储规则，key 为字段 ID，value 为规则映射集合
-              if (!fieldShowControlMap.value[fieldId]) {
-                fieldShowControlMap.value[fieldId] = {};
-              }
-              // value 映射以控制显示隐藏的字段 id 为 key，字段值为 value 集合
-              if (!fieldShowControlMap.value[fieldId][item.id]) {
-                fieldShowControlMap.value[fieldId][item.id] = [];
-              }
-              /**
-               * 最终结构为：
-               * fieldShowControlMap.value = {
-               *   [fieldId]: {
-               *     [item.id]: [rule.value]
-               *   }
-               * }
-               * 这样最外层存储每个字段的 key，value 为该字段的所有的控制规则集合
-               */
-              fieldShowControlMap.value[fieldId][item.id].push(rule.value);
-            });
-          });
-        }
-        return {
-          ...item,
-          defaultValue,
-          initialOptions,
-          fieldWidth: safeFractionConvert(item.fieldWidth),
-        };
-      });
+      const api =
+        props.isDatasource || isCustomFormApprovalDetail
+          ? getDatasourceFieldConfig
+          : getFormConfigApiMap[props.formKey];
+      if (props.formKey === FormDesignKeyEnum.CUSTOM_FORM) {
+        const res = await api(props.customFormId?.value ?? '');
+        initFormFieldConfig(res.fields);
+        formConfig.value = res.formProp;
+        customFormConfig.value = res as CustomFormDetail;
+      } else {
+        const res = await api(
+          props.isDatasource ? props.formKey : props.sourceId?.value ?? '',
+          props.otherSaveParams?.value?.approvalTaskId
+        );
+        initFormFieldConfig(res.fields);
+        formConfig.value = res.formProp;
+        customFormConfig.value = undefined;
+      }
+
       nextTick(() => {
         unsaved.value = false;
       });
