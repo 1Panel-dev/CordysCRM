@@ -66,15 +66,19 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -143,13 +147,15 @@ public class ModuleFormService {
     private DepartmentService departmentService;
     @Resource
     private BaseMapper<Attachment> attachmentMapper;
-    @Resource
-    private SerialNumGenerator serialNumGenerator;
     @Lazy
     @Resource
     private FieldSourceServiceProvider fieldSourceServiceProvider;
     @Resource
     private ModuleFieldService moduleFieldService;
+    @Resource
+    private SerialNumGenerator serialNumGenerator;
+    @Resource
+    private PlatformTransactionManager transactionManager;
     /**
      * 统计字段刷新需要读取表单配置, 延迟注入避免与表单数据读写形成构造期循环依赖。
      */
@@ -259,6 +265,11 @@ public class ModuleFormService {
      * @return 表单配置
      */
     public ModuleFormConfigDTO saveWithoutLog(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
+        boolean serialRuleChanged = false;
+        // 字段校验必须先于任何表单写入，非法流水号格式使整份配置保存失败。
+        if (saveParam.getFields() != null) {
+            preCheckForFieldSave(saveParam.getFormKey(), saveParam.getFields(), currentOrgId);
+        }
         // 处理表单
         ModuleForm form = getModuleFormByKey(saveParam.getFormKey(), currentOrgId);
         if (saveParam.getFormProp() != null) {
@@ -277,21 +288,20 @@ public class ModuleFormService {
         }
 
         if (saveParam.getFields() != null) {
-            // 字段合规校验
-            preCheckForFieldSave(saveParam.getFormKey(), saveParam.getFields(), currentOrgId);
-
             // 处理字段 (删除&&新增)
             LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
             fieldWrapper.eq(ModuleField::getFormId, form.getId());
             List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
 
             // 统计字段刷新要对比新旧配置, 旧配置必须在下面删除字段之前取出。
-            // 只有新旧任一侧存在统计字段时才读完整字段属性, 避免普通保存多出两次查询。
+            // 统计字段及已有流水号字段需要读取旧属性，其余普通保存不增加查询。
             boolean statisticFieldInvolved = hasStatisticField(fields, saveParam.getFields());
-            List<BaseField> originFields = statisticFieldInvolved ? getAllFields(form.getId()) : List.of();
+            boolean serialFieldInvolved = fields.stream().anyMatch(field -> FieldType.SERIAL_NUMBER.name().equals(field.getType()));
+            List<BaseField> originFields = statisticFieldInvolved || serialFieldInvolved ? getAllFields(form.getId()) : List.of();
+            if (serialFieldInvolved) {
+                serialRuleChanged = hasSerialRuleChanged(originFields, saveParam.getFields());
+            }
 
-            // 重置流水号
-            resetSerial(fields, saveParam.getFields(), saveParam.getFormKey(), currentOrgId);
             if (CollectionUtils.isNotEmpty(fields)) {
                 List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
                 extModuleFieldMapper.deleteByIds(fieldIds);
@@ -309,7 +319,11 @@ public class ModuleFormService {
         }
 
         // 返回表单配置
-        return getConfig(form.getFormKey(), currentOrgId);
+        ModuleFormConfigDTO config = getConfig(form.getFormKey(), currentOrgId);
+        if (serialRuleChanged) {
+            triggerSerialCleanup(form.getId(), form.getFormKey(), currentOrgId);
+        }
+        return config;
     }
 
     /**
@@ -367,31 +381,6 @@ public class ModuleFormService {
         }
         moduleFormBlobMapper.deleteByPrimaryKey(form.getId());
         moduleFormMapper.deleteByPrimaryKey(form.getId());
-    }
-
-    /**
-     * 重置流水号
-     *
-     * @param oldFields  旧的字段集合
-     * @param saveFields 保存的字段集合
-     */
-    private void resetSerial(List<ModuleField> oldFields, List<BaseField> saveFields, String formKey, String orgId) {
-        Optional<ModuleField> serialOld = oldFields.stream().filter(f -> Strings.CS.equals(f.getType(), FieldType.SERIAL_NUMBER.name())).findAny();
-        Optional<BaseField> serialNew = saveFields.stream().filter(BaseField::isSerialNumber).findAny();
-        if (serialOld.isEmpty()) {
-            return;
-        }
-        ModuleFieldBlob oldFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(serialOld.get().getId());
-        List<String> oldRules = JSON.parseObject(oldFieldBlob.getProp(), SerialNumberField.class).getSerialNumberRules();
-        if (serialNew.isEmpty()) {
-            serialNumGenerator.resetKey(oldRules.get(2), formKey, orgId);
-            return;
-        }
-        List<String> newRules = ((SerialNumberField) serialNew.get()).getSerialNumberRules();
-        if (serialNumGenerator.sameRule(oldRules, newRules)) {
-            return;
-        }
-        serialNumGenerator.resetKey(oldRules.get(2), formKey, orgId);
     }
 
     /**
@@ -2057,6 +2046,53 @@ public class ModuleFormService {
         return inOrigin || inCurrent;
     }
 
+    private SerialNumberField getSerialField(List<BaseField> fields) {
+        return fields.stream().filter(BaseField::isSerialNumber)
+                .filter(field -> StringUtils.isEmpty(field.getResourceFieldId()))
+                .map(field -> (SerialNumberField) field).findFirst().orElse(null);
+    }
+
+    private boolean hasSerialRuleChanged(List<BaseField> originFields, List<BaseField> currentFields) {
+        SerialNumberField previous = getSerialField(originFields);
+        SerialNumberField current = getSerialField(currentFields);
+        if (previous == null || current == null) {
+            return previous != current;
+        }
+        boolean previousFormula = Strings.CI.equals(previous.getPrefixType(), SerialNumberField.FORMULA);
+        boolean currentFormula = Strings.CI.equals(current.getPrefixType(), SerialNumberField.FORMULA);
+        return previousFormula != currentFormula
+                || !Objects.equals(previousFormula ? previous.getFormula() : previous.getSerialNumberRules().getFirst(),
+                currentFormula ? current.getFormula() : current.getSerialNumberRules().getFirst())
+                || !Objects.equals(previous.getSerialNumberRules().get(2), current.getSerialNumberRules().get(2));
+    }
+
+    private void triggerSerialCleanup(String formId, String formKey, String orgId) {
+        Runnable cleanup = () -> {
+            try {
+                // 新事务避开保存事务的字段查询缓存，以最新已提交配置为准，防止迟到回调误删新规则计数。
+                TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+                transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                transaction.setReadOnly(true);
+                SerialNumberField current = transaction.execute(status -> getSerialField(getAllFields(formId)));
+                // ponytail: 在途导入仍可能持有旧规则；阻止旧规则重建需要取号版本校验。
+                serialNumGenerator.cleanUnusedRules(orgId, formKey, current == null ? null : current.getSerialNumberRules(),
+                        current != null && Strings.CI.equals(current.getPrefixType(), SerialNumberField.FORMULA));
+            } catch (Exception e) {
+                log.error("表单流水号规则已保存，历史计数清理失败: {}:{}", orgId, formKey, e);
+            }
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    cleanup.run();
+                }
+            });
+        } else {
+            cleanup.run();
+        }
+    }
+
     /**
      * 触发统计字段异步刷新。
      *
@@ -2085,6 +2121,18 @@ public class ModuleFormService {
     }
 
     /**
+     * 使用生成器相同的日期校验和格式化规则预览，不读取或递增计数；非法格式返回空值。
+     */
+    public String previewSerialNumberDate(String datePattern) {
+        try {
+            SerialNumGenerator.counterDatePattern(datePattern);
+            return new SimpleDateFormat(datePattern).format(new Date());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
      * 字段保存预检查
      *
      * @param formKey 表单Key
@@ -2092,6 +2140,25 @@ public class ModuleFormService {
      * @param orgId   组织ID
      */
     public void preCheckForFieldSave(String formKey, List<BaseField> fields, String orgId) {
+        List<SerialNumberField> serialFields = fields.stream()
+                .filter(BaseField::isSerialNumber)
+                .filter(field -> StringUtils.isEmpty(field.getResourceFieldId()))
+                .map(field -> (SerialNumberField) field)
+                .toList();
+        if (serialFields.size() > 1) {
+            throw new GenericException(Translator.get("module.form.serial.number.only.one"));
+        }
+        for (SerialNumberField field : serialFields) {
+            try {
+                List<String> rules = field.getSerialNumberRules();
+                if (CollectionUtils.size(rules) != 5) {
+                    throw new IllegalArgumentException("流水号规则配置有误");
+                }
+                SerialNumGenerator.counterDatePattern(rules.get(2));
+            } catch (IllegalArgumentException e) {
+                throw new GenericException(Translator.getWithArgs("module.form.serial.number.date.invalid", field.getName()));
+            }
+        }
         boolean businessDeleted = BusinessModuleField.isBusinessDeleted(formKey, fields);
         if (businessDeleted) {
             throw new GenericException(Translator.get("module.form.business_field.deleted"));

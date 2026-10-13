@@ -735,9 +735,17 @@
           >
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
-          <n-input v-model:value="serialNumberRules3" disabled>
+          <n-input
+            v-model:value="serialNumberRules3"
+            placeholder="yyyyMM"
+            :status="serialNumberDateError ? 'error' : undefined"
+            :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
+          >
             <template #prefix>{{ t('crmFormDesign.submitDate') }}</template>
           </n-input>
+          <div v-if="serialNumberDateError" class="text-[12px] text-[var(--error-red)]">
+            {{ t(serialNumberDateError) }}
+          </div>
           <n-input
             v-model:value="serialNumberRules4"
             maxlength="10"
@@ -1730,7 +1738,12 @@
   import optionConfig from './optionConfig.vue';
   import subTableFields from './subTableFields.vue';
 
-  import { getBusinessTitleModuleForm, getCustomFormOptions, getFieldDisplayList } from '@/api/modules';
+  import {
+    getBusinessTitleModuleForm,
+    getCustomFormOptions,
+    getFieldDisplayList,
+    previewSerialNumberDate,
+  } from '@/api/modules';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
@@ -2333,17 +2346,50 @@
 
   const serialNumberRules1 = ref(fieldConfig.value?.serialNumberRules?.[0].toString() || '');
   const serialNumberRules2 = ref(fieldConfig.value?.serialNumberRules?.[1].toString() || '');
-  const serialNumberRules3 = ref(fieldConfig.value?.serialNumberRules?.[2].toString() || 'yyyyMM');
+  const serialNumberRules3 = ref(fieldConfig.value?.serialNumberRules?.[2]?.toString() ?? 'yyyyMM');
   const serialNumberRules4 = ref(fieldConfig.value?.serialNumberRules?.[3].toString() || '');
   const serialNumberRules5 = ref(Number(fieldConfig.value?.serialNumberRules?.[4] || 6));
+  const serialNumberDatePreview = ref('');
+  const serialNumberDateError = ref('');
+
+  watch(
+    () => [fieldConfig.value?.type, serialNumberRules3.value],
+    ([type], _previous, onCleanup) => {
+      if (type !== FieldTypeEnum.SERIAL_NUMBER) return;
+      serialNumberDatePreview.value = '';
+      serialNumberDateError.value = '';
+
+      // 复用后端格式化，避免自定义格式与实际取号不一致；清理过期请求，防止快速输入时预览被覆盖。
+      let active = true;
+      const pattern = serialNumberRules3.value;
+      const timer = setTimeout(async () => {
+        try {
+          const date = await previewSerialNumberDate(pattern);
+          if (!active) return;
+          serialNumberDatePreview.value = date ?? '';
+          serialNumberDateError.value = date === null ? 'crmFormDesign.serialNumberDateInvalid' : '';
+        } catch {
+          if (active) serialNumberDateError.value = 'crmFormDesign.serialNumberDatePreviewFailed';
+        }
+      }, 300);
+
+      onCleanup(() => {
+        active = false;
+        clearTimeout(timer);
+      });
+    },
+    { immediate: true }
+  );
+
   const previewValue = computed(() => {
+    if (!serialNumberDatePreview.value) return '';
     const part1 = serialNumberRules1.value || '';
     const part2 = serialNumberRules2.value || '';
     const part4 = serialNumberRules4.value || '';
     const digits = Number(serialNumberRules5.value) ?? 0;
     const part5 = digits > 0 ? String(1).padStart(digits, '0') : '';
 
-    return `${part1}${part2}202501${part4}${part5}`;
+    return `${part1}${part2}${serialNumberDatePreview.value}${part4}${part5}`;
   });
 
   function normalizeFormulaResultFormat() {
@@ -2365,7 +2411,13 @@
   });
 
   watch(
-    () => [serialNumberRules1.value, serialNumberRules2.value, serialNumberRules4.value, serialNumberRules5.value],
+    () => [
+      serialNumberRules1.value,
+      serialNumberRules2.value,
+      serialNumberRules3.value,
+      serialNumberRules4.value,
+      serialNumberRules5.value,
+    ],
     () => {
       fieldConfig.value.serialNumberRules = [
         serialNumberRules1.value,
@@ -2399,6 +2451,7 @@
     () => {
       serialNumberRules1.value = fieldConfig.value?.serialNumberRules?.[0].toString() || '';
       serialNumberRules2.value = fieldConfig.value?.serialNumberRules?.[1].toString() || '';
+      serialNumberRules3.value = fieldConfig.value?.serialNumberRules?.[2]?.toString() ?? 'yyyyMM';
       serialNumberRules4.value = fieldConfig.value?.serialNumberRules?.[3].toString() || '';
       serialNumberRules5.value = Number(fieldConfig.value?.serialNumberRules?.[4]);
       currentFieldHasAccept.value = !!fieldConfig.value?.accept;

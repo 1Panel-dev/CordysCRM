@@ -45,6 +45,13 @@ public class ModuleFormController {
         return moduleFormService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
     }
 
+    @GetMapping("/serial-number/date-preview")
+    @Operation(summary = "预览流水号日期，格式不合法时返回空值")
+    @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+    public String previewSerialNumberDate(@RequestParam String datePattern) {
+        return moduleFormService.previewSerialNumberDate(datePattern);
+    }
+
     @GetMapping("/related/{formKey}")
     @Operation(summary = "获取详情页内置标签及包含当前表单数据源的关联表单")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)

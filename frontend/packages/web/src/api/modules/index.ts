@@ -32,6 +32,13 @@ const CDR = createAxios({
   checkStatus,
 });
 
+export function previewSerialNumberDate(datePattern: string) {
+  return CDR.get<string | null>(
+    { url: '/module/form/serial-number/date-preview', params: { datePattern } },
+    { noErrorTip: true }
+  );
+}
+
 const orgApi = useOrgApi(CDR);
 const sysApi = useSysApi(CDR);
 const clueApi = useClueApi(CDR);
