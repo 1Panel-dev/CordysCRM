@@ -613,11 +613,29 @@ public class PoolCustomerService {
         if (pool == null) {
             throw new GenericException(Translator.get("customer_pool_not_exist"));
         }
-        List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
-        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
-        if (!scopeIds.contains(userId) && !ownerIds.contains(userId) && !Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+        if (!isPoolMember(pool, userId, orgId)) {
             throw new GenericException(Translator.get("customer_pool_member_access_fail"));
         }
+    }
+
+    /**
+     * 判断当前用户是否可访问当前组织的公海，用于无权限时降级展示关联记录。
+     *
+     * @param poolId 公海ID
+     * @param userId 当前用户ID
+     * @param orgId  当前组织ID
+     * @return 公海属于当前组织，且当前用户为成员或管理员时返回 true
+     */
+    public boolean hasPoolMember(String poolId, String userId, String orgId) {
+        CustomerPool pool = poolMapper.selectByPrimaryKey(poolId);
+        return pool != null && orgId != null && orgId.equals(pool.getOrganizationId())
+                && isPoolMember(pool, userId, orgId);
+    }
+
+    private boolean isPoolMember(CustomerPool pool, String userId, String orgId) {
+        List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
+        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
+        return scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue());
     }
 
     /**
