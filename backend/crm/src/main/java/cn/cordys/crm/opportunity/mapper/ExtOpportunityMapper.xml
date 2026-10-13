@@ -320,9 +320,8 @@
                         souc_sort.`id` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'approval_status'">
-                        o.`approval_status` ${sortType},  o.id ASC
+                        FIELD(o.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, o.id ASC
                     </when>
-
                     <otherwise>
                         CASE
                         WHEN module_table.type = 'INPUT_NUMBER' OR module_table.type = 'FORMULA' OR module_table.type = 'STATISTIC'

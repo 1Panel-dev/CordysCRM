@@ -246,7 +246,7 @@
                         c.`reason_id` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'approval_status'">
-                        c.`approval_status` ${sortType}, c.id ASC
+                        FIELD(c.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, c.id ASC
                     </when>
                     <otherwise>
                         CASE
