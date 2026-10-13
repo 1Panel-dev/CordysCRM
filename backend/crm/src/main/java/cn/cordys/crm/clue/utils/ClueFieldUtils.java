@@ -8,15 +8,12 @@ import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClueFieldUtils {
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data, Map<String, List<OptionDTO>> optionMap) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data, Map<String, List<OptionDTO>> optionMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("owner", data.getOwnerName());
@@ -34,7 +31,7 @@ public class ClueFieldUtils {
         systemFieldMap.put("recyclePoolName", data.getRecyclePoolName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         return systemFieldMap;
     }

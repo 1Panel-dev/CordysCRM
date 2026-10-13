@@ -62,7 +62,7 @@ public class OpportunityExportService extends BaseExportService {
         return buildExportMergeResult(taskId, exportParam, dataList,
                 OpportunityListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        OpportunityFieldUtils.getSystemFieldMap(detail, optionMap, stageConfigMap, fieldConfigMap), cache));
+                        OpportunityFieldUtils.getSystemFieldMap(detail, optionMap, stageConfigMap, fieldConfigMap, exportParam.getLocale()), cache));
     }
 
     @SuppressWarnings("unchecked")

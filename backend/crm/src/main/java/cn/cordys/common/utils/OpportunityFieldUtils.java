@@ -12,16 +12,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class OpportunityFieldUtils {
 
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap, Map<String, BaseField> fieldConfigMap) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap, Map<String, BaseField> fieldConfigMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -32,7 +29,7 @@ public class OpportunityFieldUtils {
         systemFieldMap.put("failureReason", data.getFailureReason());
 
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
 
         if (fieldConfigMap != null) {
