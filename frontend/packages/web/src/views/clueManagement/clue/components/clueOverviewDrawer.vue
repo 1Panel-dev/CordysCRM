@@ -79,13 +79,14 @@
           :show-action="showAction"
           :parentFormKey="FormDesignKeyEnum.CLUE"
         />
-        <div v-if="activeTab === 'headRecord'" class="h-full px-[24px] pt-[24px]">
+        <div v-else-if="activeTab === 'headRecord'" class="h-full px-[24px] pt-[24px]">
           <CrmHeaderTable
             :form-key="FormDesignKeyEnum.CLUE_POOL"
             :source-id="sourceId"
             :load-list-api="getClueHeaderList"
           />
         </div>
+        <transformRecord v-else-if="activeTab === 'transformRecord'" :resource-id="sourceId" />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -147,6 +148,7 @@
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import convertClueModal from './convertClueModal.vue';
+  import transformRecord from './transformRecord.vue';
 
   import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
@@ -352,6 +354,12 @@
       tab: t('common.headRecord'),
       enable: true,
       internalKey: 'CLUE_OWNER_RECORD',
+    },
+    {
+      name: 'transformRecord',
+      tab: t('common.transformRecord'),
+      enable: true,
+      internalKey: 'CLUE_TRANSITION_RECORD',
     },
   ];
   const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.CLUE);

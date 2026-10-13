@@ -361,6 +361,7 @@ export const {
   getCluePoolFollowRecordList,
   getAdvancedSearchClueDetail,
   getClueTransitionCustomerList,
+  getClueTransitionCustomerRecordList,
 } = clueApi;
 
 export const {

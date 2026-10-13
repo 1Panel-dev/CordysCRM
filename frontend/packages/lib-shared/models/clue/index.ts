@@ -1,7 +1,7 @@
 import type { CustomerSearchTypeEnum } from '../../enums/customerEnum';
 import type { ProcessStatusEnum } from '../../enums/process';
 import type { ModuleField, TableQueryParams } from '../common';
-import type { SaveCustomerParams } from '@lib/shared/models/customer';
+import type { CustomerListItem, SaveCustomerParams } from '@lib/shared/models/customer';
 
 export interface SaveClueParams extends SaveCustomerParams {
   contact?: string;
@@ -106,4 +106,10 @@ export interface ConvertClueParams {
   clueId: string;
   oppCreated: boolean;
   oppName: string;
+}
+
+export interface LeadTransitionCustomerRecordRes {
+  hasPermission: boolean;
+  list: CustomerListItem[];
+  optionMap: Record<string, any[]>;
 }

@@ -76,6 +76,7 @@ import {
   UpdateClueViewUrl,
   UpdatePoolLeadViewUrl,
   UnfreezeClueUrl,
+  GetLeadTransitionCustomerRecordListUrl,
 } from '@lib/shared/api/requrls/clue';
 import type {
   AssignClueParams,
@@ -88,6 +89,7 @@ import type {
   ClueTransitionCustomerParams,
   ConvertClueParams,
   FreezeClueParams,
+  LeadTransitionCustomerRecordRes,
   PickClueParams,
   SaveClueParams,
   UnfreezeClueParams,
@@ -108,6 +110,7 @@ import type {
   CustomerContractTableParams,
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
+  CustomerListItem,
   CustomerTabHidden,
   CustomerTableParams,
   FollowDetailItem,
@@ -495,6 +498,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: BatchUpdateLeadUrl, data });
   }
 
+  // 获取线索转换客户记录
+  function getClueTransitionCustomerRecordList(id: string) {
+    return CDR.get<LeadTransitionCustomerRecordRes>({ url: `${GetLeadTransitionCustomerRecordListUrl}/${id}` });
+  }
+
   return {
     addClue,
     updateClue,
@@ -572,5 +580,6 @@ export default function useProductApi(CDR: CordysAxios) {
     batchUpdateLead,
     generateLeadChart,
     generateLeadPoolChart,
+    getClueTransitionCustomerRecordList,
   };
 }
