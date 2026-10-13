@@ -13,17 +13,17 @@ export default function useUser() {
   const logout = async (logoutTo?: string, noRedirect?: boolean, silence = false) => {
     try {
       const userStore = useUserStore();
+      const currentRoute = router.currentRoute.value;
       await userStore.logout();
       const { message } = useDiscreteApi();
-      const currentRoute = router.currentRoute.value;
       if (!silence) {
         message.success(t('message.logoutSuccess'));
-        router.push({
+        await router.push({
           name: logoutTo && typeof logoutTo === 'string' ? logoutTo : 'login',
           query: noRedirect
             ? {}
             : {
-                ...router.currentRoute.value.query,
+                ...currentRoute.query,
                 redirect: currentRoute.name as string,
               },
         });
@@ -52,7 +52,7 @@ export default function useUser() {
       !redirect.includes(NO_RESOURCE_ROUTE_NAME) &&
       routerNameHasPermission(redirect as string, router.getRoutes());
 
-    router.push({
+    return router.push({
       name: redirectHasPermission ? (redirect as string) : currentRouteName,
       query: {
         ...othersQuery,

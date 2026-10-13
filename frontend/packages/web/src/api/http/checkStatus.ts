@@ -4,6 +4,7 @@ import useDiscreteApi from '@/hooks/useDiscreteApi';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
 import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
+import useUserStore from '@/store/modules/user';
 
 import type { VNodeChild } from 'vue';
 
@@ -20,7 +21,7 @@ export default function checkStatus(
     },
   });
   const { t } = useI18n();
-  const { logout, isLoginPage, isWhiteListPage } = useUser();
+  const { isLoginPage, isWhiteListPage } = useUser();
   let errMessage: string | VNodeChild[] = '';
   switch (status) {
     case 400:
@@ -29,8 +30,8 @@ export default function checkStatus(
     case 401: {
       errMessage = msg || t('api.errMsg401');
       if (!isLoginPage() && !isWhiteListPage()) {
-        // 不是登录页再调用logout
-        logout();
+        // 401 表示会话已失效，只做本地清理；再次请求登出可能注销正在建立的新会话。
+        useUserStore().logoutCallBack();
       }
       break;
     }

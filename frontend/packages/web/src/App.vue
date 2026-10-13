@@ -6,8 +6,11 @@
   >
     <n-message-provider>
       <n-dialog-provider>
-        <RouterView />
-        <CrmLicenseFeatureNotice />
+        <template v-if="appInitialized">
+          <RouterView />
+          <CrmLicenseFeatureNotice />
+        </template>
+        <n-spin v-else class="flex h-screen items-center justify-center" :description="t('login.form.loading')" />
       </n-dialog-provider>
     </n-message-provider>
   </n-config-provider>
@@ -15,12 +18,12 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
+  import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, NSpin, zhCN } from 'naive-ui';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
-  import { clearToken, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+  import { clearToken, hasToken, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import type { Result } from '@lib/shared/types/axios';
 
   import CrmSysUpgradeTip from '@/components/pure/crm-sys-upgrade-tip/index.vue';
@@ -48,6 +51,7 @@
   const licenseStore = useLicenseStore();
   const { currentLocale } = useLocale(message.loading);
   const appStore = useAppStore();
+  const appInitialized = ref(false);
 
   const naiveUILocale = computed(() => {
     return currentLocale.value === 'zh-CN' ? zhCN : enUS;
@@ -61,7 +65,7 @@
     type: 'wecom' | 'ding-talk' | 'lark',
     loginType: CompanyTypeEnum,
     isDingBrowser: boolean
-  ) {
+  ): Promise<boolean> {
     const retryKey = `cordys.oauth2.workbench-retry.${type}`;
     try {
       const codeKey = isDingBrowser ? 'authCode' : 'code';
@@ -86,13 +90,13 @@
             setLoginExpires();
             setLoginType(loginType);
 
-            goUserHasPermissionPage();
+            await goUserHasPermissionPage();
             setLoading(false);
             await userStore.getAuthentication();
           } else {
             throw new Error(t('login.form.login.errMsg'));
           }
-          return;
+          return true;
         }
 
         // 仅客户端工作台旧链接允许丢弃旧 code 后重新授权一次。
@@ -108,8 +112,8 @@
       } else {
         sessionStorage.removeItem(retryKey);
         if (await userStore.isLogin(true)) {
-          if (router.currentRoute.value.name === 'login') goUserHasPermissionPage();
-          return;
+          if (router.currentRoute.value.name === 'login') await goUserHasPermissionPage();
+          return true;
         }
       }
       clearToken();
@@ -148,12 +152,15 @@
       }
       if (hasCallback) sessionStorage.setItem(retryKey, '1');
       window.location.replace(authUrl);
+      // 整页授权跳转期间继续显示加载状态，不能挂载扫码页或发起业务请求。
+      return false;
     } catch (error) {
       sessionStorage.removeItem(retryKey);
       clearToken();
       const detail = error instanceof Error ? undefined : (error as Result)?.message;
       message.error(detail || t('login.form.login.errMsg'));
       await router.replace({ name: 'login' });
+      return true;
     }
   }
 
@@ -169,17 +176,33 @@
       const isLark = ua.includes('feishu') || ua.includes('lark') || flow === 'lark';
       // 授权回调优先处理，不能因残留的本地 Token 被跳过。
       if (isWXWork) {
-        await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false);
+        if (!(await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false))) return;
       } else if (isDingTalk) {
-        await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, true);
+        if (!(await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, true))) return;
       } else if (isLark) {
-        await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, false);
+        if (!(await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, false))) return;
       } else if (!WHITE_LIST.some((route) => route.name === router.currentRoute.value.name)) {
-        await userStore.checkIsLogin();
+        await userStore.checkIsLogin(true);
       }
+
+      await appStore.initThirdPartyResource();
+      // 认证与路由先完成，再加载需要登录态的配置，避免旧会话的 401 打断新 OAuth 会话。
+      if (hasToken()) {
+        await licenseStore.ensureLicenseValidated();
+        if (licenseStore.hasLicense()) {
+          await appStore.initPageConfig();
+          if (appStore.pageConfig.icon[0]?.url) {
+            setFavicon(appStore.pageConfig.icon[0]?.url);
+          }
+        }
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     } finally {
       appStore.setLoginLoading(false);
     }
+    appInitialized.value = true;
   });
 
   onBeforeUnmount(() => {
@@ -201,22 +224,6 @@
   }
   watchStyle(appStore.pageConfig.style, appStore.pageConfig);
   watchTheme(appStore.pageConfig.theme, appStore.pageConfig);
-
-  onBeforeMount(async () => {
-    try {
-      appStore.initThirdPartyResource();
-      await licenseStore.ensureLicenseValidated();
-      if (licenseStore.hasLicense()) {
-        await appStore.initPageConfig();
-        if (appStore.pageConfig.icon[0]?.url) {
-          setFavicon(appStore.pageConfig.icon[0]?.url);
-        }
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  });
 
   onMounted(() => {
     adjustOSTheme();

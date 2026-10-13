@@ -300,8 +300,7 @@
     } else if (key === AppRouteEnum.PERSONAL_EXPORT) {
       showPersonalExport.value = true;
     } else {
-      await userStore.logout();
-      logout();
+      await logout();
       if (!licenseStore.hasLicense()) {
         // license到期后，退出登录重置界面配置
         appStore.resetPageConfig();
