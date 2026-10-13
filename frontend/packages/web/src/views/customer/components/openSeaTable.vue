@@ -90,6 +90,7 @@
     :source-id="activeRow.id"
     :pool-id="openSea"
     :hidden-columns="hiddenColumns"
+    :refreshDetailKey="refreshDetailKey"
     @change="searchData(undefined, undefined, activeRow.id)"
     @delete="removeItemFromList(activeRow.id)"
     @freeze="openFreezeModal($event, 'freeze')"
@@ -668,7 +669,9 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
+  const refreshDetailKey = ref(0);
   function handleItemRefresh(id: string) {
+    refreshDetailKey.value += 1;
     searchData(undefined, undefined, id);
   }
 
