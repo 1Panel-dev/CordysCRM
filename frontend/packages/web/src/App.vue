@@ -62,6 +62,7 @@
     loginType: CompanyTypeEnum,
     isDingBrowser: boolean
   ) {
+    const retryKey = `cordys.oauth2.workbench-retry.${type}`;
     try {
       const codeKey = isDingBrowser ? 'authCode' : 'code';
       const url = new URL(window.location.href);
@@ -69,31 +70,47 @@
       const code = url.searchParams.get(codeKey);
       const state = url.searchParams.get('state') ?? '';
       const authorizationError = url.searchParams.has('error');
-      if (authParams.some((param) => url.searchParams.has(param))) {
-        // 回调只校验原来的 state；先清理一次性参数，避免刷新重放或覆盖后续路由。
+      const hasCallback = authParams.some((param) => url.searchParams.has(param));
+      if (hasCallback) {
+        // 先清理一次性参数，避免刷新重放或覆盖后续路由。
         authParams.forEach((param) => url.searchParams.delete(param));
         window.history.replaceState(window.history.state, document.title, url.toString());
         if (authorizationError || !code) {
           throw new Error(t('login.form.login.errMsg'));
         }
-        const res = await getThirdOauthCallback(code, type, state);
-        const boolean = userStore.qrCodeLogin(res.data.data);
-        if (boolean) {
-          setLoginExpires();
-          setLoginType(loginType);
+        if (state.startsWith(`${type}.`)) {
+          sessionStorage.removeItem(retryKey);
+          const res = await getThirdOauthCallback(code, type, state);
+          const boolean = userStore.qrCodeLogin(res.data.data);
+          if (boolean) {
+            setLoginExpires();
+            setLoginType(loginType);
 
-          goUserHasPermissionPage();
-          setLoading(false);
-          await userStore.getAuthentication();
-        } else {
+            goUserHasPermissionPage();
+            setLoading(false);
+            await userStore.getAuthentication();
+          } else {
+            throw new Error(t('login.form.login.errMsg'));
+          }
+          return;
+        }
+
+        // 仅客户端工作台旧链接允许丢弃旧 code 后重新授权一次。
+        const ua = navigator.userAgent.toLowerCase();
+        const isPlatformBrowser = {
+          'wecom': ua.includes('wxwork'),
+          'ding-talk': ua.includes('dingtalk'),
+          'lark': ua.includes('feishu') || ua.includes('lark'),
+        }[type];
+        if (!isPlatformBrowser || sessionStorage.getItem(retryKey)) {
           throw new Error(t('login.form.login.errMsg'));
         }
-        return;
-      }
-
-      if (await userStore.isLogin(true)) {
-        if (router.currentRoute.value.name === 'login') goUserHasPermissionPage();
-        return;
+      } else {
+        sessionStorage.removeItem(retryKey);
+        if (await userStore.isLogin(true)) {
+          if (router.currentRoute.value.name === 'login') goUserHasPermissionPage();
+          return;
+        }
       }
       clearToken();
       const configType = {
@@ -129,8 +146,10 @@
         params.set('client_id', config.agentId);
         authUrl = `https://passport.feishu.cn/suite/passport/oauth/authorize?${params}`;
       }
+      if (hasCallback) sessionStorage.setItem(retryKey, '1');
       window.location.replace(authUrl);
     } catch (error) {
+      sessionStorage.removeItem(retryKey);
       clearToken();
       const detail = error instanceof Error ? undefined : (error as Result)?.message;
       message.error(detail || t('login.form.login.errMsg'));
