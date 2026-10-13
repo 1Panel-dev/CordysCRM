@@ -1,5 +1,6 @@
 package cn.cordys.crm.contract.mapper;
 
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
@@ -55,4 +56,6 @@ public interface ExtContractPaymentRecordMapper extends StatisticSqlMapper {
     ContractPaymentRecordStatisticResponse searchStatistic(@Param("request") ContractPaymentRecordStatisticRequest request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     void updateRecord(@Param("contractPaymentRecord")ContractPaymentRecord contractPaymentRecord);
+
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }

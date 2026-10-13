@@ -25,6 +25,7 @@ import cn.cordys.crm.contract.service.ContractPaymentPlanExportService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.ImportRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -94,6 +95,13 @@ public class ContractPaymentPlanController {
     @Operation(summary = "更新合同回款计划")
     public ContractPaymentPlan update(@Validated @RequestBody ContractPaymentPlanUpdateRequest request) {
         return contractPaymentPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/update")
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_PLAN_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_PLAN)
+    @Operation(summary = "批量更新合同回款计划")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        contractPaymentPlanService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")

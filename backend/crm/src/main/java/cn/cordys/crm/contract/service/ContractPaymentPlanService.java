@@ -18,6 +18,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
@@ -42,6 +43,7 @@ import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -351,6 +353,32 @@ public class ContractPaymentPlanService extends BaseExportService {
         baseService.handleUpdateLogWithSubTable(originContractPaymentPlan, contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(),
                 originContractPaymentPlan.getId(), originContractPaymentPlan.getName(), Translator.get("products_info"), getFormConfig(orgId));
         return contractPaymentPlan;
+    }
+
+    /**
+     * 批量修改一个表单字段，整批校验通过后再写入，保持字段、日志和关联统计的事务一致性。
+     */
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String orgId) {
+        request.setIds(request.getIds().stream().distinct().toList());
+        List<ContractPaymentPlan> plans = contractPaymentPlanMapper.selectByIds(request.getIds());
+        if (plans.size() != request.getIds().size()
+                || plans.stream().anyMatch(plan -> !orgId.equals(plan.getOrganizationId()))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        BaseField field = contractPaymentPlanFieldService.getAndCheckBatchUpdateField(request, orgId);
+        if (BusinessModuleField.CONTRACT_PAYMENT_PLAN_CONTRACT.getBusinessKey().equals(field.getBusinessKey())) {
+            Contract contract = contractMapper.selectByPrimaryKey((String) request.getFieldValue());
+            if (contract == null || !orgId.equals(contract.getOrganizationId())) {
+                throw new GenericException(Translator.get("contract.not.exist"));
+            }
+        }
+
+        // 关联字段覆盖前保留原宿主，写入后同时刷新新旧宿主的统计值。
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
+                FormKey.CONTRACT_PAYMENT_PLAN.getKey(), request.getFieldId(), request.getIds(), orgId);
+        contractPaymentPlanFieldService.batchUpdate(request, field, plans, ContractPaymentPlan.class,
+                LogModule.CONTRACT_PAYMENT, extContractPaymentPlanMapper::batchUpdate, userId, orgId);
+        statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }
 
     private void updateModuleField(ContractPaymentPlan contractPaymentPlan, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {

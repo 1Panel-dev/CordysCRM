@@ -1,8 +1,12 @@
 package cn.cordys.common.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.service.ContractPaymentPlanFieldService;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormDataField;
@@ -12,13 +16,21 @@ import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.InputNumberField;
 import cn.cordys.crm.system.dto.field.ProductSubField;
 import cn.cordys.crm.system.dto.field.TextAreaField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.RuleProp;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
@@ -27,18 +39,23 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class BaseResourceFieldServiceTest {
     private ApplicationContext previousContext;
+    private MessageSource previousMessageSource;
 
     @BeforeEach
     void saveContext() {
         previousContext = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class, "context");
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        new Translator().setMessageSource(new StaticMessageSource());
     }
 
     @AfterEach
@@ -46,6 +63,83 @@ class BaseResourceFieldServiceTest {
         CustomFormDataFieldService.clearFormKey();
         OrganizationContext.clear();
         new CommonBeanFactory().setApplicationContext(previousContext);
+        new Translator().setMessageSource(previousMessageSource);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SUB_PRODUCT", "SUB_PRICE", "SERIAL_NUMBER", "FORMULA", "STATISTIC", "ATTACHMENT", "PICTURE", "DIVIDER"})
+    void batchUpdateRejectsUnsupportedFieldTypes(String type) {
+        InputField field = new InputField();
+        field.setType(type);
+        assertThrows(GenericException.class, () -> checkBatchField(field, "新值"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"system", "readonly", "child", "reference"})
+    void batchUpdateRejectsDisplayAndSubtableChildFields(String scope) {
+        InputField field = new InputField();
+        field.setType("INPUT");
+        switch (scope) {
+            case "system" -> field.setSys(true);
+            case "readonly" -> field.setEditable(false);
+            case "child" -> field.setSubTableFieldId("subtable");
+            case "reference" -> field.setResourceFieldId("source");
+        }
+        assertThrows(GenericException.class, () -> checkBatchField(field, "新值"));
+    }
+
+    @Test
+    void batchUpdateRejectsSubtableChildWithoutParentMarker() {
+        InputField child = new InputField();
+        child.setType("INPUT");
+        ProductSubField subtable = new ProductSubField();
+        subtable.setId("subtable");
+        subtable.setType("SUB_PRODUCT");
+        subtable.setSubFields(List.of(child));
+        assertThrows(GenericException.class, () -> checkBatchField(child, "新值", List.of(subtable)));
+        assertEquals(child, new ContractPaymentPlanFieldService().getAndCheckField("field-1", "org-1"));
+    }
+
+    @Test
+    void batchUpdateValidatesRequiredAndNumberValuesAndResolvesBusinessKey() {
+        InputField name = new InputField();
+        name.setType("INPUT");
+        name.setInternalKey("contractPaymentPlanName");
+        name.setRules(List.of(new RuleProp("required")));
+        assertThrows(GenericException.class, () -> checkBatchField(name, " "));
+        assertEquals("name", checkBatchField(name, "新名称").getBusinessKey());
+
+        InputNumberField amount = new InputNumberField();
+        amount.setType("INPUT_NUMBER");
+        assertThrows(GenericException.class, () -> checkBatchField(amount, "无效金额"));
+        assertEquals(amount, checkBatchField(amount, 100));
+
+        TextAreaField note = new TextAreaField();
+        note.setType("TEXTAREA");
+        assertEquals(note, checkBatchField(note, null));
+    }
+
+    private BaseField checkBatchField(BaseField field, Object value) {
+        return checkBatchField(field, value, List.of(field));
+    }
+
+    private BaseField checkBatchField(BaseField field, Object value, List<BaseField> topLevelFields) {
+        ModuleFormService forms = mock(ModuleFormService.class);
+        ApplicationContext context = mock(ApplicationContext.class);
+        when(context.getBean(ModuleFormService.class)).thenReturn(forms);
+        new CommonBeanFactory().setApplicationContext(context);
+        field.setId("field-1");
+        ModuleFormConfigDTO config = new ModuleFormConfigDTO();
+        config.setFields(topLevelFields);
+        when(forms.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "org-1"))
+                .thenReturn(config);
+        when(forms.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "org-1"))
+                .thenReturn(List.of(field));
+        doCallRealMethod().when(forms).setFieldBusinessParam(any());
+        ResourceBatchEditRequest request = new ResourceBatchEditRequest();
+        request.setFieldId(field.getId());
+        request.setFieldValue(value);
+        return new ContractPaymentPlanFieldService().getAndCheckBatchUpdateField(request, "org-1");
     }
 
     @Test

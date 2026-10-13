@@ -370,6 +370,33 @@
     </sql>
 
 
+    <update id="batchUpdate">
+        UPDATE contract_payment_plan
+        <set>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'owner'">
+                owner = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'contractId'">
+                contract_id = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'planAmount'">
+                plan_amount = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'planEndTime'">
+                plan_end_time = #{request.fieldValue},
+            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser}
+        </set>
+        WHERE id IN
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
     <update id="updatePaymentPlan">
         update contract_payment_plan
         <set>

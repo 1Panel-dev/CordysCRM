@@ -1,6 +1,7 @@
 package cn.cordys.common.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.CommonResultCode;
 import cn.cordys.common.context.SourceDetailResolveContext;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceField;
@@ -19,6 +20,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.service.CustomFormDataFieldService;
 import cn.cordys.crm.system.constants.FieldSourceType;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -1424,6 +1426,33 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         return flattenFormFields.stream().filter(f -> fieldId.equals(f.getId()))
                 .findFirst()
                 .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
+    }
+
+    /**
+     * 仅允许批量编辑顶层表单字段，并校验字段范围和字段值。
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public BaseField getAndCheckBatchUpdateField(ResourceBatchEditRequest request, String organizationId) {
+        ModuleFormService forms = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class));
+        // 平铺字段不保证带有子表标记，从顶层查找可避免把子表内部字段当作普通字段写入。
+        BaseField field = forms.getBusinessFormConfig(getFormKey(), organizationId).getFields().stream()
+                .filter(f -> request.getFieldId().equals(f.getId()))
+                .findFirst()
+                .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
+        if (field.isSys() || Boolean.FALSE.equals(field.getEditable()) || field.isSubField()
+                || field.isSerialNumber() || field.isAttachment()
+                || StringUtils.isNotBlank(field.getSubTableFieldId()) || StringUtils.isNotBlank(field.getResourceFieldId())
+                || Strings.CS.equalsAny(field.getType(), FieldType.FORMULA.name(), FieldType.STATISTIC.name(), FieldType.DIVIDER.name())) {
+            throw new GenericException(Translator.get("module.field.not_match_type"));
+        }
+        if (field.needRequireCheck() && !isNotBlank(request.getFieldValue())) {
+            throw new GenericException(CommonResultCode.FIELD_VALIDATE_ERROR,
+                    Translator.getWithArgs("field_validate_error", field.getName()));
+        }
+        AbstractModuleFieldResolver resolver = ModuleFieldResolverFactory.getResolver(field.getType());
+        resolver.validate(field, request.getFieldValue());
+        forms.setFieldBusinessParam(field);
+        return field;
     }
 
     /**
