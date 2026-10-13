@@ -6,10 +6,11 @@ import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 public class CustomerFieldUtils {
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerListResponse data) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerListResponse data, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("owner", data.getOwnerName());
@@ -24,7 +25,7 @@ public class CustomerFieldUtils {
         systemFieldMap.put("recyclePoolName", data.getRecyclePoolName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         return systemFieldMap;
     }
