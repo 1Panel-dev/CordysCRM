@@ -13,6 +13,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.form.domain.*;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
@@ -73,6 +74,8 @@ public class CustomFormService {
     private ExtCustomFormDataMapper extCustomFormDataMapper;
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
@@ -370,6 +373,10 @@ public class CustomFormService {
 
         // 删除表单角色和成员
         deleteCustomFormRoleAndUser(id);
+
+        // 级联删除该表单类型下的审批流（含审批中实例与待办的清理）。
+        // 需在删除表单数据之前执行，否则清理审批状态时会查不到对应的表单数据。
+        approvalFlowService.deleteByFormType(id, orgId);
 
         // 删除表单数据（多表联删，一次扫描）
         extCustomFormDataMapper.deleteFormDataByCustomFormId(id);

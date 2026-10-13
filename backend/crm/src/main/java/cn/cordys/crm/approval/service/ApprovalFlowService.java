@@ -547,6 +547,60 @@ public class ApprovalFlowService {
     }
 
     /**
+     * 按表单类型删除审批流，用于自定义表单被删除时的级联清理。
+     * 表单已不存在，审批流配置不再有归属，因此这里是物理删除（主表、版本、节点及其关联配置），
+     * 而非 {@link #delete(String, String)} 的软删除；
+     * 审批中的实例与待办仍走 {@link ApprovalInstanceService#clearApprovingInstanceOfFlow(String)} 清理。
+     * 因为是级联清理，不做权限校验，也不记录审批流删除日志（调用方已有自身删除日志）。
+     *
+     * @param formType       表单类型，自定义表单场景下为自定义表单ID
+     * @param organizationId 组织ID
+     */
+    public void deleteByFormType(String formType, String organizationId) {
+        if (StringUtils.isBlank(formType) || StringUtils.isBlank(organizationId)) {
+            return;
+        }
+        ApprovalFlow criteria = new ApprovalFlow();
+        criteria.setFormType(formType);
+        criteria.setDeleted(false);
+        criteria.setOrganizationId(organizationId);
+        List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
+        if (CollectionUtils.isEmpty(flows)) {
+            return;
+        }
+
+        for (ApprovalFlow flow : flows) {
+            // 先清理审批中的资源与待办：该步骤依赖 flow_version 关联查询，需在删除版本之前执行
+            approvalInstanceService.clearApprovingInstanceOfFlow(flow.getId());
+            // 物理删除审批流配置
+            deleteFlowConfig(flow.getId());
+        }
+    }
+
+    /**
+     * 物理删除审批流及其全部配置：主表、版本表，以及版本下的节点、审批人/抄送配置、条件配置、节点连线。
+     */
+    private void deleteFlowConfig(String flowId) {
+        ApprovalFlowVersion versionCriteria = new ApprovalFlowVersion();
+        versionCriteria.setFlowId(flowId);
+        List<String> versionIds = approvalFlowVersionMapper.select(versionCriteria).stream()
+                .map(ApprovalFlowVersion::getId)
+                .toList();
+        if (CollectionUtils.isNotEmpty(versionIds)) {
+            approvalNodeMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNode>()
+                    .in(ApprovalNode::getFlowVersionId, versionIds));
+            approvalNodeApproverMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeApprover>()
+                    .in(ApprovalNodeApprover::getFlowVersionId, versionIds));
+            approvalNodeConditionMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeCondition>()
+                    .in(ApprovalNodeCondition::getFlowVersionId, versionIds));
+            approvalNodeLinkMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeLink>()
+                    .in(ApprovalNodeLink::getFlowVersionId, versionIds));
+            approvalFlowVersionMapper.deleteByIds(versionIds);
+        }
+        approvalFlowMapper.deleteByIds(List.of(flowId));
+    }
+
+    /**
      * 启用/禁用审批流
      */
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE, resourceId = "{#id}")
