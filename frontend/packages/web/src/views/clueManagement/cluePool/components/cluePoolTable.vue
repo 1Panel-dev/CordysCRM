@@ -89,7 +89,8 @@
     :pool-id="poolId"
     :detail="activeClue"
     :hidden-columns="hiddenColumns"
-    @remove="removeItemFromList(activeClue?.id || '')"
+    @remove="handleOverviewRemove"
+    @refresh="searchData(undefined, undefined, activeClue?.id || '')"
     @freeze="openFreezeModal('freeze')"
     @unfreeze="openFreezeModal('unfreeze')"
   />
@@ -114,6 +115,7 @@
     v-model:field-list="fieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CLUE_POOL"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
   <CrmFreezeModal
@@ -135,6 +137,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CluePoolListItem } from '@lib/shared/models/clue';
@@ -150,6 +153,8 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFreezeTag from '@/components/business/crm-freeze-modal/freezeTag.vue';
   import CrmFreezeModal from '@/components/business/crm-freeze-modal/index.vue';
@@ -173,6 +178,9 @@
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
+  import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -264,7 +272,81 @@
   };
 
   const tableRefreshId = ref(0);
-  const tableRemoveRefreshId = ref('');
+  const tableRemoveRefreshSignal = ref({ id: '', key: 0, reload: false });
+  const activeTab = ref();
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+
+  const cluePoolDeleteRolePermissions = ['CLUE_MANAGEMENT_POOL:DELETE'];
+  const clueApprovalDeletePermissions = ['CLUE_MANAGEMENT:DELETE'];
+  const clueApprovalReadPermissions = ['CLUE_MANAGEMENT:READ'];
+
+  const {
+    initApprovalPermission,
+    resolveRowActions,
+    enableApproval,
+    deleteExecute,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<CluePoolListItem>({
+    formType: FormDesignKeyEnum.CLUE,
+    dataActionMap: {
+      delete: {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: clueApprovalDeletePermissions,
+      },
+    },
+    ignoreRolePermissionCheck: true,
+  });
+
+  const batchEditApprovalTip = computed(() =>
+    hasAnyPermission(['CLUE_MANAGEMENT_POOL:UPDATE'])
+      ? getApprovalActionTip(['CLUE_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
+      : ''
+  );
+  const batchDeleteApprovalTip = computed(() =>
+    hasAnyPermission(cluePoolDeleteRolePermissions)
+      ? getApprovalActionTip(clueApprovalDeletePermissions, 'common.batchDeleteApprovalTip')
+      : ''
+  );
+
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CLUE,
+  });
+
+  function hasPoolApprovalPermission(row: CluePoolListItem, rolePermissions: string[], approvalPermissions: string[]) {
+    return hasAnyPermission(rolePermissions) && hasApprovalScopedPermission(row, approvalPermissions);
+  }
+
+  function splitOperationActions(actions: ActionsItem[]) {
+    const realVisibleNumber = 2;
+
+    if (actions.length <= realVisibleNumber) {
+      return {
+        groupList: actions,
+        moreList: [] as ActionsItem[],
+      };
+    }
+
+    const moreList = actions.slice(realVisibleNumber);
+
+    return {
+      groupList: [
+        ...actions.slice(0, realVisibleNumber),
+        ...(moreList.length === 1
+          ? moreList
+          : [
+              {
+                label: 'more',
+                key: 'more',
+                slotName: 'more',
+              },
+            ]),
+      ],
+      moreList: moreList.length === 1 ? [] : moreList,
+    };
+  }
 
   function handleRefresh() {
     checkedRowKeys.value = [];
@@ -289,6 +371,7 @@
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
+          checkedRowKeys.value = [];
         }
       },
     });
@@ -315,15 +398,16 @@
   function handleBatchDelete() {
     openModal({
       type: 'error',
+      size: 'medium',
       title: t('clue.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('clue.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      content: renderApprovalConfirmContent(t('clue.batchDeleteContentTip'), batchDeleteApprovalTip.value),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await batchDeleteCluePool(checkedRowKeys.value as string[]);
           handleRefresh();
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -341,13 +425,17 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('clue.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteCluePool(row.id);
-          Message.success(t('common.deleteSuccess'));
-          tableRemoveRefreshId.value = row.id;
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          tableRemoveRefreshSignal.value = {
+            id: row.id,
+            key: tableRemoveRefreshSignal.value.key + 1,
+            reload: deleteExecute.value,
+          };
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -365,7 +453,11 @@
         poolId: poolId.value,
       });
       Message.success(t('common.claimSuccess'));
-      tableRemoveRefreshId.value = row.id;
+      tableRemoveRefreshSignal.value = {
+        id: row.id,
+        key: tableRemoveRefreshSignal.value.key + 1,
+        reload: false,
+      };
       openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
         id: row.id,
         transitionType: row.transitionType,
@@ -395,7 +487,11 @@
           });
           Message.success(t('common.distributeSuccess'));
           distributeForm.value = { ...defaultTransferForm };
-          tableRemoveRefreshId.value = id;
+          tableRemoveRefreshSignal.value = {
+            id,
+            key: tableRemoveRefreshSignal.value.key + 1,
+            reload: false,
+          };
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -462,6 +558,16 @@
   function handleActionSelect(row: CluePoolListItem, actionKey: string) {
     activeClue.value = row;
     switch (actionKey) {
+      case 'review':
+        reviewByResourceId(row.id, {
+          onSuccess: handleRefresh,
+        });
+        break;
+      case 'revoke':
+        revokeByResourceId(row.id, {
+          onSuccess: handleRefresh,
+        });
+        break;
       case 'pop-claim':
         handleClaim(row);
         break;
@@ -482,14 +588,60 @@
     }
   }
 
-  const activeTab = ref();
-  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
-  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+  function getRowOperation(row: CluePoolListItem) {
+    const approvalActions = resolveRowActions(row);
+    const reviewActions = approvalActions.filter((item) => ['review', 'revoke'].includes(item.key || ''));
+    const deleteAction = approvalActions.find((item) => item.key === 'delete');
+    const poolActions = (
+      [
+        {
+          label: t('common.claim'),
+          key: 'claim',
+          permission: ['CLUE_MANAGEMENT_POOL:PICK'],
+          popConfirmProps: {
+            loading: claimLoading.value,
+            title: t('clue.claimTip', { name: characterLimit(row.name) }),
+            positiveText: t('common.claim'),
+            iconType: 'primary',
+          },
+        },
+        {
+          label: t('common.distribute'),
+          key: 'distribute',
+          permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
+          popConfirmProps: {
+            loading: distributeLoading.value,
+            title: t('common.distribute'),
+            positiveText: t('common.confirm'),
+            iconType: 'primary',
+          },
+          popSlotContent: 'distributePopContent',
+        },
+        {
+          label: t(row.frozen ? 'common.unfreeze' : 'common.freeze'),
+          key: row.frozen ? 'unfreeze' : 'freeze',
+          permission: ['CLUE_MANAGEMENT_POOL:FREEZE'],
+        },
+      ] as ActionsItem[]
+    ).filter((item) => item.key && !(row.frozen ? ['freeze', 'claim', 'distribute'] : ['unfreeze']).includes(item.key));
+    const actions = [
+      ...reviewActions,
+      ...poolActions,
+      ...(deleteAction && hasAnyPermission(cluePoolDeleteRolePermissions)
+        ? [{ ...deleteAction, permission: cluePoolDeleteRolePermissions }]
+        : []),
+    ];
+
+    return splitOperationActions(actions);
+  }
 
   defineExpose({
     handleAdvanceFilter,
     handleSearchData,
   });
+
+  await initApprovalPermission();
+
   const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     containerClass: `.crm-clue-pool-table-${props.formKey}`,
@@ -499,70 +651,42 @@
           key: 'operation',
           width: 200,
           fixed: 'right',
-          render: (row: CluePoolListItem) =>
-            h(
-              CrmOperationButton,
-              {
-                groupList: (
-                  [
-                    {
-                      label: t('common.claim'),
-                      key: 'claim',
-                      permission: ['CLUE_MANAGEMENT_POOL:PICK'],
-                      popConfirmProps: {
-                        loading: claimLoading.value,
-                        title: t('clue.claimTip', { name: characterLimit(row.name) }),
-                        positiveText: t('common.claim'),
-                        iconType: 'primary',
-                      },
+          render: (row: CluePoolListItem) => {
+            const operation = getRowOperation(row);
+
+            return operation.groupList.length
+              ? h(
+                  CrmOperationButton,
+                  {
+                    groupList: operation.groupList,
+                    moreList: operation.moreList,
+                    onSelect: (key: string) => handleActionSelect(row, key),
+                    onCancel: () => {
+                      distributeForm.value = { ...defaultTransferForm };
                     },
-                    {
-                      label: t('common.distribute'),
-                      key: 'distribute',
-                      permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
-                      popConfirmProps: {
-                        loading: distributeLoading.value,
-                        title: t('common.distribute'),
-                        positiveText: t('common.confirm'),
-                        iconType: 'primary',
-                      },
-                      popSlotContent: 'distributePopContent',
+                  },
+                  {
+                    distributePopContent: () => {
+                      return h(TransferForm, {
+                        class: 'w-[320px] mt-[16px]',
+                        form: distributeForm.value,
+                        ref: distributeFormRef,
+                      });
                     },
-                    {
-                      label: t(row.frozen ? 'common.unfreeze' : 'common.freeze'),
-                      key: row.frozen ? 'unfreeze' : 'freeze',
-                      permission: ['CLUE_MANAGEMENT_POOL:FREEZE'],
-                    },
-                    {
-                      label: t('common.delete'),
-                      key: 'delete',
-                      permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
-                    },
-                  ] as ActionsItem[]
-                ).filter(
-                  (item) =>
-                    item.key && !(row.frozen ? ['freeze', 'claim', 'distribute'] : ['unfreeze']).includes(item.key)
-                ),
-                onSelect: (key: string) => handleActionSelect(row, key),
-                onCancel: () => {
-                  distributeForm.value = { ...defaultTransferForm };
-                },
-              },
-              {
-                distributePopContent: () => {
-                  return h(TransferForm, {
-                    class: 'w-[320px] mt-[16px]',
-                    form: distributeForm.value,
-                    ref: distributeFormRef,
-                  });
-                },
-              }
-            ),
+                  }
+                )
+              : '-';
+          },
         },
     specialRender: {
       name: (row: CluePoolListItem) => {
+        const canOpenDetail = hasPoolApprovalPermission(
+          row,
+          ['CLUE_MANAGEMENT_POOL:READ'],
+          clueApprovalReadPermissions
+        );
         const nameNode =
-          props.isLimitShowDetail && row.hasPermission === false
+          (props.isLimitShowDetail && row.hasPermission === false) || !canOpenDetail
             ? h(CrmNameTooltip, { text: row.name })
             : h(
                 CrmTableButton,
@@ -592,10 +716,24 @@
             : null,
         ]);
       },
+      approvalStatus: (row: CluePoolListItem) =>
+        h(CrmApprovalPopover, {
+          status: row.approvalStatus ?? ProcessStatusEnum.NONE,
+          formKey: FormDesignKeyEnum.CLUE,
+          sourceId: row.id,
+          showMore: hasPoolApprovalPermission(row, ['CLUE_MANAGEMENT_POOL:READ'], clueApprovalReadPermissions),
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            activeClue.value = row;
+            poolId.value = row.poolId ?? poolId.value;
+            showOverviewDrawer.value = true;
+          },
+        }),
     },
     permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
+    enableApproval,
   });
 
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
@@ -684,6 +822,14 @@
     () =>
       [
         {
+          title: t('common.approvalStatus'),
+          dataIndex: 'approvalStatus',
+          type: FieldTypeEnum.SELECT_MULTIPLE,
+          selectProps: {
+            options: processStatusOptions,
+          },
+        },
+        {
           title: t('customer.recycleReason'),
           dataIndex: 'reasonId',
           type: FieldTypeEnum.SELECT_MULTIPLE,
@@ -715,12 +861,25 @@
     };
   }
 
+  function refreshOrRemoveItem(id: string, reload = false) {
+    if (!id) {
+      return;
+    }
+    if (reload) {
+      searchData();
+      return;
+    }
+    removeItemFromList(id);
+  }
+
+  function handleOverviewRemove() {
+    refreshOrRemoveItem(activeClue.value?.id || '', deleteExecute.value);
+  }
+
   watch(
-    () => tableRemoveRefreshId.value,
+    () => tableRemoveRefreshSignal.value,
     (val) => {
-      if (val) {
-        removeItemFromList(val);
-      }
+      refreshOrRemoveItem(val.id, val.reload);
     }
   );
 

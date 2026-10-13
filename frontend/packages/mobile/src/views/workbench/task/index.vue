@@ -396,21 +396,35 @@
     [ApprovalResourceTypeEnum.ORDER]: FormDesignKeyEnum.ORDER_SNAPSHOT,
     [ApprovalResourceTypeEnum.INVOICE]: FormDesignKeyEnum.INVOICE_SNAPSHOT,
   };
-  function getDetailFormKey(type: string) {
-    return formKeyMap[type] || FormDesignKeyEnum.CUSTOM_FORM;
+  type ApprovalTodoItemWithPool = ApprovalTodoItem & {
+    inSharedPool?: boolean;
+    poolId?: string | number;
+  };
+
+  function getDetailFormKey(item: ApprovalTodoItemWithPool) {
+    if (item.resourceType === ApprovalResourceTypeEnum.CLUE && item.inSharedPool) {
+      return FormDesignKeyEnum.CLUE_POOL;
+    }
+    if (item.resourceType === ApprovalResourceTypeEnum.CUSTOMER && item.inSharedPool) {
+      return FormDesignKeyEnum.CUSTOMER_OPEN_SEA;
+    }
+    return formKeyMap[item.resourceType] || FormDesignKeyEnum.CUSTOM_FORM;
   }
-  function goDetail(item: ApprovalTodoItem) {
+
+  function goDetail(item: ApprovalTodoItemWithPool) {
     if (item.resourceNotFound) {
       return;
     }
+
     router.push({
       name: WorkbenchRouteEnum.WORKBENCH_APPROVAL,
       query: {
         id: item.resourceId,
-        formKey: getDetailFormKey(item.resourceType),
+        formKey: getDetailFormKey(item),
         customFormId: formKeyMap[item.resourceType] ? undefined : item.resourceType,
         taskId: item.approvalTaskId,
         approvalStatus: item.approvalOperation,
+        poolId: item.poolId ? item.poolId : undefined,
       },
     });
   }

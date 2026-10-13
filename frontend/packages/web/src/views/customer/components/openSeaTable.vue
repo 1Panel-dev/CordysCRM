@@ -92,7 +92,7 @@
     :hidden-columns="hiddenColumns"
     :refreshDetailKey="refreshDetailKey"
     @change="searchData(undefined, undefined, activeRow.id)"
-    @delete="removeItemFromList(activeRow.id)"
+    @delete="handleOverviewDelete"
     @freeze="openFreezeModal($event, 'freeze')"
     @unfreeze="openFreezeModal($event, 'unfreeze')"
   />
@@ -116,6 +116,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
   <CrmFreezeModal
@@ -137,6 +138,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
@@ -151,6 +153,8 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFreezeTag from '@/components/business/crm-freeze-modal/freezeTag.vue';
   import CrmFreezeModal from '@/components/business/crm-freeze-modal/index.vue';
@@ -173,6 +177,9 @@
     pickOpenSeaCustomer,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -214,6 +221,8 @@
   const showOverviewDrawer = ref(false);
   const batchTableQueryParams = ref<TableQueryParams>({});
   const activeTab = ref();
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
     if (option.editable) {
@@ -266,7 +275,82 @@
   };
 
   const tableRefreshId = ref(0);
-  const tableRemoveRefreshId = ref('');
+  const tableRemoveRefreshSignal = ref({ id: '', key: 0, reload: false });
+
+  const openSeaDeleteRolePermissions = ['CUSTOMER_MANAGEMENT_POOL:DELETE'];
+  const customerApprovalDeletePermissions = ['CUSTOMER_MANAGEMENT:DELETE'];
+  const customerApprovalReadPermissions = ['CUSTOMER_MANAGEMENT:READ'];
+
+  const {
+    initApprovalPermission,
+    resolveRowActions,
+    enableApproval,
+    deleteExecute,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.CUSTOMER,
+    dataActionMap: {
+      delete: {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: customerApprovalDeletePermissions,
+      },
+    },
+    ignoreRolePermissionCheck: true,
+  });
+
+  const batchEditApprovalTip = computed(() =>
+    hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:UPDATE'])
+      ? getApprovalActionTip(['CUSTOMER_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
+      : ''
+  );
+  const batchDeleteApprovalTip = computed(() =>
+    hasAnyPermission(openSeaDeleteRolePermissions)
+      ? getApprovalActionTip(customerApprovalDeletePermissions, 'common.batchDeleteApprovalTip')
+      : ''
+  );
+
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CUSTOMER,
+  });
+
+  function hasOpenSeaApprovalPermission(
+    row: Record<string, any>,
+    rolePermissions: string[],
+    approvalPermissions: string[]
+  ) {
+    return hasAnyPermission(rolePermissions) && hasApprovalScopedPermission(row, approvalPermissions);
+  }
+
+  function splitOperationActions(actions: ActionsItem[]) {
+    const realVisibleNumber = 2;
+
+    if (actions.length <= realVisibleNumber) {
+      return {
+        groupList: actions,
+        moreList: [] as ActionsItem[],
+      };
+    }
+
+    const moreList = actions.slice(realVisibleNumber);
+
+    return {
+      groupList: [
+        ...actions.slice(0, realVisibleNumber),
+        ...(moreList.length === 1
+          ? moreList
+          : [
+              {
+                label: 'more',
+                key: 'more',
+                slotName: 'more',
+              },
+            ]),
+      ],
+      moreList: moreList.length === 1 ? [] : moreList,
+    };
+  }
 
   // 批量领取
   function handleBatchClaim() {
@@ -325,9 +409,10 @@
   function handleBatchDelete() {
     openModal({
       type: 'error',
+      size: 'medium',
       title: t('customer.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('customer.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      content: renderApprovalConfirmContent(t('customer.batchDeleteContentTip'), batchDeleteApprovalTip.value),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
@@ -338,7 +423,7 @@
           });
           checkedRowKeys.value = [];
           tableRefreshId.value += 1;
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -385,11 +470,6 @@
         key: 'unfreeze',
         permission: ['CUSTOMER_MANAGEMENT_POOL:FREEZE'],
       },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
-      },
     ];
   });
 
@@ -399,13 +479,17 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('customer.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteOpenSeaCustomer(row.id);
-          Message.success(t('common.deleteSuccess'));
-          tableRemoveRefreshId.value = row.id;
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          tableRemoveRefreshSignal.value = {
+            id: row.id,
+            key: tableRemoveRefreshSignal.value.key + 1,
+            reload: deleteExecute.value,
+          };
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -422,7 +506,11 @@
         poolId: openSea.value,
       });
       Message.success(t('common.claimSuccess'));
-      tableRemoveRefreshId.value = row.id;
+      tableRemoveRefreshSignal.value = {
+        id: row.id,
+        key: tableRemoveRefreshSignal.value.key + 1,
+        reload: false,
+      };
       openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
         id: row.id,
       });
@@ -442,7 +530,11 @@
         assignUserId: distributeForm.value.owner,
       });
       Message.success(t('common.distributeSuccess'));
-      tableRemoveRefreshId.value = id;
+      tableRemoveRefreshSignal.value = {
+        id,
+        key: tableRemoveRefreshSignal.value.key + 1,
+        reload: false,
+      };
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -508,6 +600,20 @@
   function handleActionSelect(row: any, actionKey: string) {
     activeRow.value = row;
     switch (actionKey) {
+      case 'review':
+        reviewByResourceId(row.id, {
+          onSuccess: () => {
+            tableRefreshId.value += 1;
+          },
+        });
+        break;
+      case 'revoke':
+        revokeByResourceId(row.id, {
+          onSuccess: () => {
+            tableRefreshId.value += 1;
+          },
+        });
+        break;
       case 'pop-claim':
         handleClaim(row);
         break;
@@ -528,18 +634,35 @@
     }
   }
 
+  function getRowOperation(row: any) {
+    const approvalActions = resolveRowActions(row);
+    const reviewActions = approvalActions.filter((item) => ['review', 'revoke'].includes(item.key || ''));
+    const deleteAction = approvalActions.find((item) => item.key === 'delete');
+    const poolActions = operationGroupList.value.filter(
+      (item) => item.key && !(row.frozen ? ['freeze', 'claim', 'distribute'] : ['unfreeze']).includes(item.key)
+    );
+    const actions = [
+      ...reviewActions,
+      ...poolActions,
+      ...(deleteAction && hasAnyPermission(openSeaDeleteRolePermissions)
+        ? [{ ...deleteAction, permission: openSeaDeleteRolePermissions }]
+        : []),
+    ];
+
+    return splitOperationActions(actions);
+  }
+
   const hiddenColumns = computed<string[]>(() => {
     const openSeaSetting = openSeaOptions.value.find((item) => item.id === openSea.value);
     return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
   });
 
-  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
-  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
-
   defineExpose({
     handleAdvanceFilter,
     handleSearchData,
   });
+
+  await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
@@ -553,32 +676,41 @@
               ? operationGroupList.value.length * 80
               : operationGroupList.value.length * 50,
           fixed: 'right',
-          render: (row: any) =>
-            h(
-              CrmOperationButton,
-              {
-                groupList: operationGroupList.value.filter(
-                  (item) =>
-                    item.key && !(row.frozen ? ['freeze', 'claim', 'distribute'] : ['unfreeze']).includes(item.key)
-                ),
-                onSelect: (key: string) => handleActionSelect(row, key),
-                onCancel: () => {
-                  distributeForm.value.owner = null;
-                },
-              },
-              {
-                distributePopContent: () => {
-                  return h(TransferForm, {
-                    class: 'w-[320px] mt-[16px]',
-                    form: distributeForm.value,
-                    ref: distributeFormRef,
-                  });
-                },
-              }
-            ),
+          render: (row: any) => {
+            const operation = getRowOperation(row);
+
+            return operation.groupList.length
+              ? h(
+                  CrmOperationButton,
+                  {
+                    groupList: operation.groupList,
+                    moreList: operation.moreList,
+                    onSelect: (key: string) => handleActionSelect(row, key),
+                    onCancel: () => {
+                      distributeForm.value.owner = null;
+                    },
+                  },
+                  {
+                    distributePopContent: () => {
+                      return h(TransferForm, {
+                        class: 'w-[320px] mt-[16px]',
+                        form: distributeForm.value,
+                        ref: distributeFormRef,
+                      });
+                    },
+                  }
+                )
+              : '-';
+          },
         },
     specialRender: {
       name: (row: any) => {
+        const canOpenDetail = hasOpenSeaApprovalPermission(
+          row,
+          ['CUSTOMER_MANAGEMENT_POOL:READ'],
+          customerApprovalReadPermissions
+        );
+
         return h(
           'div',
           { class: 'flex max-w-full items-center gap-[12px]' },
@@ -587,7 +719,7 @@
               h(
                 'div',
                 { class: 'min-w-0 flex-1 overflow-hidden' },
-                props.isLimitShowDetail && row.hasPermission === false
+                (props.isLimitShowDetail && row.hasPermission === false) || !canOpenDetail
                   ? h(CrmNameTooltip, { text: row.name })
                   : h(
                       CrmTableButton,
@@ -617,10 +749,28 @@
           }
         );
       },
+      approvalStatus: (row: any) =>
+        h(CrmApprovalPopover, {
+          status: row.approvalStatus ?? ProcessStatusEnum.NONE,
+          formKey: FormDesignKeyEnum.CUSTOMER,
+          sourceId: row.id,
+          showMore: hasOpenSeaApprovalPermission(
+            row,
+            ['CUSTOMER_MANAGEMENT_POOL:READ'],
+            customerApprovalReadPermissions
+          ),
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            activeRow.value = row;
+            openSea.value = row.poolId ?? openSea.value;
+            showOverviewDrawer.value = true;
+          },
+        }),
     },
     permission: ['CUSTOMER_MANAGEMENT_POOL:PICK', 'CUSTOMER_MANAGEMENT_POOL:ASSIGN', 'CUSTOMER_MANAGEMENT_POOL:DELETE'],
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
+    enableApproval,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   batchTableQueryParams.value = tableQueryParams.value;
@@ -735,6 +885,14 @@
     () =>
       [
         {
+          title: t('common.approvalStatus'),
+          dataIndex: 'approvalStatus',
+          type: FieldTypeEnum.SELECT_MULTIPLE,
+          selectProps: {
+            options: processStatusOptions,
+          },
+        },
+        {
           title: t('customer.recycleReason'),
           dataIndex: 'reasonId',
           type: FieldTypeEnum.SELECT_MULTIPLE,
@@ -767,12 +925,25 @@
     };
   }
 
+  function refreshOrRemoveItem(id: string, reload = false) {
+    if (!id) {
+      return;
+    }
+    if (reload) {
+      searchData();
+      return;
+    }
+    removeItemFromList(id);
+  }
+
+  function handleOverviewDelete() {
+    refreshOrRemoveItem(activeRow.value?.id || '', deleteExecute.value);
+  }
+
   watch(
-    () => tableRemoveRefreshId.value,
+    () => tableRemoveRefreshSignal.value,
     (val) => {
-      if (val) {
-        removeItemFromList(val);
-      }
+      refreshOrRemoveItem(val.id, val.reload);
     }
   );
 

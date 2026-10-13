@@ -38,7 +38,7 @@
       <template #item="{ item }">
         <CrmListCommonItem
           :item="item"
-          :actions="actions"
+          :actions="getListItemActions(item)"
           resource-type="customer"
           @click="goDetail"
         ></CrmListCommonItem>
@@ -57,11 +57,18 @@
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
-  import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
+  import CrmListCommonItem, {
+    type CrmListCommonItemActionsItem,
+  } from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteOpenSeaCustomer, getOpenSeaCustomerList, getOpenSeaOptions, pickOpenSeaCustomer } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { CustomerRouteEnum } from '@/enums/routeEnum';
+
+  type OpenSeaActionItem = CrmListCommonItemActionsItem & { key: string };
 
   const { t } = useI18n();
   const router = useRouter();
@@ -76,7 +83,20 @@
       keyword: keyword.value,
     };
   });
-  const actions = [
+
+  const refreshList = () => {
+    crmListRef.value?.loadList(true);
+  };
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CUSTOMER,
+  });
+  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation({
+    formType: FormDesignKeyEnum.CUSTOMER,
+    ignoreRolePermissionCheck: true,
+    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+  });
+  const openSeaActions: OpenSeaActionItem[] = [
     {
       key: 'pick',
       label: t('common.pick'),
@@ -91,7 +111,7 @@
           });
           showSuccessToast(t('common.pickSuccess'));
           await sleep(300);
-          crmListRef.value?.loadList(true);
+          refreshList();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -115,37 +135,71 @@
         });
       },
     },
-    {
-      label: t('common.delete'),
-      icon: 'iconicon_delete',
-      permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
-      action: (item: any) => {
-        showConfirmDialog({
-          title: t('customer.deleteTitle'),
-          message: t('customer.deleteTip'),
-          confirmButtonText: t('common.confirmDelete'),
-          confirmButtonColor: 'var(--error-red)',
-          beforeClose: async (action) => {
-            if (action === 'confirm') {
-              try {
-                showLoadingToast(t('common.deleting'));
-                await deleteOpenSeaCustomer(item.id);
-                showSuccessToast(t('common.deleteSuccess'));
-                crmListRef.value?.loadList(true);
-                return Promise.resolve(true);
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.log(error);
-                return Promise.resolve(false);
-              }
-            } else {
-              return Promise.resolve(true);
-            }
-          },
-        });
-      },
-    },
   ];
+  function handleDelete(id: string) {
+    showConfirmDialog({
+      title: t('customer.deleteTitle'),
+      message: t('customer.deleteTip'),
+      confirmButtonText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
+      confirmButtonColor: 'var(--error-red)',
+      beforeClose: async (action) => {
+        if (action === 'confirm') {
+          try {
+            showLoadingToast(t('common.deleting'));
+            await deleteOpenSeaCustomer(id);
+            showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+            refreshList();
+            return Promise.resolve(true);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+            return Promise.resolve(false);
+          } finally {
+            closeToast();
+          }
+        } else {
+          return Promise.resolve(true);
+        }
+      },
+    });
+  }
+
+  const deleteAction: OpenSeaActionItem = {
+    key: 'delete',
+    label: t('common.delete'),
+    icon: 'iconicon_delete',
+    permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+    action: (item: any) => {
+      handleDelete(item.id);
+    },
+  };
+
+  function normalizeListAction(action: Record<string, any>): OpenSeaActionItem {
+    return {
+      ...action,
+      key: action.key,
+      label: action.label ?? action.text ?? '',
+      icon: action.icon ?? '',
+      action: action.action ?? (() => undefined),
+    };
+  }
+
+  function getListItemActions(item: any): CrmListCommonItemActionsItem[] {
+    const approvalActions = resolveRowActions(item, [deleteAction]);
+    const reviewActions = approvalActions
+      .filter((action) => ['review', 'revoke'].includes(action.key || ''))
+      .map(normalizeListAction);
+    const approvedDeleteAction = approvalActions.find((action) => action.key === 'delete');
+    const poolDeleteAction =
+      approvedDeleteAction && hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:DELETE'])
+        ? normalizeListAction({
+            ...approvedDeleteAction,
+            permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
+          })
+        : undefined;
+
+    return [...reviewActions, ...openSeaActions, ...(poolDeleteAction ? [poolDeleteAction] : [])];
+  }
 
   watch(
     () => activeOpenSea.value,
@@ -163,6 +217,7 @@
   }
 
   onActivated(() => {
+    initApprovalPermission();
     search();
   });
 
@@ -172,6 +227,7 @@
       query: {
         id: item.id,
         name: item.name,
+        poolId: activeOpenSea.value,
         needInitDetail: 'Y',
       },
     });
@@ -191,6 +247,7 @@
   }
 
   onBeforeMount(() => {
+    initApprovalPermission();
     init();
   });
 </script>
