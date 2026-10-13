@@ -26,6 +26,7 @@ import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
 import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -114,7 +115,7 @@ public class PoolClueController {
     public void delete(@PathVariable String id) {
         String poolId = poolClueService.getPoolIdByClueId(id);
         poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolClueService.delete(id);
+        poolClueService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
@@ -149,23 +150,23 @@ public class PoolClueController {
     @PostMapping("/batch-update")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_UPDATE)
     @Operation(summary = "批量更新线索")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         for (String id : request.getIds()) {
             String poolId = poolClueService.getPoolIdByClueId(id);
             poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         }
-        poolClueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolClueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch-delete")
     @Operation(summary = "批量删除线索")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE})
-    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+    public BatchAffectReasonResponse batchDelete(@RequestBody @NotEmpty List<String> ids) {
         for (String id : ids) {
             String poolId = poolClueService.getPoolIdByClueId(id);
             poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         }
-        poolClueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolClueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/export-all")

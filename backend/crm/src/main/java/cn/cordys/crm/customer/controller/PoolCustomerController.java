@@ -27,6 +27,7 @@ import cn.cordys.crm.system.dto.request.PoolBatchRequest;
 import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
 import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -114,7 +115,7 @@ public class PoolCustomerController {
     public void delete(@PathVariable String id) {
         String poolId = poolCustomerService.getPoolIdByCustomerId(id);
         poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolCustomerService.delete(id);
+        poolCustomerService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
@@ -149,23 +150,23 @@ public class PoolCustomerController {
     @PostMapping("/batch-delete")
     @Operation(summary = "批量删除客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
-    public void batchDelete(@Validated @RequestBody PoolBatchRequest request) {
+    public BatchAffectReasonResponse batchDelete(@Validated @RequestBody PoolBatchRequest request) {
         for (String id : request.getBatchIds()) {
             String poolId = poolCustomerService.getPoolIdByCustomerId(id);
             poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         }
-        poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch-update")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_UPDATE)
     @Operation(summary = "批量更新客户")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         for (String id : request.getIds()) {
             String poolId = poolCustomerService.getPoolIdByCustomerId(id);
             poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         }
-        poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/export-all")

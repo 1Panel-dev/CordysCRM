@@ -9,6 +9,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.exception.GenericException;
@@ -17,10 +18,16 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.*;
 import cn.cordys.crm.clue.dto.CluePoolDTO;
@@ -41,6 +48,7 @@ import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
 import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
@@ -126,6 +134,8 @@ public class PoolClueService {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private BaseService baseService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     /**
      * 获取当前用户线索池选项
@@ -252,6 +262,20 @@ public class PoolClueService {
     }
 
     /**
+     * 删除线索（带审批校验）
+     * <p>
+     * 线索池数据就是线索表里的一行, 审批同样走线索的 formType, 命中删除审批时由切面提审并跳过删除。
+     *
+     * @param id     线索ID
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     */
+    @HitApproval(formKey = FormKey.CLUE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        delete(id);
+    }
+
+    /**
      * 删除线索
      *
      * @param id 客户ID
@@ -308,26 +332,65 @@ public class PoolClueService {
     }
 
     /**
-     * 批量删除客户
+     * 批量删除线索
      *
-     * @param ids 客户ID集合
+     * @param ids    线索ID集合
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     * @return 删除结果: success 实际删除数, skip 已提交审批数, fail 不存在或无权操作数
      */
-    public void batchDelete(List<String> ids, String userId, String orgId) {
+    public BatchAffectReasonResponse batchDelete(List<String> ids, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(ids);
-        // 统计字段: 见 delete —— 公海这条路不经过 ClueService
-        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
-                FormKey.CLUE.getKey(), ids, OrganizationContext.getOrganizationId());
-        LambdaQueryWrapper<Clue> clueWrapper = new LambdaQueryWrapper<>();
-        clueWrapper.in(Clue::getId, ids);
-        clueMapper.deleteByLambda(clueWrapper);
-        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
+        if (CollectionUtils.isEmpty(clues)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(ids.size()).skip(0)
+                    .errorMessages(Translator.get("clue.not.exist")).build();
+        }
+        // 状态权限校验: 与线索批量删除一致, 过滤出当前用户有权删除的线索。
+        // 审批流的状态权限配置里登记的是 CLUE_MANAGEMENT:*, 线索池权限是另一个分组, 故按资源查线索权限、按角色校验线索池权限
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CLUE.getValue(),
+                clues,
+                PermissionConstants.CLUE_MANAGEMENT_DELETE,
+                orgId,
+                Clue::getId,
+                Clue::getApprovalStatus,
+                PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE
+        );
+        int fail = clues.size() - permittedIds.size();
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(fail).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
+        }
 
-        List<LogDTO> logs = clues.stream()
-                .map(clue ->
-                        new LogDTO(orgId, clue.getId(), userId, LogType.DELETE, LogModule.CLUE_POOL_INDEX, clue.getName())
-                )
-                .toList();
-        logService.batchAdd(logs);
+        // 命中删除审批流的线索不直接删除, 走审批
+        Map<String, String> nameMap = clues.stream()
+                .filter(clue -> permittedIds.contains(clue.getId()))
+                .collect(Collectors.toMap(Clue::getId, Clue::getName, (a, b) -> a));
+        List<String> approvalIds = CommonBeanFactory.getBean(ApprovalResourceService.class)
+                .batchDeleteTriggerApproval(permittedIds, FormKey.CLUE, orgId, userId, nameMap);
+        List<String> deleteIds = permittedIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+
+        if (!CollectionUtils.isEmpty(deleteIds)) {
+            // 统计字段: 见 delete —— 公海这条路不经过 ClueService
+            StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
+                    FormKey.CLUE.getKey(), deleteIds, orgId);
+            LambdaQueryWrapper<Clue> clueWrapper = new LambdaQueryWrapper<>();
+            clueWrapper.in(Clue::getId, deleteIds);
+            clueMapper.deleteByLambda(clueWrapper);
+            statisticFieldService.refreshAfterRelatedDelete(statisticScope);
+
+            List<LogDTO> logs = clues.stream()
+                    .filter(clue -> deleteIds.contains(clue.getId()))
+                    .map(clue ->
+                            new LogDTO(orgId, clue.getId(), userId, LogType.DELETE, LogModule.CLUE_POOL_INDEX, clue.getName())
+                    )
+                    .toList();
+            logService.batchAdd(logs);
+        }
+
+        return BatchAffectReasonResponse.builder()
+                .success(deleteIds.size()).fail(fail).skip(approvalIds.size())
+                .errorMessages(Translator.get("batch.delete.reason")).build();
     }
 
     public void freeze(PoolFreezeRequest request, String userId, String orgId) {
@@ -593,21 +656,55 @@ public class PoolClueService {
         logService.add(log);
     }
 
-    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
-
-        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
-            // 修改负责人，走批量分配的接口
-            PoolBatchAssignRequest batchAssignRequest = new PoolBatchAssignRequest();
-            batchAssignRequest.setBatchIds(request.getIds());
-            batchAssignRequest.setAssignUserId(request.getFieldValue().toString());
-            batchAssign(batchAssignRequest, batchAssignRequest.getAssignUserId(), organizationId, userId);
-            return;
+        List<Clue> originClues = clueMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originClues)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(request.getIds().size()).skip(0)
+                    .errorMessages(Translator.get("clue.not.exist")).build();
+        }
+        // 状态权限校验: 与线索批量编辑一致。放在负责人分支之前, 否则处于无权编辑状态(如审批中)的数据会从那条路径绕过去。
+        // 审批流的状态权限配置里登记的是 CLUE_MANAGEMENT:*, 线索池权限是另一个分组, 故按资源查线索权限、按角色校验线索池权限
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CLUE.getValue(),
+                originClues,
+                PermissionConstants.CLUE_MANAGEMENT_UPDATE,
+                organizationId,
+                Clue::getId,
+                Clue::getApprovalStatus,
+                PermissionConstants.CLUE_MANAGEMENT_POOL_UPDATE
+        );
+        int fail = originClues.size() - permittedIds.size();
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(fail).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
         }
 
-        List<Clue> originCustomers = clueMapper.selectByIds(request.getIds());
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
+            // 修改负责人就是一次分配, 分配不接审批, 走批量分配的接口
+            PoolBatchAssignRequest batchAssignRequest = new PoolBatchAssignRequest();
+            batchAssignRequest.setBatchIds(permittedIds);
+            batchAssignRequest.setAssignUserId(request.getFieldValue().toString());
+            batchAssign(batchAssignRequest, batchAssignRequest.getAssignUserId(), organizationId, userId);
+            return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(fail).skip(0)
+                    .errorMessages(Translator.get("batch.update.reason")).build();
+        }
 
-        clueFieldService.batchUpdate(request, field, originCustomers, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+        // 快照须在写库前落库, 否则审批驳回/撤回时回退到的是改后的值
+        ResourceBatchEditRequest filteredRequest = new ResourceBatchEditRequest();
+        filteredRequest.setIds(permittedIds);
+        filteredRequest.setFieldId(request.getFieldId());
+        filteredRequest.setFieldValue(request.getFieldValue());
+        List<Clue> permittedClues = originClues.stream()
+                .filter(clue -> permittedIds.contains(clue.getId()))
+                .toList();
+
+        CommonBeanFactory.getBean(ApprovalResourceService.class)
+                .batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CLUE, organizationId, userId, field.getName(), request.getFieldValue());
+        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+
+        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(fail).skip(0)
+                .errorMessages(Translator.get("batch.update.reason")).build();
     }
 
 

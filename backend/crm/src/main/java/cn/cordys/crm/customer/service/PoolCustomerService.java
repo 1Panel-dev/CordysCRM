@@ -9,6 +9,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.ChartAnalysisDbRequest;
@@ -22,6 +23,11 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.*;
 import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.CustomerPoolDTO;
 import cn.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
@@ -45,6 +51,7 @@ import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
 import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -133,6 +140,8 @@ public class PoolCustomerService {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private BaseService baseService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     /**
      * 获取当前用户公海选项
@@ -263,6 +272,35 @@ public class PoolCustomerService {
     }
 
     /**
+     * 删除客户（带审批校验）
+     * <p>
+     * 公海数据就是客户表里的一行, 审批同样走客户的 formType。
+     * 引用校验必须赶在提审之前: 切面命中删除审批流时会直接提审并跳过方法体,
+     * 校验若留在被拦截的方法里, 挂着商机/联系人的客户会先被提审、直到审批通过才报错, 白跑一趟审批。
+     *
+     * @param id     客户ID
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     */
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        Objects.requireNonNull(CommonBeanFactory.getBean(CustomerService.class)).checkResourceRef(List.of(id));
+        // 自调用不走代理, 需从容器取代理对象才能命中审批切面
+        Objects.requireNonNull(CommonBeanFactory.getBean(PoolCustomerService.class)).deleteTriggerApproval(id, userId, orgId);
+    }
+
+    /**
+     * 删除客户（审批入口, 命中删除审批流时由切面提审并跳过删除）
+     *
+     * @param id     客户ID
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     */
+    @HitApproval(formKey = FormKey.CUSTOMER, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteTriggerApproval(String id, String userId, String orgId) {
+        delete(id);
+    }
+
+    /**
      * 删除客户
      *
      * @param id 客户ID
@@ -316,20 +354,60 @@ public class PoolCustomerService {
     /**
      * 批量删除客户
      *
-     * @param ids 客户ID集合
+     * @param ids    客户ID集合
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     * @return 删除结果: success 实际删除数, skip 已提交审批数, fail 不存在或无权操作数
      */
-    public void batchDelete(List<String> ids, String userId, String orgId) {
+    public BatchAffectReasonResponse batchDelete(List<String> ids, String userId, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(ids);
-        CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
-        Objects.requireNonNull(customerService).checkResourceRef(ids);
-        customerService.deleteCustomerResource(ids);
+        if (CollectionUtils.isEmpty(customers)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(ids.size()).skip(0)
+                    .errorMessages(Translator.get("customer.not.exist")).build();
+        }
+        // 状态权限校验: 与客户批量删除一致, 过滤出当前用户有权删除的客户。
+        // 审批流的状态权限配置里登记的是 CUSTOMER_MANAGEMENT:*, 公海权限是另一个分组, 故按资源查客户权限、按角色校验公海权限
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CUSTOMER.getValue(),
+                customers,
+                PermissionConstants.CUSTOMER_MANAGEMENT_DELETE,
+                orgId,
+                Customer::getId,
+                Customer::getApprovalStatus,
+                PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE
+        );
+        int fail = customers.size() - permittedIds.size();
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(fail).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
+        }
 
-        List<LogDTO> logs = customers.stream()
-                .map(customer ->
-                        new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_POOL, customer.getName())
-                )
-                .toList();
-        logService.batchAdd(logs);
+        // 引用校验要赶在提审之前: 进了审批的那些如果留到审批通过才校验, 审批人白跑一趟
+        Objects.requireNonNull(CommonBeanFactory.getBean(CustomerService.class)).checkResourceRef(permittedIds);
+
+        // 命中删除审批流的客户不直接删除, 走审批
+        Map<String, String> nameMap = customers.stream()
+                .filter(customer -> permittedIds.contains(customer.getId()))
+                .collect(Collectors.toMap(Customer::getId, Customer::getName, (a, b) -> a));
+        List<String> approvalIds = CommonBeanFactory.getBean(ApprovalResourceService.class)
+                .batchDeleteTriggerApproval(permittedIds, FormKey.CUSTOMER, orgId, userId, nameMap);
+        List<String> deleteIds = permittedIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+
+        if (!CollectionUtils.isEmpty(deleteIds)) {
+            Objects.requireNonNull(CommonBeanFactory.getBean(CustomerService.class)).deleteCustomerResource(deleteIds);
+
+            List<LogDTO> logs = customers.stream()
+                    .filter(customer -> deleteIds.contains(customer.getId()))
+                    .map(customer ->
+                            new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_POOL, customer.getName())
+                    )
+                    .toList();
+            logService.batchAdd(logs);
+        }
+
+        return BatchAffectReasonResponse.builder()
+                .success(deleteIds.size()).fail(fail).skip(approvalIds.size())
+                .errorMessages(Translator.get("batch.delete.reason")).build();
     }
 
     public void freeze(PoolFreezeRequest request, String userId, String orgId) {
@@ -630,21 +708,55 @@ public class PoolCustomerService {
         logService.add(log);
     }
 
-    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = customerFieldService.getAndCheckField(request.getFieldId(), organizationId);
-
-        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
-            // 修改负责人，走批量分配的接口
-            var batchAssignRequest = new PoolBatchAssignRequest();
-            batchAssignRequest.setBatchIds(request.getIds());
-            batchAssignRequest.setAssignUserId(request.getFieldValue().toString());
-            batchAssign(batchAssignRequest, batchAssignRequest.getAssignUserId(), organizationId, userId);
-            return;
+        List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originCustomers)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(request.getIds().size()).skip(0)
+                    .errorMessages(Translator.get("customer.not.exist")).build();
+        }
+        // 状态权限校验: 与客户批量编辑一致。放在负责人分支之前, 否则处于无权编辑状态(如审批中)的数据会从那条路径绕过去。
+        // 审批流的状态权限配置里登记的是 CUSTOMER_MANAGEMENT:*, 公海权限是另一个分组, 故按资源查客户权限、按角色校验公海权限
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CUSTOMER.getValue(),
+                originCustomers,
+                PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+                organizationId,
+                Customer::getId,
+                Customer::getApprovalStatus,
+                PermissionConstants.CUSTOMER_MANAGEMENT_POOL_UPDATE
+        );
+        int fail = originCustomers.size() - permittedIds.size();
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(fail).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
         }
 
-        List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
+        if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
+            // 修改负责人就是一次分配, 分配不接审批, 走批量分配的接口
+            var batchAssignRequest = new PoolBatchAssignRequest();
+            batchAssignRequest.setBatchIds(permittedIds);
+            batchAssignRequest.setAssignUserId(request.getFieldValue().toString());
+            batchAssign(batchAssignRequest, batchAssignRequest.getAssignUserId(), organizationId, userId);
+            return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(fail).skip(0)
+                    .errorMessages(Translator.get("batch.update.reason")).build();
+        }
 
-        customerFieldService.batchUpdate(request, field, originCustomers, Customer.class, LogModule.CUSTOMER_POOL, extCustomerMapper::batchUpdate, userId, organizationId);
+        // 快照须在写库前落库, 否则审批驳回/撤回时回退到的是改后的值
+        ResourceBatchEditRequest filteredRequest = new ResourceBatchEditRequest();
+        filteredRequest.setIds(permittedIds);
+        filteredRequest.setFieldId(request.getFieldId());
+        filteredRequest.setFieldValue(request.getFieldValue());
+        List<Customer> permittedCustomers = originCustomers.stream()
+                .filter(customer -> permittedIds.contains(customer.getId()))
+                .toList();
+
+        CommonBeanFactory.getBean(ApprovalResourceService.class)
+                .batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CUSTOMER, organizationId, userId, field.getName(), request.getFieldValue());
+        customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class, LogModule.CUSTOMER_POOL, extCustomerMapper::batchUpdate, userId, organizationId);
+
+        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(fail).skip(0)
+                .errorMessages(Translator.get("batch.update.reason")).build();
     }
 
     public List<ChartResult> chart(PoolCustomerChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {

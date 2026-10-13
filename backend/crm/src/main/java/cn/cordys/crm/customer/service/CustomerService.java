@@ -590,13 +590,29 @@ public class CustomerService implements ApprovalResourceHandler {
 
     /**
      * 删除客户（带审批校验）
+     * <p>
+     * 引用校验必须赶在提审之前: 切面命中删除审批流时会直接提审并跳过方法体,
+     * 校验若留在被拦截的方法里, 挂着商机/联系人的客户会先被提审、直到审批通过才报错, 白跑一趟审批。
+     *
+     * @param id     客户ID
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     */
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        checkResourceRef(List.of(id));
+        // 自调用不走代理, 需从容器取代理对象才能命中审批切面
+        CommonBeanFactory.getBean(CustomerService.class).deleteTriggerApproval(id, userId, orgId);
+    }
+
+    /**
+     * 删除客户（审批入口, 命中删除审批流时由切面提审并跳过删除）
      *
      * @param id     客户ID
      * @param userId 用户ID
      * @param orgId  组织ID
      */
     @HitApproval(formKey = FormKey.CUSTOMER, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
-    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+    public void deleteTriggerApproval(String id, String userId, String orgId) {
         delete(id, userId, orgId);
     }
 
@@ -609,9 +625,11 @@ public class CustomerService implements ApprovalResourceHandler {
         // 设置操作对象
         OperationLogContext.setResourceName(originCustomer.getName());
 
+        // 公海客户没有负责人, List.of(null) 会直接抛 NPE; 审批通过后执行的删除也会走到这里
+        List<String> receivers = StringUtils.isBlank(originCustomer.getOwner()) ? List.of() : List.of(originCustomer.getOwner());
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
                 NotificationConstants.Event.CUSTOMER_DELETED, originCustomer.getName(), userId,
-                orgId, List.of(originCustomer.getOwner()), true);
+                orgId, receivers, true);
     }
 
     public BatchAffectReasonResponse batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
@@ -740,6 +758,9 @@ public class CustomerService implements ApprovalResourceHandler {
             return;
         }
 
+        // 引用校验要赶在提审之前: 进了审批的那些如果留到审批通过才校验, 审批人白跑一趟
+        checkResourceRef(toDoIds);
+
         // 命中删除审批流的客户不直接删除, 走审批
         Map<String, String> nameMap = permittedCustomers.stream()
                 .collect(Collectors.toMap(Customer::getId, Customer::getName, (a, b) -> a));
@@ -750,8 +771,6 @@ public class CustomerService implements ApprovalResourceHandler {
         if (CollectionUtils.isEmpty(deleteIds)) {
             return;
         }
-
-        checkResourceRef(deleteIds);
 
         deleteCustomerResource(deleteIds);
 

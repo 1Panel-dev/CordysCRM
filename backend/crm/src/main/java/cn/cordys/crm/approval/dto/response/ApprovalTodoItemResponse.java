@@ -18,6 +18,9 @@ public class ApprovalTodoItemResponse {
     @Schema(description = "资源是否在公海（客户）/线索池（线索）中，仅资源类型为客户、线索时返回，其他类型为空")
     private Boolean inSharedPool;
 
+    @Schema(description = "公海ID（客户）/线索池ID（线索），仅资源类型为客户、线索时返回，其他类型为空")
+    private String poolId;
+
     @Schema(description = "申请人")
     private String applicant;
 
