@@ -27,6 +27,7 @@ interface UseApprovalOperationOptions<Row extends Record<string, any>> {
     isApplicant?: (row: Row, currentUserId: string) => boolean;
     isOwner?: (row: Row, currentUserId: string) => boolean;
   };
+  ignoreRolePermissionCheck?: boolean;
   shouldUseRolePermissionOnly?: (row: Row) => boolean;
   onReview?: (row: Row) => void;
   onRevoke?: (row: Row) => void;
@@ -70,7 +71,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   }
 
   function hasRolePermission(permissions: string[]) {
-    return !permissions.length || hasAnyPermission(permissions);
+    return options.ignoreRolePermissionCheck || !permissions.length || hasAnyPermission(permissions);
   }
 
   function isApplicant(row: Row) {

@@ -1,80 +1,129 @@
 <template>
-  <CrmOverviewDrawer
-    ref="crmOverviewDrawerRef"
+  <CrmDrawer
     v-model:show="show"
-    v-model:active-tab="activeTab"
-    :tab-list="tabList"
-    :button-list="buttonList"
-    :source-id="sourceId"
+    resizable
+    no-padding
+    :footer="false"
     :title="props.detail?.name"
-    :form-key="FormDesignKeyEnum.CLUE_POOL"
-    :show-tab-setting="true"
-    :formViewSize="formViewSize"
-    @button-select="handleSelect"
-    @button-pop-update="handleButtonPopUpdate"
-    @saved="() => (refreshKey += 1)"
+    :view-size="formViewSize"
   >
-    <template #left>
-      <div class="h-full overflow-hidden">
-        <CrmFormDescription
-          :form-key="FormDesignKeyEnum.CLUE_POOL"
-          :source-id="sourceId"
-          class="p-[16px_24px]"
-          :hidden-fields="hiddenColumns"
-          :column="layout === 'vertical' ? 3 : undefined"
-          :label-width="layout === 'vertical' ? 'auto' : undefined"
-          :value-align="layout === 'vertical' ? 'start' : undefined"
-          :readonly="!hasAnyPermission(['CLUE_MANAGEMENT_POOL:UPDATE'])"
-          @init="handleDescriptionInit"
-        />
-      </div>
+    <template #titleLeft>
+      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
-    <template #distributePopContent>
-      <TransferForm ref="distributeFormRef" v-model:form="distributeForm" class="mt-[16px] w-[320px]" />
+    <template #titleRight>
+      <CrmOperationButton
+        class="gap-[12px]"
+        :group-list="detailActions.groupList"
+        :more-list="detailActions.moreList"
+        :not-show-divider="true"
+        @pop-update="handleButtonPopUpdate"
+        @select="handleSelect"
+      >
+        <template #more>
+          <n-button type="primary" ghost class="n-btn-outline-primary">
+            {{ t('common.more') }}
+            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+          </n-button>
+        </template>
+        <template #distributePopContent>
+          <TransferForm ref="distributeFormRef" v-model:form="distributeForm" class="mt-[16px] w-[320px]" />
+        </template>
+      </CrmOperationButton>
     </template>
-    <template #right>
-      <div class="h-full pt-[16px]">
+    <div class="h-full bg-[var(--text-n9)] p-[16px]">
+      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              :tab-list="settingTabOptions"
+              :setting-key="`${FormDesignKeyEnum.CLUE_POOL}-settingKey`"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="64" no-content-padding>
+        <div v-show="activeTab === 'cluePool'" class="h-full overflow-hidden">
+          <CrmApprovalDetail
+            :refresh-key="refreshKey"
+            :form-key="FormDesignKeyEnum.CLUE"
+            :source-id="sourceId"
+            :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+            @saveApproval="handleSaveApproval"
+          >
+            <template #left="{ fieldPermissions, taskNode }">
+              <CrmFormDescription
+                :refresh-key="refreshKey"
+                :form-key="FormDesignKeyEnum.CLUE_POOL"
+                :source-id="sourceId"
+                :hidden-fields="hiddenColumns"
+                :column="2"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                :readonly="true"
+                :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  approvalTaskId: taskNode?.taskId,
+                }"
+                @init="handleDescriptionInit"
+                @refresh="emit('refresh')"
+              />
+            </template>
+          </CrmApprovalDetail>
+        </div>
         <FollowDetail
-          v-if="['followRecord'].includes(activeTab)"
-          :active-type="(activeTab as 'followRecord')"
-          wrapper-class="h-[calc(100vh-162px)]"
-          virtual-scroll-height="calc(100vh - 258px)"
+          v-if="activeTab === 'followRecord'"
+          active-type="followRecord"
+          wrapper-class="h-full"
+          virtual-scroll-height="calc(100vh - 254px)"
           :follow-api-key="FormDesignKeyEnum.CLUE_POOL"
           :source-id="sourceId"
           :show-action="false"
           :refresh-key="refreshKey"
         />
-        <CrmHeaderTable
-          v-if="activeTab === 'headRecord'"
-          :form-key="FormDesignKeyEnum.CLUE_POOL"
-          :source-id="sourceId"
-          :load-list-api="getClueHeaderList"
-        />
-      </div>
-    </template>
-  </CrmOverviewDrawer>
+        <div v-if="activeTab === 'headRecord'" class="h-full px-[24px] pt-[24px]">
+          <CrmHeaderTable
+            :form-key="FormDesignKeyEnum.CLUE_POOL"
+            :source-id="sourceId"
+            :load-list-api="getClueHeaderList"
+          />
+        </div>
+      </CrmCard>
+    </div>
+  </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
+  import { NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CluePoolListItem } from '@lib/shared/models/clue';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
+  import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
-  import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
 
   import { assignClue, deleteCluePool, getClueHeaderList, pickClue } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
@@ -93,6 +142,7 @@
 
   const emit = defineEmits<{
     (e: 'remove'): void;
+    (e: 'refresh'): void;
     (e: 'freeze'): void;
     (e: 'unfreeze'): void;
   }>();
@@ -102,17 +152,19 @@
   const Message = useMessage();
   const { openNewPage } = useOpenNewPage();
 
-  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
-  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
-
   const sourceId = computed(() => props.detail?.id ?? '');
 
   const refreshKey = ref(0);
+  const detailInfo = ref<Record<string, any>>({
+    ...props.detail,
+    approvalStatus: props.detail?.approvalStatus ?? ProcessStatusEnum.NONE,
+  });
 
   const claimLoading = ref(false);
   const distributeLoading = ref(false);
 
-  const buttonList = computed<ActionsItem[]>(() =>
+  const cluePoolDeleteRolePermissions = ['CLUE_MANAGEMENT_POOL:DELETE'];
+  const cluePoolActions = computed<ActionsItem[]>(() =>
     (
       [
         {
@@ -158,20 +210,75 @@
           ghost: true,
           permission: ['CLUE_MANAGEMENT_POOL:FREEZE'],
         },
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
-          text: false,
-          ghost: true,
-          danger: true,
-          class: 'n-btn-outline-primary',
-        },
       ] as ActionsItem[]
     ).filter((item) =>
       props.detail?.frozen ? !['claim', 'distribute', 'freeze'].includes(item.key || '') : item.key !== 'unfreeze'
     )
   );
+
+  const { initApprovalPermission, resolveRowActions, deleteExecute } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.CLUE,
+    dataActionMap: {
+      delete: {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CLUE_MANAGEMENT:DELETE'],
+        text: false,
+        ghost: true,
+        danger: true,
+        class: 'n-btn-outline-primary',
+      },
+    },
+    isDetail: true,
+    ignoreRolePermissionCheck: true,
+  });
+
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CLUE,
+  });
+
+  function splitDetailActions(actions: ActionsItem[]) {
+    const realVisibleNumber = 2;
+
+    if (actions.length <= realVisibleNumber) {
+      return {
+        groupList: actions,
+        moreList: [] as ActionsItem[],
+      };
+    }
+
+    return {
+      groupList: [
+        ...actions.slice(0, realVisibleNumber),
+        {
+          label: t('common.more'),
+          key: 'more',
+          slotName: 'more',
+        },
+      ],
+      moreList: actions.slice(realVisibleNumber),
+    };
+  }
+
+  const detailActions = computed(() => {
+    const approvalActions = resolveRowActions(detailInfo.value);
+    const reviewActions = approvalActions.filter((item) => ['review', 'revoke'].includes(item.key || ''));
+    const deleteAction = approvalActions.find((item) => item.key === 'delete');
+    const actions = [
+      ...reviewActions,
+      ...cluePoolActions.value,
+      ...(deleteAction && hasAnyPermission(cluePoolDeleteRolePermissions)
+        ? [{ ...deleteAction, permission: cluePoolDeleteRolePermissions }]
+        : []),
+    ].map((item) => ({
+      ...item,
+      text: false,
+      ghost: true,
+      class: item.class || 'n-btn-outline-primary',
+    }));
+
+    return splitDetailActions(actions);
+  });
 
   const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
   const distributeForm = ref<TransferParams>({
@@ -218,12 +325,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(props.detail?.name) }),
       content: t('clue.batchDeleteContentTip'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteCluePool(sourceId.value);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           show.value = false;
           emit('remove');
         } catch (error) {
@@ -258,8 +365,28 @@
     }
   }
 
+  function handleSaved() {
+    refreshKey.value += 1;
+    emit('refresh');
+  }
+
+  async function handleSaveApproval(callback: () => Promise<any>, _hasFieldPermission: boolean) {
+    await callback();
+    handleSaved();
+  }
+
   function handleSelect(key: string) {
     switch (key) {
+      case 'review':
+        reviewByResourceId(sourceId.value, {
+          onSuccess: handleSaved,
+        });
+        break;
+      case 'revoke':
+        revokeByResourceId(sourceId.value, {
+          onSuccess: handleSaved,
+        });
+        break;
       case 'pop-claim':
         handleClaim();
         break;
@@ -280,9 +407,8 @@
     }
   }
 
-  // tab
-  const activeTab = ref('followRecord');
-  const tabList: TabContentItem[] = [
+  const activeTab = ref('cluePool');
+  const settingTabOptions: TabContentItem[] = [
     {
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
@@ -294,6 +420,28 @@
       enable: true,
     },
   ];
+  const settingTabList = ref<TabContentItem[]>(settingTabOptions);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'cluePool',
+      tab: t('crmFormDesign.clue'),
+      enable: true,
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   const formViewSize = ref<FormViewSize>('large');
   function handleDescriptionInit(
@@ -302,6 +450,14 @@
     detail?: Record<string, any>,
     config?: FormConfig
   ) {
+    detailInfo.value = {
+      ...detail,
+      approvalStatus: detail?.approvalStatus ?? ProcessStatusEnum.NONE,
+    };
     formViewSize.value = config?.viewSize || 'large';
   }
+
+  onBeforeMount(() => {
+    initApprovalPermission();
+  });
 </script>

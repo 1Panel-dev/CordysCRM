@@ -76,11 +76,18 @@
   const sourceId = computed(() => route.query.id?.toString() ?? '');
   const routeFormKey = computed(() => route.query.formKey?.toString() as FormDesignKeyEnum);
   const customFormId = computed(() => route.query.customFormId?.toString());
-  const approvalFormKey = computed(() =>
-    routeFormKey.value === FormDesignKeyEnum.CUSTOM_FORM
-      ? customFormId.value || ''
-      : routeFormKey.value.replace('Snapshot', '')
-  );
+  const approvalFormKey = computed(() => {
+    switch (routeFormKey.value) {
+      case FormDesignKeyEnum.CLUE_POOL:
+        return FormDesignKeyEnum.CLUE;
+      case FormDesignKeyEnum.CUSTOMER_OPEN_SEA:
+        return FormDesignKeyEnum.CUSTOMER;
+      case FormDesignKeyEnum.CUSTOM_FORM:
+        return customFormId.value || '';
+      default:
+        return routeFormKey.value.replace('Snapshot', '');
+    }
+  });
 
   const { sourceName, descriptions, detail, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: routeFormKey.value,

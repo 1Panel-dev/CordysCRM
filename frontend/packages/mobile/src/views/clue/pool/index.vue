@@ -39,7 +39,12 @@
       :immediateCheck="false"
     >
       <template #item="{ item }">
-        <CrmListCommonItem :item="item" :actions="actions" resource-type="lead" @click="goDetail"></CrmListCommonItem>
+        <CrmListCommonItem
+          :item="item"
+          :actions="getListItemActions(item)"
+          resource-type="lead"
+          @click="goDetail"
+        ></CrmListCommonItem>
       </template>
     </CrmList>
   </div>
@@ -56,11 +61,18 @@
   import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
-  import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
+  import CrmListCommonItem, {
+    type CrmListCommonItemActionsItem,
+  } from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteCluePool, getCluePoolList, getPoolOptions, pickClue } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
+
+  type PoolActionItem = CrmListCommonItemActionsItem & { key: string };
 
   const { t } = useI18n();
   const router = useRouter();
@@ -70,6 +82,20 @@
 
   const activeFilter = ref('');
   const filterButtons = ref<CluePoolItem[]>([]);
+
+  const refreshList = () => {
+    crmListRef.value?.loadList(true);
+  };
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CLUE,
+  });
+  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<CluePoolListItem>({
+    formType: FormDesignKeyEnum.CLUE,
+    ignoreRolePermissionCheck: true,
+    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+  });
+
   async function getCluePoolOptions() {
     try {
       showLoadingToast(t('common.loading'));
@@ -92,7 +118,7 @@
       });
       showSuccessToast(t('common.pickSuccess'));
       await sleep(300);
-      crmListRef.value?.loadList(true);
+      refreshList();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -115,20 +141,22 @@
     showConfirmDialog({
       title: t('clue.deleteTitle'),
       message: t('clue.batchDeleteContentTip'),
-      confirmButtonText: t('common.confirmDelete'),
+      confirmButtonText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       confirmButtonColor: 'var(--error-red)',
       beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
             showLoadingToast(t('common.deleting'));
             await deleteCluePool(id);
-            showSuccessToast(t('common.deleteSuccess'));
-            crmListRef.value?.loadList(true);
+            showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+            refreshList();
             return Promise.resolve(true);
           } catch (error) {
             // eslint-disable-next-line no-console
             console.log(error);
             return Promise.resolve(false);
+          } finally {
+            closeToast();
           }
         } else {
           return Promise.resolve(true);
@@ -137,7 +165,7 @@
     });
   }
 
-  const actions = [
+  const poolActions: PoolActionItem[] = [
     {
       key: 'pick',
       label: t('common.pick'),
@@ -156,15 +184,44 @@
         handleDistribute(item.id);
       },
     },
-    {
-      label: t('common.delete'),
-      icon: 'iconicon_delete',
-      permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
-      action: (item: CluePoolListItem) => {
-        handleDelete(item.id);
-      },
-    },
   ];
+
+  const deleteAction: PoolActionItem = {
+    key: 'delete',
+    label: t('common.delete'),
+    icon: 'iconicon_delete',
+    permission: ['CLUE_MANAGEMENT:DELETE'],
+    action: (item: CluePoolListItem) => {
+      handleDelete(item.id);
+    },
+  };
+
+  function normalizeListAction(action: Record<string, any>): PoolActionItem {
+    return {
+      ...action,
+      key: action.key,
+      label: action.label ?? action.text ?? '',
+      icon: action.icon ?? '',
+      action: action.action ?? (() => undefined),
+    };
+  }
+
+  function getListItemActions(item: CluePoolListItem): CrmListCommonItemActionsItem[] {
+    const approvalActions = resolveRowActions(item, [deleteAction]);
+    const reviewActions = approvalActions
+      .filter((action) => ['review', 'revoke'].includes(action.key || ''))
+      .map(normalizeListAction);
+    const approvedDeleteAction = approvalActions.find((action) => action.key === 'delete');
+    const poolDeleteAction =
+      approvedDeleteAction && hasAnyPermission(['CLUE_MANAGEMENT_POOL:DELETE'])
+        ? normalizeListAction({
+            ...approvedDeleteAction,
+            permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
+          })
+        : undefined;
+
+    return [...reviewActions, ...poolActions, ...(poolDeleteAction ? [poolDeleteAction] : [])];
+  }
 
   function search() {
     nextTick(() => {
@@ -173,6 +230,7 @@
   }
 
   onActivated(() => {
+    initApprovalPermission();
     search();
   });
 
@@ -193,12 +251,14 @@
       query: {
         id: item.id,
         name: item.name,
+        poolId: activeFilter.value,
         needInitDetail: 'Y',
       },
     });
   }
 
   onMounted(async () => {
+    initApprovalPermission();
     await getCluePoolOptions();
   });
 </script>

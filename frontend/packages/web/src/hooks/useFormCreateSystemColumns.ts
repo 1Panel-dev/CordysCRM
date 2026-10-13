@@ -541,6 +541,7 @@ export default async function useFormCreateSystemColumns(
     ],
     [FormDesignKeyEnum.PRODUCT]: [],
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [
+      ...approvalStatusColumn,
       {
         title: t('customer.recycleReason'),
         width: 120,
@@ -578,6 +579,7 @@ export default async function useFormCreateSystemColumns(
       },
     ],
     [FormDesignKeyEnum.CLUE_POOL]: [
+      ...approvalStatusColumn,
       {
         title: t('customer.recycleReason'),
         width: 120,
@@ -637,6 +639,7 @@ export default async function useFormCreateSystemColumns(
     ],
     [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: contactInternalColumns,
     [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: [
+      ...approvalStatusColumn,
       {
         title: t('customer.recycleReason'),
         width: 120,
@@ -663,6 +666,7 @@ export default async function useFormCreateSystemColumns(
       },
     ],
     [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: [
+      ...approvalStatusColumn,
       {
         title: t('customer.recycleReason'),
         width: 120,

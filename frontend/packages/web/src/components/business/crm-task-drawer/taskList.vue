@@ -20,7 +20,7 @@
                   !item.resourceNotFound &&
                   (props.activeTaskType.includes('pending') || getResourcePermission(item))
                 ) {
-                  emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId);
+                  handleOpenDetail(item);
                 }
               }
             "
@@ -49,7 +49,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId)"
+                  @click="handleOpenDetail(item)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -60,7 +60,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId)"
+                  @click="handleOpenDetail(item)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -156,7 +156,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'openDetail', id: string, approvalFlowId: string, approvalTaskId: string): void;
+    (e: 'openDetail', id: string, resourceType: string, approvalTaskId: string, item: ApprovalTodoItem): void;
     (e: 'listInit', total: number, keys: string[]): void;
     (e: 'approvalSuccess'): void;
   }>();
@@ -330,6 +330,10 @@
 
   function getEffectiveResourceType(item: ApprovalTodoItem) {
     return standardResourceTypes.includes(item.resourceType) ? item.resourceType : getActiveResourceType();
+  }
+
+  function handleOpenDetail(item: ApprovalTodoItem) {
+    emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId, item);
   }
 
   function getResourcePermission(item: ApprovalTodoItem) {

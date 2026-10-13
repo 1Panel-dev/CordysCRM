@@ -130,6 +130,14 @@
     @deleted="handleApproveSuccess"
     @refresh="handleApproveSuccess"
   />
+  <OpenSeaOverviewDrawer
+    v-model:show="openSeaDetailVisible"
+    :source-id="activeResourceId"
+    :pool-id="activePoolId"
+    :hidden-columns="openSeaHiddenColumns"
+    @change="handleApproveSuccess"
+    @delete="handleApproveSuccess"
+  />
   <ClueOverviewDrawer
     v-model:show="clueDetailVisible"
     :detail="activeResourceDetail"
@@ -137,6 +145,14 @@
     @remove="handleApproveSuccess"
     @refresh="handleApproveSuccess"
     @open-customer-drawer="handleOpenCustomerDetail"
+  />
+  <CluePoolOverviewDrawer
+    v-model:show="cluePoolDetailVisible"
+    :detail="activeResourceDetail"
+    :pool-id="activePoolId"
+    :hidden-columns="cluePoolHiddenColumns"
+    @remove="handleApproveSuccess"
+    @refresh="handleApproveSuccess"
   />
   <OptOverviewDrawer
     v-model:show="opportunityDetailVisible"
@@ -172,7 +188,8 @@
   import { type ApprovalListTypeEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { OptionDTO } from '@lib/shared/models/system/business';
-  import type { ApprovalProcessDetail } from '@lib/shared/models/system/process';
+  import type { CluePoolItem } from '@lib/shared/models/system/module';
+  import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -181,17 +198,26 @@
   import approvalModal from './approvalModal.vue';
   import taskList from './taskList.vue';
   import ClueOverviewDrawer from '@/views/clueManagement/clue/components/clueOverviewDrawer.vue';
+  import CluePoolOverviewDrawer from '@/views/clueManagement/cluePool/components/cluePoolOverviewDrawer.vue';
   import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
   import InvoiceDetailDrawer from '@/views/contract/invoice/components/detail.vue';
   import CustomerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import OpenSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
   import CustomFormDetailDrawer from '@/views/customForm/components/detail.vue';
   import OptOverviewDrawer from '@/views/opportunity/components/optOverviewDrawer.vue';
   import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
   import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
 
-  import { getApprovalConfigDetail, getApprovalFlowFormOptions, getTodoStatistic } from '@/api/modules';
+  import {
+    getApprovalConfigDetail,
+    getApprovalFlowFormOptions,
+    getOpenSeaOptions,
+    getPoolOptions,
+    getTodoStatistic,
+  } from '@/api/modules';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useOpenNewPage from '@/hooks/useOpenNewPage.js';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { ContractRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum.js';
 
@@ -428,28 +454,93 @@
   const orderDetailVisible = ref(false);
   const invoiceDetailVisible = ref(false);
   const customerDetailVisible = ref(false);
+  const openSeaDetailVisible = ref(false);
   const clueDetailVisible = ref(false);
+  const cluePoolDetailVisible = ref(false);
   const opportunityDetailVisible = ref(false);
   const customFormDetailVisible = ref(false);
   const customFormEditVisible = ref(false);
   const customFormRefreshKey = ref(0);
   const approvalTaskId = ref('');
   const resourceType = ref('');
-  const activeResourceDetail = computed(() => ({ id: activeResourceId.value }));
+  const activeResourceName = ref('');
+  const activePoolId = ref('');
+  const activeResourceDetail = computed(() => ({
+    id: activeResourceId.value,
+    name: activeResourceName.value,
+  }));
+
+  type ApprovalTodoItemWithPool = ApprovalTodoItem & {
+    inSharedPool?: boolean;
+    poolId?: string | number;
+  };
+
+  function getHiddenColumns(poolOptions: CluePoolItem[], poolId: string) {
+    const pool = poolOptions.find((item) => item.id === poolId);
+    return pool?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  }
+
+  const openSeaOptions = ref<CluePoolItem[]>([]);
+  const cluePoolOptions = ref<CluePoolItem[]>([]);
+  const openSeaHiddenColumns = computed(() => getHiddenColumns(openSeaOptions.value, activePoolId.value));
+  const cluePoolHiddenColumns = computed(() => getHiddenColumns(cluePoolOptions.value, activePoolId.value));
   const { reviewByFormResult } = useApprovalResourceAction({
     formKey: resourceType,
   });
 
-  function handleOpenDetail(resourceId: string, _resourceType: string, _approvalTaskId: string) {
+  async function initOpenSeaOptions() {
+    if (openSeaOptions.value.length || !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ'])) {
+      return;
+    }
+    try {
+      openSeaOptions.value = await getOpenSeaOptions();
+    } catch (error) {
+      // 池配置不可用时仍允许审批待办进入详情，使用详情接口的默认字段展示。
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
+  async function initCluePoolOptions() {
+    if (cluePoolOptions.value.length || !hasAnyPermission(['CLUE_MANAGEMENT_POOL:READ'])) {
+      return;
+    }
+    try {
+      cluePoolOptions.value = await getPoolOptions();
+    } catch (error) {
+      // 池配置不可用时仍允许审批待办进入详情，使用详情接口的默认字段展示。
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
+  async function handleOpenDetail(
+    resourceId: string,
+    _resourceType: string,
+    _approvalTaskId: string,
+    item: ApprovalTodoItemWithPool
+  ) {
     activeResourceId.value = resourceId;
     approvalTaskId.value = _approvalTaskId;
     resourceType.value = _resourceType;
+    activeResourceName.value = item.resourceName;
+    activePoolId.value = item.poolId ? String(item.poolId) : '';
 
     switch (_resourceType) {
       case ApprovalResourceTypeEnum.CLUE:
+        if (item.poolId) {
+          await initCluePoolOptions();
+          cluePoolDetailVisible.value = true;
+          break;
+        }
         clueDetailVisible.value = true;
         break;
       case ApprovalResourceTypeEnum.CUSTOMER:
+        if (item.inSharedPool) {
+          await initOpenSeaOptions();
+          openSeaDetailVisible.value = true;
+          break;
+        }
         customerDetailVisible.value = true;
         break;
       case ApprovalResourceTypeEnum.OPPORTUNITY:
