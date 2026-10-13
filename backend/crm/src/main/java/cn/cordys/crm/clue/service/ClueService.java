@@ -1338,6 +1338,7 @@ public class ClueService implements ApprovalResourceHandler {
                             clue.setStage(ClueStatus.NEW.name());
                             clue.setInSharedPool(false);
                             clue.setFrozen(false);
+                            clue.setApprovalStatus(ApprovalStatus.NONE.name());
                             logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, clue.getName()));
                         });
                         clueMapper.batchInsert(clues);

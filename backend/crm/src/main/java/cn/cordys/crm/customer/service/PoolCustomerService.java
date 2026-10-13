@@ -25,6 +25,7 @@ import cn.cordys.common.util.*;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
@@ -842,6 +843,7 @@ public class PoolCustomerService {
                             customer.setInSharedPool(true);
                             customer.setPoolId(request.getPoolId());
                             customer.setFrozen(false);
+                            customer.setApprovalStatus(ApprovalStatus.NONE.name());
                             logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_POOL, customer.getName()));
                         });
                         customerMapper.batchInsert(customers);

@@ -993,6 +993,7 @@ public class CustomerService implements ApprovalResourceHandler {
                             customer.setCollectionTime(customer.getCreateTime());
                             customer.setInSharedPool(false);
                             customer.setFrozen(false);
+                            customer.setApprovalStatus(ApprovalStatus.NONE.name());
                             logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_INDEX, customer.getName()));
                         });
                         customerMapper.batchInsert(customers);
