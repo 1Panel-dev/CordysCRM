@@ -203,6 +203,8 @@
     batchUpdateOpenSeaCustomer,
     batchUpdateOpportunity,
     batchUpdateOrder,
+    batchUpdatePaymentPlan,
+    batchUpdatePaymentRecord,
     batchUpdateProduct,
     batchUpdateProductPrice,
     batchUpdateQuotation,
@@ -229,6 +231,8 @@
       | FormDesignKeyEnum.CONTRACT
       | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
       | FormDesignKeyEnum.ORDER
+      | FormDesignKeyEnum.CONTRACT_PAYMENT
+      | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
       | FormDesignKeyEnum.CUSTOM_FORM;
     showApprovalTip?: string;
     otherSaveParams?: Record<string, any>;
@@ -270,6 +274,8 @@
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: batchUpdateQuotation,
     [FormDesignKeyEnum.ORDER]: batchUpdateOrder,
     [FormDesignKeyEnum.CUSTOM_FORM]: batchUpdateCustomFormData,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: batchUpdatePaymentPlan,
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: batchUpdatePaymentRecord,
   };
 
   const initForm = {

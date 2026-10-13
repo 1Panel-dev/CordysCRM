@@ -114,6 +114,14 @@
     @delete="removeItemFromList(activeSourceId)"
     @open-contract-drawer="showContractDrawer"
   />
+
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="editFieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
+    @refresh="searchData(undefined, undefined)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -135,6 +143,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -197,6 +206,15 @@
     sourceId: activeSourceId,
   });
 
+  const showEditModal = ref(false);
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD),
+  });
+  function handleBatchEdit() {
+    initEditFormConfig();
+    showEditModal.value = true;
+  }
+
   async function handleNewClick() {
     try {
       createLoading.value = true;
@@ -239,6 +257,11 @@
         permission: ['CONTRACT_PAYMENT_RECORD:EXPORT'],
       },
       {
+        label: t('common.batchEdit'),
+        key: 'batchEdit',
+        permission: ['CONTRACT_PAYMENT_RECORD:UPDATE'],
+      },
+      {
         label: t('common.batchDelete'),
         key: 'batchDelete',
         permission: ['CONTRACT_PAYMENT_RECORD:DELETE'],
@@ -273,6 +296,9 @@
       case 'exportChecked':
         isExportAll.value = false;
         showExportModal.value = true;
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       case 'batchDelete':
         handleBatchDelete();

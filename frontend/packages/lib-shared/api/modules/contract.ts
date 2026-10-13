@@ -132,6 +132,8 @@ import {
   UpdateContractStageUrl,
   SwitchContractCirculationTypeUrl,
   SaveContractCirculationConfigUrl,
+  PaymentRecordBatchUpdateUrl,
+  PaymentPlanBatchUpdateUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -546,11 +548,7 @@ export default function useContractApi(CDR: CordysAxios) {
 
   // 合同-工商抬头导入
   function preCheckImportBusinessTitle(params: ImportUploadParams) {
-    return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckBusinessTitleImportUrl },
-      params,
-      'file'
-    );
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckBusinessTitleImportUrl }, params, 'file');
   }
 
   function downloadBusinessTitleTemplate() {
@@ -851,6 +849,16 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.get({ url: `${SwitchContractCirculationTypeUrl}/${type}` });
   }
 
+  // 回款记录批量更新
+  function batchUpdatePaymentRecord(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: PaymentRecordBatchUpdateUrl, data });
+  }
+
+  // 回款计划批量更新
+  function batchUpdatePaymentPlan(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: PaymentPlanBatchUpdateUrl, data });
+  }
+
   return {
     exportContractAll,
     exportContractSelected,
@@ -904,6 +912,7 @@ export default function useContractApi(CDR: CordysAxios) {
     enablePaymentPlanView,
     deletePaymentPlanView,
     dragPaymentPlanView,
+    batchUpdatePaymentPlan,
     // 回款记录
     getPaymentRecordFormConfig,
     addPaymentRecord,
@@ -930,6 +939,7 @@ export default function useContractApi(CDR: CordysAxios) {
     importContractPaymentRecord,
     downloadContractPaymentRecordTemplate,
     getPaymentRecordStatistic,
+    batchUpdatePaymentRecord,
     // 合同工商抬头
     preCheckImportBusinessTitle,
     downloadBusinessTitleTemplate,
