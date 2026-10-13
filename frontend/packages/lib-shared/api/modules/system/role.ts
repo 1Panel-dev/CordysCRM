@@ -26,6 +26,7 @@ import type {
   RoleItem,
   RoleMemberItem,
   RoleMemberTableQueryParams,
+  RoleSortParams,
   RoleUpdateParams,
 } from '@lib/shared/models/system/role';
 
@@ -101,6 +102,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<RoleItem[]>({ url: `${GetUserOptionUrl}/${data.roleId}` });
   }
 
+  // 角色排序
+  function roleSort(data: RoleSortParams) {
+    return CDR.post({ url: '/role/sort', data });
+  }
+
   return {
     relateRoleMember,
     getRoleMember,
@@ -116,5 +122,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getRoleDetail,
     deleteRole,
     getUsers,
+    roleSort,
   };
 }

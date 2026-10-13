@@ -12,3 +12,4 @@ export const GetRoleDetailUrl = '/role/get'; // 获取角色详情
 export const DeleteRoleUrl = '/role/delete'; // 删除角色
 export const GetDeptTreeUrl = '/role/dept/tree'; // 获取部门树
 export const GetUserOptionUrl = '/role/user/option'; // 获取用户列表
+export const RoleSortUrl = '/role/sort'; // 角色排序

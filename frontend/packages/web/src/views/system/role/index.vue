@@ -34,8 +34,11 @@
               :rename-api="updateRoleName"
               :rename-static="renameStatic"
               :selectable="roleTreeSelectable"
+              :allow-drop="allowDrop"
+              draggable
               @click="handleRoleClick"
               @more-action-select="handleMoreActionSelect"
+              @drop="handleRoleDrop"
             />
           </n-scrollbar>
         </div>
@@ -84,11 +87,13 @@
   import memberTab from './components/memberTab.vue';
   import permissionTab from './components/permissionTab.vue';
 
-  import { deleteRole, getRoles, updateRole } from '@/api/modules';
+  import { deleteRole, getRoles, roleSort, updateRole } from '@/api/modules';
   import useLeaveUnSaveTip from '@/hooks/useLeaveUnSaveTip';
   import useModal from '@/hooks/useModal';
   import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import type { DropPosition } from 'naive-ui/es/tree/src/interface.js';
 
   const { t } = useI18n();
   const { openModal } = useModal();
@@ -223,6 +228,46 @@
         break;
       default:
         break;
+    }
+  }
+
+  function allowDrop(info: { dropPosition: DropPosition; node: CrmTreeNodeData; phase: 'drag' | 'drop' }) {
+    const { dropPosition, node, phase } = info;
+    if (phase === 'drag') {
+      return true;
+    }
+    if (dropPosition === 'inside') {
+      return false;
+    }
+    return true;
+  }
+
+  async function handleRoleDrop(
+    tree: CrmTreeNodeData[],
+    dragNode: CrmTreeNodeData,
+    dropNode: CrmTreeNodeData,
+    dropPosition: 'before' | 'inside' | 'after'
+  ) {
+    if (dragNode.id === dropNode.id) {
+      return;
+    }
+    const startIndex = roles.value.findIndex((role) => role.id === dragNode.id);
+    const endIndex = roles.value.findIndex((role) => role.id === dropNode.id);
+    try {
+      loading.value = true;
+      await roleSort({
+        start: startIndex,
+        end: endIndex,
+        dragModuleId: dragNode.id,
+      });
+      roles.value = await getRoles();
+      selectedKeys.value = [dragNode.id];
+      message.success(t('common.operationSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
     }
   }
 

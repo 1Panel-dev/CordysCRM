@@ -842,6 +842,7 @@ export const {
   getRoleMemberTree,
   getRoleDeptUserTree,
   batchRemoveRoleMember,
+  roleSort,
 } = roleApi;
 
 export const { login, signout, isLogin, getKey, getThirdCallback, getThirdOauthCallback, getOauthState } = loginApi;

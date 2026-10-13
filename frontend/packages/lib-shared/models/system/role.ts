@@ -119,3 +119,9 @@ export interface RoleMemberItem {
   createTime: number;
   roles: RoleMemberRoleItem[];
 }
+
+export interface RoleSortParams {
+  start: number;
+  end: number;
+  dragModuleId: string;
+}
