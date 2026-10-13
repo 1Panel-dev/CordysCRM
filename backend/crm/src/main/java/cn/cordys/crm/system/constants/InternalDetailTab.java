@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * 已有详情页中由系统提供的内置标签。
  *
- * <p>内置标签只允许改名，不能关闭或删除。直接关联字段使用 internalKey 定位，避免不同组织初始化后
+ * <p>内置标签只允许改名和切换启用状态，不能删除。直接关联字段使用 internalKey 定位，避免不同组织初始化后
  * 字段 ID 不同；间接关联标签的字段为空，独立业务标签的关联表单和字段均为空。运行时通过枚举名称生成的
  * internalKey 稳定识别各内置标签。</p>
  */
@@ -33,6 +33,7 @@ public enum InternalDetailTab {
     CLUE_FOLLOW_RECORD(FormKey.CLUE.getKey(), FormKey.FOLLOW_RECORD.getKey(), FormKey.FOLLOW_RECORD.getKey(), "recordClue"),
     CLUE_FOLLOW_PLAN(FormKey.CLUE.getKey(), FormKey.FOLLOW_PLAN.getKey(), FormKey.FOLLOW_PLAN.getKey(), "planClue"),
     CLUE_OWNER_RECORD(FormKey.CLUE.getKey(), "module.form.detail_tab.owner_record", null, null),
+    CLUE_TRANSITION_RECORD(FormKey.CLUE.getKey(), "module.form.detail_tab.transition_record", null, null),
 
     OPPORTUNITY_FOLLOW_RECORD(FormKey.OPPORTUNITY.getKey(), FormKey.FOLLOW_RECORD.getKey(), FormKey.FOLLOW_RECORD.getKey(), "recordOpportunity"),
     OPPORTUNITY_FOLLOW_PLAN(FormKey.OPPORTUNITY.getKey(), FormKey.FOLLOW_PLAN.getKey(), FormKey.FOLLOW_PLAN.getKey(), "planOpportunity"),

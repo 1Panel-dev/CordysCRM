@@ -666,7 +666,7 @@ public class ModuleFormService {
             }
         }
 
-        // 系统标签只允许改名；保存时关联表单、字段和启用状态必须与枚举定义一致。
+        // 系统标签只允许改名和切换启用状态，关联表单和字段必须与枚举定义一致。
         if (strict && (!Objects.equals(getOptionId(tab.getRelatedForm()), internalTab.getRelatedFormKey())
                 || !Objects.equals(getOptionId(tab.getRelatedField()), relatedField == null ? null : relatedField.getId()))) {
             throw new GenericException(Translator.get("module.form.detail_tab.system.readonly"));
@@ -2808,7 +2808,20 @@ public class ModuleFormService {
             }
             FormProp formProp = StringUtils.isBlank(formBlob.getProp())
                     ? new FormProp() : JSON.parseObject(formBlob.getProp(), FormProp.class);
+            // 解析会翻译默认名称，初始化写回时保留原值，避免国际化键被固定为当前语言。
+            Map<String, String> internalTabNames = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(formProp.getDetailTabs())) {
+                formProp.getDetailTabs().stream()
+                        .filter(Objects::nonNull)
+                        .filter(tab -> StringUtils.isNotBlank(tab.getInternalKey()))
+                        .forEach(tab -> internalTabNames.put(tab.getInternalKey(), tab.getName()));
+            }
             resolveDetailTabs(moduleForm.getFormKey(), moduleForm.getOrganizationId(), formProp);
+            formProp.getDetailTabs().forEach(tab -> {
+                if (internalTabNames.containsKey(tab.getInternalKey())) {
+                    tab.setName(internalTabNames.get(tab.getInternalKey()));
+                }
+            });
             formBlob.setProp(JSON.toJSONString(formProp));
             moduleFormBlobMapper.updateById(formBlob);
         }
