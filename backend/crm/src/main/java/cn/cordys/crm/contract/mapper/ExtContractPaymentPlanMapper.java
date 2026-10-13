@@ -1,5 +1,6 @@
 package cn.cordys.crm.contract.mapper;
 
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
@@ -26,4 +27,6 @@ public interface ExtContractPaymentPlanMapper extends StatisticSqlMapper {
     List<ContractPaymentPlan> selectByTimestamp(@Param("timestamp") long timestamp, @Param("timestampOld") long timestampOld, @Param("orgId") String organizationId);
 
     void updatePaymentPlan(@Param("contractPaymentPlan")ContractPaymentPlan contractPaymentPlan);
+
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }

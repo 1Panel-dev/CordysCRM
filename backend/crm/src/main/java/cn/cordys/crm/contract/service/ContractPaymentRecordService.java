@@ -18,6 +18,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
@@ -42,6 +43,7 @@ import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -196,6 +198,41 @@ public class ContractPaymentRecordService extends BaseExportService {
                 oldRecord.getId(), oldRecord.getName(), Translator.get("products_info"),
                 moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
         return contractPaymentRecord;
+    }
+
+    /**
+     * 批量修改一个表单字段，沿用回款金额校验及字段、日志和关联统计的事务处理。
+     */
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String orgId) {
+        request.setIds(request.getIds().stream().distinct().toList());
+        List<ContractPaymentRecord> records = contractPaymentRecordMapper.selectByIds(request.getIds());
+        if (records.size() != request.getIds().size()
+                || records.stream().anyMatch(record -> !orgId.equals(record.getOrganizationId()))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        BaseField field = contractPaymentRecordFieldService.getAndCheckBatchUpdateField(request, orgId);
+        if (BusinessModuleField.CONTRACT_PAYMENT_RECORD_AMOUNT.getBusinessKey().equals(field.getBusinessKey())) {
+            BigDecimal amount = request.getFieldValue() == null ? null : new BigDecimal(request.getFieldValue().toString());
+            records.forEach(record -> checkContractPaymentAmount(record.getContractId(), amount, record.getId()));
+        } else if (BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey().equals(field.getBusinessKey())) {
+            Contract contract = contractMapper.selectByPrimaryKey((String) request.getFieldValue());
+            if (contract == null || !orgId.equals(contract.getOrganizationId())) {
+                throw new GenericException(Translator.get("contract.not.exist"));
+            }
+        } else if (BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey().equals(field.getBusinessKey())
+                && StringUtils.isNotBlank((String) request.getFieldValue())) {
+            ContractPaymentPlan plan = contractPaymentPlanMapper.selectByPrimaryKey((String) request.getFieldValue());
+            if (plan == null || !orgId.equals(plan.getOrganizationId())) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+        }
+
+        // 关联字段覆盖前保留原宿主，写入后同时刷新新旧宿主的统计值。
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
+                FormKey.CONTRACT_PAYMENT_RECORD.getKey(), request.getFieldId(), request.getIds(), orgId);
+        contractPaymentRecordFieldService.batchUpdate(request, field, records, ContractPaymentRecord.class,
+                LogModule.CONTRACT_PAYMENT_RECORD, extContractPaymentRecordMapper::batchUpdate, userId, orgId);
+        statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }
 
     @OperationLog(module = LogModule.CONTRACT_PAYMENT_RECORD, type = LogType.DELETE, resourceId = "{#id}")
