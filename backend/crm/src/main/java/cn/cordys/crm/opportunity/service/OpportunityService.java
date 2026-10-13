@@ -965,6 +965,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
                             Opportunity opportunity = opportunities.get(i);
                             opportunity.setStage(stageConfigList.getFirst().getId());
                             opportunity.setPos(nextPos + i);
+                            opportunity.setApprovalStatus(ApprovalStatus.NONE.name());
                             logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
                             commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
                                     NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,

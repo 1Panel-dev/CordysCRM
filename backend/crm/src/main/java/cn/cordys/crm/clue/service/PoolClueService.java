@@ -25,6 +25,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
@@ -779,6 +780,7 @@ public class PoolClueService {
                             clue.setInSharedPool(true);
                             clue.setPoolId(request.getPoolId());
                             clue.setFrozen(false);
+                            clue.setApprovalStatus(ApprovalStatus.NONE.name());
                             logs.add(new LogDTO(orgId, clue.getId(), userId, LogType.ADD, LogModule.CLUE_POOL_INDEX, clue.getName()));
                         });
                         clueMapper.batchInsert(clues);
