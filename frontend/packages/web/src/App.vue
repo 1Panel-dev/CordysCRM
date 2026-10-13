@@ -18,15 +18,15 @@
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
-  import { hasToken, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
-  import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
+  import { clearToken, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import type { Result } from '@lib/shared/types/axios';
 
   import CrmSysUpgradeTip from '@/components/pure/crm-sys-upgrade-tip/index.vue';
   import CrmLicenseFeatureNotice from '@/components/business/crm-license-feature-notice/index.vue';
 
-  import { getOauthState, getThirdOauthCallback } from '@/api/modules';
+  import { getOauthState, getThirdConfigByType, getThirdOauthCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
@@ -37,10 +37,11 @@
   import useLicenseStore from './store/modules/setting/license';
   import useUserStore from './store/modules/user';
 
-  const { goUserHasPermissionPage, logout } = useUser();
+  const { goUserHasPermissionPage } = useUser();
 
   const { setLoading } = useLoading();
   const { message } = useDiscreteApi();
+  const { t } = useI18n();
   const router = useRouter();
 
   const userStore = useUserStore();
@@ -56,16 +57,24 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-  async function handleOauthLogin(type: string, loginType: CompanyTypeEnum, isDingBrowser: boolean) {
+  async function handleOauthLogin(
+    type: 'wecom' | 'ding-talk' | 'lark',
+    loginType: CompanyTypeEnum,
+    isDingBrowser: boolean
+  ) {
     try {
       const codeKey = isDingBrowser ? 'authCode' : 'code';
-      const authParams = isDingBrowser ? ['code', 'authCode', 'state'] : ['code', 'state'];
-      const code = getQueryVariable(codeKey);
-      let state = getQueryVariable('state') ?? '';
-      if (code) {
-        // 钉钉/企微/飞书工作台免登时由客户端直接注入 code，没有 state，需先向后端申请一个再回调
-        if (!state) {
-          state = await getOauthState(type);
+      const url = new URL(window.location.href);
+      const authParams = ['code', 'authCode', 'state', 'error', 'error_description'];
+      const code = url.searchParams.get(codeKey);
+      const state = url.searchParams.get('state') ?? '';
+      const authorizationError = url.searchParams.has('error');
+      if (authParams.some((param) => url.searchParams.has(param))) {
+        // 回调只校验原来的 state；先清理一次性参数，避免刷新重放或覆盖后续路由。
+        authParams.forEach((param) => url.searchParams.delete(param));
+        window.history.replaceState(window.history.state, document.title, url.toString());
+        if (authorizationError || !code) {
+          throw new Error(t('login.form.login.errMsg'));
         }
         const res = await getThirdOauthCallback(code, type, state);
         const boolean = userStore.qrCodeLogin(res.data.data);
@@ -76,57 +85,80 @@
           goUserHasPermissionPage();
           setLoading(false);
           await userStore.getAuthentication();
+        } else {
+          throw new Error(t('login.form.login.errMsg'));
         }
-        if (code) {
-          const currentUrl = window.location.href;
-          const url = new URL(currentUrl);
-          authParams.forEach((param) => {
-            getUrlParameterWidthRegExp(param);
-          });
-          authParams.forEach((param) => {
-            url.searchParams.delete(param);
-          });
-          const newUrl = url.toString();
-          // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-          window.history.replaceState({}, document.title, newUrl);
-        }
+        return;
       }
+
+      if (await userStore.isLogin(true)) {
+        if (router.currentRoute.value.name === 'login') goUserHasPermissionPage();
+        return;
+      }
+      clearToken();
+      const configType = {
+        'wecom': CompanyTypeEnum.WECOM,
+        'ding-talk': CompanyTypeEnum.DINGTALK,
+        'lark': CompanyTypeEnum.LARK,
+      }[type];
+      const { config } = await getThirdConfigByType(configType);
+      const redirectUrl = type === 'lark' ? config.redirectUrl : `${window.location.origin}/`;
+      if (!config.agentId || !redirectUrl || (type !== 'lark' && !config.corpId)) {
+        throw new Error(t('login.form.login.errMsg'));
+      }
+      if (new URL(redirectUrl).origin !== window.location.origin) {
+        throw new Error(t('login.form.login.errMsg'));
+      }
+      // 与移动端一样，在跳转授权前签发 state，并由平台随授权码原样带回。
+      const oauthState = await getOauthState(type);
+      if (!oauthState) throw new Error(t('login.form.login.errMsg'));
+      const params = new URLSearchParams({ redirect_uri: redirectUrl, response_type: 'code', state: oauthState });
+      let authUrl: string;
+      if (type === 'wecom') {
+        params.set('appid', config.corpId);
+        params.set('agentid', config.agentId);
+        params.set('scope', 'snsapi_privateinfo');
+        authUrl = `https://open.weixin.qq.com/connect/oauth2/authorize?${params}#wechat_redirect`;
+      } else if (type === 'ding-talk') {
+        params.set('client_id', config.agentId);
+        params.set('scope', 'openid corpid');
+        params.set('corpid', config.corpId);
+        params.set('prompt', 'consent');
+        authUrl = `https://login.dingtalk.com/oauth2/auth?${params}`;
+      } else {
+        params.set('client_id', config.agentId);
+        authUrl = `https://passport.feishu.cn/suite/passport/oauth/authorize?${params}`;
+      }
+      window.location.replace(authUrl);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-      if ((error as Result).code === 100500) {
-        router.replace({ name: 'login' });
-      }
-      if ((error as Result).code === 401) {
-        logout();
-      }
+      clearToken();
+      const detail = error instanceof Error ? undefined : (error as Result)?.message;
+      message.error(detail || t('login.form.login.errMsg'));
+      await router.replace({ name: 'login' });
     }
   }
 
   onBeforeMount(async () => {
-    const isWXWork = navigator.userAgent.includes('wxwork');
-    const isDingTalk =
-      navigator.userAgent.includes('dingtalk') ||
-      navigator.userAgent.includes('aliapp(dingtalk') ||
-      (getQueryVariable('authCode') !== '' &&
-        getQueryVariable('authCode') !== undefined &&
-        getQueryVariable('authCode') !== null);
-    const isLark =
-      navigator.userAgent.includes('feishu') ||
-      navigator.userAgent.includes('lark') ||
-      getQueryVariable('state')?.startsWith('lark.') === true;
-    if (!hasToken()) {
+    try {
+      // 初始路由守卫会取消请求，等待其完成后再申请 state。
+      await router.isReady();
+      const ua = navigator.userAgent.toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      const flow = params.get('state')?.split('.')[0];
+      const isWXWork = ua.includes('wxwork') || flow === 'wecom';
+      const isDingTalk = ua.includes('dingtalk') || !!params.get('authCode') || flow === 'ding-talk';
+      const isLark = ua.includes('feishu') || ua.includes('lark') || flow === 'lark';
+      // 授权回调优先处理，不能因残留的本地 Token 被跳过。
       if (isWXWork) {
         await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false);
       } else if (isDingTalk) {
-        await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, isDingTalk);
+        await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, true);
       } else if (isLark) {
         await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, false);
+      } else if (!WHITE_LIST.some((route) => route.name === router.currentRoute.value.name)) {
+        await userStore.checkIsLogin();
       }
-    }
-
-    if (WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path)) === undefined) {
-      await userStore.checkIsLogin(isWXWork || isDingTalk || isLark);
+    } finally {
       appStore.setLoginLoading(false);
     }
   });

@@ -1,20 +1,15 @@
 import { useRouter } from 'vue-router';
+import { showFailToast } from 'vant';
 import { AxiosResponse } from 'axios';
 
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-import {
-  getQueryVariable,
-  getUrlParameterWidthRegExp,
-  isDingTalkBrowser,
-  isLarkBrowser,
-  isWeComBrowser,
-} from '@lib/shared/method';
-import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+import { useI18n } from '@lib/shared/hooks/useI18n';
+import { isDingTalkBrowser, isLarkBrowser, isWeComBrowser } from '@lib/shared/method';
+import { clearToken, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 import { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 import type { Result } from '@lib/shared/types/axios';
 
 import { getOauthState, getThirdConfigByType, getThirdOauthCallback } from '@/api/modules';
-import { AUTH_DISABLED_ROUTE_NAME } from '@/router/constants';
 import useUserStore from '@/store/modules/user';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
@@ -27,7 +22,6 @@ const platformConfig = {
     authLoginType: CompanyTypeEnum.WE_COM_OAUTH2,
     type: 'wecom',
     codeKey: 'code',
-    codeKeysParams: ['code', 'state'],
     authUrl: (config: Record<string, any>, state: string) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
@@ -44,7 +38,6 @@ const platformConfig = {
     authLoginType: CompanyTypeEnum.DINGTALK_OAUTH2,
     type: 'ding-talk',
     codeKey: 'authCode',
-    codeKeysParams: ['code', 'authCode', 'state'],
     authUrl: (config: Record<string, any>, state: string) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(
@@ -60,7 +53,6 @@ const platformConfig = {
     authLoginType: CompanyTypeEnum.LARK_OAUTH2,
     type: 'lark-mobile',
     codeKey: 'code',
-    codeKeysParams: ['code', 'state'],
     authUrl: (config: Record<string, any>, state: string) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${
@@ -73,6 +65,7 @@ const platformConfig = {
 export default function useLogin() {
   const userStore = useUserStore();
   const router = useRouter();
+  const { t } = useI18n();
 
   async function thirdAuthLogin(code: string, state: string, type: string, loginType: CompanyTypeEnum) {
     try {
@@ -88,41 +81,34 @@ export default function useLogin() {
             ...othersQuery,
           },
         });
+      } else {
+        throw new Error(t('login.form.login.errMsg'));
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-      const err = error as Result;
-      if (err.code === 100500) {
-        router.replace({ name: 'login' });
-      } else if (err.code === 401) {
-        router.replace(AUTH_DISABLED_ROUTE_NAME);
-      }
+      clearToken();
+      const detail = error instanceof Error ? undefined : (error as Result)?.message;
+      showFailToast(detail || t('login.form.login.errMsg'));
+      await router.replace({ name: 'login' });
     }
   }
 
   async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig) {
     const platform = platformConfig[platformKey];
-    const code = getQueryVariable(platform.codeKey) ?? '';
-    let state = getQueryVariable('state') ?? '';
-    if (code) {
-      // 钉钉/企微/飞书工作台免登时由客户端直接注入 code，没有 state，需先向后端申请一个再回调
-      if (!state) {
-        state = await getOauthState(platform.type);
-      }
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get(platform.codeKey);
+    const state = url.searchParams.get('state') ?? '';
+    const authParams = ['code', 'authCode', 'state', 'error', 'error_description'];
+    const authorizationError = url.searchParams.has('error');
+    if (authParams.some((param) => url.searchParams.has(param))) {
+      // 缺失 state 交给后端拒绝，不在回调后补发；清理参数必须早于路由跳转。
+      authParams.forEach((param) => url.searchParams.delete(param));
+      window.history.replaceState(window.history.state, document.title, url.toString());
+      if (authorizationError || !code) throw new Error(t('login.form.login.errMsg'));
       await thirdAuthLogin(code, state, platform.type, platform.authLoginType);
-
-      // 清理参数
-      const url = new URL(window.location.href);
-      platform.codeKeysParams.forEach((param) => {
-        getUrlParameterWidthRegExp(param);
-        url.searchParams.delete(param);
-      });
-      // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-      window.history.replaceState({}, document.title, url.toString());
       return;
     }
 
+    clearToken();
     const res = await getThirdConfigByType<AxiosResponse<Result<ThirdPartyResourceConfig>>>(
       platform.platformConfigType,
       true
@@ -130,6 +116,7 @@ export default function useLogin() {
     if (res) {
       const { data } = res.data;
       const oauthState = await getOauthState(platform.type);
+      if (!oauthState) throw new Error(t('login.form.login.errMsg'));
       const redirectUrl = platform.authUrl(data.config, oauthState);
       window.location.replace(redirectUrl);
     }
@@ -137,9 +124,11 @@ export default function useLogin() {
 
   async function oAuthLogin() {
     try {
-      const platformKey = Object.keys(platformConfig).find((key) =>
-        platformConfig[key as keyof typeof platformConfig].detect()
-      ) as keyof typeof platformConfig | undefined;
+      const platformKeys = Object.keys(platformConfig) as (keyof typeof platformConfig)[];
+      const flow = new URLSearchParams(window.location.search).get('state')?.split('.')[0];
+      const platformKey =
+        platformKeys.find((key) => platformConfig[key].type === flow) ||
+        platformKeys.find((key) => platformConfig[key].detect());
       // 没有检测到三方平台企业微信、钉钉浏览器直接跳转到登录
       if (!platformKey) {
         return router.replace({ name: 'login' });
@@ -147,14 +136,10 @@ export default function useLogin() {
       // 检测到任一平台走第三方认证登录
       await handleThirdAuthLogin(platformKey);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-      const err = error as Result;
-      if (err.code === 100500) {
-        router.replace({ name: 'login' });
-      } else if (err.code === 401) {
-        router.replace(AUTH_DISABLED_ROUTE_NAME);
-      }
+      clearToken();
+      const detail = error instanceof Error ? undefined : (error as Result)?.message;
+      showFailToast(detail || t('login.form.login.errMsg'));
+      await router.replace({ name: 'login' });
     }
   }
 
