@@ -403,4 +403,5 @@ export default {
   'common.unfreezeTip': '解冻后该{type}立即恢复可领取状态，本次操作会写入操作日志',
   'common.refreshSuccess': '刷新成功',
   'common.freezeBiggestDay': '最长 1000 天',
+  'common.transformRecord': '转换记录',
 };

@@ -21,6 +21,7 @@ export const GetGlobalSearchClueListUrl = '/global/search/lead';
 export const GetGlobalCluePoolListUrl = '/global/search/clue_pool';
 export const BatchUpdateLeadUrl = '/lead/batch/update'; // 批量更新线索
 export const GenerateLeadChartUrl = '/lead/chart'; // 生成线索图表
+export const GetLeadTransitionCustomerRecordListUrl = '/lead/transition/account/list'; // 查询线索转换客户记录
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/lead/follow/record/update'; // 更新跟进记录

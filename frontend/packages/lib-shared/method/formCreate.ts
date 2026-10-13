@@ -3,6 +3,7 @@ import { FieldTypeEnum, FieldDataSourceTypeEnum, FormDesignKeyEnum } from '../en
 import type { FormCreateField, FormDetail } from '@cordys/web/src/components/business/crm-form-create/types';
 import { formatTimeValue, getCityPath, getIndustryPath } from './index';
 import { useI18n } from '../hooks/useI18n';
+import type { LeadTransitionCustomerRecordRes } from '../models/clue';
 
 export const linkAllAcceptTypes = [FieldTypeEnum.INPUT, FieldTypeEnum.TEXTAREA];
 export const dataSourceTypes = [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE];
@@ -315,7 +316,7 @@ export function transformData({
 }: {
   fields: FormCreateField[];
   item: any;
-  originalData?: CommonList<any>;
+  originalData?: CommonList<any> | LeadTransitionCustomerRecordRes;
   excludeFieldIds?: string[];
   needParseSubTable?: boolean;
 }) {
