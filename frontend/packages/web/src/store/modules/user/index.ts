@@ -110,7 +110,8 @@ const useUserStore = defineStore('user', {
         appStore.resetPageConfig();
       }
       licenseStore.resetLicenseValidation();
-      appStore.disconnectSystemMessageSSE();
+      // 会话已注销，仅关闭本地消息流，避免再次请求需要认证的关闭接口。
+      appStore.disconnectSystemMessageSSE(false);
       this.destroySystemNotify();
       // 重置用户信息
       this.$reset();
@@ -118,7 +119,7 @@ const useUserStore = defineStore('user', {
 
       removeRouteListener();
       appStore.hideLoading();
-      router.push({ name: 'login' });
+      return router.push({ name: 'login' });
     },
     // 登出
     async logout(silence = false) {
@@ -130,7 +131,8 @@ const useUserStore = defineStore('user', {
         }
         await signout();
       } finally {
-        this.logoutCallBack();
+        // 离开业务页后才完成登出，避免后续整页刷新重新加载旧路由。
+        await this.logoutCallBack();
       }
     },
     // 获取登录认证方式
@@ -190,8 +192,10 @@ const useUserStore = defineStore('user', {
           const currentRouteName = getFirstRouteNameByPermission(router.getRoutes());
           await router.push({ name: currentRouteName });
         }
-      } else if (!isLoginPage()) {
-        router.push({ name: 'login' });
+      } else {
+        // 先清理失效 Token，防止登录守卫把 login 再重定向到业务页。
+        clearToken();
+        if (!isLoginPage()) await router.replace({ name: 'login' });
       }
     },
     // 展示系统公告

@@ -125,6 +125,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';
+  import { hasToken } from '@lib/shared/method/auth';
   import { GetHomeStatisticParams } from '@lib/shared/models/home';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -152,6 +153,10 @@
   const activeDeptId = ref('');
 
   const useStore = useUserStore();
+  let disposed = false;
+  onScopeDispose(() => {
+    disposed = true;
+  });
 
   const originDepartmentOptions = ref<CrmTreeNodeData[]>([]);
   const departmentOptions = ref<CrmTreeNodeData[]>([]);
@@ -310,6 +315,7 @@
   });
   async function initDimType() {
     const config = await overviewStore.loadWinOrderConfig();
+    if (disposed || !hasToken()) return;
     const { timeField, priorPeriodEnable, userField, winOrderTimeField } = config;
     params.value = {
       ...params.value,
@@ -365,7 +371,8 @@
 
   onMounted(async () => {
     await initDimType();
-    initDepartList();
+    // 登出或切页后，异步初始化不能继续发起旧页面的业务请求。
+    if (!disposed && hasToken()) initDepartList();
   });
 </script>
 

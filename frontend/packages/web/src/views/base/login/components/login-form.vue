@@ -334,7 +334,7 @@
           preheat.value = false;
           clearToken();
         } else {
-          preheat.value = await userStore.isLogin();
+          preheat.value = await userStore.isLogin(true);
         }
       } catch (e) {
         // eslint-disable-next-line no-console

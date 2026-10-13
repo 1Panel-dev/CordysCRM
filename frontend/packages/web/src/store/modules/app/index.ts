@@ -327,14 +327,15 @@ const useAppStore = defineStore('app', {
     },
     /**
      * 客户端主动断开连接
+     * notifyServer=false 用于已登出场景，服务端通过消息流终止回调清理订阅。
      */
-    async disconnectSystemMessageSSE() {
+    async disconnectSystemMessageSSE(notifyServer = true) {
       const userStore = useUserStore();
-      if (!userStore.clientIdRandomId || !userStore.userInfo.id) return;
       if (this.eventSource) {
         this.eventSource.close();
         this.eventSource = null;
       }
+      if (!notifyServer || !userStore.clientIdRandomId || !userStore.userInfo.id) return;
       try {
         await closeMessageSubscribe({ clientId: userStore.clientIdRandomId, userId: userStore.userInfo.id });
       } catch (error) {
