@@ -272,8 +272,11 @@
                 order by
                 <choose>
                     <when test="${sort}.name in
-                        {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id', 'approval_status'}">
+                        {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id'}">
                         c.${sortName} ${sortType}, c.id ASC
+                    </when>
+                    <when test="${sort}.name == 'approval_status'">
+                        FIELD(c.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
                         sou_sort.${sortName} ${sortType}, c.id ASC
