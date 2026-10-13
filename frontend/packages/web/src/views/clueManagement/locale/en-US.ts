@@ -3,6 +3,7 @@ export default {
   'clue.allClues': 'All leads',
   'clue.myClues': 'My leads',
   'clue.departmentClues': 'Department leads',
+  'clue.convertedClues': 'Converted leads',
   'clue.convertedTo': 'Converted',
   'clue.convertedToCustomer': 'Converted to account',
   'clue.transferredToCustomer': 'Transferred to account',

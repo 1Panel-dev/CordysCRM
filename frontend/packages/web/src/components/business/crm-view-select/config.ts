@@ -123,6 +123,13 @@ import useUserStore from '@/store/modules/user';
 
 const userStore = useUserStore();
 
+export const nonFixedInternalViewIds = new Set<string>([CustomerSearchTypeEnum.CLUE_TRANSITION]);
+
+export const nonCopyableInternalViewIds = new Set<string>([
+  CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
+  CustomerSearchTypeEnum.CLUE_TRANSITION,
+]);
+
 type ViewAction = 'list' | 'add' | 'update' | 'delete' | 'detail' | 'fixed' | 'enable' | 'drag';
 
 export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => Promise<any>>> = {

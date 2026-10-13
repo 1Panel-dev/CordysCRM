@@ -10,7 +10,11 @@ import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 import type { ViewItem } from '@lib/shared/models/view';
 
 import { ConditionsItem, FilterFormItem, filterOptionKeyMap } from '@/components/pure/crm-advance-filter/type';
-import { internalConditionsMap, viewApiMap } from '@/components/business/crm-view-select/config';
+import {
+  internalConditionsMap,
+  nonFixedInternalViewIds,
+  viewApiMap,
+} from '@/components/business/crm-view-select/config';
 
 import { getOpportunityStageConfig } from '@/api/modules';
 import { TabType } from '@/hooks/useHiddenTab';
@@ -153,7 +157,7 @@ const useViewStore = defineStore('view', {
                 id: item.name as string,
                 name: item.tab as string,
                 enable: true,
-                fixed: true,
+                fixed: !nonFixedInternalViewIds.has(item.name as string),
                 type: 'internal',
                 searchMode: 'AND',
                 list: this.resolveInternalConditionList({
