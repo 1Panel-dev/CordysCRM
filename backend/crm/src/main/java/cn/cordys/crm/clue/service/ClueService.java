@@ -687,9 +687,11 @@ public class ClueService implements ApprovalResourceHandler {
         OperationLogContext.setResourceName(clue.getName());
 
         // 消息通知
+        // 线索池的线索没有负责人, List.of(null) 会直接抛 NPE; 审批通过后执行的删除也会走到这里
+        List<String> receivers = StringUtils.isBlank(clue.getOwner()) ? List.of() : List.of(clue.getOwner());
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
                 NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
-                orgId, List.of(clue.getOwner()), true);
+                orgId, receivers, true);
 
     }
 

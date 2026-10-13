@@ -89,7 +89,7 @@ public class ApprovalTodoService {
             return PageUtils.setPageInfo(page, Collections.<ApprovalTodoItemResponse>emptyList());
         }
 
-        fillSharedPoolFlag(items);
+        fillSharedPoolInfo(items);
         // 返回分页待办列表。
         return PageUtils.setPageInfo(page, items);
     }
@@ -142,7 +142,7 @@ public class ApprovalTodoService {
                 resolveResourceTypeFilter(filterType, request.getResourceType()),
                 keyword
         );
-        fillSharedPoolFlag(items);
+        fillSharedPoolInfo(items);
         return PageUtils.setPageInfo(page, items);
     }
 
@@ -165,7 +165,7 @@ public class ApprovalTodoService {
                 resolveResourceTypeFilter(filterType, request.getResourceType()),
                 keyword
         );
-        fillSharedPoolFlag(items);
+        fillSharedPoolInfo(items);
         // 返回分页结果，分页元信息沿用 PageHelper 查询结果。
         return PageUtils.setPageInfo(page, items);
     }
@@ -189,7 +189,7 @@ public class ApprovalTodoService {
                 resolveResourceTypeFilter(filterType, request.getResourceType()),
                 keyword
         );
-        fillSharedPoolFlag(items);
+        fillSharedPoolInfo(items);
         return PageUtils.setPageInfo(page, items);
     }
 
@@ -276,12 +276,12 @@ public class ApprovalTodoService {
     }
 
     /**
-     * 回填资源是否位于公海（客户）或线索池（线索）。
-     * 仅客户、线索类型需要该标记，其他类型保持为空；资源已删除时同样保持为空。
+     * 回填客户/线索的公海（线索池）信息：是否在公海（线索池）中、所属公海（线索池）ID。
+     * 仅客户、线索类型需要这些字段，其他类型保持为空；资源已删除时同样保持为空。
      *
      * @param items 待回填的分页数据
      */
-    private void fillSharedPoolFlag(List<ApprovalTodoItemResponse> items) {
+    private void fillSharedPoolInfo(List<ApprovalTodoItemResponse> items) {
         if (CollectionUtils.isEmpty(items)) {
             return;
         }
@@ -303,28 +303,29 @@ public class ApprovalTodoService {
             return;
         }
 
-        // 按类型批量查询，构造 资源ID -> 是否在公海/线索池 的映射。
-        // 注意 inSharedPool 可能为 null，不能使用 Collectors.toMap（值为 null 会抛 NPE）。
-        Map<String, Boolean> customerPoolMap = new HashMap<>();
-        Map<String, Boolean> cluePoolMap = new HashMap<>();
-        if (!customerIds.isEmpty()) {
-            for (Customer customer : customerMapper.selectByIds(customerIds.stream().distinct().toList())) {
-                customerPoolMap.put(customer.getId(), customer.getInSharedPool());
-            }
-        }
-        if (!clueIds.isEmpty()) {
-            for (Clue clue : clueMapper.selectByIds(clueIds.stream().distinct().toList())) {
-                cluePoolMap.put(clue.getId(), clue.getInSharedPool());
-            }
-        }
+        // 按类型批量查询，构造 资源ID -> 资源 映射，一次查询同时取到是否在池中与池ID。
+        Map<String, Customer> customerMap = customerIds.isEmpty() ? Collections.<String, Customer>emptyMap()
+                : customerMapper.selectByIds(customerIds.stream().distinct().toList()).stream()
+                .collect(Collectors.toMap(Customer::getId, Function.identity(), (prev, next) -> prev));
+        Map<String, Clue> clueMap = clueIds.isEmpty() ? Collections.<String, Clue>emptyMap()
+                : clueMapper.selectByIds(clueIds.stream().distinct().toList()).stream()
+                .collect(Collectors.toMap(Clue::getId, Function.identity(), (prev, next) -> prev));
 
-        // 回填标记。
+        // 回填标记与池ID。
         for (ApprovalTodoItemResponse item : items) {
             ApprovalFormTypeEnum formType = parseFormType(item.getResourceType());
-            if (formType == ApprovalFormTypeEnum.CUSTOMER && customerPoolMap.containsKey(item.getResourceId())) {
-                item.setInSharedPool(customerPoolMap.get(item.getResourceId()));
-            } else if (formType == ApprovalFormTypeEnum.CLUE && cluePoolMap.containsKey(item.getResourceId())) {
-                item.setInSharedPool(cluePoolMap.get(item.getResourceId()));
+            if (formType == ApprovalFormTypeEnum.CUSTOMER) {
+                Customer customer = customerMap.get(item.getResourceId());
+                if (customer != null) {
+                    item.setInSharedPool(customer.getInSharedPool());
+                    item.setPoolId(customer.getPoolId());
+                }
+            } else if (formType == ApprovalFormTypeEnum.CLUE) {
+                Clue clue = clueMap.get(item.getResourceId());
+                if (clue != null) {
+                    item.setInSharedPool(clue.getInSharedPool());
+                    item.setPoolId(clue.getPoolId());
+                }
             }
         }
     }
