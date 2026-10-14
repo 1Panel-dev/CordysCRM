@@ -215,6 +215,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import { hasAnyPermission } from '@/utils/permission';
 
   const FollowDetail = defineAsyncComponent(() => import('@/components/business/crm-follow-detail/index.vue'));
@@ -233,6 +234,7 @@
   const { t } = useI18n();
   const Message = useMessage();
   const { openModal } = useModal();
+  const { getUpdateReviewExtraParams } = useUpdateReviewChange();
 
   const show = defineModel<boolean>('show', {
     required: true,
@@ -289,7 +291,7 @@
     },
   }));
 
-  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+  const { initApprovalPermission, resolveRowOperation, updateExecute, deleteExecute, hasApprovalScopedPermission } =
     useApprovalOperation<Record<string, any>>({
       formType: FormDesignKeyEnum.CUSTOMER,
       dataActionMap: () => customerDataActionMap.value,
@@ -480,10 +482,16 @@
   // 转移
   async function transfer() {
     try {
+      const extraParams = await getUpdateReviewExtraParams(Boolean(detailInfo.value?.approved && updateExecute.value));
+      if (extraParams === false) {
+        return;
+      }
+
       transferLoading.value = true;
       await updateCustomer({
         id: props.sourceId,
         owner: transferForm.value.owner,
+        ...extraParams,
       });
       Message.success(t('common.transferSuccess'));
       resetTransferForm();

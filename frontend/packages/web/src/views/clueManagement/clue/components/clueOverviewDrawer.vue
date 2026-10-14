@@ -159,6 +159,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -177,6 +178,7 @@
   }>();
 
   const { openModal } = useModal();
+  const { getUpdateReviewExtraParams } = useUpdateReviewChange();
   const { t } = useI18n();
   const Message = useMessage();
 
@@ -208,28 +210,6 @@
     if (key === 'transfer' && visible) {
       resetTransferForm();
     }
-  }
-
-  function handleTransfer() {
-    transferFormRef.value?.formRef?.validate(async (error) => {
-      if (!error) {
-        try {
-          transferLoading.value = true;
-          await batchTransferClue({
-            ...transferForm.value,
-            ids: [sourceId.value],
-          });
-          Message.success(t('common.transferSuccess'));
-          resetTransferForm();
-          closeAndRefresh();
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(e);
-        } finally {
-          transferLoading.value = false;
-        }
-      }
-    });
   }
 
   // 移入线索池
@@ -299,7 +279,7 @@
     },
   }));
 
-  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+  const { initApprovalPermission, resolveRowOperation, updateExecute, deleteExecute, hasApprovalScopedPermission } =
     useApprovalOperation<Record<string, any>>({
       formType: FormDesignKeyEnum.CLUE,
       dataActionMap: () => clueDataActionMap.value,
@@ -310,6 +290,36 @@
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CLUE,
   });
+
+  function handleTransfer() {
+    transferFormRef.value?.formRef?.validate(async (error) => {
+      if (!error) {
+        try {
+          const extraParams = await getUpdateReviewExtraParams(
+            Boolean(detailInfo.value?.approved && updateExecute.value)
+          );
+          if (extraParams === false) {
+            return;
+          }
+
+          transferLoading.value = true;
+          await batchTransferClue({
+            ...transferForm.value,
+            ids: [sourceId.value],
+            ...extraParams,
+          });
+          Message.success(t('common.transferSuccess'));
+          resetTransferForm();
+          closeAndRefresh();
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        } finally {
+          transferLoading.value = false;
+        }
+      }
+    });
+  }
 
   const detailActions = computed<{
     groupList: ActionsItem[];

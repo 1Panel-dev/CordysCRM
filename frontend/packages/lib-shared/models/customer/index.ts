@@ -11,6 +11,7 @@ export interface SaveCustomerParams {
 export interface UpdateCustomerParams extends SaveCustomerParams {
   id: string;
   approvalTaskId?: string;
+  comment?: string;
 }
 
 export interface FreezeOpenSeaCustomerParams {
@@ -253,6 +254,7 @@ export type FollowDetailItem = FollowDetailItemType<CustomerFollowRecordListItem
 export interface TransferParams {
   ids?: (string | number)[];
   owner: string | null; // 负责人
+  comment?: string;
   [key: string]: any;
 }
 

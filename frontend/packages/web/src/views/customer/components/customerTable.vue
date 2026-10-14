@@ -183,6 +183,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -196,6 +197,7 @@
   const { t } = useI18n();
   const route = useRoute();
   const { currentLocale } = useLocale(Message.loading);
+  const { getUpdateReviewExtraParams } = useUpdateReviewChange();
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER;
@@ -327,6 +329,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -499,12 +502,18 @@
     }
   }
 
-  async function transferCustomer() {
+  async function transferCustomer(row: Record<string, any>) {
     try {
+      const extraParams = await getUpdateReviewExtraParams(Boolean(row.approved && updateExecute.value));
+      if (extraParams === false) {
+        return;
+      }
+
       transferLoading.value = true;
       await updateCustomer({
         id: activeSourceId.value,
         owner: transferForm.value.owner,
+        ...extraParams,
       });
 
       Message.success(t('common.transferSuccess'));
@@ -563,7 +572,7 @@
         break;
       case 'pop-transfer':
         activeSourceId.value = row.id;
-        transferCustomer();
+        transferCustomer(row);
         break;
       case 'delete':
         handleDelete(row);
