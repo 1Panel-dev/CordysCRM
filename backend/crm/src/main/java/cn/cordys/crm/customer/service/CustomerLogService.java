@@ -22,6 +22,8 @@ public class CustomerLogService extends BaseModuleLogService {
         for (JsonDifferenceDTO differ : differences) {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
+            } else if (Strings.CI.equals(differ.getColumn(), "approvalStatus")) {
+                setApprovalName(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "collectionTime")) {
                 setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
             }

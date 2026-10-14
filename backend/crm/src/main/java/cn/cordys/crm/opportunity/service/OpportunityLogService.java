@@ -86,6 +86,10 @@ public class OpportunityLogService extends BaseModuleLogService {
                 }
             }
 
+            if (Strings.CI.equals(differ.getColumn(), "approvalStatus")) {
+                setApprovalName(differ);
+            }
+
             if (differ.getColumn() != null && differ.getColumn().contains("-")) {
                 differ.setColumnName(differ.getColumn());
             }
