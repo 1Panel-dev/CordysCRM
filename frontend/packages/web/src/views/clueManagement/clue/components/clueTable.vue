@@ -448,6 +448,7 @@
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'batchTransfer':
+        moveIds.value = [];
         showTransferModal.value = true;
         break;
       case 'moveIntoCluePool':
