@@ -48,6 +48,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
         <div v-show="activeTab === 'quotation'" class="h-full">
           <CrmApprovalDetail
+            v-if="visible"
             :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"

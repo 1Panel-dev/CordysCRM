@@ -45,6 +45,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
         <div v-show="activeTab === 'invoice'" class="h-full">
           <CrmApprovalDetail
+            v-if="visible"
             :form-key="FormDesignKeyEnum.INVOICE"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
