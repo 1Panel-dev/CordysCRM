@@ -190,6 +190,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { useUserStore } from '@/store';
   import { getExportColumns } from '@/utils/export';
@@ -210,6 +211,7 @@
   const { t } = useI18n();
   const route = useRoute();
   const { currentLocale } = useLocale(Message.loading);
+  const { getUpdateReviewExtraParams } = useUpdateReviewChange();
 
   const props = defineProps<{
     tableFormKey: FormDesignKeyEnum.CLUE | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE;
@@ -334,6 +336,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -513,10 +516,16 @@
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         try {
+          const extraParams = await getUpdateReviewExtraParams(Boolean(row.approved && updateExecute.value));
+          if (extraParams === false) {
+            return;
+          }
+
           transferLoading.value = true;
           await batchTransferClue({
             ...transferForm.value,
             ids: [row.id],
+            ...extraParams,
           });
           done?.();
           Message.success(t('common.transferSuccess'));

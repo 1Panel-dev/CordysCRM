@@ -56,8 +56,7 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue';
-  import { FormInst, NButton, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
+  import { FormInst, NButton, NForm, NScrollbar, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
   import dayjs from 'dayjs';
 
@@ -90,7 +89,7 @@
   import { getDatasourceRefDetailList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormReviewAction from '@/hooks/useFormReviewAction';
-  import useModal from '@/hooks/useModal';
+  import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
 
   import { formKeyMap } from '../crm-data-source-select/config';
   import { FormulaDataSourceMap } from '../crm-formula/formula-runtime/types';
@@ -119,7 +118,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
-  const { openModal } = useModal();
+  const { getUpdateReviewExtraParams } = useUpdateReviewChange();
 
   const formLoading = defineModel<boolean>('loading', {
     default: false,
@@ -734,92 +733,12 @@
     return result;
   }
 
-  function openUpdateChangeModal() {
-    return new Promise<string | undefined>((resolve) => {
-      const changeDescription = ref('');
-      let modalReactive: ReturnType<typeof openModal> | null = null;
-      const syncPositiveDisabled = (disabled: boolean) => {
-        if (!modalReactive) {
-          return;
-        }
-        modalReactive.positiveButtonProps = {
-          ...(modalReactive.positiveButtonProps ?? {}),
-          disabled,
-        };
-      };
-
-      modalReactive = openModal({
-        maskClosable: false,
-        size: 'medium',
-        title: t('crm.approval.change'),
-        positiveText: t('crm.approval.confirmChange'),
-        negativeText: t('common.cancel'),
-        positiveButtonProps: {
-          size: 'medium',
-          disabled: true,
-        },
-        content: () =>
-          h(
-            NFormItem,
-            {
-              label: t('crm.approval.changeDescription'),
-              required: true,
-              showFeedback: false,
-            },
-            {
-              default: () =>
-                h(NInput, {
-                  value: changeDescription.value,
-                  type: 'textarea',
-                  maxlength: 300,
-                  showCount: true,
-                  autosize: {
-                    minRows: 3,
-                  },
-                  onUpdateValue: (value: string) => {
-                    changeDescription.value = value;
-                    syncPositiveDisabled(!value.trim().length);
-                  },
-                }),
-            }
-          ),
-        onPositiveClick: () => {
-          const description = changeDescription.value.trim();
-          if (!description.length) {
-            Message.warning(t('common.notNull', { value: t('crm.approval.changeDescription') }));
-            return false;
-          }
-          resolve(description);
-        },
-        onNegativeClick: () => {
-          resolve(undefined);
-        },
-        onAfterLeave: () => {
-          resolve(undefined);
-        },
-      });
-    });
-  }
-
-  async function getUpdateReviewExtraParams() {
-    if (!shouldConfirmUpdateChange.value) {
-      return {};
-    }
-
-    const comment = await openUpdateChangeModal();
-    if (!comment) {
-      return false;
-    }
-
-    return { comment };
-  }
-
   function handleSave(isContinue = false) {
     formRef.value?.validate(async (errors) => {
       if (!errors) {
         const result = buildSavePayload();
         // 获取变更说明
-        const extraParams = await getUpdateReviewExtraParams();
+        const extraParams = await getUpdateReviewExtraParams(shouldConfirmUpdateChange.value);
         if (extraParams === false) {
           return;
         }
