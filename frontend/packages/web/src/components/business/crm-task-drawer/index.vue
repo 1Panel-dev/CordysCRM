@@ -166,7 +166,6 @@
     :source-id="activeResourceId"
     :customFormId="resourceType"
     :approvalTaskId="approvalTaskId"
-    :refreshId="customFormRefreshKey"
     @edit="handleCustomFormEdit"
     @refresh="handleApproveSuccess"
   />
@@ -176,7 +175,7 @@
     :source-id="activeResourceId"
     :need-init-detail="true"
     :custom-form-id="resourceType"
-    @saved="handleCustomFormSaved"
+    @saved="handleApproveSuccess"
     @review="handleCustomFormReview"
   />
 </template>
@@ -460,7 +459,6 @@
   const opportunityDetailVisible = ref(false);
   const customFormDetailVisible = ref(false);
   const customFormEditVisible = ref(false);
-  const customFormRefreshKey = ref(0);
   const approvalTaskId = ref('');
   const resourceType = ref('');
   const activeResourceName = ref('');
@@ -564,16 +562,25 @@
     }
   }
 
+  function closeDetailDrawers() {
+    contractDetailVisible.value = false;
+    quotationDetailVisible.value = false;
+    orderDetailVisible.value = false;
+    invoiceDetailVisible.value = false;
+    customerDetailVisible.value = false;
+    openSeaDetailVisible.value = false;
+    clueDetailVisible.value = false;
+    cluePoolDetailVisible.value = false;
+    opportunityDetailVisible.value = false;
+    customFormDetailVisible.value = false;
+  }
+
   function handleApproveSuccess() {
+    closeDetailDrawers();
     initStatistic();
     taskListRef.value?.loadTaskList(true);
     allSelect.value = false;
     selectedKeys.value = [];
-  }
-
-  function refreshCustomFormDetail() {
-    customFormRefreshKey.value += 1;
-    handleApproveSuccess();
   }
 
   function handleCustomFormEdit(sourceId: string) {
@@ -581,13 +588,9 @@
     customFormEditVisible.value = true;
   }
 
-  function handleCustomFormSaved() {
-    refreshCustomFormDetail();
-  }
-
   function handleCustomFormReview(res: any) {
     reviewByFormResult(res, {
-      onSuccess: refreshCustomFormDetail,
+      onSuccess: handleApproveSuccess,
     });
   }
 
