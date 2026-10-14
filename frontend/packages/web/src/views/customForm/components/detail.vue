@@ -43,6 +43,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
         <div v-show="activeTab === 'customForm'" class="h-full p-[24px]">
           <CrmApprovalDetail
+            v-if="visible"
             :form-key="props.customFormId"
             :source-id="props.sourceId"
             :refresh-key="detailRefreshKey"

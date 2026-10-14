@@ -59,6 +59,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 186 : 106" no-content-padding>
         <div v-show="activeTab === 'order'" class="h-full">
           <CrmApprovalDetail
+            v-if="visible"
             :form-key="FormDesignKeyEnum.ORDER"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"

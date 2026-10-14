@@ -53,6 +53,7 @@
         <!-- 需要用到 detailInfo 所以这里不用 v-if -->
         <div v-show="activeTab === 'contract'" class="h-full">
           <CrmApprovalDetail
+            v-if="visible"
             :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"

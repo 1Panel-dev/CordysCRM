@@ -69,6 +69,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 170 : 90" no-content-padding>
         <div v-show="activeTab === 'opportunity'" class="h-full overflow-hidden">
           <CrmApprovalDetail
+            v-if="showOptOverviewDrawer"
             :form-key="FormDesignKeyEnum.BUSINESS"
             :source-id="sourceId"
             :refresh-key="refreshKey"

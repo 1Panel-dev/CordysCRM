@@ -39,6 +39,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 64 : 0" no-content-padding>
         <div v-show="activeTab === 'clue'" class="h-full overflow-hidden">
           <CrmApprovalDetail
+            v-if="show"
             :refresh-key="refreshKey"
             :form-key="FormDesignKeyEnum.CLUE"
             :source-id="sourceId"

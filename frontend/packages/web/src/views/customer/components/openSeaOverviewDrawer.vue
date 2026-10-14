@@ -38,6 +38,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="64" no-content-padding>
         <div v-show="activeTab === 'openSea'" class="h-full overflow-hidden">
           <CrmApprovalDetail
+            v-if="show"
             :form-key="FormDesignKeyEnum.CUSTOMER"
             :source-id="props.sourceId"
             :refresh-key="refreshKey"
