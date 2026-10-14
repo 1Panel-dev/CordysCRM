@@ -132,7 +132,7 @@ export default {
   'crmFormDesign.formActionButtonPosition': '表单操作按钮位置',
   'crmFormDesign.serialNumberRule': '流水号规则',
   'crmFormDesign.serialNumberRuleTip':
-    '按日期格式中最细的年、月或日周期计数，新周期从 1 开始。同一前缀和周期内，仅更改日期分隔符会沿用原计数',
+    '更改第一个固定字符（前缀）或提交日期的计数周期（年/月/日）后，旧规则计数将被清理，新规则从 1 开始计数。仅修改日期分隔符（如 yyyy/MM/dd 改为 yyyy-MM-dd）会沿用原计数。进入新周期时从 1 开始计数。',
   'crmFormDesign.serialNumberRuleAutoCountTip': '{number} 位数字，按日期规则的年、月或日周期计数',
   'crmFormDesign.serialNumberDateInvalid': '日期格式不合法，仅支持完整的 yyyy、yyyyMM 或 yyyyMMdd，可添加分隔符',
   'crmFormDesign.serialNumberDatePreviewFailed': '日期预览暂不可用，请稍后重试',
