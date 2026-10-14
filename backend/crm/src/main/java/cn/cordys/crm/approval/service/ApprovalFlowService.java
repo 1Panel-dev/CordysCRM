@@ -2151,12 +2151,12 @@ public class ApprovalFlowService {
         if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
             // 自动驳回, 插入审批记录
             saveAutoRecord(instance, nextApproverNode.getId(), ApprovalStatus.AUTO_UNAPPROVED, null, null, nextApproverNode.getCcList(), true, null, currentOrgId);
-            updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.REJECT, InternalUser.ADMIN.getValue());
             ApprovalNodeExceptionResponse exNode = BeanUtils.copyBean(new ApprovalNodeExceptionResponse(), nextApproverNode);
             exNode.setNodeType(ApprovalNodeTypeEnum.EXCEPTION.name());
             ApprovalActionService approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
-            // 撤回时从快照还原业务数据
+            // 先回退业务数据, 再执行驳回后操作: 顺序反过来的话, 回退会把驳回后操作刚写进去的字段一并还原掉
             approvalActionService.revertFromSnapshot(FormKey.ofKey(instance.getType()), instance.getExecuteTime(), instance.getResourceId(), InternalUser.ADMIN.getValue(), currentOrgId);
+            updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.REJECT, InternalUser.ADMIN.getValue());
             return exNode;
         }
 

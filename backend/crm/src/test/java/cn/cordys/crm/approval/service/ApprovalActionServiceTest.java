@@ -5,17 +5,22 @@ import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalAction;
 import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.constants.ApprovalTypeEnum;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
+import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.dto.request.ApprovalActionRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.junit.jupiter.api.AfterAll;
@@ -23,6 +28,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.MockedStatic;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -35,7 +42,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -44,6 +56,7 @@ class ApprovalActionServiceTest {
 
 	private static ApplicationContext previousContext;
 	private static MessageSource previousMessageSource;
+	private static DefaultUidGenerator uidGenerator;
 
 	private ApprovalActionService service;
 	private BaseMapper<ApprovalInstance> instanceMapper;
@@ -64,6 +77,7 @@ class ApprovalActionServiceTest {
 		DefaultUidGenerator generator = new DefaultUidGenerator();
 		ReflectionTestUtils.setField(generator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
 		generator.init();
+		uidGenerator = generator;
 		ApplicationContext context = mock(ApplicationContext.class);
 		when(context.getBean(DefaultUidGenerator.class)).thenReturn(generator);
 		new CommonBeanFactory().setApplicationContext(context);
@@ -194,6 +208,45 @@ class ApprovalActionServiceTest {
 		assertEquals(ApprovalStatus.APPROVING.name(), nextTask.getStatus());
 		assertEquals(nextTask.getId(), nextSign.getTaskId());
 		verify(extTaskMapper).updateRootNext("sign-next-old", nextTask.getId());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void rejectRevertsTheResourceBeforeApplyingTheRejectPostActions() {
+		ApprovalInstance instance = new ApprovalInstance();
+		instance.setId("instance-1");
+		instance.setType(FormKey.CUSTOMER.getKey());
+		instance.setResourceId("customer-1");
+		instance.setExecuteTime(ExecuteTimingEnum.UPDATE.name());
+		instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
+		when(instanceMapper.selectByPrimaryKey("instance-1")).thenReturn(instance);
+
+		ApprovalTask currentTask = task("task-1", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 0);
+		currentTask.setApproverId("approver-1");
+		when(taskMapper.selectByPrimaryKey("task-1")).thenReturn(currentTask);
+
+		ReflectionTestUtils.setField(service, "approvalInstanceService", mock(ApprovalInstanceService.class));
+		ReflectionTestUtils.setField(service, "approvalRecordMapper", mock(BaseMapper.class));
+
+		ApprovalActionService spy = spy(service);
+		doNothing().when(spy).loseCurrentNode(anyString(), anyString());
+		doNothing().when(spy).saveLogAndNotice(any(), anyString(), anyString(), any());
+		doNothing().when(spy).revertFromSnapshot(any(), any(), any(), any(), any());
+
+		ApprovalResourceService resourceService = mock(ApprovalResourceService.class);
+		try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
+			beanFactory.when(() -> CommonBeanFactory.getBean(ApprovalResourceService.class)).thenReturn(resourceService);
+			beanFactory.when(() -> CommonBeanFactory.getBean(DefaultUidGenerator.class)).thenReturn(uidGenerator);
+			spy.reject(ApprovalActionRequest.builder().id("task-1").instanceId("instance-1").nodeId("NODE001").build(),
+					"approver-1", "org-1");
+		}
+
+		// 先退回再执行驳回后操作: 顺序反过来的话, 驳回后操作刚写进去的字段会被退回一并还原掉
+		InOrder inOrder = inOrder(spy, approvalFlowService);
+		inOrder.verify(spy).revertFromSnapshot(
+				FormKey.CUSTOMER, ExecuteTimingEnum.UPDATE.name(), "customer-1", "approver-1", "org-1");
+		inOrder.verify(approvalFlowService).updateApprovalPostField(
+				instance, "NODE001", ApprovalAction.REJECT, "approver-1");
 	}
 
 	private ApprovalTask task(String id, ApprovalTaskType type, ApprovalStatus status, int round) {
