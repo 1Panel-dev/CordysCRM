@@ -394,6 +394,7 @@ public class ModuleFormService {
         if (CollectionUtils.isEmpty(saveFields)) {
             return;
         }
+        normalizeStoredFieldBusinessParams(saveFields, null);
         // 剔除引用字段&&并保留到数据源引用字段
         List<BaseField> fieldToSave = new ArrayList<>(saveFields);
         AtomicLong pos = new AtomicLong(0L);
@@ -895,6 +896,7 @@ public class ModuleFormService {
                 fieldDTOList.add(baseField);
             });
         }
+        normalizeStoredFieldBusinessParams(fieldDTOList, null);
         return fieldDTOList;
     }
 
@@ -1287,33 +1289,75 @@ public class ModuleFormService {
      * @param field 自定义字段
      */
     public void setFieldBusinessParam(BaseField field) {
-        Set<String> businessTitleIdSet = Arrays.stream(BusinessTitleConstants.values())
-                .map(BusinessTitleConstants::getId)
-                .collect(Collectors.toSet());
-        if (field.isSys()) {
-            return;
+        String actualFieldId = splitRefId(field.getResourceFieldId()).apply(field.getId());
+        SystemFieldConstants systemField = field.isSys() ? Arrays.stream(SystemFieldConstants.values())
+                .filter(candidate -> Strings.CS.equals(candidate.getKey(), actualFieldId)).findFirst().orElse(null) : null;
+        BusinessTitleConstants titleField = Arrays.stream(BusinessTitleConstants.values())
+                .filter(candidate -> Strings.CS.equals(candidate.getId(), actualFieldId)
+                        && (StringUtils.isNotBlank(field.getResourceFieldId())
+                        || Strings.CS.equals(candidate.getKey(), field.getInternalKey())))
+                .findFirst().orElse(null);
+        // 特殊字段也从服务端闭集重建业务键，不能因为 sys 或引用 ID 保留客户端的 SQL 文本。
+        setBusinessFieldParam(field);
+        if (systemField != null) {
+            field.setSys(true);
+            field.setBusinessKey(systemField.getKey());
+            field.setDisabledProps(null);
+        } else if (titleField != null) {
+            field.setBusinessKey(titleField.getKey());
+            field.setDisabledProps(null);
         }
-        if (StringUtils.isNotBlank(field.getResourceFieldId())) {
-            String actualFieldId = field.getId().replace((field.getResourceFieldId() + REF_UNDERLINE), StringUtils.EMPTY);
-            if (businessTitleIdSet.contains(actualFieldId)) {
-                return;
-            }
-        }
-
-        // 获取特殊的业务字段
-        Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
-                collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
         if (field instanceof SubField subField) {
-            subField.getSubFields().forEach(this::setFieldBusinessParam);
+            normalizeStoredFieldBusinessParams(subField.getSubFields(), null);
         }
-        BusinessModuleField businessEnum = businessModuleFieldMap.get(field.getInternalKey());
+        if (field instanceof DatasourceField sourceField) {
+            normalizeStoredFieldBusinessParams(sourceField.getRefFields(), sourceField);
+        }
+    }
+
+    private void setBusinessFieldParam(BaseField field) {
+        field.setSys(false);
+        BusinessModuleField businessEnum = BusinessModuleField.ofKey(field.getInternalKey());
         if (businessEnum != null) {
-            // 设置特殊的业务字段 key
             field.setBusinessKey(businessEnum.getBusinessKey());
             field.setDisabledProps(businessEnum.getDisabledProps());
         } else {
             field.setBusinessKey(null);
             field.setDisabledProps(null);
+        }
+    }
+
+    /** 保存和历史配置回读都不信任 sys；系统引用必须匹配真实数据源及服务端字段定义。 */
+    private void normalizeStoredFieldBusinessParams(List<BaseField> fields, DatasourceField parentSource) {
+        if (CollectionUtils.isEmpty(fields)) {
+            return;
+        }
+        Map<String, DatasourceField> sourceFields = fields.stream().filter(DatasourceField.class::isInstance)
+                .map(DatasourceField.class::cast)
+                .collect(Collectors.toMap(BaseField::getId, Function.identity(), (previous, next) -> previous));
+        if (parentSource != null) {
+            sourceFields.put(parentSource.getId(), parentSource);
+        }
+        for (BaseField field : fields) {
+            setBusinessFieldParam(field);
+            DatasourceField sourceField = sourceFields.get(field.getResourceFieldId());
+            if (sourceField != null) {
+                String actualFieldId = splitRefId(sourceField.getId()).apply(field.getId());
+                getSystemExtendFields(sourceField.getDataSourceType()).stream()
+                        .filter(candidate -> Strings.CS.equals(candidate.getId(), actualFieldId)).findFirst()
+                        .ifPresent(candidate -> {
+                            field.setInternalKey(candidate.getInternalKey());
+                            field.setBusinessKey(candidate.getBusinessKey());
+                            field.setDisabledProps(candidate.getDisabledProps());
+                            field.setSys(candidate.isSys());
+                        });
+            }
+            if (field instanceof SubField subField) {
+                normalizeStoredFieldBusinessParams(subField.getSubFields(), null);
+            }
+            if (field instanceof DatasourceField datasourceField) {
+                normalizeStoredFieldBusinessParams(datasourceField.getRefFields(), datasourceField);
+            }
         }
     }
 
@@ -1485,9 +1529,15 @@ public class ModuleFormService {
         }
         List<BaseField> fields = new ArrayList<>();
         for (SystemFieldConstants sf : SystemFieldConstants.values()) {
+            if (sf.getSourceType() != sourceType) {
+                continue;
+            }
             // 目前只有下拉类型系统字段, 后续可根据枚举扩展
             SelectField field = new SelectField();
             field.setId(sf.getKey());
+            field.setInternalKey(sf.getKey());
+            field.setBusinessKey(sf.getKey());
+            field.setType(FieldType.SELECT.name());
             field.setSys(true);
             fields.add(field);
         }
@@ -3094,9 +3144,14 @@ public class ModuleFormService {
      * @return 组合后的字段配置
      */
     private BaseField combineFieldsProps(BaseField old, BaseField ref) {
+        // 引用属性也可能来自旧 Blob，合并前必须重新解析业务元数据。
+        setFieldBusinessParam(ref);
         if (ref.isSys()) {
-            // 系统字段, 直接返回前端引用的字段配置即可, 后端不组装字段
+            // 保留系统引用字段的展示属性，业务元数据只能来自服务端定义。
             old.setSys(true);
+            old.setInternalKey(ref.getInternalKey());
+            old.setBusinessKey(ref.getBusinessKey());
+            old.setDisabledProps(ref.getDisabledProps());
             return old;
         }
         // 深拷贝 ref 对象, 避免修改原始对象

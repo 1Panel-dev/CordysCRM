@@ -22,6 +22,8 @@ import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.SystemResultCode;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -39,6 +41,8 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
 
     @Resource
     private ExtClueMapper extClueMapper;
+    @Resource
+    private BaseMapper<Clue> clueMapper;
     @Resource
     private ClueFieldService clueFieldService;
     @Resource
@@ -62,7 +66,7 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //查询当前用户搜索配置
-        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
+        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.CLUE.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
         List<String> phoneTypeFieldIds = userSearchConfigs.stream().filter(config -> Strings.CI.equals(config.getType(), FieldType.PHONE.name())).map(UserSearchConfig::getFieldId).toList();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
@@ -139,13 +143,9 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         //处理内置字段的选项
         List<Clue> clues = new ArrayList<>();
         if (MapUtils.isNotEmpty(internalKeyMap)) {
-            List<String> columns = new ArrayList<>();
-            for (String value : internalKeyMap.values()) {
-                String result = value.replaceAll("([A-Z])", "_$1").toLowerCase();
-                columns.add(result);
-            }
-            columns.add("id");
-            clues = extClueMapper.searchColumnsByIds(columns, clueIds);
+            clues = clueMapper.selectListByLambda(new LambdaQueryWrapper<Clue>()
+                    .in(Clue::getId, clueIds)
+                    .eq(Clue::getOrganizationId, orgId));
         }
         Map<String, Clue> internalKeyValueMap = clues.stream().collect(Collectors.toMap(Clue::getId, t -> t));
         // 处理自定义字段选项数据

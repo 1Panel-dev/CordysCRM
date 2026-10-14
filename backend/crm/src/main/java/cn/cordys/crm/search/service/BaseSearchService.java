@@ -6,9 +6,11 @@ import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.customer.domain.CustomerPool;
@@ -18,9 +20,11 @@ import cn.cordys.crm.search.domain.SearchFieldMaskConfig;
 import cn.cordys.crm.search.domain.UserSearchConfig;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.Module;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
@@ -32,10 +36,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class BaseSearchService<T extends BasePageRequest, R> {
+
+    private static final Pattern BUSINESS_KEY_PATTERN = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*$");
 
     @Resource
     private BaseMapper<Module> moduleMapper;
@@ -63,6 +70,9 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
 
     @Resource
     private ModuleFormService moduleFormService;
+
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
     @Resource
     private UserExtendService userExtendService;
@@ -201,6 +211,10 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     public void buildOtherFilterCondition(String orgId, UserSearchConfig userSearchConfig, String keyword, List<FilterCondition> conditions) {
         String name;
         if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey())) {
+            // 计数和列表共用此入口，业务键必须是完整标识符，不能依赖可配置的 SQL 黑名单。
+            if (!BUSINESS_KEY_PATTERN.matcher(userSearchConfig.getBusinessKey()).matches()) {
+                throw new GenericException(Translator.get("search.config.invalid"));
+            }
             name = userSearchConfig.getBusinessKey();
         } else {
             name = userSearchConfig.getFieldId();
@@ -263,6 +277,31 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         wrapper.eq(UserSearchConfig::getUserId, userId)
                 .eq(UserSearchConfig::getOrganizationId, orgId);
         return userSearchConfigBaseMapper.selectListByLambda(wrapper);
+    }
+
+    /**
+     * 在构造查询前核对当前模块的历史搜索配置，防止旧业务键或类型绕过字段归一化。
+     */
+    public List<UserSearchConfig> getUserSearchConfigs(String userId, String orgId, String formKey, String moduleType) {
+        List<UserSearchConfig> configs = getUserSearchConfigs(userId, orgId);
+        List<UserSearchConfig> moduleConfigs = configs.stream()
+                .filter(config -> Strings.CI.equals(config.getModuleType(), moduleType)).toList();
+        if (CollectionUtils.isEmpty(moduleConfigs)) {
+            return configs;
+        }
+        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(formKey, orgId).getFields();
+        for (UserSearchConfig config : moduleConfigs) {
+            BaseField field = fields.stream().filter(candidate -> Strings.CI.equals(candidate.getId(), config.getFieldId()))
+                    .findFirst().orElse(null);
+            String businessKey = config.getBusinessKey();
+            if (field == null || !Strings.CS.equals(config.getType(), field.getType())
+                    || !Strings.CS.equals(StringUtils.defaultIfBlank(businessKey, null), StringUtils.defaultIfBlank(field.getBusinessKey(), null))
+                    || (StringUtils.isNotBlank(businessKey) && !BUSINESS_KEY_PATTERN.matcher(businessKey).matches())
+                    || !Strings.CS.equals(config.getDataSourceType(), field instanceof DatasourceField source ? source.getDataSourceType() : null)) {
+                throw new GenericException(Translator.get("search.config.invalid"));
+            }
+        }
+        return configs;
     }
 
     /**
@@ -410,6 +449,10 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param request    分页请求
      */
     public void buildCombineSearch(List<FilterCondition> conditions, BasePageRequest request) {
+        // 不允许非法条件被静默过滤后变成不带关键词条件的组织范围查询。
+        if (conditions.stream().anyMatch(condition -> !condition.valid())) {
+            throw new GenericException(Translator.get("search.config.invalid"));
+        }
         CombineSearch combineSearch = new CombineSearch();
         combineSearch.setSearchMode(CombineSearch.SearchMode.OR.toString());
         combineSearch.setConditions(conditions);

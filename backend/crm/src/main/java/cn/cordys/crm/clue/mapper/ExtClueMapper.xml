@@ -732,17 +732,6 @@
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
-    <select id="searchColumnsByIds" resultType="cn.cordys.crm.clue.domain.Clue">
-        select
-        <foreach collection="columns" item="col" separator=",">
-            ${col}
-        </foreach>
-        from clue
-        where id in
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-    </select>
 
     <update id="updateIncludeNullById" parameterType="cn.cordys.crm.clue.domain.Clue">
         update clue set pool_id = #{clue.poolId}, in_shared_pool = #{clue.inSharedPool}, owner = #{clue.owner},

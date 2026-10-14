@@ -26,6 +26,8 @@ import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.SystemResultCode;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -43,6 +45,8 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
 
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private BaseService baseService;
     @Resource
@@ -68,7 +72,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //查询当前用户搜索配置
-        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
+        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.OPPORTUNITY.getKey(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY);
         //记住选择的内置列,除自定义字段外，用户还会选择一些内置字段
         Map<String, String> internalKeyMap = new HashMap<>();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
@@ -151,13 +155,9 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         //处理内置字段的选项
         List<Opportunity> opportunities = new ArrayList<>();
         if (MapUtils.isNotEmpty(internalKeyMap)) {
-            List<String> columns = new ArrayList<>();
-            for (String value : internalKeyMap.values()) {
-                String result = value.replaceAll("([A-Z])", "_$1").toLowerCase();
-                columns.add(result);
-            }
-            columns.add("id");
-            opportunities = extOpportunityMapper.searchColumnsByIds(columns, opportunityIds);
+            opportunities = opportunityMapper.selectListByLambda(new LambdaQueryWrapper<Opportunity>()
+                    .in(Opportunity::getId, opportunityIds)
+                    .eq(Opportunity::getOrganizationId, orgId));
         }
         Map<String, Opportunity> internalKeyValueMap = opportunities.stream().collect(Collectors.toMap(Opportunity::getId, t -> t));
         // 处理自定义字段选项数据
