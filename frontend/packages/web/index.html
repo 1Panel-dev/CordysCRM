@@ -12,11 +12,13 @@
     }
 
     if (isMobileDevice()) {
-      window.location.href = import.meta.env.DEV ? 'http://localhost:3000' : `${window.location.origin}/mobile`;
+      const mobileEntry = import.meta.env.DEV ? 'http://localhost:3000/' : `${window.location.origin}/mobile`;
+      window.location.replace(`${mobileEntry}${window.location.search}${window.location.hash}`);
+    } else {
+      import('/src/main.ts');
     }
   </script>
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
