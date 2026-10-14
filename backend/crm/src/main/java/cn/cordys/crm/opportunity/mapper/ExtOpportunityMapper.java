@@ -58,8 +58,6 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
 
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-    List<Opportunity> searchColumnsByIds(@Param("columns") List<String> columns, @Param("ids") List<String> opportunityIds);
-
     /**
      * 全量更新商机
      *

@@ -937,17 +937,6 @@
             <property name="combineSearch" value="request.combineSearch"/>
         </include>
     </select>
-    <select id="searchColumnsByIds" resultType="cn.cordys.crm.opportunity.domain.Opportunity">
-        select
-        <foreach collection="columns" item="col" separator=",">
-            ${col}
-        </foreach>
-        from opportunity
-        where id in
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-    </select>
 
     <update id="updateIncludeNullById" parameterType="cn.cordys.crm.opportunity.domain.Opportunity">
         update opportunity set customer_id = #{opportunity.customerId}, name = #{opportunity.name}, amount = #{opportunity.amount},
