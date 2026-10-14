@@ -81,6 +81,7 @@ export default function useLogin() {
             ...othersQuery,
           },
         });
+        sessionStorage.removeItem(`cordys.oauth2.workbench-retry.${type}`);
       } else {
         throw new Error(t('login.form.login.errMsg'));
       }
@@ -94,18 +95,30 @@ export default function useLogin() {
 
   async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig): Promise<boolean> {
     const platform = platformConfig[platformKey];
+    const retryKey = `cordys.oauth2.workbench-retry.${platform.type}`;
     const url = new URL(window.location.href);
     const code = url.searchParams.get(platform.codeKey);
     const state = url.searchParams.get('state') ?? '';
     const authParams = ['code', 'authCode', 'state', 'error', 'error_description'];
     const authorizationError = url.searchParams.has('error');
-    if (authParams.some((param) => url.searchParams.has(param))) {
-      // 缺失 state 交给后端拒绝，不在回调后补发；清理参数必须早于路由跳转。
+    const hasCallback = authParams.some((param) => url.searchParams.has(param));
+    if (hasCallback) {
+      // 清理一次性参数必须早于路由跳转，旧链接中的 code 不能与新 state 配对使用。
       authParams.forEach((param) => url.searchParams.delete(param));
       window.history.replaceState(window.history.state, document.title, url.toString());
       if (authorizationError || !code) throw new Error(t('login.form.login.errMsg'));
-      await thirdAuthLogin(code, state, platform.type, platform.authLoginType);
-      return true;
+      if (state.startsWith(`${platform.type}.`)) {
+        await thirdAuthLogin(code, state, platform.type, platform.authLoginType);
+        return true;
+      }
+
+      // shortcut: 旧工作台授权首页仍需补授权一次，迁移至 CRM 首页后可移除此分支。
+      const hasCrmState = /^(wecom|ding-talk|lark|lark-mobile|qr-wecom|qr-ding-talk|github)\./.test(state);
+      if (hasCrmState || !platform.detect() || sessionStorage.getItem(retryKey)) {
+        throw new Error(t('login.form.login.errMsg'));
+      }
+    } else {
+      sessionStorage.removeItem(retryKey);
     }
 
     clearToken();
@@ -118,6 +131,7 @@ export default function useLogin() {
     const oauthState = await getOauthState(platform.type);
     if (!oauthState) throw new Error(t('login.form.login.errMsg'));
     const redirectUrl = platform.authUrl(data.config, oauthState);
+    if (hasCallback) sessionStorage.setItem(retryKey, '1');
     window.location.replace(redirectUrl);
     // 浏览器跳转尚未卸载当前页面时，调用方必须停止初始化和业务请求。
     return false;
