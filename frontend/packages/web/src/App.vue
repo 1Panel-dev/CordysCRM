@@ -61,9 +61,14 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-  async function handleOauthLogin(type: 'wecom' | 'ding-talk' | 'lark', loginType: CompanyTypeEnum): Promise<boolean> {
+  async function handleOauthLogin(
+    type: 'wecom' | 'ding-talk' | 'lark',
+    loginType: CompanyTypeEnum,
+    isDingBrowser: boolean
+  ): Promise<boolean> {
+    const retryKey = `cordys.oauth2.workbench-retry.${type}`;
     try {
-      const codeKey = type === 'ding-talk' ? 'authCode' : 'code';
+      const codeKey = isDingBrowser ? 'authCode' : 'code';
       const url = new URL(window.location.href);
       const authParams = ['code', 'authCode', 'state', 'error', 'error_description'];
       const code = url.searchParams.get(codeKey);
@@ -77,22 +82,39 @@
         if (authorizationError || !code) {
           throw new Error(t('login.form.login.errMsg'));
         }
-        // 回调只消费原 code/state；无效或缺失 state 交给后端拒绝，不自动发起第二轮授权。
-        const res = await getThirdOauthCallback(code, type, state);
-        if (!userStore.qrCodeLogin(res.data.data)) {
+        if (state.startsWith(`${type}.`)) {
+          sessionStorage.removeItem(retryKey);
+          const res = await getThirdOauthCallback(code, type, state);
+          const boolean = userStore.qrCodeLogin(res.data.data);
+          if (boolean) {
+            setLoginExpires();
+            setLoginType(loginType);
+
+            await goUserHasPermissionPage();
+            setLoading(false);
+            await userStore.getAuthentication();
+          } else {
+            throw new Error(t('login.form.login.errMsg'));
+          }
+          return true;
+        }
+
+        // 仅客户端工作台旧链接允许丢弃旧 code 后重新授权一次。
+        const ua = navigator.userAgent.toLowerCase();
+        const isPlatformBrowser = {
+          'wecom': ua.includes('wxwork'),
+          'ding-talk': ua.includes('dingtalk'),
+          'lark': ua.includes('feishu') || ua.includes('lark'),
+        }[type];
+        if (!isPlatformBrowser || sessionStorage.getItem(retryKey)) {
           throw new Error(t('login.form.login.errMsg'));
         }
-        setLoginExpires();
-        setLoginType(loginType);
-        await goUserHasPermissionPage();
-        setLoading(false);
-        await userStore.getAuthentication();
-        return true;
-      }
-
-      if (await userStore.isLogin(true)) {
-        if (router.currentRoute.value.name === 'login') await goUserHasPermissionPage();
-        return true;
+      } else {
+        sessionStorage.removeItem(retryKey);
+        if (await userStore.isLogin(true)) {
+          if (router.currentRoute.value.name === 'login') await goUserHasPermissionPage();
+          return true;
+        }
       }
       clearToken();
       const configType = {
@@ -128,10 +150,12 @@
         params.set('client_id', config.agentId);
         authUrl = `https://passport.feishu.cn/suite/passport/oauth/authorize?${params}`;
       }
+      if (hasCallback) sessionStorage.setItem(retryKey, '1');
       window.location.replace(authUrl);
       // 整页授权跳转期间继续显示加载状态，不能挂载扫码页或发起业务请求。
       return false;
     } catch (error) {
+      sessionStorage.removeItem(retryKey);
       clearToken();
       const detail = error instanceof Error ? undefined : (error as Result)?.message;
       message.error(detail || t('login.form.login.errMsg'));
@@ -147,19 +171,16 @@
       const ua = navigator.userAgent.toLowerCase();
       const params = new URLSearchParams(window.location.search);
       const flow = params.get('state')?.split('.')[0];
-      const callbackFlow = ['wecom', 'ding-talk', 'lark'].find((type) => type === flow);
-      const isWXWork = callbackFlow ? callbackFlow === 'wecom' : ua.includes('wxwork');
-      const isDingTalk = callbackFlow
-        ? callbackFlow === 'ding-talk'
-        : ua.includes('dingtalk') || !!params.get('authCode');
-      const isLark = callbackFlow ? callbackFlow === 'lark' : ua.includes('feishu') || ua.includes('lark');
+      const isWXWork = ua.includes('wxwork') || flow === 'wecom';
+      const isDingTalk = ua.includes('dingtalk') || !!params.get('authCode') || flow === 'ding-talk';
+      const isLark = ua.includes('feishu') || ua.includes('lark') || flow === 'lark';
       // 授权回调优先处理，不能因残留的本地 Token 被跳过。
       if (isWXWork) {
-        if (!(await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2))) return;
+        if (!(await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false))) return;
       } else if (isDingTalk) {
-        if (!(await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2))) return;
+        if (!(await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, true))) return;
       } else if (isLark) {
-        if (!(await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2))) return;
+        if (!(await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, false))) return;
       } else if (!WHITE_LIST.some((route) => route.name === router.currentRoute.value.name)) {
         await userStore.checkIsLogin(true);
       }

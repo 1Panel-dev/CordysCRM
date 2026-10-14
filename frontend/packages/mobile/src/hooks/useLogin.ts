@@ -92,7 +92,7 @@ export default function useLogin() {
     }
   }
 
-  async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig): Promise<boolean> {
+  async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig) {
     const platform = platformConfig[platformKey];
     const url = new URL(window.location.href);
     const code = url.searchParams.get(platform.codeKey);
@@ -104,10 +104,8 @@ export default function useLogin() {
       authParams.forEach((param) => url.searchParams.delete(param));
       window.history.replaceState(window.history.state, document.title, url.toString());
       if (authorizationError || !code) throw new Error(t('login.form.login.errMsg'));
-      // 根页面可能将飞书 Web 回调转入移动端，必须沿用签发时的 flow。
-      const callbackType = platformKey === 'lark' && state.startsWith('lark.') ? 'lark' : platform.type;
-      await thirdAuthLogin(code, state, callbackType, platform.authLoginType);
-      return true;
+      await thirdAuthLogin(code, state, platform.type, platform.authLoginType);
+      return;
     }
 
     clearToken();
@@ -115,35 +113,33 @@ export default function useLogin() {
       platform.platformConfigType,
       true
     );
-    if (!res) throw new Error(t('login.form.login.errMsg'));
-    const { data } = res.data;
-    const oauthState = await getOauthState(platform.type);
-    if (!oauthState) throw new Error(t('login.form.login.errMsg'));
-    const redirectUrl = platform.authUrl(data.config, oauthState);
-    window.location.replace(redirectUrl);
-    return false;
+    if (res) {
+      const { data } = res.data;
+      const oauthState = await getOauthState(platform.type);
+      if (!oauthState) throw new Error(t('login.form.login.errMsg'));
+      const redirectUrl = platform.authUrl(data.config, oauthState);
+      window.location.replace(redirectUrl);
+    }
   }
 
-  async function oAuthLogin(): Promise<boolean> {
+  async function oAuthLogin() {
     try {
       const platformKeys = Object.keys(platformConfig) as (keyof typeof platformConfig)[];
       const flow = new URLSearchParams(window.location.search).get('state')?.split('.')[0];
       const platformKey =
-        platformKeys.find((key) => platformConfig[key].type === flow || key === flow) ||
+        platformKeys.find((key) => platformConfig[key].type === flow) ||
         platformKeys.find((key) => platformConfig[key].detect());
       // 没有检测到三方平台企业微信、钉钉浏览器直接跳转到登录
       if (!platformKey) {
-        await router.replace({ name: 'login' });
-        return true;
+        return router.replace({ name: 'login' });
       }
       // 检测到任一平台走第三方认证登录
-      return await handleThirdAuthLogin(platformKey);
+      await handleThirdAuthLogin(platformKey);
     } catch (error) {
       clearToken();
       const detail = error instanceof Error ? undefined : (error as Result)?.message;
       showFailToast(detail || t('login.form.login.errMsg'));
       await router.replace({ name: 'login' });
-      return true;
     }
   }
 

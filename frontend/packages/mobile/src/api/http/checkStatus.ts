@@ -3,8 +3,6 @@ import { showFailToast } from 'vant';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import useUser from '@/hooks/useUser';
-import router from '@/router';
-import useUserStore from '@/store/modules/user';
 
 export default function checkStatus(
   status: number,
@@ -14,7 +12,7 @@ export default function checkStatus(
   noErrorTip?: boolean
 ): void {
   const { t } = useI18n();
-  const { isLoginPage, isWhiteListPage } = useUser();
+  const { logout, isLoginPage, isWhiteListPage } = useUser();
 
   let errMessage = '';
   switch (status) {
@@ -24,9 +22,7 @@ export default function checkStatus(
     case 401: {
       errMessage = msg || t('api.errMsg401');
       if (!isLoginPage() && !isWhiteListPage()) {
-        // 旧请求的 401 只清理本地会话，避免再次登出打断正在建立的 OAuth 会话。
-        useUserStore().logoutCallBack();
-        router.replace({ name: 'login' });
+        logout();
       }
       break;
     }
