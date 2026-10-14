@@ -2060,10 +2060,18 @@ public class ModuleFormService {
         }
         boolean previousFormula = Strings.CI.equals(previous.getPrefixType(), SerialNumberField.FORMULA);
         boolean currentFormula = Strings.CI.equals(current.getPrefixType(), SerialNumberField.FORMULA);
-        return previousFormula != currentFormula
+        if (previousFormula != currentFormula
                 || !Objects.equals(previousFormula ? previous.getFormula() : previous.getSerialNumberRules().getFirst(),
-                currentFormula ? current.getFormula() : current.getSerialNumberRules().getFirst())
-                || !Objects.equals(previous.getSerialNumberRules().get(2), current.getSerialNumberRules().get(2));
+                currentFormula ? current.getFormula() : current.getSerialNumberRules().getFirst())) {
+            return true;
+        }
+        try {
+            return !Objects.equals(SerialNumGenerator.counterDatePattern(previous.getSerialNumberRules().get(2)),
+                    SerialNumGenerator.counterDatePattern(current.getSerialNumberRules().get(2)));
+        } catch (IllegalArgumentException e) {
+            // 历史已保存但不再合法的日期规则仍需允许修正。
+            return true;
+        }
     }
 
     private void triggerSerialCleanup(String formId, String formKey, String orgId) {
@@ -2156,7 +2164,7 @@ public class ModuleFormService {
                 }
                 SerialNumGenerator.counterDatePattern(rules.get(2));
             } catch (IllegalArgumentException e) {
-                throw new GenericException(Translator.getWithArgs("module.form.serial.number.date.invalid", field.getName()));
+                throw new GenericException(Translator.get("module.form.serial.number.date.invalid"));
             }
         }
         boolean businessDeleted = BusinessModuleField.isBusinessDeleted(formKey, fields);

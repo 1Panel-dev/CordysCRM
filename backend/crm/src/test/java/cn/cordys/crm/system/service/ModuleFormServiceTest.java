@@ -109,8 +109,7 @@ class ModuleFormServiceTest {
         GenericException error = assertThrows(GenericException.class, () ->
                 service.saveWithoutLog(request, "user", "org"));
 
-        assertTrue(error.getMessage().contains("日期格式不合法"));
-        assertTrue(error.getMessage().contains("整份表单配置未保存"));
+        assertEquals("日期规则不合法", error.getMessage());
         verifyNoInteractions(formMapper, formBlobMapper, fieldMapper, extFieldMapper);
         assertNull(service.previewSerialNumberDate(pattern));
     }
@@ -195,18 +194,29 @@ class ModuleFormServiceTest {
         verify(formulaFixture.generator()).cleanUnusedRules("org", "custom-form-id", formula.getSerialNumberRules(), true);
     }
 
-    @Test
-    void unchangedPrefixAndDateDoNotCleanWhenOtherFieldPropertiesChange() {
-        SerialNumberField previous = serialField("field-1", "yyyyMMdd");
-        SerialNumberField current = serialField("field-1", "yyyyMMdd");
+    @ParameterizedTest
+    @ValueSource(strings = {"yyyy/MM/dd", "yyyy-MM-dd"})
+    void unchangedPrefixAndPeriodDoNotCleanWhenDisplayPropertiesChange(String pattern) {
+        SerialNumberField previous = serialField("field-1", "yyyy/MM/dd");
+        SerialNumberField current = serialField("field-1", pattern);
         previous.setPrefixType("custom");
         current.setName("新的字段名称");
-        current.setSerialNumberRules(List.of("Opp", "/", "yyyyMMdd", "_", "8"));
+        current.setSerialNumberRules(List.of("Opp", "/", pattern, "_", "8"));
         var fixture = serialSaveFixture(previous, current);
 
         fixture.service().saveWithoutLog(fixture.request(), "user", "org");
 
         verifyNoInteractions(fixture.generator(), fixture.transactionManager());
+    }
+
+    @Test
+    void historicalDateRuleCanBeCorrectedToSupportedPattern() {
+        SerialNumberField current = serialField("field-1", "yyyy-MM-dd");
+        var fixture = serialSaveFixture(serialField("field-1", "yyyy-MM-dd HH:mm:ss"), current);
+
+        assertDoesNotThrow(() -> fixture.service().saveWithoutLog(fixture.request(), "user", "org"));
+
+        verify(fixture.generator()).cleanUnusedRules("org", "custom-form-id", current.getSerialNumberRules(), false);
     }
 
     @Test

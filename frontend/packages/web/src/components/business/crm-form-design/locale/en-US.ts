@@ -134,7 +134,7 @@ export default {
   'crmFormDesign.formActionButtonPosition': 'Form Action Button Position',
   'crmFormDesign.serialNumberRule': 'Serial Number Rule',
   'crmFormDesign.serialNumberRuleTip':
-    'Counts by the finest year, month or day in the date format. A new period starts at 1. Changing only date separators keeps the count for the same prefix and period',
+    'Changing the first fixed character (prefix) or the submission date counting period (year/month/day) clears the old rule counters and starts the new rule at 1. Changing only date separators (e.g. yyyy/MM/dd to yyyy-MM-dd) keeps the existing count. Each new period starts at 1.',
   'crmFormDesign.serialNumberRuleAutoCountTip': '{number} digits, counted by the year, month or day in the date format',
   'crmFormDesign.serialNumberDateInvalid':
     'Invalid date format. Only complete yyyy, yyyyMM or yyyyMMdd with optional separators are supported',
