@@ -299,5 +299,26 @@
         "weComEnable": false
       }
     ]
+  },
+  {
+    "organizationId": "",
+    "module": "APPROVAL",
+    "moduleName": "",
+    "messageTaskDetailDTOList": [
+      {
+        "event": "APPROVAL_TODO",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": true,
+        "weComEnable": false
+      },
+      {
+        "event": "APPROVAL_CC",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": true,
+        "weComEnable": false
+      }
+    ]
   }
 ]
