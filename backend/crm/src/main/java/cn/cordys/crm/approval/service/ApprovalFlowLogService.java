@@ -6,6 +6,8 @@ import cn.cordys.common.dto.EnableFieldValue;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.stage.StageConfigResponse;
+import cn.cordys.common.permission.Permission;
+import cn.cordys.common.permission.PermissionDefinitionItem;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.JsonDifferenceUtils;
@@ -24,6 +26,7 @@ import cn.cordys.crm.system.mapper.ExtRoleMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.crm.system.service.SysOperationLogService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,6 +63,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private ExtRoleMapper extRoleMapper;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private RoleService roleService;
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
@@ -766,18 +771,27 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
 
     /**
      * 翻译权限字符串
-     * 将 "ORDER:READ" 翻译为 "订单:查看"
+     * 将 "ORDER:READ" 翻译为 "查看"
      */
     private String translatePermission(String permission) {
         if (StringUtils.isBlank(permission)) {
             return "";
         }
-        String[] parts = permission.split(":");
-        if (parts.length >= 2) {
-            String permissionKey = "permission." + parts[1].toLowerCase();
-            return Translator.get(permissionKey, parts[1]);
+
+        List<PermissionDefinitionItem> permissionSetting = roleService.getPermissionSetting();
+        for (PermissionDefinitionItem permissionDefinitionItem : permissionSetting) {
+            List<PermissionDefinitionItem> children = permissionDefinitionItem.getChildren();
+            for (PermissionDefinitionItem child : children) {
+                if (child.getPermissions() != null) {
+                    for (Permission permissionDefinitionItemPermission : child.getPermissions()) {
+                        if (permissionDefinitionItemPermission.getId().equalsIgnoreCase(permission)) {
+                            return permissionDefinitionItemPermission.getName();
+                        }
+                    }
+                }
+            }
         }
-        return Translator.get("permission." + permission.toLowerCase(), permission);
+        return StringUtils.EMPTY;
     }
 
     private void handleDescription(JsonDifferenceDTO differ) {

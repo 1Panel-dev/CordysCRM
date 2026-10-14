@@ -31,6 +31,10 @@ public class ClueLogService extends BaseModuleLogService {
                 setProductName(difference);
             }
 
+            if (Strings.CI.equals(difference.getColumn(), "approvalStatus")) {
+                setApprovalName(difference);
+            }
+
             if (Strings.CS.equals(difference.getColumn(), "stage")) {
                 difference.setColumnName(Translator.get("clue.stage"));
                 difference.setNewValueName(ClueStatus.getByKey((String) difference.getNewValue()));

@@ -573,7 +573,7 @@ public class CustomerService implements ApprovalResourceHandler {
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
 
         customer = customerMapper.selectByPrimaryKey(request.getId());
-        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields(), originCustomer.getId(), originCustomer.getName());
+        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields() == null ? originCustomerFields : request.getModuleFields(), originCustomer.getId(), originCustomer.getName());
         return customer;
     }
 
