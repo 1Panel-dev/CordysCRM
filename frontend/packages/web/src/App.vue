@@ -10,7 +10,11 @@
           <RouterView />
           <CrmLicenseFeatureNotice />
         </template>
-        <n-spin v-else class="flex h-screen items-center justify-center" :description="t('login.form.loading')" />
+        <n-spin
+          v-else
+          class="flex h-screen items-center justify-center"
+          :description="t('message.loadingDefaultTip')"
+        />
       </n-dialog-provider>
     </n-message-provider>
   </n-config-provider>
