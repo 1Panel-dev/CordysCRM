@@ -278,6 +278,22 @@ export function parseFormDetailValue(item: FormCreateField, form: FormDetail, so
       } else if (value) {
         name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
       }
+    } else if (
+      [
+        FieldTypeEnum.DATA_SOURCE,
+        FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        FieldTypeEnum.MEMBER,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      ].includes(item.type)
+    ) {
+      // 数据源/成员/部门类型字段，且没有匹配到 options，则显示不存在
+      if (Array.isArray(value)) {
+        name = value.map(() => t('common.optionNotExist'));
+      } else {
+        name = t('common.optionNotExist');
+      }
     }
     if (item.type === FieldTypeEnum.DATE_TIME) {
       return formatTimeValue(name || form[item.businessKey], item.dateType);
