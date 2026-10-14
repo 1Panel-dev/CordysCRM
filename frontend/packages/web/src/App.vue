@@ -61,20 +61,21 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-  async function handleOauthLogin(
-    type: 'wecom' | 'ding-talk' | 'lark',
-    loginType: CompanyTypeEnum,
-    isDingBrowser: boolean
-  ): Promise<boolean> {
+  async function handleOauthLogin(type: 'wecom' | 'ding-talk' | 'lark', loginType: CompanyTypeEnum): Promise<boolean> {
     const retryKey = `cordys.oauth2.workbench-retry.${type}`;
     try {
-      const codeKey = isDingBrowser ? 'authCode' : 'code';
+      const codeKey = type === 'ding-talk' ? 'authCode' : 'code';
       const url = new URL(window.location.href);
       const authParams = ['code', 'authCode', 'state', 'error', 'error_description'];
       const code = url.searchParams.get(codeKey);
       const state = url.searchParams.get('state') ?? '';
       const authorizationError = url.searchParams.has('error');
       const hasCallback = authParams.some((param) => url.searchParams.has(param));
+      const hasEntry = url.searchParams.has('oauth_start');
+      url.searchParams.delete('oauth_start');
+      if (hasEntry && !hasCallback) {
+        window.history.replaceState(window.history.state, document.title, url.toString());
+      }
       if (hasCallback) {
         // 先清理一次性参数，避免刷新重放或覆盖后续路由。
         authParams.forEach((param) => url.searchParams.delete(param));
@@ -83,7 +84,6 @@
           throw new Error(t('login.form.login.errMsg'));
         }
         if (state.startsWith(`${type}.`)) {
-          sessionStorage.removeItem(retryKey);
           const res = await getThirdOauthCallback(code, type, state);
           const boolean = userStore.qrCodeLogin(res.data.data);
           if (boolean) {
@@ -93,6 +93,7 @@
             await goUserHasPermissionPage();
             setLoading(false);
             await userStore.getAuthentication();
+            sessionStorage.removeItem(retryKey);
           } else {
             throw new Error(t('login.form.login.errMsg'));
           }
@@ -106,7 +107,8 @@
           'ding-talk': ua.includes('dingtalk'),
           'lark': ua.includes('feishu') || ua.includes('lark'),
         }[type];
-        if (!isPlatformBrowser || sessionStorage.getItem(retryKey)) {
+        const hasCrmState = /^(wecom|ding-talk|lark|lark-mobile|qr-wecom|qr-ding-talk|github)\./.test(state);
+        if (hasCrmState || !isPlatformBrowser || sessionStorage.getItem(retryKey)) {
           throw new Error(t('login.form.login.errMsg'));
         }
       } else {
@@ -155,7 +157,6 @@
       // 整页授权跳转期间继续显示加载状态，不能挂载扫码页或发起业务请求。
       return false;
     } catch (error) {
-      sessionStorage.removeItem(retryKey);
       clearToken();
       const detail = error instanceof Error ? undefined : (error as Result)?.message;
       message.error(detail || t('login.form.login.errMsg'));
@@ -171,16 +172,21 @@
       const ua = navigator.userAgent.toLowerCase();
       const params = new URLSearchParams(window.location.search);
       const flow = params.get('state')?.split('.')[0];
-      const isWXWork = ua.includes('wxwork') || flow === 'wecom';
-      const isDingTalk = ua.includes('dingtalk') || !!params.get('authCode') || flow === 'ding-talk';
-      const isLark = ua.includes('feishu') || ua.includes('lark') || flow === 'lark';
+      // 工作台首页先进入 CRM 签发 state；固定授权链接会在此之前多走一轮授权。
+      const entry = params.get('oauth_start');
+      const platform =
+        ['wecom', 'ding-talk', 'lark'].find((type) => type === flow) ||
+        ['wecom', 'ding-talk'].find((type) => type === entry);
+      const isWXWork = platform ? platform === 'wecom' : ua.includes('wxwork');
+      const isDingTalk = platform ? platform === 'ding-talk' : ua.includes('dingtalk') || !!params.get('authCode');
+      const isLark = platform ? platform === 'lark' : ua.includes('feishu') || ua.includes('lark');
       // 授权回调优先处理，不能因残留的本地 Token 被跳过。
       if (isWXWork) {
-        if (!(await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2, false))) return;
+        if (!(await handleOauthLogin('wecom', CompanyTypeEnum.WE_COM_OAUTH2))) return;
       } else if (isDingTalk) {
-        if (!(await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2, true))) return;
+        if (!(await handleOauthLogin('ding-talk', CompanyTypeEnum.DINGTALK_OAUTH2))) return;
       } else if (isLark) {
-        if (!(await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2, false))) return;
+        if (!(await handleOauthLogin('lark', CompanyTypeEnum.LARK_OAUTH2))) return;
       } else if (!WHITE_LIST.some((route) => route.name === router.currentRoute.value.name)) {
         await userStore.checkIsLogin(true);
       }

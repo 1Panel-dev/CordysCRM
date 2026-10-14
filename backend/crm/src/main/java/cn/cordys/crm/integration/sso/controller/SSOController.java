@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.session.web.http.HttpSessionIdResolver;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,12 +27,18 @@ public class SSOController {
     private SSOService ssoService;
     @Resource
     private OAuthStateService oauthStateService;
+    @Resource
+    private HttpSessionIdResolver sessionIdResolver;
 
     @GetMapping("/oauth/state/{flow}")
     public String generateOauthState(@PathVariable String flow, HttpServletRequest request, HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("Pragma", "no-cache");
-        return oauthStateService.generateState(flow, request.getSession(true));
+        HttpSession session = request.getSession(true);
+        String state = oauthStateService.generateState(flow, session);
+        // 复用请求头会话且 ID 未改变时，Session Filter 不会补写授权回调所需的 Cookie。
+        sessionIdResolver.setSessionId(request, response, session.getId());
+        return state;
     }
 
     @GetMapping(value = "/wecom")
