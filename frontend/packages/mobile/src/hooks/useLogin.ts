@@ -92,7 +92,7 @@ export default function useLogin() {
     }
   }
 
-  async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig) {
+  async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig): Promise<boolean> {
     const platform = platformConfig[platformKey];
     const url = new URL(window.location.href);
     const code = url.searchParams.get(platform.codeKey);
@@ -105,7 +105,7 @@ export default function useLogin() {
       window.history.replaceState(window.history.state, document.title, url.toString());
       if (authorizationError || !code) throw new Error(t('login.form.login.errMsg'));
       await thirdAuthLogin(code, state, platform.type, platform.authLoginType);
-      return;
+      return true;
     }
 
     clearToken();
@@ -113,16 +113,17 @@ export default function useLogin() {
       platform.platformConfigType,
       true
     );
-    if (res) {
-      const { data } = res.data;
-      const oauthState = await getOauthState(platform.type);
-      if (!oauthState) throw new Error(t('login.form.login.errMsg'));
-      const redirectUrl = platform.authUrl(data.config, oauthState);
-      window.location.replace(redirectUrl);
-    }
+    if (!res?.data?.data?.config) throw new Error(t('login.form.login.errMsg'));
+    const { data } = res.data;
+    const oauthState = await getOauthState(platform.type);
+    if (!oauthState) throw new Error(t('login.form.login.errMsg'));
+    const redirectUrl = platform.authUrl(data.config, oauthState);
+    window.location.replace(redirectUrl);
+    // 浏览器跳转尚未卸载当前页面时，调用方必须停止初始化和业务请求。
+    return false;
   }
 
-  async function oAuthLogin() {
+  async function oAuthLogin(): Promise<boolean> {
     try {
       const platformKeys = Object.keys(platformConfig) as (keyof typeof platformConfig)[];
       const flow = new URLSearchParams(window.location.search).get('state')?.split('.')[0];
@@ -131,15 +132,17 @@ export default function useLogin() {
         platformKeys.find((key) => platformConfig[key].detect());
       // 没有检测到三方平台企业微信、钉钉浏览器直接跳转到登录
       if (!platformKey) {
-        return router.replace({ name: 'login' });
+        await router.replace({ name: 'login' });
+        return true;
       }
       // 检测到任一平台走第三方认证登录
-      await handleThirdAuthLogin(platformKey);
+      return await handleThirdAuthLogin(platformKey);
     } catch (error) {
       clearToken();
       const detail = error instanceof Error ? undefined : (error as Result)?.message;
       showFailToast(detail || t('login.form.login.errMsg'));
       await router.replace({ name: 'login' });
+      return true;
     }
   }
 

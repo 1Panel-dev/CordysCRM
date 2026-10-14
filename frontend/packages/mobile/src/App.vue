@@ -2,16 +2,18 @@
   <Suspense v-if="appInitialized">
     <RouterView />
   </Suspense>
+  <LoginLoading v-else class="h-screen" role="status" />
 </template>
 
 <script lang="ts" setup>
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
-  import { showLoadingToast } from 'vant';
 
-  import useLocale from '@lib/shared/locale/useLocale';
-  import { LocaleType } from '@lib/shared/types/global';
+  import { hasToken } from '@lib/shared/method/auth';
 
+  import LoginLoading from '@/views/base/login/loading.vue';
+
+  import { LOGIN_LOADING } from '@/router/constants';
   import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
 
@@ -23,12 +25,12 @@
   const userStore = useUserStore();
   const { oAuthLogin } = useLogin();
   const licenseStore = useLicenseStore();
-  const { changeLocale } = useLocale(showLoadingToast);
   const appInitialized = ref(false);
 
   onBeforeMount(async () => {
+    let redirecting = false;
     try {
-      changeLocale(navigator.language as LocaleType);
+      // main.ts 已初始化语言；回调期间切换语言可能整页重载并重放一次性授权参数。
       await router.isReady();
       const params = new URLSearchParams(window.location.search);
       const flow = params.get('state')?.split('.')[0];
@@ -46,14 +48,15 @@
       const isLark = ua.includes('feishu') || ua.includes('lark') || flow === 'lark-mobile';
 
       if (!loginStatus && (isWXWork || isDingTalk || isLark)) {
-        await oAuthLogin();
-        await licenseStore.getValidateLicense();
+        await router.replace({ name: LOGIN_LOADING, query: router.currentRoute.value.query });
+        redirecting = !(await oAuthLogin());
+        if (!redirecting && hasToken()) await licenseStore.getValidateLicense();
         return;
       }
-      await licenseStore.getValidateLicense();
+      if (hasToken()) await licenseStore.getValidateLicense();
       await router.replace({ name: AppRouteEnum.WORKBENCH });
     } finally {
-      appInitialized.value = true;
+      appInitialized.value = !redirecting;
     }
   });
 </script>
