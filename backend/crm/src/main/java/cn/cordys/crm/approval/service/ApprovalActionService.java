@@ -209,9 +209,9 @@ public class ApprovalActionService {
 			resourceService.updateResourceApprovalStatus(formKey, instance.getResourceId(), instance.getApprovalStatus(), currentUserId, currentOrgId);
 		}
 		loseCurrentNode(instance.getId(), currentTask.getNodeId());
-		approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT, currentUserId);
-		// 撤回时从快照还原业务数据
+		// 先回退业务数据, 再执行驳回后操作: 顺序反过来的话, 回退会把驳回后操作刚写进去的字段一并还原掉
 		revertFromSnapshot(formKey, instance.getExecuteTime(), instance.getResourceId(), currentUserId, currentOrgId);
+		approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT, currentUserId);
 
 		// 日志 && 通知
 		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT);
