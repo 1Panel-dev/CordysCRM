@@ -52,6 +52,7 @@
         :source-id="sourceId"
         :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
         :update-api="updateOptStage"
+        :before-change-stage="handleBeforeChangeStage"
         @load-detail="refreshList"
       />
       <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
@@ -290,6 +291,10 @@
         return actionKeys;
       },
     });
+
+  async function handleBeforeChangeStage() {
+    return getUpdateReviewExtraParams(Boolean(detailInfo.value?.approved && updateExecute.value));
+  }
 
   const canUpdateStage = computed(() => {
     if (!detailInfo.value) {

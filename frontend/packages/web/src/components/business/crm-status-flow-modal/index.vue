@@ -86,6 +86,9 @@
     circulationFieldValues: CirculationFieldValueItem[];
     sourceId: string;
     stageConfig?: OpportunityStageConfig; // 阶段配置
+    beforeFlow?: (
+      stage: string
+    ) => Pick<UpdateStageParams, 'comment'> | false | Promise<Pick<UpdateStageParams, 'comment'> | false>; // 确认流转后、调用阶段接口前的拦截
   }>();
   const emit = defineEmits<{
     (e: 'success'): void;
@@ -261,11 +264,17 @@
     formRef.value?.validate(async (errors) => {
       if (!errors) {
         try {
+          const extraParams = await props.beforeFlow?.(props.to.id || '');
+          if (extraParams === false) {
+            return;
+          }
+
           okLoading.value = true;
           const result = cloneDeep(formDetail.value);
           await updateApiMap[props.formKey]?.({
             id: props.sourceId,
             stage: props.to.id || '',
+            ...extraParams,
             fields: realFields.value.map((e) => {
               transformFieldValue(e, result, e.id);
               return {

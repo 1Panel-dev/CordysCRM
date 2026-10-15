@@ -68,6 +68,7 @@ export interface OpportunityDetail extends OpportunityItem {
 export interface UpdateStageParams {
   id: string;
   stage: string;
+  comment?: string; // 变更说明
   // expectedEndTime?: number; // 预计结束时间
   failureReason?: string | null; // 失败原因
   voidReason?: string;

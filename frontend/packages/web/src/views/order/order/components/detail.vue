@@ -42,6 +42,7 @@
         :source-id="sourceId"
         :operation-permission="['ORDER:UPDATE']"
         :update-api="updateOrderStage"
+        :before-change-stage="handleBeforeChangeStage"
         @load-detail="handleSaved()"
       />
       <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
@@ -167,6 +168,7 @@
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { FullPageEnum } from '@/enums/routeEnum';
@@ -189,6 +191,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
+  const { getUpdateReviewExtraParams } = useUpdateReviewChange();
   const detailInfo = ref();
   const formConfig = ref<FormConfig>();
   const detailTabConfig = ref<FormConfig>();
@@ -308,12 +311,16 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+  const { initApprovalPermission, resolveRowOperation, updateExecute, deleteExecute, hasApprovalScopedPermission } =
     useApprovalOperation<OrderItem>({
       formType: FormDesignKeyEnum.ORDER,
       dataActionMap: orderDetailDataActionMap,
       isDetail: true,
     });
+
+  async function handleBeforeChangeStage() {
+    return getUpdateReviewExtraParams(Boolean(detailInfo.value?.approved && updateExecute.value));
+  }
 
   async function handleDelete(row: OrderItem) {
     openModal({

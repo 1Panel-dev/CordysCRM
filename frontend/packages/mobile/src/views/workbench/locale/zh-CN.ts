@@ -45,7 +45,7 @@ export default {
   'workbench.copyToMe': '抄送我的',
   'workbench.myApply': '我发起的',
   'workbench.myProcess': '我处理的',
-  'workbench.result.PENDING': '待审批',
+  'workbench.result.PENDING': '待提审',
   'workbench.result.APPROVING': '审批中',
   'workbench.result.APPROVED': '已通过',
   'workbench.result.AUTO_APPROVED': '自动通过',

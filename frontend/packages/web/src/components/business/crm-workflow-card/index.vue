@@ -63,6 +63,7 @@
     :circulationFieldValues="circulationFieldValues"
     :source-id="props.sourceId"
     :stageConfig="stageConfig"
+    :before-flow="props.beforeChangeStage"
     @success="handleFlowSuccess"
   />
 </template>
@@ -112,7 +113,9 @@
     afootRollBack?: boolean; // 是否允许从跟进中回退
     endRollBack?: boolean; // 是否允许从成功或失败回退
     isNoResignFlow?: boolean; // 是否是不区分成功失败、无反签逻辑的流程
-    beforeChangeStage?: (stage: string) => boolean | Promise<boolean>; // 切换阶段前的拦截，返回 false 阻止默认更新
+    beforeChangeStage?: (
+      stage: string
+    ) => Pick<UpdateStageParams, 'comment'> | false | Promise<Pick<UpdateStageParams, 'comment'> | false>; // 实际提交阶段变更前的拦截，返回 false 阻止更新
   }>();
 
   const emit = defineEmits<{
@@ -160,11 +163,17 @@
 
   async function handleSave(stage: string) {
     try {
+      const extraParams = await props.beforeChangeStage?.(stage);
+      if (extraParams === false) {
+        return;
+      }
+
       updateStageLoading.value = true;
       if (props.updateApi) {
         await props.updateApi({
           id: props.sourceId,
           stage,
+          ...extraParams,
           failureReason: props.showConfirmStatus && stage === failureStage.value ? form.value.failureReason : undefined,
         });
         handleCancel();
@@ -193,11 +202,6 @@
   const enableReason = ref(false);
   // 更新状态
   async function handleUpdateStatus(stage: string) {
-    const canContinue = (await props.beforeChangeStage?.(stage)) ?? true;
-    if (!canContinue) {
-      return;
-    }
-
     if (
       props.showConfirmStatus &&
       stage === workflowList.value[workflowList.value.length - 1].value &&
