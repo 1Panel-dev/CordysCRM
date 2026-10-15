@@ -2,11 +2,14 @@ package cn.cordys.crm.clue.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueApprovalSnapshotRequest;
@@ -46,6 +49,7 @@ class ClueTransferApprovalTest {
     private final LogService logService = mock(LogService.class);
     private final CommonNoticeSendService noticeSendService = mock(CommonNoticeSendService.class);
     private final ApprovalResourceService approvalResourceService = mock(ApprovalResourceService.class);
+    private final ApprovalFlowService approvalFlowService = mock(ApprovalFlowService.class);
     private final ProductService productService = mock(ProductService.class);
     private final ClueFieldService clueFieldService = mock(ClueFieldService.class);
     private final StatisticFieldService statisticFieldService = mock(StatisticFieldService.class);
@@ -54,6 +58,7 @@ class ClueTransferApprovalTest {
     private MockedStatic<Translator> translator;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         // 转移/批量编辑的返回值要取翻译, 单测里没有 Spring 上下文, 直接回显 key
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
@@ -67,8 +72,16 @@ class ClueTransferApprovalTest {
         ReflectionTestUtils.setField(service, "clueFieldService", clueFieldService);
         ReflectionTestUtils.setField(service, "statisticFieldService", statisticFieldService);
         ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+        // 状态权限默认放行全部, 让其余用例只关心转移本身; 收窄权限的用例自己再覆盖一次
+        when(approvalFlowService.filterResourcesWithPermission(any(), any(), any(), any(), any(), any()))
+                .thenAnswer(invocation -> permittedIds((List<Clue>) invocation.getArgument(1)));
         request.setIds(List.of("clue-1", "clue-2"));
         request.setOwner(NEW_OWNER);
+    }
+
+    private static List<String> permittedIds(List<Clue> clues) {
+        return clues.stream().map(Clue::getId).toList();
     }
 
     @AfterEach
@@ -134,6 +147,58 @@ class ClueTransferApprovalTest {
 
         assertEquals(0, response.getSuccess());
         verify(extClueMapper, never()).batchTransfer(any());
+    }
+
+    @Test
+    void statusPermissionIsCheckedBeforeTheApprovalIsRaised() {
+        List<Clue> clues = List.of(clue("clue-1", "old-owner"), clue("clue-2", "old-owner"));
+        when(clueMapper.selectByIds(request.getIds())).thenReturn(clues);
+
+        runTransfer();
+
+        // 与其他批量操作一致: 先按审批状态过滤出有权转移的线索, 再拿这批去提审
+        InOrder inOrder = inOrder(approvalFlowService, approvalResourceService);
+        inOrder.verify(approvalFlowService).filterResourcesWithPermission(
+                eq(ApprovalFormTypeEnum.CLUE.getValue()), same(clues),
+                eq(PermissionConstants.CLUE_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
+        inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
+                List.of("clue-1", "clue-2"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER);
+    }
+
+    @Test
+    void transferLeavesOutTheCluesTheOperatorHasNoPermissionFor() {
+        when(clueMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(clue("clue-1", "old-owner"), clue("clue-2", "old-owner")));
+        // doReturn 而非 when: 默认 stub 已注册, when(...) 会先跑一遍它, 拿到的却是匹配器占位的 null
+        doReturn(List.of("clue-1")).when(approvalFlowService)
+                .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
+
+        BatchAffectReasonResponse response = runTransfer();
+
+        // 转移 SQL 与负责人历史都按 request.ids 整批写, 入参必须同步收窄, 否则没权限的线索也跟着被改
+        assertEquals(List.of("clue-1"), request.getIds());
+        verify(approvalResourceService).batchTransferTriggerApproval(
+                List.of("clue-1"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER);
+        // 没权限的那些既不算成功也不算跳过, 与查不到的 id 一样落在 fail 里
+        assertEquals(1, response.getSuccess());
+        assertEquals(0, response.getSkip());
+        assertEquals(1, response.getFail());
+    }
+
+    @Test
+    void transferWithoutAnyPermittedClueTouchesNothing() {
+        when(clueMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(clue("clue-1", "old-owner"), clue("clue-2", "old-owner")));
+        doReturn(List.of()).when(approvalFlowService)
+                .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
+
+        BatchAffectReasonResponse response = runTransfer();
+
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any());
+        verify(extClueMapper, never()).batchTransfer(any());
+        verify(poolClueService, never()).validateCapacity(anyInt(), anyString(), anyString());
+        assertEquals(0, response.getSuccess());
+        assertEquals(2, response.getFail());
     }
 
     @Test

@@ -494,13 +494,32 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
      * @param orgId   组织ID
      */
     public BatchAffectReasonResponse transfer(OpportunityTransferRequest request, String userId, String orgId) {
+        int requestCount = CollectionUtils.size(request.getIds());
         List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(opportunityList)) {
             return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
                     .errorMessages(Translator.get("opportunity.not.exist")).build();
         }
+        // 状态权限校验: 过滤出当前用户有权转移的商机。放在提审与转移 SQL 之前 —— 否则处在无权转移
+        // 状态(如审批中)的商机照样会被改掉负责人, 审批也照样会给他们建一条
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.OPPORTUNITY.getValue(),
+                opportunityList,
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER,
+                orgId,
+                Opportunity::getId,
+                Opportunity::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(opportunityList.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
+        }
+        List<Opportunity> transferableOpportunities = opportunityList.stream()
+                .filter(opportunity -> permittedIds.contains(opportunity.getId()))
+                .toList();
+
         // 转移 SQL 只写负责人真正发生变化的商机, 审批同样只对这些商机触发, 避免给原本就是这个负责人的商机凭空建一条审批
-        List<String> changedIds = opportunityList.stream()
+        List<String> changedIds = transferableOpportunities.stream()
                 .filter(opportunity -> !Strings.CS.equals(opportunity.getOwner(), request.getOwner()))
                 .map(Opportunity::getId)
                 .toList();
@@ -518,7 +537,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
 
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
-        opportunityList.forEach(opportunity -> {
+        transferableOpportunities.forEach(opportunity -> {
             Customer originCustomer = new Customer();
             originCustomer.setOwner(opportunity.getOwner());
             Customer modifieCustomer = new Customer();
@@ -530,18 +549,18 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         });
 
         // 商机负责人变更, 联系人负责人要跟着走; 只处理负责人真正变化的商机, 与转移 SQL 的范围保持一致
-        opportunityList.stream()
+        transferableOpportunities.stream()
                 .filter(opportunity -> !Strings.CS.equals(opportunity.getOwner(), request.getOwner()))
                 .forEach(opportunity -> syncContactOwner(opportunity.getContactId(), request.getOwner()));
 
         logService.batchAdd(logs);
-        sendTransferNotice(opportunityList, request.getOwner(), userId, orgId);
+        sendTransferNotice(transferableOpportunities, request.getOwner(), userId, orgId);
 
-        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里有查不到的商机
+        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里查不到或无权转移的商机
         return BatchAffectReasonResponse.builder()
                 .success(changedIds.size())
-                .fail(CollectionUtils.size(request.getIds()) - opportunityList.size())
-                .skip(opportunityList.size() - changedIds.size())
+                .fail(requestCount - transferableOpportunities.size())
+                .skip(transferableOpportunities.size() - changedIds.size())
                 .errorMessages(Translator.get("batch.transfer.reason"))
                 .build();
     }

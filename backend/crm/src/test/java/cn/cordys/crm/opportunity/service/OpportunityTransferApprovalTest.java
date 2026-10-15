@@ -2,10 +2,13 @@ package cn.cordys.crm.opportunity.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -52,6 +55,7 @@ class OpportunityTransferApprovalTest {
     private final LogService logService = mock(LogService.class);
     private final CommonNoticeSendService noticeSendService = mock(CommonNoticeSendService.class);
     private final ApprovalResourceService approvalResourceService = mock(ApprovalResourceService.class);
+    private final ApprovalFlowService approvalFlowService = mock(ApprovalFlowService.class);
     private final OpportunityFieldService opportunityFieldService = mock(OpportunityFieldService.class);
     private final StatisticFieldService statisticFieldService = mock(StatisticFieldService.class);
     private final ProductService productService = mock(ProductService.class);
@@ -61,6 +65,7 @@ class OpportunityTransferApprovalTest {
     private MockedStatic<Translator> translator;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         // 编辑回退内部会取翻译, 单测里没有 Spring 上下文, 直接回显 key
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
@@ -75,10 +80,18 @@ class OpportunityTransferApprovalTest {
         ReflectionTestUtils.setField(service, "productService", productService);
         ReflectionTestUtils.setField(service, "moduleFormCacheService", moduleFormCacheService);
         ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+        // 状态权限默认放行全部, 让其余用例只关心转移本身; 收窄权限的用例自己再覆盖一次
+        when(approvalFlowService.filterResourcesWithPermission(any(), any(), any(), any(), any(), any()))
+                .thenAnswer(invocation -> permittedIds((List<Opportunity>) invocation.getArgument(1)));
         when(sqlSessionFactory.openSession(ExecutorType.BATCH)).thenReturn(sqlSession);
         when(sqlSession.getMapper(ExtOpportunityMapper.class)).thenReturn(extOpportunityMapper);
         request.setIds(List.of("opportunity-1", "opportunity-2"));
         request.setOwner(NEW_OWNER);
+    }
+
+    private static List<String> permittedIds(List<Opportunity> opportunities) {
+        return opportunities.stream().map(Opportunity::getId).toList();
     }
 
     @AfterEach
@@ -159,6 +172,58 @@ class OpportunityTransferApprovalTest {
 
         assertEquals(0, response.getSuccess());
         verify(extOpportunityMapper, never()).transfer(anyString(), anyString(), anyString(), anyLong());
+    }
+
+    @Test
+    void statusPermissionIsCheckedBeforeTheApprovalIsRaised() {
+        List<Opportunity> opportunities = List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner"));
+        when(opportunityMapper.selectByIds(request.getIds())).thenReturn(opportunities);
+
+        runTransfer();
+
+        // 与其他批量操作一致: 先按审批状态过滤出有权转移的商机, 再拿这批去提审
+        InOrder inOrder = inOrder(approvalFlowService, approvalResourceService);
+        inOrder.verify(approvalFlowService).filterResourcesWithPermission(
+                eq(ApprovalFormTypeEnum.OPPORTUNITY.getValue()), same(opportunities),
+                eq(PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
+        inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
+                List.of("opportunity-1", "opportunity-2"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER);
+    }
+
+    @Test
+    void transferLeavesOutTheOpportunitiesTheOperatorHasNoPermissionFor() {
+        when(opportunityMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner")));
+        // doReturn 而非 when: 默认 stub 已注册, when(...) 会先跑一遍它, 拿到的却是匹配器占位的 null
+        doReturn(List.of("opportunity-1")).when(approvalFlowService)
+                .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
+
+        BatchAffectReasonResponse response = runTransfer();
+
+        verify(approvalResourceService).batchTransferTriggerApproval(
+                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER);
+        verify(extOpportunityMapper).transfer(eq(NEW_OWNER), eq(USER_ID), eq("opportunity-1"), anyLong());
+        verify(extOpportunityMapper, never()).transfer(anyString(), anyString(), eq("opportunity-2"), anyLong());
+        verify(extCustomerContactMapper, never()).updateContactById(eq("contact-opportunity-2"), anyString());
+        // 没权限的那些既不算成功也不算跳过, 与查不到的 id 一样落在 fail 里
+        assertEquals(1, response.getSuccess());
+        assertEquals(0, response.getSkip());
+        assertEquals(1, response.getFail());
+    }
+
+    @Test
+    void transferWithoutAnyPermittedOpportunityTouchesNothing() {
+        when(opportunityMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner")));
+        doReturn(List.of()).when(approvalFlowService)
+                .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
+
+        BatchAffectReasonResponse response = runTransfer();
+
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any());
+        verify(extOpportunityMapper, never()).transfer(anyString(), anyString(), anyString(), anyLong());
+        assertEquals(0, response.getSuccess());
+        assertEquals(2, response.getFail());
     }
 
     @Test

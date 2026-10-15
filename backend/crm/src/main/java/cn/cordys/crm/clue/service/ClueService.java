@@ -770,16 +770,37 @@ public class ClueService implements ApprovalResourceHandler {
     }
 
     public BatchAffectReasonResponse batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
+        int requestCount = CollectionUtils.size(request.getIds());
         List<Clue> clues = clueMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(clues)) {
             return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
                     .errorMessages(Translator.get("clue.not.exist")).build();
         }
-        long processCount = clues.stream().filter(clue -> !Strings.CS.equals(clue.getOwner(), request.getOwner())).count();
+        // 状态权限校验: 过滤出当前用户有权转移的线索。放在提审与转移 SQL 之前 —— 否则处在无权转移
+        // 状态(如审批中)的线索照样会被改掉负责人, 审批也照样会给他们建一条
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CLUE.getValue(),
+                clues,
+                PermissionConstants.CLUE_MANAGEMENT_TRANSFER,
+                orgId,
+                Clue::getId,
+                Clue::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(clues.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
+        }
+        List<Clue> transferableClues = clues.stream()
+                .filter(clue -> permittedIds.contains(clue.getId()))
+                .toList();
+        // 转移 SQL 与负责人历史都按 request.ids 整批写, 得把无权的那批从入参里摘掉, 否则它们会跟着一起被改
+        request.setIds(permittedIds);
+
+        long processCount = transferableClues.stream().filter(clue -> !Strings.CS.equals(clue.getOwner(), request.getOwner())).count();
         poolClueService.validateCapacity((int) processCount, request.getOwner(), orgId);
 
         // 转移 SQL 只写负责人真正发生变化的线索, 审批同样只对这些线索触发, 避免给原本就是这个负责人的线索凭空建一条审批
-        List<String> changedIds = clues.stream()
+        List<String> changedIds = transferableClues.stream()
                 .filter(clue -> !Strings.CS.equals(clue.getOwner(), request.getOwner()))
                 .map(Clue::getId)
                 .toList();
@@ -792,7 +813,7 @@ public class ClueService implements ApprovalResourceHandler {
         extClueMapper.batchTransfer(request);
 
         // 记录日志
-        List<LogDTO> logs = clues.stream()
+        List<LogDTO> logs = transferableClues.stream()
                 .map(clue -> {
                     Customer originCustomer = new Customer();
                     originCustomer.setOwner(clue.getOwner());
@@ -806,13 +827,13 @@ public class ClueService implements ApprovalResourceHandler {
 
         logService.batchAdd(logs);
 
-        sendTransferNotice(clues, request.getOwner(), userId, orgId);
+        sendTransferNotice(transferableClues, request.getOwner(), userId, orgId);
 
-        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里有查不到的线索
+        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里查不到或无权转移的线索
         return BatchAffectReasonResponse.builder()
                 .success((int) processCount)
-                .fail(CollectionUtils.size(request.getIds()) - clues.size())
-                .skip(clues.size() - (int) processCount)
+                .fail(requestCount - transferableClues.size())
+                .skip(transferableClues.size() - (int) processCount)
                 .errorMessages(Translator.get("batch.transfer.reason"))
                 .build();
     }
