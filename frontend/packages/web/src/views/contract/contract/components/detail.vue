@@ -34,6 +34,7 @@
         :source-id="sourceId"
         :operation-permission="['CONTRACT:STAGE']"
         :update-api="updateContractStage"
+        :before-change-stage="handleBeforeChangeStage"
         @load-detail="handleSaved()"
       />
       <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
@@ -196,6 +197,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -217,6 +219,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
+  const { getUpdateReviewExtraParams } = useUpdateReviewChange();
   const title = ref('');
   const detailInfo = ref();
   const detailTabConfig = ref<FormConfig>();
@@ -314,32 +317,38 @@
     };
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute, hasApprovalScopedPermission } =
-    useApprovalOperation<ContractItem>({
-      formType: FormDesignKeyEnum.CONTRACT,
-      dataActionMap: createContractDetailActionMap,
-      isDetail: true,
-      identityResolver: {
-        isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-      },
-      specialActionFilter: (row, actionKeys) => {
-        if (row.stage !== ContractStatusEnum.VOID) {
-          return actionKeys;
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    updateExecute,
+    deleteExecute,
+    hasApprovalScopedPermission,
+  } = useApprovalOperation<ContractItem>({
+    formType: FormDesignKeyEnum.CONTRACT,
+    dataActionMap: createContractDetailActionMap,
+    isDetail: true,
+    identityResolver: {
+      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+    },
+    specialActionFilter: (row, actionKeys) => {
+      if (row.stage !== ContractStatusEnum.VOID) {
+        return actionKeys;
+      }
+
+      return actionKeys.filter((key) => {
+        if (key === 'paymentRecord') {
+          return false;
         }
 
-        return actionKeys.filter((key) => {
-          if (key === 'paymentRecord') {
-            return false;
-          }
+        if (!enableApproval.value && key === 'edit') {
+          return false;
+        }
 
-          if (!enableApproval.value && key === 'edit') {
-            return false;
-          }
-
-          return true;
-        });
-      },
-    });
+        return true;
+      });
+    },
+  });
 
   const detailActions = computed<{
     groupList: ActionsItem[];
@@ -405,6 +414,10 @@
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CONTRACT,
   });
+
+  async function handleBeforeChangeStage() {
+    return getUpdateReviewExtraParams(Boolean(detailInfo.value?.approved && updateExecute.value));
+  }
 
   const canUpdateStage = computed(() => {
     if (!detailInfo.value) {
