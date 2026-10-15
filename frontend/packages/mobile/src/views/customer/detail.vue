@@ -208,16 +208,15 @@
   ]);
   const approvalStatus = computed(() => approvalInfo.value?.approvalStatus ?? detail.value.approvalStatus);
   const renderDescriptions = computed(() => {
-    const approvalStatusDescription =
-      enableApproval.value && approvalStatus.value && approvalStatus.value !== ProcessStatusEnum.NONE
-        ? [
-            {
-              label: t('workbench.approvalStatus'),
-              value: approvalStatus.value,
-              valueSlotName: 'approvalStatus',
-            },
-          ]
-        : [];
+    const approvalStatusDescription = enableApproval.value
+      ? [
+          {
+            label: t('workbench.approvalStatus'),
+            value: approvalStatus.value,
+            valueSlotName: 'approvalStatus',
+          },
+        ]
+      : [];
 
     return [...approvalStatusDescription, ...descriptions.value];
   });
