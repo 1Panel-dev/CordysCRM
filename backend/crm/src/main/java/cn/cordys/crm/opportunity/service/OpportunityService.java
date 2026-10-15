@@ -454,9 +454,9 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
      * @param orgId  组织ID
      */
     @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
-    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
-        delete(id, userId, orgId);
+        // 自调用 bypass 代理, delete 上的 @OperationLog 不会生效; 从容器取代理对象才能记上删除日志
+        CommonBeanFactory.getBean(OpportunityService.class).delete(id, userId, orgId);
     }
 
     /**

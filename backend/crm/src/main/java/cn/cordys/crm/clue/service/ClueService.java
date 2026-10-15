@@ -741,7 +741,8 @@ public class ClueService implements ApprovalResourceHandler {
      */
     @HitApproval(formKey = FormKey.CLUE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
-        delete(id, userId, orgId);
+        // 自调用 bypass 代理, delete 上的 @OperationLog 不会生效; 从容器取代理对象才能记上删除日志
+        CommonBeanFactory.getBean(ClueService.class).delete(id, userId, orgId);
     }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.DELETE, resourceId = "{#id}")

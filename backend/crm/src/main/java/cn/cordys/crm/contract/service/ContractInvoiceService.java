@@ -375,8 +375,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
 
     @HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
-        // 校验审批流
-        delete(id, userId, orgId);
+        // 自调用 bypass 代理, delete 上的 @OperationLog 不会生效; 从容器取代理对象才能记上删除日志
+        CommonBeanFactory.getBean(ContractInvoiceService.class).delete(id, userId, orgId);
     }
 
     @Override

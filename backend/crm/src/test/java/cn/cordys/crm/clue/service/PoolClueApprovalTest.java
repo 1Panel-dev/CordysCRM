@@ -85,12 +85,16 @@ class PoolClueApprovalTest {
     }
 
     @Test
-    void singleDeleteEntryPointDelegatesToThePlainDelete() throws Exception {
-        // 切面在单测里不生效, 这里只钉住「入口委托给原有的 delete」
+    void singleDeleteEntryPointDelegatesToThePlainDeleteThroughTheProxy() throws Exception {
+        // 切面在单测里不生效, 这里只钉住「入口经代理委托给原有的 delete」:
+        // 自调用 bypass 代理, delete 上的 @OperationLog 会失效, 所以必须从容器取代理对象
         PoolClueService spy = spy(service);
         doNothing().when(spy).delete(anyString());
 
-        spy.deleteWithApprovalCheck("clue-1", USER_ID, ORG_ID);
+        try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
+            beanFactory.when(() -> CommonBeanFactory.getBean(PoolClueService.class)).thenReturn(spy);
+            spy.deleteWithApprovalCheck("clue-1", USER_ID, ORG_ID);
+        }
 
         verify(spy).delete("clue-1");
         // 触发点必须留在入口上, 原方法不能重复触发 (deleteCustomerResource 那种共用出口会重复提审)

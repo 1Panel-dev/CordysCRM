@@ -298,7 +298,8 @@ public class PoolCustomerService {
      */
     @HitApproval(formKey = FormKey.CUSTOMER, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
     public void deleteTriggerApproval(String id, String userId, String orgId) {
-        delete(id);
+        // 自调用 bypass 代理, delete 上的 @OperationLog 不会生效; 从容器取代理对象才能记上删除日志
+        Objects.requireNonNull(CommonBeanFactory.getBean(PoolCustomerService.class)).delete(id);
     }
 
     /**
