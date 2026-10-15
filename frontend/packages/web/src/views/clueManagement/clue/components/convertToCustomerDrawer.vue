@@ -40,6 +40,7 @@
     </div>
   </CrmDrawer>
   <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" @saved="searchData" />
+  <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="t('clue.linkAccount')" />
 </template>
 
 <script setup lang="ts">
@@ -47,12 +48,14 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { BatchOperationResult } from '@lib/shared/models/opportunity';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
+  import batchOperationResultModal from '@/components/business/crm-batch-edit-modal/components/batchOperationResultModal.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
   import { reTransitionCustomer } from '@/api/modules';
@@ -139,15 +142,27 @@
     ...baseFilterConfigList,
   ]);
 
+  const resultVisible = ref(false);
+  const batchResult = ref<BatchOperationResult>({
+    success: 0,
+    fail: 0,
+  });
+
   async function handleConfirm() {
     try {
-      await reTransitionCustomer({
+      const res = await reTransitionCustomer({
         clueIds: props.clueIds,
         customerId: checkedRowKeys.value[0] as string,
       });
-      Message.success(t('clue.convertToCustomerSuccess'));
+      batchResult.value = res;
       emit('finish');
       show.value = false;
+      // 与其他批量操作一致: 逐条给出成功/失败数量, 全部成功时只提示成功
+      if (batchResult.value.fail) {
+        resultVisible.value = true;
+      } else {
+        Message.success(t('clue.convertToCustomerSuccess'));
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);

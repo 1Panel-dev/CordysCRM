@@ -25,4 +25,6 @@ public class OpportunityStageRequest {
     @Schema(description = "更新字段")
     private List<BaseModuleFieldValue> fields;
 
+    @Schema(description = "变更说明")
+    private String comment;
 }

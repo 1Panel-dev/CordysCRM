@@ -565,7 +565,8 @@ public class ClueService implements ApprovalResourceHandler {
         clue = clueMapper.selectByPrimaryKey(request.getId());
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
-        baseService.handleUpdateLog(originClue, clue, originCustomerFields, request.getModuleFields(), originClue.getId(), originClue.getName());
+        baseService.handleUpdateLog(originClue, clue, originCustomerFields,
+                request.getModuleFields() == null ? originCustomerFields : request.getModuleFields(), originClue.getId(), originClue.getName());
         return clueMapper.selectByPrimaryKey(clue.getId());
     }
 
@@ -924,8 +925,19 @@ public class ClueService implements ApprovalResourceHandler {
         LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Clue::getId, request.getIds());
         List<Clue> clues = clueMapper.selectListByLambda(wrapper);
+        // 状态权限校验: 过滤出当前用户有权移入线索池的线索。放在回收 SQL 之前 —— 否则处在无权回收
+        // 状态(如审批中)的线索照样会被移入线索池, 负责人也会被清空
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CLUE.getValue(),
+                clues,
+                PermissionConstants.CLUE_MANAGEMENT_RECYCLE,
+                orgId,
+                Clue::getId,
+                Clue::getApprovalStatus
+        );
+        // 已在线索池中的线索本来就不需要移入, 与无权移入的一并计入 fail
         clues = clues.stream()
-                .filter(clue -> !BooleanUtils.isTrue(clue.getInSharedPool()))
+                .filter(clue -> permittedIds.contains(clue.getId()) && !BooleanUtils.isTrue(clue.getInSharedPool()))
                 .toList();
         if (CollectionUtils.isEmpty(clues)) {
             return BatchAffectResponse.builder().success(0).fail(request.getIds().size()).build();
@@ -1028,12 +1040,32 @@ public class ClueService implements ApprovalResourceHandler {
      * @param request     关联参数
      * @param currentUser 当前用户
      * @param orgId       组织ID
+     * @return 成功/失败条数
      */
-    public void batchTransition(BatchReTransitionCustomerRequest request, String currentUser, String orgId) {
+    public BatchAffectReasonResponse batchTransition(BatchReTransitionCustomerRequest request, String currentUser, String orgId) {
         if (CollectionUtils.isEmpty(request.getClueIds())) {
             throw new GenericException(Translator.get("clue_ids_not_empty"));
         }
+        int requestCount = request.getClueIds().size();
+        // 状态权限校验: 过滤出当前用户有权编辑的线索。放在领取公海客户之前 —— 否则处在无权编辑
+        // 状态(如审批中)的线索照样会被改掉关联信息, 且一条都关联不上时还会白白把客户从公海领走
+        List<Clue> clues = clueMapper.selectByIds(request.getClueIds());
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CLUE.getValue(),
+                clues,
+                PermissionConstants.CLUE_MANAGEMENT_UPDATE,
+                orgId,
+                Clue::getId,
+                Clue::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return allFailedResponse(requestCount);
+        }
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
+        // 客户已不存在时, 有权关联的线索也一条都关联不上
+        if (customer == null) {
+            return allFailedResponse(requestCount);
+        }
         // 操作人尝试领取公海客户, 领取失败则不继续
         if (customer.getInSharedPool()) {
             PoolCustomerPickRequest pickRequest = new PoolCustomerPickRequest();
@@ -1041,7 +1073,30 @@ public class ClueService implements ApprovalResourceHandler {
             pickRequest.setPoolId(customer.getPoolId());
             poolCustomerService.pick(pickRequest, currentUser, orgId);
         }
-        request.getClueIds().forEach(clueId -> transitionCs(clueId, customer, currentUser, orgId));
+        // 负责人不存在等情况下 transitionCs 会返回 false, 这部分只计入 fail, 不改数据
+        int success = 0;
+        for (String clueId : permittedIds) {
+            if (transitionCs(clueId, customer, currentUser, orgId)) {
+                success++;
+            }
+        }
+        // success: 真的关联上了; fail: 查不到、无权关联或负责人不存在的线索
+        return BatchAffectReasonResponse.builder()
+                .success(success)
+                .fail(requestCount - success)
+                .skip(0)
+                .errorMessages(Translator.get("batch.link.account.reason"))
+                .build();
+    }
+
+    /**
+     * 整批都关联不上时的返回
+     *
+     * @param requestCount 请求关联的线索总数
+     */
+    private BatchAffectReasonResponse allFailedResponse(int requestCount) {
+        return BatchAffectReasonResponse.builder().success(0).fail(requestCount).skip(0)
+                .errorMessages(Translator.get("batch.link.account.reason")).build();
     }
 
     /**
@@ -1050,13 +1105,14 @@ public class ClueService implements ApprovalResourceHandler {
      * @param clueId      线索ID
      * @param currentUser 当前用户ID
      * @param orgId       组织ID
+     * @return true 表示关联成功
      */
-    public void transitionCs(String clueId, Customer transitionCs, String currentUser, String orgId) {
+    public boolean transitionCs(String clueId, Customer transitionCs, String currentUser, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(clueId);
         // 负责人不存在, 跳过关联
         List<String> owners = extUserMapper.selectUserNameByIds(List.of(clue.getOwner()));
         if (CollectionUtils.isEmpty(owners)) {
-            return;
+            return false;
         }
 
         // 关联
@@ -1078,6 +1134,7 @@ public class ClueService implements ApprovalResourceHandler {
         paramMap.put("name", clue.getName());
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
                 paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
+        return true;
     }
 
     /**

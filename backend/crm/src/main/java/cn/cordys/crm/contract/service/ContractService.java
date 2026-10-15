@@ -742,7 +742,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
      * @param userId
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}")
+    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}", comment = "{#request.comment}")
     public void updateStage(ContractStageRequest request, String userId, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {

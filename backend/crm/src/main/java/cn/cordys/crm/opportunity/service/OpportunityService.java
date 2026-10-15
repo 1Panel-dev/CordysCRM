@@ -791,7 +791,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
      * @param orgId
      */
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}")
+    @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}", comment = "{#request.comment}")
     public void updateStage(OpportunityStageRequest request, String userId, String orgId) {
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(orgId)
                 || !PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)) {
