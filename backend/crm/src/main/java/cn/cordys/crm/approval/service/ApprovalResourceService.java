@@ -513,6 +513,11 @@ public class ApprovalResourceService {
     public void push(ApprovalPushParam param) {
         String currentOrgId = param.getOrgId();
         String currentUserId = param.getUserId();
+        // 自动提审后再次手动提审时，复用审批中的实例，不重复生成待办。
+        if (extApprovalInstanceMapper.existsApprovingInstance(currentOrgId, param.getFormKey(), param.getResourceId())) {
+            return;
+        }
+
         ApprovalFlow approvalFlow = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
         if (approvalFlow == null) {
             throw new GenericException(Translator.get("approval_flow.not.exist"));
