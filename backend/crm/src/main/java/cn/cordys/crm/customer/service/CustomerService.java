@@ -452,6 +452,10 @@ public class CustomerService implements ApprovalResourceHandler {
         CustomerGetResponse response = BeanUtils.copyBean(new CustomerGetResponse(), customer);
         List<BaseModuleFieldValue> fvs = customerFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fvs);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), customer.getOrganizationId()));
+        }
         return response;
     }
 

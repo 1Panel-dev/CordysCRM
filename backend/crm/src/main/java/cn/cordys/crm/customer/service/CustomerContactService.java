@@ -276,6 +276,10 @@ public class CustomerContactService {
         CustomerContactGetResponse response = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
         List<BaseModuleFieldValue> fvs = customerContactFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fvs);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), customerContact.getOrganizationId()));
+        }
         return response;
     }
 

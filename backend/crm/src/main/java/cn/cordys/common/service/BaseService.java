@@ -24,6 +24,7 @@ import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
+import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
@@ -65,6 +66,8 @@ public class BaseService {
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private ExtCustomerMapper extCustomerMapper;
     @Resource
@@ -259,6 +262,14 @@ public class BaseService {
     public UserDeptDTO getUserDeptMapByUserId(String ownerId, String orgId) {
         List<UserDeptDTO> userDeptList = extUserMapper.getUserDeptByUserIds(List.of(ownerId), orgId);
         return CollectionUtils.isEmpty(userDeptList) ? null : userDeptList.getFirst();
+    }
+
+    public String getDeptIdByUserId(String userId, String orgId) {
+        OrganizationUser criteria = new OrganizationUser();
+        criteria.setOrganizationId(orgId);
+        criteria.setUserId(userId);
+        OrganizationUser organizationUser = organizationUserMapper.selectOne(criteria);
+        return organizationUser != null ? organizationUser.getDepartmentId() : null;
     }
 
     public Map<String, UserDeptDTO> getUserDeptMapByUserIds(List<String> ownerIds, String orgId) {

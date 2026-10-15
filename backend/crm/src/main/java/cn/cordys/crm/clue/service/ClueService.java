@@ -448,6 +448,10 @@ public class ClueService implements ApprovalResourceHandler {
         // 获取模块字段
         List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
         clueGetResponse.setModuleFields(clueFields);
+        // 部门信息
+        if (clueGetResponse.getOwner() != null) {
+            clueGetResponse.setDepartmentId(baseService.getDeptIdByUserId(clueGetResponse.getOwner(), clue.getOrganizationId()));
+        }
         return clueGetResponse;
     }
 

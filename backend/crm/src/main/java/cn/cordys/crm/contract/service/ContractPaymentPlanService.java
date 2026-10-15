@@ -266,6 +266,10 @@ public class ContractPaymentPlanService extends BaseExportService {
         ContractPaymentPlanGetResponse response = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), contractPaymentPlan);
         List<BaseModuleFieldValue> fvs = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fvs);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), contractPaymentPlan.getOrganizationId()));
+        }
         return response;
     }
 
