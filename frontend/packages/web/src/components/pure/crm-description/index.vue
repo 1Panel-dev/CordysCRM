@@ -36,7 +36,7 @@
                 :placement="(props.tooltipPosition || item.tooltipPosition) ?? 'top-start'"
               >
                 <template #trigger>
-                  <div :class="props.oneLineValue ? 'one-line-text' : ''">
+                  <div :class="props.oneLineValue ? 'one-line-text' : ''" class="max-w-[300px]">
                     {{
                       item.value === undefined || item.value === null || item.value?.toString() === ''
                         ? '-'

@@ -73,7 +73,7 @@
             needInitDetail
             class="flex-1"
           />
-          <div v-else-if="item.value" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+          <div v-else-if="item.value" class="break-all" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
           <div v-else>-</div>
         </div>
       </template>
