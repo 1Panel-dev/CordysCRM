@@ -119,7 +119,7 @@
         </template>
       </n-data-table>
     </template>
-    <template v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished">
+    <template v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen && props.noPagination) || hasFinished">
       <CrmPagination
         v-if="paginationType === 'pagePagination' && !props.noPagination && !notShowTable"
         :item-count="(attrs.crmPagination as PaginationProps)?.itemCount"

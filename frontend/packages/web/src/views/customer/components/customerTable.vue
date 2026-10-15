@@ -722,7 +722,7 @@
           if (e.key === 'operation') {
             return {
               ...e,
-              width: 80,
+              width: 150,
             };
           }
           return e;
