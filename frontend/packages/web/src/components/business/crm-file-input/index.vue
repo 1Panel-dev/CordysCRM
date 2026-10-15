@@ -33,6 +33,7 @@
       class="crm-file-input"
       resizable
       clearable
+      @blur="validate()"
     />
     <div class="flex justify-end text-[var(--text-n4)]">{{ value.length }}/300</div>
     <span v-if="valueStatus === 'error'" class="text-[var(--error-red)]">

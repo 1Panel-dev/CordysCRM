@@ -229,7 +229,7 @@
                       </div>
                       <n-tooltip trigger="hover">
                         <template #trigger>
-                          <div class="one-line-text font-normal">{{ cc.ccUserName }}</div>
+                          <div class="one-line-text max-w-[220px] font-normal">{{ cc.ccUserName }}</div>
                         </template>
                         {{ cc.ccUserName }}
                       </n-tooltip>
