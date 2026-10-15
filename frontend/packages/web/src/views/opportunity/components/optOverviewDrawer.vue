@@ -75,6 +75,7 @@
             :refresh-key="refreshKey"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
             @saveApproval="handleSaveApproval"
+            @delete-approved="handleDeleteApproved"
           >
             <template #left="{ fieldPermissions, taskNode }">
               <CrmFormDescription
@@ -526,6 +527,11 @@
       await callback();
       refreshList();
     }
+  }
+
+  function handleDeleteApproved() {
+    showOptOverviewDrawer.value = false;
+    emit('refresh');
   }
 
   const formViewSize = ref<FormViewSize>('large');
