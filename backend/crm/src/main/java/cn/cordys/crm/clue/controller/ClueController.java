@@ -232,8 +232,8 @@ public class ClueController {
     @PostMapping("/re-transition/account")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#request.clueIds}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "批量关联已有客户")
-    public void batchTransition(@Validated @RequestBody BatchReTransitionCustomerRequest request) {
-        clueService.batchTransition(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchTransition(@Validated @RequestBody BatchReTransitionCustomerRequest request) {
+        return clueService.batchTransition(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/transform")

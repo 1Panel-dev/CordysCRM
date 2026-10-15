@@ -857,8 +857,19 @@ public class CustomerService implements ApprovalResourceHandler {
      */
     public BatchAffectResponse batchToPool(BatchPoolReasonRequest request, String currentUser, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(request.getIds());
+        // 状态权限校验: 过滤出当前用户有权移入公海的客户。放在回收 SQL 之前 —— 否则处在无权回收
+        // 状态(如审批中)的客户照样会被移入公海, 负责人也会被清空
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CUSTOMER.getValue(),
+                customers,
+                PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE,
+                orgId,
+                Customer::getId,
+                Customer::getApprovalStatus
+        );
+        // 已在公海中的客户本来就不需要移入, 与无权移入的一并计入 fail
         customers = customers.stream()
-                .filter(customer -> !BooleanUtils.isTrue(customer.getInSharedPool()))
+                .filter(customer -> permittedIds.contains(customer.getId()) && !BooleanUtils.isTrue(customer.getInSharedPool()))
                 .toList();
         if (CollectionUtils.isEmpty(customers)) {
             return BatchAffectResponse.builder().success(0).fail(request.getIds().size()).build();
