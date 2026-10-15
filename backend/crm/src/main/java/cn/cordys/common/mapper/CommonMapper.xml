@@ -354,9 +354,6 @@
         select count(1)
         from `${tableName}`
         where `${fieldName}` COLLATE utf8mb4_bin = #{fieldValue} and organization_id = #{orgId}
-        <if test="tableName == 'clue'">
-            and (transition_type != 'CUSTOMER' or transition_type is null)
-        </if>
         limit 1
     </select>
     <select id="checkUpdateExist" resultType="java.lang.Boolean">
@@ -366,9 +363,6 @@
         <foreach collection="excludeIds" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
-        <if test="tableName == 'clue'">
-            and (transition_type != 'CUSTOMER' or transition_type is null)
-        </if>
         limit 1
     </select>
 
@@ -376,34 +370,22 @@
         select `${fieldName}` as fieldValue, id as resourceId
         from `${tableName}` t
         where organization_id = #{orgId}
-        <if test="tableName == 'clue'">
-            and (t.transition_type != 'CUSTOMER' or t.transition_type is null)
-        </if>
     </select>
 
     <select id="checkFieldRepeatName" resultType="java.lang.String">
         select d.name from `${fieldTable}` f join `${dataTable}` d on f.resource_id = d.id
         where f.field_id = #{fieldId} and f.field_value = #{fieldValue} and d.organization_id = #{orgId}
-        <if test="dataTable == 'clue'">
-            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
-        </if>
         limit 1
     </select>
 
     <select id="getCheckFieldValList" resultType="cn.cordys.common.domain.BaseResourceSubField">
         select f.field_value, f.resource_id from `${fieldTable}` f join `${dataTable}` d on f.resource_id = d.id
         where f.field_id = #{fieldId} and d.organization_id = #{orgId}
-        <if test="dataTable == 'clue'">
-            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
-        </if>
     </select>
 
     <select id="checkInternalRepeatName" resultType="java.lang.String">
         select d.name from `${dataTable}` d
         where d.`${businessName}` = #{value} and d.organization_id = #{orgId}
-        <if test="dataTable == 'clue'">
-            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
-        </if>
         limit 1
     </select>
 
