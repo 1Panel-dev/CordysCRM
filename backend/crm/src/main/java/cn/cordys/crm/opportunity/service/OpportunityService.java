@@ -753,6 +753,10 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         }
         List<BaseModuleFieldValue> fvs = opportunityFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fvs);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), response.getOrganizationId()));
+        }
         return response;
     }
 

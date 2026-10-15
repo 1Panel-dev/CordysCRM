@@ -567,6 +567,10 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         List<BaseModuleFieldValue> fvs = invoiceFieldService.getModuleFieldValuesByResourceId(id);
         ModuleFormConfigDTO formConfig = getFormConfig(contractInvoice.getOrganizationId());
         moduleFormService.processBusinessFieldValues(response, fvs, formConfig);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), contractInvoice.getOrganizationId()));
+        }
         return response;
     }
 
