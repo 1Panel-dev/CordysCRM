@@ -139,6 +139,7 @@
             message: t('common.notNull', {
               value: t('crm.approval.addSignApprover'),
             }),
+            trigger: 'change',
           },
         ]"
       >
@@ -173,7 +174,19 @@
       label-width="auto"
       require-mark-placement="right"
     >
-      <n-form-item path="node" :label="t('crm.approval.fallbackTo')" required>
+      <n-form-item
+        path="node"
+        :label="t('crm.approval.fallbackTo')"
+        :rule="[
+          {
+            required: true,
+            message: t('common.notNull', {
+              value: t('crm.approval.fallbackTo'),
+            }),
+            trigger: 'change',
+          },
+        ]"
+      >
         <n-select v-model:value="fallbackForm.node" :options="fallbackOptions" clearable />
       </n-form-item>
       <n-form-item path="reason" :label="t('crm.approval.fallbackReason')">
