@@ -90,6 +90,7 @@
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])"
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
+                  updateType: 'approval',
                   approvalTaskId: taskNode?.taskId,
                 }"
                 @init="handleDescriptionInit"
