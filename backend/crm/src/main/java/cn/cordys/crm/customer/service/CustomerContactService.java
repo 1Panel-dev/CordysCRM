@@ -481,6 +481,10 @@ public class CustomerContactService {
 
     public CustomerContactListAllResponse listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (customer == null || StringUtils.isBlank(orgId) || !orgId.equals(customer.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+
         CustomerContactListAllResponse response = new CustomerContactListAllResponse();
         if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             // 全部数据权限，直接返回

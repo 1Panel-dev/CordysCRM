@@ -107,8 +107,7 @@ public class ResourcePermissionService {
 
         ResourceAccessContextProvider provider = getProvider(formType);
         ResourceAccessContext context = provider != null ? provider.getAccessContext(resourceId, orgId) : null;
-        boolean permitted = checkRoleAndDataAndStatusPermission(permission, formType, userId, orgId, context,
-                provider == null || provider.requiresOwner());
+        boolean permitted = checkRoleAndDataAndStatusPermission(permission, resourceId, formType, userId, orgId, context, provider);
 
         if (!permitted) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -195,10 +194,11 @@ public class ResourcePermissionService {
     /**
      * 校验角色权限位 + 数据权限 + 审批状态权限：(1 && 2 && 3)
      */
-    private boolean checkRoleAndDataAndStatusPermission(String permission, String formType,
+    private boolean checkRoleAndDataAndStatusPermission(String permission, String resourceId, String formType,
                                                         String userId, String orgId, ResourceAccessContext context,
-                                                        boolean requiresOwner) {
+                                                        ResourceAccessContextProvider provider) {
 
+        boolean requiresOwner = provider == null || provider.requiresOwner();
         // 资源必须存在；只有明确声明为组织共享的资源才允许没有负责人。
         if (StringUtils.isNotBlank(formType)
                 && (context == null || (requiresOwner && StringUtils.isBlank(context.getOwnerId())))) {
@@ -212,8 +212,9 @@ public class ResourcePermissionService {
             return false;
         }
 
-        // Check 2: 角色的数据权限
-        if (requiresOwner && ownerId != null && !dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)) {
+        // 数据范围不足时允许资源提供者补充授权，后续仍须校验审批状态。
+        if (requiresOwner && ownerId != null && !dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)
+                && (provider == null || !provider.hasAdditionalDataPermission(permission, resourceId, userId))) {
             return false;
         }
 
