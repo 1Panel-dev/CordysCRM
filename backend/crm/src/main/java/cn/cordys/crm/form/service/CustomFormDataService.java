@@ -12,6 +12,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.formula.FormulaEngine;
 import cn.cordys.common.mapper.CommonMapper;
@@ -197,8 +198,19 @@ public class CustomFormDataService extends BaseExportService implements Approval
         Map<String, List<BaseModuleFieldValue>> fieldMap = customFormDataFieldService.getResourceFieldMap(dataIds, true);
         Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = customFormDataFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(formId, orgId), fieldMap);
 
+        // 归属部门取自负责人所在部门, 与客户/线索/商机保持一致
+        List<String> ownerIds = list.stream().map(CustomFormDataListResponse::getOwner)
+                .filter(StringUtils::isNotBlank).distinct().toList();
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
+
         list.forEach(resp -> {
             resp.setModuleFields(resolvefieldValueMap.get(resp.getId()));
+
+            UserDeptDTO userDeptDTO = userDeptMap.get(resp.getOwner());
+            if (userDeptDTO != null) {
+                resp.setDepartmentId(userDeptDTO.getDeptId());
+                resp.setDepartmentName(userDeptDTO.getDeptName());
+            }
         });
 
         return baseService.setCreateUpdateOwnerUserName(list);
@@ -248,6 +260,13 @@ public class CustomFormDataService extends BaseExportService implements Approval
         resp.setOwnerName(userNameMap.get(data.getOwner()));
         resp.setCreateUserName(userNameMap.get(data.getCreateUser()));
         resp.setUpdateUserName(userNameMap.get(data.getUpdateUser()));
+
+        // 归属部门取自负责人所在部门, 与客户/线索/商机保持一致
+        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(data.getOwner(), orgId);
+        if (userDeptDTO != null) {
+            resp.setDepartmentId(userDeptDTO.getDeptId());
+            resp.setDepartmentName(userDeptDTO.getDeptName());
+        }
 
         CustomFormDataFieldService.setFormKey(data.getCustomFormId());
         try {

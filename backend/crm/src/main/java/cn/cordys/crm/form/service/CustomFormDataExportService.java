@@ -70,6 +70,7 @@ public class CustomFormDataExportService extends BaseExportService {
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
         systemFieldMap.put("owner", data.getOwnerName());
+        systemFieldMap.put("departmentId", data.getDepartmentName());
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
             systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }

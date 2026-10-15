@@ -355,6 +355,21 @@ export default async function useFormCreateSystemColumns(
     },
   ] as CrmDataTableColumn[];
 
+  // 自定义表单数据的归属部门取自负责人所在部门, 后端列表接口按负责人返回部门名称
+  const customFormInternalColumns: CrmDataTableColumn[] = [
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => row.departmentName || '-',
+    },
+  ];
+
   const invoiceInternalColumns: CrmDataTableColumn[] = [
     ...approvalStatusColumn,
     {
@@ -781,7 +796,7 @@ export default async function useFormCreateSystemColumns(
     [FormDesignKeyEnum.ORDER]: orderInternalColumns,
     [FormDesignKeyEnum.CONTRACT_ORDER]: orderInternalColumns,
     [FormDesignKeyEnum.CUSTOMER_ORDER]: orderInternalColumns,
-    [FormDesignKeyEnum.CUSTOM_FORM]: approvalStatusColumn,
+    [FormDesignKeyEnum.CUSTOM_FORM]: [...approvalStatusColumn, ...customFormInternalColumns],
   };
 
   const staticColumns: CrmDataTableColumn[] = [

@@ -1,6 +1,7 @@
 package cn.cordys.crm.form.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.BaseService;
@@ -11,12 +12,15 @@ import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormRoleKey;
 import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataUpdateRequest;
+import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
+import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.TextAreaField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,10 +29,12 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -329,6 +335,74 @@ class CustomFormDataServiceTest {
         assertThrows(GenericException.class,
                 () -> service.delete("form-1", "user-1", "org-1"));
         verify(formCacheService, never()).delete(anyString(), anyString());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void getFillsDepartmentFromOwnerDepartment() {
+        BaseMapper<CustomFormData> dataMapper = mock(BaseMapper.class);
+        CustomFormDataFieldService fieldService = mock(CustomFormDataFieldService.class);
+        ModuleFormCacheService formCacheService = mock(ModuleFormCacheService.class);
+        BaseService baseService = mock(BaseService.class);
+        ModuleFormService moduleFormService = mock(ModuleFormService.class);
+        CustomFormDataService service = serviceWithManageAllPermission();
+        ReflectionTestUtils.setField(service, "customFormDataMapper", dataMapper);
+        ReflectionTestUtils.setField(service, "customFormDataFieldService", fieldService);
+        ReflectionTestUtils.setField(service, "moduleFormCacheService", formCacheService);
+        ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "moduleFormService", moduleFormService);
+        ReflectionTestUtils.setField(service, "resourcePermissionService",
+                mock(ResourcePermissionService.class));
+
+        CustomFormData data = record("record-1", "form-1", "org-1", "owner-1");
+        data.setCreateUser("owner-1");
+        data.setUpdateUser("owner-1");
+        when(dataMapper.selectByPrimaryKey("record-1")).thenReturn(data);
+        when(baseService.getUserNameMap(anyList())).thenReturn(Map.of("owner-1", "负责人"));
+        when(baseService.getUserDeptMapByUserId("owner-1", "org-1"))
+                .thenReturn(new UserDeptDTO("owner-1", "dept-1", "销售部"));
+        when(formCacheService.getBusinessFormConfig("form-1", "org-1"))
+                .thenReturn(new ModuleFormConfigDTO());
+        when(moduleFormService.getOptionMap(any(), anyList()))
+                .thenReturn(new HashMap<>());
+
+        CustomFormDataGetResponse response = service.get("record-1", "owner-1", "org-1");
+
+        assertEquals("dept-1", response.getDepartmentId());
+        assertEquals("销售部", response.getDepartmentName());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void buildListFillsDepartmentFromOwnerDepartment() {
+        CustomFormDataFieldService fieldService = mock(CustomFormDataFieldService.class);
+        BaseService baseService = mock(BaseService.class);
+        ModuleFormService moduleFormService = mock(ModuleFormService.class);
+        CustomFormDataService service = serviceWithManageAllPermission();
+        ReflectionTestUtils.setField(service, "customFormDataFieldService", fieldService);
+        ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "moduleFormService", moduleFormService);
+        when(fieldService.setBusinessRefFieldValue(anyList(), anyList(), any()))
+                .thenReturn(new HashMap<>());
+
+        CustomFormDataListResponse owned = new CustomFormDataListResponse();
+        owned.setId("record-1");
+        owned.setOwner("owner-1");
+        CustomFormDataListResponse unknownOwner = new CustomFormDataListResponse();
+        unknownOwner.setId("record-2");
+        unknownOwner.setOwner("owner-2");
+        List<CustomFormDataListResponse> list = List.of(owned, unknownOwner);
+
+        when(baseService.getUserDeptMapByUserIds(anyList(), eq("org-1")))
+                .thenReturn(Map.of("owner-1", new UserDeptDTO("owner-1", "dept-1", "销售部")));
+
+        service.buildList(list, "form-1", "org-1");
+
+        assertEquals("dept-1", owned.getDepartmentId());
+        assertEquals("销售部", owned.getDepartmentName());
+        // 查不到部门时保持为空, 不写入占位值
+        assertNull(unknownOwner.getDepartmentId());
+        assertNull(unknownOwner.getDepartmentName());
     }
 
     private Object valueOf(

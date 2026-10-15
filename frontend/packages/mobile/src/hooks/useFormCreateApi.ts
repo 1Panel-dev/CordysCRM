@@ -255,6 +255,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         key: 'departmentName',
       },
     ],
+    [FormDesignKeyEnum.CUSTOM_FORM]: [
+      {
+        title: t('common.department'),
+        key: 'departmentName',
+      },
+    ],
   };
   const staticFields = [
     {
