@@ -38,6 +38,7 @@
             message: t('common.notNull', {
               value: props.approvalType === 'approve' ? t('taskDrawer.approveReason') : t('taskDrawer.rejectReason'),
             }),
+            trigger: 'blur',
           },
         ]"
       >
