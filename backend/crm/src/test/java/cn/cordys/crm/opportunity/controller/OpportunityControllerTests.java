@@ -128,7 +128,7 @@ public class OpportunityControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testBatchTransfer() throws Exception {
-        OpportunityTransferRequest request = new OpportunityTransferRequest();
+        OpportunityBatchTransferRequest request = new OpportunityBatchTransferRequest();
         request.setIds(List.of("1234"));
         request.setOwner("12345");
         this.requestPost(BATCH_TRANSFER, request)

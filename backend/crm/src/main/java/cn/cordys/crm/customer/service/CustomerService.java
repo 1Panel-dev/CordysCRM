@@ -636,7 +636,35 @@ public class CustomerService implements ApprovalResourceHandler {
                 orgId, receivers, true);
     }
 
+    /**
+     * 批量转移客户（批量入口不接收提交说明）
+     */
     public BatchAffectReasonResponse batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
+        return batchTransfer(request, userId, orgId, request.getComment());
+    }
+
+    /**
+     * 单独转移客户
+     * <p>
+     * 单独转移与批量转移是同一段逻辑, 差别只有入参形态（单条 id 包成 List）和提交人填写的审批说明;
+     * 复用批量入口而不是另写一份, 转移 SQL、负责人历史、联系人改派和提审顺序才不会两边走偏。
+     *
+     * @param request 转移请求
+     * @param userId  操作人ID
+     * @param orgId   组织ID
+     * @return 成功/跳过/失败计数
+     */
+    public BatchAffectReasonResponse transfer(CustomerTransferRequest request, String userId, String orgId) {
+        CustomerBatchTransferRequest batchRequest = new CustomerBatchTransferRequest();
+        batchRequest.setIds(List.of(request.getId()));
+        batchRequest.setOwner(request.getOwner());
+        return batchTransfer(batchRequest, userId, orgId, request.getComment());
+    }
+
+    /**
+     * @param comment 提交人填写的审批说明, 追加在系统生成的变更说明之后; 批量入口不接收, 传 null
+     */
+    public BatchAffectReasonResponse batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId, String comment) {
         int requestCount = CollectionUtils.size(request.getIds());
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originCustomers)) {
@@ -673,7 +701,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 .toList();
         // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
         CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
-                changedIds, BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, orgId, userId, request.getOwner());
+                changedIds, BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, orgId, userId, request.getOwner(), comment);
 
         // 客户负责人变更, 联系人负责人要跟着走, 与单个编辑(CustomerService#update)保持一致;
         // 在这里取值, 此时客户行还没被转移 SQL 改写, 拿到的仍是原负责人

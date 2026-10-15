@@ -454,6 +454,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
      * @param orgId  组织ID
      */
     @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
         delete(id, userId, orgId);
     }
@@ -487,13 +488,38 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
 
 
     /**
-     * 商机转移 (与商机阶段无关, 都可转移)
+     * 商机批量转移 (与商机阶段无关, 都可转移; 批量入口不接收提交说明)
      *
      * @param request 请求参数
      * @param userId  用户ID
      * @param orgId   组织ID
      */
+    public BatchAffectReasonResponse batchTransfer(OpportunityBatchTransferRequest request, String userId, String orgId) {
+        return batchTransfer(request, userId, orgId, request.getComment());
+    }
+
+    /**
+     * 单独转移商机
+     * <p>
+     * 单独转移与批量转移是同一段逻辑, 差别只有入参形态（单条 id 包成 List）和提交人填写的审批说明;
+     * 复用批量入口而不是另写一份, 转移 SQL、联系人改派和提审顺序才不会两边走偏。
+     *
+     * @param request 转移请求
+     * @param userId  操作人ID
+     * @param orgId   组织ID
+     * @return 成功/跳过/失败计数
+     */
     public BatchAffectReasonResponse transfer(OpportunityTransferRequest request, String userId, String orgId) {
+        OpportunityBatchTransferRequest batchRequest = new OpportunityBatchTransferRequest();
+        batchRequest.setIds(List.of(request.getId()));
+        batchRequest.setOwner(request.getOwner());
+        return batchTransfer(batchRequest, userId, orgId, request.getComment());
+    }
+
+    /**
+     * @param comment 提交人填写的审批说明, 追加在系统生成的变更说明之后; 批量入口不接收, 传 null
+     */
+    public BatchAffectReasonResponse batchTransfer(OpportunityBatchTransferRequest request, String userId, String orgId, String comment) {
         int requestCount = CollectionUtils.size(request.getIds());
         List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(opportunityList)) {
@@ -525,7 +551,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
                 .toList();
         // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
         CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
-                changedIds, BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, orgId, userId, request.getOwner());
+                changedIds, BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, orgId, userId, request.getOwner(), comment);
 
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
@@ -1174,10 +1200,10 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
 
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey())) {
             // 修改负责人，走批量转移接口
-            OpportunityTransferRequest batchTransferRequest = new OpportunityTransferRequest();
+            OpportunityBatchTransferRequest batchTransferRequest = new OpportunityBatchTransferRequest();
             batchTransferRequest.setIds(permittedIds);
             batchTransferRequest.setOwner(request.getFieldValue().toString());
-            return transfer(batchTransferRequest, userId, organizationId);
+            return batchTransfer(batchTransferRequest, userId, organizationId);
         }
 
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {

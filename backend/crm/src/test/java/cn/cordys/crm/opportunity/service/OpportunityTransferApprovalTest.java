@@ -13,7 +13,7 @@ import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityApprovalSnapshotRequest;
-import cn.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityBatchTransferRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.product.service.ProductService;
@@ -61,7 +61,7 @@ class OpportunityTransferApprovalTest {
     private final ProductService productService = mock(ProductService.class);
     private final ModuleFormCacheService moduleFormCacheService = mock(ModuleFormCacheService.class);
     private final BaseService baseService = mock(BaseService.class);
-    private final OpportunityTransferRequest request = new OpportunityTransferRequest();
+    private final OpportunityBatchTransferRequest request = new OpportunityBatchTransferRequest();
     private MockedStatic<Translator> translator;
 
     @BeforeEach
@@ -108,7 +108,7 @@ class OpportunityTransferApprovalTest {
 
         // 转移 SQL 逐条改写商机, 但负责人本就相同的商机不需要审批介入
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -120,7 +120,7 @@ class OpportunityTransferApprovalTest {
         // 快照必须早于转移 SQL, 否则驳回/撤回会把负责人回退成转移后的值
         InOrder inOrder = inOrder(approvalResourceService, extOpportunityMapper);
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
         inOrder.verify(extOpportunityMapper).transfer(eq(NEW_OWNER), eq(USER_ID), eq("opportunity-1"), anyLong());
     }
 
@@ -132,7 +132,7 @@ class OpportunityTransferApprovalTest {
 
         // 入口必须被调用, 由它自己短路; 若改成调用方提前 return, 这里的空集合断言会失败
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of(), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER);
+                List.of(), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -187,7 +187,7 @@ class OpportunityTransferApprovalTest {
                 eq(ApprovalFormTypeEnum.OPPORTUNITY.getValue()), same(opportunities),
                 eq(PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1", "opportunity-2"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("opportunity-1", "opportunity-2"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -201,7 +201,7 @@ class OpportunityTransferApprovalTest {
         BatchAffectReasonResponse response = runTransfer();
 
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
         verify(extOpportunityMapper).transfer(eq(NEW_OWNER), eq(USER_ID), eq("opportunity-1"), anyLong());
         verify(extOpportunityMapper, never()).transfer(anyString(), anyString(), eq("opportunity-2"), anyLong());
         verify(extCustomerContactMapper, never()).updateContactById(eq("contact-opportunity-2"), anyString());
@@ -220,7 +220,7 @@ class OpportunityTransferApprovalTest {
 
         BatchAffectReasonResponse response = runTransfer();
 
-        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any());
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any(), any());
         verify(extOpportunityMapper, never()).transfer(anyString(), anyString(), anyString(), anyLong());
         assertEquals(0, response.getSuccess());
         assertEquals(2, response.getFail());
@@ -282,7 +282,7 @@ class OpportunityTransferApprovalTest {
         try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
             beanFactory.when(() -> CommonBeanFactory.getBean(ApprovalResourceService.class))
                     .thenReturn(approvalResourceService);
-            return service.transfer(request, USER_ID, ORG_ID);
+            return service.batchTransfer(request, USER_ID, ORG_ID);
         }
     }
 

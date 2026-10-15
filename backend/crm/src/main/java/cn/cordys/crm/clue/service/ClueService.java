@@ -774,7 +774,35 @@ public class ClueService implements ApprovalResourceHandler {
 
     }
 
+    /**
+     * 批量转移线索（批量入口不接收提交说明）
+     */
     public BatchAffectReasonResponse batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
+        return batchTransfer(request, userId, orgId, request.getComment());
+    }
+
+    /**
+     * 单独转移线索
+     * <p>
+     * 单独转移与批量转移是同一段逻辑, 差别只有入参形态（单条 id 包成 List）和提交人填写的审批说明;
+     * 复用批量入口而不是另写一份, 转移 SQL、负责人历史和提审顺序才不会两边走偏。
+     *
+     * @param request 转移请求
+     * @param userId  操作人ID
+     * @param orgId   组织ID
+     * @return 成功/跳过/失败计数
+     */
+    public BatchAffectReasonResponse transfer(ClueTransferRequest request, String userId, String orgId) {
+        ClueBatchTransferRequest batchRequest = new ClueBatchTransferRequest();
+        batchRequest.setIds(List.of(request.getId()));
+        batchRequest.setOwner(request.getOwner());
+        return batchTransfer(batchRequest, userId, orgId, request.getComment());
+    }
+
+    /**
+     * @param comment 提交人填写的审批说明, 追加在系统生成的变更说明之后; 批量入口不接收, 传 null
+     */
+    public BatchAffectReasonResponse batchTransfer(ClueBatchTransferRequest request, String userId, String orgId, String comment) {
         int requestCount = CollectionUtils.size(request.getIds());
         List<Clue> clues = clueMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(clues)) {
@@ -811,7 +839,7 @@ public class ClueService implements ApprovalResourceHandler {
                 .toList();
         // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
         CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
-                changedIds, BusinessModuleField.CLUE_OWNER, FormKey.CLUE, orgId, userId, request.getOwner());
+                changedIds, BusinessModuleField.CLUE_OWNER, FormKey.CLUE, orgId, userId, request.getOwner(), comment);
 
         // 添加责任人历史
         clueOwnerHistoryService.batchAdd(request, userId);

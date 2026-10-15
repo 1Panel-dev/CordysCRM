@@ -98,7 +98,7 @@ class ClueTransferApprovalTest {
 
         // 转移 SQL 带 owner != #{owner}, 这批线索不会被改写, 也就不该凭空多出一条审批
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("clue-1"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("clue-1"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -110,7 +110,7 @@ class ClueTransferApprovalTest {
         // 快照必须早于转移 SQL, 否则驳回/撤回会把负责人回退成转移后的值
         InOrder inOrder = inOrder(approvalResourceService, extClueMapper);
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("clue-1"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("clue-1"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER, null);
         inOrder.verify(extClueMapper).batchTransfer(request);
     }
 
@@ -122,7 +122,7 @@ class ClueTransferApprovalTest {
 
         // 入口必须被调用, 由它自己短路; 若改成调用方提前 return, 这里的空集合断言会失败
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of(), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER);
+                List.of(), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -162,7 +162,7 @@ class ClueTransferApprovalTest {
                 eq(ApprovalFormTypeEnum.CLUE.getValue()), same(clues),
                 eq(PermissionConstants.CLUE_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("clue-1", "clue-2"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("clue-1", "clue-2"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -178,7 +178,7 @@ class ClueTransferApprovalTest {
         // 转移 SQL 与负责人历史都按 request.ids 整批写, 入参必须同步收窄, 否则没权限的线索也跟着被改
         assertEquals(List.of("clue-1"), request.getIds());
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("clue-1"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("clue-1"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER, null);
         // 没权限的那些既不算成功也不算跳过, 与查不到的 id 一样落在 fail 里
         assertEquals(1, response.getSuccess());
         assertEquals(0, response.getSkip());
@@ -194,7 +194,7 @@ class ClueTransferApprovalTest {
 
         BatchAffectReasonResponse response = runTransfer();
 
-        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any());
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any(), any());
         verify(extClueMapper, never()).batchTransfer(any());
         verify(poolClueService, never()).validateCapacity(anyInt(), anyString(), anyString());
         assertEquals(0, response.getSuccess());

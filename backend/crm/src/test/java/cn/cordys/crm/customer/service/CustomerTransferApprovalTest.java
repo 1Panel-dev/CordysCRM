@@ -102,7 +102,7 @@ class CustomerTransferApprovalTest {
 
         // 转移 SQL 带 owner != #{owner}, 这批客户不会被改写, 也就不该凭空多出一条审批
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("customer-1"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("customer-1"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -114,7 +114,7 @@ class CustomerTransferApprovalTest {
         // 快照必须早于转移 SQL, 否则驳回/撤回会把负责人回退成转移后的值
         InOrder inOrder = inOrder(approvalResourceService, extCustomerMapper);
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("customer-1"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("customer-1"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER, null);
         inOrder.verify(extCustomerMapper).batchTransfer(request, USER_ID);
     }
 
@@ -126,7 +126,7 @@ class CustomerTransferApprovalTest {
 
         // 入口必须被调用, 由它自己短路; 若改成调用方提前 return, 这里的空集合断言会失败
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of(), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER);
+                List.of(), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -178,7 +178,7 @@ class CustomerTransferApprovalTest {
                 eq(ApprovalFormTypeEnum.CUSTOMER.getValue()), same(customers),
                 eq(PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("customer-1", "customer-2"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("customer-1", "customer-2"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
@@ -194,7 +194,7 @@ class CustomerTransferApprovalTest {
         // 转移 SQL 与负责人历史都按 request.ids 整批写, 入参必须同步收窄, 否则没权限的客户也跟着被改
         assertEquals(List.of("customer-1"), request.getIds());
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("customer-1"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER);
+                List.of("customer-1"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER, null);
         verify(customerContactService).updateContactOwner("customer-1", NEW_OWNER, "old-owner", ORG_ID);
         verify(customerContactService, never()).updateContactOwner(eq("customer-2"), anyString(), anyString(), anyString());
         // 没权限的那些既不算成功也不算跳过, 与查不到的 id 一样落在 fail 里
@@ -212,7 +212,7 @@ class CustomerTransferApprovalTest {
 
         BatchAffectReasonResponse response = runTransfer();
 
-        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any());
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any(), any());
         verify(extCustomerMapper, never()).batchTransfer(any(), anyString());
         verify(poolCustomerService, never()).validateCapacity(anyInt(), anyString(), anyString());
         assertEquals(0, response.getSuccess());
