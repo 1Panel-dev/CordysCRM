@@ -114,7 +114,20 @@ public class OpportunityController {
     @PostMapping("/batch/transfer")
     @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "批量转移商机")
-    public BatchAffectReasonResponse batchTransfer(@RequestBody OpportunityTransferRequest request) {
+    public BatchAffectReasonResponse batchTransfer(@RequestBody OpportunityBatchTransferRequest request) {
+        return opportunityService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    /**
+     * 单独转移商机
+     * <p>
+     * 与批量转移同一套权限码和转移逻辑, 但走单资源入口: 除了角色权限位和数据权限, 还会校验该商机当前
+     * 审批状态是否允许转移, 并接收提交人填写的变更说明。
+     */
+    @PostMapping("/transfer")
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER, resourceId = "{#request.id}", formType = FormKeyConstants.OPPORTUNITY)
+    @Operation(summary = "转移商机")
+    public BatchAffectReasonResponse transfer(@Validated @RequestBody OpportunityTransferRequest request) {
         return opportunityService.transfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

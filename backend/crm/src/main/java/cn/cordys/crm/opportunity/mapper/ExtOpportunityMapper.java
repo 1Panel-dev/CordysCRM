@@ -10,7 +10,7 @@ import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunitySearchStatisticRequest;
-import cn.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityBatchTransferRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
@@ -33,7 +33,7 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
 
     List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId, @Param("id") String id);
 
-    void batchTransfer(@Param("request") OpportunityTransferRequest request, @Param("userId") String userId, @Param("updateTime") long updateTime, @Param("stage") String stage);
+    void batchTransfer(@Param("request") OpportunityBatchTransferRequest request, @Param("userId") String userId, @Param("updateTime") long updateTime, @Param("stage") String stage);
 
     OpportunityDetailResponse getDetail(@Param("id") String id);
 

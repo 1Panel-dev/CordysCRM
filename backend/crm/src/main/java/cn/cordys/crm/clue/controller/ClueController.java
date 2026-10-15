@@ -134,6 +134,19 @@ public class ClueController {
         return clueService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    /**
+     * 单独转移线索
+     * <p>
+     * 与批量转移同一套权限码和转移逻辑, 但走单资源入口: 除了角色权限位和数据权限, 还会校验该线索当前
+     * 审批状态是否允许转移, 并接收提交人填写的变更说明。
+     */
+    @PostMapping("/transfer")
+    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_TRANSFER, resourceId = "{#request.id}", formType = FormKeyConstants.CLUE)
+    @Operation(summary = "转移线索")
+    public BatchAffectReasonResponse transfer(@Validated @RequestBody ClueTransferRequest request) {
+        return clueService.transfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
     @PostMapping("/batch/update")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "批量更新线索")

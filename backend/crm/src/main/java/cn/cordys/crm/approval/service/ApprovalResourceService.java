@@ -710,9 +710,10 @@ public class ApprovalResourceService {
      * @param organizationId 组织ID
      * @param userId         操作人ID
      * @param fieldValue     转移后的负责人ID
+     * @param comment        提交人填写的变更说明, 追加在系统生成的变更说明之后; 批量转移入口不接收, 传 null
      */
     public void batchTransferTriggerApproval(List<String> resourceIds, BusinessModuleField ownerField, FormKey formKey,
-                                             String organizationId, String userId, Object fieldValue) {
+                                             String organizationId, String userId, Object fieldValue, String comment) {
         if (CollectionUtils.isEmpty(resourceIds) || ownerField == null || formKey == null
                 || StringUtils.isBlank(organizationId) || fieldValue == null) {
             return;
@@ -732,8 +733,12 @@ public class ApprovalResourceService {
                 .findFirst()
                 .orElse(ownerKey);
         String valueName = resolveFieldValueName(fields, ownerKey, fieldValue);
-        triggerUpdateApproval(resourceIds, formKey.getKey(), formKey, ownerKey, organizationId, userId,
-                Translator.getWithArgs("approval.update.field", fieldName, valueName));
+        // 系统文案说明改了什么, 提交人填写的说明补充为什么改, 两条都保留审批人才看得全
+        String changeComment = Translator.getWithArgs("approval.update.field", fieldName, valueName);
+        String finalComment = StringUtils.isBlank(comment)
+                ? changeComment
+                : comment;
+        triggerUpdateApproval(resourceIds, formKey.getKey(), formKey, ownerKey, organizationId, userId, finalComment);
     }
 
     /**
