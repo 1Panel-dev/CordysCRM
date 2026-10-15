@@ -2,6 +2,7 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.file.engine.DefaultRepositoryDir;
@@ -29,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,9 @@ public class AttachmentService {
 
     @Resource
     private BaseMapper<Attachment> attachmentMapper;
+
+    @Resource
+    private BaseMapper<ApprovalInstanceAttachment> approvalInstanceAttachmentMapper;
 
     @Resource
     private FileCommonService fileCommonService;
@@ -145,6 +150,7 @@ public class AttachmentService {
         List<Attachment> attachments = new ArrayList<>();
         LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Attachment::getResourceId, transferRequest.getResourceId());
+        queryWrapper.eq(Attachment::getOrganizationId, transferRequest.getOrganizationId());
         List<Attachment> transferredAttachments = attachmentMapper.selectListByLambda(queryWrapper);
         List<String> transferredIds = transferredAttachments.stream().map(Attachment::getId).toList();
         // insert new attachment
@@ -181,6 +187,15 @@ public class AttachmentService {
         attachmentMapper.batchInsert(attachments);
         // remove deleted
         List<String> removedIds = transferredIds.stream().filter(aId -> !transferRequest.getTempFileIds().contains(aId)).toList();
+        if (!CollectionUtils.isEmpty(removedIds)) {
+            // 审批附件与表单附件共用资源ID，表单同步不能删除仍被审批记录引用的附件。
+            LambdaQueryWrapper<ApprovalInstanceAttachment> approvalQueryWrapper = new LambdaQueryWrapper<>();
+            approvalQueryWrapper.in(ApprovalInstanceAttachment::getAttachmentId, removedIds);
+            Set<String> approvalAttachmentIds = approvalInstanceAttachmentMapper.selectListByLambda(approvalQueryWrapper).stream()
+                    .map(ApprovalInstanceAttachment::getAttachmentId)
+                    .collect(Collectors.toSet());
+            removedIds = removedIds.stream().filter(id -> !approvalAttachmentIds.contains(id)).toList();
+        }
         if (!CollectionUtils.isEmpty(removedIds)) {
             LambdaQueryWrapper<Attachment> duplicateQueryWrapper = new LambdaQueryWrapper<>();
             duplicateQueryWrapper.in(Attachment::getId, removedIds);
