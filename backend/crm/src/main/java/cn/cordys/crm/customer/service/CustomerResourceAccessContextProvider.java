@@ -1,11 +1,14 @@
 package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +20,8 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
 
     @Resource
     private BaseMapper<Customer> customerMapper;
+    @Resource
+    private BaseMapper<CustomerCollaboration> collaborationMapper;
 
     @Override
     public String getFormType() {
@@ -26,13 +31,24 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
     @Override
     public ResourceAccessContext getAccessContext(String resourceId, String orgId) {
         var customer = customerMapper.selectByPrimaryKey(resourceId);
-        if (customer == null || orgId == null || !orgId.equals(customer.getOrganizationId())) {
+        if (customer == null || StringUtils.isBlank(orgId) || !orgId.equals(customer.getOrganizationId())) {
             return null;
         }
         var context = new ResourceAccessContext();
         context.setOwnerId(customer.getOwner());
         context.setApprovalStatus(customer.getApprovalStatus());
         return context;
+    }
+
+    @Override
+    public boolean hasAdditionalDataPermission(String permission, String resourceId, String userId) {
+        if (!PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission) || StringUtils.isAnyBlank(resourceId, userId)) {
+            return false;
+        }
+        CustomerCollaboration example = new CustomerCollaboration();
+        example.setCustomerId(resourceId);
+        example.setUserId(userId);
+        return collaborationMapper.countByExample(example) > 0;
     }
 
     @Override

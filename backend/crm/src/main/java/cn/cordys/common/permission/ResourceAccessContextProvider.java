@@ -31,6 +31,13 @@ public interface ResourceAccessContextProvider {
     }
 
     /**
+     * 组织、负责人和角色校验通过后，补充当前资源的数据范围授权；审批状态仍由统一服务校验。
+     */
+    default boolean hasAdditionalDataPermission(String permission, String resourceId, String userId) {
+        return false;
+    }
+
+    /**
      * 返回当前组织中存在的资源ID；组织共享资源应覆盖此方法。
      */
     default Set<String> batchGetResourceIds(List<String> resourceIds, String orgId) {
