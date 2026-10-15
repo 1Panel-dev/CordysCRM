@@ -370,6 +370,21 @@
         options: processStatusOptions,
       },
     },
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        type: 'department',
+        checkable: true,
+        showContainChildModule: true,
+        containChildIds: [],
+      },
+    },
     ...baseFilterConfigList,
   ]);
   function searchData(val?: string, refreshId?: string) {

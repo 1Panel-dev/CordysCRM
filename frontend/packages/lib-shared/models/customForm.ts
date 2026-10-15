@@ -86,6 +86,8 @@ export interface CustomFormPageItem {
   updateTime: number;
   createUserName: string;
   updateUserName: string;
+  departmentId: string;
+  departmentName: string;
   moduleFields: ModuleField[];
   isAdmin: boolean;
   approvalStatus?: ProcessStatusEnum;
@@ -114,6 +116,8 @@ export interface CustomFormDataDetail {
   updateTime: number;
   createUserName: string;
   updateUserName: string;
+  departmentId: string;
+  departmentName: string;
   moduleFields: ModuleField[];
   optionMap: Record<string, any>;
   isAdmin?: boolean;

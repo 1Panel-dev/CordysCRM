@@ -45,6 +45,12 @@ public class CustomFormDataGetResponse {
     @Schema(description = "更新人名称")
     private String updateUserName;
 
+    @Schema(description = "归属部门")
+    private String departmentId;
+
+    @Schema(description = "归属部门名称")
+    private String departmentName;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 
