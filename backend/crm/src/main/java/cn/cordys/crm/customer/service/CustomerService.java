@@ -633,16 +633,37 @@ public class CustomerService implements ApprovalResourceHandler {
     }
 
     public BatchAffectReasonResponse batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
+        int requestCount = CollectionUtils.size(request.getIds());
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originCustomers)) {
             return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
                     .errorMessages(Translator.get("customer.not.exist")).build();
         }
-        long processCount = originCustomers.stream().filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner())).count();
+        // 状态权限校验: 过滤出当前用户有权转移的客户。放在提审与转移 SQL 之前 —— 否则处在无权转移
+        // 状态(如审批中)的客户照样会被改掉负责人, 审批也照样会给他们建一条
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CUSTOMER.getValue(),
+                originCustomers,
+                PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER,
+                orgId,
+                Customer::getId,
+                Customer::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(originCustomers.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
+        }
+        List<Customer> transferableCustomers = originCustomers.stream()
+                .filter(customer -> permittedIds.contains(customer.getId()))
+                .toList();
+        // 转移 SQL 与负责人历史都按 request.ids 整批写, 得把无权的那批从入参里摘掉, 否则它们会跟着一起被改
+        request.setIds(permittedIds);
+
+        long processCount = transferableCustomers.stream().filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner())).count();
         poolCustomerService.validateCapacity((int) processCount, request.getOwner(), orgId);
 
         // 转移 SQL 只写负责人真正发生变化的客户, 审批同样只对这些客户触发, 避免给原本就是这个负责人的客户凭空建一条审批
-        List<String> changedIds = originCustomers.stream()
+        List<String> changedIds = transferableCustomers.stream()
                 .filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner()))
                 .map(Customer::getId)
                 .toList();
@@ -652,7 +673,7 @@ public class CustomerService implements ApprovalResourceHandler {
 
         // 客户负责人变更, 联系人负责人要跟着走, 与单个编辑(CustomerService#update)保持一致;
         // 在这里取值, 此时客户行还没被转移 SQL 改写, 拿到的仍是原负责人
-        originCustomers.stream()
+        transferableCustomers.stream()
                 .filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner()))
                 .forEach(customer -> customerContactService.updateContactOwner(
                         customer.getId(), request.getOwner(), customer.getOwner(), orgId));
@@ -662,7 +683,7 @@ public class CustomerService implements ApprovalResourceHandler {
         extCustomerMapper.batchTransfer(request, userId);
 
         // 记录日志
-        List<LogDTO> logs = originCustomers.stream()
+        List<LogDTO> logs = transferableCustomers.stream()
                 .map(customer -> {
                     Customer originCustomer = new Customer();
                     originCustomer.setOwner(customer.getOwner());
@@ -676,13 +697,13 @@ public class CustomerService implements ApprovalResourceHandler {
 
         logService.batchAdd(logs);
 
-        sendTransferNotice(originCustomers, request.getOwner(), userId, orgId);
+        sendTransferNotice(transferableCustomers, request.getOwner(), userId, orgId);
 
-        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里有查不到的客户
+        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里查不到或无权转移的客户
         return BatchAffectReasonResponse.builder()
                 .success((int) processCount)
-                .fail(CollectionUtils.size(request.getIds()) - originCustomers.size())
-                .skip(originCustomers.size() - (int) processCount)
+                .fail(requestCount - transferableCustomers.size())
+                .skip(transferableCustomers.size() - (int) processCount)
                 .errorMessages(Translator.get("batch.transfer.reason"))
                 .build();
     }

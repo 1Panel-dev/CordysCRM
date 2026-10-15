@@ -2,11 +2,14 @@ package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.request.CustomerApprovalSnapshotRequest;
@@ -46,6 +49,7 @@ class CustomerTransferApprovalTest {
     private final LogService logService = mock(LogService.class);
     private final CommonNoticeSendService noticeSendService = mock(CommonNoticeSendService.class);
     private final ApprovalResourceService approvalResourceService = mock(ApprovalResourceService.class);
+    private final ApprovalFlowService approvalFlowService = mock(ApprovalFlowService.class);
     private final CustomerContactService customerContactService = mock(CustomerContactService.class);
     private final CustomerFieldService customerFieldService = mock(CustomerFieldService.class);
     private final StatisticFieldService statisticFieldService = mock(StatisticFieldService.class);
@@ -56,6 +60,7 @@ class CustomerTransferApprovalTest {
     private MockedStatic<Translator> translator;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         // 转移/批量编辑的返回值要取翻译, 单测里没有 Spring 上下文, 直接回显 key
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
@@ -71,8 +76,16 @@ class CustomerTransferApprovalTest {
         ReflectionTestUtils.setField(service, "moduleFormService", moduleFormService);
         ReflectionTestUtils.setField(service, "moduleFormCacheService", moduleFormCacheService);
         ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+        // 状态权限默认放行全部, 让其余用例只关心转移本身; 收窄权限的用例自己再覆盖一次
+        when(approvalFlowService.filterResourcesWithPermission(any(), any(), any(), any(), any(), any()))
+                .thenAnswer(invocation -> permittedIds((List<Customer>) invocation.getArgument(1)));
         request.setIds(List.of("customer-1", "customer-2"));
         request.setOwner(NEW_OWNER);
+    }
+
+    private static List<String> permittedIds(List<Customer> customers) {
+        return customers.stream().map(Customer::getId).toList();
     }
 
     @AfterEach
@@ -150,6 +163,60 @@ class CustomerTransferApprovalTest {
 
         assertEquals(0, response.getSuccess());
         verify(extCustomerMapper, never()).batchTransfer(any(), anyString());
+    }
+
+    @Test
+    void statusPermissionIsCheckedBeforeTheApprovalIsRaised() {
+        List<Customer> customers = List.of(customer("customer-1", "old-owner"), customer("customer-2", "old-owner"));
+        when(customerMapper.selectByIds(request.getIds())).thenReturn(customers);
+
+        runTransfer();
+
+        // 与其他批量操作一致: 先按审批状态过滤出有权转移的客户, 再拿这批去提审
+        InOrder inOrder = inOrder(approvalFlowService, approvalResourceService);
+        inOrder.verify(approvalFlowService).filterResourcesWithPermission(
+                eq(ApprovalFormTypeEnum.CUSTOMER.getValue()), same(customers),
+                eq(PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
+        inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
+                List.of("customer-1", "customer-2"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER);
+    }
+
+    @Test
+    void transferLeavesOutTheCustomersTheOperatorHasNoPermissionFor() {
+        when(customerMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(customer("customer-1", "old-owner"), customer("customer-2", "old-owner")));
+        // doReturn 而非 when: 默认 stub 已注册, when(...) 会先跑一遍它, 拿到的却是匹配器占位的 null
+        doReturn(List.of("customer-1")).when(approvalFlowService)
+                .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
+
+        BatchAffectReasonResponse response = runTransfer();
+
+        // 转移 SQL 与负责人历史都按 request.ids 整批写, 入参必须同步收窄, 否则没权限的客户也跟着被改
+        assertEquals(List.of("customer-1"), request.getIds());
+        verify(approvalResourceService).batchTransferTriggerApproval(
+                List.of("customer-1"), BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, ORG_ID, USER_ID, NEW_OWNER);
+        verify(customerContactService).updateContactOwner("customer-1", NEW_OWNER, "old-owner", ORG_ID);
+        verify(customerContactService, never()).updateContactOwner(eq("customer-2"), anyString(), anyString(), anyString());
+        // 没权限的那些既不算成功也不算跳过, 与查不到的 id 一样落在 fail 里
+        assertEquals(1, response.getSuccess());
+        assertEquals(0, response.getSkip());
+        assertEquals(1, response.getFail());
+    }
+
+    @Test
+    void transferWithoutAnyPermittedCustomerTouchesNothing() {
+        when(customerMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(customer("customer-1", "old-owner"), customer("customer-2", "old-owner")));
+        doReturn(List.of()).when(approvalFlowService)
+                .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
+
+        BatchAffectReasonResponse response = runTransfer();
+
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any());
+        verify(extCustomerMapper, never()).batchTransfer(any(), anyString());
+        verify(poolCustomerService, never()).validateCapacity(anyInt(), anyString(), anyString());
+        assertEquals(0, response.getSuccess());
+        assertEquals(2, response.getFail());
     }
 
     @Test
