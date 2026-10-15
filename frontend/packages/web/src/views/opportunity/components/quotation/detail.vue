@@ -54,6 +54,7 @@
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus"
             @saveApproval="handleSaveApproval"
+            @delete-approved="handleDeleteApproved"
           >
             <template #left="{ fieldPermissions, taskNode }">
               <CrmFormDescription
@@ -381,6 +382,11 @@
       refreshKey.value += 1;
       emit('refresh');
     }
+  }
+
+  function handleDeleteApproved() {
+    visible.value = false;
+    emit('refresh');
   }
 
   watch(

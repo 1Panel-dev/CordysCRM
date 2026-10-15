@@ -50,6 +50,7 @@
             :approval-status="currentApprovalStatus"
             @saveApproval="handleSaveApproval"
             @refresh="handleSavedRefresh"
+            @delete-approved="handleDeleteApproved"
           >
             <template #left="{ fieldPermissions, taskNode }">
               <CrmFormDescription
@@ -243,6 +244,11 @@
 
     await callback();
     handleSavedRefresh();
+  }
+
+  function handleDeleteApproved() {
+    visible.value = false;
+    emit('refresh');
   }
 
   const activeTab = ref('customForm');

@@ -49,6 +49,7 @@
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
             @saveApproval="handleSaveApproval"
+            @delete-approved="handleDeleteApproved"
           >
             <template #left="{ fieldPermissions, taskNode }">
               <CrmFormDescription
@@ -569,6 +570,11 @@
       await callback();
       handleSaved();
     }
+  }
+
+  function handleDeleteApproved() {
+    show.value = false;
+    emit('saved');
   }
 
   function handleButtonSelect(key: string) {

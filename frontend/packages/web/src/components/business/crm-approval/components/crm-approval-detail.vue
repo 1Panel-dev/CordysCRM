@@ -199,7 +199,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ApprovalTaskExecuteTimeEnum, MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig } from '@lib/shared/models/system/module';
@@ -257,6 +257,7 @@
       config?: FormConfig
     ): void;
     (e: 'saveApproval', callback: () => Promise<any>, hasFieldPermission: boolean): void;
+    (e: 'deleteApproved'): void;
     (e: 'refresh'): void;
   }>();
 
@@ -456,6 +457,10 @@
         comment: approvalOpinion.value,
       });
       message.success(t('common.approved'));
+      if (approvalInfo.value?.executeTime === ApprovalTaskExecuteTimeEnum.DELETE) {
+        emit('deleteApproved');
+        return;
+      }
       initApprovalDetail();
       approvalOpinion.value = '';
       fileList.value = [];

@@ -45,6 +45,7 @@
             :source-id="sourceId"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
             @saveApproval="handleSaveApproval"
+            @delete-approved="closeAndRefresh()"
           >
             <template #left="{ fieldPermissions, taskNode }">
               <CrmFormDescription

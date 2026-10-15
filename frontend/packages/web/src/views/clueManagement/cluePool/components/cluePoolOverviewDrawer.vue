@@ -51,6 +51,7 @@
             :source-id="sourceId"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
             @saveApproval="handleSaveApproval"
+            @delete-approved="handleDeleteApproved"
           >
             <template #left="{ fieldPermissions, taskNode }">
               <CrmFormDescription
@@ -374,6 +375,11 @@
   async function handleSaveApproval(callback: () => Promise<any>, _hasFieldPermission: boolean) {
     await callback();
     handleSaved();
+  }
+
+  function handleDeleteApproved() {
+    show.value = false;
+    emit('refresh');
   }
 
   function handleSelect(key: string) {

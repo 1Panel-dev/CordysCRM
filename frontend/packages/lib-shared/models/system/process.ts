@@ -309,6 +309,7 @@ export interface ApprovalDetail {
   result: string;
   approvalStatus: ProcessStatusEnum;
   currentNodeId: string;
+  executeTime: ApprovalTaskExecuteTimeEnum;
   currentNodeFieldPermissions: string;
   nodes: ApprovalNode[];
 }
