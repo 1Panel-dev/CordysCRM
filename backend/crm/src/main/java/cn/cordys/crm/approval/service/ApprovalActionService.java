@@ -554,8 +554,11 @@ public class ApprovalActionService {
 			sendApprovalTaskNotice(multiSeqApprovalTasks, instance, currentOrgId);
 		}
 
-		// 节点状态流转类型的待办
-		if (isCurrentSingleNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId(), instance.getSubmitterId(), currentOrgId) || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
+		// 单人节点不应用或签规则，前加签通过后仍需等待原审批人。
+		boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(currentTask.getNodeId(), instance.getSubmitterId(), currentOrgId);
+		if (multiApprover
+				? isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())
+				: isCurrentSingleNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId(), instance.getSubmitterId(), currentOrgId)) {
 			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE, currentUserId);
 			// 单人审批或者多人审批但节点流转通过
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance, currentOrgId);
