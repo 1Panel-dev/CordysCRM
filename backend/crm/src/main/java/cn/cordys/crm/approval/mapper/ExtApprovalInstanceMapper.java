@@ -5,6 +5,12 @@ import org.apache.ibatis.annotations.Param;
 public interface ExtApprovalInstanceMapper {
 
 	/**
+	 * 判断当前组织的资源是否已有审批中的实例，跨执行时机和流程版本去重。
+	 */
+	boolean existsApprovingInstance(@Param("organizationId") String organizationId, @Param("formKey") String formKey,
+								   @Param("resourceId") String resourceId);
+
+	/**
 	 * 更新业务表的审批状态
 	 *
 	 * @param sourceTable     主业务表

@@ -2,6 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper">
+    <select id="existsApprovingInstance" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM approval_instance ai
+            INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+            WHERE afv.organization_id = #{organizationId}
+              AND ai.type = #{formKey}
+              AND ai.resource_id = #{resourceId}
+              AND ai.approval_status = 'APPROVING'
+        )
+    </select>
+
     <select id="updateApprovalStatus" resultType="java.lang.String">
         update ${sourceTable} set approval_status = #{approvalStatus} where id = #{id}
     </select>
