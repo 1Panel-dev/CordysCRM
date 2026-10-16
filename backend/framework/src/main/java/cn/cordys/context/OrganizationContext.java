@@ -15,8 +15,8 @@ import java.util.Set;
 /**
  * 组织上下文工具类，用于在请求/任务生命周期中传递组织ID和请求来源。
  * <p>
- * 使用 {@link InheritableThreadLocal} 实现父子线程自动传递，但在线程池场景需注意
- * 子线程任务执行完毕后必须清理，否则会造成上下文泄漏。
+ * 组织ID使用 {@link InheritableThreadLocal} 实现父子线程自动传递，请求来源由异步执行器显式传递。
+ * 任务执行完毕后必须清理，否则会造成上下文泄漏。
  * </p>
  *
  * <p>典型用法：</p>
@@ -38,6 +38,7 @@ public final class OrganizationContext {
     public static final String DEFAULT_ORGANIZATION_ID = "100001";
 
     private static final ThreadLocal<String> ORGANIZATION_ID = new InheritableThreadLocal<>();
+    private static final ThreadLocal<String> REQUEST_SOURCE = new ThreadLocal<>();
 
     private OrganizationContext() {
         // 工具类禁止实例化
@@ -105,10 +106,23 @@ public final class OrganizationContext {
         }
     }
 
+    public static String getRequestSource() {
+        return REQUEST_SOURCE.get();
+    }
+
+    public static void setRequestSource(String requestSource) {
+        if (requestSource == null) {
+            REQUEST_SOURCE.remove();
+        } else {
+            REQUEST_SOURCE.set(requestSource);
+        }
+    }
+
     /**
      * 清理 ThreadLocal 上下文，必须放在 finally 块中执行。
      */
     public static void clear() {
         ORGANIZATION_ID.remove();
+        REQUEST_SOURCE.remove();
     }
 }
