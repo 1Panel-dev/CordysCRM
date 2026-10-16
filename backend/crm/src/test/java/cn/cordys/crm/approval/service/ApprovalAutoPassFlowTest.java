@@ -4,6 +4,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
@@ -13,6 +14,7 @@ import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
@@ -243,6 +245,122 @@ class ApprovalAutoPassFlowTest {
         assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
         verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
                 anyMap(), eq("submitter"), eq("org-1"), eq(List.of("approver-b")), eq(true));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"FIRST", "MIDDLE", "LAST"})
+    void missingSupervisorOnlySkipsSubmitterAndPreservesSequentialApprovers(String position) {
+        List<String> approvers = switch (position) {
+            case "FIRST" -> List.of("submitter", "approver-b");
+            case "MIDDLE" -> List.of("approver-a", "submitter", "approver-b");
+            default -> List.of("approver-a", "approver-b", "submitter");
+        };
+        enterNodeWithSubmitter(MultiApproverModeEnum.SEQUENTIAL, approvers, null);
+
+        for (String approver : approvers.stream().filter(id -> !id.equals("submitter")).toList()) {
+            assertEquals("NODE003", instance.getCurrentNodeId());
+            assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
+            assertEquals(ApprovalStatus.APPROVING.name(), resourceStatus.get());
+            List<ApprovalTask> pending = tasks.stream()
+                    .filter(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus())).toList();
+            assertEquals(List.of(approver), pending.stream().map(ApprovalTask::getApproverId).toList());
+            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
+                    anyMap(), eq("submitter"), eq("org-1"), eq(List.of(approver)), eq(true));
+            verifyNoMoreInteractions(notices);
+            clearInvocations(notices);
+            pending.getFirst().setStatus(ApprovalStatus.APPROVED.name());
+            process(pending.getFirst());
+        }
+
+        List<ApprovalTask> submitterTasks = tasks.stream().filter(task -> "submitter".equals(task.getApproverId())).toList();
+        assertEquals(1, submitterTasks.size());
+        assertEquals(ApprovalStatus.AUTO_APPROVED.name(), submitterTasks.getFirst().getStatus());
+        assertCompleted();
+        verifyNoInteractions(notices);
+    }
+
+    @Test
+    void missingSupervisorKeepsOtherCountersignApproversPending() {
+        enterNodeWithSubmitter(MultiApproverModeEnum.ALL, List.of("submitter", "approver-b"), null);
+
+        assertEquals("NODE003", instance.getCurrentNodeId());
+        assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
+        assertEquals(ApprovalStatus.APPROVING.name(), resourceStatus.get());
+        ApprovalTask submitter = tasks.stream().filter(task -> "submitter".equals(task.getApproverId())).findFirst().orElseThrow();
+        assertEquals(ApprovalStatus.AUTO_APPROVED.name(), submitter.getStatus());
+        ApprovalTask pending = tasks.getLast();
+        assertEquals("approver-b", pending.getApproverId());
+        assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
+        verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
+                anyMap(), eq("submitter"), eq("org-1"), eq(List.of("approver-b")), eq(true));
+        verifyNoMoreInteractions(notices);
+
+        pending.setStatus(ApprovalStatus.APPROVED.name());
+        process(pending);
+        assertCompleted();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void missingSupervisorStillCompletesSingleApproverAndAnyApproval(boolean singleApprover) {
+        enterNodeWithSubmitter(MultiApproverModeEnum.ANY,
+                singleApprover ? List.of("submitter") : List.of("submitter", "approver-b"), null);
+
+        assertEquals("submitter", tasks.getLast().getApproverId());
+        assertEquals(ApprovalStatus.AUTO_APPROVED.name(), tasks.getLast().getStatus());
+        assertCompleted();
+        verifyNoInteractions(notices);
+    }
+
+    @Test
+    void existingSupervisorReceivesSequentialTaskBeforeOtherApprovers() {
+        enterNodeWithSubmitter(MultiApproverModeEnum.SEQUENTIAL, List.of("submitter", "approver-b"), "supervisor");
+
+        for (String approver : List.of("supervisor", "approver-b")) {
+            assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
+            assertEquals(ApprovalStatus.APPROVING.name(), resourceStatus.get());
+            ApprovalTask pending = tasks.getLast();
+            assertEquals(approver, pending.getApproverId());
+            assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
+            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
+                    anyMap(), eq("submitter"), eq("org-1"), eq(List.of(approver)), eq(true));
+            clearInvocations(notices);
+            pending.setStatus(ApprovalStatus.APPROVED.name());
+            process(pending);
+        }
+
+        assertTrue(tasks.stream().noneMatch(task -> "submitter".equals(task.getApproverId())));
+        assertCompleted();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void enterNodeWithSubmitter(MultiApproverModeEnum mode, List<String> approvers, String supervisorId) {
+        ApprovalTask first = firstApprovedTask(List.of("previous-approver"));
+        ApprovalNodeApproverResponse automatic = node("AUTO001", MultiApproverModeEnum.ANY, List.of());
+        automatic.setApprovalType(ApprovalTypeEnum.AUTO_PASS.name());
+        ApprovalNodeApproverResponse target = node("NODE003", mode, approvers);
+        target.setSameSubmitterAction(SameSubmitterActionEnum.ASSIGN_SUPERIOR.name());
+        ApprovalNodeApprover config = nodeMapper.selectByPrimaryKey(target.getId());
+        config.setSameSubmitterAction(SameSubmitterActionEnum.ASSIGN_SUPERIOR.name());
+        config.setApproverType(ApproverTypeEnum.MEMBER.name());
+        config.setApproverList(JSON.toJSONString(approvers));
+        BaseMapper<OrganizationUser> organizationUsers = mock(BaseMapper.class);
+        OrganizationUser submitter = new OrganizationUser();
+        submitter.setSupervisorId(supervisorId);
+        when(organizationUsers.selectOne(any())).thenReturn(submitter);
+        ReflectionTestUtils.setField(flowService, "organizationUserMapper", organizationUsers);
+        ReflectionTestUtils.setField(flowService, "approvalNodeApproverMapper", nodeMapper);
+        // 后续取人真实走同人转交逻辑，仅替换与本用例无关的成员解析。
+        doCallRealMethod().when(flowService).getCurrentNodeApproverList(any(ApprovalInstance.class), anyString(), anyString());
+        doAnswer(invocation -> ((List<String>) invocation.getArgument(3)).stream().map(id -> {
+            User user = new User();
+            user.setId(id);
+            return user;
+        }).toList()).when(flowService).resolveApprovers(anyString(), anyString(), any(), anyList(), any());
+        nextNodes.put("NODE001", automatic);
+        nextNodes.put("AUTO001", target);
+
+        process(first);
     }
 
     private ApprovalNodeApproverResponse node(String id, MultiApproverModeEnum mode, List<String> approvers) {

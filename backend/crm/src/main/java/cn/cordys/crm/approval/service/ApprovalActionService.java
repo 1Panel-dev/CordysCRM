@@ -526,19 +526,22 @@ public class ApprovalActionService {
 			if (approvingTasks.isEmpty()) {
 				List<String> autoSkipUserIds = approvalFlowService.getFlowAutoSkipUser(instance, currentTask.getNodeId(), List.of(currentTask.getApproverId()));
 				SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nodeApprover.getSameSubmitterAction());
+				String sameSubmitterComment = sameAction == SameSubmitterActionEnum.ASSIGN_SUPERIOR
+						? "审批人与提交人为同一人时, 直属上级为空, 自动通过" : "审批人与提交人为同一人时, 自动同意跳过";
 				// 如果依次审批的节点存在跳过的情况, 一直往后取
 				int seq = 0;
 				String nextSeqUserId = getMultiSeqAfterOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, seq);
 				while (StringUtils.isNotBlank(nextSeqUserId)) {
 					ApprovalTask nextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextSeqUserId, ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound(), seq);
 					boolean autoSkip = autoSkipUserIds.contains(nextSeqUserId);
-					boolean sameSubmitterSkip = sameAction == SameSubmitterActionEnum.SKIP && Strings.CI.equals(nextSeqUserId, instance.getSubmitterId());
+					// 有直属上级的提交人已替换为上级，仍在名单中的提交人按无上级自动跳过。
+					boolean sameSubmitterSkip = sameAction != SameSubmitterActionEnum.ALLOW && Strings.CI.equals(nextSeqUserId, instance.getSubmitterId());
 					if (autoSkip || sameSubmitterSkip) {
 						// 自动同意 (重复审批跳过, 提审人相同跳过)
 						nextTask.setAction(ApprovalAction.APPROVE.name());
 						nextTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
 						approvalFlowService.saveAutoRecord(instance, currentTask.getNodeId(), ApprovalStatus.AUTO_APPROVED,
-								autoSkipUserIds.contains(nextSeqUserId) ? "审批人重复出现, 后续节点自动通过" : "审批人与提交人为同一人时, 自动同意跳过", nextTask.getId(), null, false, nextTask.getNodeRound(), currentOrgId);
+								autoSkipUserIds.contains(nextSeqUserId) ? "审批人重复出现, 后续节点自动通过" : sameSubmitterComment, nextTask.getId(), null, false, nextTask.getNodeRound(), currentOrgId);
 						seq++;
 						nextSeqUserId = getMultiSeqAfterOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, seq);
 					} else {
@@ -1255,8 +1258,10 @@ public class ApprovalActionService {
 			return approvalTasks;
 		}
 		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instance.getId(), nodeId);
-		if (sameAction == SameSubmitterActionEnum.SKIP) {
-			// 如果配置了审批人和提审人相同, 自动跳过 (会签, 依次审批 生成的提审人待办需直接同意, 或签和单人审批已在流程执行的时候处理过)
+		if (sameAction != SameSubmitterActionEnum.ALLOW) {
+			// 同人自动跳过、转交但无上级时逐人跳过；有上级的提交人已在取人时替换。
+			String sameSubmitterComment = sameAction == SameSubmitterActionEnum.ASSIGN_SUPERIOR
+					? "审批人与提交人为同一人时, 直属上级为空, 自动通过" : "审批人与提交人为同一人时, 自动同意跳过";
 			switch (multiMode) {
 				case SEQUENTIAL -> {
 					// 依次审批需要循环发送待办, 直到该待办审批人没有跳过
@@ -1268,7 +1273,7 @@ public class ApprovalActionService {
 							firstTask.setAction(ApprovalAction.APPROVE.name());
 							firstTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
 							approvalFlowService.saveAutoRecord(instance, nodeId, ApprovalStatus.AUTO_APPROVED,
-									Strings.CI.equals(seqUser, instance.getSubmitterId()) ? "审批人与提交人为同一人时, 自动同意跳过" : "审批人重复出现, 后续节点自动通过", firstTask.getId(), null, false, firstTask.getNodeRound(), currentOrgId);
+									Strings.CI.equals(seqUser, instance.getSubmitterId()) ? sameSubmitterComment : "审批人重复出现, 后续节点自动通过", firstTask.getId(), null, false, firstTask.getNodeRound(), currentOrgId);
 							approvalTasks.add(firstTask);
 						} else {
 							// 找到未自动跳过的审批人, 跳出循环
@@ -1287,7 +1292,7 @@ public class ApprovalActionService {
 							approvalTask.setAction(ApprovalAction.APPROVE.name());
 							approvalTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
 							approvalFlowService.saveAutoRecord(instance, nodeId, ApprovalStatus.AUTO_APPROVED,
-									Strings.CI.equals(approver, instance.getSubmitterId()) ? "审批人与提交人为同一人时, 自动同意跳过" : "审批人重复出现, 后续节点自动通过", approvalTask.getId(), null, false, approvalTask.getNodeRound(), currentOrgId);
+									Strings.CI.equals(approver, instance.getSubmitterId()) ? sameSubmitterComment : "审批人重复出现, 后续节点自动通过", approvalTask.getId(), null, false, approvalTask.getNodeRound(), currentOrgId);
 						}
 						approvalTasks.add(approvalTask);
 					}
