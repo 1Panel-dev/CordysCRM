@@ -329,8 +329,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取线索池详情
-  function getPoolClue(id: string) {
-    return CDR.get<ClueDetail>({ url: `${GetPoolClueUrl}/${id}` });
+  function getPoolClue(id: string, approvalTaskId?: string) {
+    return CDR.get<ClueDetail>({ url: `${GetPoolClueUrl}/${id}`, params: { approvalTaskId } });
   }
 
   // 生成线索池图表

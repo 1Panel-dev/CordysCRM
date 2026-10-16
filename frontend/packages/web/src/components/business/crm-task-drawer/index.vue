@@ -136,6 +136,7 @@
     :source-id="activeResourceId"
     :pool-id="activePoolId"
     :hidden-columns="openSeaHiddenColumns"
+    :approvalTaskId="approvalTaskId"
     @change="handleApproveSuccess"
     @delete="handleApproveSuccess"
   />
@@ -153,6 +154,7 @@
     :detail="activeResourceDetail"
     :pool-id="activePoolId"
     :hidden-columns="cluePoolHiddenColumns"
+    :approvalTaskId="approvalTaskId"
     @remove="handleApproveSuccess"
     @refresh="handleApproveSuccess"
   />
