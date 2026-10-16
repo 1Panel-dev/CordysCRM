@@ -661,7 +661,7 @@ public class ClueService implements ApprovalResourceHandler {
     }
 
     /**
-     * 判断关联客户的访问权限，协作访问时保留协作类型供操作权限使用。
+     * 非公海关联客户仅负责人或协作人可完整查看，协作访问时保留协作类型供操作权限使用。
      */
     private boolean hasTransitionCustomerPermission(Customer customer, CustomerListResponse item, String userId, String orgId) {
         if (BooleanUtils.isTrue(customer.getInSharedPool())) {
@@ -671,8 +671,7 @@ public class ClueService implements ApprovalResourceHandler {
         if (!PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)) {
             return false;
         }
-        if (StringUtils.isNotBlank(customer.getOwner()) && dataScopeService.hasDataPermission(
-                userId, orgId, customer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ)) {
+        if (StringUtils.isNotBlank(customer.getOwner()) && Strings.CS.equals(customer.getOwner(), userId)) {
             return true;
         }
         List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(customer.getId(), userId);

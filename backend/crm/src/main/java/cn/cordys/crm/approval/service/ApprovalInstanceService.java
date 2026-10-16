@@ -236,6 +236,9 @@ public class ApprovalInstanceService {
 		List<ApprovalRecordNode> processedApprovalNodes = buildProcessedApprovalNodes(instance, tasks, records, signTasks, backRecords, attachmentMap, simpleUserMap, currentOrgId);
 		// 未来节点
 		List<ApprovalRecordNode> pendingApprovalNodes = buildPendingApprovalNodes(instance, simpleUserMap, currentOrgId);
+		// 兼容旧实例残留的有效轮次，未来节点及其加签历史不再作为当前进度重复展示。
+		Set<String> pendingNodeIds = pendingApprovalNodes.stream().map(ApprovalRecordNode::getNodeId).collect(Collectors.toSet());
+		processedApprovalNodes.removeIf(node -> pendingNodeIds.contains(node.getNodeId().split(SIGN_SPILT)[0]));
 		List<ApprovalRecordNode> nodes = new ArrayList<>(ListUtils.union(processedApprovalNodes, pendingApprovalNodes));
 		// 处理结束节点
 		ApprovalRecordNode endNode = getInstanceEndNode(instance);

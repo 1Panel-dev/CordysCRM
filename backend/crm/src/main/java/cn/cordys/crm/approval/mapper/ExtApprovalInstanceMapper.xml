@@ -55,7 +55,7 @@
     </select>
 
     <update id="batchClearNotApprovingTask">
-        update approval_task set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status != 'APPROVING'
+        update approval_task set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round BETWEEN 0 AND #{nodeRound} and status != 'APPROVING'
     </update>
 
     <update id="loseApprovingTask">
@@ -63,10 +63,10 @@
     </update>
 
     <update id="batchClearApprovingTask">
-        update approval_task set status = 'NONE', node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status = 'APPROVING'
+        update approval_task set status = 'NONE', node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round BETWEEN 0 AND #{nodeRound} and status = 'APPROVING'
     </update>
 
     <update id="batchClearRecord">
-        update approval_record set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound}
+        update approval_record set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round BETWEEN 0 AND #{nodeRound}
     </update>
 </mapper>

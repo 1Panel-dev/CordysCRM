@@ -5,7 +5,11 @@
   <CrmTag
     v-else
     plain
-    :tag="processStatusMap[props.status].label"
+    :tag="
+      props.scene === 'approvalRecord' && props.status === ProcessStatusEnum.PENDING
+        ? t('crm.approval.pending')
+        : processStatusMap[props.status].label
+    "
     :text-color="processStatusMap[props.status].color"
     :bgColor="processStatusMap[props.status].bgColor"
   />
@@ -16,6 +20,7 @@
 
   const props = defineProps<{
     status?: ProcessStatusEnum;
+    scene?: 'process' | 'approvalRecord';
   }>();
 
   const { t } = useI18n();

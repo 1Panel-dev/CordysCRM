@@ -1,5 +1,6 @@
 export default {
   'crm.approval.record': 'Approval Record',
+  'crm.approval.pending': 'Pending Approval',
   'crm.approval.opinion': 'Approval Opinion',
   'crm.approval.rejectConfirm': 'Confirm Rejection?',
   'crm.approval.rejectTip': 'After rejection, the approval process will be terminated. Please proceed with caution!',

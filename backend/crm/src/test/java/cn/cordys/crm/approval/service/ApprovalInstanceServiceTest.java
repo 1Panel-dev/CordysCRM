@@ -1,5 +1,8 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.uid.impl.DefaultUidGenerator;
+import cn.cordys.common.uid.worker.WorkerIdAssigner;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
@@ -12,9 +15,11 @@ import cn.cordys.crm.approval.domain.ApprovalReturnBackRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalRecordNode;
 import cn.cordys.crm.approval.dto.ApprovalTaskNode;
+import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
@@ -119,6 +124,78 @@ class ApprovalInstanceServiceTest {
 		assertEquals(ApprovalStatus.APPROVING.name(), result.get(1).getStatus());
 		assertEquals(ApprovalStatus.PENDING.name(), result.get(2).getStatus());
 		assertEquals(ApprovalStatus.PENDING.name(), result.get(3).getStatus());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void futurePendingNodeReplacesApprovedHistoryFromPreviousReturnRound() {
+		ApprovalInstanceService service = new ApprovalInstanceService();
+		ApprovalFlowService flowService = mock(ApprovalFlowService.class);
+		BaseMapper<ApprovalNodeApprover> approverNodeMapper = mock(BaseMapper.class);
+		BaseMapper<ApprovalNode> nodeMapper = mock(BaseMapper.class);
+		ReflectionTestUtils.setField(service, "approvalFlowService", flowService);
+		ReflectionTestUtils.setField(service, "approvalNodeApproverMapper", approverNodeMapper);
+		ReflectionTestUtils.setField(service, "approvalNodeMapper", nodeMapper);
+
+		ApprovalInstance instance = new ApprovalInstance();
+		instance.setId("instance-1");
+		instance.setCurrentNodeId("NODE001");
+		instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+		ApprovalTask current = task("task-current", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 2);
+		current.setNodeId("NODE001");
+		current.setCreateTime(30L);
+		ApprovalTask stale = task("task-stale", ApprovalTaskType.NL, ApprovalStatus.APPROVED, 1);
+		stale.setNodeId("NODE002");
+		stale.setCreateTime(10L);
+		ApprovalTask staleSign = task("sign-stale", ApprovalTaskType.SN, ApprovalStatus.APPROVED, 1);
+		staleSign.setNodeId(stale.getNodeId());
+		staleSign.setCreateTime(11L);
+		ApprovalAddSignTask staleRelation = sign("relation-stale", staleSign.getId(), stale.getId(), stale.getId(), ApprovalAddSignType.AFTER, 100L);
+		ApprovalRecord staleRecord = new ApprovalRecord();
+		staleRecord.setId("record-stale");
+		staleRecord.setTaskId(stale.getId());
+		staleRecord.setNodeId(stale.getNodeId());
+		staleRecord.setNodeRound(1);
+		staleRecord.setCreateTime(20L);
+		ApprovalNodeApproverResponse future = new ApprovalNodeApproverResponse();
+		future.setId(stale.getNodeId());
+		future.setApprovalType("MANUAL");
+		future.setApproverList(List.of(stale.getApproverId()));
+		ApprovalNode firstNode = new ApprovalNode();
+		firstNode.setId(current.getNodeId());
+		firstNode.setNodeType("APPROVER");
+		firstNode.setSort(1);
+		ApprovalNode secondNode = new ApprovalNode();
+		secondNode.setId(stale.getNodeId());
+		secondNode.setNodeType("APPROVER");
+		secondNode.setSort(2);
+		when(flowService.getCurrentNodeApproverList(instance, current.getNodeId(), "org-1")).thenReturn(List.of(current.getApproverId()));
+		when(flowService.getCurrentNodeApproverList(instance, stale.getNodeId(), "org-1")).thenReturn(List.of(stale.getApproverId()));
+		when(flowService.getInstanceCurrentFollowNode(instance, "org-1")).thenReturn(List.of(future));
+		when(approverNodeMapper.selectByIds(anyList())).thenReturn(List.of());
+		when(nodeMapper.selectByIds(anyList())).thenReturn(List.of(firstNode, secondNode));
+		when(nodeMapper.selectOne(any())).thenReturn(null);
+
+		ApplicationContext previousContext = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class, "context");
+		DefaultUidGenerator generator = new DefaultUidGenerator();
+		ReflectionTestUtils.setField(generator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
+		generator.init();
+		ApplicationContext context = mock(ApplicationContext.class);
+		when(context.getBean(DefaultUidGenerator.class)).thenReturn(generator);
+		new CommonBeanFactory().setApplicationContext(context);
+		try {
+			List<ApprovalRecordNode> nodes = ReflectionTestUtils.invokeMethod(service, "buildApprovalRecordNodeList", instance,
+					List.of(current, stale, staleSign), List.of(staleRecord), List.of(staleRelation), List.of(), Map.of(), Map.of(), "org-1");
+
+			assertEquals(List.of("NODE001", "NODE002"), nodes.stream().map(ApprovalRecordNode::getNodeId).toList());
+			assertEquals(ApprovalStatus.APPROVING.name(), nodes.getFirst().getApprovalStatus());
+			ApprovalRecordNode pending = nodes.getLast();
+			assertEquals(ApprovalStatus.PENDING.name(), pending.getApprovalStatus());
+			assertEquals(ApprovalStatus.PENDING.name(), pending.getTaskNodes().getFirst().getApprovalStatus());
+			assertNull(pending.getTaskNodes().getFirst().getApprovalTime());
+		} finally {
+			new CommonBeanFactory().setApplicationContext(previousContext);
+		}
 	}
 
 	private ApprovalTask task(String id, ApprovalTaskType type, ApprovalStatus status, int round) {

@@ -19,6 +19,8 @@ import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.MockMakers;
@@ -137,15 +139,14 @@ class ClueTransitionCustomerListTest {
     }
 
     @Test
-    void privateCustomerInDataScopeUsesCompleteCustomerListAssembly() {
+    void privateCustomerOwnerUsesCompleteCustomerListAssembly() {
         allowPrivateRead();
-        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID, PermissionConstants.CUSTOMER_MANAGEMENT_READ))
-                .thenReturn(true);
+        customer.setOwner(USER_ID);
         CustomerListResponse built = new CustomerListResponse();
         built.setId(CUSTOMER_ID);
         built.setModuleFields(List.of());
         List<CustomerListResponse> builtList = List.of(built);
-        Map<String, List<OptionDTO>> options = Map.of("owner", List.of(new OptionDTO(OWNER_ID, "客户负责人")));
+        Map<String, List<OptionDTO>> options = Map.of("owner", List.of(new OptionDTO(USER_ID, "客户负责人")));
         when(customerService.buildListData(anyList(), eq(ORG_ID))).thenReturn(builtList);
         when(customerService.buildOptionMap(eq(ORG_ID), anyList(), same(builtList))).thenReturn(options);
 
@@ -164,17 +165,18 @@ class ClueTransitionCustomerListTest {
         verify(customerService).buildOptionMap(ORG_ID, builtList, builtList);
     }
 
-    @Test
-    void privateCollaboratorCanReadOutsideOwnerDataScope() {
+    @ParameterizedTest
+    @ValueSource(strings = {"READ_ONLY", "COLLABORATION"})
+    void privateCollaboratorCanReadOutsideOwnerDataScope(String collaborationType) {
         allowPrivateRead();
         CustomerCollaboration collaboration = new CustomerCollaboration();
-        collaboration.setCollaborationType("READ_ONLY");
+        collaboration.setCollaborationType(collaborationType);
         when(collaborationService.selectByCustomerIdAndUserId(CUSTOMER_ID, USER_ID)).thenReturn(List.of(collaboration));
 
         ClueTransitionCustomerListResponse response = query();
 
         assertTrue(response.isHasPermission());
-        assertEquals("READ_ONLY", response.getList().getFirst().getCollaborationType());
+        assertEquals(collaborationType, response.getList().getFirst().getCollaborationType());
         verify(customerService).buildListData(anyList(), eq(ORG_ID));
     }
 
@@ -190,8 +192,21 @@ class ClueTransitionCustomerListTest {
     }
 
     @Test
-    void privateCustomerOutsideDataScopeOnlyReturnsBasicFields() {
+    void privateCustomerDataScopePermissionWithoutOwnershipOrCollaborationOnlyReturnsBasicFields() {
         allowPrivateRead();
+        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID, PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+                .thenReturn(true);
+
+        assertBasicFieldsOnly(query());
+        verifyNoInteractions(dataScopeService);
+    }
+
+    @Test
+    void privateCustomerOwnerWithoutReadPermissionOnlyReturnsBasicFields() {
+        customer.setOwner(USER_ID);
+        when(baseService.getUserName(USER_ID)).thenReturn("客户负责人");
+        when(baseService.getUserDeptMapByUserId(USER_ID, ORG_ID))
+                .thenReturn(new UserDeptDTO(USER_ID, "department", "示例部门"));
 
         assertBasicFieldsOnly(query());
     }
@@ -236,8 +251,7 @@ class ClueTransitionCustomerListTest {
     @Test
     void frozenStateMatchesPermanentFutureExpiredAndNotFrozenCustomers() {
         allowPrivateRead();
-        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID, PermissionConstants.CUSTOMER_MANAGEMENT_READ))
-                .thenReturn(true);
+        customer.setOwner(USER_ID);
         assertTrue(query().getList().getFirst().getFrozen());
         customer.setUnfreezeTime(Long.MAX_VALUE);
         assertTrue(query().getList().getFirst().getFrozen());
@@ -269,7 +283,7 @@ class ClueTransitionCustomerListTest {
         CustomerListResponse item = response.getList().getFirst();
         assertEquals(CUSTOMER_ID, item.getId());
         assertEquals("示例客户", item.getName());
-        assertEquals(OWNER_ID, item.getOwner());
+        assertEquals(customer.getOwner(), item.getOwner());
         assertEquals("客户负责人", item.getOwnerName());
         assertEquals("department", item.getDepartmentId());
         assertEquals("示例部门", item.getDepartmentName());

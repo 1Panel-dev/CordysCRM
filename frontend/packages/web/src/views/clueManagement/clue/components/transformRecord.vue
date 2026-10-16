@@ -369,7 +369,7 @@
     },
     specialRender: {
       name: (row: any) => {
-        if (row.hasPermission === false) {
+        if (!hasPermission.value) {
           return h(CrmNameTooltip, { text: row.name });
         }
         return hasApprovalScopedPermission(row, ['CUSTOMER_MANAGEMENT:READ'])
