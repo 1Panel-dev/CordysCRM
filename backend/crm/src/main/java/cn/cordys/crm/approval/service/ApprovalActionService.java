@@ -945,7 +945,7 @@ public class ApprovalActionService {
 	 */
 	public void clearExpiredNode(String instanceId, String nodeId) {
 		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instanceId, nodeId);
-		if (maxRound > 0) {
+		if (maxRound >= 0) {
 			/*
 			 * 当前节点执行过, 假删除, 保留历史待办
 			 */
@@ -962,7 +962,7 @@ public class ApprovalActionService {
 	 */
 	public void loseCurrentNode(String instanceId, String nodeId) {
 		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instanceId, nodeId);
-		if (maxRound > 0) {
+		if (maxRound >= 0) {
 			/*
 			 * 当前节点执行过
 			 * 审批中 => 空
