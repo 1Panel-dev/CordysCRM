@@ -586,8 +586,10 @@ public class ClueService implements ApprovalResourceHandler {
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
-        // 记录修改前的状态
-        clue.setLastStage(originClue.getStage());
+        if (!Strings.CI.equals(originClue.getStage(), request.getStage())) {
+            // 记录修改前的状态,有修改才记录
+            clue.setLastStage(originClue.getStage());
+        }
         clueMapper.update(clue);
         // 日志
         OperationLogContext.setContext(
