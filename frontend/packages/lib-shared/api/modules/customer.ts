@@ -490,8 +490,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取公海客户详情
-  function getOpenSeaCustomer(id: string) {
-    return CDR.get<CustomerDetail>({ url: `${GetOpenSeaCustomerUrl}/${id}` });
+  function getOpenSeaCustomer(id: string, approvalTaskId?: string) {
+    return CDR.get<CustomerDetail>({ url: `${GetOpenSeaCustomerUrl}/${id}`, params: { approvalTaskId } });
   }
 
   // 删除公海客户

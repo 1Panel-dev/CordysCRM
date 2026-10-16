@@ -60,7 +60,7 @@
                 :readonly="true"
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
-                  approvalTaskId: taskNode?.taskId,
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
                 }"
                 @init="handleDescriptionInit"
                 @refresh="emit('change')"
@@ -136,6 +136,7 @@
     readonly?: boolean;
     hiddenColumns: string[];
     refreshDetailKey?: number;
+    approvalTaskId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;

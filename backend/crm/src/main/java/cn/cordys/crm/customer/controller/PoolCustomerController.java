@@ -9,6 +9,9 @@ import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -50,6 +53,8 @@ public class PoolCustomerController {
 
     @Resource
     private PoolCustomerService poolCustomerService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private CustomerService customerService;
     @Resource
@@ -119,11 +124,16 @@ public class PoolCustomerController {
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
-        String poolId = poolCustomerService.getPoolIdByCustomerId(id);
-        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        // 待办审批人可查看资源详情，无需再校验权限
+        if (!resourcePermissionService.hasApprovalTaskPermission(id, SessionUtils.getUserId())) {
+            if (!PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+            String poolId = poolCustomerService.getPoolIdByCustomerId(id);
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         return customerService.get(id);
     }
 

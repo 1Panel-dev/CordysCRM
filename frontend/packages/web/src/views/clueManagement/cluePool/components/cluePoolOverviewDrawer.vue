@@ -66,7 +66,7 @@
                 :readonly="true"
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
-                  approvalTaskId: taskNode?.taskId,
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
                 }"
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"
@@ -136,6 +136,7 @@
     detail?: Partial<CluePoolListItem>;
     poolId: string;
     hiddenColumns: string[];
+    approvalTaskId?: string;
   }>();
 
   const show = defineModel<boolean>('show', {

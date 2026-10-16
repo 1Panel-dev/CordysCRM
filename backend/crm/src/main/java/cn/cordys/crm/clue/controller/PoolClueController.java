@@ -9,6 +9,9 @@ import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -50,6 +53,8 @@ public class PoolClueController {
 
     @Resource
     private PoolClueService poolClueService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private ClueService clueService;
     @Resource
@@ -119,11 +124,16 @@ public class PoolClueController {
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "线索详情")
     public ClueGetResponse get(@PathVariable String id) {
-        String poolId = poolClueService.getPoolIdByClueId(id);
-        poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        // 待办审批人可查看资源详情，无需再校验权限
+        if (!resourcePermissionService.hasApprovalTaskPermission(id, SessionUtils.getUserId())) {
+            if (!PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+            String poolId = poolClueService.getPoolIdByClueId(id);
+            poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        }
         return clueService.get(id);
     }
 
