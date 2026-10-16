@@ -2,6 +2,7 @@ package cn.cordys.crm.contract.dto.request;
 
 import cn.cordys.common.dto.ExportHeadDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class ContractPaymentRecordExportRequest extends ContractPaymentRecordPag
 	@Schema(description = "合同ID")
 	private String contractId;
 
+	@NotBlank
 	@Schema(description = "文件名")
 	private String fileName;
 

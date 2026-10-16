@@ -1,6 +1,7 @@
 package cn.cordys.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -9,6 +10,7 @@ import java.util.List;
 @Data
 public class ExportSelectRequest {
 
+    @NotBlank
     @Schema(description = "文件名")
     private String fileName;
 

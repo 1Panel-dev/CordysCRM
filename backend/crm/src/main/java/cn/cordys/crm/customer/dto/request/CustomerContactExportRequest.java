@@ -2,6 +2,7 @@ package cn.cordys.crm.customer.dto.request;
 
 import cn.cordys.common.dto.ExportHeadDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.util.List;
 @Data
 public class CustomerContactExportRequest extends CustomerContactPageRequest {
 
+    @NotBlank
     @Schema(description = "文件名")
     private String fileName;
 
