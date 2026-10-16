@@ -53,7 +53,7 @@
 
   import { getApprovalConfigDetail, revokeApproval, revokeResource } from '@/api/modules';
   import useUserStore from '@/store/modules/user';
-  import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ApprovalTaskExecuteTimeEnum, MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
   import type {
@@ -78,6 +78,7 @@
   const emit = defineEmits<{
     (e: 'refresh'): void;
     (e: 'approvalSuccess'): void;
+    (e: 'deleteApproved'): void;
     (e: 'cancelSuccess'): void;
   }>();
 
@@ -310,6 +311,11 @@
   }
 
   function handleApprovalSuccess() {
+    if (!isRejecting.value && props.approvalInfo?.executeTime === ApprovalTaskExecuteTimeEnum.DELETE) {
+      emit('deleteApproved');
+      return;
+    }
+
     refresh();
     emit('approvalSuccess');
   }

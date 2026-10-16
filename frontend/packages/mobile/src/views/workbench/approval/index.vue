@@ -44,6 +44,7 @@
         :current-approval-node-index="currentApprovalNodeIndex"
         @refresh="refresh"
         @approval-success="router.back()"
+        @delete-approved="router.back()"
         @cancel-success="router.back()"
       />
     </template>

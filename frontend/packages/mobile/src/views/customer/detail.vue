@@ -77,6 +77,7 @@
         :current-approval-node="currentApprovalNode"
         :current-approval-node-index="currentApprovalNodeIndex"
         @refresh="refreshDetail"
+        @delete-approved="router.back()"
       />
     </template>
   </CrmPageWrapper>

@@ -126,11 +126,12 @@
   });
 
   const refreshList = () => crmListRef.value?.loadList(true);
-  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<OpportunityItem>({
-    formType: FormDesignKeyEnum.BUSINESS,
-    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
-    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
-  });
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+    useApprovalOperation<OpportunityItem>({
+      formType: FormDesignKeyEnum.BUSINESS,
+      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+    });
 
   const listParams = computed(() => {
     return {
@@ -274,6 +275,10 @@
   }
 
   function goDetail(item: OpportunityItem) {
+    if (!hasApprovalScopedPermission(item, ['OPPORTUNITY_MANAGEMENT:READ'])) {
+      return;
+    }
+
     const { id, name } = item;
     router.push({
       name: OpportunityRouteEnum.OPPORTUNITY_DETAIL,

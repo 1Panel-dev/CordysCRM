@@ -43,7 +43,7 @@
           :item="item"
           :actions="getListItemActions(item)"
           resource-type="lead"
-          @click="goDetail"
+          @click="(value) => goDetail(value as CluePoolListItem)"
         ></CrmListCommonItem>
       </template>
     </CrmList>
@@ -89,12 +89,13 @@
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CLUE,
   });
-  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<CluePoolListItem>({
-    formType: FormDesignKeyEnum.CLUE,
-    ignoreRolePermissionCheck: true,
-    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
-    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
-  });
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+    useApprovalOperation<CluePoolListItem>({
+      formType: FormDesignKeyEnum.CLUE,
+      ignoreRolePermissionCheck: true,
+      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+    });
 
   async function getCluePoolOptions() {
     try {
@@ -245,7 +246,14 @@
     }
   );
 
-  function goDetail(item: Record<string, any>) {
+  function goDetail(item: CluePoolListItem) {
+    if (
+      !hasAnyPermission(['CLUE_MANAGEMENT_POOL:READ']) ||
+      !hasApprovalScopedPermission(item, ['CLUE_MANAGEMENT:READ'])
+    ) {
+      return;
+    }
+
     router.push({
       name: ClueRouteEnum.CLUE_POOL_DETAIL,
       query: {
