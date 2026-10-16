@@ -863,6 +863,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         moduleFields: [],
         id: props.sourceId?.value,
       };
+      if (form.comment !== undefined) {
+        params.comment = form.comment;
+      }
       fieldList.value.forEach((item) => {
         if (item.resourceFieldId) {
           return;

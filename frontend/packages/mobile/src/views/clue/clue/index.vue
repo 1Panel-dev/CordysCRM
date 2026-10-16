@@ -100,7 +100,6 @@
   ];
   const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.CLUE);
 
-  const activeClue = ref<ClueListItem>();
   const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CLUE);
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CLUE,
@@ -124,12 +123,13 @@
     });
   }
 
-  function handleTransfer(id: string) {
+  function handleTransfer(item: ClueListItem) {
     router.push({
       name: CustomerRouteEnum.CUSTOMER_TRANSFER,
       query: {
-        id,
+        id: item.id,
         apiKey: FormDesignKeyEnum.CLUE,
+        approved: item.approved ? 'Y' : 'N',
       },
     });
   }
@@ -189,7 +189,7 @@
           icon: 'iconicon_jump',
           permission: ['CLUE_MANAGEMENT:TRANSFER'],
           action: (item: ClueListItem) => {
-            handleTransfer(item.id);
+            handleTransfer(item);
           },
         },
         {

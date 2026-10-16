@@ -139,12 +139,13 @@
     };
   });
 
-  function handleTransfer(id: string) {
+  function handleTransfer(item: OpportunityItem) {
     router.push({
       name: CustomerRouteEnum.CUSTOMER_TRANSFER,
       query: {
-        id,
+        id: item.id,
         apiKey: FormDesignKeyEnum.BUSINESS,
+        approved: item.approved ? 'Y' : 'N',
       },
     });
   }
@@ -162,7 +163,7 @@
           icon: 'iconicon_jump',
           permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
           action: (item: OpportunityItem) => {
-            handleTransfer(item.id);
+            handleTransfer(item);
           },
         },
       ];

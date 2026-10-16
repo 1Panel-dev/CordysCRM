@@ -145,6 +145,7 @@
           query: {
             id: item.id,
             apiKey: FormDesignKeyEnum.CUSTOMER,
+            approved: item.approved ? 'Y' : 'N',
           },
         });
       },
