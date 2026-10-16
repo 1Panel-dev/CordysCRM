@@ -1,6 +1,8 @@
 package cn.cordys.config;
 
 
+import cn.cordys.common.util.ServletUtils;
+import cn.cordys.context.OrganizationContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -33,9 +35,21 @@ public class AsyncConfig implements AsyncConfigurer {
     private static final int STATISTIC_QUEUE_CAPACITY = 64;
 
     // 同时暴露默认名称，便于 @Async 自动装配
-    @Bean(name = {"threadPoolTaskExecutor", "applicationTaskExecutor"})
+    @Bean(name = {"taskExecutor", "threadPoolTaskExecutor", "applicationTaskExecutor"})
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setTaskDecorator(task -> {
+            String requestSource = ServletUtils.getRequestSource();
+            return () -> {
+                String previousSource = OrganizationContext.getRequestSource();
+                try {
+                    OrganizationContext.setRequestSource(requestSource);
+                    task.run();
+                } finally {
+                    OrganizationContext.setRequestSource(previousSource);
+                }
+            };
+        });
         executor.setCorePoolSize(CORE_POOL_SIZE);
         executor.setMaxPoolSize(MAX_POOL_SIZE);
         executor.setKeepAliveSeconds(KEEP_ALIVE_SECONDS);

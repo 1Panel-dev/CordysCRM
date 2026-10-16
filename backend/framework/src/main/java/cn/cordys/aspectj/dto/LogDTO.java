@@ -2,6 +2,7 @@ package cn.cordys.aspectj.dto;
 
 import cn.cordys.common.groups.Created;
 import cn.cordys.common.groups.Updated;
+import cn.cordys.common.util.ServletUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -68,7 +69,8 @@ public class LogDTO {
     private String platform;
 
     @Schema(description = "请求来源")
-    private String requestSource;
+    // 创建时快照来源，避免异步入库时请求上下文已丢失。
+    private String requestSource = ServletUtils.getRequestSource();
 
     /**
      * 原始值

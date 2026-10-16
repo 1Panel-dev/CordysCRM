@@ -14,6 +14,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.ServletUtils;
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
@@ -544,9 +545,11 @@ public abstract class BaseExportService {
      * @param logType    日志类型
      * @param moduleType 模块类型
      * @param fileName   文件名
+     * @param requestSource 请求来源
      */
-    public void exportLog(String orgId, String taskId, String userId, String logType, String moduleType, String fileName) {
+    public void exportLog(String orgId, String taskId, String userId, String logType, String moduleType, String fileName, String requestSource) {
         LogDTO logDTO = new LogDTO(orgId, taskId, userId, logType, moduleType, fileName);
+        logDTO.setRequestSource(requestSource);
         logService.add(logDTO);
     }
 
@@ -820,6 +823,7 @@ public abstract class BaseExportService {
     }
 
     public void runExport(String orgId, String userId, String module, Locale locale, ExportTask exportTask, String fileName, ExportTaskFunction func) {
+        String requestSource = ServletUtils.getRequestSource();
         Thread.startVirtualThread(() -> {
             try {
                 LocaleContextHolder.setLocale(locale);
@@ -848,7 +852,7 @@ public abstract class BaseExportService {
                 );
             } finally {
                 ExportThreadRegistry.remove(exportTask.getId());
-                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, module, fileName);
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, module, fileName, requestSource);
             }
         });
     }

@@ -1,12 +1,10 @@
 package cn.cordys.aspectj.handler;
 
 import cn.cordys.aspectj.builder.OperationLog;
-import cn.cordys.aspectj.constants.RequestSource;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.util.ServletUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,11 +38,6 @@ public class OperationLogService {
             return;
         }
 
-        String accessKey = request.getHeader(ACCESS_KEY_HEADER);
-        String secretKey = request.getHeader(SECRET_KEY_HEADER);
-        String requestSource = request.getHeader(REQUEST_SOURCE_HEADER);
-        reqDTO.setRequestSource(resolveRequestSource(requestSource, accessKey, secretKey));
-
         // 补全请求信息
         reqDTO.setMethod(request.getMethod());
         reqDTO.setPath(request.getRequestURI());
@@ -63,21 +56,5 @@ public class OperationLogService {
         // 2. 异步记录日志
         assert operationLogHandler != null;
         operationLogHandler.handleLog(reqDTO);
-    }
-
-    /**
-     * 根据请求头解析请求来源，优先级：
-     * 1. 明确指定的 X-Request-Source
-     * 2. 携带鉴权密钥对 (Access/Secret) 时视为 API 调用
-     * 3. 否则默认为 WEB
-     */
-    private static String resolveRequestSource(String requestSource, String accessKey, String secretKey) {
-        if (StringUtils.isNotBlank(requestSource)) {
-            return requestSource;
-        }
-        if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
-            return RequestSource.API.name();
-        }
-        return RequestSource.WEB.name();
     }
 }

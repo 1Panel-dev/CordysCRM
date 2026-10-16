@@ -1,6 +1,9 @@
 package cn.cordys.common.util;
 
+import cn.cordys.aspectj.constants.RequestSource;
+import cn.cordys.context.OrganizationContext;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -30,6 +33,22 @@ public class ServletUtils {
             return null;
         }
         return ((ServletRequestAttributes) requestAttributes).getRequest();
+    }
+
+    public static String getRequestSource() {
+        HttpServletRequest request = getRequest();
+        if (request == null) {
+            return OrganizationContext.getRequestSource();
+        }
+        String source = request.getHeader("X-Request-Source");
+        if (StringUtils.isNotBlank(source)) {
+            return source;
+        }
+        if (StringUtils.isNotBlank(request.getHeader("X-Access-Key"))
+                && StringUtils.isNotBlank(request.getHeader("X-Secret-Key"))) {
+            return RequestSource.API.name();
+        }
+        return RequestSource.WEB.name();
     }
 
     public static String getUserAgent() {
