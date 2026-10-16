@@ -423,7 +423,9 @@
       return (
         approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes[0].approverId ===
           userStore.userInfo.id &&
-        currentApprovalNode.value?.taskNodes?.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
+        currentApprovalNode.value?.taskNodes?.every((e) =>
+          [ProcessStatusEnum.APPROVING, ProcessStatusEnum.PENDING].includes(e.approvalStatus)
+        )
       );
     }
     // 上一个节点是多人审批且是或签，且是自己审批通过的，且当前节点下所有人都未审批
@@ -433,7 +435,10 @@
       return (
         approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes.some(
           (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
-        ) && currentApprovalNode.value?.taskNodes?.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
+        ) &&
+        currentApprovalNode.value?.taskNodes?.every((e) =>
+          [ProcessStatusEnum.APPROVING, ProcessStatusEnum.PENDING].includes(e.approvalStatus)
+        )
       );
     }
   });
