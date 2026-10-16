@@ -234,7 +234,7 @@ export interface FormDesignConfigDetailParams {
 }
 
 export interface FormDesignDataSourceTableQueryParams extends TableQueryParams {
-  field: string;
+  field?: string;
 }
 
 export interface ReasonParams {

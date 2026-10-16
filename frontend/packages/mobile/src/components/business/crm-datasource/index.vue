@@ -112,7 +112,7 @@
     getUserOptions,
   } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { getDataSourceFormKey, isCustomDataSourceType } from '@lib/shared/method/formCreate';
+  import { getDataSourceFormKey, isCustomDataSourceType, transformData } from '@lib/shared/method/formCreate';
   import { dataSourceFilterFormKeyMap } from '@cordys/web/src/components/business/crm-form-create/config';
   import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
@@ -130,12 +130,17 @@
     listParams?: Record<string, any>;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: string | string[], selectedRows: Record<string, any>[], fields: FormCreateField[]): void;
+    (
+      e: 'change',
+      value: string | number | (string | number)[],
+      selectedRows: Record<string, any>[],
+      fields: FormCreateField[]
+    ): void;
   }>();
 
   const { t } = useI18n();
 
-  const value = defineModel<string | string[]>('value', {
+  const value = defineModel<string | number | (string | number)[]>('value', {
     default: '',
   });
   const selectedRows = defineModel<Record<string, any>[]>('selectedRows', {
@@ -143,7 +148,7 @@
   });
 
   const fieldValue = ref('');
-  const pickerValue = ref<string[]>([]);
+  const pickerValue = ref<(string | number)[]>([]);
   const pickerSelectedRows = ref<Record<string, any>[]>([]);
   const crmSelectListRef = ref<InstanceType<typeof CrmSelectList>>();
   const showPicker = ref(false);
@@ -220,9 +225,15 @@
     showPicker.value = false;
   }
 
-  function selectListTransform(item: Record<string, any>) {
+  function selectListTransform(item: Record<string, any>, optionMap?: Record<string, any[]>) {
+    const transformItem = transformData({
+      item,
+      originalData: { optionMap: optionMap || {} },
+      fields: fieldList.value,
+      needParseSubTable: true,
+    });
     return {
-      ...item,
+      ...transformItem,
       disabled: props.disabledSelection ? props.disabledSelection(item) : false,
       checked: pickerSelectedRows.value.some((row) => row.id === item.id),
     };
@@ -242,7 +253,7 @@
     () => selectedRows.value,
     (val) => {
       fieldValue.value = val
-        .filter((e) => value.value.includes(e.id))
+        .filter((e) => value.value.toString().includes(e.id))
         .map((item) => item.name)
         .join('；');
       pickerSelectedRows.value = val;

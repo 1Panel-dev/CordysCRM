@@ -40,7 +40,6 @@
   import type { CommonList } from '@lib/shared/models/common';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
-  import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
     data?: Record<string, any>[];
@@ -52,7 +51,7 @@
     transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
 
-  const value = defineModel<string | string[]>('value', {
+  const value = defineModel<string | number | (string | number)[]>('value', {
     default: '',
   });
   const selectedRows = defineModel<Record<string, any>[]>('selectedRows', {

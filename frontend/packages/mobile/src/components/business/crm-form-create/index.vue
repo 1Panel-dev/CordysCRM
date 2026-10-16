@@ -4,7 +4,7 @@
       <van-cell-group inset>
         <template v-for="item in mobileFieldList" :key="item.id">
           <component
-            :is="getItemComponent(item.type)"
+            :is="getItemComponent(item)"
             v-if="item.show !== false && item.readable"
             v-model:value="formDetail[item.id]"
             :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
@@ -118,8 +118,9 @@
     return fieldList.value.filter((item) => item.mobile !== false);
   });
 
-  function getItemComponent(type: FieldTypeEnum) {
-    if (type === FieldTypeEnum.INPUT) {
+  function getItemComponent(item: FormCreateField) {
+    const type = item.type;
+    if (type === FieldTypeEnum.INPUT || item.resourceFieldId) {
       return CrmFormCreateComponents.basicComponents.singleText;
     }
     if (type === FieldTypeEnum.TEXTAREA) {

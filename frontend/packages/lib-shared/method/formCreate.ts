@@ -332,7 +332,7 @@ export function transformData({
 }: {
   fields: FormCreateField[];
   item: any;
-  originalData?: CommonList<any> | LeadTransitionCustomerRecordRes;
+  originalData?: CommonList<any> | LeadTransitionCustomerRecordRes | { optionMap?: Record<string, any[]> };
   excludeFieldIds?: string[];
   needParseSubTable?: boolean;
 }) {
