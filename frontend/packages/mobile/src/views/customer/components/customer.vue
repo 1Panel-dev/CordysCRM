@@ -47,7 +47,11 @@
       :transform="transformFormData"
     >
       <template #item="{ item }">
-        <CrmListCommonItem :item="item" :actions="getListItemActions(item)" @click="goDetail"></CrmListCommonItem>
+        <CrmListCommonItem
+          :item="item"
+          :actions="getListItemActions(item)"
+          @click="(value) => goDetail(value as CustomerListItem)"
+        ></CrmListCommonItem>
       </template>
     </CrmList>
   </div>
@@ -111,11 +115,12 @@
   });
 
   const refreshList = () => crmListRef.value?.loadList(true);
-  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<CustomerListItem>({
-    formType: FormDesignKeyEnum.CUSTOMER,
-    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
-    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
-  });
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+    useApprovalOperation<CustomerListItem>({
+      formType: FormDesignKeyEnum.CUSTOMER,
+      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+    });
 
   const actions = [
     {
@@ -243,7 +248,11 @@
     });
   }
 
-  function goDetail(item: any) {
+  function goDetail(item: CustomerListItem) {
+    if (!hasApprovalScopedPermission(item, ['CUSTOMER_MANAGEMENT:READ'])) {
+      return;
+    }
+
     router.push({
       name: CustomerRouteEnum.CUSTOMER_DETAIL,
       query: {

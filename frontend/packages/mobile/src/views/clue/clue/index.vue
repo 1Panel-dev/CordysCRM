@@ -49,7 +49,12 @@
       :transform="transformFormData"
     >
       <template #item="{ item }">
-        <CrmListCommonItem :hidden-stage="true" :item="item" :actions="actions(item)" @click="goDetail" />
+        <CrmListCommonItem
+          :hidden-stage="true"
+          :item="item"
+          :actions="actions(item)"
+          @click="(value) => goDetail(value as ClueListItem)"
+        />
       </template>
     </CrmList>
   </div>
@@ -61,6 +66,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem } from '@lib/shared/models/clue';
 
@@ -106,11 +112,12 @@
   });
 
   const refreshList = () => crmListRef.value?.loadList(true);
-  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation<ClueListItem>({
-    formType: FormDesignKeyEnum.CLUE,
-    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
-    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
-  });
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+    useApprovalOperation<ClueListItem>({
+      formType: FormDesignKeyEnum.CLUE,
+      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+    });
 
   function handleEdit(id: string) {
     router.push({
@@ -140,6 +147,17 @@
       query: {
         clueId: item.id,
         clueName: item.name,
+      },
+    });
+  }
+
+  function handleMoveToPool(item: ClueListItem) {
+    router.push({
+      name: ClueRouteEnum.MOVE_TO_POOL,
+      query: {
+        id: item.id,
+        name: item.name,
+        reasonKey: ReasonTypeEnum.CLUE_POOL_RS,
       },
     });
   }
@@ -190,6 +208,15 @@
           permission: ['CLUE_MANAGEMENT:TRANSFER'],
           action: (item: ClueListItem) => {
             handleTransfer(item);
+          },
+        },
+        {
+          key: 'moveToPool',
+          label: t('clue.moveIntoCluePool'),
+          icon: 'iconicon_swap',
+          permission: ['CLUE_MANAGEMENT:RECYCLE'],
+          action: (item: ClueListItem) => {
+            handleMoveToPool(item);
           },
         },
         {
@@ -247,7 +274,11 @@
     });
   }
 
-  function goDetail(item: Record<string, any>) {
+  function goDetail(item: ClueListItem) {
+    if (!hasApprovalScopedPermission(item, ['CLUE_MANAGEMENT:READ'])) {
+      return;
+    }
+
     router.push({
       name: ClueRouteEnum.CLUE_DETAIL,
       query: {

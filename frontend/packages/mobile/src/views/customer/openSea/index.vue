@@ -54,6 +54,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
+  import type { CustomerListItem } from '@lib/shared/models/customer';
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
@@ -90,12 +91,13 @@
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CUSTOMER,
   });
-  const { resolveRowActions, initApprovalPermission, deleteExecute } = useApprovalOperation({
-    formType: FormDesignKeyEnum.CUSTOMER,
-    ignoreRolePermissionCheck: true,
-    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
-    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
-  });
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+    useApprovalOperation<CustomerListItem>({
+      formType: FormDesignKeyEnum.CUSTOMER,
+      ignoreRolePermissionCheck: true,
+      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+    });
   const openSeaActions: OpenSeaActionItem[] = [
     {
       key: 'pick',
@@ -222,6 +224,13 @@
   });
 
   function goDetail(item: any) {
+    if (
+      !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']) ||
+      !hasApprovalScopedPermission(item, ['CUSTOMER_MANAGEMENT:READ'])
+    ) {
+      return;
+    }
+
     router.push({
       name: CustomerRouteEnum.CUSTOMER_OPENSEA_DETAIL,
       query: {
