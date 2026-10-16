@@ -231,7 +231,9 @@ export const businessTypeOptions = [
   },
 ];
 
-export function createApprovalBusinessTypeOptions(customForms: CustomFormItem[] = []): LabelValueOption[] {
+export function createApprovalBusinessTypeOptions(
+  customForms: Pick<CustomFormItem, 'id' | 'name'>[] = []
+): LabelValueOption[] {
   return [
     ...businessTypeOptions,
     ...customForms.map((item) => ({

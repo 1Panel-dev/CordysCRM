@@ -20,6 +20,7 @@ import {
   BatchUpdateCustomFormDataUrl,
   GetCustomFormListUrl,
   GetCustomFormOptionsUrl,
+  GetCustomFormAllOptionsUrl,
   DeleteCustomFormUrl,
   EnableCustomFormUrl,
   DisableCustomFormUrl,
@@ -151,6 +152,10 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<CustomFormItem[]>({ url: GetCustomFormOptionsUrl });
   }
 
+  function getCustomFormAllOptions() {
+    return CDR.get<Pick<CustomFormItem, 'id' | 'name'>[]>({ url: GetCustomFormAllOptionsUrl });
+  }
+
   function getCustomFormCreatePermission(customFormId: string) {
     return CDR.get<boolean>({ url: `${GetCustomFormCreatePermissionUrl}/${customFormId}` });
   }
@@ -207,6 +212,7 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     batchDeleteCustomFormData,
     batchUpdateCustomFormData,
     getCustomFormOptions,
+    getCustomFormAllOptions,
     deleteCustomForm,
     enableCustomForm,
     disableCustomForm,
