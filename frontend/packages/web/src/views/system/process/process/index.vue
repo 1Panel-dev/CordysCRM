@@ -55,7 +55,7 @@
     approvalProcessDetail,
     deleteApprovalProcess,
     getApprovalProcessList,
-    getCustomFormList,
+    getCustomFormAllOptions,
     toggleApprovalProcess,
     updateApprovalProcess,
   } from '@/api/modules';
@@ -79,7 +79,7 @@
 
   async function loadApprovalBusinessTypeOptions() {
     try {
-      approvalBusinessTypeOptions.value = createApprovalBusinessTypeOptions(await getCustomFormList());
+      approvalBusinessTypeOptions.value = createApprovalBusinessTypeOptions(await getCustomFormAllOptions());
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

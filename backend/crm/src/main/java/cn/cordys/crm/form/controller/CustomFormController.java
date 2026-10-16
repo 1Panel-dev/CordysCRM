@@ -15,6 +15,8 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +41,13 @@ public class CustomFormController {
     @Operation(summary = "自定义表单选项(开启的)")
     public List<OptionDTO> getOptions() {
         return customFormService.getOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/option/all")
+    @Operation(summary = "自定义表单选项(包含未开启的)")
+    @RequiresPermissions(value = {PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
+    public List<OptionDTO> getAllOptions() {
+        return customFormService.getAllOptions(OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")

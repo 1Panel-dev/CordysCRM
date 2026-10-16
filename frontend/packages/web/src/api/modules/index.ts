@@ -85,6 +85,7 @@ export const {
   enableCustomForm,
   disableCustomForm,
   getCustomFormOptions,
+  getCustomFormAllOptions,
   preCheckImportCustomForm,
   downloadCustomFormTemplate,
   importCustomForm,

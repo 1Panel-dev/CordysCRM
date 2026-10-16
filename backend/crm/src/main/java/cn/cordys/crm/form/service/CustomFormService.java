@@ -87,6 +87,15 @@ public class CustomFormService {
                 .toList();
     }
 
+    public List<OptionDTO> getAllOptions(String orgId) {
+        CustomForm criteria = new CustomForm();
+        criteria.setOrganizationId(orgId);
+        List<CustomForm> customForms = customFormMapper.select(criteria);
+        return customForms.stream()
+                .map(form -> new OptionDTO(form.getId(), form.getName()))
+                .toList();
+    }
+
     public List<CustomFormListResponse> list(String userId, String orgId) {
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(orgId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
