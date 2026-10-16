@@ -563,7 +563,7 @@ public class ApprovalResourceService {
         updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name(), currentUserId, currentOrgId);
         approvalInstanceMapper.insert(instance);
         ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
-        approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, null, currentUserId, null, currentOrgId);
+        approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, currentUserId, null, currentOrgId);
     }
 
     private void sendFinishNotice(String currentOrgId, String currentUserId, ApprovalInstance instance) {

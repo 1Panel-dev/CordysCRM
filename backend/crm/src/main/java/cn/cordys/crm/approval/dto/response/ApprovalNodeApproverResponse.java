@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.dto.response;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -46,6 +47,10 @@ public class ApprovalNodeApproverResponse extends ApprovalNodeResponse {
 
     @Schema(description = "审批人ID列表")
     private List<String> approverList;
+
+    // 保留实际流转路径计算的跳过人员，避免待办生成时跨自动节点重复判断。
+    @JsonIgnore
+    private List<String> autoSkipUserIds = List.of();
 
     @Schema(description = "审批人选择项（用于前端回显）")
     private List<OptionDTO> approverSelectOptions;

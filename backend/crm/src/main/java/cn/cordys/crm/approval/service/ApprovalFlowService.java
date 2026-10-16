@@ -2108,6 +2108,11 @@ public class ApprovalFlowService {
         // 加载修改字段列表，用于 NOT_EQUAL_ORIGINAL 条件判断
         Set<String> updateFields = loadUpdateFields(instance.getUpdateFields());
         ApprovalNodeResponse nextNode = getNextNode(nodeId, fieldValues, updateFields);
+        // 条件分支不打断连续审批，保留进入分支前的审批节点；自动节点仍通过后续递归重新确定前驱。
+        while (nextNode != null && Strings.CS.equalsAny(nextNode.getNodeType(),
+                ApprovalNodeTypeEnum.CONDITION.name(), ApprovalNodeTypeEnum.DEFAULT.name())) {
+            nextNode = getNextNode(nextNode.getId(), fieldValues, updateFields);
+        }
         if (nextNode == null) {
             throw new GenericException(Translator.get("no.approval.next.node"));
         }
@@ -2121,7 +2126,8 @@ public class ApprovalFlowService {
             } else {
                 Integer round = extApprovalInstanceMapper.getNodeRound(instance.getId(), nodeId);
                 List<ApprovalTask> approvedTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().eq(ApprovalTask::getInstanceId, instance.getId())
-                        .eq(ApprovalTask::getNodeId, nodeId).eq(ApprovalTask::getNodeRound, round).eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED));
+                        .eq(ApprovalTask::getNodeId, nodeId).eq(ApprovalTask::getNodeRound, round)
+                        .in(ApprovalTask::getStatus, List.of(ApprovalStatus.APPROVED.name(), ApprovalStatus.AUTO_APPROVED.name())));
                 List<String> preApprovers = approvedTasks.stream().map(ApprovalTask::getApproverId).toList();
                 return handleNextApproverNodeWithExceptionHandler(instance, nextNode, fieldValues, currentOrgId, preApprovers);
             }
@@ -2234,6 +2240,7 @@ public class ApprovalFlowService {
 		// 重复审批人处理
 		DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
 		List<String> autoSkipUser = getFlowAutoSkipUser(instance, nextApproverNode.getId(), preApprovers);
+		nextApproverNode.setAutoSkipUserIds(autoSkipUser);
 		if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.FIRST_ONLY || duplicateApproverRuleEnum == DuplicateApproverRuleEnum.SEQUENTIAL_ALL) {
 			// 仅首个节点需要审批, 后续节点自动同意 (当前节点审批人在之前在有不同的节点审批过待办任务)
 			Optional<String> anySkip = nextApproverNode.getApproverList().stream().filter(autoSkipUser::contains).findAny();

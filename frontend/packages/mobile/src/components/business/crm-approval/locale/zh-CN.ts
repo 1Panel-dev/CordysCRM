@@ -1,5 +1,6 @@
 export default {
   'crm.approval.record': '审批记录',
+  'crm.approval.pending': '待审批',
   'crm.approval.opinion': '审批意见',
   'crm.approval.rejectConfirm': '确认驳回吗？',
   'crm.approval.rejectTip': '驳回后，审批流将终止，请谨慎操作！',
