@@ -23,6 +23,7 @@
       :accept="props.fieldConfig.accept || '*/*'"
       :custom-request="customRequest"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :status="props.feedback ? 'error' : undefined"
       list-type="image"
       multiple
       directory-dnd
@@ -74,6 +75,7 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string[], files: UploadFileInfo[]): void;

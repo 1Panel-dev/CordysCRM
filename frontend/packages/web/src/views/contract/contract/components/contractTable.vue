@@ -610,7 +610,7 @@
       value: item.id,
       disabled:
         stageConfig.value?.circulationType === CirculationTypeEnum.ADVANCED
-          ? currentStageAdvanceConfig?.targets.find((e) => e.targetId === item.id)?.enable
+          ? !currentStageAdvanceConfig?.targets.find((e) => e.targetId === item.id)?.enable
           : isContractStageOptionDisabled(row, item.id),
     }));
   }

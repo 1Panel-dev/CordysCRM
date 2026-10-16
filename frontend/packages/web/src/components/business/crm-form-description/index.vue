@@ -558,7 +558,7 @@
               });
             }
           }
-          if (item.show && !validateField(item)) {
+          if (item.show !== false && !validateField(item)) {
             hasErrorField = true;
             break;
           }

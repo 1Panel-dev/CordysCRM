@@ -26,6 +26,7 @@
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :range="props.fieldConfig.locationType"
       :scope="props.fieldConfig.scope"
+      :status="props.feedback ? 'error' : undefined"
       clearable
       @change="handleCityAndDetailChange"
     />
@@ -35,6 +36,7 @@
       :maxlength="200"
       :placeholder="t('crmFormCreate.advanced.inputLocationDetail')"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :status="props.feedback ? 'error' : undefined"
       type="textarea"
       clearable
       class="mt-[4px]"
@@ -59,6 +61,7 @@
     path: string;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
