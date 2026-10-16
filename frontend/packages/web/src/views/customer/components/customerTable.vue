@@ -91,6 +91,7 @@
     :source-id="activeSourceId"
     @saved="searchData(undefined, activeSourceId)"
     @deleted="removeItemFromList(activeSourceId)"
+    @delete-approved="searchData"
     @transfer="searchData"
     @refresh="searchData(undefined, activeSourceId)"
   />
@@ -175,7 +176,7 @@
   import customerOverviewDrawer from './customerOverviewDrawer.vue';
   import mergeAccountModal from './mergeAccountModal.vue';
 
-  import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
+  import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, transferCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
@@ -502,7 +503,7 @@
     }
   }
 
-  async function transferCustomer(row: Record<string, any>) {
+  async function handleTransferCustomer(row: Record<string, any>) {
     try {
       const extraParams = await getUpdateReviewExtraParams(Boolean(row.approved && updateExecute.value));
       if (extraParams === false) {
@@ -510,7 +511,7 @@
       }
 
       transferLoading.value = true;
-      await updateCustomer({
+      await transferCustomer({
         id: activeSourceId.value,
         owner: transferForm.value.owner,
         ...extraParams,
@@ -572,7 +573,7 @@
         break;
       case 'pop-transfer':
         activeSourceId.value = row.id;
-        transferCustomer(row);
+        handleTransferCustomer(row);
         break;
       case 'delete':
         handleDelete(row);

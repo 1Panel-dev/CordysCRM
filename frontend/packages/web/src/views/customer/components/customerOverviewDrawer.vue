@@ -210,7 +210,7 @@
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
-  import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
+  import { deleteCustomer, getCustomerHeaderList, transferCustomer } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
@@ -229,6 +229,7 @@
   const emit = defineEmits<{
     (e: 'saved'): void;
     (e: 'deleted'): void;
+    (e: 'deleteApproved'): void;
     (e: 'transfer'): void;
     (e: 'refresh'): void;
   }>();
@@ -490,7 +491,7 @@
       }
 
       transferLoading.value = true;
-      await updateCustomer({
+      await transferCustomer({
         id: props.sourceId,
         owner: transferForm.value.owner,
         ...extraParams,
@@ -575,7 +576,7 @@
 
   function handleDeleteApproved() {
     show.value = false;
-    emit('saved');
+    emit('deleteApproved');
   }
 
   function handleButtonSelect(key: string) {

@@ -5,6 +5,7 @@ export const AddCustomerUrl = '/account/add'; // 添加客户
 export const GetCustomerUrl = '/account/get'; // 获取客户详情
 export const DeleteCustomerUrl = '/account/delete'; // 删除客户
 export const BatchDeleteCustomerUrl = '/account/batch/delete'; // 批量删除客户
+export const TransferCustomerUrl = '/account/transfer'; // 单条转移客户
 export const BatchTransferCustomerUrl = '/account/batch/transfer'; // 批量转移客户
 export const BatchMoveCustomerUrl = '/account/batch/to-pool'; // 批量移入公海
 export const MoveToCustomerUrl = '/account/to-pool'; // 移入公海

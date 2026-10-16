@@ -110,6 +110,7 @@ import {
   PreCheckPoolAccountImportUrl,
   SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
+  TransferCustomerUrl,
   UpdateAccountPoolViewUrl,
   UpdateContactViewUrl,
   UpdateCustomerCollaborationUrl,
@@ -167,6 +168,7 @@ import type {
   CustomerOptionsItem,
   CustomerTabHidden,
   CustomerTableParams,
+  CustomerTransferParams,
   FreezeOpenSeaCustomerParams,
   FollowDetailItem,
   MergeAccountParams,
@@ -236,6 +238,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 批量转移客户
   function batchTransferCustomer(data: TransferParams) {
     return CDR.post({ url: BatchTransferCustomerUrl, data });
+  }
+
+  // 单条转移客户
+  function transferCustomer(data: CustomerTransferParams) {
+    return CDR.post({ url: TransferCustomerUrl, data });
   }
 
   // 批量移入公海
@@ -858,6 +865,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getGlobalModuleCount,
     batchDeleteCustomer,
     batchTransferCustomer,
+    transferCustomer,
     batchMoveCustomer,
     addCustomerFollowRecord,
     updateCustomerFollowRecord,

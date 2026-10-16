@@ -414,6 +414,7 @@ export const {
   fixedAccountPoolView,
   getCustomerFormConfig,
   batchTransferCustomer,
+  transferCustomer,
   addCustomerFollowPlan,
   getCustomerFollowPlan,
   updateCustomerContact,
