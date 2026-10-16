@@ -41,6 +41,7 @@
 
     <select id="getNextNodeRound" resultType="java.lang.Integer">
         SELECT IFNULL(GREATEST(
+              0,
               COALESCE((SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0),
               COALESCE((SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0)
         ), 0) + 1

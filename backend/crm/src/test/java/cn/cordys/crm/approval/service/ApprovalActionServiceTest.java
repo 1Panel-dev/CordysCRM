@@ -321,6 +321,41 @@ class ApprovalActionServiceTest {
 		verify(extInstanceMapper).loseApprovingTask("instance-1", "NODE001", 1);
 	}
 
+	@ParameterizedTest
+	@ValueSource(ints = {0, 1})
+	void clearExpiredNodeClearsNonNegativeRounds(int round) {
+		when(extInstanceMapper.getNodeRound("instance-1", "NODE001")).thenReturn(round);
+
+		service.clearExpiredNode("instance-1", "NODE001");
+
+		verify(extInstanceMapper).batchClearNotApprovingTask("instance-1", "NODE001", round);
+		verify(extInstanceMapper).batchClearRecord("instance-1", "NODE001", round);
+		verify(extInstanceMapper).batchClearApprovingTask("instance-1", "NODE001", round);
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = {0, 1})
+	void loseCurrentNodeClearsNonNegativeRounds(int round) {
+		when(extInstanceMapper.getNodeRound("instance-1", "NODE001")).thenReturn(round);
+
+		service.loseCurrentNode("instance-1", "NODE001");
+
+		verify(extInstanceMapper).loseApprovingTask("instance-1", "NODE001", round);
+	}
+
+	@Test
+	void cleanupSkipsExpiredRound() {
+		when(extInstanceMapper.getNodeRound("instance-1", "NODE001")).thenReturn(-1);
+
+		service.clearExpiredNode("instance-1", "NODE001");
+		service.loseCurrentNode("instance-1", "NODE001");
+
+		verify(extInstanceMapper, never()).batchClearNotApprovingTask(anyString(), anyString(), anyInt());
+		verify(extInstanceMapper, never()).batchClearRecord(anyString(), anyString(), anyInt());
+		verify(extInstanceMapper, never()).batchClearApprovingTask(anyString(), anyString(), anyInt());
+		verify(extInstanceMapper, never()).loseApprovingTask(anyString(), anyString(), anyInt());
+	}
+
 	private ApprovalInstance prepareAnyNode(boolean multiApprover) {
 		ApprovalInstance instance = new ApprovalInstance();
 		instance.setId("instance-1");
