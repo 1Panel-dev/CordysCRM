@@ -187,8 +187,8 @@
     if (prevNode?.taskNodes?.length === 1) {
       return (
         prevNode.taskNodes[0].approverId === userStore.userInfo.id &&
-        props.currentApprovalNode.taskNodes?.every(
-          (taskNode) => taskNode.approvalStatus === ProcessStatusEnum.APPROVING
+        props.currentApprovalNode.taskNodes?.every((taskNode) =>
+          [ProcessStatusEnum.APPROVING, ProcessStatusEnum.PENDING].includes(taskNode.approvalStatus)
         )
       );
     }
@@ -198,8 +198,8 @@
           (taskNode) =>
             hasApprovalStatus.includes(taskNode.approvalStatus) && taskNode.approverId === userStore.userInfo.id
         ) &&
-        props.currentApprovalNode.taskNodes?.every(
-          (taskNode) => taskNode.approvalStatus === ProcessStatusEnum.APPROVING
+        props.currentApprovalNode.taskNodes?.every((taskNode) =>
+          [ProcessStatusEnum.APPROVING, ProcessStatusEnum.PENDING].includes(taskNode.approvalStatus)
         )
       );
     }
