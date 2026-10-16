@@ -14,6 +14,12 @@ export interface UpdateCustomerParams extends SaveCustomerParams {
   comment?: string;
 }
 
+export interface CustomerTransferParams {
+  id: string;
+  owner: string;
+  comment?: string;
+}
+
 export interface FreezeOpenSeaCustomerParams {
   id: string;
   freezeDays: number;

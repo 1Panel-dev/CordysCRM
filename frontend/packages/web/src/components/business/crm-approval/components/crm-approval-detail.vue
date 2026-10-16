@@ -136,6 +136,7 @@
         :rule="[
           {
             required: true,
+            type: 'array',
             message: t('common.notNull', {
               value: t('crm.approval.addSignApprover'),
             }),
