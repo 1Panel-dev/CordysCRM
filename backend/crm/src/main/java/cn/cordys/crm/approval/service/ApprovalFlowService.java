@@ -2201,8 +2201,9 @@ public class ApprovalFlowService {
 								.map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId : approver)
 								.collect(Collectors.toList());
 						nextApproverNode.setApproverList(newApproverList);
-					} else {
-						// 不存在直属上级, 自动跳过
+					} else if (nextApproverNode.getApproverList().size() == 1
+							|| MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
+						// 无直属上级时，仅单人、或签可跳过整个节点；会签、依次审批仍需逐人处理。
 						ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
 						saveAutoRecord(instance, nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 直属上级为空, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound(), currentOrgId);
 						updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE, InternalUser.ADMIN.getValue());
