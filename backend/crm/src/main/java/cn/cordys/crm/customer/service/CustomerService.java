@@ -1262,6 +1262,25 @@ public class CustomerService implements ApprovalResourceHandler {
             throw new GenericException(Translator.get("no.customer.merge.data"));
         }
 
+        // 状态权限校验: 被合并的客户会被删除, 合并目标会被改负责人并接管前者的联系人/商机/跟进,
+        // 两边都算一次合并。放在任何写操作之前 —— 否则处在无权合并状态(如审批中)的客户照样会被并掉
+        List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
+        List<Customer> involvedCustomers = new ArrayList<>(mergeCustomers);
+        involvedCustomers.add(oldCustomer);
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CUSTOMER.getValue(),
+                involvedCustomers,
+                PermissionConstants.CUSTOMER_MANAGEMENT_MERGE,
+                currentOrgId,
+                Customer::getId,
+                Customer::getApprovalStatus
+        );
+        // 与批量操作"只处理有权的那些"不同: 合并的结果只有一个, 少并几个客户是无声无息的,
+        // 所以只要有一个客户无权合并就整个拒绝, 由用户重新挑选参与合并的客户
+        if (permittedIds.size() < involvedCustomers.size()) {
+            throw new GenericException(Translator.get("no.customer.merge.permission"));
+        }
+
         // 批量合并产生的修改日志
         List<LogDTO> mergeLogs = getMergeRelateLogs(request, currentUser, currentOrgId);
         // 联系人需要排除重复项合并
@@ -1284,7 +1303,6 @@ public class CustomerService implements ApprovalResourceHandler {
 
         // 合并协作人&&删除被合并客户&&记录删除日志
         mergeCollaboration(request, currentUser, currentOrgId);
-        List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
         customerMapper.deleteByIds(request.getMergeIds());
         for (Customer mergeCustomer : mergeCustomers) {
             // 被合并客户的删除日志
