@@ -58,8 +58,6 @@ public class CustomerContactController {
     private CustomerContactExportService customerContactExportService;
 
     @GetMapping("/module/form")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), OrganizationContext.getOrganizationId());

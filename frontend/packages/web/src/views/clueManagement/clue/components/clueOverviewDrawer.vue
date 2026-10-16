@@ -61,7 +61,7 @@
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
                   updateType: 'approval',
-                  approvalTaskId: taskNode?.taskId,
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
                 }"
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
@@ -166,6 +166,7 @@
 
   const props = defineProps<{
     detail?: Partial<ClueListItem>;
+    approvalTaskId?: string;
   }>();
 
   const show = defineModel<boolean>('show', {

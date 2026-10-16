@@ -59,7 +59,6 @@ public class OpportunityController {
 
 
     @GetMapping("/module/form")
-    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());

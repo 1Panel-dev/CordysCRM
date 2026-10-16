@@ -60,9 +60,6 @@ public class OpportunityControllerTests extends BaseTest {
     void testModuleField() throws Exception {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
         moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, MODULE_FORM);
     }
 
 

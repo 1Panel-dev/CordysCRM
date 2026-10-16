@@ -54,9 +54,6 @@ public class ContractControllerTests extends BaseTest {
     void testModuleField() throws Exception {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
         moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CONTRACT_READ, MODULE_FORM);
     }
 
     @Sql(scripts = {"/dml/init_contract_test.sql"},
