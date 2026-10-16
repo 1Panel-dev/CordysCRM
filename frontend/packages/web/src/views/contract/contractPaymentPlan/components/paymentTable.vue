@@ -100,7 +100,12 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
-    @refresh="searchData(undefined, undefined)"
+    @refresh="
+      () => {
+        checkedRowKeys = [];
+        searchData(undefined, undefined);
+      }
+    "
   />
 </template>
 

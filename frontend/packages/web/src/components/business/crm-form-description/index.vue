@@ -346,20 +346,21 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
+  import CrmDateTime from '@/components/business/crm-form-create/components/basic/dateTime.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
+  import CrmInputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
+  import CrmSelect from '@/components/business/crm-form-create/components/basic/select.vue';
+  import CrmSingleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
+  import CrmTextarea from '@/components/business/crm-form-create/components/basic/textarea.vue';
+  import { AttachmentInfo, type FormCreateField } from '@/components/business/crm-form-create/types';
+  import type { FormulaDataSourceMap } from '@/components/business/crm-formula/formula-runtime/types.js';
+  import { safeParseFormula } from '@/components/business/crm-formula-editor/utils.js';
   import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
-  import CrmDateTime from '../crm-form-create/components/basic/dateTime.vue';
-  import CrmInputNumber from '../crm-form-create/components/basic/inputNumber.vue';
-  import CrmSelect from '../crm-form-create/components/basic/select.vue';
-  import CrmSingleText from '../crm-form-create/components/basic/singleText.vue';
-  import CrmTextarea from '../crm-form-create/components/basic/textarea.vue';
 
   import { refreshStatistic } from '@/api/modules/index.js';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
-
-  import { AttachmentInfo, type FormCreateField } from '../crm-form-create/types';
 
   const businessTitleDrawer = defineAsyncComponent(
     () => import('@/views/contract/businessTitle/components/detail.vue')
@@ -743,6 +744,45 @@
     }
   );
 
+  const formulaDataSource = ref<FormulaDataSourceMap>({});
+
+  const evaluationNow = ref<Date | null>(new Date());
+
+  const formulaFormContext = computed(() => ({
+    fields: fieldList.value,
+    formulaDataSource: formulaDataSource.value,
+    evaluationNow,
+  }));
+
+  provide('formFieldsProvider', readonly(formulaFormContext));
+
+  function initFormulaDataSourceRemark() {
+    formulaDataSource.value = {};
+    const fieldMap = new Map(fieldList.value.map((item) => [item.id, item]));
+    fieldList.value.forEach((item) => {
+      if ([FieldTypeEnum.FORMULA, FieldTypeEnum.INPUT, FieldTypeEnum.SERIAL_NUMBER].includes(item.type)) {
+        const { fields } = safeParseFormula(item.formula ?? '');
+        fields?.forEach((e: any) => {
+          let options = [];
+          const targetField = fieldMap.get(e.fieldId);
+
+          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.fieldType)) {
+            options = targetField?.initialOptions ?? [];
+          } else if (e.fieldType === FieldTypeEnum.SELECT) {
+            options = targetField?.options ?? [];
+          } else {
+            return;
+          }
+
+          formulaDataSource.value[e.fieldId] = {
+            parserName: true,
+            options,
+          };
+        });
+      }
+    });
+  }
+
   onBeforeMount(async () => {
     await initFormConfig();
     await initFormDetail(true);
@@ -751,6 +791,7 @@
         popShow.value[e.fieldInfo?.id || ''] = false;
       }
     });
+    initFormulaDataSourceRemark();
     emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
     isInit.value = true;
   });
