@@ -23,6 +23,7 @@
               :failure-reason="lastFailureReason"
               :afoot-roll-back="stageConfig?.afootRollBack"
               :end-roll-back="stageConfig?.endRollBack"
+              :should-confirm-change="Boolean(detail.approved && updateExecute)"
               @load-detail="() => initStage(true)"
             />
           </div>
@@ -178,12 +179,18 @@
     initFormDescription();
     await initApprovalDetail();
   };
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, enableApproval } =
-    useApprovalOperation({
-      formType: FormDesignKeyEnum.BUSINESS,
-      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
-      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshDetail }),
-    });
+  const {
+    resolveRowActions,
+    hasApprovalScopedPermission,
+    initApprovalPermission,
+    updateExecute,
+    deleteExecute,
+    enableApproval,
+  } = useApprovalOperation({
+    formType: FormDesignKeyEnum.BUSINESS,
+    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
+    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshDetail }),
+  });
 
   const initialSourceName = computed(() => {
     const { customerName, customerId, name } = detail.value;
@@ -217,9 +224,13 @@
   );
 
   const readonly = computed(() => !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']));
-  const canUpdateOpportunity = computed(() =>
-    hasApprovalScopedPermission(detail.value, ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
-  );
+  const canUpdateOpportunity = computed(() => {
+    const permissions = isSuccess.value
+      ? ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']
+      : ['OPPORTUNITY_MANAGEMENT:UPDATE'];
+
+    return hasApprovalScopedPermission(detail.value, permissions);
+  });
 
   const showEditButton = computed(() => {
     if (isFail.value) return false;
@@ -278,6 +289,7 @@
       query: {
         id,
         apiKey: FormDesignKeyEnum.BUSINESS,
+        approved: detail.value.approved ? 'Y' : 'N',
       },
     });
   }

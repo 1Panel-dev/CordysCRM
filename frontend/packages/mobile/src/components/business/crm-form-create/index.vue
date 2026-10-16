@@ -46,6 +46,7 @@
         </van-button>
       </div>
     </template>
+    <ChangeDescriptionPopup v-model:show="showChangeDescription" @confirm="handleChangeDescriptionConfirm" />
   </CrmPageWrapper>
 </template>
 
@@ -58,6 +59,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import ChangeDescriptionPopup from '@/components/business/crm-approval/changeDescriptionPopup.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
 
   import { checkRepeat } from '@/api/modules';
@@ -107,7 +109,7 @@
   const { reviewLoading, reviewByResourceId } = useApprovalResourceAction({
     formKey,
   });
-  const { reviewAction, initApprovalReviewConfig } = useFormReviewAction({
+  const { reviewAction, shouldConfirmUpdateChange, initApprovalReviewConfig } = useFormReviewAction({
     formKey,
     isEdit,
     approvalStatus: computed(() => detail.value?.approvalStatus),
@@ -117,6 +119,7 @@
   const mobileFieldList = computed(() => {
     return fieldList.value.filter((item) => item.mobile !== false);
   });
+  const showChangeDescription = ref(false);
 
   function getItemComponent(item: FormCreateField) {
     const type = item.type;
@@ -286,12 +289,19 @@
   async function handleSave() {
     try {
       await formRef.value?.validate();
-      const result = buildSavePayload();
-      saveForm(result, () => router.back());
+      if (shouldConfirmUpdateChange.value) {
+        showChangeDescription.value = true;
+        return;
+      }
+      saveForm(buildSavePayload(), () => router.back());
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
+  }
+
+  function handleChangeDescriptionConfirm(comment: string) {
+    saveForm({ ...buildSavePayload(), comment }, () => router.back());
   }
 
   async function handleReview() {

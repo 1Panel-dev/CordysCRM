@@ -139,7 +139,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 更新线索状态
-  function updateClueStatus(data: { id: string; stage: string }) {
+  function updateClueStatus(data: { id: string; stage: string; comment?: string }) {
     return CDR.post({ url: UpdateClueStatusUrl, data });
   }
 

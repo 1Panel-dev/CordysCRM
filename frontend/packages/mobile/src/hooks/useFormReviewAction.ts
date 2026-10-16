@@ -1,4 +1,4 @@
-import { type Ref, ref } from 'vue';
+import { computed, type Ref, ref } from 'vue';
 
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
@@ -77,6 +77,15 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     return hiddenAction;
   });
 
+  const shouldConfirmUpdateChange = computed(
+    () =>
+      isApprovalForm.value &&
+      enabledApproval.value &&
+      updateExecute.value &&
+      options.isEdit.value &&
+      Boolean(options.detail?.value?.approved)
+  );
+
   async function initApprovalReviewConfig() {
     if (!isApprovalForm.value) {
       enabledApproval.value = false;
@@ -101,6 +110,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
 
   return {
     reviewAction,
+    shouldConfirmUpdateChange,
     initApprovalReviewConfig,
   };
 }

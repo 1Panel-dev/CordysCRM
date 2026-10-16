@@ -69,6 +69,7 @@
       </div>
     </div>
   </div>
+  <ChangeDescriptionPopup v-model:show="showChangeDescription" @confirm="handleChangeDescriptionConfirm" />
 </template>
 
 <script setup lang="ts">
@@ -81,6 +82,7 @@
   import { StageConfigItem } from '@lib/shared/models/opportunity';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import ChangeDescriptionPopup from '@/components/business/crm-approval/changeDescriptionPopup.vue';
 
   import { getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
@@ -110,6 +112,7 @@
     failureReason?: string; // 失败原因
     afootRollBack?: boolean; // 是否允许从跟进中回退
     endRollBack?: boolean; // 是否允许从成功或失败回退
+    shouldConfirmChange?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -130,6 +133,8 @@
     }));
   });
   const enableReason = ref(false);
+  const showChangeDescription = ref(false);
+  const pendingStage = ref('');
   const currentStageIndex = computed(() => workflowList.value.findIndex((e) => e.value === currentStage.value));
   const failureStage = computed(() => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || '');
   const successStage = computed(
@@ -151,12 +156,13 @@
       currentStage.value === successStage.value
   );
 
-  async function handleSave(stage: string) {
+  async function handleSave(stage: string, comment?: string) {
     try {
       showLoadingToast(t('common.updating'));
       await updateStageApi[props.formStageKey]({
         id: props.sourceId,
         stage,
+        comment,
       });
       showSuccessToast(t('common.operationSuccess'));
       emit('loadDetail');
@@ -166,6 +172,10 @@
     } finally {
       closeToast();
     }
+  }
+
+  async function handleChangeDescriptionConfirm(comment: string) {
+    await handleSave(pendingStage.value, comment);
   }
 
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
@@ -222,8 +232,14 @@
           type: props.formStageKey,
           lastName: workflowList.value[workflowList.value.length - 1].label,
           isHasBack: isHasBackPermission.value ? 'Y' : 'N',
+          shouldConfirmChange: props.shouldConfirmChange ? 'Y' : 'N',
         },
       });
+      return;
+    }
+    if (props.shouldConfirmChange) {
+      pendingStage.value = stage;
+      showChangeDescription.value = true;
       return;
     }
     await handleSave(stage);

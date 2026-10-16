@@ -55,6 +55,7 @@
         </van-button>
       </div>
     </template>
+    <ChangeDescriptionPopup v-model:show="showChangeDescription" @confirm="handleChangeDescriptionConfirm" />
   </CrmPageWrapper>
 </template>
 
@@ -69,6 +70,7 @@
   import type { OpportunityStageConfig, UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import ChangeDescriptionPopup from '@/components/business/crm-approval/changeDescriptionPopup.vue';
 
   import { getOpportunityStageConfig, getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
 
@@ -122,17 +124,36 @@
 
   const formRef = ref<FormInstance>();
   const loading = ref(false);
+  const showChangeDescription = ref(false);
   async function handleSave() {
     try {
       if (enableReason.value) {
         await formRef.value?.validate();
       }
+      if (route.query.shouldConfirmChange === 'Y') {
+        showChangeDescription.value = true;
+        return;
+      }
+      await saveStage();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function handleChangeDescriptionConfirm(comment: string) {
+    await saveStage(comment);
+  }
+
+  async function saveStage(comment?: string) {
+    try {
       loading.value = true;
       const stageType = route.query.type as WorkStageTypeKey;
       await updateStageApi[stageType]({
         id: route.query.id as string,
         stage: form.value.stage || failureStage.value?.id || '',
         failureReason: form.value.stage === failureStage.value?.id ? currentReason.value[0] : undefined,
+        comment,
       });
       showSuccessToast(t('common.operationSuccess'));
       router.back();

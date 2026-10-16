@@ -176,7 +176,7 @@
     permissions: Record<string, boolean>;
   };
 
-  const disabledApprovingPermissionSuffixes = ['UPDATE', 'DELETE', 'TRANSFER', 'RESIGN'] as const;
+  const disabledApprovingPermissionSuffixes = ['UPDATE', 'DELETE', 'TRANSFER', 'MERGE', 'RESIGN'] as const;
 
   function isReadPermission(permissionId: string) {
     return permissionId === 'READ' || permissionId.endsWith(':READ');

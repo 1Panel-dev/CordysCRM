@@ -44,6 +44,7 @@
         </van-button>
       </div>
     </template>
+    <ChangeDescriptionPopup v-model:show="showChangeDescription" @confirm="handleChangeDescriptionConfirm" />
   </CrmPageWrapper>
 </template>
 
@@ -56,8 +57,10 @@
   import { sleep } from '@lib/shared/method';
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
+  import ChangeDescriptionPopup from '@/components/business/crm-approval/changeDescriptionPopup.vue';
 
   import { batchTransferClue, batchTransferCustomer, getUserOptions, transferOpt } from '@/api/modules';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
 
   const route = useRoute();
   const router = useRouter();
@@ -67,7 +70,10 @@
   const value = ref<string | string[]>([]);
   const selectedRows = ref<Record<string, any>[]>([]);
   const loading = ref(false);
+  const showChangeDescription = ref(false);
   const crmSelectListRef = ref<InstanceType<typeof CrmSelectList>>();
+  const formType = computed(() => route.query.apiKey as FormDesignKeyEnum);
+  const { updateExecute, initApprovalPermission } = useApprovalOperation({ formType });
 
   const loadListApi: Record<string, (data: any) => Promise<any>> = {
     [FormDesignKeyEnum.CUSTOMER]: batchTransferCustomer,
@@ -82,12 +88,27 @@
   };
 
   async function onConfirm() {
+    await initApprovalPermission();
+    if (route.query.approved === 'Y' && updateExecute.value) {
+      showChangeDescription.value = true;
+      return;
+    }
+
+    await transfer();
+  }
+
+  async function handleChangeDescriptionConfirm(comment: string) {
+    await transfer(comment);
+  }
+
+  async function transfer(comment?: string) {
     try {
       loading.value = true;
       showLoadingToast(t('common.transferring'));
       await loadListApi[route.query.apiKey as string]({
         ids: [route.query.id as string],
         owner: value.value as string,
+        comment,
       });
       showSuccessToast(t('customer.transferSuccess'));
       await sleep(300);
@@ -99,6 +120,10 @@
       loading.value = false;
     }
   }
+
+  onBeforeMount(() => {
+    initApprovalPermission();
+  });
 
   function search() {
     nextTick(() => {
