@@ -404,9 +404,14 @@
           loading.value = true;
 
           const result = { ...form.value };
-          if (currentForm.value.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(result.fieldValue)) {
-            // 处理数据源字段，单选传单个值
-            result.fieldValue = result.fieldValue?.[0];
+          if (
+            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(
+              currentForm.value.type
+            ) &&
+            Array.isArray(result.fieldValue)
+          ) {
+            // 处理数据源/成员/部门字段，单选传单个值
+            result.fieldValue = result.fieldValue?.[0] || '';
           }
           if (currentForm.value.type === FieldTypeEnum.PHONE) {
             // 去空格
@@ -438,6 +443,15 @@
       }
     });
   }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (!val) {
+        form.value = { ...initForm };
+      }
+    }
+  );
 </script>
 
 <style scoped lang="less">
