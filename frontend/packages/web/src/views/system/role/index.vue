@@ -268,7 +268,7 @@
       loading.value = true;
       await roleSort({
         start: startIndex,
-        end: dropPosition === 'before' ? endIndex - 1 : endIndex + 1,
+        end: dropPosition === 'before' ? endIndex - 1 : endIndex,
         dragModuleId: dragNode.id,
       });
       roles.value = await getRoles();

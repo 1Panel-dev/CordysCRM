@@ -33,12 +33,17 @@
     needInitDetail?: boolean; // 判断是否编辑情况
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: string | string[], selectedRows: Record<string, any>[], fields?: FormCreateField[]): void;
+    (
+      e: 'change',
+      value: string | number | (string | number)[],
+      selectedRows: Record<string, any>[],
+      fields?: FormCreateField[]
+    ): void;
   }>();
 
   const { t } = useI18n();
 
-  const value = defineModel<string | string[]>('value', {
+  const value = defineModel<string | number | (string | number)[]>('value', {
     default: '',
   });
   const selectedRows = ref<Record<string, any>[]>(props.fieldConfig.initialOptions || []);

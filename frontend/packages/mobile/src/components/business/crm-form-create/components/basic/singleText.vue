@@ -5,7 +5,7 @@
     :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
     :maxlength="255"
-    :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
+    :placeholder="props.fieldConfig.placeholder"
     :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
     clearable
     @update:model-value="($event) => emit('change', $event)"

@@ -102,7 +102,7 @@
                           :sign-node="task.signAction"
                         />
                       </div>
-                      <div class="one-line-text max-w-[60px]">{{ task.approver }}</div>
+                      <div class="one-line-text flex-1">{{ task.approver }}</div>
                       <CrmTag
                         v-if="task.sign"
                         :tag="t('common.COUNTERSIGNATURE')"
@@ -363,5 +363,8 @@
     .van-collapse-item__content {
       padding: 8px;
     }
+  }
+  :deep(.van-cell__title) {
+    width: 100%;
   }
 </style>
