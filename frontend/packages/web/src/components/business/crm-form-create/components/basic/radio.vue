@@ -23,6 +23,7 @@
     <n-radio-group
       v-model:value="value"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :status="props.feedback ? 'error' : undefined"
     >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-radio v-for="item in props.fieldConfig.options" :key="item.value" :value="item.value">
@@ -47,6 +48,7 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number): void;

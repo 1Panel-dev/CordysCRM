@@ -9,6 +9,7 @@
     :parse="parse"
     :format="format"
     :precision="props.longFloat ? props.fieldConfig.precision || 13 : props.fieldConfig.precision"
+    :status="props.feedback ? 'error' : undefined"
     clearable
     class="w-full"
     @update-value="($event:number | null) => emit('change', $event)"
@@ -46,6 +47,7 @@
       :parse="parse"
       :format="format"
       :precision="props.fieldConfig.precision"
+      :status="props.feedback ? 'error' : undefined"
       clearable
       class="w-full"
       @update-value="($event:number | null) => emit('change', $event)"
@@ -78,6 +80,7 @@
     disabled?: boolean;
     pureInput?: boolean; // 是否是纯输入框，主要用于公式计算结果渲染
     longFloat?: boolean; // 是否是长浮点数，是的话且没设置保留位数时就保留最长小数位
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: number | null): void;

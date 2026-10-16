@@ -26,6 +26,7 @@
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :allow-input="onlyAllowNumber"
+      :status="props.feedback ? 'error' : undefined"
       clearable
       @update-value="($event) => emit('change', $event)"
     >
@@ -53,6 +54,7 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;

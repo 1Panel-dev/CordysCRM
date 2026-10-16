@@ -23,6 +23,7 @@
     <n-checkbox-group
       v-model:value="value"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :status="props.feedback ? 'error' : undefined"
       @update-value="($event) => emit('change', $event)"
     >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
@@ -48,6 +49,7 @@
     fieldConfig: FormCreateField;
     formConfig?: FormConfig;
     path: string;
+    feedback?: string;
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染

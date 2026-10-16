@@ -28,6 +28,7 @@
       :placeholder="props.fieldConfig.placeholder"
       :fallback-option="value !== null && value !== undefined && value !== '' ? fallbackOption : false"
       :render-option="renderOption"
+      :status="props.feedback ? 'error' : undefined"
       filterable
       max-tag-count="responsive"
       clearable
@@ -55,6 +56,7 @@
     isDescriptionRender?: boolean; // 是否是描述渲染
     isDesignRender?: boolean; // 是否为表单设计器预览
     disabled?: boolean;
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;

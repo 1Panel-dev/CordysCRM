@@ -31,6 +31,7 @@
       :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       :file-list-class="props.isSubTableRender ? 'crm-upload--subtable-file-list' : ''"
       :trigger-style="getTriggerStyle"
+      :status="props.feedback ? 'error' : undefined"
       multiple
       directory-dnd
       @before-upload="beforeUpload"
@@ -81,6 +82,7 @@
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
     disabled?: boolean;
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string[], files: UploadFileInfo[]): void;

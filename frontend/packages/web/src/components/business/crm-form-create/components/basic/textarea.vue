@@ -26,6 +26,7 @@
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :rows="props.isSubTableField ? 1 : undefined"
+      :status="props.feedback ? 'error' : undefined"
       type="textarea"
       clearable
       @update-value="($event) => emit('change', $event)"
@@ -49,6 +50,7 @@
     isSubTableRender?: boolean; // 是否是子表渲染
     isDefaultValueRender?: boolean; // 是否是默认值渲染
     isDescriptionRender?: boolean; // 是否是描述渲染
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;

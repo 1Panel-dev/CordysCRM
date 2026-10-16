@@ -44,6 +44,7 @@
             !!props.fieldConfig.resourceFieldId ||
             props.fieldConfig.defaultValueType === 'formula'
           "
+          :status="props.feedback ? 'error' : undefined"
           clearable
           @update-value="($event) => emit('change', $event)"
         />
@@ -77,6 +78,7 @@
     isDescriptionRender?: boolean; // 是否是描述渲染
     formDetail?: Record<string, any>;
     disabled?: boolean;
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;

@@ -25,6 +25,7 @@
       :placeholder="props.fieldConfig.placeholder || t('crmFormCreate.advanced.selectIndustry')"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :range="props.fieldConfig.locationType"
+      :status="props.feedback ? 'error' : undefined"
       clearable
       @change="emit('change', $event)"
     />
@@ -48,6 +49,7 @@
     needInitDetail?: boolean;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | Array<string | number> | null): void;
