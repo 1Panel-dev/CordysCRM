@@ -46,6 +46,9 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
 
     @Override
     public Object transformToValue(InputNumberField numberField, String value) {
+		if (isBlankOrNullStr(value)) {
+			return null;
+		}
 		BigDecimal actualDecimal = new BigDecimal(value).stripTrailingZeros();
 		if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
 			actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
@@ -59,7 +62,7 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
 		return formatActualVal + (Strings.CI.equals(numberField.getNumberFormat(), "percent") ? "%" : "");
 	}
 
-    @Override
+	@Override
     public Object textToValue(InputNumberField field, String text) {
         if (Strings.CS.equals(field.getNumberFormat(), PERCENT_FORMAT)) {
             text = text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);

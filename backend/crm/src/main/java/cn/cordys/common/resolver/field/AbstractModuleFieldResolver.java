@@ -7,11 +7,10 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static cn.cordys.common.constants.CommonResultCode.FIELD_OPTION_VALUE_ERROR;
 import static cn.cordys.common.constants.CommonResultCode.FIELD_VALIDATE_ERROR;
@@ -137,5 +136,12 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
+    }
+
+    protected boolean isBlankOrNullStr(String value) {
+        if (StringUtils.isBlank(value) || Strings.CI.equals(value, "null")) {
+            return true;
+        }
+        return false;
     }
 }

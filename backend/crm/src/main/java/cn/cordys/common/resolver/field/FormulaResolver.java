@@ -5,7 +5,6 @@ import cn.cordys.crm.system.dto.field.InputNumberField;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.apache.poi.ss.formula.FormulaParseException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,6 +35,9 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
         }
         try {
             if (Strings.CI.equals(numberField.getFormulaResultFormat(), "number")) {
+                if (isBlankOrNullStr(value)) {
+                    return null;
+                }
                 BigDecimal actualDecimal = new BigDecimal(value).stripTrailingZeros();
                 if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
                     actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
