@@ -63,6 +63,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CollaborationType, CustomerListItem } from '@lib/shared/models/customer';
 
@@ -75,7 +76,7 @@
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
 
-  import { CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
+  import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -151,6 +152,22 @@
             id: item.id,
             apiKey: FormDesignKeyEnum.CUSTOMER,
             approved: item.approved ? 'Y' : 'N',
+          },
+        });
+      },
+    },
+    {
+      key: 'moveToPool',
+      label: t('customer.moveToOpenSea'),
+      icon: 'iconicon_swap',
+      permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
+      action: (item: CustomerListItem) => {
+        router.push({
+          name: ClueRouteEnum.MOVE_TO_POOL,
+          query: {
+            id: item.id,
+            name: item.name,
+            reasonKey: ReasonTypeEnum.CUSTOMER_POOL_RS,
           },
         });
       },

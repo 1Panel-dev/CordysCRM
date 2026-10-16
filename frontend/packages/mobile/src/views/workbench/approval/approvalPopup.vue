@@ -38,6 +38,7 @@
         ]"
       />
       <CrmUploadFile
+        :key="uploadKey"
         v-model:value="approvalForm.fileList"
         :field-config="{
           id: getGenerateId(),
@@ -110,8 +111,18 @@
     reason: '',
     fileList: [] as string[],
   });
+  const uploadKey = ref(0);
   const loading = ref(false);
   const approvalFormRef = ref<FormInstance>();
+
+  function resetApprovalForm() {
+    approvalForm.value = {
+      reason: '',
+      fileList: [],
+    };
+    approvalFormRef.value?.resetValidation();
+    uploadKey.value += 1;
+  }
 
   async function approval() {
     if (!props.approvingItem) {
@@ -210,10 +221,8 @@
     () => showApprovalPopup.value,
     (val) => {
       if (val) {
+        resetApprovalForm();
         initApprovalConfig();
-      } else {
-        approvalForm.value.reason = '';
-        approvalForm.value.fileList = [];
       }
     }
   );
