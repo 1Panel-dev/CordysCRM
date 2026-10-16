@@ -19,6 +19,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -189,6 +190,8 @@ public class CustomerService implements ApprovalResourceHandler {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -340,6 +343,10 @@ public class CustomerService implements ApprovalResourceHandler {
         CustomerGetResponse getResponse = get(id);
         if (getResponse == null) {
             throw new GenericException(Translator.get("customer.not.exist"));
+        }
+        // 待办审批人可查看资源详情，无需再校验数据权限与协作人
+        if (resourcePermissionService.hasApprovalTaskPermission(id, userId)) {
+            return getResponse;
         }
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         if (!hasPermission) {

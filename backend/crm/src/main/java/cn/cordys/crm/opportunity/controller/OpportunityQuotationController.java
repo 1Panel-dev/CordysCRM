@@ -44,7 +44,6 @@ public class OpportunityQuotationController {
 
 
     @GetMapping("/module/form")
-    @CsPermission(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), OrganizationContext.getOrganizationId());

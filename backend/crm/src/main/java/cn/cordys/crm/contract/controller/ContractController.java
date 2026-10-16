@@ -73,7 +73,6 @@ public class ContractController {
 
 
     @GetMapping("/module/form")
-    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), OrganizationContext.getOrganizationId());

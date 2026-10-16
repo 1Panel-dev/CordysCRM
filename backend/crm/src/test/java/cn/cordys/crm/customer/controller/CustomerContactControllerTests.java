@@ -65,9 +65,6 @@ class CustomerContactControllerTests extends BaseTest {
 
         MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
         moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, MODULE_FORM);
     }
 
     @Test

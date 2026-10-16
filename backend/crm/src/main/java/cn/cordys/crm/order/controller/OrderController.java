@@ -58,7 +58,6 @@ public class OrderController {
     private OrderExportService orderExportService;
 
     @GetMapping("/module/form")
-    @CsPermission(PermissionConstants.ORDER_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), OrganizationContext.getOrganizationId());

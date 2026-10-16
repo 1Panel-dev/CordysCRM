@@ -65,7 +65,7 @@
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
                   updateType: 'approval',
-                  approvalTaskId: taskNode?.taskId,
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
                 }"
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"
@@ -225,6 +225,7 @@
   const props = defineProps<{
     sourceId: string;
     readonly?: boolean;
+    approvalTaskId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'saved'): void;

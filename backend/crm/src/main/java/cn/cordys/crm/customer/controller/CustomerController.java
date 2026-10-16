@@ -96,7 +96,6 @@ public class CustomerController {
     private CustomerCollaborationService customerCollaborationService;
 
     @GetMapping("/module/form")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), OrganizationContext.getOrganizationId());
@@ -112,8 +111,13 @@ public class CustomerController {
         return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
+
+    /**
+     * 不校验数据权限，service 还需校验协作人权限
+     * @param id
+     * @return
+     */
     @GetMapping("/get/{id}")
-    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ) // 不校验数据权限，service 还需校验协作人权限
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
         return customerService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

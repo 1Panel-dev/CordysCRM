@@ -60,7 +60,6 @@ public class ContractPaymentPlanController {
     private ModuleFormCacheService moduleFormCacheService;
 
     @GetMapping("/module/form")
-    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), OrganizationContext.getOrganizationId());

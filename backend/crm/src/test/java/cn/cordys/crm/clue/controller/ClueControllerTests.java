@@ -67,9 +67,6 @@ class ClueControllerTests extends BaseTest {
     @Order(0)
     void testModuleField() throws Exception {
         this.requestGetWithOkAndReturn(MODULE_FORM);
-
-        // 校验权限
-        requestGetPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ), MODULE_FORM);
     }
 
     @Test

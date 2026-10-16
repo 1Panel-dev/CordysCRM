@@ -60,7 +60,6 @@ public class ContractPaymentRecordController {
     private ContractPaymentRecordExportService contractPaymentRecordExportService;
 
     @GetMapping("/module/form")
-    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), OrganizationContext.getOrganizationId());

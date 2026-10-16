@@ -126,6 +126,7 @@
   <CustomerOverviewDrawer
     v-model:show="customerDetailVisible"
     :source-id="activeResourceId"
+    :approvalTaskId="approvalTaskId"
     @saved="handleApproveSuccess"
     @deleted="handleApproveSuccess"
     @refresh="handleApproveSuccess"
@@ -141,6 +142,7 @@
   <ClueOverviewDrawer
     v-model:show="clueDetailVisible"
     :detail="activeResourceDetail"
+    :approvalTaskId="approvalTaskId"
     @saved="handleApproveSuccess"
     @remove="handleApproveSuccess"
     @refresh="handleApproveSuccess"
@@ -157,6 +159,7 @@
   <OptOverviewDrawer
     v-model:show="opportunityDetailVisible"
     :detail="activeResourceDetail"
+    :approvalTaskId="approvalTaskId"
     @remove="handleApproveSuccess"
     @refresh="handleApproveSuccess"
     @open-customer-drawer="handleOpenCustomerDetail"
