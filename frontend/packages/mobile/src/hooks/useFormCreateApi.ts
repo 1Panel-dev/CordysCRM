@@ -864,6 +864,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         id: props.sourceId?.value,
       };
       fieldList.value.forEach((item) => {
+        if (item.resourceFieldId) {
+          return;
+        }
         if (item.businessKey) {
           // 存在业务字段，则按照业务字段的key存储
           params[item.businessKey] = getNormalFieldValue(item, form[item.id]);
