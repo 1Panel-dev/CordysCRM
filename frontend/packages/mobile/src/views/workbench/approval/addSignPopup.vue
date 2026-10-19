@@ -6,69 +6,75 @@
     safe-area-inset-top
     safe-area-inset-bottom
   >
-    <div class="relative p-[16px] text-center">
-      <CrmTextButton
-        icon="iconicon_chevron_left"
-        icon-size="24px"
-        color="var(--text-n1)"
-        class="absolute left-[12px] top-[16px]"
-        @click="show = false"
-      />
-      <div class="text-[16px] font-semibold">{{ t('workbench.operation.SIGN') }}</div>
+    <div class="flex flex-col">
+      <div class="relative p-[16px] text-center">
+        <CrmTextButton
+          icon="iconicon_chevron_left"
+          icon-size="24px"
+          color="var(--text-n1)"
+          class="absolute left-[12px] top-[16px]"
+          @click="show = false"
+        />
+        <div class="text-[16px] font-semibold">{{ t('workbench.operation.SIGN') }}</div>
+      </div>
+      <div class="h-full flex-1 overflow-y-auto pb-[80px]">
+        <van-form ref="fallbackFormRef" label-align="top" @submit="">
+          <van-field name="radio" :label="t('workbench.addSignType')" label-align="left">
+            <template #input>
+              <van-radio-group v-model="addSignForm.type" direction="horizontal">
+                <van-radio name="BEFORE">{{ t('workbench.beforeMe') }}</van-radio>
+                <van-radio name="AFTER">{{ t('workbench.afterMe') }}</van-radio>
+              </van-radio-group>
+            </template>
+          </van-field>
+          <CrmMemberSelect
+            v-model:value="addSignForm.reviewer"
+            :field-config="{
+              id: getGenerateId(),
+              showLabel: true,
+              editable: true,
+              readable: true,
+              description: '',
+              type: FieldTypeEnum.MEMBER,
+              name: t('workbench.addSignReviewer'),
+              fieldWidth: 1,
+              rules: [{ key: FieldRuleEnum.REQUIRED }],
+              icon: '',
+            }"
+          />
+          <van-field
+            name="reason"
+            :label="t('workbench.addSignAdvice')"
+            :placeholder="t('common.pleaseInput')"
+            v-model="addSignForm.reason"
+            autosize
+            show-word-limit
+            rows="2"
+            type="textarea"
+            maxlength="300"
+          />
+          <CrmUploadFile
+            v-model:value="addSignForm.fileList"
+            :field-config="{
+              id: getGenerateId(),
+              name: t('crm.fileListPop.title'),
+              type: FieldTypeEnum.ATTACHMENT,
+              showLabel: true,
+              readable: true,
+              editable: true,
+              fieldWidth: 1,
+              description: '',
+              icon: '',
+              rules: [],
+              limitSize: '50MB',
+            }"
+          />
+        </van-form>
+      </div>
     </div>
-    <van-form ref="fallbackFormRef" label-align="top" @submit="">
-      <van-field name="radio" :label="t('workbench.addSignType')" label-align="left">
-        <template #input>
-          <van-radio-group v-model="addSignForm.type" direction="horizontal">
-            <van-radio name="BEFORE">{{ t('workbench.beforeMe') }}</van-radio>
-            <van-radio name="AFTER">{{ t('workbench.afterMe') }}</van-radio>
-          </van-radio-group>
-        </template>
-      </van-field>
-      <CrmMemberSelect
-        v-model:value="addSignForm.reviewer"
-        :field-config="{
-          id: getGenerateId(),
-          showLabel: true,
-          editable: true,
-          readable: true,
-          description: '',
-          type: FieldTypeEnum.MEMBER,
-          name: t('workbench.addSignReviewer'),
-          fieldWidth: 1,
-          rules: [{ key: FieldRuleEnum.REQUIRED }],
-          icon: '',
-        }"
-      />
-      <van-field
-        name="reason"
-        :label="t('workbench.addSignAdvice')"
-        :placeholder="t('common.pleaseInput')"
-        v-model="addSignForm.reason"
-        autosize
-        show-word-limit
-        rows="2"
-        type="textarea"
-        maxlength="300"
-      />
-      <CrmUploadFile
-        v-model:value="addSignForm.fileList"
-        :field-config="{
-          id: getGenerateId(),
-          name: t('crm.fileListPop.title'),
-          type: FieldTypeEnum.ATTACHMENT,
-          showLabel: true,
-          readable: true,
-          editable: true,
-          fieldWidth: 1,
-          description: '',
-          icon: '',
-          rules: [],
-          limitSize: '50MB',
-        }"
-      />
-    </van-form>
-    <div class="fixed bottom-0 left-0 right-0 flex items-center justify-between gap-[16px] p-[16px]">
+    <div
+      class="fixed bottom-0 left-0 right-0 flex items-center justify-between gap-[16px] bg-[var(--text-n10)] p-[16px]"
+    >
       <van-button
         type="default"
         class="flex-1 !border-none !bg-[var(--text-n8)] !text-[var(--text-n1)]"
