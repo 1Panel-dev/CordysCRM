@@ -63,14 +63,10 @@
       </van-tab>
     </van-tabs>
     <template v-if="showFooterActions" #footer>
-      <CrmActionButtons
-        v-if="activeTab === 'info'"
-        :show-edit-button="showEditButton"
-        :actions="operationActions"
-        @select="handleMoreSelect"
-      />
       <CrmApprovalRecordActions
-        v-if="activeTab === 'approval' && approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING"
+        v-if="showApprovalActions"
+        v-slot="{ actions: approvalActions, handleSelect: handleApprovalAction }"
+        hide-actions
         :source-id="sourceId"
         :form-key="FormDesignKeyEnum.CUSTOMER"
         :approval-info="approvalInfo"
@@ -78,6 +74,23 @@
         :current-approval-node-index="currentApprovalNodeIndex"
         @refresh="refreshDetail"
         @delete-approved="router.back()"
+      >
+        <CrmActionButtons
+          :show-edit-button="showDetailActions && showEditButton"
+          :actions="getFooterActions(approvalActions)"
+          @select="
+            (key) => {
+              handleMoreSelect(key);
+              handleApprovalAction(key);
+            }
+          "
+        />
+      </CrmApprovalRecordActions>
+      <CrmActionButtons
+        v-else-if="showDetailActions"
+        :show-edit-button="showEditButton"
+        :actions="operationActions"
+        @select="handleMoreSelect"
       />
     </template>
   </CrmPageWrapper>
@@ -223,11 +236,20 @@
   });
   const showEditButton = computed(() => hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE']));
   const operationActions = computed(() => resolveRowActions(detail.value, actions.value));
+  const showDetailActions = computed(() => Boolean(showEditButton.value || operationActions.value.length));
+  const showApprovalActions = computed(() => approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING);
   const showFooterActions = computed(
-    () =>
-      (activeTab.value === 'info' && (showEditButton.value || operationActions.value.length)) ||
-      (activeTab.value === 'approval' && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING)
+    () => ['info', 'approval'].includes(activeTab.value) && (showDetailActions.value || showApprovalActions.value)
   );
+
+  function getFooterActions(approvalActions: CrmActionButtonsItem[]) {
+    const hasCancelApplyAction = approvalActions.some((action) => action.key === 'cancelApply');
+    const detailActions = showDetailActions.value
+      ? operationActions.value.filter((action) => action.key !== 'revoke' || !hasCancelApplyAction)
+      : [];
+
+    return [...approvalActions, ...detailActions];
+  }
 
   function handleEdit(id: string) {
     router.push({

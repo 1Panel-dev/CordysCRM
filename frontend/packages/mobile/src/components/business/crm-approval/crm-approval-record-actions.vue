@@ -1,5 +1,6 @@
 <template>
-  <div v-if="showActions" class="flex justify-between gap-[16px]">
+  <slot v-if="props.hideActions" :actions="approvalActions" :handle-select="handleApprovalAction" />
+  <div v-else-if="showActions" class="flex justify-between gap-[16px]">
     <van-button v-if="directMoreAction" plain type="primary" block @click="directMoreAction.action()">
       {{ directMoreAction.text }}
     </van-button>
@@ -74,6 +75,7 @@
     approvalConfig?: ApprovalProcessDetail;
     currentApprovalNode?: ApprovalNode;
     currentApprovalNodeIndex: number;
+    hideActions?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
@@ -278,6 +280,34 @@
       props.approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
       (isApprover.value || moreActionList.value.length > 0)
   );
+  const approvalActions = computed(() => {
+    if (!showActions.value) {
+      return [];
+    }
+
+    return [
+      ...(isApprover.value
+        ? [
+            {
+              key: 'approve',
+              text: t('workbench.operation.APPROVE'),
+              action: () => openApprovalPopup(false),
+            },
+            {
+              key: 'reject',
+              text: t('workbench.operation.REJECT'),
+              color: 'var(--error-red)',
+              action: () => openApprovalPopup(true),
+            },
+          ]
+        : []),
+      ...moreActionList.value,
+    ];
+  });
+
+  function handleApprovalAction(key: string) {
+    approvalActions.value.find((action) => action.key === key)?.action();
+  }
 
   async function initApprovalConfig() {
     try {
