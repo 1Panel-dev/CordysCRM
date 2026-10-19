@@ -46,7 +46,7 @@
       :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       :parse="parse"
       :format="format"
-      :precision="props.fieldConfig.precision"
+      :precision="props.longFloat ? props.fieldConfig.precision || 13 : props.fieldConfig.precision"
       :status="props.feedback ? 'error' : undefined"
       clearable
       class="w-full"
@@ -117,7 +117,7 @@
   function format(val?: number | null) {
     if (val === null || val === undefined) return '';
     if (props.fieldConfig.formulaResultFormat === 'number') {
-      return formatFormulaResultValue(val, props.fieldConfig);
+      return formatFormulaResultValue(val, props.fieldConfig, '', props.longFloat);
     }
     if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
       if (props.fieldConfig.precision && props.fieldConfig.precision > 0) {

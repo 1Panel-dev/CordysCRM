@@ -10,6 +10,7 @@
         :is-sub-table-field="props.isSubTableField"
         :is-sub-table-render="props.isSubTableRender"
         :need-init-detail="needInitDetail"
+        longFloat
         @change="handleChange"
       />
     </template>
