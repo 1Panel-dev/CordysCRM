@@ -875,6 +875,9 @@
       const res = await getOpenSeaOptions();
       openSeaOptions.value = res;
       openSea.value = openSeaOptions.value[0]?.id || '';
+      if (openSea.value) {
+        searchData(undefined, openSea.value);
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
