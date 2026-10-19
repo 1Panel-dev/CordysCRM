@@ -969,6 +969,9 @@ public class ClueService implements ApprovalResourceHandler {
                 Clue::getId,
                 Clue::getApprovalStatus
         );
+        if (CollectionUtils.isNotEmpty(clues) && CollectionUtils.isEmpty(permittedIds)) {
+            throw new GenericException(Translator.get("clue.to.pool.approval.permission.denied"));
+        }
         // 已在线索池中的线索本来就不需要移入, 与无权移入的一并计入 fail
         clues = clues.stream()
                 .filter(clue -> permittedIds.contains(clue.getId()) && !BooleanUtils.isTrue(clue.getInSharedPool()))

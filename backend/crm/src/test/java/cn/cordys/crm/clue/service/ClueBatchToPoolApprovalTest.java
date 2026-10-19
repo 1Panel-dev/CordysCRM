@@ -1,13 +1,16 @@
 package cn.cordys.crm.clue.service;
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
@@ -15,14 +18,18 @@ import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InOrder;
 import org.mockito.MockedStatic;
+import org.mockito.MockMakers;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class ClueBatchToPoolApprovalTest {
@@ -47,7 +54,8 @@ class ClueBatchToPoolApprovalTest {
     @SuppressWarnings("unchecked")
     void setUp() {
         // 回收日志与错误提示要取翻译, 单测里没有 Spring 上下文, 直接回显 key
-        translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
+        translator = mockStatic(Translator.class, withSettings().mockMaker(MockMakers.INLINE)
+                .defaultAnswer(invocation -> invocation.getArgument(0)));
         ReflectionTestUtils.setField(service, "clueMapper", clueMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
         ReflectionTestUtils.setField(service, "cluePoolService", cluePoolService);
@@ -109,19 +117,44 @@ class ClueBatchToPoolApprovalTest {
         assertEquals(1, response.getFail());
     }
 
-    @Test
-    void recycleWithoutAnyPermittedClueTouchesNothing() {
-        when(clueMapper.selectListByLambda(any())).thenReturn(List.of(clue("clue-1"), clue("clue-2")));
+    @ParameterizedTest
+    @EnumSource(value = ApprovalStatus.class, names = {"PENDING", "APPROVING", "APPROVED", "UNAPPROVED", "REVOKED"})
+    void recycleWithoutAnyPermittedClueIsRejectedBeforeWrites(ApprovalStatus status) {
+        Clue clue = clue("clue-1");
+        clue.setApprovalStatus(status.name());
+        when(clueMapper.selectListByLambda(any())).thenReturn(List.of(clue));
         doReturn(List.of()).when(approvalFlowService)
                 .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
 
+        GenericException exception = assertThrows(GenericException.class,
+                () -> service.batchToPool(request, USER_ID, ORG_ID));
+
+        assertEquals("clue.to.pool.approval.permission.denied", exception.getMessage());
+        verifyNoInteractions(cluePoolService, extClueMapper, ownerHistoryService, logService, noticeSendService);
+    }
+
+    @Test
+    void singleClueServiceUsesTheSameApprovalPermissionCheck() {
+        when(clueMapper.selectListByLambda(any())).thenReturn(List.of(clue("clue-1")));
+        doReturn(List.of()).when(approvalFlowService)
+                .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
+        PoolReasonRequest singleRequest = new PoolReasonRequest();
+        singleRequest.setId("clue-1");
+
+        GenericException exception = assertThrows(GenericException.class,
+                () -> service.toPool(singleRequest, USER_ID, ORG_ID));
+
+        assertEquals("clue.to.pool.approval.permission.denied", exception.getMessage());
+        verifyNoInteractions(cluePoolService, extClueMapper, ownerHistoryService, logService, noticeSendService);
+    }
+
+    @Test
+    void missingCluesAreNotReportedAsApprovalPermissionDenied() {
         BatchAffectResponse response = service.batchToPool(request, USER_ID, ORG_ID);
 
-        verify(extClueMapper, never()).moveToPool(any(Clue.class));
-        verify(ownerHistoryService, never()).add(any(Clue.class), anyString(), anyBoolean());
-        verify(logService, never()).batchAdd(anyList());
         assertEquals(0, response.getSuccess());
         assertEquals(2, response.getFail());
+        verifyNoInteractions(cluePoolService, extClueMapper, ownerHistoryService, logService, noticeSendService);
     }
 
     @Test
