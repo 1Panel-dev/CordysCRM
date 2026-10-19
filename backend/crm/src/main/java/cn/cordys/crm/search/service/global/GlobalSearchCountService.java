@@ -126,7 +126,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
     private long getOpportunityCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         List<String> customerIds = getCustomerIds(keyword, orgId);
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY)).toList();
+            List<UserSearchConfig> opportunitySearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.OPPORTUNITY.getKey(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY);
             if (CollectionUtils.isEmpty(opportunitySearchConfigs)) {
                 return 0L;
             } else {
@@ -168,7 +168,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      */
     private long getCluePoolCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> cluePoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL)).toList();
+            List<UserSearchConfig> cluePoolSearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.CLUE.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
             if (CollectionUtils.isEmpty(cluePoolSearchConfigs)) {
                 return 0L;
             } else {
@@ -211,7 +211,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      */
     private long getClueCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> clueSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE)).toList();
+            List<UserSearchConfig> clueSearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.CLUE.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CLUE);
             if (CollectionUtils.isEmpty(clueSearchConfigs)) {
                 return 0L;
             } else {
@@ -255,7 +255,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      */
     private long getPublicCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> customerPoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_PUBLIC)).toList();
+            List<UserSearchConfig> customerPoolSearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.CUSTOMER.getKey(), SearchModuleEnum.SEARCH_ADVANCED_PUBLIC);
             if (CollectionUtils.isEmpty(customerPoolSearchConfigs)) {
                 return 0L;
             } else {
@@ -292,7 +292,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
     private long getContactCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         List<String> customerIds = getCustomerIds(keyword, orgId);
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT)).toList();
+            List<UserSearchConfig> contactSearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.CONTACT.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT);
             if (CollectionUtils.isEmpty(contactSearchConfigs)) {
                 return 0L;
             } else {
@@ -338,7 +338,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      */
     private long getCustomerCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> customerSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER)).toList();
+            List<UserSearchConfig> customerSearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.CUSTOMER.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER);
             if (CollectionUtils.isEmpty(customerSearchConfigs)) {
                 return 0L;
             } else {

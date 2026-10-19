@@ -66,7 +66,7 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //查询当前用户搜索配置
-        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.CLUE.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
+        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
         List<String> phoneTypeFieldIds = userSearchConfigs.stream().filter(config -> Strings.CI.equals(config.getType(), FieldType.PHONE.name())).map(UserSearchConfig::getFieldId).toList();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
@@ -78,7 +78,7 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> cluePoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL)).toList();
+            List<UserSearchConfig> cluePoolSearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.CLUE.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
             if (CollectionUtils.isEmpty(cluePoolSearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
                 return PageUtils.setPageInfo(page, List.of());

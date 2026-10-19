@@ -72,7 +72,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //查询当前用户搜索配置
-        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.OPPORTUNITY.getKey(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY);
+        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
         //记住选择的内置列,除自定义字段外，用户还会选择一些内置字段
         Map<String, String> internalKeyMap = new HashMap<>();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
@@ -83,7 +83,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY)).toList();
+            List<UserSearchConfig> opportunitySearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.OPPORTUNITY.getKey(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY);
             if (CollectionUtils.isEmpty(opportunitySearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
                 return PageUtils.setPageInfo(page, List.of());

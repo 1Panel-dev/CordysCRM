@@ -79,7 +79,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT)).toList();
+            List<UserSearchConfig> contactSearchConfigs = getModuleSearchConfigs(userSearchConfigs, orgId, FormKey.CONTACT.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT);
             if (CollectionUtils.isEmpty(contactSearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
                 return PageUtils.setPageInfo(page, List.of());

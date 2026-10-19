@@ -280,28 +280,32 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     }
 
     /**
-     * 在构造查询前核对当前模块的历史搜索配置，防止旧业务键或类型绕过字段归一化。
+     * 过滤当前模块已删除的搜索字段，并校验其余配置，防止旧业务键或类型绕过字段归一化。
      */
-    public List<UserSearchConfig> getUserSearchConfigs(String userId, String orgId, String formKey, String moduleType) {
-        List<UserSearchConfig> configs = getUserSearchConfigs(userId, orgId);
+    public List<UserSearchConfig> getModuleSearchConfigs(List<UserSearchConfig> configs, String orgId, String formKey, String moduleType) {
         List<UserSearchConfig> moduleConfigs = configs.stream()
                 .filter(config -> Strings.CI.equals(config.getModuleType(), moduleType)).toList();
         if (CollectionUtils.isEmpty(moduleConfigs)) {
-            return configs;
+            return moduleConfigs;
         }
         List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(formKey, orgId).getFields();
+        List<UserSearchConfig> validConfigs = new ArrayList<>();
         for (UserSearchConfig config : moduleConfigs) {
             BaseField field = fields.stream().filter(candidate -> Strings.CI.equals(candidate.getId(), config.getFieldId()))
                     .findFirst().orElse(null);
+            if (field == null) {
+                continue;
+            }
             String businessKey = config.getBusinessKey();
-            if (field == null || !Strings.CS.equals(config.getType(), field.getType())
+            if (!Strings.CS.equals(config.getType(), field.getType())
                     || !Strings.CS.equals(StringUtils.defaultIfBlank(businessKey, null), StringUtils.defaultIfBlank(field.getBusinessKey(), null))
                     || (StringUtils.isNotBlank(businessKey) && !BUSINESS_KEY_PATTERN.matcher(businessKey).matches())
                     || !Strings.CS.equals(config.getDataSourceType(), field instanceof DatasourceField source ? source.getDataSourceType() : null)) {
                 throw new GenericException(Translator.get("search.config.invalid"));
             }
+            validConfigs.add(config);
         }
-        return configs;
+        return validConfigs;
     }
 
     /**
