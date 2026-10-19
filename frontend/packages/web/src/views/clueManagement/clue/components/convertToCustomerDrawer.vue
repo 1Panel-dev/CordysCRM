@@ -9,34 +9,42 @@
     @cancel="handleCancel"
     @confirm="handleConfirm"
   >
-    <div class="h-full px-[24px] pt-[24px]">
-      <CrmTable
-        ref="crmTableRef"
-        v-model:checked-row-keys="checkedRowKeys"
-        v-bind="propsRes"
-        class="crm-clue-convert-table"
-        :not-show-table-filter="isAdvancedSearchMode"
-        @page-change="propsEvent.pageChange"
-        @page-size-change="propsEvent.pageSizeChange"
-        @sorter-change="propsEvent.sorterChange"
-        @filter-change="propsEvent.filterChange"
-        @refresh="searchData"
-      >
-        <template #tableTop>
-          <div class="flex items-center justify-end gap-[12px]">
-            <div class="flex gap-[12px]">
-              <CrmAdvanceFilter
-                ref="tableAdvanceFilterRef"
-                v-model:keyword="keyword"
-                :custom-fields-config-list="filterConfigList"
-                :filter-config-list="customFieldsFilterConfig"
-                @adv-search="handleAdvSearch"
-                @keyword-search="searchData"
-              />
-            </div>
-          </div>
+    <div class="flex h-full flex-col px-[24px] pt-[24px]">
+      <n-alert v-if="props.showApprovalTip" type="warning" class="mb-[16px]">
+        <template #icon>
+          <CrmIcon type="iconicon_info_circle_filled" :size="20" />
         </template>
-      </CrmTable>
+        {{ props.showApprovalTip }}
+      </n-alert>
+      <div class="min-h-0 flex-1">
+        <CrmTable
+          ref="crmTableRef"
+          v-model:checked-row-keys="checkedRowKeys"
+          v-bind="propsRes"
+          class="crm-clue-convert-table"
+          :not-show-table-filter="isAdvancedSearchMode"
+          @page-change="propsEvent.pageChange"
+          @page-size-change="propsEvent.pageSizeChange"
+          @sorter-change="propsEvent.sorterChange"
+          @filter-change="propsEvent.filterChange"
+          @refresh="searchData"
+        >
+          <template #tableTop>
+            <div class="flex items-center justify-end gap-[12px]">
+              <div class="flex gap-[12px]">
+                <CrmAdvanceFilter
+                  ref="tableAdvanceFilterRef"
+                  v-model:keyword="keyword"
+                  :custom-fields-config-list="filterConfigList"
+                  :filter-config-list="customFieldsFilterConfig"
+                  @adv-search="handleAdvSearch"
+                  @keyword-search="searchData"
+                />
+              </div>
+            </div>
+          </template>
+        </CrmTable>
+      </div>
     </div>
   </CrmDrawer>
   <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" @saved="searchData" />
@@ -44,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NAlert, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -53,6 +61,7 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import batchOperationResultModal from '@/components/business/crm-batch-edit-modal/components/batchOperationResultModal.vue';
@@ -64,6 +73,7 @@
 
   const props = defineProps<{
     clueIds: (string | number)[];
+    showApprovalTip?: string;
   }>();
   const emit = defineEmits<{
     (e: 'new', linkForm: Record<string, any>): void;

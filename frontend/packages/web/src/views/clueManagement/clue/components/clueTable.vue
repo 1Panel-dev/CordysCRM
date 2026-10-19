@@ -111,6 +111,7 @@
     v-if="isInitConvertDrawer"
     v-model:show="showConvertToCustomerDrawer"
     :clue-ids="checkedRowKeys"
+    :show-approval-tip="linkCustomerApprovalTip"
     @finish="handleRefresh"
   />
   <CrmMoveModal
@@ -355,6 +356,9 @@
   );
   const batchMoveToPoolApprovalTip = computed(() =>
     getApprovalActionTip(['CLUE_MANAGEMENT:RECYCLE'], 'common.batchMoveToPoolApprovalTip')
+  );
+  const linkCustomerApprovalTip = computed(() =>
+    getApprovalActionTip(['CLUE_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
   );
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
