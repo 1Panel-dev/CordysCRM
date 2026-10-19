@@ -869,7 +869,7 @@ public class ClueService implements ApprovalResourceHandler {
                 .success((int) processCount)
                 .fail(requestCount - transferableClues.size())
                 .skip(transferableClues.size() - (int) processCount)
-                .errorMessages(Translator.get("batch.transfer.reason"))
+                .errorMessages(Translator.get("batch.operate.reason"))
                 .build();
     }
 

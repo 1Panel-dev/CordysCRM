@@ -238,7 +238,7 @@ class PoolCustomerApprovalTest {
         assertEquals(1, response.getSuccess());
         assertEquals(1, response.getSkip());
         assertEquals(1, response.getFail());
-        assertEquals("batch.delete.reason", response.getErrorMessages());
+        assertEquals("batch.operate.reason", response.getErrorMessages());
         verify(approvalResourceService).batchDeleteTriggerApproval(
                 eq(List.of("customer-1", "customer-2")), eq(FormKey.CUSTOMER), eq(ORG_ID), eq(USER_ID),
                 argThat(nameMap -> nameMap.size() == 2 && "customer-customer-1".equals(nameMap.get("customer-1"))));

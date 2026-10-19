@@ -744,7 +744,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 .success((int) processCount)
                 .fail(requestCount - transferableCustomers.size())
                 .skip(transferableCustomers.size() - (int) processCount)
-                .errorMessages(Translator.get("batch.transfer.reason"))
+                .errorMessages(Translator.get("batch.operate.reason"))
                 .build();
     }
 
