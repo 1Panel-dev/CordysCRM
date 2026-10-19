@@ -587,7 +587,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
                 .success(changedIds.size())
                 .fail(requestCount - transferableOpportunities.size())
                 .skip(transferableOpportunities.size() - changedIds.size())
-                .errorMessages(Translator.get("batch.transfer.reason"))
+                .errorMessages(Translator.get("batch.operate.reason"))
                 .build();
     }
 

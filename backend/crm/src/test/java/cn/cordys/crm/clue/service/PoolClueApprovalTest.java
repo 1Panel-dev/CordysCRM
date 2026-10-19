@@ -220,7 +220,7 @@ class PoolClueApprovalTest {
         assertEquals(1, response.getSuccess());
         assertEquals(1, response.getSkip());
         assertEquals(1, response.getFail());
-        assertEquals("batch.delete.reason", response.getErrorMessages());
+        assertEquals("batch.operate.reason", response.getErrorMessages());
     }
 
     @Test

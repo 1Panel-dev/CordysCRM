@@ -392,7 +392,7 @@ public class PoolClueService {
 
         return BatchAffectReasonResponse.builder()
                 .success(deleteIds.size()).fail(fail).skip(approvalIds.size())
-                .errorMessages(Translator.get("batch.delete.reason")).build();
+                .errorMessages(Translator.get("batch.operate.reason")).build();
     }
 
     public void freeze(PoolFreezeRequest request, String userId, String orgId) {
