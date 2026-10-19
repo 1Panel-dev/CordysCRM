@@ -351,7 +351,9 @@
                         </include>
                     </when>
                     <otherwise>
-                        <if test="condition.customField">
+                        <if test="condition.name not in
+                                {'name', 'owner', 'customerId', 'stage', 'amount', 'possible',
+                                 'products', 'contactId', 'followTime', 'updateUser', 'createTime', 'updateTime', 'createUser', 'follower', 'expectedEndTime', 'actualEndTime', 'failureReason', 'departmentId'}">
                             <if test="condition.blob">
                                 left join opportunity_field_blob ${tablePrefix}_${i}
                                 on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
