@@ -32,7 +32,7 @@
               @click.stop
             />
             <div class="task-item-content">
-              <div class="flex w-full items-center gap-[16px]">
+              <div class="flex w-full items-center gap-[16px] overflow-hidden">
                 <div class="flex items-center gap-[8px]">
                   <CrmTag
                     v-if="props.activeTaskType?.includes('approved')"
@@ -48,7 +48,7 @@
                   type="primary"
                   text
                   size="small"
-                  class="text-[14px]"
+                  class="max-w-max flex-1 overflow-hidden text-[14px]"
                   @click="handleOpenDetail(item)"
                 >
                   {{ item.resourceName }}
@@ -59,7 +59,7 @@
                   type="primary"
                   text
                   size="small"
-                  class="text-[14px]"
+                  class="max-w-max flex-1 overflow-hidden text-[14px]"
                   @click="handleOpenDetail(item)"
                 >
                   {{ item.resourceName }}
@@ -364,7 +364,7 @@
 
 <style lang="less" scoped>
   .task-item {
-    @apply flex cursor-pointer justify-between;
+    @apply flex w-full cursor-pointer justify-between overflow-hidden;
 
     margin-bottom: 16px;
     padding: 16px;
@@ -375,7 +375,7 @@
       background-color: var(--text-n9);
     }
     .task-item-content {
-      @apply flex flex-1 flex-wrap items-center;
+      @apply flex flex-1 flex-wrap items-center overflow-hidden;
 
       gap: 8px;
     }

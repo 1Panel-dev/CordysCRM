@@ -6,78 +6,84 @@
     safe-area-inset-top
     safe-area-inset-bottom
   >
-    <div class="relative p-[16px] text-center">
-      <CrmTextButton
-        icon="iconicon_chevron_left"
-        icon-size="24px"
-        color="var(--text-n1)"
-        class="absolute left-[12px] top-[16px]"
-        @click="show = false"
-      />
-      <div class="text-[16px] font-semibold">{{ t('workbench.operation.BACK') }}</div>
-    </div>
-    <van-form ref="fallbackFormRef" label-align="top" @submit="">
-      <van-field
-        v-model="fieldValue"
-        is-link
-        readonly
-        :label="t('workbench.fallbackTo')"
-        :placeholder="t('common.pleaseSelect')"
-        label-align="left"
-        required
-        :rules="[
-          {
-            required: approvalConfig?.requireComment,
-            message: t('common.notNull', {
-              value: t('workbench.fallbackTo'),
-            }),
-          },
-        ]"
-        @click="showPicker = true"
-      />
-      <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
-        <van-picker
-          v-model:model-value="pickerValue"
-          :columns="props.fallbackOptions"
-          @cancel="showPicker = false"
-          @confirm="
-            () => {
-              showPicker = false;
-              fieldValue = props.fallbackOptions.find((e) => e.value === pickerValue[0])?.text?.toString() || '';
-              fallbackForm.node = pickerValue[0];
-            }
-          "
+    <div class="flex flex-col">
+      <div class="relative p-[16px] text-center">
+        <CrmTextButton
+          icon="iconicon_chevron_left"
+          icon-size="24px"
+          color="var(--text-n1)"
+          class="absolute left-[12px] top-[16px]"
+          @click="show = false"
         />
-      </van-popup>
-      <van-field
-        name="reason"
-        :label="t('workbench.fallbackReason')"
-        :placeholder="t('common.pleaseInput')"
-        v-model="fallbackForm.reason"
-        autosize
-        show-word-limit
-        rows="2"
-        type="textarea"
-        maxlength="300"
-      />
-      <CrmUploadFile
-        v-model:value="fallbackForm.fileList"
-        :field-config="{
-          id: getGenerateId(),
-          name: t('crm.fileListPop.title'),
-          type: FieldTypeEnum.ATTACHMENT,
-          showLabel: true,
-          readable: true,
-          editable: true,
-          fieldWidth: 1,
-          description: '',
-          icon: '',
-          rules: [],
-          limitSize: '50MB',
-        }"
-      />
-    </van-form>
-    <div class="fixed bottom-0 left-0 right-0 flex items-center justify-between gap-[16px] p-[16px]">
+        <div class="text-[16px] font-semibold">{{ t('workbench.operation.BACK') }}</div>
+      </div>
+      <div class="h-full flex-1 overflow-y-auto pb-[80px]">
+        <van-form ref="fallbackFormRef" label-align="top" @submit="">
+          <van-field
+            v-model="fieldValue"
+            is-link
+            readonly
+            :label="t('workbench.fallbackTo')"
+            :placeholder="t('common.pleaseSelect')"
+            label-align="left"
+            required
+            :rules="[
+              {
+                required: approvalConfig?.requireComment,
+                message: t('common.notNull', {
+                  value: t('workbench.fallbackTo'),
+                }),
+              },
+            ]"
+            @click="showPicker = true"
+          />
+          <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
+            <van-picker
+              v-model:model-value="pickerValue"
+              :columns="props.fallbackOptions"
+              @cancel="showPicker = false"
+              @confirm="
+                () => {
+                  showPicker = false;
+                  fieldValue = props.fallbackOptions.find((e) => e.value === pickerValue[0])?.text?.toString() || '';
+                  fallbackForm.node = pickerValue[0];
+                }
+              "
+            />
+          </van-popup>
+          <van-field
+            name="reason"
+            :label="t('workbench.fallbackReason')"
+            :placeholder="t('common.pleaseInput')"
+            v-model="fallbackForm.reason"
+            autosize
+            show-word-limit
+            rows="2"
+            type="textarea"
+            maxlength="300"
+          />
+          <CrmUploadFile
+            v-model:value="fallbackForm.fileList"
+            :field-config="{
+              id: getGenerateId(),
+              name: t('crm.fileListPop.title'),
+              type: FieldTypeEnum.ATTACHMENT,
+              showLabel: true,
+              readable: true,
+              editable: true,
+              fieldWidth: 1,
+              description: '',
+              icon: '',
+              rules: [],
+              limitSize: '50MB',
+            }"
+          />
+        </van-form>
+      </div>
+    </div>
+    <div
+      class="fixed bottom-0 left-0 right-0 flex items-center justify-between gap-[16px] bg-[var(--text-n10)] p-[16px]"
+    >
       <van-button
         type="default"
         class="flex-1 !border-none !bg-[var(--text-n8)] !text-[var(--text-n1)]"

@@ -6,56 +6,62 @@
     safe-area-inset-top
     safe-area-inset-bottom
   >
-    <div class="relative p-[16px] text-center">
-      <CrmTextButton
-        icon="iconicon_chevron_left"
-        icon-size="24px"
-        color="var(--text-n1)"
-        class="absolute left-[12px] top-[16px]"
-        @click="showApprovalPopup = false"
-      />
-      <div class="text-[16px] font-semibold">{{ t('workbench.approval') }}</div>
+    <div class="flex flex-col">
+      <div class="relative p-[16px] text-center">
+        <CrmTextButton
+          icon="iconicon_chevron_left"
+          icon-size="24px"
+          color="var(--text-n1)"
+          class="absolute left-[12px] top-[16px]"
+          @click="showApprovalPopup = false"
+        />
+        <div class="text-[16px] font-semibold">{{ t('workbench.approval') }}</div>
+      </div>
+      <div class="h-full flex-1 overflow-y-auto pb-[80px]">
+        <van-form ref="approvalFormRef" label-align="top" @submit="">
+          <van-field
+            name="reason"
+            :label="isRejecting ? t('workbench.rejectReason') : t('workbench.approvedReason')"
+            :placeholder="t('common.pleaseInput')"
+            v-model="approvalForm.reason"
+            autosize
+            show-word-limit
+            rows="2"
+            type="textarea"
+            maxlength="300"
+            :required="approvalConfig?.requireComment"
+            :rules="[
+              {
+                required: approvalConfig?.requireComment,
+                message: t('common.notNull', {
+                  value: isRejecting ? t('workbench.rejectReason') : t('workbench.approvedReason'),
+                }),
+              },
+            ]"
+          />
+          <CrmUploadFile
+            :key="uploadKey"
+            v-model:value="approvalForm.fileList"
+            :field-config="{
+              id: getGenerateId(),
+              name: t('crm.fileListPop.title'),
+              type: FieldTypeEnum.ATTACHMENT,
+              showLabel: true,
+              readable: true,
+              editable: true,
+              fieldWidth: 1,
+              description: '',
+              icon: '',
+              rules: [],
+              limitSize: '50MB',
+            }"
+          />
+        </van-form>
+      </div>
     </div>
-    <van-form ref="approvalFormRef" label-align="top" @submit="">
-      <van-field
-        name="reason"
-        :label="isRejecting ? t('workbench.rejectReason') : t('workbench.approvedReason')"
-        :placeholder="t('common.pleaseInput')"
-        v-model="approvalForm.reason"
-        autosize
-        show-word-limit
-        rows="2"
-        type="textarea"
-        maxlength="300"
-        :required="approvalConfig?.requireComment"
-        :rules="[
-          {
-            required: approvalConfig?.requireComment,
-            message: t('common.notNull', {
-              value: isRejecting ? t('workbench.rejectReason') : t('workbench.approvedReason'),
-            }),
-          },
-        ]"
-      />
-      <CrmUploadFile
-        :key="uploadKey"
-        v-model:value="approvalForm.fileList"
-        :field-config="{
-          id: getGenerateId(),
-          name: t('crm.fileListPop.title'),
-          type: FieldTypeEnum.ATTACHMENT,
-          showLabel: true,
-          readable: true,
-          editable: true,
-          fieldWidth: 1,
-          description: '',
-          icon: '',
-          rules: [],
-          limitSize: '50MB',
-        }"
-      />
-    </van-form>
-    <div class="fixed bottom-0 left-0 right-0 flex items-center justify-between gap-[16px] p-[16px]">
+    <div
+      class="fixed bottom-0 left-0 right-0 flex items-center justify-between gap-[16px] bg-[var(--text-n10)] p-[16px]"
+    >
       <van-button
         type="default"
         class="flex-1 !border-none !bg-[var(--text-n8)] !text-[var(--text-n1)]"
