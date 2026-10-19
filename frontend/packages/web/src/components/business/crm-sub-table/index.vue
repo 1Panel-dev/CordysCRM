@@ -941,6 +941,20 @@
     }
   }
 
+  function restoreSortableRows(container: HTMLElement, rowMap: Map<string, Record<string, any>>) {
+    const rows = Array.from(container.children) as HTMLElement[];
+    const rowElements = new Map(rows.map((row) => [row.dataset.id || '', row]));
+    const nonDataRows = rows.filter((row) => !rowMap.has(row.dataset.id || ''));
+
+    data.value.forEach((row, index) => {
+      const rowElement = rowElements.get(String(getSubTableRowKey(row, index)));
+      if (rowElement) {
+        container.appendChild(rowElement);
+      }
+    });
+    nonDataRows.forEach((row) => container.appendChild(row));
+  }
+
   function initSortable() {
     destroySortable();
     if (props.readonly || !props.draggable) return;
@@ -954,8 +968,15 @@
       sortable.value = Sortable.create(el, {
         ghostClass: 'sortable-ghost',
         handle: '.crm-sub-table-data-draggable-handle',
+        draggable: 'tr[data-id]',
         setData(dataTransfer) {
           dataTransfer.setData('Text', '');
+        },
+        onMove: ({ related }) => {
+          if (!related) return true;
+          // 如果目标位置对应的不是实际数据行，就禁止放置
+          const rowMap = new Map(data.value.map((row, index) => [String(getSubTableRowKey(row, index)), row]));
+          return rowMap.has((related as HTMLElement).dataset.id || '');
         },
         onEnd: ({ oldIndex, newIndex, to }) => {
           if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return;
@@ -965,7 +986,10 @@
             .map((rowEl) => rowMap.get(String((rowEl as HTMLElement).dataset.id)))
             .filter((row): row is Record<string, any> => !!row);
 
-          if (orderedRows.length !== data.value.length) return;
+          if (orderedRows.length !== data.value.length) {
+            restoreSortableRows(to, rowMap);
+            return;
+          }
 
           data.value.splice(0, data.value.length, ...orderedRows);
           emit('change', data.value);
