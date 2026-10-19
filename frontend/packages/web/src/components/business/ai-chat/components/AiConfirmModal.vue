@@ -15,7 +15,7 @@
     </n-alert>
 
     <div v-for="(item, itemIndex) in confirmItems" :key="`${item.prompt}_${itemIndex}`">
-      <div v-if="item.prompt" class="mb-[8px] font-[600] text-[var(--text-n1)]">
+      <div v-if="item.prompt" class="mb-[8px] whitespace-pre-wrap font-[600] text-[var(--text-n1)]">
         {{ item.prompt }}
       </div>
 
