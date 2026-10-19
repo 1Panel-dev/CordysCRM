@@ -39,9 +39,10 @@
       </van-tab>
     </van-tabs>
     <template v-if="showFooterActions" #footer>
-      <CrmActionButtons v-if="activeTab === 'info'" :actions="operationActions" @select="handleSelect" />
       <CrmApprovalRecordActions
-        v-if="activeTab === 'approval' && approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING"
+        v-if="showApprovalActions"
+        v-slot="{ actions: approvalActions, handleSelect: handleApprovalAction }"
+        hide-actions
         :source-id="sourceId"
         :form-key="FormDesignKeyEnum.CLUE"
         :approval-info="approvalInfo"
@@ -49,7 +50,18 @@
         :current-approval-node-index="currentApprovalNodeIndex"
         @refresh="refreshDetail"
         @delete-approved="router.back()"
-      />
+      >
+        <CrmActionButtons
+          :actions="getFooterActions(approvalActions)"
+          @select="
+            (key) => {
+              handleSelect(key);
+              handleApprovalAction(key);
+            }
+          "
+        />
+      </CrmApprovalRecordActions>
+      <CrmActionButtons v-else-if="showDetailActions" :actions="operationActions" @select="handleSelect" />
     </template>
   </CrmPageWrapper>
 </template>
@@ -206,11 +218,20 @@
 
     return [...reviewActions, ...poolActions.value, ...(poolDeleteAction ? [poolDeleteAction] : [])];
   });
+  const showDetailActions = computed(() => Boolean(operationActions.value.length));
+  const showApprovalActions = computed(() => approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING);
   const showFooterActions = computed(
-    () =>
-      (activeTab.value === 'info' && operationActions.value.length) ||
-      (activeTab.value === 'approval' && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING)
+    () => ['info', 'approval'].includes(activeTab.value) && (showDetailActions.value || showApprovalActions.value)
   );
+
+  function getFooterActions(approvalActions: CrmActionButtonsItem[]) {
+    const hasCancelApplyAction = approvalActions.some((action) => action.key === 'cancelApply');
+    const detailActions = showDetailActions.value
+      ? operationActions.value.filter((action) => action.key !== 'revoke' || !hasCancelApplyAction)
+      : [];
+
+    return [...approvalActions, ...detailActions];
+  }
 
   async function handlePick() {
     try {
