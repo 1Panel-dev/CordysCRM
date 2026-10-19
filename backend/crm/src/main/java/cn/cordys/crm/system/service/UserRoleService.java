@@ -6,7 +6,9 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.RoleUserTreeNode;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.SubListUtils;
@@ -232,6 +234,9 @@ public class UserRoleService {
 
     public void deleteRoleUser(String id, String userId, String orgId) {
         UserRole userRole = userRoleMapper.selectByPrimaryKey(id);
+        if (userRole == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         userRoleMapper.deleteByPrimaryKey(id);
         permissionCache.clearCache(userRole.getUserId(), orgId);
 

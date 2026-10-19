@@ -469,6 +469,9 @@ public class CustomFormDataService extends BaseExportService implements Approval
     @HitApproval(executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
         CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
+        if (data == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         checkWritePermission(userId, orgId, data);
         // 自调用 bypass 代理, delete 上的 @OperationLog 不会生效; 从容器取代理对象才能记上删除日志
         CommonBeanFactory.getBean(CustomFormDataService.class).delete(id, userId, orgId);
