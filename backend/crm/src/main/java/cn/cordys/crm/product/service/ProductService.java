@@ -15,6 +15,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
@@ -281,6 +282,9 @@ public class ProductService {
     @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Product product = productBaseMapper.selectByPrimaryKey(id);
+        if (product == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等删完才准
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.PRODUCT.getKey(), List.of(id), OrganizationContext.getOrganizationId());

@@ -455,6 +455,9 @@ public class CustomerContactService {
 
     private void changeEnable(String id, boolean enable, String reason) {
         CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(id);
+        if (originCustomerContact == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
 
         CustomerContact customerContact = new CustomerContact();
         customerContact.setEnable(enable);

@@ -13,6 +13,7 @@ import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CodingUtils;
@@ -334,6 +335,9 @@ public class OrganizationUserService {
      */
     public UserResponse getUserDetail(String id) {
         UserResponse userDetail = extUserMapper.getUserDetail(id);
+        if (userDetail == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         if (StringUtils.isNotBlank(userDetail.getSupervisorId())) {
             User user = userMapper.selectByPrimaryKey(userDetail.getSupervisorId());
             userDetail.setSupervisorName(Optional.ofNullable(user).map(User::getName).orElse(null));
@@ -431,6 +435,9 @@ public class OrganizationUserService {
     public void resetPassword(String userId, String operatorId, String orgId) {
         if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             User user = userMapper.selectByPrimaryKey(userId);
+            if (user == null) {
+                throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+            }
             if (StringUtils.isBlank(user.getPhone())) {
                 throw new GenericException(Translator.get("user_phone_not_exist"));
             }
@@ -869,6 +876,9 @@ public class OrganizationUserService {
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.DELETE, resourceId = "{#id}")
     public void deleteUserById(String id, String orgId) {
         UserResponse user = extUserMapper.getUserDetail(id);
+        if (user == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         if (checkUserResource(user.getUserId())) {
             approvalActionService.refreshApprovingTasksForDisabledUser(List.of(user.getUserId()), orgId);
             //删除后该员工在系统上的全部数据将会被清理
@@ -915,6 +925,9 @@ public class OrganizationUserService {
 
     public boolean deleteCheck(String id) {
         UserResponse user = extUserMapper.getUserDetail(id);
+        if (user == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         return checkUserResource(user.getUserId());
     }
 

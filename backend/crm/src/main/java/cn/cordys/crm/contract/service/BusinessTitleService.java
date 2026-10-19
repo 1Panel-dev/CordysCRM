@@ -10,6 +10,7 @@ import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
@@ -247,10 +248,10 @@ public class BusinessTitleService {
      */
     public BusinessTitleListResponse get(String id) {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
-        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
         if (businessTitle == null) {
-            throw new GenericException(Translator.get("business_title.not.exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
         BusinessTitleListResponse businessTitleListResponse = BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
         baseService.setCreateAndUpdateUserName(List.of(businessTitleListResponse));
         return businessTitleListResponse;
@@ -264,10 +265,10 @@ public class BusinessTitleService {
      */
     public BusinessTitleListResponse getSimple(String id) {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
-        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
         if (businessTitle == null) {
             return null;
         }
+        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
         return BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
     }
 

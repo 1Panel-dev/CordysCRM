@@ -15,6 +15,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -583,6 +584,9 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     public void checkUpdatePermission(String id, String userId) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
+        if (followUpRecord == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         if (Strings.CS.equals(userId, InternalUser.ADMIN.toString()) || Strings.CS.equals(followUpRecord.getOwner(), userId)) {
             return;
         }
