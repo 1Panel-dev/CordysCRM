@@ -148,19 +148,12 @@ export function normalizeFormulaNumber(n: number): number {
 }
 
 /**
- * 先消除浮点尾差，再按指定位数截断，不做四舍五入
+ * 先消除浮点尾差，再判断保留小数的话四舍五入，不保留直接输出
  */
-export function keepDecimal(value: number, digits = 2) {
+export function keepDecimal(value: number, digits?: number) {
   if (!Number.isFinite(value)) return value;
   const normalized = normalizeFormulaNumber(value);
-  // 极小数会使用科学计数法；直接截字符串会把 1.234e-7 错算为 1.23。
-  const str = normalized.toLocaleString('en-US', {
-    useGrouping: false,
-    maximumSignificantDigits: 15,
-  });
-  const dotIdx = str.indexOf('.');
-  if (dotIdx === -1) return normalized;
-  return Number(str.substring(0, dotIdx + 1 + digits));
+  return digits === undefined || digits === null ? normalized : normalized.toFixed(digits);
 }
 
 /**
@@ -174,7 +167,7 @@ export function getFormulaResultFormatOptions(fieldConfig: FormCreateField): {
 } {
   if (fieldConfig.formulaResultFormat === 'number') {
     return {
-      decimalPlaces: fieldConfig.decimalPlaces ? fieldConfig.precision ?? 0 : 0,
+      decimalPlaces: fieldConfig.decimalPlaces ? fieldConfig.precision : undefined,
     };
   }
 

@@ -91,7 +91,7 @@
         <n-checkbox
           v-model:checked="fieldConfig.decimalPlaces"
           :disabled="fieldConfig.disabledProps?.includes('decimalPlaces') || !!fieldConfig.resourceFieldId"
-          @update-checked="() => (fieldConfig.precision = 0)"
+          @update-checked="() => (fieldConfig.precision = undefined)"
         >
           {{ t('crmFormDesign.saveFloat') }}
         </n-checkbox>
@@ -872,7 +872,7 @@
             v-if="fieldConfig.formulaResultFormat === 'number'"
             v-model:checked="fieldConfig.decimalPlaces"
             :disabled="fieldConfig.disabledProps?.includes('decimalPlaces') || !!fieldConfig.resourceFieldId"
-            @update-checked="() => (fieldConfig.precision = 0)"
+            @update-checked="() => (fieldConfig.precision = undefined)"
           >
             {{ t('crmFormDesign.saveFloat') }}
           </n-checkbox>
@@ -1357,7 +1357,7 @@
           <n-checkbox
             v-model:checked="fieldConfig.decimalPlaces"
             :disabled="fieldConfig.disabledProps?.includes('decimalPlaces') || !!fieldConfig.resourceFieldId"
-            @update-checked="() => (fieldConfig.precision = 0)"
+            @update-checked="() => (fieldConfig.precision = undefined)"
           >
             {{ t('crmFormDesign.saveFloat') }}
           </n-checkbox>

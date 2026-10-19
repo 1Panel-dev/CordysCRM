@@ -687,7 +687,7 @@ export function transformFieldValue(item: FormCreateField, result: Record<string
  * 数值模式支持小数位和千分位，文本结果不强制转换为数字；
  * emptyText 用于列表、详情等展示场景的空值占位。
  */
-export function formatFormulaResultValue(result: any, fieldConfig: FormCreateField, emptyText = '') {
+export function formatFormulaResultValue(result: any, fieldConfig: FormCreateField, emptyText = '', longFloat = false) {
   if (result === undefined || result === null || result === '') {
     return emptyText;
   }
@@ -707,16 +707,21 @@ export function formatFormulaResultValue(result: any, fieldConfig: FormCreateFie
   const num = Number(typeof result === 'string' ? result.replace(/,/g, '') : result);
   if (Number.isNaN(num)) return String(result);
 
-  const precision = fieldConfig.decimalPlaces ? fieldConfig.precision ?? 0 : 0;
+  const precision = fieldConfig.decimalPlaces ? fieldConfig.precision : null;
   if (fieldConfig.showThousandsSeparator) {
-    if (precision > 0) {
+    if (precision !== null && precision !== undefined && precision > 0) {
       const [integerPart, decimalPart] = num.toFixed(precision).split('.');
       return `${integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${decimalPart}`;
     }
-    return num.toLocaleString('en-US');
+    const [integerPart, decimalPart] = num.toFixed(13).split('.'); // 长浮点数处理，避免精度丢失
+    const longFloatNum =
+      Number(decimalPart) === 0
+        ? Number(integerPart).toLocaleString('en-US')
+        : `${Number(integerPart).toLocaleString('en-US')}.${decimalPart}`;
+    return longFloat ? longFloatNum : num.toLocaleString('en-US');
   }
 
-  return precision > 0 ? num.toFixed(precision) : num.toString();
+  return precision !== null && precision !== undefined && precision > 0 ? num.toFixed(precision) : num.toString();
 }
 
 /**

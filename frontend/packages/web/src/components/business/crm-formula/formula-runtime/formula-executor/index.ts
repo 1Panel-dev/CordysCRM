@@ -94,7 +94,7 @@ export function normalizeFormulaResult(
     expectedType?: ValueType;
   }
 ): any {
-  const decimalPlaces = options?.decimalPlaces ?? 2;
+  const decimalPlaces = options?.decimalPlaces;
   const expectedType = options?.expectedType;
 
   if (result == null) {
@@ -145,7 +145,7 @@ export function executeFormFormula(ctx: FormulaExecutorContext): FormulaExecutor
     formulaDataSource,
     needInitDetail,
     evaluationNow,
-    decimalPlaces = 2,
+    decimalPlaces,
     expectedType,
     cloneIR = true,
     warn,
