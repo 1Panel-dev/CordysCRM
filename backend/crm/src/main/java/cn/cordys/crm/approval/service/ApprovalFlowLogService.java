@@ -82,7 +82,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 Map.entry("allowBatchProcess", this::handleBooleanValue),
                 Map.entry("allowWithdraw", this::handleBooleanValue),
                 Map.entry("allowAddSign", this::handleBooleanValue),
-                Map.entry("requireComment", this::handleBooleanValue),
+                Map.entry("requireApproveComment", this::handleBooleanValue),
+                Map.entry("requireRejectComment", this::handleBooleanValue),
                 Map.entry("duplicateApproverRule", this::handleDuplicateApproverRule),
                 Map.entry("description", this::handleDescription),
                 Map.entry("statusPermissions", this::handleStatusPermissions)
