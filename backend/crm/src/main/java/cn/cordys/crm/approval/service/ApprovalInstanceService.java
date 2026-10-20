@@ -340,6 +340,7 @@ public class ApprovalInstanceService {
 				autoTask.setApprovalTime(autoNodeRecordMap.get(hisNode).getCreateTime());
 				autoTask.setApprovalStatus(recordNode.getApprovalStatus());
 				autoTask.setRecordId(autoNodeRecordMap.get(hisNode).getId());
+				autoTask.setComment(autoNodeRecordMap.get(hisNode).getComment());
 				recordNode.setTaskNodes(List.of(autoTask));
 				recordNode.setCcNodes(ccNodes);
 				nodes.addLast(recordNode);
