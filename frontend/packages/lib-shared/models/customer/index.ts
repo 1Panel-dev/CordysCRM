@@ -39,6 +39,9 @@ export interface CustomerListItem {
   id: string;
   name: string;
   owner: string; // 负责人
+  ownerName: string; // 负责人名称
+  /** 协作权限类型；只读协作人不可执行记录操作 */
+  collaborationType?: CollaborationType;
   inSharedPool: boolean; // 是否在公海池
   dealStatus: string; // 最终成交状态
   createUser: string;

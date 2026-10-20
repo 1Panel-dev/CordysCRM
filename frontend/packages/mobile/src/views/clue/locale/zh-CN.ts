@@ -1,6 +1,9 @@
 export default {
   'clue.department': '部门',
   'clue.info': '线索信息',
+  'clue.convertedClues': '已转换线索',
+  'clue.transitionRecord': '转换记录',
+  'clue.transitionCustomerName': '客户名称',
   'clue.convertedToCustomer': '已转客户',
   'clue.batchDeleteContentTip': '删除后，成员无法查到该线索，请谨慎操作！',
   'clue.deleteTitle': '确认删除线索吗？',

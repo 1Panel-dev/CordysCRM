@@ -1,6 +1,9 @@
 export default {
   'clue.department': 'Department',
   'clue.info': 'Lead information',
+  'clue.convertedClues': 'Converted leads',
+  'clue.transitionRecord': 'conversion record',
+  'clue.transitionCustomerName': 'Account name',
   'clue.convertedToCustomer': 'Converted to customer',
   'clue.batchDeleteContentTip': 'After deletion, members cannot access this lead. Please proceed with caution!',
   'clue.deleteTitle': 'Confirm to delete this lead?',

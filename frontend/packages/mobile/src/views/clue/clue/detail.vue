@@ -31,6 +31,7 @@
           :initial-source-name="sourceName"
         />
         <CrmHeaderList v-else-if="tab.name === 'header'" :load-list-api="getClueHeaderList" :source-id="sourceId" />
+        <transitionRecord v-else-if="tab.name === 'transitionRecord'" :source-id="sourceId" />
         <div v-else-if="tab.name === 'approval'" class="flex h-full bg-[var(--text-n9)] p-[16px]">
           <CrmApprovalLine
             :nodes="approvalInfo?.nodes || []"
@@ -102,6 +103,7 @@
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
+  import transitionRecord from './transitionRecord.vue';
 
   import { deleteClue, getApprovalResourceDetail, getClueHeaderList } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
@@ -136,6 +138,10 @@
       name: 'header',
       title: t('customer.headerRecord'),
     },
+    {
+      name: 'transitionRecord',
+      title: t('clue.transitionRecord'),
+    },
     ...(approvalInfo.value
       ? [
           {
@@ -157,7 +163,7 @@
     formKey: FormDesignKeyEnum.CLUE,
   });
   const refreshDetail = async () => {
-    initFormDescription();
+    await initFormDescription();
     await initApprovalDetail();
   };
   const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, enableApproval } =
@@ -169,8 +175,7 @@
   onBeforeMount(async () => {
     initApprovalPermission();
     await initFormConfig();
-    initFormDescription();
-    initApprovalDetail();
+    await refreshDetail();
   });
 
   const actions = ref<CrmActionButtonsItem[]>([
@@ -336,7 +341,13 @@
   const currentApprovalNodeIndex = ref(0);
 
   async function initApprovalDetail() {
-    if (!sourceId.value) {
+    if (
+      !sourceId.value ||
+      !detail.value.approvalStatus ||
+      [ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(detail.value.approvalStatus)
+    ) {
+      approvalInfo.value = undefined;
+      currentApprovalNode.value = undefined;
       return;
     }
 
@@ -359,8 +370,7 @@
     } else if (activeTab.value === 'plan') {
       planListRef.value?.[0].loadList();
     } else if (activeTab.value === 'info') {
-      initFormDescription();
-      initApprovalDetail();
+      refreshDetail();
     }
   });
 </script>
