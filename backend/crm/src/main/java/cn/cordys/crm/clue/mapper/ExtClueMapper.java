@@ -127,6 +127,21 @@ public interface ExtClueMapper extends StatisticSqlMapper {
      */
     void updateClue(@Param("clue") Clue clue);
 
+    /**
+     * 仅在线索尚未转化时写入转化关系, 用于兜底并发重复转化
+     *
+     * @param id             线索ID
+     * @param orgId          组织ID
+     * @param transitionType 转化类型
+     * @param transitionId   转化后的资源ID
+     * @param updateUser     更新人
+     * @param updateTime     更新时间
+     * @return 更新行数, 0 表示线索已被其他请求转化
+     */
+    int updateTransitionIfAbsent(@Param("id") String id, @Param("orgId") String orgId,
+                                 @Param("transitionType") String transitionType, @Param("transitionId") String transitionId,
+                                 @Param("updateUser") String updateUser, @Param("updateTime") Long updateTime);
+
     int freeze(@Param("id") String id, @Param("orgId") String orgId, @Param("reason") String reason,
                @Param("unfreezeTime") Long unfreezeTime);
 

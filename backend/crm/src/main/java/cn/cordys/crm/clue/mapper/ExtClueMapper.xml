@@ -839,6 +839,18 @@
         </where>
     </update>
 
+    <update id="updateTransitionIfAbsent">
+        update clue
+        set transition_type = #{transitionType},
+            transition_id = #{transitionId},
+            update_user = #{updateUser},
+            update_time = #{updateTime}
+        where id = #{id}
+          and organization_id = #{orgId}
+          and (transition_type is null or transition_type = '')
+          and (transition_id is null or transition_id = '')
+    </update>
+
     <update id="freeze">
         update clue
         set frozen = true, freeze_reason = #{reason}, unfreeze_time = #{unfreezeTime}

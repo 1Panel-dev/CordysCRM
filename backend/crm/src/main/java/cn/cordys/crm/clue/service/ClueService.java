@@ -698,13 +698,12 @@ public class ClueService implements ApprovalResourceHandler {
         }
         resourcePermissionService.checkResourcePermissionWithoutApprovalTask(PermissionConstants.CLUE_MANAGEMENT_UPDATE,
                 request.getClueId(), FormKey.CLUE.getKey(), userId, orgId);
+        // 已转化的线索再次转化会重复创建客户, 并覆盖线索上原有的转化关系, 先于创建客户拦截
+        checkNotTransitioned(clue);
 
         Customer customer = customerService.add(request, userId, orgId);
-        clue.setTransitionId(customer.getId());
-        clue.setTransitionType(FormKey.CUSTOMER.name());
-        clue.setUpdateTime(System.currentTimeMillis());
-        clue.setUpdateUser(userId);
-        clueMapper.update(clue);
+        // 条件更新兜底并发重复提交: 未抢到转化关系时说明已有请求完成转化, 抛异常回滚本次新建的客户
+        markTransitioned(clue.getId(), customer.getId(), userId, orgId);
 
         // 同步添加联系人
         LambdaQueryWrapper<CustomerContact> wrapper = new LambdaQueryWrapper<>();
@@ -730,6 +729,26 @@ public class ClueService implements ApprovalResourceHandler {
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
                 NotificationConstants.Event.CLUE_CONVERT_CUSTOMER, clue.getName(), userId,
                 orgId, List.of(clue.getOwner()), true);
+    }
+
+    /**
+     * 校验线索尚未转化, 避免重复转化产生重复客户并覆盖原有转化关系
+     */
+    private void checkNotTransitioned(Clue clue) {
+        if (StringUtils.isNotBlank(clue.getTransitionType()) || StringUtils.isNotBlank(clue.getTransitionId())) {
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("clue_already_transitioned"));
+        }
+    }
+
+    /**
+     * 记录线索的转化关系; 仅在线索尚未转化时写入, 并发场景下只有一个请求能成功
+     */
+    private void markTransitioned(String clueId, String transitionId, String userId, String orgId) {
+        int updated = extClueMapper.updateTransitionIfAbsent(clueId, orgId, FormKey.CUSTOMER.name(),
+                transitionId, userId, System.currentTimeMillis());
+        if (updated == 0) {
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("clue_already_transitioned"));
+        }
     }
 
 
@@ -1191,6 +1210,8 @@ public class ClueService implements ApprovalResourceHandler {
         if (CollectionUtils.isEmpty(owners)) {
             throw new GenericException(Translator.get("clue_owner_not_exist"));
         }
+        // 已转化的线索再次转换会重复创建客户, 并覆盖线索上原有的转化关系
+        checkNotTransitioned(clue);
 
         LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Customer::getName, clue.getName());
@@ -1208,9 +1229,7 @@ public class ClueService implements ApprovalResourceHandler {
         refreshCsFollowTime(clue, transformCustomer);
 
         TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transformCustomer, currentUser, orgId);
-        clue.setTransitionId(transformCustomer.getId());
-        clue.setTransitionType("CUSTOMER");
-        clueMapper.update(clue);
+        markTransitioned(clue.getId(), transformCustomer.getId(), currentUser, orgId);
 
         // 客户转换通知
         Map<String, Object> paramMap = new HashMap<>(4);
