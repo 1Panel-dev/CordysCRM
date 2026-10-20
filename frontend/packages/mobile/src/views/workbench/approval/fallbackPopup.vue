@@ -29,7 +29,7 @@
             required
             :rules="[
               {
-                required: approvalConfig?.requireComment,
+                required: true,
                 message: t('common.notNull', {
                   value: t('workbench.fallbackTo'),
                 }),

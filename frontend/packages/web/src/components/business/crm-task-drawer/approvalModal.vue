@@ -1,9 +1,11 @@
 <template>
-  <CrmModal
+  <ApprovalOpinionModal
     v-model:show="show"
-    :positive-text="props.approvalType === 'approve' ? t('taskDrawer.confirmApprove') : t('taskDrawer.confirmReject')"
-    :negative-text="t('common.cancel')"
-    :ok-loading="loading"
+    v-model:opinion="approvalForm.reason"
+    v-model:file-list="fileList"
+    :approval-type="props.approvalType"
+    :loading="loading"
+    :required="isCommentRequired"
     @confirm="handleApprovalSave"
     @cancel="handleApprovalCancel"
   >
@@ -28,35 +30,16 @@
         </n-tooltip>
       </div>
     </template>
-    <n-form ref="approvalFormRef" :model="approvalForm" :inline="false">
-      <n-form-item
-        :label="props.approvalType === 'approve' ? t('taskDrawer.approveReason') : t('taskDrawer.rejectReason')"
-        path="reason"
-        :rule="[
-          {
-            required: approvalConfig?.requireComment,
-            message: t('common.notNull', {
-              value: props.approvalType === 'approve' ? t('taskDrawer.approveReason') : t('taskDrawer.rejectReason'),
-            }),
-            trigger: 'blur',
-          },
-        ]"
-      >
-        <CrmFileInput v-model:value="approvalForm.reason" v-model:file-list="fileList" />
-      </n-form-item>
-    </n-form>
-  </CrmModal>
+  </ApprovalOpinionModal>
 </template>
 
 <script setup lang="ts">
-  import { type FormInst, NForm, NFormItem, NTooltip, useMessage } from 'naive-ui';
+  import { NTooltip, type UploadFileInfo, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
 
-  import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import type { CrmFileItem } from '@/components/pure/crm-upload/types';
-  import CrmFileInput from '@/components/business/crm-file-input/index.vue';
+  import ApprovalOpinionModal from '@/components/business/crm-approval/components/approvalOpinionModal.vue';
 
   import {
     agreeApproval,
@@ -89,8 +72,7 @@
   const approvalForm = ref({
     reason: '',
   });
-  const approvalFormRef = ref<FormInst>();
-  const fileList = ref<CrmFileItem[]>([]);
+  const fileList = ref<UploadFileInfo[]>([]);
 
   function reset() {
     approvalForm.value = {
@@ -172,18 +154,19 @@
   }
 
   function handleApprovalSave() {
-    approvalFormRef.value?.validate(async (errors) => {
-      if (!errors) {
-        if (props.approvalItemKeys?.length) {
-          batchApproval();
-        } else {
-          approval();
-        }
-      }
-    });
+    if (props.approvalItemKeys?.length) {
+      batchApproval();
+    } else {
+      approval();
+    }
   }
 
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
+  const isCommentRequired = computed(() =>
+    props.approvalType === 'reject'
+      ? approvalConfig.value?.requireRejectComment
+      : approvalConfig.value?.requireApproveComment
+  );
   async function initApprovalConfig() {
     try {
       approvalConfig.value = await getApprovalConfigDetail(props.resourceType);

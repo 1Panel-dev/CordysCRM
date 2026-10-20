@@ -35,7 +35,13 @@
       clearable
       @blur="validate()"
     />
-    <div class="flex justify-end text-[var(--text-n4)]">{{ value.length }}/300</div>
+    <div
+      class="flex items-center text-[var(--text-n4)]"
+      :class="hasFooter ? 'justify-between gap-[8px]' : 'justify-end'"
+    >
+      <slot name="footer"></slot>
+      <div class="shrink-0">{{ value.length }}/300</div>
+    </div>
     <span v-if="valueStatus === 'error'" class="text-[var(--error-red)]">
       {{ t('common.notNull', { value: props.name }) }}
     </span>
@@ -97,6 +103,8 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const slots = useSlots();
+  const hasFooter = computed(() => Boolean(slots.footer));
 
   const value = defineModel<string>('value', {
     required: true,

@@ -48,7 +48,8 @@ export interface ApprovalProcessItem extends BaseItem {
   allowWithdraw: boolean;
   allowAddSign: boolean;
   duplicateApproverRule: string;
-  requireComment: boolean;
+  requireApproveComment: boolean;
+  requireRejectComment: boolean;
   organizationId: string;
   createUserName: string;
   createUser: string;
@@ -175,7 +176,8 @@ export interface MoreSettingsParams {
   allowWithdraw: boolean;
   allowAddSign: boolean;
   duplicateApproverRule: string;
-  requireComment: boolean;
+  requireApproveComment: boolean;
+  requireRejectComment: boolean;
   permissions: BaseItem[];
   statusPermissions: StatusPermissions[];
 }

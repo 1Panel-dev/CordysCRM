@@ -76,12 +76,17 @@
       <n-form-item
         require-mark-placement="left"
         label-placement="left"
-        path="requireComment"
+        path="requireApproveComment"
         :label="t('process.process.approvalOpinion')"
       >
-        <n-checkbox v-model:checked="form.requireComment" :disabled="readonly">
-          {{ t('process.process.approvalRejectOpinion') }}
-        </n-checkbox>
+        <div class="flex flex-col gap-[8px]">
+          <n-checkbox v-model:checked="form.requireApproveComment" :disabled="readonly">
+            {{ t('process.process.approvalApproveOpinion') }}
+          </n-checkbox>
+          <n-checkbox v-model:checked="form.requireRejectComment" :disabled="readonly">
+            {{ t('process.process.approvalRejectOpinion') }}
+          </n-checkbox>
+        </div>
       </n-form-item>
       <n-form-item
         require-mark-placement="left"
