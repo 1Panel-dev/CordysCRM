@@ -2,6 +2,8 @@ package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.constants.RoleDataScope;
+import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.constants.CustomerRelationType;
 import cn.cordys.crm.customer.domain.Customer;
@@ -12,12 +14,15 @@ import cn.cordys.crm.customer.dto.request.CustomerRelationUpdateRequest;
 import cn.cordys.crm.customer.dto.response.CustomerRelationListResponse;
 import cn.cordys.crm.customer.service.CustomerRelationService;
 import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.system.domain.Role;
+import cn.cordys.crm.system.domain.RolePermission;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
@@ -46,6 +51,12 @@ class CustomerRelationControllerTests extends BaseTest {
     @Resource
     private BaseMapper<CustomerRelation> customerRelationBaseMapper;
 
+    @Resource
+    private BaseMapper<Role> roleMapper;
+
+    @Resource
+    private BaseMapper<RolePermission> rolePermissionMapper;
+
     @Override
     protected String getBasePath() {
         return BASE_PATH;
@@ -69,9 +80,6 @@ class CustomerRelationControllerTests extends BaseTest {
     @Test
     @Order(1)
     void testSave() throws Exception {
-        // 校验权限 放前面，否则会删掉创建的关系
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, SAVE, List.of(), "111");
-
         CustomerAddRequest customerAddRequest = new CustomerAddRequest();
         customerAddRequest.setName(UUID.randomUUID().toString());
         customerAddRequest.setOwner(InternalUser.ADMIN.getValue());
@@ -79,6 +87,9 @@ class CustomerRelationControllerTests extends BaseTest {
 
         customerAddRequest.setName(UUID.randomUUID().toString());
         anotherAddCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
+
+        // 校验权限 放前面，否则会删掉创建的关系（客户需已存在，否则数据权限校验会直接拒绝）
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, SAVE, List.of(), addCustomer.getId());
 
         List<CustomerRelationSaveRequest> requests = List.of(new CustomerRelationSaveRequest());
         requestPostWithOk(SAVE, requests, addCustomer.getId());
@@ -88,6 +99,54 @@ class CustomerRelationControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, SAVE, requests, addCustomer.getId());
+    }
+
+    @Test
+    @Order(2)
+    void testSaveRejectsSelfScopeOtherOwner() throws Exception {
+        CustomerAddRequest customerAddRequest = new CustomerAddRequest();
+        customerAddRequest.setName(UUID.randomUUID().toString());
+        customerAddRequest.setOwner(InternalUser.ADMIN.getValue());
+        Customer otherOwnerCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
+
+        customerRelationService.save(otherOwnerCustomer.getId(),
+                List.of(new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name())));
+        CustomerRelation example = new CustomerRelation();
+        example.setSourceCustomerId(otherOwnerCustomer.getId());
+        CustomerRelation existingRelation = customerRelationBaseMapper.selectOne(example);
+        Assertions.assertNotNull(existingRelation);
+
+        Role role = roleMapper.selectByPrimaryKey(PERMISSION_USER_NAME);
+        String originDataScope = role.getDataScope();
+        role.setDataScope(RoleDataScope.SELF.name());
+        roleMapper.update(role);
+
+        RolePermission rolePermission = new RolePermission();
+        rolePermission.setId(IDGenerator.nextStr());
+        rolePermission.setRoleId(PERMISSION_USER_NAME);
+        rolePermission.setPermissionId(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
+        rolePermissionMapper.insert(rolePermission);
+        permissionCache.clearCache(PERMISSION_USER_NAME, DEFAULT_ORGANIZATION_ID);
+
+        try {
+            // 仅本人数据权限不能整体覆盖其他负责人的客户关系
+            int saveStatus = mockMvc.perform(getPermissionPostRequestBuilder(SAVE, List.of(), otherOwnerCustomer.getId()))
+                    .andReturn().getResponse().getStatus();
+            Assertions.assertEquals(HttpStatus.FORBIDDEN.value(), saveStatus);
+
+            // 仅本人数据权限不能向其他负责人的客户添加关系
+            CustomerRelationSaveRequest addRequest = new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name());
+            int addStatus = mockMvc.perform(getPermissionPostRequestBuilder(ADD, addRequest, otherOwnerCustomer.getId()))
+                    .andReturn().getResponse().getStatus();
+            Assertions.assertEquals(HttpStatus.FORBIDDEN.value(), addStatus);
+
+            Assertions.assertNotNull(customerRelationBaseMapper.selectByPrimaryKey(existingRelation.getId()));
+        } finally {
+            rolePermissionMapper.deleteByPrimaryKey(rolePermission.getId());
+            role.setDataScope(originDataScope);
+            roleMapper.update(role);
+            permissionCache.clearCache(PERMISSION_USER_NAME, DEFAULT_ORGANIZATION_ID);
+        }
     }
 
     @Test
