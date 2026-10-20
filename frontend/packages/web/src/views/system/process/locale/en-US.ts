@@ -20,7 +20,8 @@ export default {
   'process.process.autoApproval.continuousNode': 'Auto-approve only when consecutive',
   'process.process.autoApproval.allNode': 'Each node requires approval',
   'process.process.approvalOpinion': 'Approval comments',
-  'process.process.approvalRejectOpinion': 'Approver must provide comments when approving or rejecting',
+  'process.process.approvalApproveOpinion': 'Approver must provide comments when approving',
+  'process.process.approvalRejectOpinion': 'Approver must provide comments when rejecting',
   'process.process.approvalAuthority': 'Approval status permissions',
   'process.process.approvalAuthority.batchAction': 'Allow approver to batch process',
   'process.process.approvalAuthority.batchActionTip':

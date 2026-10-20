@@ -29,10 +29,10 @@
             rows="2"
             type="textarea"
             maxlength="300"
-            :required="approvalConfig?.requireComment"
+            :required="isCommentRequired"
             :rules="[
               {
-                required: approvalConfig?.requireComment,
+                required: isCommentRequired,
                 message: t('common.notNull', {
                   value: isRejecting ? t('workbench.rejectReason') : t('workbench.approvedReason'),
                 }),
@@ -74,7 +74,7 @@
         :type="isRejecting ? 'danger' : 'primary'"
         class="flex-1"
         :loading="loading"
-        :disabled="approvalConfig?.requireComment && !approvalForm.reason"
+        :disabled="isCommentRequired && !approvalForm.reason"
         @click="handleApprovalSave"
       >
         {{ isRejecting ? t('workbench.operation.confirmRejected') : t('workbench.operation.confirmApproved') }}
@@ -214,6 +214,9 @@
   }
 
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
+  const isCommentRequired = computed(() =>
+    props.isRejecting ? approvalConfig.value?.requireRejectComment : approvalConfig.value?.requireApproveComment
+  );
   async function initApprovalConfig() {
     try {
       approvalConfig.value = await getApprovalConfigDetail(props.resourceType);

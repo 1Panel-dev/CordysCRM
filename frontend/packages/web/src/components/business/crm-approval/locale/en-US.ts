@@ -1,6 +1,12 @@
 export default {
   'crm.approval.record': 'Approval Record',
   'crm.approval.opinion': 'Approval Opinion',
+  'crm.approval.suggestion': 'Approval Suggestion',
+  'crm.approval.approve': 'Approved',
+  'crm.approval.quickOpinion.approve1': 'Approved, meets the requirements',
+  'crm.approval.quickOpinion.approve2': 'Verified and approved',
+  'crm.approval.quickOpinion.reject1': 'Information is incomplete. Please supplement it.',
+  'crm.approval.quickOpinion.reject2': 'Please provide the relevant attachments.',
   'crm.approval.rejectConfirm': 'Confirm Rejection?',
   'crm.approval.rejectTip': 'After rejection, the approval process will be terminated. Please proceed with caution!',
   'crm.approval.confirmReject': 'Confirm Rejection',

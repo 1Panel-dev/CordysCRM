@@ -1,6 +1,12 @@
 export default {
   'crm.approval.record': '审批记录',
   'crm.approval.opinion': '审批意见',
+  'crm.approval.suggestion': '审批建议',
+  'crm.approval.approve': '通过',
+  'crm.approval.quickOpinion.approve1': '同意，符合要求',
+  'crm.approval.quickOpinion.approve2': '已核对，同意',
+  'crm.approval.quickOpinion.reject1': '信息不完整，请补充',
+  'crm.approval.quickOpinion.reject2': '请补充相关附件',
   'crm.approval.rejectConfirm': '确认驳回吗？',
   'crm.approval.rejectTip': '驳回后，审批流将终止，请谨慎操作！',
   'crm.approval.confirmReject': '确认驳回',

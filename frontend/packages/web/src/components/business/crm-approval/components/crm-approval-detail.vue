@@ -3,11 +3,10 @@
     <CrmSplitPanel
       v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
       :size="0.7"
-      :max="1"
-      :min="0.7"
+      :max="0.8"
+      :min="0.4"
       :default-size="0.7"
       collapse-side="right"
-      disabled
     >
       <template #1>
         <div class="flex h-full w-full p-[24px_8px_24px_24px]">
@@ -49,44 +48,33 @@
             "
             class="sticky bottom-0 flex max-h-full flex-col border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[16px]"
           >
-            <template v-if="isApprover">
-              <div class="flex items-center gap-[4px]">
-                <div class="mb-[8px] font-semibold">{{ t('crm.approval.opinion') }}</div>
-                <span v-if="approvalConfig?.requireComment" class="text-[var(--error-red)]">*</span>
-              </div>
-              <CrmFileInput
-                ref="CrmFileInputRef"
-                v-model:value="approvalOpinion"
-                v-model:file-list="fileList"
-                :required="approvalConfig?.requireComment"
-                :name="t('crm.approval.opinion')"
-                class="min-h-0 flex-1"
-              />
-              <div class="mt-[12px] flex shrink-0 gap-[12px]">
-                <n-button type="primary" class="flex-1" :loading="approvalLoading" @click="handleApprove">
+            <div v-if="isApprover" class="flex shrink-0 justify-between gap-[12px]">
+              <div v-if="isApprover">
+                <n-button type="primary" :loading="approvalLoading" @click="openApprovalOpinion('approve')">
                   {{ t('common.approve') }}
                 </n-button>
-                <n-button type="error" ghost @click="handleReject">{{ t('common.reject') }}</n-button>
-                <CrmMoreAction :options="moreActions" trigger="click" size="medium" @select="handleMoreActionSelect" />
+                <n-button type="error" class="ml-[8px]" ghost @click="openApprovalOpinion('reject')">{{
+                  t('common.reject')
+                }}</n-button>
               </div>
-            </template>
-            <n-button
-              v-if="canCancelApply"
-              type="primary"
-              class="mt-[16px]"
-              ghost
-              block
-              @click="cancelApproval('apply')"
-            >
+              <CrmMoreAction
+                v-if="moreActions.length"
+                :class="!isApprover ? 'ml-auto' : ''"
+                :options="moreActions"
+                trigger="click"
+                size="medium"
+                @select="handleMoreActionSelect"
+              />
+            </div>
+            <n-button v-if="!isApprover && canCancelApply" type="primary" ghost block @click="cancelApproval('apply')">
               <template #icon>
                 <CrmIcon type="iconicon_rollfront" :size="16" />
               </template>
               {{ t('common.revoke') }}
             </n-button>
             <n-button
-              v-if="canCancelApproval"
+              v-if="!isApprover && canCancelApproval"
               type="primary"
-              class="mt-[16px]"
               ghost
               block
               @click="() => cancelApproval()"
@@ -106,6 +94,16 @@
       </n-scrollbar>
     </div>
   </CrmCard>
+  <ApprovalOpinionModal
+    v-model:show="approvalOpinionModalVisible"
+    v-model:opinion="approvalOpinion"
+    v-model:file-list="fileList"
+    :title="t('crm.approval.suggestion')"
+    :approval-type="approvalAction"
+    :loading="approvalLoading"
+    :required="isCommentRequired"
+    @confirm="submitApprovalOpinion"
+  />
   <CrmModal
     v-model:show="addSignModalVisible"
     :title="t('common.COUNTERSIGNATURE')"
@@ -232,6 +230,7 @@
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import CrmFileInput from '@/components/business/crm-file-input/index.vue';
   import CrmMemberSelect from '@/components/business/crm-user-tag-selector/index.vue';
+  import ApprovalOpinionModal from './approvalOpinionModal.vue';
   import CrmApprovalLine from './crm-approval-line.vue';
 
   import {
@@ -296,7 +295,13 @@
 
   const approvalOpinion = ref('');
   const fileList = ref<UploadFileInfo[]>([]);
-  const CrmFileInputRef = ref<InstanceType<typeof CrmFileInput>>();
+  const approvalOpinionModalVisible = ref(false);
+  const approvalAction = ref<'approve' | 'reject'>('approve');
+  const isCommentRequired = computed(() =>
+    approvalAction.value === 'approve'
+      ? approvalConfig.value?.requireApproveComment
+      : approvalConfig.value?.requireRejectComment
+  );
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
   const hasApprovalStatus = [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE];
@@ -462,7 +467,7 @@
 
   const approvalLoading = ref(false);
   async function approvalAgree() {
-    if (!CrmFileInputRef.value?.validate() || !currentTaskNode.value || !currentApprovalNode.value) {
+    if (!currentTaskNode.value || !currentApprovalNode.value) {
       return;
     }
     try {
@@ -476,6 +481,7 @@
         comment: approvalOpinion.value,
       });
       message.success(t('common.approved'));
+      approvalOpinionModalVisible.value = false;
       if (approvalInfo.value?.executeTime === ApprovalTaskExecuteTimeEnum.DELETE) {
         emit('deleteApproved');
         return;
@@ -491,8 +497,16 @@
       approvalLoading.value = false;
     }
   }
+
+  function openApprovalOpinion(action: 'approve' | 'reject') {
+    approvalAction.value = action;
+    approvalOpinion.value = '';
+    fileList.value = [];
+    approvalOpinionModalVisible.value = true;
+  }
+
   async function handleApprove() {
-    if (!CrmFileInputRef.value?.validate() || !currentTaskNode.value || !currentApprovalNode.value) {
+    if (!currentTaskNode.value || !currentApprovalNode.value) {
       return;
     }
     emit(
@@ -503,49 +517,48 @@
   }
 
   function handleReject() {
-    if (!CrmFileInputRef.value?.validate()) {
+    if (!currentApprovalNode.value || !currentTaskNode.value) {
       return;
     }
-    // 审批驳回
-    openModal({
-      title: t('crm.approval.rejectConfirm'),
-      content: t('crm.approval.rejectTip'),
-      type: 'error',
-      positiveText: t('crm.approval.confirmReject'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
+    emit(
+      'saveApproval',
+      async () => {
         if (!currentApprovalNode.value || !currentTaskNode.value) {
           return;
         }
-        emit(
-          'saveApproval',
-          async () => {
-            if (!currentApprovalNode.value || !currentTaskNode.value) {
-              return;
-            }
-            try {
-              await rejectApproval({
-                id: currentTaskNode.value.taskId,
-                nodeId: currentApprovalNode.value.nodeId,
-                instanceId: approvalConfig.value?.id || '',
-                attachmentIds: fileList.value.map((e) => e.id),
-                approverId: currentTaskNode.value.approverId,
-                comment: approvalOpinion.value,
-              });
-              message.success(t('common.rejected'));
-              initApprovalDetail();
-              approvalOpinion.value = '';
-              fileList.value = [];
-              emit('refresh');
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.log(error);
-            }
-          },
-          filedPermission.value.some((e) => e.permissionType === 'EDIT')
-        );
+        try {
+          approvalLoading.value = true;
+          await rejectApproval({
+            id: currentTaskNode.value.taskId,
+            nodeId: currentApprovalNode.value.nodeId,
+            instanceId: approvalConfig.value?.id || '',
+            attachmentIds: fileList.value.map((e) => e.id),
+            approverId: currentTaskNode.value.approverId,
+            comment: approvalOpinion.value,
+          });
+          message.success(t('common.rejected'));
+          approvalOpinionModalVisible.value = false;
+          initApprovalDetail();
+          approvalOpinion.value = '';
+          fileList.value = [];
+          emit('refresh');
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        } finally {
+          approvalLoading.value = false;
+        }
       },
-    });
+      filedPermission.value.some((e) => e.permissionType === 'EDIT')
+    );
+  }
+
+  function submitApprovalOpinion() {
+    if (approvalAction.value === 'approve') {
+      handleApprove();
+      return;
+    }
+    handleReject();
   }
 
   const addSignModalVisible = ref(false);
@@ -686,30 +699,32 @@
 
   const moreActions = computed(() => {
     const fullActions: ActionsItem[] = [];
-    if (approvalConfig.value?.allowAddSign) {
+    if (isApprover.value && approvalConfig.value?.allowAddSign) {
       fullActions.push({
         key: 'addSign',
         label: t('common.COUNTERSIGNATURE'),
       });
     }
-    if (fallbackOptions.value.length) {
+    if (isApprover.value && fallbackOptions.value.length) {
       fullActions.push({
         key: 'fallback',
         label: t('taskDrawer.operation.BACK'),
       });
     }
+    if (canCancelApply.value) {
+      fullActions.push({
+        key: 'cancelApply',
+        label: t('common.revoke'),
+      });
+    }
+    if (canCancelApproval.value) {
+      fullActions.push({
+        key: 'cancelApproval',
+        label: t('crm.approval.cancelApproval'),
+      });
+    }
     return fullActions;
   });
-
-  function handleMoreActionSelect(item: ActionsItem) {
-    if (item.key === 'addSign') {
-      // 添加会签
-      addSignModalVisible.value = true;
-    } else if (item.key === 'fallback') {
-      // 退回
-      fallbackModalVisible.value = true;
-    }
-  }
 
   function cancelApproval(type?: 'apply' | 'approval') {
     if (type === 'apply') {
@@ -757,6 +772,20 @@
           );
         },
       });
+    }
+  }
+
+  function handleMoreActionSelect(item: ActionsItem) {
+    if (item.key === 'addSign') {
+      // 添加会签
+      addSignModalVisible.value = true;
+    } else if (item.key === 'fallback') {
+      // 退回
+      fallbackModalVisible.value = true;
+    } else if (item.key === 'cancelApply') {
+      cancelApproval('apply');
+    } else if (item.key === 'cancelApproval') {
+      cancelApproval();
     }
   }
 
