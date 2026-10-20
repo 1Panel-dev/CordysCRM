@@ -746,4 +746,22 @@
             <property name="mainTableAlias" value="ct"/>
         </include>
     </select>
+
+    <update id="batchMerge" parameterType="cn.cordys.crm.customer.dto.request.CustomerMergeRequest">
+        update contract set customer_id = #{request.toMergeId}, update_user = #{userId}, update_time = unix_timestamp() * 1000
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </update>
+
+    <select id="getMergeContractList" resultType="cn.cordys.crm.contract.domain.Contract">
+        select id, name, customer_id from contract
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </select>
 </mapper>

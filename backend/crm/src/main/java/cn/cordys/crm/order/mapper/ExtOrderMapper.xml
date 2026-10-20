@@ -655,4 +655,22 @@
             <property name="mainTableAlias" value="so"/>
         </include>
     </select>
+
+    <update id="batchMerge" parameterType="cn.cordys.crm.customer.dto.request.CustomerMergeRequest">
+        update sales_order set customer_id = #{request.toMergeId}, update_user = #{userId}, update_time = unix_timestamp() * 1000
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </update>
+
+    <select id="getMergeOrderList" resultType="cn.cordys.crm.order.domain.Order">
+        select id, name, customer_id from sales_order
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </select>
 </mapper>
