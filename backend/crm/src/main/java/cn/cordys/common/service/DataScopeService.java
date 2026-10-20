@@ -42,7 +42,7 @@ public class DataScopeService {
     private PermissionCache permissionCache;
 
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String viewId, String permission) {
-        if (InternalUserView.isVisible(viewId)) {
+        if (InternalUserView.isVisible(viewId, permission)) {
             // 查看设置为可见的数据
             DeptDataPermissionDTO dto = new DeptDataPermissionDTO();
             dto.setViewId(viewId);
