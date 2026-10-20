@@ -134,6 +134,8 @@ export default {
   'process.process.flow.permission.hidden': 'Hidden',
   'process.process.flow.permission.view': 'View',
   'process.process.flow.permission.edit': 'Edit',
+  'process.process.flow.permission.editDependencyTip':
+    'When a selected field has linked dependencies, related fields will automatically become editable to keep the linkage working.',
   'process.process.flow.passAction': 'After pass',
   'process.process.flow.rejectAction': 'After reject',
   'process.process.flow.fieldUpdate': 'Field update',

@@ -101,25 +101,29 @@
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
     @show-customer-drawer="handleOpenCustomerDetail"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
   />
   <QuotationDetailDrawer
     v-model:visible="quotationDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
   />
   <OrderDetailDrawer
     v-model:visible="orderDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
   />
   <InvoiceDetailDrawer
     v-model:visible="invoiceDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
     @open-contract-drawer="handleOpenContractDetail"
     @open-customer-drawer="handleOpenCustomerDetail"
   />
@@ -127,9 +131,10 @@
     v-model:show="customerDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
-    @saved="handleApproveSuccess"
+    @saved="handleDetailRefresh"
     @deleted="handleApproveSuccess"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
   />
   <OpenSeaOverviewDrawer
     v-model:show="openSeaDetailVisible"
@@ -137,16 +142,18 @@
     :pool-id="activePoolId"
     :hidden-columns="openSeaHiddenColumns"
     :approvalTaskId="approvalTaskId"
-    @change="handleApproveSuccess"
+    @change="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
     @delete="handleApproveSuccess"
   />
   <ClueOverviewDrawer
     v-model:show="clueDetailVisible"
     :detail="activeResourceDetail"
     :approvalTaskId="approvalTaskId"
-    @saved="handleApproveSuccess"
+    @saved="handleDetailRefresh"
     @remove="handleApproveSuccess"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
     @open-customer-drawer="handleOpenCustomerDetail"
   />
   <CluePoolOverviewDrawer
@@ -156,14 +163,16 @@
     :hidden-columns="cluePoolHiddenColumns"
     :approvalTaskId="approvalTaskId"
     @remove="handleApproveSuccess"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
   />
   <OptOverviewDrawer
     v-model:show="opportunityDetailVisible"
     :detail="activeResourceDetail"
     :approvalTaskId="approvalTaskId"
     @remove="handleApproveSuccess"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
     @open-customer-drawer="handleOpenCustomerDetail"
   />
   <CustomFormDetailDrawer
@@ -172,7 +181,8 @@
     :customFormId="resourceType"
     :approvalTaskId="approvalTaskId"
     @edit="handleCustomFormEdit"
-    @refresh="handleApproveSuccess"
+    @refresh="handleDetailRefresh"
+    @approval-success="handleDetailApprovalSuccess"
   />
   <CrmFormCreateDrawer
     v-model:visible="customFormEditVisible"
@@ -180,7 +190,7 @@
     :source-id="activeResourceId"
     :need-init-detail="true"
     :custom-form-id="resourceType"
-    @saved="handleApproveSuccess"
+    @saved="handleDetailRefresh"
     @review="handleCustomFormReview"
   />
 </template>
@@ -580,10 +590,20 @@
     customFormDetailVisible.value = false;
   }
 
-  function handleApproveSuccess() {
-    closeDetailDrawers();
+  function handleDetailRefresh() {
     initStatistic();
     taskListRef.value?.loadTaskList(true);
+  }
+
+  function handleApproveSuccess() {
+    closeDetailDrawers();
+    handleDetailRefresh();
+    allSelect.value = false;
+    selectedKeys.value = [];
+  }
+
+  function handleDetailApprovalSuccess() {
+    closeDetailDrawers();
     allSelect.value = false;
     selectedKeys.value = [];
   }

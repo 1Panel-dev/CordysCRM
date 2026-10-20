@@ -146,6 +146,7 @@
   const emit = defineEmits<{
     (e: 'remove'): void;
     (e: 'refresh'): void;
+    (e: 'approvalSuccess'): void;
     (e: 'freeze'): void;
     (e: 'unfreeze'): void;
   }>();
@@ -375,6 +376,7 @@
 
   async function handleSaveApproval(callback: () => Promise<any>, _hasFieldPermission: boolean) {
     await callback();
+    emit('approvalSuccess');
     handleSaved();
   }
 

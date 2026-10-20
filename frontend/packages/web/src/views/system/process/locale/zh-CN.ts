@@ -126,6 +126,8 @@ export default {
   'process.process.flow.permission.hidden': '隐藏',
   'process.process.flow.permission.view': '查看',
   'process.process.flow.permission.edit': '编辑',
+  'process.process.flow.permission.editDependencyTip':
+    '当选择字段存在联动依赖时，关联字段将自动开启可编辑，保证联动生效',
   'process.process.flow.passAction': '通过后操作',
   'process.process.flow.rejectAction': '驳回后操作',
   'process.process.flow.fieldUpdate': '字段更新',

@@ -59,32 +59,30 @@
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus"
+            left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
           >
-            <template #left="{ fieldPermissions, taskNode }">
-              <CrmFormDescription
+            <template #left="{ fieldPermissions, taskNode, setLoading }">
+              <ApprovalFieldEditor
                 ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
                 :source-id="props.sourceId"
                 :column="2"
                 :refresh-key="refreshKey"
                 refresh-form-config
-                label-width="auto"
-                value-align="start"
-                tooltip-position="top-start"
+                :field-permissions="fieldPermissions"
+                :task-node="taskNode"
+                :set-loading="setLoading"
                 :readonly="!hasAnyPermission(['CONTRACT:UPDATE'])"
-                :isContractTableDetail="props.isContractTableDetail"
-                :fieldPermissions="fieldPermissions"
-                :otherSaveParams="{
-                  updateType: 'approval',
-                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
-                }"
-                @openCustomerDetail="emit('showCustomerDrawer', $event)"
-                @openOpportunityDetail="openOpportunityDetail"
-                @openQuotationDetail="openQuotationDetail"
+                :is-contract-table-detail="props.isContractTableDetail"
+                :approval-task-id="props.approvalTaskId"
                 @init="handleInit"
+                @open-customer-detail="emit('showCustomerDrawer', $event)"
+                @open-opportunity-detail="openOpportunityDetail"
+                @open-quotation-detail="openQuotationDetail"
                 @refresh="emit('refresh')"
+                @saved="handleApprovalFieldsSaved"
               />
             </template>
           </CrmApprovalDetail>
@@ -174,10 +172,10 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
-  import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
@@ -206,6 +204,7 @@
     approvalTaskId?: string;
   }>();
   const emit = defineEmits<{
+    (e: 'approvalSuccess'): void;
     (e: 'refresh'): void;
     (e: 'delete'): void;
     (e: 'showCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
@@ -535,16 +534,24 @@
     }
   }
 
-  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  const formDescriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
+
+  function handleApprovalFieldsSaved() {
+    approvalDetailRefreshKey.value += 1;
+    handleSaved();
+  }
+
   async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
     if (hasFieldPermission) {
       formDescriptionRef.value?.handleFormChange(async () => {
         await callback();
+        emit('approvalSuccess');
         refreshKey.value += 1;
         emit('refresh');
       });
     } else {
       await callback();
+      emit('approvalSuccess');
       refreshKey.value += 1;
       emit('refresh');
     }
