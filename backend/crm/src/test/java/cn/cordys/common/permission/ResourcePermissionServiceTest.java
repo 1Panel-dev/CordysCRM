@@ -7,6 +7,8 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
@@ -520,8 +522,13 @@ class ResourcePermissionServiceTest {
         ApprovalTask task = new ApprovalTask();
         task.setApproverId("sales");
         task.setInstanceId("instance-id");
+        task.setNodeId("node-id");
+        task.setStatus(ApprovalStatus.APPROVING.name());
+        task.setType(ApprovalTaskType.NL.name());
         ApprovalInstance instance = new ApprovalInstance();
         instance.setResourceId(clue.getId());
+        instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        instance.setCurrentNodeId("node-id");
         when(taskMapper.selectByPrimaryKey("task-id")).thenReturn(task);
         when(instanceMapper.selectByPrimaryKey("instance-id")).thenReturn(instance);
         ReflectionTestUtils.setField(service, "approvalTaskMapper", taskMapper);
@@ -554,6 +561,114 @@ class ResourcePermissionServiceTest {
         } finally {
             RequestContextHolder.resetRequestAttributes();
         }
+    }
+
+    @Test
+    void completedApprovalTaskCannotGrantResourcePermission() {
+        ApprovalTask task = pendingTask("task-id");
+        ApprovalInstance instance = pendingInstance(task);
+        bindApprovalTask(task, instance);
+        // 负责人不是本人且无角色权限位, 只能依赖处理中的待办授权
+        clue.setOwner("other-sales");
+        withApprovalTaskHeader(task.getId());
+
+        try (MockedStatic<PermissionUtils> ignored = mockPermissions()) {
+            Runnable check = () -> service.checkResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org");
+
+            assertTrue(service.hasApprovalTaskPermission(clue.getId(), "sales"));
+            assertDoesNotThrow(check::run);
+
+            // 已处理的待办 ID 不能再用于放权
+            task.setStatus(ApprovalStatus.APPROVED.name());
+            assertFalse(service.hasApprovalTaskPermission(clue.getId(), "sales"));
+            assertThrows(GenericException.class, check::run);
+
+            // 审批实例已结束
+            task.setStatus(ApprovalStatus.APPROVING.name());
+            instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
+            assertThrows(GenericException.class, check::run);
+
+            // 任务不在实例当前审批节点
+            instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+            instance.setCurrentNodeId("next-node");
+            assertThrows(GenericException.class, check::run);
+
+            // 抄送任务不代表审批权限
+            instance.setCurrentNodeId(task.getNodeId());
+            task.setType(ApprovalTaskType.CC.name());
+            assertThrows(GenericException.class, check::run);
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {PermissionConstants.CLUE_MANAGEMENT_DELETE, PermissionConstants.CLUE_MANAGEMENT_TRANSFER,
+            PermissionConstants.CLUE_MANAGEMENT_RECYCLE})
+    void approvalTaskCannotAuthorizeDestructiveOperations(String permission) {
+        ApprovalTask task = pendingTask("task-id");
+        ApprovalInstance instance = pendingInstance(task);
+        bindApprovalTask(task, instance);
+        clue.setOwner("other-sales");
+        withApprovalTaskHeader(task.getId());
+
+        try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
+            // 待办仍可用于审批过程中的查看
+            assertDoesNotThrow(() -> service.checkResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+            // 删除/转移/回收等操作不能凭待办 ID 跳过权限位与数据权限
+            assertThrows(GenericException.class, () -> service.checkResourcePermission(permission,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+
+            // 真正拥有权限的用户不受影响
+            clue.setOwner("sales");
+            roles.when(() -> PermissionUtils.hasPermission(permission)).thenReturn(true);
+            DeptDataPermissionDTO self = new DeptDataPermissionDTO();
+            self.setSelf(true);
+            doReturn(self).when(dataScope).getDeptDataPermission("sales", "org", permission);
+            assertDoesNotThrow(() -> service.checkResourcePermission(permission,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
+    }
+
+    private ApprovalTask pendingTask(String taskId) {
+        ApprovalTask task = new ApprovalTask();
+        task.setId(taskId);
+        task.setApproverId("sales");
+        task.setInstanceId("instance-id");
+        task.setNodeId("node-id");
+        task.setStatus(ApprovalStatus.APPROVING.name());
+        task.setType(ApprovalTaskType.NL.name());
+        return task;
+    }
+
+    private ApprovalInstance pendingInstance(ApprovalTask task) {
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setId(task.getInstanceId());
+        instance.setResourceId(clue.getId());
+        instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        instance.setCurrentNodeId(task.getNodeId());
+        return instance;
+    }
+
+    private void bindApprovalTask(ApprovalTask task, ApprovalInstance instance) {
+        @SuppressWarnings("unchecked")
+        BaseMapper<ApprovalTask> taskMapper = mock(BaseMapper.class);
+        @SuppressWarnings("unchecked")
+        BaseMapper<ApprovalInstance> instanceMapper = mock(BaseMapper.class);
+        when(taskMapper.selectByPrimaryKey(task.getId())).thenReturn(task);
+        when(instanceMapper.selectByPrimaryKey(instance.getId())).thenReturn(instance);
+        ReflectionTestUtils.setField(service, "approvalTaskMapper", taskMapper);
+        ReflectionTestUtils.setField(service, "approvalInstanceMapper", instanceMapper);
+    }
+
+    private void withApprovalTaskHeader(String taskId) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Approval-Task-Id", taskId);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
     private void assertConversionDenied() {
