@@ -37,7 +37,7 @@ public class CustomerRelationController {
     }
 
     @PostMapping("/add/{customerId}")
-    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "添加客户关系")
     public CustomerRelation add(@PathVariable String customerId, @Validated @RequestBody CustomerRelationSaveRequest request) {
         return customerRelationService.add(request, customerId);
@@ -58,7 +58,7 @@ public class CustomerRelationController {
     }
 
     @PostMapping("/save/{customerId}")
-    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "整体客户关系")
     public void save(@PathVariable String customerId, @Validated @RequestBody @Valid @NotNull List<CustomerRelationSaveRequest> requests) {
         customerRelationService.save(customerId, requests);
