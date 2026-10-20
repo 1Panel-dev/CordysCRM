@@ -692,7 +692,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           ? form[item.businessKey]
           : form.moduleFields?.find((mf) => mf.fieldId === item.id)?.fieldValue;
         if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) && item.subFields?.length) {
-          if (item.show === false || !item.readable || !value || value?.length === 0) return;
+          if (!item.readable || !value || value?.length === 0) return;
           descriptions.value.push({
             label: item.name,
             value,

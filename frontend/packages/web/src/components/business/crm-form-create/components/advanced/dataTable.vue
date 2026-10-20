@@ -16,11 +16,11 @@
       :sub-fields="props.fieldConfig.subFields || []"
       :need-init-detail="props.needInitDetail"
       :parent-id="props.fieldConfig.id"
-      :readonly="false"
       :form-detail="props.formDetail"
       :fixed-column="props.fieldConfig.fixedColumn"
       :sumColumns="props.fieldConfig.sumColumns"
-      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :disabled="props.readonly || props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :readonly="props.readonly || props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :draggable="props.formKey === FormDesignKeyEnum.PRICE && props.fieldConfig.type === FieldTypeEnum.SUB_PRODUCT"
       @change="emit('change', $event)"
     />
@@ -42,6 +42,7 @@
     formKey?: FormDesignKeyEnum;
     formDetail?: Record<string, any>;
     needInitDetail?: boolean; // 判断是否编辑情况
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: Record<string, any>[]): void;

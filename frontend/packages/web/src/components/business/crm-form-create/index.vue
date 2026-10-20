@@ -9,7 +9,7 @@
   >
     <n-scrollbar>
       <div class="flex h-full w-full flex-wrap content-start">
-        <template v-for="item in fieldList" :key="item.id">
+        <template v-for="item in renderFieldList" :key="item.id">
           <div
             v-if="item.show !== false && item.readable"
             class="crm-form-create-item"
@@ -27,13 +27,14 @@
               :form-key="props.formKey"
               :need-init-detail="needInitDetail"
               :form-config="formConfig"
+              :readonly="!item.editable"
               @change="(value: any, source: Record<string, any>[], dataSourceFormFields?: FormCreateField[]) => handleFieldChange(value, source, item, dataSourceFormFields)"
             />
           </div>
         </template>
       </div>
     </n-scrollbar>
-    <div class="crm-form-create-footer" :class="formConfig.optBtnPos">
+    <div v-if="!props.inlineApprovalEdit" class="crm-form-create-footer" :class="formConfig.optBtnPos">
       <n-button v-if="props.isEdit" type="primary" @click="handleSave(false)">
         {{ t('common.update') }}
       </n-button>
@@ -66,6 +67,7 @@
     FormDesignKeyEnum,
     FormLinkScenarioEnum,
   } from '@lib/shared/enums/formDesignEnum';
+  import { ApprovalFieldPermissionModeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
   import {
@@ -82,6 +84,7 @@
     transformFieldValue,
   } from '@lib/shared/method/formCreate';
   import { FormViewSize } from '@lib/shared/models/system/module';
+  import type { ApprovalFieldPermission } from '@lib/shared/models/system/process';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { type DataSourceSubFieldLinkField, FormCreateField } from '@/components/business/crm-form-create/types';
@@ -108,10 +111,13 @@
     linkFormKey?: FormDesignKeyEnum;
     linkScenario?: FormLinkScenarioEnum; // 关联表单场景
     customFormId?: string;
+    inlineApprovalEdit?: boolean;
+    approvalFieldPermissions?: ApprovalFieldPermission[];
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
     (e: 'init', title: string, formViewSize?: FormViewSize): void;
+    (e: 'ready'): void;
     (e: 'saved', isContinue: boolean, res: any, isUpdateReview?: boolean): void;
     (e: 'review', res: any): void;
   }>();
@@ -173,6 +179,25 @@
     isEdit: computed(() => props.isEdit),
     approvalStatus: computed(() => detail.value?.approvalStatus),
     detail,
+  });
+
+  const renderFieldList = computed(() => {
+    if (!props.inlineApprovalEdit || !props.approvalFieldPermissions) {
+      return fieldList.value;
+    }
+
+    const permissionMap = new Map(props.approvalFieldPermissions.map((item) => [item.fieldId, item.permissionType]));
+    return fieldList.value.map((field) => {
+      const permission = permissionMap.get(field.id);
+      const canEdit = permission === ApprovalFieldPermissionModeEnum.EDIT && field.editable !== false;
+
+      return {
+        ...field,
+        readable: permission !== ApprovalFieldPermissionModeEnum.HIDDEN && field.readable !== false,
+        editable: canEdit,
+        rules: canEdit ? field.rules : [],
+      };
+    });
   });
 
   function getItemComponent(item: FormCreateField) {
@@ -733,7 +758,7 @@
     return result;
   }
 
-  function handleSave(isContinue = false) {
+  function handleSave(isContinue = false, afterSave?: () => Promise<void>) {
     formRef.value?.validate(async (errors) => {
       if (!errors) {
         const result = buildSavePayload();
@@ -745,7 +770,8 @@
         saveForm(
           result,
           isContinue,
-          (_isContinue, res) => {
+          async (_isContinue, res) => {
+            await afterSave?.();
             emit('saved', isContinue, res, Boolean((extraParams as Record<string, any>).comment));
           },
           false,
@@ -757,6 +783,12 @@
       }
     });
   }
+
+  function handleSaveWithCallback(afterSave: () => Promise<void>) {
+    handleSave(false, afterSave);
+  }
+
+  defineExpose({ handleSave, handleSaveWithCallback });
 
   function handleReview() {
     formRef.value?.validate((errors) => {
@@ -801,6 +833,7 @@
     initForm(props.linkScenario);
     initFormulaDataSourceRemark();
     await initApprovalReviewConfigPromise;
+    emit('ready');
   });
 </script>
 

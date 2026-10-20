@@ -13,13 +13,14 @@
 
 <script setup lang="ts">
   import { h, ref, watch } from 'vue';
-  import { DataTableColumn, NDataTable, NRadio, NScrollbar } from 'naive-ui';
+  import { DataTableColumn, NDataTable, NRadio, NScrollbar, NTooltip } from 'naive-ui';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { ApprovalFieldPermissionModeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalActionNode } from '@lib/shared/models/system/process';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
   import { getDatasourceFieldConfig } from '@/api/modules';
@@ -63,14 +64,9 @@
   // 仅部分类型支持编辑， 其它类型的编辑按钮禁用
   function isEditableField(field: FormCreateField) {
     return (
-      [
-        FieldTypeEnum.INPUT,
-        FieldTypeEnum.TEXTAREA,
-        FieldTypeEnum.INPUT_NUMBER,
-        FieldTypeEnum.SELECT,
-        FieldTypeEnum.SELECT_MULTIPLE,
-        FieldTypeEnum.DATE_TIME,
-      ].includes(field.type) &&
+      ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.STATISTIC, FieldTypeEnum.DIVIDER, FieldTypeEnum.FORMULA].includes(
+        field.type
+      ) &&
       field.editable !== false &&
       isReadableField(field) &&
       !field.resourceFieldId
@@ -136,7 +132,7 @@
       ellipsis: {
         tooltip: true,
       },
-      width: 120,
+      width: 100,
       render: (row) => row.name,
     },
     ...permissionOptions.map(
@@ -154,6 +150,28 @@
                 },
               }),
               h('span', item.label),
+              ...(item.value === ApprovalFieldPermissionModeEnum.EDIT
+                ? [
+                    h(
+                      NTooltip,
+                      {
+                        trigger: 'hover',
+                        delay: 300,
+                        placement: 'top',
+                        showArrow: false,
+                      },
+                      {
+                        trigger: () =>
+                          h(CrmIcon, {
+                            type: 'iconicon_help_circle',
+                            size: 16,
+                            class: 'text-[var(--text-n4)] hover:text-[var(--primary-8)]',
+                          }),
+                        default: () => t('process.process.flow.permission.editDependencyTip'),
+                      }
+                    ),
+                  ]
+                : []),
             ]),
           key: item.value,
           render: (row) =>

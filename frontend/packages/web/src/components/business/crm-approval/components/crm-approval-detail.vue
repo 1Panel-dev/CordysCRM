@@ -9,10 +9,38 @@
       collapse-side="right"
     >
       <template #1>
-        <div class="flex h-full w-full p-[24px_8px_24px_24px]">
-          <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
-            <slot name="left" :fieldPermissions="filedPermission" :taskNode="currentTaskNode"></slot>
-          </n-scrollbar>
+        <div class="relative flex h-full w-full p-[24px_8px_24px_24px]">
+          <Transition name="approval-left-skeleton">
+            <div
+              v-if="leftSlotLoading"
+              class="absolute inset-0 z-10 bg-[var(--text-n10)] p-[24px_16px_24px_24px]"
+              aria-hidden="true"
+            >
+              <div class="mb-[20px] flex items-center gap-[12px]">
+                <n-skeleton circle :width="36" :height="36" />
+                <div class="flex flex-1 flex-col gap-[8px]">
+                  <n-skeleton :width="160" />
+                  <n-skeleton :width="96" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-x-[24px] gap-y-[28px]">
+                <div v-for="item in 8" :key="item" class="flex flex-col gap-[10px]">
+                  <n-skeleton :width="88" />
+                  <n-skeleton class="w-full" :height="34" />
+                </div>
+              </div>
+            </div>
+          </Transition>
+          <div class="h-full min-h-0 w-full" :class="{ 'opacity-0': leftSlotLoading }">
+            <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
+              <slot
+                name="left"
+                :fieldPermissions="filedPermission"
+                :taskNode="currentTaskNode"
+                :setLoading="setLeftSlotLoading"
+              ></slot>
+            </n-scrollbar>
+          </div>
         </div>
       </template>
       <template #2>
@@ -90,7 +118,7 @@
     </CrmSplitPanel>
     <div v-else class="flex h-full w-full p-[24px_16px_24px_24px]">
       <n-scrollbar x-scrollable>
-        <slot name="left" :fieldPermissions="[]" :taskNode="currentTaskNode"></slot>
+        <slot name="left" :fieldPermissions="[]" :taskNode="currentTaskNode" :setLoading="setLeftSlotLoading"></slot>
       </n-scrollbar>
     </div>
   </CrmCard>
@@ -205,6 +233,7 @@
     NRadioGroup,
     NScrollbar,
     NSelect,
+    NSkeleton,
     type UploadFileInfo,
     useMessage,
   } from 'naive-ui';
@@ -219,6 +248,7 @@
     ApprovalDetail,
     ApprovalFieldPermission,
     ApprovalNode,
+    ApprovalNodeTaskNode,
     ApprovalProcessDetail,
   } from '@lib/shared/models/system/process';
 
@@ -254,6 +284,14 @@
     refreshKey?: number;
     layout?: 'horizontal' | 'vertical';
     approvalStatus: ProcessStatusEnum;
+    leftLoading?: boolean;
+  }>();
+  defineSlots<{
+    left(props: {
+      fieldPermissions: ApprovalFieldPermission[];
+      taskNode?: ApprovalNodeTaskNode;
+      setLoading: (loading: boolean) => void;
+    }): any;
   }>();
   const approvalStandardFormKeys = new Set<string>([
     FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
@@ -281,6 +319,11 @@
 
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
+  const leftSlotLoading = ref(props.leftLoading ?? false);
+
+  function setLeftSlotLoading(loading: boolean) {
+    leftSlotLoading.value = loading;
+  }
 
   async function initApprovalConfig() {
     try {
@@ -812,4 +855,13 @@
   );
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .approval-left-skeleton-enter-active,
+  .approval-left-skeleton-leave-active {
+    transition: opacity 180ms ease;
+  }
+  .approval-left-skeleton-enter-from,
+  .approval-left-skeleton-leave-to {
+    opacity: 0;
+  }
+</style>

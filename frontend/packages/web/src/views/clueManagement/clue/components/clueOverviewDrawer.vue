@@ -44,28 +44,24 @@
             :form-key="FormDesignKeyEnum.CLUE"
             :source-id="sourceId"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+            left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="closeAndRefresh()"
           >
-            <template #left="{ fieldPermissions, taskNode }">
-              <CrmFormDescription
+            <template #left="{ fieldPermissions, taskNode, setLoading }">
+              <ApprovalFieldEditor
                 ref="descriptionRef"
-                :refresh-key="refreshKey"
                 :form-key="FormDesignKeyEnum.CLUE"
                 :source-id="sourceId"
-                :column="2"
-                label-width="auto"
-                value-align="start"
-                tooltip-position="top-start"
+                :refresh-key="refreshKey"
+                :field-permissions="fieldPermissions"
+                :task-node="taskNode"
+                :set-loading="setLoading"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['CLUE_MANAGEMENT:UPDATE'])"
-                :fieldPermissions="fieldPermissions"
-                :otherSaveParams="{
-                  updateType: 'approval',
-                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
-                }"
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
                 @refresh="emit('refresh')"
+                @saved="handleSaved"
               />
             </template>
           </CrmApprovalDetail>
@@ -139,11 +135,11 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
-  import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
   import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -174,6 +170,7 @@
   });
 
   const emit = defineEmits<{
+    (e: 'approvalSuccess'): void;
     (e: 'refresh'): void;
     (e: 'saved', res: any): void;
     (e: 'remove'): void;
@@ -413,7 +410,7 @@
     }
   );
 
-  const descriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  const descriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
   watch(
     () => activeTab.value,
     () => {
@@ -508,10 +505,12 @@
     if (hasFieldPermission) {
       descriptionRef.value?.handleFormChange(async () => {
         await callback();
+        emit('approvalSuccess');
         handleSaved();
       });
     } else {
       await callback();
+      emit('approvalSuccess');
       handleSaved();
     }
   }
