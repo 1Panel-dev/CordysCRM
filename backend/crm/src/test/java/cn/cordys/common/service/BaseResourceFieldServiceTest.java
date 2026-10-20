@@ -3,7 +3,9 @@ package cn.cordys.common.service;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
+import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.service.ContractPaymentPlanFieldService;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -241,7 +244,9 @@ class BaseResourceFieldServiceTest {
         BaseMapper<CustomFormDataField> fieldMapper = mock(BaseMapper.class);
         BaseMapper<CustomFormDataFieldBlob> blobMapper = mock(BaseMapper.class);
         ModuleFormService moduleFormService = mock(ModuleFormService.class);
-        DefaultUidGenerator uidGenerator = mock(DefaultUidGenerator.class);
+        DefaultUidGenerator uidGenerator = new DefaultUidGenerator();
+        ReflectionTestUtils.setField(uidGenerator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
+        uidGenerator.init();
         ApplicationContext context = mock(ApplicationContext.class);
         CustomFormDataFieldService service = new CustomFormDataFieldService();
         ReflectionTestUtils.setField(service, "customFormDataFieldMapper", fieldMapper);
@@ -249,7 +254,6 @@ class BaseResourceFieldServiceTest {
 
         when(context.getBean(ModuleFormService.class)).thenReturn(moduleFormService);
         when(context.getBean(DefaultUidGenerator.class)).thenReturn(uidGenerator);
-        when(uidGenerator.getUID()).thenReturn(100L, 101L, 102L);
         new CommonBeanFactory().setApplicationContext(context);
         OrganizationContext.setOrganizationId("org-1");
         CustomFormDataFieldService.setFormKey("form-1");
@@ -293,5 +297,9 @@ class BaseResourceFieldServiceTest {
         assertNotNull(restoredRows.get(0).get("id"));
         assertEquals("row-2", restoredRows.get(1).get("id"));
         assertEquals("保留值", restoredRows.get(1).get("child-field"));
+
+        // 还原上下文后，静态缓存的生成器仍须持续生成唯一 ID。
+        new CommonBeanFactory().setApplicationContext(previousContext);
+        assertNotEquals(IDGenerator.nextStr(), IDGenerator.nextStr());
     }
 }
