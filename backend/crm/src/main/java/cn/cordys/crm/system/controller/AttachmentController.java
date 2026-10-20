@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.controller;
 
 import cn.cordys.crm.system.service.AttachmentService;
+import cn.cordys.crm.system.service.FilePreviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -21,6 +22,8 @@ public class AttachmentController {
 
     @Resource
     private AttachmentService attachmentService;
+    @Resource
+    private FilePreviewService filePreviewService;
 
     @PostMapping("/upload/temp")
     @Operation(summary = "上传临时附件")
@@ -38,5 +41,11 @@ public class AttachmentController {
     @Operation(summary = "下载附件")
     public ResponseEntity<org.springframework.core.io.Resource> download(@PathVariable String id) {
         return attachmentService.getResource(id);
+    }
+
+    @GetMapping("/file/preview/{id}")
+    @Operation(summary = "预览附件")
+    public ResponseEntity<org.springframework.core.io.Resource> filePreview(@PathVariable String id) {
+        return filePreviewService.preview(id);
     }
 }

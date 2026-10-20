@@ -289,6 +289,13 @@
             <version>${fastexcel.version}</version>
         </dependency>
 
+        <!-- Document Conversion (LibreOffice) -->
+        <dependency>
+            <groupId>org.jodconverter</groupId>
+            <artifactId>jodconverter-local</artifactId>
+            <version>${jodconverter.version}</version>
+        </dependency>
+
         <!-- JPA API / JWT -->
         <dependency>
             <groupId>jakarta.persistence</groupId>

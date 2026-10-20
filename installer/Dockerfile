@@ -39,7 +39,13 @@ COPY installer/mcp /app/mcp
 COPY --from=cockpit-runtime /usr/local/bin/node /usr/local/bin/node
 COPY installer/cockpit/bundle /app/cockpit/bundle
 COPY installer/cockpit/skills /app/cockpit/skills
-RUN apk add --no-cache libstdc++ && node --version
+RUN apk add --no-cache libstdc++ \
+    libreoffice \
+    font-noto-cjk \
+    font-liberation \
+    fontconfig \
+ && fc-cache -f \
+ && node --version
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=cn.cordys.Application
