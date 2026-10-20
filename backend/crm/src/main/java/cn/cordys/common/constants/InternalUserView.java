@@ -69,7 +69,8 @@ public enum InternalUserView {
         return Strings.CS.equals(DEPARTMENT.name(), searchType);
     }
 
-    public static boolean isVisible(String searchType) {
-        return Strings.CS.equals(CUSTOMER_COLLABORATION.name(), searchType);
+    public static boolean isVisible(String searchType, String permission) {
+        // 目前只有客户协作人视图有可见权限
+        return Strings.CS.startsWith(permission, "CUSTOMER_MANAGEMENT") && Strings.CS.equals(CUSTOMER_COLLABORATION.name(), searchType);
     }
 }
