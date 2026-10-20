@@ -190,7 +190,7 @@
     formKey: FormDesignKeyEnum.BUSINESS,
   });
   const refreshDetail = async () => {
-    initFormDescription();
+    await initFormDescription();
     await initApprovalDetail();
   };
   const {
@@ -374,7 +374,13 @@
   const currentApprovalNodeIndex = ref(0);
 
   async function initApprovalDetail() {
-    if (!sourceId.value) {
+    if (
+      !sourceId.value ||
+      !detail.value.approvalStatus ||
+      [ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(detail.value.approvalStatus)
+    ) {
+      approvalInfo.value = undefined;
+      currentApprovalNode.value = undefined;
       return;
     }
 
@@ -397,8 +403,7 @@
     } else if (activeTab.value === 'plan') {
       planListRef.value?.[0].loadList();
     } else if (activeTab.value === 'info') {
-      initFormDescription();
-      initApprovalDetail();
+      refreshDetail();
     }
   });
 
@@ -406,8 +411,7 @@
     initApprovalPermission();
     initStageConfig();
     await initFormConfig();
-    initFormDescription();
-    initApprovalDetail();
+    await refreshDetail();
   });
 
   watch([() => detail.value.stage, () => detail.value.lastStage], () => {

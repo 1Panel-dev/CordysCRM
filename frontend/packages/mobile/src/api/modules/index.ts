@@ -203,6 +203,7 @@ export const {
   getGlobalCluePoolList,
   transformClue,
   moveToLeadPool,
+  getClueTransitionCustomerRecordList,
 } = clueApi;
 
 export const { getDepartmentTree, getUserList, getUserDetail, getUserOptions, getRoleOptions } = orgApi;

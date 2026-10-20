@@ -141,7 +141,13 @@
   });
 
   async function initApprovalDetail() {
-    if (!sourceId.value) {
+    if (
+      !sourceId.value ||
+      !detail.value.approvalStatus ||
+      [ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(detail.value.approvalStatus)
+    ) {
+      approvalInfo.value = undefined;
+      currentApprovalNode.value = undefined;
       return;
     }
 
@@ -162,7 +168,7 @@
     formKey: FormDesignKeyEnum.CUSTOMER,
   });
   const refreshDetail = async () => {
-    initFormDescription();
+    await initFormDescription();
     await initApprovalDetail();
   };
   const { resolveRowActions, initApprovalPermission, deleteExecute, enableApproval } = useApprovalOperation({
@@ -323,8 +329,7 @@
   onBeforeMount(async () => {
     initApprovalPermission();
     await initFormConfig();
-    initFormDescription();
-    initApprovalDetail();
+    await refreshDetail();
   });
 
   onActivated(() => {

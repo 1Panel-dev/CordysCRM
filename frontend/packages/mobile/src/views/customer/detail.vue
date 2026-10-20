@@ -146,7 +146,7 @@
     formKey: FormDesignKeyEnum.CUSTOMER,
   });
   const refreshDetail = async () => {
-    initFormDescription();
+    await initFormDescription();
     await initApprovalDetail();
   };
   const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, enableApproval } =
@@ -234,10 +234,17 @@
 
     return [...approvalStatusDescription, ...descriptions.value];
   });
-  const showEditButton = computed(() => hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE']));
-  const operationActions = computed(() => resolveRowActions(detail.value, actions.value));
+  const isReadOnlyCollaboration = computed(() => collaborationType.value === 'READ_ONLY');
+  const showEditButton = computed(
+    () => !isReadOnlyCollaboration.value && hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE'])
+  );
+  const operationActions = computed(() =>
+    isReadOnlyCollaboration.value ? [] : resolveRowActions(detail.value, actions.value)
+  );
   const showDetailActions = computed(() => Boolean(showEditButton.value || operationActions.value.length));
-  const showApprovalActions = computed(() => approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING);
+  const showApprovalActions = computed(
+    () => !isReadOnlyCollaboration.value && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
+  );
   const showFooterActions = computed(
     () => ['info', 'approval'].includes(activeTab.value) && (showDetailActions.value || showApprovalActions.value)
   );
@@ -343,7 +350,13 @@
   const currentApprovalNodeIndex = ref(0);
 
   async function initApprovalDetail() {
-    if (!sourceId.value) {
+    if (
+      !sourceId.value ||
+      !detail.value.approvalStatus ||
+      [ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(detail.value.approvalStatus)
+    ) {
+      approvalInfo.value = undefined;
+      currentApprovalNode.value = undefined;
       return;
     }
 
@@ -363,8 +376,7 @@
   onBeforeMount(async () => {
     initApprovalPermission();
     await initFormConfig();
-    initFormDescription();
-    initApprovalDetail();
+    await refreshDetail();
   });
 
   onActivated(() => {
@@ -377,8 +389,7 @@
     } else if (activeTab.value === 'collaborator') {
       collaboratorListRef.value?.[0].initList();
     } else if (activeTab.value === 'info') {
-      initFormDescription();
-      initApprovalDetail();
+      refreshDetail();
     }
   });
 </script>
