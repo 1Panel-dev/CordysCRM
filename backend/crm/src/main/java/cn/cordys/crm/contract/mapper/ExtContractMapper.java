@@ -10,6 +10,7 @@ import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
+import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -61,4 +62,22 @@ public interface ExtContractMapper extends StatisticSqlMapper {
     void updateOldApprovalStatusNone();
 
     void updateContract(@Param("contract") Contract contract);
+
+    /**
+     * 批量合并客户合同
+     *
+     * @param request 请求参数
+     * @param userId  用户ID
+     * @param orgId   组织ID
+     */
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+
+    /**
+     * 获取待合并的客户合同列表
+     *
+     * @param request 请求参数
+     * @param orgId   组织ID
+     * @return 客户合同列表
+     */
+    List<Contract> getMergeContractList(@Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
 }

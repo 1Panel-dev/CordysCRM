@@ -45,6 +45,8 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.contract.domain.Contract;
+import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.request.*;
@@ -61,6 +63,8 @@ import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import cn.cordys.crm.order.domain.Order;
+import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.NotificationConstants;
@@ -178,6 +182,10 @@ public class CustomerService implements ApprovalResourceHandler {
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private ExtContractMapper extContractMapper;
+    @Resource
+    private ExtOrderMapper extOrderMapper;
     @Resource
     private ExtFollowUpRecordMapper extFollowUpRecordMapper;
     @Resource
@@ -1258,7 +1266,7 @@ public class CustomerService implements ApprovalResourceHandler {
     public void merge(CustomerMergeRequest request, String currentUser, String currentOrgId) {
         /*
          * 规则:
-         * 1. 合并客户联系人, 客户关联商机.
+         * 1. 合并客户联系人, 客户关联商机/合同/订单.
          * 3. 合并客户跟进记录/计划.
          * 4. 删除被合并的客户, 并添加对应的负责人为合并客户的协作人, 被合并客户的协作人也要.
          */
@@ -1305,6 +1313,9 @@ public class CustomerService implements ApprovalResourceHandler {
         }
         extCustomerContactMapper.batchMerge(request, currentUser, currentOrgId, names, phones);
         extOpportunityMapper.batchMerge(request, currentUser, currentOrgId);
+        // 合同/订单只存 customer_id, 客户被删除后列表里的客户名会变成空值, 必须一并改到合并后的客户
+        extContractMapper.batchMerge(request, currentUser, currentOrgId);
+        extOrderMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpRecordMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpPlanMapper.batchMerge(request, currentUser, currentOrgId);
 
@@ -1437,6 +1448,34 @@ public class CustomerService implements ApprovalResourceHandler {
                 Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), opportunity);
                 newOpportunity.setCustomerId(mergeRequest.getToMergeId());
                 logDTO.setModifiedValue(newOpportunity);
+                logs.add(logDTO);
+            }
+        }
+
+        // 合同日志
+        List<Contract> mergeContracts = extContractMapper.getMergeContractList(mergeRequest, currentOrgId);
+        if (CollectionUtils.isNotEmpty(mergeContracts)) {
+            for (Contract contract : mergeContracts) {
+                LogDTO logDTO = new LogDTO(currentOrgId, contract.getId(), currentUser, LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
+                contract.setCustomerId(customerMap.get(contract.getCustomerId()));
+                logDTO.setOriginalValue(contract);
+                Contract newContract = BeanUtils.copyBean(new Contract(), contract);
+                newContract.setCustomerId(mergeRequest.getToMergeId());
+                logDTO.setModifiedValue(newContract);
+                logs.add(logDTO);
+            }
+        }
+
+        // 订单日志
+        List<Order> mergeOrders = extOrderMapper.getMergeOrderList(mergeRequest, currentOrgId);
+        if (CollectionUtils.isNotEmpty(mergeOrders)) {
+            for (Order order : mergeOrders) {
+                LogDTO logDTO = new LogDTO(currentOrgId, order.getId(), currentUser, LogType.UPDATE, LogModule.ORDER_INDEX, order.getName());
+                order.setCustomerId(customerMap.get(order.getCustomerId()));
+                logDTO.setOriginalValue(order);
+                Order newOrder = BeanUtils.copyBean(new Order(), order);
+                newOrder.setCustomerId(mergeRequest.getToMergeId());
+                logDTO.setModifiedValue(newOrder);
                 logs.add(logDTO);
             }
         }

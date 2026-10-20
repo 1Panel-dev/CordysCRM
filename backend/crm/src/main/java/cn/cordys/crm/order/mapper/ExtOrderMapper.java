@@ -4,6 +4,7 @@ import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.statistic.StatisticSqlMapper;
+import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
@@ -49,4 +50,22 @@ public interface ExtOrderMapper extends StatisticSqlMapper {
      */
     void revertStageByApproval(@Param("id") String id, @Param("stage") String stage, @Param("userId") String userId,
                                @Param("updateTime") long updateTime);
+
+    /**
+     * 批量合并客户订单
+     *
+     * @param request 请求参数
+     * @param userId  用户ID
+     * @param orgId   组织ID
+     */
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+
+    /**
+     * 获取待合并的客户订单列表
+     *
+     * @param request 请求参数
+     * @param orgId   组织ID
+     * @return 客户订单列表
+     */
+    List<Order> getMergeOrderList(@Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
 }
