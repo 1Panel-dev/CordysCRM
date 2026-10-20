@@ -38,6 +38,31 @@ class ApprovalInstanceServiceTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
+	void autoApprovedNodeExposesStoredComment() {
+		ApprovalInstanceService service = new ApprovalInstanceService();
+		BaseMapper<ApprovalNodeApprover> approverNodeMapper = mock(BaseMapper.class);
+		ReflectionTestUtils.setField(service, "approvalNodeApproverMapper", approverNodeMapper);
+		when(approverNodeMapper.selectByIds(anyList())).thenReturn(List.of());
+		ApprovalRecord record = new ApprovalRecord();
+		record.setId("record-auto");
+		record.setNodeId("NODE001");
+		record.setNodeRound(1);
+		record.setResult(ApprovalStatus.AUTO_APPROVED.name());
+		record.setComment("审批人为空，自动通过");
+		record.setCreateTime(123L);
+
+		List<ApprovalRecordNode> nodes = ReflectionTestUtils.invokeMethod(service, "buildProcessedApprovalNodes", new ApprovalInstance(),
+				List.of(), List.of(record), List.of(), List.of(), Map.of(), Map.of(), "org-1");
+
+		ApprovalTaskNode autoTask = nodes.getFirst().getTaskNodes().getFirst();
+		assertEquals(record.getComment(), autoTask.getComment());
+		assertEquals(record.getResult(), autoTask.getApprovalStatus());
+		assertEquals(record.getCreateTime(), autoTask.getApprovalTime());
+		assertEquals(record.getId(), autoTask.getRecordId());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
 	void approvedReturnedNodeDoesNotExposePreviousBackInfo() {
 		ApprovalInstanceService service = new ApprovalInstanceService();
 		ApprovalFlowService flowService = mock(ApprovalFlowService.class);
