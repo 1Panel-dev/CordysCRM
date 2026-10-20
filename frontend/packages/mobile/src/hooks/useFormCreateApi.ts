@@ -546,7 +546,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : '';
         } else if (item.type === FieldTypeEnum.ATTACHMENT) {
           item.initialOptions = res.attachmentMap?.[item.id];
-        } else if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
+        } else if (item.type === FieldTypeEnum.STATISTIC) {
           formDetail.value[item.businessKey || item.id] = formatNumberValueToString(
             formDetail.value[item.businessKey || item.id],
             item
