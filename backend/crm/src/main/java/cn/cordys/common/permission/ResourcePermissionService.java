@@ -4,6 +4,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
@@ -80,12 +81,16 @@ public class ResourcePermissionService {
 
         // 从HTTP请求中获取待办任务ID
         String approvalTaskId = resolveApprovalTaskId();
-        // 如果传了待办任务ID，只校验当前用户是否是该待办的所有人
         if (StringUtils.isNotBlank(approvalTaskId)) {
+            // 只有当前用户处理中(待审批)的任务才能作为权限来源, 已完成/已失效的任务不得继续放权
             if (!isTaskOwner(approvalTaskId, resourceId, userId)) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-            return;
+            // 审批待办只能替代审批过程中查看、编辑资源的权限;
+            // 删除、转移等业务操作仍须按角色权限位和数据权限校验
+            if (isApprovalTaskReviewPermission(permission)) {
+                return;
+            }
         }
 
         checkResourcePermissionWithoutApprovalTask(permission, resourceId, formType, userId, orgId);
@@ -126,6 +131,9 @@ public class ResourcePermissionService {
 
     /**
      * 校验当前用户是否是指定待办任务的所有人，且该任务关联的资源与请求资源一致
+     * <p>
+     * 待办任务仅在“处理中”时才代表审批人当前可以查看/编辑的授权：
+     * 已完成、已失效、未流转到当前节点或非审批任务（抄送）都不能作为权限来源。
      */
     private boolean isTaskOwner(String approvalTaskId, String resourceId, String userId) {
         if (StringUtils.isBlank(approvalTaskId) || StringUtils.isBlank(userId)) {
@@ -137,9 +145,34 @@ public class ResourcePermissionService {
             return false;
         }
 
+        // 只有处理中的审批待办（非抄送、尚未执行操作）才可执行, 已处理的待办 ID 不能重复使用
+        if (!ApprovalStatus.APPROVING.name().equals(task.getStatus())
+                || StringUtils.isNotBlank(task.getAction())
+                || ApprovalTaskType.CC.name().equals(task.getType())
+                || StringUtils.isBlank(task.getInstanceId())) {
+            return false;
+        }
+
         // 校验任务关联的审批实例资源是否与当前请求的资源一致
         ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(task.getInstanceId());
-        return instance != null && resourceId.equals(instance.getResourceId());
+        if (instance == null || !resourceId.equals(instance.getResourceId())) {
+            return false;
+        }
+
+        // 审批实例已结束或任务不在当前审批节点时, 该任务已不可执行
+        if (ApprovalStatus.APPROVED.name().equals(instance.getApprovalStatus())
+                || ApprovalStatus.UNAPPROVED.name().equals(instance.getApprovalStatus())) {
+            return false;
+        }
+        return StringUtils.equals(instance.getCurrentNodeId(), task.getNodeId());
+    }
+
+    /**
+     * 审批待办可以替代的资源权限：查看(READ)与编辑(UPDATE)。
+     * 其他操作(删除、转移、回收等)不能凭待办 ID 跳过正常的权限校验。
+     */
+    private boolean isApprovalTaskReviewPermission(String permission) {
+        return permission != null && (permission.endsWith(":READ") || permission.endsWith(":UPDATE"));
     }
 
     /**
