@@ -1,10 +1,12 @@
 package cn.cordys.common.permission;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
@@ -12,6 +14,7 @@ import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueTransitionCustomerRequest;
+import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.clue.service.ClueResourceAccessContextProvider;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.customer.controller.CustomerContactController;
@@ -32,6 +35,7 @@ import cn.cordys.crm.opportunity.service.OpportunityQuotationResourceAccessConte
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,13 +43,19 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.MockMakers;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContext;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -72,6 +82,9 @@ class ResourcePermissionServiceTest {
     private final CustomerService customers = mock(CustomerService.class);
     private final CommonNoticeSendService notices = mock(CommonNoticeSendService.class);
     private final ClueTransitionCustomerRequest conversionRequest = new ClueTransitionCustomerRequest();
+    private final ExtClueMapper extClueMapper = mock(ExtClueMapper.class);
+    private MessageSource previousMessageSource;
+    private LocaleContext previousLocaleContext;
 
     @BeforeEach
     void setUp() {
@@ -104,10 +117,12 @@ class ResourcePermissionServiceTest {
         when(clueMapper.selectByPrimaryKey(clue.getId())).thenReturn(clue);
         when(clueMapper.selectByIds(List.of(clue.getId()))).thenReturn(List.of(clue));
         ReflectionTestUtils.setField(conversion, "clueMapper", clueMapper);
+        ReflectionTestUtils.setField(conversion, "extClueMapper", extClueMapper);
         ReflectionTestUtils.setField(conversion, "resourcePermissionService", service);
         ReflectionTestUtils.setField(conversion, "customerService", customers);
         ReflectionTestUtils.setField(conversion, "customerContactMapper", contactMapper);
         ReflectionTestUtils.setField(conversion, "commonNoticeSendService", notices);
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
         conversionRequest.setClueId(clue.getId());
         conversionRequest.setName("示例客户");
         Customer customer = new Customer();
@@ -115,6 +130,26 @@ class ResourcePermissionServiceTest {
         customer.setOwner("sales");
         when(customers.add(conversionRequest, "sales", "org")).thenReturn(customer);
         when(contactMapper.selectListByLambda(any())).thenReturn(List.of(new CustomerContact()));
+        // 条件更新命中未转化线索时返回 1, 返回 0 表示已被并发请求抢先转化
+        when(extClueMapper.updateTransitionIfAbsent(eq(clue.getId()), eq("org"), eq(FormKey.CUSTOMER.name()),
+                eq(customer.getId()), eq("sales"), anyLong())).thenReturn(1);
+
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        previousLocaleContext = LocaleContextHolder.getLocaleContext();
+        ResourceBundleMessageSource messages = new ResourceBundleMessageSource();
+        messages.setBasename("i18n/cordys-crm");
+        messages.setDefaultEncoding("UTF-8");
+        new Translator().setMessageSource(messages);
+        LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
+    }
+
+    @AfterEach
+    void restoreMessages() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+        new Translator().setMessageSource(previousMessageSource);
+        LocaleContextHolder.setLocaleContext(previousLocaleContext);
     }
 
     private void register(List<ResourceAccessContextProvider> providers) {
@@ -438,12 +473,12 @@ class ResourcePermissionServiceTest {
             roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE)).thenReturn(true);
             assertDoesNotThrow(() -> conversion.transitionCustomer(conversionRequest, "sales", "org"));
         }
-        var order = inOrder(dataScope, customers, clueMapper);
+        var order = inOrder(dataScope, customers, extClueMapper);
         order.verify(dataScope).hasDataPermission("sales", "org", owner, PermissionConstants.CLUE_MANAGEMENT_UPDATE);
         order.verify(customers).add(conversionRequest, "sales", "org");
-        order.verify(clueMapper).update(clue);
-        assertEquals("customer-id", clue.getTransitionId());
-        assertEquals("sales", clue.getUpdateUser());
+        // 转化关系由条件更新写入, 不再直接改内存对象后调用 clueMapper.update
+        order.verify(extClueMapper).updateTransitionIfAbsent(eq(clue.getId()), eq("org"), eq(FormKey.CUSTOMER.name()),
+                eq("customer-id"), eq("sales"), anyLong());
         @SuppressWarnings("unchecked")
         ArgumentCaptor<LambdaQueryWrapper<CustomerContact>> query = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
         verify(contactMapper).selectListByLambda(query.capture());
@@ -525,8 +560,7 @@ class ResourcePermissionServiceTest {
         GenericException error = assertThrows(GenericException.class,
                 () -> conversion.transitionCustomer(conversionRequest, "sales", "org"));
         assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
-        verifyNoInteractions(customers, contactMapper, notices);
-        verify(clueMapper, never()).update(any(Clue.class));
+        verifyNoInteractions(customers, contactMapper, notices, extClueMapper);
         assertNull(clue.getTransitionId());
     }
 }
