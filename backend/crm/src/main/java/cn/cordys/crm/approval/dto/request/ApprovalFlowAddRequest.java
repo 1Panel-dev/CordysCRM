@@ -52,8 +52,11 @@ public class ApprovalFlowAddRequest {
     @Schema(description = "重复审批人规则")
     private String duplicateApproverRule;
 
-    @Schema(description = "是否必须填写审批意见")
-    private Boolean requireComment;
+    @Schema(description = "同意时是否必须填写审批意见")
+    private Boolean requireApproveComment;
+
+    @Schema(description = "驳回时是否必须填写审批意见")
+    private Boolean requireRejectComment;
 
     @Schema(description = "状态权限配置")
     @Valid

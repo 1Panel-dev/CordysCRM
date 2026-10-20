@@ -156,7 +156,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setAllowWithdraw(true);
         request.setAllowAddSign(false);
         request.setDuplicateApproverRule(DuplicateApproverRuleEnum.EACH.name());
-        request.setRequireComment(false);
+        request.setRequireApproveComment(false);
+        request.setRequireRejectComment(true);
         request.setCreateExecute(false);
         request.setUpdateExecute(true);
         request.setStatusPermissions(buildStatusPermissions());
@@ -219,7 +220,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(request.getAllowWithdraw(), flow.getAllowWithdraw());
         Assertions.assertEquals(request.getAllowAddSign(), flow.getAllowAddSign());
         Assertions.assertEquals(request.getDuplicateApproverRule(), flow.getDuplicateApproverRule());
-        Assertions.assertEquals(request.getRequireComment(), flow.getRequireComment());
+        Assertions.assertEquals(request.getRequireApproveComment(), flow.getRequireApproveComment());
+        Assertions.assertEquals(request.getRequireRejectComment(), flow.getRequireRejectComment());
         Assertions.assertEquals(request.getCreateExecute(), flow.getCreateExecute());
         Assertions.assertEquals(request.getUpdateExecute(), flow.getUpdateExecute());
 
@@ -283,7 +285,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setAllowWithdraw(false);
         request.setAllowAddSign(true);
         request.setDuplicateApproverRule(DuplicateApproverRuleEnum.FIRST_ONLY.name());
-        request.setRequireComment(true);
+        request.setRequireApproveComment(true);
+        request.setRequireRejectComment(false);
         request.setCreateExecute(true);
         request.setUpdateExecute(false);
         request.setStatusPermissions(buildStatusPermissions());
@@ -321,7 +324,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(request.getAllowWithdraw(), updatedFlow.getAllowWithdraw());
         Assertions.assertEquals(request.getAllowAddSign(), updatedFlow.getAllowAddSign());
         Assertions.assertEquals(request.getDuplicateApproverRule(), updatedFlow.getDuplicateApproverRule());
-        Assertions.assertEquals(request.getRequireComment(), updatedFlow.getRequireComment());
+        Assertions.assertEquals(request.getRequireApproveComment(), updatedFlow.getRequireApproveComment());
+        Assertions.assertEquals(request.getRequireRejectComment(), updatedFlow.getRequireRejectComment());
 
         // 校验更新后产生了新版本
         Assertions.assertNotEquals(addApprovalFlow.getCurrentVersionId(), updatedFlow.getCurrentVersionId());
@@ -404,7 +408,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(approvalFlow.getAllowWithdraw(), response.getAllowWithdraw());
         Assertions.assertEquals(approvalFlow.getAllowAddSign(), response.getAllowAddSign());
         Assertions.assertEquals(approvalFlow.getDuplicateApproverRule(), response.getDuplicateApproverRule());
-        Assertions.assertEquals(approvalFlow.getRequireComment(), response.getRequireComment());
+        Assertions.assertEquals(approvalFlow.getRequireApproveComment(), response.getRequireApproveComment());
+        Assertions.assertEquals(approvalFlow.getRequireRejectComment(), response.getRequireRejectComment());
 
         // 校验节点配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getCreateNodeConfig().getNodes()));
@@ -581,7 +586,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(flow.getAllowWithdraw(), response.getAllowWithdraw());
         Assertions.assertEquals(flow.getAllowAddSign(), response.getAllowAddSign());
         Assertions.assertEquals(flow.getDuplicateApproverRule(), response.getDuplicateApproverRule());
-        Assertions.assertEquals(flow.getRequireComment(), response.getRequireComment());
+        Assertions.assertEquals(flow.getRequireApproveComment(), response.getRequireApproveComment());
+        Assertions.assertEquals(flow.getRequireRejectComment(), response.getRequireRejectComment());
 
         // 校验权限列表
         Assertions.assertNotNull(response.getPermissions());
