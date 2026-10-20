@@ -12,6 +12,7 @@ import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueTransitionCustomerRequest;
+import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.clue.service.ClueResourceAccessContextProvider;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.customer.controller.CustomerContactController;
@@ -72,6 +73,7 @@ class ResourcePermissionServiceTest {
     private final CustomerService customers = mock(CustomerService.class);
     private final CommonNoticeSendService notices = mock(CommonNoticeSendService.class);
     private final ClueTransitionCustomerRequest conversionRequest = new ClueTransitionCustomerRequest();
+    private final ExtClueMapper extClueMapper = mock(ExtClueMapper.class);
 
     @BeforeEach
     void setUp() {

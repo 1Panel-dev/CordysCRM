@@ -288,6 +288,18 @@ class ClueControllerTests extends BaseTest {
         request.setOwner("admin");
         this.requestPostWithOk(TRANSITION_CUSTOMER, request);
 
+        String transitionId = clueMapper.selectByPrimaryKey(addClue.getId()).getTransitionId();
+        Assertions.assertNotNull(transitionId);
+
+        // 已转化的线索不能再次转化: 否则会重复创建客户并覆盖线索原有的转化关系
+        ClueTransitionCustomerRequest repeatRequest = new ClueTransitionCustomerRequest();
+        repeatRequest.setClueId(addClue.getId());
+        repeatRequest.setName("cc-repeat");
+        repeatRequest.setOwner("admin");
+        int status = this.requestPost(TRANSITION_CUSTOMER, repeatRequest).andReturn().getResponse().getStatus();
+        Assertions.assertEquals(400, status);
+        Assertions.assertEquals(transitionId, clueMapper.selectByPrimaryKey(addClue.getId()).getTransitionId());
+
         // 校验权限
         requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_ADD,
                 PermissionConstants.CLUE_MANAGEMENT_UPDATE), TRANSITION_CUSTOMER, request);
