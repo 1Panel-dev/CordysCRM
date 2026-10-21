@@ -81,9 +81,11 @@
       >
         <div class="flex flex-col gap-[8px]">
           <n-checkbox v-model:checked="form.requireApproveComment" :disabled="readonly">
+            <span class="font-bold">{{ t('process.process.approve') }}</span>
             {{ t('process.process.approvalApproveOpinion') }}
           </n-checkbox>
           <n-checkbox v-model:checked="form.requireRejectComment" :disabled="readonly">
+            <span class="font-bold">{{ t('process.process.reject') }}</span>
             {{ t('process.process.approvalRejectOpinion') }}
           </n-checkbox>
         </div>
