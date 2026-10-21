@@ -15,6 +15,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,24 +110,37 @@ public class ApprovalCommentService {
         extCommentMapper.deleteComments(ids, comment.getInstanceId(), orgId);
     }
 
+    /**
+     * 判断当前用户是否具有指定审批实例的评论权限。
+     */
+    public boolean hasCommentPermission(String instanceId, String userId, String orgId) {
+        ApprovalInstance instance = extCommentMapper.selectInstance(instanceId, orgId);
+        return instance != null && hasCommentPermission(instance, userId, orgId);
+    }
+
+    private boolean hasCommentPermission(ApprovalInstance instance, String userId, String orgId) {
+        // 评论权限: 业务审批数据的查看权限或评论被@用户
+        return approvalResourceService.hasInstanceViewPermission(instance, userId, orgId)
+                || extCommentMapper.existsMention(instance.getId(), userId, orgId);
+    }
+
     private void checkPermission(String instanceId, String userId, String orgId) {
         ApprovalInstance instance = extCommentMapper.selectInstance(instanceId, orgId);
         if (instance == null) {
             throw new GenericException(Translator.get("approval.comment.instance_not_found"));
         }
-        if (!approvalResourceService.hasInstanceViewPermission(instance, userId, orgId)
-                && !extCommentMapper.existsMention(instanceId, userId, orgId)) {
+        if (!hasCommentPermission(instance, userId, orgId)) {
             throw new GenericException(Translator.get("approval.comment.no_permission"));
         }
     }
 
     private ApprovalComment getOwnComment(String id, String userId, String orgId) {
         ApprovalComment comment = extCommentMapper.selectCommentForUpdate(id, orgId);
-        if (comment == null || !Objects.equals(comment.getOrganizationId(), orgId)) {
+        if (comment == null || !Strings.CS.equals(comment.getOrganizationId(), orgId)) {
             throw new GenericException(Translator.get("approval.comment.not_found"));
         }
         checkPermission(comment.getInstanceId(), userId, orgId);
-        if (!Objects.equals(comment.getCreateUser(), userId)) {
+        if (!Strings.CS.equals(comment.getCreateUser(), userId)) {
             throw new GenericException(Translator.get("approval.comment.only_creator"));
         }
         return comment;

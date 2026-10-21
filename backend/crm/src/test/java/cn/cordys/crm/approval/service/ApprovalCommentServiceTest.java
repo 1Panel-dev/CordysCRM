@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
@@ -93,6 +94,31 @@ class ApprovalCommentServiceTest {
         instance = new ApprovalInstance();
         instance.setId(INSTANCE);
         when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(instance);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false, false, false", "true, false, true", "false, true, true"})
+    void returnsCommentPermissionFromBusinessOrEffectiveMentions(boolean businessOrTaskPermission,
+                                                               boolean mentioned, boolean expected) {
+        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(businessOrTaskPermission);
+        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(mentioned);
+
+        assertEquals(expected, service.hasCommentPermission(INSTANCE, USER, ORG));
+
+        verify(approvalResourceService).hasInstanceViewPermission(instance, USER, ORG);
+        if (!businessOrTaskPermission) {
+            verify(extCommentMapper).existsMention(INSTANCE, USER, ORG);
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"missing-instance, org-a", "instance-a, other-org"})
+    void returnsNoCommentPermissionForUnknownInstanceOrAnotherOrganization(String instanceId, String orgId) {
+        assertFalse(service.hasCommentPermission(instanceId, USER, orgId));
+
+        verify(extCommentMapper).selectInstance(instanceId, orgId);
+        verifyNoInteractions(approvalResourceService, commentMapper, mentionMapper);
+        verify(extCommentMapper, never()).existsMention(anyString(), anyString(), anyString());
     }
 
     @ParameterizedTest

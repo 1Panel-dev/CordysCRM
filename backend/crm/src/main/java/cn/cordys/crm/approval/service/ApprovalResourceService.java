@@ -1310,9 +1310,11 @@ public class ApprovalResourceService {
             return false;
         }
         if (userId.equals(instance.getSubmitterId()) || hasApprovalTaskPermission(instance, userId)) {
+            // 审批流程实例的经办人放行 (提审人, 当前或历史节点的审批人, 抄送人;)
             return true;
         }
 
+        // 拥有业务数据的数据查看权限放行
         String readPermission = getReadPermissionByFormType(instance.getType());
         if (StringUtils.isBlank(readPermission) || !PermissionUtils.hasPermission(readPermission)) {
             return false;
