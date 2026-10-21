@@ -262,8 +262,8 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     }
 
     private String getOptionComment(BaseField field) {
-        if (field instanceof HasOption) {
-            List<OptionProp> options = ((HasOption) field).getOptions();
+        if (field instanceof HasOption optionField) {
+            List<OptionProp> options = optionField.getOptions();
             return Translator.get("option") + ": " + options.stream().map(OptionProp::getLabel).toList();
         }
         return null;

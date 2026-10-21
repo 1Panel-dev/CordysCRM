@@ -53,20 +53,16 @@ public class UserSearchConfigService {
                 throw new GenericException(Translator.get("search.config.limit"));
             }
             switch (key) {
-            case SearchModuleEnum.SEARCH_ADVANCED_CLUE, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL ->
                 saveSearchFields(value, userId, orgId, FormKey.CLUE.getKey(), key, request);
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
+            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC ->
                 saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key, request);
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
+            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT ->
                 saveSearchFields(value, userId, orgId, FormKey.CONTACT.getKey(), key, request);
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
+            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY ->
                 saveSearchFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key, request);
-                break;
-            default:
-                break;
+            default -> {
+            }
             }
         });
     }

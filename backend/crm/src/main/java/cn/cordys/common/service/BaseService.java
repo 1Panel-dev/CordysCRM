@@ -836,8 +836,8 @@ public class BaseService {
             return null;
         }
         List<String> ids;
-        if (fieldValue instanceof List) {
-            ids = ((List<?>) fieldValue).stream().map(String::valueOf).toList();
+        if (fieldValue instanceof List<?> values) {
+            ids = values.stream().map(String::valueOf).toList();
         } else {
             ids = JSON.parseArray(fieldValue.toString(), String.class);
         }

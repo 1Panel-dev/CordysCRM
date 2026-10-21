@@ -154,12 +154,12 @@ public class CompressUtils {
     }
 
     public static Object zipString(Object data) {
-        if (!(data instanceof String)) {
+        if (!(data instanceof String text)) {
             return data;
         }
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             try (DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(out)) {
-                deflaterOutputStream.write(((String) data).getBytes(StandardCharsets.UTF_8));
+                deflaterOutputStream.write(text.getBytes(StandardCharsets.UTF_8));
             }
             return Base64.encodeBase64String(out.toByteArray());
         } catch (Exception e) {
@@ -168,12 +168,12 @@ public class CompressUtils {
     }
 
     public static Object unzipString(Object data) {
-        if (!(data instanceof String)) {
+        if (!(data instanceof String text)) {
             return data;
         }
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             try (OutputStream outputStream = new InflaterOutputStream(os)) {
-                outputStream.write(Base64.decodeBase64((String) data));
+                outputStream.write(Base64.decodeBase64(text));
             }
             return os.toString(StandardCharsets.UTF_8);
         } catch (Exception e) {

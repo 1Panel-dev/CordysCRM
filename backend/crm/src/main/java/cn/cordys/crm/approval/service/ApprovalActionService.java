@@ -648,22 +648,19 @@ public class ApprovalActionService {
             throw new GenericException(Translator.get("not.approval.task.owner"));
         }
         switch (action) {
-        case APPROVE: {
+        case APPROVE -> {
             currentTask.setAction(ApprovalAction.APPROVE.name());
             currentTask.setStatus(ApprovalStatus.APPROVED.name());
-            break;
         }
-        case REJECT: {
+        case REJECT -> {
             currentTask.setAction(ApprovalAction.REJECT.name());
             currentTask.setStatus(ApprovalStatus.UNAPPROVED.name());
-            break;
         }
-        case BACK: {
+        case BACK -> {
             currentTask.setStatus(ApprovalStatus.PENDING.name());
             currentTask.setAction(ApprovalAction.BACK.name());
-            break;
         }
-        case SIGN: {
+        case SIGN -> {
             if (signType == ApprovalAddSignType.BEFORE) {
                 currentTask.setStatus(ApprovalStatus.PENDING.name());
                 currentTask.setAction(ApprovalAction.SIGN.name());
@@ -671,9 +668,8 @@ public class ApprovalActionService {
                 currentTask.setAction(ApprovalAction.APPROVE.name());
                 currentTask.setStatus(ApprovalStatus.APPROVED.name());
             }
-            break;
         }
-        default: {
+        default -> {
         }
         }
         currentTask.setUpdateUser(currentUserId);

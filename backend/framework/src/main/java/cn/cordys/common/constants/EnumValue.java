@@ -96,8 +96,8 @@ public @interface EnumValue {
 
             // 获取枚举类的所有有效值
             for (Enum<?> item : enums) {
-                if (item instanceof ValueEnum) {
-                    values.add(((ValueEnum<?>) item).getValue());
+                if (item instanceof ValueEnum<?> valueEnum) {
+                    values.add(valueEnum.getValue());
                 } else {
                     values.add(item.name());
                 }

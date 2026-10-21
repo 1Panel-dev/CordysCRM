@@ -28,10 +28,10 @@ public class ServletUtils {
      */
     public static HttpServletRequest getRequest() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (!(requestAttributes instanceof ServletRequestAttributes)) {
+        if (!(requestAttributes instanceof ServletRequestAttributes servletRequestAttributes)) {
             return null;
         }
-        return ((ServletRequestAttributes) requestAttributes).getRequest();
+        return servletRequestAttributes.getRequest();
     }
 
     public static String getRequestSource() {

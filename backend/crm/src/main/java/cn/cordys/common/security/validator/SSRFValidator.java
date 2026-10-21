@@ -130,8 +130,8 @@ public class SSRFValidator {
         }
 
         // ---- 处理 IPv4-mapped IPv6 (::ffff:x.x.x.x) ----
-        if (addr instanceof Inet6Address) {
-            InetAddress embedded = getEmbeddedIPv4Address((Inet6Address) addr);
+        if (addr instanceof Inet6Address ipv6Address) {
+            InetAddress embedded = getEmbeddedIPv4Address(ipv6Address);
             if (embedded != null) {
                 // 递归校验内嵌的 IPv4 地址
                 validateIpAddress(embedded);
@@ -139,28 +139,28 @@ public class SSRFValidator {
             }
 
             // NAT64: 64:ff9b::/96
-            embedded = extractIPv4FromNAT64((Inet6Address) addr);
+            embedded = extractIPv4FromNAT64(ipv6Address);
             if (embedded != null) {
                 validateIpAddress(embedded);
                 return;
             }
 
             // 6to4: 2002::/16
-            embedded = extractIPv4From6to4((Inet6Address) addr);
+            embedded = extractIPv4From6to4(ipv6Address);
             if (embedded != null) {
                 validateIpAddress(embedded);
                 return;
             }
 
             // Teredo: 2001::/32
-            embedded = extractIPv4FromTeredo((Inet6Address) addr);
+            embedded = extractIPv4FromTeredo(ipv6Address);
             if (embedded != null) {
                 validateIpAddress(embedded);
                 return;
             }
 
             // IPv6 ULA (fc00::/7)
-            if (isIPv6ULA((Inet6Address) addr)) {
+            if (isIPv6ULA(ipv6Address)) {
                 throw new IllegalArgumentException("禁止访问 IPv6 唯一本地地址 (ULA)");
             }
         }

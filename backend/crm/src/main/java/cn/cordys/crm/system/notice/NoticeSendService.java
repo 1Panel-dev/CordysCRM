@@ -53,7 +53,7 @@ public class NoticeSendService {
     }
 
     private void setLanguage(Object languageObj) {
-        String language = languageObj instanceof String ? (String) languageObj : "";
+        String language = languageObj instanceof String value ? value : "";
         Locale locale = Locale.SIMPLIFIED_CHINESE;
         if (Strings.CI.contains(language, "US")) {
             locale = Locale.US;

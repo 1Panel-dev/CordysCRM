@@ -38,15 +38,15 @@ public class UserDesensitizationInterceptor implements Interceptor {
         Object returnValue = invocation.proceed();
 
         // 如果返回值是 List 类型，处理其中的每个元素
-        if (returnValue instanceof List<?>) {
+        if (returnValue instanceof List<?> values) {
             List<Object> list = new ArrayList<>();
             boolean isDecrypted = false;
 
-            for (Object val : (List<?>) returnValue) {
-                if (val instanceof User) {
+            for (Object val : values) {
+                if (val instanceof User user) {
                     isDecrypted = true;
                     // 将密码字段置为 null，进行脱敏处理
-                    ((User) val).setPassword(null);
+                    user.setPassword(null);
                 }
                 list.add(val);
             }
@@ -56,8 +56,8 @@ public class UserDesensitizationInterceptor implements Interceptor {
         }
 
         // 如果返回值是单个 User 对象，脱敏其密码字段
-        if (returnValue instanceof User) {
-            ((User) returnValue).setPassword(null);
+        if (returnValue instanceof User user) {
+            user.setPassword(null);
         }
 
         return returnValue;

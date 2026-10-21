@@ -348,7 +348,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                 BaseModuleFieldValue returnBaseModuleFieldValue = new BaseModuleFieldValue();
                 returnBaseModuleFieldValue.setFieldId(fieldId);
                 Object fieldValue = fieldValueMap.get(fieldId);
-                if (fieldValue instanceof String) {
+                if (fieldValue instanceof String stringValue) {
                     //数据源类型的字段，进行值的转换
                     if (Strings.CI.equals(fieldTypeMap.get(fieldId), FieldType.DATA_SOURCE.toString())) {
                         List<OptionDTO> options = optionMap.get(fieldId);
@@ -356,7 +356,7 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                             continue;
                         }
                         for (OptionDTO optionDTO : options) {
-                            if (Strings.CI.equals(optionDTO.getIdAsString(), (String) fieldValue)) {
+                            if (Strings.CI.equals(optionDTO.getIdAsString(), stringValue)) {
                                 fieldValue = optionDTO.getName();
                                 break;
                             }
@@ -369,9 +369,9 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                         }
                     }
                     returnBaseModuleFieldValue.setFieldValue(fieldValue);
-                } else if (fieldValue instanceof List<?>) {
+                } else if (fieldValue instanceof List<?> values) {
                     List<String> fieldValueList = new ArrayList<>();
-                    for (Object element : (List<?>) fieldValue) {
+                    for (Object element : values) {
                         String s = element == null ? null : element.toString();
                         List<OptionDTO> optionDTOs = optionMap.get(fieldId);
                         if (CollectionUtils.isEmpty(optionDTOs)) {
