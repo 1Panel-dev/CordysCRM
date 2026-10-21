@@ -94,7 +94,7 @@ public class ContractController {
     }
 
     @PostMapping("/update/stage")
-    @CsPermission(value = PermissionConstants.CONTRACT_STAGE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT)
+    @CsPermission(value = PermissionConstants.CONTRACT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "更新合同阶段")
     public void updateStage(@Validated @RequestBody ContractStageRequest request) {
         contractService.updateStage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

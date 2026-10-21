@@ -193,7 +193,6 @@ public class PermissionConstants {
     public static final String CONTRACT_IMPORT = "CONTRACT:IMPORT";
     public static final String CONTRACT_EXPORT = "CONTRACT:EXPORT";
     public static final String CONTRACT_APPROVAL = "CONTRACT:APPROVAL";
-    public static final String CONTRACT_STAGE = "CONTRACT:STAGE";
     public static final String CONTRACT_PAYMENT = "CONTRACT:PAYMENT";
 
     /*------ end: CONTRACT ------*/
