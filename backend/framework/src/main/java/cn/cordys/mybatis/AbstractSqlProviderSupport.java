@@ -104,8 +104,8 @@ public abstract class AbstractSqlProviderSupport {
      * @param obj 查询条件对象
      */
     void beforeInterceptor(Object obj) {
-        if (obj instanceof BaseMapper.Interceptor && this instanceof BaseMapper.WriteType) {
-            ((BaseMapper.Interceptor) obj).prePersist();
+        if (obj instanceof BaseMapper.Interceptor interceptor && this instanceof BaseMapper.WriteType) {
+            interceptor.prePersist();
         }
     }
 

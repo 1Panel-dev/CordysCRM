@@ -307,8 +307,8 @@ public class HitApprovalAspect {
             return null;
         }
         // 如果返回值是字符串，直接返回
-        if (retValue instanceof String) {
-            return (String) retValue;
+        if (retValue instanceof String id) {
+            return id;
         }
         try {
             Method method = retValue.getClass().getMethod("getId");
@@ -339,7 +339,7 @@ public class HitApprovalAspect {
             if (value == null) {
                 return null;
             }
-            return value instanceof List ? ((List<?>) value).getFirst().toString() : value.toString();
+            return value instanceof List<?> values ? values.getFirst().toString() : value.toString();
         } catch (Exception e) {
             return null;
         }

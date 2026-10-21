@@ -1237,20 +1237,20 @@ public class ApprovalResourceService {
         if (webHookConfig != null && webHookConfig.getWebHookEnable()) {
             HashMap<String, Object> resultObj = new HashMap<>();
             switch (webHookConfig.getWebHookMethod()) {
-            case "POST":
+            case "POST" -> {
                 resultObj = sendPost(webHookConfig, null, null, true, null);
                 if (MapUtils.isEmpty(resultObj)) {
                     throw new GenericException("测试连接不通过");
                 }
-                break;
-            case "GET":
+            }
+            case "GET" -> {
                 resultObj = sendGet(webHookConfig, null, null, true, null);
                 if (MapUtils.isEmpty(resultObj)) {
                     throw new GenericException("测试连接不通过");
                 }
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
             }
         }
     }

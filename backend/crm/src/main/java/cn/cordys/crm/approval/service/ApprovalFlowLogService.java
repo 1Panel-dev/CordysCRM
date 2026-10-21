@@ -358,7 +358,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private void setNodePropertyValue(JsonDifferenceDTO diff, String field, JsonNode oldNode, JsonNode newNode,
             boolean hasOldValue, boolean hasNewValue) {
         switch (field) {
-        case "approvalType":
+        case "approvalType" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(
                         Translator.get("approval_flow.approval_type." + diff.getOldValue().toString().toLowerCase()));
@@ -367,9 +367,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 diff.setNewValueName(
                         Translator.get("approval_flow.approval_type." + diff.getNewValue().toString().toLowerCase()));
             }
-            break;
-        case "approverType":
-        case "ccType":
+        }
+        case "approverType", "ccType" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(
                         Translator.get("approval_flow.approver_type." + diff.getOldValue().toString().toLowerCase()));
@@ -378,8 +377,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 diff.setNewValueName(
                         Translator.get("approval_flow.approver_type." + diff.getNewValue().toString().toLowerCase()));
             }
-            break;
-        case "multiApproverMode":
+        }
+        case "multiApproverMode" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(Translator
                         .get("approval_flow.multi_approver_mode." + diff.getOldValue().toString().toLowerCase()));
@@ -388,8 +387,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 diff.setNewValueName(Translator
                         .get("approval_flow.multi_approver_mode." + diff.getNewValue().toString().toLowerCase()));
             }
-            break;
-        case "emptyApproverAction":
+        }
+        case "emptyApproverAction" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(Translator
                         .get("approval_flow.empty_approver_action." + diff.getOldValue().toString().toLowerCase()));
@@ -398,8 +397,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 diff.setNewValueName(Translator
                         .get("approval_flow.empty_approver_action." + diff.getNewValue().toString().toLowerCase()));
             }
-            break;
-        case "sameSubmitterAction":
+        }
+        case "sameSubmitterAction" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(Translator
                         .get("approval_flow.same_submitter_action." + diff.getOldValue().toString().toLowerCase()));
@@ -408,8 +407,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 diff.setNewValueName(Translator
                         .get("approval_flow.same_submitter_action." + diff.getNewValue().toString().toLowerCase()));
             }
-            break;
-        case "nodeType":
+        }
+        case "nodeType" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(
                         Translator.get("approval_flow.node_type." + diff.getOldValue().toString().toLowerCase()));
@@ -418,8 +417,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 diff.setNewValueName(
                         Translator.get("approval_flow.node_type." + diff.getNewValue().toString().toLowerCase()));
             }
-            break;
-        case "approverList":
+        }
+        case "approverList" -> {
             if (hasOldValue && oldNode != null) {
                 String oldApproverType = getNodeFieldValue(oldNode, "approverType");
                 diff.setOldValueName(translateApproverList(diff.getOldValue(), oldApproverType));
@@ -428,8 +427,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 String newApproverType = getNodeFieldValue(newNode, "approverType");
                 diff.setNewValueName(translateApproverList(diff.getNewValue(), newApproverType));
             }
-            break;
-        case "ccList":
+        }
+        case "ccList" -> {
             if (hasOldValue && oldNode != null) {
                 String oldCcType = getNodeFieldValue(oldNode, "ccType");
                 diff.setOldValueName(translateApproverList(diff.getOldValue(), oldCcType));
@@ -438,54 +437,55 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 String newCcType = getNodeFieldValue(newNode, "ccType");
                 diff.setNewValueName(translateApproverList(diff.getNewValue(), newCcType));
             }
-            break;
-        case "fallbackApprover":
+        }
+        case "fallbackApprover" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(translateMemberList(diff.getOldValue()));
             }
             if (hasNewValue && isValidValue(diff.getNewValue())) {
                 diff.setNewValueName(translateMemberList(diff.getNewValue()));
             }
-            break;
-        case "passPostConfig":
+        }
+        case "passPostConfig" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(translatePostConfig(diff.getOldValue()));
             }
             if (hasNewValue && isValidValue(diff.getNewValue())) {
                 diff.setNewValueName(translatePostConfig(diff.getNewValue()));
             }
-            break;
-        case "rejectPostConfig":
+        }
+        case "rejectPostConfig" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(translatePostConfig(diff.getOldValue()));
             }
             if (hasNewValue && isValidValue(diff.getNewValue())) {
                 diff.setNewValueName(translatePostConfig(diff.getNewValue()));
             }
-            break;
-        case "fieldPermissions":
+        }
+        case "fieldPermissions" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(translateFieldPermissions(diff.getOldValue()));
             }
             if (hasNewValue && isValidValue(diff.getNewValue())) {
                 diff.setNewValueName(translateFieldPermissions(diff.getNewValue()));
             }
-            break;
-        case "conditionConfig":
+        }
+        case "conditionConfig" -> {
             if (hasOldValue && isValidValue(diff.getOldValue())) {
                 diff.setOldValueName(translateConditionConfig(diff.getOldValue()));
             }
             if (hasNewValue && isValidValue(diff.getNewValue())) {
                 diff.setNewValueName(translateConditionConfig(diff.getNewValue()));
             }
-            break;
-        default:
+        }
+        default -> {
             if (hasOldValue) {
                 diff.setOldValueName(diff.getOldValue());
             }
             if (hasNewValue) {
                 diff.setNewValueName(diff.getNewValue());
             }
+        }
         }
     }
 

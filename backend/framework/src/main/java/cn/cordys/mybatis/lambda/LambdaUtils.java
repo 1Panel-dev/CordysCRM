@@ -25,8 +25,8 @@ public final class LambdaUtils {
      */
     public static String extract(XFunction<?, ?> func) {
         // 1. IDEA 调试模式下，Lambda 表达式是一个代理对象
-        if (func instanceof Proxy) {
-            ProxyLambdaMeta lambdaMeta = new ProxyLambdaMeta((Proxy) func);
+        if (func instanceof Proxy proxy) {
+            ProxyLambdaMeta lambdaMeta = new ProxyLambdaMeta(proxy);
             return lambdaMeta.getImplMethodName();
         }
 
