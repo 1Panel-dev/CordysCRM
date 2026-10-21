@@ -33,6 +33,8 @@ public class ApprovalInstanceService {
 	@Resource
 	private BaseMapper<ApprovalInstance> approvalInstanceMapper;
 	@Resource
+	private BaseMapper<ApprovalComment> approvalCommentMapper;
+	@Resource
 	private BaseMapper<ApprovalTask> approvalTaskMapper;
 	@Resource
 	private BaseMapper<ApprovalAddSignTask> approvalAddSignTaskMapper;
@@ -86,6 +88,10 @@ public class ApprovalInstanceService {
 		instanceDetail.setNodes(buildApprovalRecordNodeList(latestInstance, tasks, records, signTasks, backRecords, elementAttachmentsMap, simpleUserMap, currentOrgId));
 		instanceDetail.setCurrentNodeId(latestInstance.getCurrentNodeId());
 		instanceDetail.setComment(latestInstance.getComment());
+		ApprovalComment commentCriteria = new ApprovalComment();
+		commentCriteria.setInstanceId(latestInstance.getId());
+		commentCriteria.setOrganizationId(currentOrgId);
+		instanceDetail.setCommentCount(approvalCommentMapper.countByExample(commentCriteria));
 		return setCurrentNodeFieldPermissions(instanceDetail);
 	}
 

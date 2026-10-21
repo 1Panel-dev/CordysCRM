@@ -1,0 +1,385 @@
+package cn.cordys.crm.approval.service;
+
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.uid.impl.DefaultUidGenerator;
+import cn.cordys.common.uid.worker.WorkerIdAssigner;
+import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.domain.ApprovalComment;
+import cn.cordys.crm.approval.domain.ApprovalCommentMention;
+import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.dto.request.ApprovalCommentAddRequest;
+import cn.cordys.crm.approval.dto.request.ApprovalCommentUpdateRequest;
+import cn.cordys.crm.approval.dto.response.ApprovalCommentMentionUserResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalCommentResponse;
+import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
+import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+class ApprovalCommentServiceTest {
+
+    private static final String ORG = "org-a";
+    private static final String USER = "user-a";
+    private static final String INSTANCE = "instance-a";
+    private static ApplicationContext previousContext;
+    private static MessageSource previousMessageSource;
+    private static DefaultUidGenerator uidGenerator;
+
+    private ApprovalCommentService service;
+    private BaseMapper<ApprovalComment> commentMapper;
+    private BaseMapper<ApprovalCommentMention> mentionMapper;
+    private ExtApprovalCommentMapper extCommentMapper;
+    private ApprovalResourceService approvalResourceService;
+    private ApprovalInstance instance;
+
+    @BeforeAll
+    static void initCommonUtilities() {
+        previousContext = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class, "context");
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        ReflectionTestUtils.setField(Translator.class, "messageSource", new StaticMessageSource());
+        uidGenerator = new DefaultUidGenerator();
+        ReflectionTestUtils.setField(uidGenerator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
+        uidGenerator.init();
+        ApplicationContext context = mock(ApplicationContext.class);
+        when(context.getBean(DefaultUidGenerator.class)).thenReturn(uidGenerator);
+        new CommonBeanFactory().setApplicationContext(context);
+    }
+
+    @AfterAll
+    static void restoreCommonUtilities() {
+        new CommonBeanFactory().setApplicationContext(previousContext);
+        ReflectionTestUtils.setField(Translator.class, "messageSource", previousMessageSource);
+    }
+
+    @BeforeEach
+    @SuppressWarnings("unchecked")
+    void setUp() {
+        service = new ApprovalCommentService();
+        commentMapper = mock(BaseMapper.class);
+        mentionMapper = mock(BaseMapper.class);
+        extCommentMapper = mock(ExtApprovalCommentMapper.class);
+        approvalResourceService = mock(ApprovalResourceService.class);
+        ReflectionTestUtils.setField(service, "commentMapper", commentMapper);
+        ReflectionTestUtils.setField(service, "mentionMapper", mentionMapper);
+        ReflectionTestUtils.setField(service, "extCommentMapper", extCommentMapper);
+        ReflectionTestUtils.setField(service, "approvalResourceService", approvalResourceService);
+        instance = new ApprovalInstance();
+        instance.setId(INSTANCE);
+        when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(instance);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void rejectsUnknownInstanceOrMissingAllPermissions(boolean knownInstance) {
+        if (!knownInstance) {
+            when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(null);
+        }
+
+        assertThrows(GenericException.class, () -> service.add(addRequest(), USER, ORG));
+
+        verify(extCommentMapper).selectInstance(INSTANCE, ORG);
+        verifyNoInteractions(commentMapper, mentionMapper);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void allowsBusinessOrTaskPermissionAndEffectiveMention(boolean businessOrTaskPermission) {
+        ApprovalCommentResponse detail = detail("comment-a");
+        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of(detail));
+        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(businessOrTaskPermission);
+        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(!businessOrTaskPermission);
+
+        assertEquals(List.of(detail), service.list(INSTANCE, USER, ORG));
+
+        assertTrue(detail.isEditable());
+        verify(approvalResourceService).hasInstanceViewPermission(instance, USER, ORG);
+        if (!businessOrTaskPermission) {
+            verify(extCommentMapper).existsMention(INSTANCE, USER, ORG);
+        }
+    }
+
+    @Test
+    void listsTwoLevelsWithTheirOwnMentionsAndDisplayInformation() {
+        allowExistingPermission();
+        ApprovalCommentResponse root = detail("comment-a");
+        root.setContent("一级评论");
+        root.setCreateUserName("评论甲");
+        root.setCreateUserAvatar("avatar-a");
+        root.setCreateTime(100L);
+        root.setUpdateTime(110L);
+        root.setReplyCount(99L);
+        ApprovalCommentResponse reply = detail("reply-a");
+        reply.setParentId(root.getId());
+        reply.setCreateUser("other-user");
+        reply.setCreateUserName("评论乙");
+        reply.setCreateUserAvatar("avatar-b");
+        reply.setContent("二级回复");
+        reply.setCreateTime(200L);
+        reply.setUpdateTime(210L);
+        reply.setReplyToUserId(USER);
+        reply.setReplyToUserName(root.getCreateUserName());
+        ApprovalCommentMentionUserResponse rootMention = new ApprovalCommentMentionUserResponse();
+        rootMention.setCommentId(root.getId());
+        rootMention.setId("member-a");
+        ApprovalCommentMentionUserResponse replyMention = new ApprovalCommentMentionUserResponse();
+        replyMention.setCommentId(reply.getId());
+        replyMention.setId("member-b");
+        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of(root));
+        when(extCommentMapper.selectChildren(INSTANCE, List.of(root.getId()), ORG)).thenReturn(List.of(reply));
+        when(extCommentMapper.selectMentionUsers(List.of(root.getId(), reply.getId()), ORG))
+                .thenReturn(List.of(replyMention, rootMention));
+
+        List<ApprovalCommentResponse> roots = service.list(INSTANCE, USER, ORG);
+
+        assertEquals(List.of(root), roots);
+        assertEquals("一级评论", roots.getFirst().getContent());
+        assertEquals("评论甲", roots.getFirst().getCreateUserName());
+        assertEquals("avatar-a", roots.getFirst().getCreateUserAvatar());
+        assertEquals(100L, roots.getFirst().getCreateTime());
+        assertEquals(110L, roots.getFirst().getUpdateTime());
+        assertEquals(1L, roots.getFirst().getReplyCount());
+        assertEquals(List.of(rootMention), roots.getFirst().getMentionUsers());
+        assertTrue(roots.getFirst().isEditable());
+        List<ApprovalCommentResponse> replies = roots.getFirst().getReplies();
+
+        assertEquals(List.of(reply), replies);
+        assertEquals("二级回复", replies.getFirst().getContent());
+        assertEquals("评论乙", replies.getFirst().getCreateUserName());
+        assertEquals("avatar-b", replies.getFirst().getCreateUserAvatar());
+        assertEquals(200L, replies.getFirst().getCreateTime());
+        assertEquals(210L, replies.getFirst().getUpdateTime());
+        assertEquals(USER, replies.getFirst().getReplyToUserId());
+        assertEquals("评论甲", replies.getFirst().getReplyToUserName());
+        assertEquals(List.of(replyMention), replies.getFirst().getMentionUsers());
+        assertFalse(replies.getFirst().isEditable());
+        assertTrue(replies.getFirst().getReplies().isEmpty());
+        assertEquals(0L, replies.getFirst().getReplyCount());
+        verify(extCommentMapper).selectChildren(INSTANCE, List.of(root.getId()), ORG);
+        verify(extCommentMapper).selectMentionUsers(List.of(root.getId(), reply.getId()), ORG);
+    }
+
+    @Test
+    void groupsRepliesByParentAndKeepsRootsWithoutReplies() {
+        allowExistingPermission();
+        ApprovalCommentResponse first = detail("comment-a");
+        ApprovalCommentResponse second = detail("comment-b");
+        ApprovalCommentResponse noReply = detail("comment-c");
+        ApprovalCommentResponse firstReply = detail("reply-a1");
+        firstReply.setParentId(first.getId());
+        ApprovalCommentResponse nextReply = detail("reply-a2");
+        nextReply.setParentId(first.getId());
+        ApprovalCommentResponse secondReply = detail("reply-b");
+        secondReply.setParentId(second.getId());
+        List<String> parentIds = List.of(first.getId(), second.getId(), noReply.getId());
+        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of(first, second, noReply));
+        when(extCommentMapper.selectChildren(INSTANCE, parentIds, ORG))
+                .thenReturn(List.of(secondReply, firstReply, nextReply));
+
+        List<ApprovalCommentResponse> comments = service.list(INSTANCE, USER, ORG);
+
+        assertEquals(List.of(first, second, noReply), comments);
+        assertEquals(List.of(firstReply, nextReply), first.getReplies());
+        assertEquals(2L, first.getReplyCount());
+        assertEquals(List.of(secondReply), second.getReplies());
+        assertEquals(1L, second.getReplyCount());
+        assertTrue(noReply.getReplies().isEmpty());
+        assertEquals(0L, noReply.getReplyCount());
+        verify(extCommentMapper).selectChildren(INSTANCE, parentIds, ORG);
+    }
+
+    @Test
+    void skipsChildrenAndMentionLookupWhenRootListIsEmpty() {
+        allowExistingPermission();
+        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of());
+
+        List<ApprovalCommentResponse> comments = service.list(INSTANCE, USER, ORG);
+
+        assertTrue(comments.isEmpty());
+        verify(extCommentMapper, never()).selectChildren(anyString(), any(), anyString());
+        verify(extCommentMapper, never()).selectMentionUsers(any(), anyString());
+    }
+
+    @Test
+    void rejectsReplyToAnotherApprovalInstance() {
+        allowExistingPermission();
+        ApprovalComment parent = comment("parent-a", "other-user");
+        parent.setInstanceId("instance-b");
+        when(extCommentMapper.selectCommentForUpdate("parent-a", ORG)).thenReturn(parent);
+        ApprovalCommentAddRequest request = addRequest();
+        request.setParentId("parent-a");
+
+        assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
+
+        verifyNoInteractions(commentMapper, mentionMapper);
+    }
+
+    @Test
+    void rejectsThirdCommentLevel() {
+        allowExistingPermission();
+        ApprovalComment parent = comment("reply-a", "other-user");
+        parent.setParentId("parent-a");
+        when(extCommentMapper.selectCommentForUpdate("reply-a", ORG)).thenReturn(parent);
+        ApprovalCommentAddRequest request = addRequest();
+        request.setParentId("reply-a");
+
+        assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
+
+        verifyNoInteractions(commentMapper, mentionMapper);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void rejectsEditingOrDeletingAnotherUsersComment(boolean update) {
+        allowExistingPermission();
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", "other-user"));
+
+        assertThrows(GenericException.class, () -> {
+            if (update) {
+                service.update(updateRequest(), USER, ORG);
+            } else {
+                service.delete("comment-a", USER, ORG);
+            }
+        });
+
+        verifyNoInteractions(commentMapper, mentionMapper);
+        verify(extCommentMapper, never()).deleteMentions(any(), anyString());
+        verify(extCommentMapper, never()).deleteComments(any(), anyString(), anyString());
+    }
+
+    @Test
+    void rejectsMentioningUserOutsideEnabledOrganizationMembers() {
+        allowExistingPermission();
+        ApprovalCommentAddRequest request = addRequest();
+        request.setMentionedUserIds(List.of("member-a", "foreign-user"));
+        when(extCommentMapper.selectEnabledUserIds(List.of("member-a", "foreign-user"), ORG)).thenReturn(List.of("member-a"));
+
+        assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
+
+        verifyNoInteractions(commentMapper, mentionMapper);
+    }
+
+    @Test
+    void allowsFinishingOwnEditWhenItRemovesTheLastMentionGrant() {
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
+        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(true);
+        ApprovalCommentResponse detail = detail("comment-a");
+        when(extCommentMapper.selectDetail("comment-a", ORG)).thenReturn(detail);
+
+        assertSame(detail, service.update(updateRequest(), USER, ORG));
+
+        ArgumentCaptor<ApprovalComment> updated = ArgumentCaptor.forClass(ApprovalComment.class);
+        verify(commentMapper).update(updated.capture());
+        assertEquals("修改后的评论", updated.getValue().getContent());
+        assertEquals(USER, updated.getValue().getUpdateUser());
+        verify(extCommentMapper).existsMention(INSTANCE, USER, ORG);
+        verify(extCommentMapper).deleteMentions(List.of("comment-a"), ORG);
+        verifyNoInteractions(mentionMapper);
+    }
+
+    @Test
+    void deletesRootAndRepliesTogetherWithTheirMentionGrants() {
+        allowExistingPermission();
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
+        ApprovalComment reply = comment("reply-a", "other-user");
+        reply.setParentId("comment-a");
+        when(commentMapper.selectListByLambda(any())).thenAnswer(invocation -> {
+            LambdaQueryWrapper<ApprovalComment> query = invocation.getArgument(0);
+            assertTrue(query.getParams().containsValue(INSTANCE));
+            assertTrue(query.getParams().containsValue(ORG));
+            assertTrue(query.getParams().containsValue("comment-a"));
+            return List.of(reply);
+        });
+
+        service.delete("comment-a", USER, ORG);
+
+        verify(extCommentMapper).deleteMentions(List.of("comment-a", "reply-a"), ORG);
+        verify(extCommentMapper).deleteComments(List.of("comment-a", "reply-a"), INSTANCE, ORG);
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void deduplicatesMentionUsersAndDefaultsReplyRecipientToRootAuthor() {
+        allowExistingPermission();
+        when(extCommentMapper.selectCommentForUpdate("parent-a", ORG)).thenReturn(comment("parent-a", "root-author"));
+        when(extCommentMapper.selectEnabledUserIds(List.of("member-a"), ORG)).thenReturn(List.of("member-a"));
+        when(extCommentMapper.selectDetail(anyString(), eq(ORG))).thenAnswer(invocation -> detail(invocation.getArgument(0)));
+        ApprovalCommentAddRequest request = addRequest();
+        request.setParentId("parent-a");
+        request.setMentionedUserIds(List.of("member-a", "member-a"));
+
+        service.add(request, USER, ORG);
+
+        ArgumentCaptor<ApprovalComment> commentCaptor = ArgumentCaptor.forClass(ApprovalComment.class);
+        verify(commentMapper).insert(commentCaptor.capture());
+        assertEquals("parent-a", commentCaptor.getValue().getParentId());
+        assertEquals("root-author", commentCaptor.getValue().getReplyToUserId());
+        ArgumentCaptor<List<ApprovalCommentMention>> mentionCaptor = ArgumentCaptor.forClass((Class) List.class);
+        verify(mentionMapper).batchInsert(mentionCaptor.capture());
+        assertEquals(1, mentionCaptor.getValue().size());
+        assertEquals("member-a", mentionCaptor.getValue().getFirst().getUserId());
+        assertEquals(commentCaptor.getValue().getId(), mentionCaptor.getValue().getFirst().getCommentId());
+    }
+
+    private void allowExistingPermission() {
+        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(true);
+    }
+
+    private ApprovalCommentAddRequest addRequest() {
+        ApprovalCommentAddRequest request = new ApprovalCommentAddRequest();
+        request.setInstanceId(INSTANCE);
+        request.setContent("评论内容");
+        return request;
+    }
+
+    private ApprovalCommentUpdateRequest updateRequest() {
+        ApprovalCommentUpdateRequest request = new ApprovalCommentUpdateRequest();
+        request.setId("comment-a");
+        request.setContent("修改后的评论");
+        request.setMentionedUserIds(List.of());
+        return request;
+    }
+
+    private ApprovalComment comment(String id, String author) {
+        ApprovalComment comment = new ApprovalComment();
+        comment.setId(id);
+        comment.setInstanceId(INSTANCE);
+        comment.setOrganizationId(ORG);
+        comment.setCreateUser(author);
+        return comment;
+    }
+
+    private ApprovalCommentResponse detail(String id) {
+        ApprovalCommentResponse response = new ApprovalCommentResponse();
+        response.setId(id);
+        response.setInstanceId(INSTANCE);
+        response.setCreateUser(USER);
+        return response;
+    }
+}

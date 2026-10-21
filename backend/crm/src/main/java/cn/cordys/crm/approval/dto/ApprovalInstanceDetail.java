@@ -26,6 +26,9 @@ public class ApprovalInstanceDetail {
 	@Schema(description = "变更说明")
 	private String comment;
 
+	@Schema(description = "评论总数，包含一级评论和二级回复")
+	private Long commentCount;
+
 	@Schema(description = "审批状态")
 	private String approvalStatus;
 

@@ -4,6 +4,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
@@ -25,6 +26,8 @@ import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -34,8 +37,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -43,6 +49,37 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class CustomFormDataServiceTest {
+
+    @ParameterizedTest
+    @EnumSource(CustomFormRoleKey.class)
+    @SuppressWarnings("unchecked")
+    void lightweightViewPermissionKeepsCustomFormRoleOwnerAndOrganizationRules(CustomFormRoleKey scope) {
+        CustomFormDataService service = serviceWithPermission(scope);
+        BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
+        when(mapper.selectByPrimaryKey("record-1")).thenReturn(record("record-1", "form-1", "org-1", "owner"));
+
+        assertTrue(service.hasViewPermission("record-1", "owner", "org-1"));
+        assertEquals(scope != CustomFormRoleKey.MANAGE_OWN, service.hasViewPermission("record-1", "reader", "org-1"));
+        assertFalse(service.hasViewPermission("record-1", "owner", "org-2"));
+        assertFalse(service.hasViewPermission("missing", "owner", "org-1"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void lightweightViewPermissionOnlyConvertsExpectedAccessFailuresToFalse() {
+        CustomFormDataService service = org.mockito.Mockito.spy(serviceWithManageAllPermission());
+        BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
+        when(mapper.selectByPrimaryKey("record-1")).thenReturn(record("record-1", "form-1", "org-1", "owner"));
+        for (CrmHttpResultCode code : List.of(CrmHttpResultCode.FORBIDDEN, CrmHttpResultCode.NOT_FOUND)) {
+            org.mockito.Mockito.doThrow(new GenericException(code)).when(service).getDataScope("form-1", "reader", "org-1");
+            assertFalse(service.hasViewPermission("record-1", "reader", "org-1"));
+        }
+        GenericException unexpected = new GenericException("非权限业务异常");
+        org.mockito.Mockito.doThrow(unexpected).when(service).getDataScope("form-1", "reader", "org-1");
+        assertSame(unexpected, assertThrows(GenericException.class, () -> service.hasViewPermission("record-1", "reader", "org-1")));
+    }
 
     @Test
     @SuppressWarnings("unchecked")

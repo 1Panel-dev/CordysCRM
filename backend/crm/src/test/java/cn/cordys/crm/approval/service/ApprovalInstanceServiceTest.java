@@ -7,6 +7,7 @@ import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
+import cn.cordys.crm.approval.domain.ApprovalComment;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
@@ -14,11 +15,16 @@ import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalReturnBackRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalRecordNode;
+import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalTaskNode;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -32,9 +38,63 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class ApprovalInstanceServiceTest {
+
+	@ParameterizedTest
+	@ValueSource(longs = {0, 3})
+	@SuppressWarnings("unchecked")
+	void latestInstanceDetailCountsAllCommentsWithinCurrentOrganization(long commentCount) {
+		ApprovalInstanceService service = new ApprovalInstanceService();
+		BaseMapper<ApprovalInstance> instanceMapper = mock(BaseMapper.class);
+		BaseMapper<ApprovalComment> commentMapper = mock(BaseMapper.class);
+		UserExtendService userExtendService = mock(UserExtendService.class);
+		ReflectionTestUtils.setField(service, "approvalInstanceMapper", instanceMapper);
+		ReflectionTestUtils.setField(service, "approvalCommentMapper", commentMapper);
+		ReflectionTestUtils.setField(service, "approvalTaskMapper", mock(BaseMapper.class));
+		ReflectionTestUtils.setField(service, "approvalRecordMapper", mock(BaseMapper.class));
+		ReflectionTestUtils.setField(service, "approvalAddSignTaskMapper", mock(BaseMapper.class));
+		ReflectionTestUtils.setField(service, "approvalReturnBackRecordMapper", mock(BaseMapper.class));
+		ReflectionTestUtils.setField(service, "approvalNodeMapper", mock(BaseMapper.class));
+		ReflectionTestUtils.setField(service, "approvalNodeApproverMapper", mock(BaseMapper.class));
+		ReflectionTestUtils.setField(service, "userExtendService", userExtendService);
+		ApprovalInstance previous = new ApprovalInstance();
+		previous.setId("instance-previous");
+		previous.setSubmitTime(1L);
+		ApprovalInstance latest = new ApprovalInstance();
+		latest.setId("instance-latest");
+		latest.setSubmitTime(2L);
+		latest.setSubmitterId("submitter");
+		latest.setCurrentNodeId("");
+		when(instanceMapper.selectListByLambda(any())).thenReturn(List.of(latest, previous));
+		when(userExtendService.getAllUserSimpleMap()).thenReturn(Map.of());
+		when(commentMapper.countByExample(any())).thenReturn(commentCount);
+
+		ApprovalInstanceDetail detail = service.getLatestApprovalInstanceDetail("resource-1", "org-1");
+
+		assertEquals(latest.getId(), detail.getId());
+		assertEquals(commentCount, detail.getCommentCount());
+		ArgumentCaptor<ApprovalComment> criteria = ArgumentCaptor.forClass(ApprovalComment.class);
+		verify(commentMapper).countByExample(criteria.capture());
+		assertEquals(latest.getId(), criteria.getValue().getInstanceId());
+		assertEquals("org-1", criteria.getValue().getOrganizationId());
+		assertNull(criteria.getValue().getParentId());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void missingApprovalInstanceDoesNotCountComments() {
+		ApprovalInstanceService service = new ApprovalInstanceService();
+		BaseMapper<ApprovalComment> commentMapper = mock(BaseMapper.class);
+		ReflectionTestUtils.setField(service, "approvalInstanceMapper", mock(BaseMapper.class));
+		ReflectionTestUtils.setField(service, "approvalCommentMapper", commentMapper);
+
+		assertNull(service.getLatestApprovalInstanceDetail("resource-1", "org-1"));
+		verifyNoInteractions(commentMapper);
+	}
 
 	@Test
 	@SuppressWarnings("unchecked")
