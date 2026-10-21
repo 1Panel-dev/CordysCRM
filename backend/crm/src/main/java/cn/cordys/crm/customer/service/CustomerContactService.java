@@ -654,7 +654,6 @@ public class CustomerContactService {
      * @param customerId 客户ID
      * @param owner      负责人
      * @param orgId      组织ID
-     *
      * @return 联系人ID集合
      */
     public List<String> listOwnedContactIds(String customerId, String owner, String orgId) {
@@ -877,7 +876,7 @@ public class CustomerContactService {
         // 这一步在服务内部直接短路, 只多一次反查
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTACT.getKey(), request.getFieldId(), request.getIds(), organizationId);
-        customerContactFieldService.batchUpdate(request, field, originCustomerContacts, CustomerContact.class, LogModule.CUSTOMER_CONTACT, extCustomerContactMapper::batchUpdate, userId, organizationId);
+        customerContactFieldService.batchUpdate(request, field, originCustomerContacts, CustomerContact.class, LogModule.CUSTOMER_CONTACT, extCustomerContactMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }

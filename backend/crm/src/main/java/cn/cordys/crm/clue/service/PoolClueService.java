@@ -703,7 +703,7 @@ public class PoolClueService {
 
         CommonBeanFactory.getBean(ApprovalResourceService.class)
                 .batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CLUE, organizationId, userId, field.getName(), request.getFieldValue());
-        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId, true);
 
         return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(fail).skip(0)
                 .errorMessages(Translator.get("batch.update.reason")).build();

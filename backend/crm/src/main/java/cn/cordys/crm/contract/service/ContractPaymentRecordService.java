@@ -231,7 +231,7 @@ public class ContractPaymentRecordService extends BaseExportService {
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTRACT_PAYMENT_RECORD.getKey(), request.getFieldId(), request.getIds(), orgId);
         contractPaymentRecordFieldService.batchUpdate(request, field, records, ContractPaymentRecord.class,
-                LogModule.CONTRACT_PAYMENT_RECORD, extContractPaymentRecordMapper::batchUpdate, userId, orgId);
+                LogModule.CONTRACT_PAYMENT_RECORD, extContractPaymentRecordMapper::batchUpdate, userId, orgId, true);
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }
 
