@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,9 @@ public class ModuleFormCacheService {
      * @param formKey        表单Key
      * @param organizationId 组织ID
      * @return 表单配置
+     * 字段加工共用一次事务，避免跨服务的逐字段调用反复开关数据库事务
      */
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
     public ModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
         ModuleFormConfigDTO cached = Objects.requireNonNull(CommonBeanFactory.getBean(this.getClass()))
                 .getConfig(formKey, organizationId);
