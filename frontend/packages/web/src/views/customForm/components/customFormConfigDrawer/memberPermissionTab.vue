@@ -190,7 +190,7 @@
       removeLoading.value = true;
       await removeCustomFormMember({
         customFormRoleId: activeRoleId.value,
-        userIds: [row.id],
+        userIds: [row.userId],
       });
       Message.success(t('common.removeSuccess'));
       close();
@@ -273,6 +273,7 @@
     getCustomFormRoleUsers,
     {
       tableKey: TableKeyEnum.CUSTOM_FORM_USER,
+      tableRowKey: 'userId',
       columns,
       showSetting: true,
       containerClass: '.custom-form-member-table',

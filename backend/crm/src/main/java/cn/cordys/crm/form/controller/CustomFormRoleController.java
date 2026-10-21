@@ -67,7 +67,7 @@ public class CustomFormRoleController {
     @PostMapping("/user/remove")
     @Operation(summary = "角色移除用户")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public void removeUsers(@RequestBody CustomFormRoleUserBatchRequest request) {
+    public void removeUsers(@Validated @RequestBody CustomFormRoleUserBatchRequest request) {
         customFormRoleService.removeUsers(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

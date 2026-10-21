@@ -163,6 +163,9 @@ public class CustomFormRoleService {
 
         long now = System.currentTimeMillis();
         List<String> insertUserIds = ListUtils.subtract(userIds, currentRoleUserIds);
+        if (CollectionUtils.isEmpty(insertUserIds)) {
+            return;
+        }
         List<CustomFormRoleUser> toInsert = insertUserIds
                 .stream()
                 .map(uid -> {
@@ -176,10 +179,7 @@ public class CustomFormRoleService {
                     roleUser.setUpdateUser(userId);
                     return roleUser;
                 }).toList();
-
-        if (CollectionUtils.isNotEmpty(toInsert)) {
-            customFormRoleUserMapper.batchInsert(toInsert);
-        }
+        customFormRoleUserMapper.batchInsert(toInsert);
 
         CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
         List<String> userNames = extUserMapper.selectUserNameByIds(insertUserIds);
@@ -196,22 +196,30 @@ public class CustomFormRoleService {
         }
         customFormService.checkFormAdmin(role.getCustomFormId(), userId, orgId);
 
-        if (CollectionUtils.isEmpty(request.getUserIds())) {
+        List<String> resolvedUserIds = resolveUserIds(request);
+        if (CollectionUtils.isEmpty(resolvedUserIds)) {
             return;
         }
 
-        LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).in(CustomFormRoleUser::getId, request.getUserIds());
-        List<String> roleUserIds = customFormRoleUserMapper.selectByIds(request.getUserIds())
-                .stream()
-                .map(CustomFormRoleUser::getUserId).toList();
-        customFormRoleUserMapper.deleteByLambda(wrapper);
+        List<CustomFormRoleUser> removedRoleUsers = new ArrayList<>();
+        SubListUtils.dealForSubList(resolvedUserIds, SubListUtils.DEFAULT_QUERY_BATCH_SIZE, subUserIds -> {
+            LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId())
+                    .in(CustomFormRoleUser::getUserId, subUserIds);
+            removedRoleUsers.addAll(customFormRoleUserMapper.selectListByLambda(wrapper));
+        });
+        if (CollectionUtils.isEmpty(removedRoleUsers)) {
+            return;
+        }
+        SubListUtils.dealForSubList(removedRoleUsers.stream().map(CustomFormRoleUser::getId).toList(),
+                SubListUtils.DEFAULT_QUERY_BATCH_SIZE, customFormRoleUserMapper::deleteByIds);
+
+        List<String> removedUserIds = removedRoleUsers.stream().map(CustomFormRoleUser::getUserId).toList();
+        List<String> userNames = extUserMapper.selectUserNameByIds(removedUserIds);
 
         CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
-
-        List<String> userNames = extUserMapper.selectUserNameByIds(roleUserIds);
         LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.REMOVE_USER, LogModule.CUSTOM_FORM, customForm.getName());
-        String detail = "[" + role.getName() + "]: " + userNames.stream().collect(Collectors.joining(", "));
+        String detail = "[" + role.getName() + "]: " + String.join(", ", userNames);
         logDTO.setDetail(detail);
         logService.add(logDTO);
     }

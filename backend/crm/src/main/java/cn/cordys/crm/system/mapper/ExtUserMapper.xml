@@ -207,11 +207,18 @@
     <select id="selectUserNameByIds" resultType="java.lang.String">
         SELECT name
         FROM sys_user
-        WHERE id IN
-        <foreach collection="userIds" item="id" index="index"
-                 open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        <choose>
+            <when test="userIds != null and userIds.size() > 0">
+                WHERE id IN
+                <foreach collection="userIds" item="id" index="index"
+                         open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                WHERE 1 = 0
+            </otherwise>
+        </choose>
     </select>
 
     <select id="selectUserIdsByNames" resultType="java.lang.String">

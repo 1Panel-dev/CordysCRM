@@ -197,6 +197,47 @@ public class CustomFormControllerTests extends BaseTest {
 
     @Test
     @Order(9)
+    void testRemoveRoleUsersByUserDeptAndRole() throws Exception {
+        assertNotNull(createdFormId, "表单应已创建");
+
+        String roleId = getFirstCustomFormRoleId();
+        CustomFormRoleUserBatchRequest request = new CustomFormRoleUserBatchRequest();
+        request.setCustomFormRoleId(roleId);
+
+        // 移除不在角色中的用户应为空操作
+        request.setUserIds(List.of("cf-role-disabled-direct-user"));
+        this.requestPostWithOk("role/user/remove", request);
+        assertRoleUsers(roleId, "cf-role-direct-user", "cf-role-dept-user", "cf-role-system-role-user");
+
+        // 按用户移除
+        request.setUserIds(List.of("cf-role-direct-user"));
+        this.requestPostWithOk("role/user/remove", request);
+        assertRoleUsers(roleId, "cf-role-dept-user", "cf-role-system-role-user");
+
+        // 重复移除同一用户应幂等
+        this.requestPostWithOk("role/user/remove", request);
+        assertRoleUsers(roleId, "cf-role-dept-user", "cf-role-system-role-user");
+
+        // 按系统角色移除（部门用户和角色用户都属于测试系统角色）
+        request.setUserIds(null);
+        request.setRoleIds(List.of("cf-role-test-system-role"));
+        this.requestPostWithOk("role/user/remove", request);
+        assertRoleUsers(roleId);
+
+        // 重新加入后按部门移除
+        request.setRoleIds(null);
+        request.setUserIds(List.of("cf-role-direct-user", "cf-role-dept-user", "cf-role-system-role-user"));
+        this.requestPostWithOk("role/user/add", request);
+        assertRoleUsers(roleId, "cf-role-direct-user", "cf-role-dept-user", "cf-role-system-role-user");
+
+        request.setUserIds(null);
+        request.setDeptIds(List.of("cf-role-test-dept"));
+        this.requestPostWithOk("role/user/remove", request);
+        assertRoleUsers(roleId);
+    }
+
+    @Test
+    @Order(10)
     void testDelete() throws Exception {
         assertNotNull(createdFormId, "表单应已创建");
 
