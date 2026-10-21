@@ -41,30 +41,37 @@ public class FollowUpRecordController {
     @Resource
     private DataScopeService dataScopeService;
 
-
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
     @Operation(summary = "数据权限TAB")
     public ResourceTabEnableDTO getTabEnableConfig() {
-        return followUpRecordService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return followUpRecordService.getTabEnableConfig(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+            PermissionConstants.OPPORTUNITY_MANAGEMENT_READ }, logical = Logical.OR)
     @Operation(summary = "跟进记录列表")
-    public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody RecordHomePageRequest request) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(
+            @Validated @RequestBody RecordHomePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
         DeptDataPermissionDTO clueDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return followUpRecordService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return followUpRecordService.totalList(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
     }
 
     @GetMapping("/delete/{id}")
@@ -76,19 +83,22 @@ public class FollowUpRecordController {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "跟进记录详情")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+            PermissionConstants.OPPORTUNITY_MANAGEMENT_READ }, logical = Logical.OR)
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
-        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
 
-	@PostMapping("/add")
-	@Operation(summary = "添加跟进记录")
-	public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
+    @PostMapping("/add")
+    @Operation(summary = "添加跟进记录")
+    public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
         followUpRecordService.checkRecordPermission(BeanUtils.copyBean(new FollowUpRecord(), request),
                 OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), false);
         return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    }
 
     @PostMapping("/update")
     @Operation(summary = "更新跟进记录")

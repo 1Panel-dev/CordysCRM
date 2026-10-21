@@ -5,11 +5,13 @@ import lombok.Data;
 
 /**
  * 统计字段「更新范围」游标分页的请求参数。
- *
- * <p>筛的是宿主表单自身的存量数据, 条件结构就是该表单的高级搜索, 由宿主表单自己的资源 Mapper
- * 执行 —— 与列表页同一套条件片段。</p>
- *
- * <p>绑定名固定为 {@code request}, 与 {@link StatisticAggregateRequest} 一致。</p>
+ * <p>
+ * 筛的是宿主表单自身的存量数据, 条件结构就是该表单的高级搜索, 由宿主表单自己的资源 Mapper
+ * 执行 —— 与列表页同一套条件片段。
+ * </p>
+ * <p>
+ * 绑定名固定为 {@code request}, 与 {@link StatisticAggregateRequest} 一致。
+ * </p>
  */
 @Data
 public class StatisticCursorRequest {

@@ -18,7 +18,6 @@ public class NodeMoveRequest {
     @Schema(description = "放入的位置（取值：-1，,1。  -1：dropNodeId节点之前。 1：dropNodeId节点后）", requiredMode = Schema.RequiredMode.REQUIRED)
     private int dropPosition;
 
-
     public void setAndConvertDropPosition(String position, boolean isSortDesc) {
         if (Strings.CS.equals(MoveTypeEnum.BEFORE.name(), position)) {
             this.dropPosition = isSortDesc ? 1 : -1;

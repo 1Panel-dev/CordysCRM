@@ -1,6 +1,5 @@
 package cn.cordys.common.security.realm;
 
-
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.security.VerifiedUserToken;
 import cn.cordys.common.util.Translator;
@@ -19,7 +18,6 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.context.annotation.Lazy;
-
 
 /**
  * 自定义Realm 注入service 可能会导致在 service的aop 失效，例如@Transactional,
@@ -53,7 +51,8 @@ public class LocalRealm extends AuthorizingRealm {
      * 登录认证
      */
     @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken)
+            throws AuthenticationException {
         // 密码令牌始终校验密码，不允许会话状态切换成免密认证。
         if (authenticationToken instanceof UsernamePasswordToken token) {
             return loginLocalMode(token.getUsername(), String.valueOf(token.getPassword()));
@@ -67,7 +66,6 @@ public class LocalRealm extends AuthorizingRealm {
         SessionUser sessionUser = SessionUser.fromUser(user, (String) session.getId());
         session.setAttribute(SessionConstants.ATTR_USER, sessionUser);
         return new SimpleAuthenticationInfo(user.getId(), token.getCredentials(), getName());
-
     }
 
     @Override

@@ -14,7 +14,6 @@ import java.util.Map;
 
 import static cn.cordys.security.SessionConstants.ATTR_USER;
 
-
 /**
  * Session 工具类，提供操作用户 Session 的常用方法。
  * <p>
@@ -70,7 +69,8 @@ public class SessionUtils {
      */
     public static void kickOutUser(String username) {
         // 获取 Redis session 存储库
-        RedisIndexedSessionRepository sessionRepository = CommonBeanFactory.getBean(RedisIndexedSessionRepository.class);
+        RedisIndexedSessionRepository sessionRepository = CommonBeanFactory
+                .getBean(RedisIndexedSessionRepository.class);
         if (sessionRepository == null) {
             return;
         }
@@ -108,7 +108,6 @@ public class SessionUtils {
             // 管理员重置他人密码，踢出该用户
             SessionUtils.kickOutUser(kickUserId);
         }
-
     }
 
     /**
@@ -120,14 +119,14 @@ public class SessionUtils {
         // 保存用户信息到 Session
         SecurityUtils.getSubject().getSession().setAttribute(ATTR_USER, sessionUser);
         // 保存用户 ID 到 Session
-        SecurityUtils.getSubject().getSession().setAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, sessionUser.getId());
+        SecurityUtils.getSubject().getSession().setAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME,
+                sessionUser.getId());
     }
-    
+
     /**
      * 检查指定 Session 是否存在且已经完成用户认证。
      *
      * @param sessionId Session ID
-     *
      * @return 是否为有效的已认证 Session
      */
     public static boolean hasAuthenticatedSession(String sessionId) {

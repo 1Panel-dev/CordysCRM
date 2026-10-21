@@ -42,14 +42,14 @@ public enum FormKey {
      * 产品
      */
     PRODUCT("product"),
-	/**
-	 * 价格
-	 */
-	PRICE("price"),
-	/**
-	 * 报价单
-	 */
-	QUOTATION("quotation"),
+    /**
+     * 价格
+     */
+    PRICE("price"),
+    /**
+     * 报价单
+     */
+    QUOTATION("quotation"),
     /**
      * 合同
      */
@@ -58,14 +58,14 @@ public enum FormKey {
      * 发票
      */
     INVOICE("invoice"),
-	/**
-	 * 合同回款计划
-	 */
-	CONTRACT_PAYMENT_PLAN("contractPaymentPlan"),
-	/**
-	 * 回款记录
-	 */
-	CONTRACT_PAYMENT_RECORD("contractPaymentRecord"),
+    /**
+     * 合同回款计划
+     */
+    CONTRACT_PAYMENT_PLAN("contractPaymentPlan"),
+    /**
+     * 回款记录
+     */
+    CONTRACT_PAYMENT_RECORD("contractPaymentRecord"),
     /**
      * 订单
      */
@@ -77,20 +77,20 @@ public enum FormKey {
         this.key = key;
     }
 
-	public static List<String> allKeys() {
-		return Arrays.stream(FormKey.values()).map(FormKey::getKey).collect(Collectors.toList());
-	}
+    public static List<String> allKeys() {
+        return Arrays.stream(FormKey.values()).map(FormKey::getKey).collect(Collectors.toList());
+    }
 
-	public static FormKey ofKey(String key) {
-		for (FormKey formKey : FormKey.values()) {
-			if (Strings.CI.equals(formKey.getKey(), key)) {
-				return formKey;
-			}
-		}
-		return null;
-	}
+    public static FormKey ofKey(String key) {
+        for (FormKey formKey : FormKey.values()) {
+            if (Strings.CI.equals(formKey.getKey(), key)) {
+                return formKey;
+            }
+        }
+        return null;
+    }
 
-	public boolean hasSnapshot() {
-		return Strings.CI.equalsAny(this.key, CONTRACT.getKey(), INVOICE.getKey(), QUOTATION.getKey(), ORDER.getKey());
-	}
+    public boolean hasSnapshot() {
+        return Strings.CI.equalsAny(this.key, CONTRACT.getKey(), INVOICE.getKey(), QUOTATION.getKey(), ORDER.getKey());
+    }
 }

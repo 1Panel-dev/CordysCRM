@@ -4,18 +4,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 处理 API 密钥验证的工具类，包括获取用户、验证请求是否包含 API 密钥以及验证签名的功能。
+ * 根据 Authorization 请求头格式识别 API Key 调用。
  */
 public class ApiKeyHandler {
 
     public static final String AUTHORIZATION = "Authorization"; // 授权字段
 
     /**
-     * 判断请求是否包含有效的 API 密钥和签名。
+     * 判断 Authorization 按冒号分割后是否至少包含两段；不校验密钥或签名的有效性。
      *
      * @param request HTTP 请求
-     *
-     * @return 如果请求包含有效的 API 密钥和签名，返回 true；否则返回 false
+     * @return 请求头符合上述格式时返回 {@code true}，请求或请求头为空时返回 {@code false}
      */
     public static Boolean isApiKeyCall(HttpServletRequest request) {
         if (request == null) {

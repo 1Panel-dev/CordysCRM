@@ -4,12 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 /**
  * 登入日志
  *
  * @author jianxing
- * @date 2025-01-24 16:12:06
  */
 @Data
 @Table(name = "sys_login_log")

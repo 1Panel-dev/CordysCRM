@@ -8,12 +8,12 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.JSON;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
@@ -64,9 +64,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -83,8 +83,8 @@ public class ModuleFieldController {
     private ModuleFieldService moduleFieldService;
     @Resource
     private ModuleFormService moduleFormService;
-	@Resource
-	private ModuleFormCacheService formCacheService;
+    @Resource
+    private ModuleFormCacheService formCacheService;
     @Resource
     private CustomerService customerService;
     @Resource
@@ -103,20 +103,20 @@ public class ModuleFieldController {
     private ProductPriceService productPriceService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
-	@Resource
-	private ContractPaymentRecordService contractPaymentRecordService;
+    @Resource
+    private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
     private BusinessTitleService businessTitleService;
-	@Resource
-	private OrderService orderService;
+    @Resource
+    private OrderService orderService;
     @Resource
     private CustomFormDataService customFormDataService;
-	@Resource
-	private ContractInvoiceService contractInvoiceService;
     @Resource
-	private StatisticFieldService statisticFieldService;
+    private ContractInvoiceService contractInvoiceService;
+    @Resource
+    private StatisticFieldService statisticFieldService;
 
     @GetMapping("/dept/tree")
     @Operation(summary = "获取部门树")
@@ -126,7 +126,8 @@ public class ModuleFieldController {
 
     @GetMapping("/user/dept/tree")
     @Operation(summary = "获取部门用户树")
-    public List<DeptUserTreeNode> getDeptUserTree(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+    public List<DeptUserTreeNode> getDeptUserTree(
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
@@ -135,21 +136,25 @@ public class ModuleFieldController {
     public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-				InternalUserView.ALL.name(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(),
+                InternalUserView.ALL.name(), PermissionConstants.CLUE_MANAGEMENT_READ);
+        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, true);
     }
 
     @PostMapping("/source/custom-form-data")
     @Operation(summary = "分页获取自定义表单数据")
-    public Pager<List<CustomFormDataListResponse>> sourceCustomFormDataPage(@Valid @RequestBody CustomFormDataPageRequest request) {
+    public Pager<List<CustomFormDataListResponse>> sourceCustomFormDataPage(
+            @Valid @RequestBody CustomFormDataPageRequest request) {
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
         request.setCombineSearch(request.getCombineSearch().convert());
         if (!PermissionUtils.hasPermission(PermissionConstants.CUSTOM_FORM_READ)) {
             Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
             return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
         }
-        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
+        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                true);
     }
 
     @PostMapping("/source/account")
@@ -157,39 +162,50 @@ public class ModuleFieldController {
     public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-				InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(),
+                InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
 
     @PostMapping("/source/contact")
     @Operation(summary = "分页获取联系人")
-    public Pager<List<CustomerContactListResponse>> sourceContactPage(@Valid @RequestBody CustomerContactPageRequest request) {
+    public Pager<List<CustomerContactListResponse>> sourceContactPage(
+            @Valid @RequestBody CustomerContactPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-				InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(),
+                InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
 
     @PostMapping("/source/opportunity")
     @Operation(summary = "分页获取商机")
-    public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody OpportunityPageRequest request) {
+    public Pager<List<OpportunityListResponse>> sourceOpportunityPage(
+            @Valid @RequestBody OpportunityPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
+        return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, true);
     }
 
     @PostMapping("/source/quotation")
     @Operation(summary = "分页获取报价单")
-    public Pager<List<OpportunityQuotationListResponse>> sourceOpportunityQuotationPage(@Valid @RequestBody OpportunityQuotationPageRequest request) {
+    public Pager<List<OpportunityQuotationListResponse>> sourceOpportunityQuotationPage(
+            @Valid @RequestBody OpportunityQuotationPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.QUOTATION.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission, true);
+        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), deptDataPermission, true);
     }
 
     @PostMapping("/source/contract")
@@ -197,9 +213,11 @@ public class ModuleFieldController {
     public Pager<List<ContractListResponse>> sourceContractPage(@Valid @RequestBody ContractPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.CONTRACT_READ);
-        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
+        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, true);
     }
 
     @PostMapping("/source/product")
@@ -222,52 +240,64 @@ public class ModuleFieldController {
 
     @PostMapping("/source/contract/payment-plan")
     @Operation(summary = "分页获取合同回款计划")
-    public Pager<List<ContractPaymentPlanListResponse>> sourcePlanPage(@Valid @RequestBody ContractPaymentPlanPageRequest request) {
+    public Pager<List<ContractPaymentPlanListResponse>> sourcePlanPage(
+            @Valid @RequestBody ContractPaymentPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return contractPaymentPlanService.list(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
-	@PostMapping("/source/contract/payment-record")
-	@Operation(summary = "分页获取合同回款记录")
-	public Pager<List<ContractPaymentRecordResponse>> sourceRecordPage(@Valid @RequestBody ContractPaymentRecordPageRequest request) {
+    @PostMapping("/source/contract/payment-record")
+    @Operation(summary = "分页获取合同回款记录")
+    public Pager<List<ContractPaymentRecordResponse>> sourceRecordPage(
+            @Valid @RequestBody ContractPaymentRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
-				PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
-	}
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
+                PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.list(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 
-	@PostMapping("/source/order")
-	@Operation(summary = "分页获取订单列表")
-	public PagerWithOption<List<OrderListResponse>> list(@Validated @RequestBody OrderPageRequest request) {
+    @PostMapping("/source/order")
+    @Operation(summary = "分页获取订单列表")
+    public PagerWithOption<List<OrderListResponse>> list(@Validated @RequestBody OrderPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-				InternalUserView.ALL.name(), PermissionConstants.ORDER_READ);
-		return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
-	}
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(),
+                InternalUserView.ALL.name(), PermissionConstants.ORDER_READ);
+        return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, false);
+    }
 
-	@PostMapping("/source/business-title")
-	@Operation(summary = "分页获取工商抬头信息")
-	public Pager<List<BusinessTitleListResponse>> sourceBusinessTitlePage(@Valid @RequestBody BusinessTitlePageRequest request) {
+    @PostMapping("/source/business-title")
+    @Operation(summary = "分页获取工商抬头信息")
+    public Pager<List<BusinessTitleListResponse>> sourceBusinessTitlePage(
+            @Valid @RequestBody BusinessTitlePageRequest request) {
         if (!PermissionUtils.hasPermission(PermissionConstants.CONTRACT_BUSINESS_TITLE_READ)) {
             Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
             return PageUtils.setPageInfo(page, List.of());
         }
-		return businessTitleService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+        return businessTitleService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/source/invoice")
-	@Operation(summary = "分页获取发票信息")
-	public PagerWithOption<List<ContractInvoiceListResponse>> list(@Validated @RequestBody ContractInvoicePageRequest request) {
-		ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
-		return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
-	}
+    @PostMapping("/source/invoice")
+    @Operation(summary = "分页获取发票信息")
+    public PagerWithOption<List<ContractInvoiceListResponse>> list(
+            @Validated @RequestBody ContractInvoicePageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_INVOICE_READ);
+        return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
+    }
 
     @PostMapping("/check/repeat")
     @Operation(summary = "校验重复值")
@@ -288,7 +318,8 @@ public class ModuleFieldController {
         Map<String, OptionDTO> matches = new LinkedHashMap<>();
         if ("MEMBER".equals(source) || "DEPARTMENT".equals(source)) {
             List<? extends BaseTreeNode> roots = "MEMBER".equals(source)
-                    ? getDeptUserTree(false) : getDeptTree();
+                    ? getDeptUserTree(false)
+                    : getDeptTree();
             collectSourceTree(roots, "MEMBER".equals(source), keywords, matches);
             return new ArrayList<>(matches.values());
         }
@@ -309,9 +340,13 @@ public class ModuleFieldController {
                         matches.put(option.getIdAsString(), option);
                     }
                 }
-                if ((long) page * 100 >= response.getTotal()) break;
+                if ((long) page * 100 >= response.getTotal()) {
+                    break;
+                }
                 // ponytail: 每个精确条件最多一万候选，超过上限拒绝；更大规模需专用权限化唯一查询。
-                if (rows.isEmpty() || page == 100) throw new GenericException("候选未完整读取，请缩小解析范围");
+                if (rows.isEmpty() || page == 100) {
+                    throw new GenericException("候选未完整读取，请缩小解析范围");
+                }
             }
         }
         return new ArrayList<>(matches.values());
@@ -319,31 +354,35 @@ public class ModuleFieldController {
 
     private Pager<?> resolveSourcePage(String source, String body) {
         return switch (source) {
-            case "CUSTOMER" -> sourceCustomerPage(JSON.parseObject(body, CustomerPageRequest.class));
-            case "CLUE" -> sourceCluePage(JSON.parseObject(body, CluePageRequest.class));
-            case "CONTACT" -> sourceContactPage(JSON.parseObject(body, CustomerContactPageRequest.class));
-            case "OPPORTUNITY" -> sourceOpportunityPage(JSON.parseObject(body, OpportunityPageRequest.class));
-            case "PRODUCT" -> sourceProductPage(JSON.parseObject(body, ProductPageRequest.class));
-            case "PRICE" -> sourceProductPage(JSON.parseObject(body, ProductPricePageRequest.class));
-            case "QUOTATION" -> sourceOpportunityQuotationPage(JSON.parseObject(body, OpportunityQuotationPageRequest.class));
-            case "CONTRACT" -> sourceContractPage(JSON.parseObject(body, ContractPageRequest.class));
-            case "PAYMENT_PLAN" -> sourcePlanPage(JSON.parseObject(body, ContractPaymentPlanPageRequest.class));
-            case "CONTRACT_PAYMENT_RECORD" -> sourceRecordPage(JSON.parseObject(body, ContractPaymentRecordPageRequest.class));
-            case "ORDER" -> list(JSON.parseObject(body, OrderPageRequest.class));
-            case "INVOICE" -> list(JSON.parseObject(body, ContractInvoicePageRequest.class));
-            case "BUSINESS_TITLE" -> sourceBusinessTitlePage(JSON.parseObject(body, BusinessTitlePageRequest.class));
-            default -> sourceCustomFormDataPage(JSON.parseObject(body, CustomFormDataPageRequest.class));
+        case "CUSTOMER" -> sourceCustomerPage(JSON.parseObject(body, CustomerPageRequest.class));
+        case "CLUE" -> sourceCluePage(JSON.parseObject(body, CluePageRequest.class));
+        case "CONTACT" -> sourceContactPage(JSON.parseObject(body, CustomerContactPageRequest.class));
+        case "OPPORTUNITY" -> sourceOpportunityPage(JSON.parseObject(body, OpportunityPageRequest.class));
+        case "PRODUCT" -> sourceProductPage(JSON.parseObject(body, ProductPageRequest.class));
+        case "PRICE" -> sourceProductPage(JSON.parseObject(body, ProductPricePageRequest.class));
+        case "QUOTATION" ->
+            sourceOpportunityQuotationPage(JSON.parseObject(body, OpportunityQuotationPageRequest.class));
+        case "CONTRACT" -> sourceContractPage(JSON.parseObject(body, ContractPageRequest.class));
+        case "PAYMENT_PLAN" -> sourcePlanPage(JSON.parseObject(body, ContractPaymentPlanPageRequest.class));
+        case "CONTRACT_PAYMENT_RECORD" ->
+            sourceRecordPage(JSON.parseObject(body, ContractPaymentRecordPageRequest.class));
+        case "ORDER" -> list(JSON.parseObject(body, OrderPageRequest.class));
+        case "INVOICE" -> list(JSON.parseObject(body, ContractInvoicePageRequest.class));
+        case "BUSINESS_TITLE" -> sourceBusinessTitlePage(JSON.parseObject(body, BusinessTitlePageRequest.class));
+        default -> sourceCustomFormDataPage(JSON.parseObject(body, CustomFormDataPageRequest.class));
         };
     }
 
     private void collectSourceTree(List<? extends BaseTreeNode> nodes, boolean members, List<String> keywords,
-                                   Map<String, OptionDTO> matches) {
+            Map<String, OptionDTO> matches) {
         for (BaseTreeNode node : nodes) {
             boolean selectable = !members || node instanceof DeptUserTreeNode user && "USER".equals(user.getNodeType());
             if (selectable && (keywords.contains(node.getId()) || keywords.contains(node.getName()))) {
                 matches.put(node.getId(), new OptionDTO(node.getId(), node.getName()));
             }
-            if (node.getChildren() != null) collectSourceTree(node.getChildren(), members, keywords, matches);
+            if (node.getChildren() != null) {
+                collectSourceTree(node.getChildren(), members, keywords, matches);
+            }
         }
     }
 
@@ -353,26 +392,28 @@ public class ModuleFieldController {
         return moduleFormService.getSourceDisplayFields(formKey, OrganizationContext.getOrganizationId());
     }
 
-	@GetMapping("/source/config/{formKey}")
-	@Operation(summary = "获取数据源表单配置")
-	public ModuleFormConfigDTO getSourceFormConfig(@PathVariable String formKey) {
-		return formCacheService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/source/config/{formKey}")
+    @Operation(summary = "获取数据源表单配置")
+    public ModuleFormConfigDTO getSourceFormConfig(@PathVariable String formKey) {
+        return formCacheService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/source/ref-detail")
-	@Operation(summary = "批量获取数据源引用详情")
-	public List<DatasourceRefDTO> getDatasourceRefDetail(@Valid @RequestBody DatasourceRefQueryRequest request) {
-		return moduleFieldService.getSourceRefDetail(request);
-	}
+    @PostMapping("/source/ref-detail")
+    @Operation(summary = "批量获取数据源引用详情")
+    public List<DatasourceRefDTO> getDatasourceRefDetail(@Valid @RequestBody DatasourceRefQueryRequest request) {
+        return moduleFieldService.getSourceRefDetail(request);
+    }
 
     /**
      * 手动刷新某条数据上的某个统计字段。
-     *
-     * <p>两个参数缺一不可: resourceId 定位值算给哪条记录, fieldId 定位是哪个统计字段。
+     * <p>
+     * 两个参数缺一不可: resourceId 定位值算给哪条记录, fieldId 定位是哪个统计字段。
      * 只给 fieldId 的话刷新范围就成了「整张表单的存量数据」, 那是保存配置时才做的事 ——
-     * 用户在详情页点刷新, 想要的是眼前这一条立刻变准。</p>
-     *
-     * <p>路径按「先记录后字段」排: 资源ID是业务对象, 字段ID只是它身上的一个属性, 从粗到细。</p>
+     * 用户在详情页点刷新, 想要的是眼前这一条立刻变准。
+     * </p>
+     * <p>
+     * 路径按「先记录后字段」排: 资源ID是业务对象, 字段ID只是它身上的一个属性, 从粗到细。
+     * </p>
      *
      * @return 重算后的值, null 表示空结果(页面上显示「-」)。前端拿它直接更新显示,
      *         免得刷新完还要再查一遍详情。
@@ -380,6 +421,7 @@ public class ModuleFieldController {
     @PostMapping("/statistic/refresh/{resourceId}/{fieldId}")
     @Operation(summary = "手动刷新单条数据上的统计字段")
     public BigDecimal refreshStatisticField(@PathVariable String resourceId, @PathVariable String fieldId) {
-        return statisticFieldService.refreshField(fieldId, resourceId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return statisticFieldService.refreshField(fieldId, resourceId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 }

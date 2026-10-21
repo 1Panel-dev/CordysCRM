@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/tender")
 public class TenderController {
 
-
     @Resource
     private IntegrationConfigService integrationConfigService;
 
@@ -27,6 +26,7 @@ public class TenderController {
     @Operation(summary = "获取标讯设置")
     @RequiresPermissions(PermissionConstants.TENDER_READ)
     public ThirdConfigBaseDTO getApplicationConfig() {
-        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), ThirdConfigTypeConstants.TENDER.name());
+        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), ThirdConfigTypeConstants.TENDER.name());
     }
 }

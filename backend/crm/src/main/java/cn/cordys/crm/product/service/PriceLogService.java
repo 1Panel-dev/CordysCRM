@@ -40,7 +40,6 @@ public class PriceLogService extends BaseModuleLogService {
         return differences;
     }
 
-
     /**
      * 产品
      *
@@ -48,14 +47,20 @@ public class PriceLogService extends BaseModuleLogService {
      */
     private void setPriceStatus(JsonDifferenceDTO differ, String orgId) {
         ModuleFormConfigDTO priceConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), orgId);
-        Optional<BaseField> statusField = priceConfig.getFields().stream().filter(f -> Strings.CS.equals(BusinessModuleField.PRICE_STATUS.getKey(), f.getInternalKey())).findFirst();
+        Optional<BaseField> statusField = priceConfig.getFields().stream()
+                .filter(f -> Strings.CS.equals(BusinessModuleField.PRICE_STATUS.getKey(), f.getInternalKey()))
+                .findFirst();
         if (statusField.isEmpty()) {
             return;
         }
         List<OptionProp> options = ((HasOption) statusField.get()).getOptions();
         differ.setNewValueName(options.stream()
-                .filter(optionProp -> optionProp.getValue() != null && Strings.CS.equals(optionProp.getValue().toString(), differ.getNewValue().toString())).map(OptionProp::getLabel));
+                .filter(optionProp -> optionProp.getValue() != null
+                        && Strings.CS.equals(optionProp.getValue().toString(), differ.getNewValue().toString()))
+                .map(OptionProp::getLabel));
         differ.setOldValueName(options.stream()
-                .filter(optionProp -> optionProp.getValue() != null && Strings.CS.equals(optionProp.getValue().toString(), differ.getOldValue().toString())).map(OptionProp::getLabel));
+                .filter(optionProp -> optionProp.getValue() != null
+                        && Strings.CS.equals(optionProp.getValue().toString(), differ.getOldValue().toString()))
+                .map(OptionProp::getLabel));
     }
 }

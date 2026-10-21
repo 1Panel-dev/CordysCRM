@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.notice.sender;
 
-
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.MessageDetailDTO;

@@ -29,14 +29,13 @@ public class PoolClueUserViewController {
     @Resource
     private UserViewService userViewService;
 
-
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "添加线索池视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CLUE_POOL.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                UserViewResourceType.CLUE_POOL.name());
     }
-
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
@@ -45,7 +44,6 @@ public class PoolClueUserViewController {
         return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "删除线索池视图")
@@ -53,22 +51,21 @@ public class PoolClueUserViewController {
         userViewService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/detail/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "线索池视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
-        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.CLUE.getKey());
+        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                FormKey.CLUE.getKey());
     }
-
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "线索池视图列表")
     public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.CLUE_POOL.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.list(UserViewResourceType.CLUE_POOL.name(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/fixed/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
@@ -83,7 +80,6 @@ public class PoolClueUserViewController {
     public void editPos(@Validated @RequestBody PosRequest request) {
         userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CLUE_POOL.name());
     }
-
 
     @GetMapping("/enable/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)

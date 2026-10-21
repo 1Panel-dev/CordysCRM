@@ -3,7 +3,6 @@ package cn.cordys.crm.integration.wecom.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-
 @Data
 public class WeComUserResponse extends WeComResponseEntity {
 

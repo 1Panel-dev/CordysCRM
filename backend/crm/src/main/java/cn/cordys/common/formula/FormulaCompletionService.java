@@ -48,8 +48,7 @@ public class FormulaCompletionService {
             FormulaEngine formulaEngine,
             FormulaResultNormalizer resultNormalizer,
             Clock clock,
-            DisplayValueResolver displayValueResolver
-    ) {
+            DisplayValueResolver displayValueResolver) {
         this.formulaEngine = formulaEngine;
         this.resultNormalizer = resultNormalizer;
         this.clock = clock;
@@ -64,8 +63,7 @@ public class FormulaCompletionService {
             Map<String, BaseModuleFieldValue> fieldValueMap,
             boolean createMode,
             Function<String, Object> businessValueReader,
-            BiConsumer<String, Object> businessValueWriter
-    ) {
+            BiConsumer<String, Object> businessValueWriter) {
         return complete(fields, fieldValueMap, createMode, businessValueReader,
                 businessValueWriter, true);
     }
@@ -79,8 +77,7 @@ public class FormulaCompletionService {
             Map<String, BaseModuleFieldValue> fieldValueMap,
             boolean createMode,
             Function<String, Object> businessValueReader,
-            BiConsumer<String, Object> businessValueWriter
-    ) {
+            BiConsumer<String, Object> businessValueWriter) {
         return complete(fields, fieldValueMap, createMode, businessValueReader,
                 businessValueWriter, false);
     }
@@ -91,8 +88,7 @@ public class FormulaCompletionService {
             boolean createMode,
             Function<String, Object> businessValueReader,
             BiConsumer<String, Object> businessValueWriter,
-            boolean overwriteExisting
-    ) {
+            boolean overwriteExisting) {
         Map<String, Object> calculatedValues = new LinkedHashMap<>();
         if (fields == null || fields.isEmpty()) {
             return calculatedValues;
@@ -147,8 +143,7 @@ public class FormulaCompletionService {
             Map<String, Object> calculatedValues,
             LocalDateTime evaluationNow,
             boolean createMode,
-            boolean overwriteExisting
-    ) {
+            boolean overwriteExisting) {
         for (BaseField field : fields) {
             if (!(field instanceof SubField subField) || subField.getSubFields() == null) {
                 continue;
@@ -200,8 +195,7 @@ public class FormulaCompletionService {
             boolean createMode,
             Map<String, BaseModuleFieldValue> fieldValueMap,
             BiConsumer<String, Object> businessValueWriter,
-            boolean overwriteExisting
-    ) {
+            boolean overwriteExisting) {
         List<FormulaTarget> targets = fields.stream()
                 .filter(field -> !(field instanceof SubField))
                 .filter(field -> createMode || !field.isSerialNumber())
@@ -232,8 +226,7 @@ public class FormulaCompletionService {
             Map<String, FormulaFieldMetadata> metadata,
             Map<String, BaseField> runtimeFieldMap,
             LocalDateTime evaluationNow,
-            boolean createMode
-    ) {
+            boolean createMode) {
         return new FormulaEvaluationContext(runtimeValues, Map.of(), metadata,
                 evaluationNow,
                 (fieldId, rawValue) -> {
@@ -252,8 +245,7 @@ public class FormulaCompletionService {
     private Map<String, Object> buildRuntimeValues(
             List<BaseField> fields,
             Map<String, BaseModuleFieldValue> fieldValueMap,
-            Function<String, Object> businessValueReader
-    ) {
+            Function<String, Object> businessValueReader) {
         Map<String, Object> result = new LinkedHashMap<>();
         for (BaseField field : fields) {
             Object value;
@@ -290,17 +282,17 @@ public class FormulaCompletionService {
 
     private FormulaFieldMetadata toMetadata(BaseField field) {
         FormulaFieldMetadata.ValueType valueType = switch (field.getType()) {
-            case "INPUT_NUMBER" -> FormulaFieldMetadata.ValueType.NUMBER;
-            case "DATE_TIME" -> FormulaFieldMetadata.ValueType.DATE;
-            case "INPUT", "DATA_SOURCE", "DATA_SOURCE_MULTIPLE", "SERIAL_NUMBER", "SELECT" ->
-                    FormulaFieldMetadata.ValueType.STRING;
-            case "RADIO", "CHECKBOX" -> FormulaFieldMetadata.ValueType.BOOLEAN;
-            default -> FormulaFieldMetadata.ValueType.UNKNOWN;
+        case "INPUT_NUMBER" -> FormulaFieldMetadata.ValueType.NUMBER;
+        case "DATE_TIME" -> FormulaFieldMetadata.ValueType.DATE;
+        case "INPUT", "DATA_SOURCE", "DATA_SOURCE_MULTIPLE", "SERIAL_NUMBER", "SELECT" ->
+            FormulaFieldMetadata.ValueType.STRING;
+        case "RADIO", "CHECKBOX" -> FormulaFieldMetadata.ValueType.BOOLEAN;
+        default -> FormulaFieldMetadata.ValueType.UNKNOWN;
         };
         FormulaFieldMetadata.NumberType numberType = field instanceof InputNumberField numberField
                 && Strings.CI.equals(numberField.getNumberFormat(), "percent")
-                ? FormulaFieldMetadata.NumberType.PERCENT
-                : FormulaFieldMetadata.NumberType.NUMBER;
+                        ? FormulaFieldMetadata.NumberType.PERCENT
+                        : FormulaFieldMetadata.NumberType.NUMBER;
         return new FormulaFieldMetadata(field.getName(), field.getType(), valueType,
                 numberType, StringUtils.isNotBlank(field.getResourceFieldId()));
     }
@@ -337,7 +329,8 @@ public class FormulaCompletionService {
         if (field instanceof FormulaField formulaField) {
             boolean numberResult = Strings.CI.equals(formulaField.getFormulaResultFormat(), "number");
             int decimalPlaces = numberResult && Boolean.TRUE.equals(formulaField.getDecimalPlaces())
-                    ? formulaField.getPrecision() : 0;
+                    ? formulaField.getPrecision()
+                    : 0;
             return resultNormalizer.normalize(rawResult, decimalPlaces,
                     numberResult
                             ? FormulaResultNormalizer.ExpectedType.UNSPECIFIED
@@ -364,8 +357,7 @@ public class FormulaCompletionService {
             Map<String, FormulaTarget> targetMap,
             Map<String, VisitState> states,
             List<FormulaTarget> result,
-            Set<String> path
-    ) {
+            Set<String> path) {
         VisitState state = states.get(target.runtimeId());
         if (state == VisitState.VISITED) {
             return;
@@ -386,7 +378,7 @@ public class FormulaCompletionService {
         result.add(target);
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static Object resolveDisplayValue(BaseField field, Object rawValue) {
         if (rawValue == null || !Strings.CS.equalsAny(field.getType(),
                 FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.SELECT.name())) {
@@ -398,7 +390,9 @@ public class FormulaCompletionService {
                         .getBean(FormulaReferenceValueService.class)).resolve(source, rawValue);
             }
             AbstractModuleFieldResolver resolver = ModuleFieldResolverFactory.getResolver(field.getType());
-            if (!"".equals(rawValue)) resolver.validate(field, rawValue);
+            if (!"".equals(rawValue)) {
+                resolver.validate(field, rawValue);
+            }
             String storedValue = resolver.convertToString(field, rawValue);
             return resolver.transformToValue(field, storedValue);
         } catch (RuntimeException e) {

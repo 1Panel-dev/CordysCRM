@@ -46,7 +46,7 @@ public class ClueCapacityService {
     public List<ClueCapacityDTO> list(String currentOrgId) {
         LambdaQueryWrapper<ClueCapacity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId)
-                .orderByAsc(ClueCapacity::getCreateTime);  // 直接数据库升序，避免内存排序
+                .orderByAsc(ClueCapacity::getCreateTime); // 直接数据库升序，避免内存排序
 
         List<ClueCapacity> capacities = clueCapacityMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(capacities)) {
@@ -59,7 +59,8 @@ public class ClueCapacityService {
             dto.setId(capacity.getId());
             dto.setCapacity(capacity.getCapacity());
             List<String> scopeIds = JSON.parseArray(capacity.getScopeId(), String.class);
-            dto.setMembers(CollectionUtils.isEmpty(scopeIds) ? new ArrayList<>() : userExtendService.getScope(scopeIds));
+            dto.setMembers(
+                    CollectionUtils.isEmpty(scopeIds) ? new ArrayList<>() : userExtendService.getScope(scopeIds));
             return dto;
         }).collect(Collectors.toList());
     }
@@ -126,8 +127,7 @@ public class ClueCapacityService {
                         .resourceName(Translator.get("module.clue.capacity.setting"))
                         .originalValue(originalValue)
                         .modifiedValue(modifiedValue)
-                        .build()
-        );
+                        .build());
     }
 
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")

@@ -44,12 +44,12 @@ public class ExportTaskCenterService {
      * 查询导出任务列表
      *
      * @param request 请求参数
-     *
      * @return 导出任务列表
      */
     public List<ExportTask> list(ExportTaskCenterQueryRequest request, String userId) {
         LocalDateTime oneDayBefore = LocalDateTime.now().minusDays(1);
-        return extExportTaskMapper.selectExportTaskList(request, oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(), userId);
+        return extExportTaskMapper.selectExportTaskList(request,
+                oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(), userId);
     }
 
     /**
@@ -83,7 +83,8 @@ public class ExportTaskCenterService {
         }
         String filePath = getFilePath(exportTask);
         try {
-            FileRequest request = new FileRequest(filePath, StorageType.LOCAL.name(), exportTask.getFileName() + ".xlsx");
+            FileRequest request = new FileRequest(filePath, StorageType.LOCAL.name(),
+                    exportTask.getFileName() + ".xlsx");
             return fileCommonService.download(request);
         } catch (Exception e) {
             log.error("下载导出任务文件失败，任务ID: {}", taskId, e);
@@ -92,7 +93,8 @@ public class ExportTaskCenterService {
     }
 
     private String getFilePath(ExportTask exportTask) {
-        return File.separator + DefaultRepositoryDir.getExportDir(exportTask.getOrganizationId()) + File.separator + exportTask.getFileId();
+        return File.separator + DefaultRepositoryDir.getExportDir(exportTask.getOrganizationId()) + File.separator
+                + exportTask.getFileId();
     }
 
     public void clean() {
@@ -106,13 +108,13 @@ public class ExportTaskCenterService {
         exportTasks.forEach(exportTask -> {
             try {
                 //删除文件
-                FileRequest request = new FileRequest(getFilePath(exportTask), StorageType.LOCAL.name(), exportTask.getFileName() + ".xlsx");
+                FileRequest request = new FileRequest(getFilePath(exportTask), StorageType.LOCAL.name(),
+                        exportTask.getFileName() + ".xlsx");
                 fileCommonService.deleteFolder(request, false);
             } catch (GenericException e) {
                 log.error("定时任务删除导出任务文件失败，任务ID: {}", exportTask.getId(), e);
                 throw new RuntimeException(e);
             }
         });
-
     }
 }

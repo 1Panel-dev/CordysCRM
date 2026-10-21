@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.mockito.MockMakers;
+import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -166,7 +166,7 @@ class ClueTransitionCustomerListTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"READ_ONLY", "COLLABORATION"})
+    @ValueSource(strings = { "READ_ONLY", "COLLABORATION" })
     void privateCollaboratorCanReadOutsideOwnerDataScope(String collaborationType) {
         allowPrivateRead();
         CustomerCollaboration collaboration = new CustomerCollaboration();
@@ -182,7 +182,8 @@ class ClueTransitionCustomerListTest {
 
     @Test
     void privateCustomerWithoutReadPermissionOnlyReturnsBasicFields() {
-        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID, PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID,
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ))
                 .thenReturn(true);
         CustomerCollaboration collaboration = new CustomerCollaboration();
         collaboration.setCollaborationType("COLLABORATION");
@@ -194,7 +195,8 @@ class ClueTransitionCustomerListTest {
     @Test
     void privateCustomerDataScopePermissionWithoutOwnershipOrCollaborationOnlyReturnsBasicFields() {
         allowPrivateRead();
-        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID, PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID,
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ))
                 .thenReturn(true);
 
         assertBasicFieldsOnly(query());
@@ -224,7 +226,8 @@ class ClueTransitionCustomerListTest {
     void publicPoolMemberWithPoolReadPermissionCanReadCompleteCustomer() {
         customer.setInSharedPool(true);
         customer.setPoolId("customer-pool");
-        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)).thenReturn(true);
+        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ))
+                .thenReturn(true);
         when(poolCustomerService.hasPoolMember("customer-pool", USER_ID, ORG_ID)).thenReturn(true);
 
         assertTrue(query().isHasPermission());
@@ -237,12 +240,15 @@ class ClueTransitionCustomerListTest {
         customer.setInSharedPool(true);
         customer.setPoolId("customer-pool");
         allowPrivateRead();
-        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)).thenReturn(true);
-        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID, PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ))
+                .thenReturn(true);
+        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, OWNER_ID,
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ))
                 .thenReturn(true);
         assertBasicFieldsOnly(query());
 
-        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)).thenReturn(false);
+        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ))
+                .thenReturn(false);
         when(poolCustomerService.hasPoolMember("customer-pool", USER_ID, ORG_ID)).thenReturn(true);
         assertBasicFieldsOnly(query());
         verifyNoInteractions(dataScopeService, collaborationService);
@@ -267,7 +273,8 @@ class ClueTransitionCustomerListTest {
     }
 
     private void allowPrivateRead() {
-        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)).thenReturn(true);
+        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+                .thenReturn(true);
     }
 
     private void assertEmpty(ClueTransitionCustomerListResponse response) {

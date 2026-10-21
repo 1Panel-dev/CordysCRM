@@ -11,7 +11,6 @@ public class ContractArchivedRequest {
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String id;
 
-
     @NotBlank
     @Schema(description = "归档状态", requiredMode = Schema.RequiredMode.REQUIRED)
     private String archivedStatus;

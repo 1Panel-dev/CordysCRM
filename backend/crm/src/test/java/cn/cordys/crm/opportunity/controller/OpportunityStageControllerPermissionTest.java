@@ -1,9 +1,9 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageRequest;
-import cn.cordys.common.constants.FormKeyConstants;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.junit.jupiter.api.Test;
@@ -23,8 +23,8 @@ class OpportunityStageControllerPermissionTest {
         var roles = method.getAnnotation(RequiresPermissions.class);
         assertNotNull(roles);
         assertEquals(Logical.OR, roles.logical());
-        assertArrayEquals(new String[]{PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE,
-                PermissionConstants.OPPORTUNITY_MANAGEMENT_RESIGN}, roles.value());
+        assertArrayEquals(new String[] { PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE,
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_RESIGN }, roles.value());
         assertTrue(method.getParameters()[0].isAnnotationPresent(Validated.class));
     }
 }

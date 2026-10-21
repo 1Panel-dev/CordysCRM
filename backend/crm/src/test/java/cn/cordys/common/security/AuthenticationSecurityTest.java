@@ -12,9 +12,9 @@ import cn.cordys.security.SessionConstants;
 import cn.cordys.security.SessionUser;
 import cn.cordys.security.UserDTO;
 import jakarta.servlet.Filter;
-import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -109,7 +109,7 @@ class AuthenticationSecurityTest {
 
     @ParameterizedTest
     @NullSource
-    @ValueSource(strings = {"LOCAL", "QR_CODE", "WECOM_OAUTH2"})
+    @ValueSource(strings = { "LOCAL", "QR_CODE", "WECOM_OAUTH2" })
     void passwordTokensAlwaysRequireThePasswordRegardlessOfSessionMarker(String marker) {
         Subject subject = bindSubject();
         if (marker != null) {
@@ -161,7 +161,7 @@ class AuthenticationSecurityTest {
         mvc = createMvc();
         MockHttpSession session = new MockHttpSession();
 
-        for (String path : new String[]{"/swagger-ui/index.html", "/v3/api-docs", "/v3/api-docs/account"}) {
+        for (String path : new String[] { "/swagger-ui/index.html", "/v3/api-docs", "/v3/api-docs/account" }) {
             mvc.perform(get(path).session(session).header("X-MCP", String.valueOf(System.currentTimeMillis())))
                     .andExpect(status().isOk()).andExpect(content().string("synthetic API documentation"));
         }
@@ -239,7 +239,7 @@ class AuthenticationSecurityTest {
 
     @RestController
     static class TestEndpoints {
-        @GetMapping({"/swagger-ui/index.html", "/v3/api-docs", "/v3/api-docs/account"})
+        @GetMapping({ "/swagger-ui/index.html", "/v3/api-docs", "/v3/api-docs/account" })
         String apiDocumentation() {
             return "synthetic API documentation";
         }
@@ -249,7 +249,7 @@ class AuthenticationSecurityTest {
             return "synthetic front page";
         }
 
-        @GetMapping({"/language", "/department/tree"})
+        @GetMapping({ "/language", "/department/tree" })
         String protectedResource() {
             return org.apache.shiro.SecurityUtils.getSubject().getPrincipal().toString();
         }

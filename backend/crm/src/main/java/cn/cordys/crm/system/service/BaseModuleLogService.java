@@ -53,8 +53,6 @@ public abstract class BaseModuleLogService {
     /**
      * 翻译字段名称
      * 赋值旧值名称和新值名称
-     *
-     * @param differ
      */
     public static void translatorDifferInfo(JsonDifferenceDTO differ) {
         //主表字段
@@ -130,12 +128,9 @@ public abstract class BaseModuleLogService {
     /**
      * 处理非业务字段的自定义字段
      * 同时会翻译其他字段的 ColumnName
-     *
-     * @param differences
-     * @param orgId
-     * @param formKey
      */
-    protected List<JsonDifferenceDTO> handleModuleLogField(List<JsonDifferenceDTO> differences, String orgId, String formKey) {
+    protected List<JsonDifferenceDTO> handleModuleLogField(List<JsonDifferenceDTO> differences, String orgId,
+            String formKey) {
         ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
                 .getBusinessFormConfig(formKey, orgId);
 
@@ -164,7 +159,6 @@ public abstract class BaseModuleLogService {
                 .stream()
                 .filter(f -> StringUtils.isNotEmpty(f.getBusinessKey()) && StringUtils.isEmpty(f.getResourceFieldId()))
                 .collect(Collectors.toMap(BaseField::getBusinessKey, Function.identity()));
-
 
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differences);
         modifiable.removeIf(differ -> subFieldRemoveIds.contains(differ.getColumn()));
@@ -203,9 +197,7 @@ public abstract class BaseModuleLogService {
                     fieldValue.setFieldId(differ.getColumn());
                     fieldValue.setFieldValue(differ.getNewValue());
                     optionFieldValues.add(fieldValue);
-
                 }
-
             }
             subFieldMap.forEach((key, value) -> {
                 // 子表字段
@@ -217,7 +209,8 @@ public abstract class BaseModuleLogService {
                     if (StringUtils.isNotBlank(differ.getColumn())) {
                         differColumn = differ.getColumn().substring(differ.getColumn().lastIndexOf("-") + 1);
                     }
-                    if (Strings.CS.equals(subBusinessKey, differColumn) || Strings.CS.equals(subFieldIdKey, differColumn)) {
+                    if (Strings.CS.equals(subBusinessKey, differColumn)
+                            || Strings.CS.equals(subFieldIdKey, differColumn)) {
                         //判断differ.getOldValue() 是否为空，如果是String 类型 不能为空字符串,不能为"null"，如果是List 类型 不能为空
                         if (differ.getOldValue() != null && (differ.getOldValue() instanceof String oldText
                                 ? !StringUtils.isBlank(oldText) && !Strings.CI.equals(oldText, "null")
@@ -240,13 +233,16 @@ public abstract class BaseModuleLogService {
             });
         });
 
-        Map<String, List<OptionDTO>> optionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
+        Map<String, List<OptionDTO>> optionMap = Objects
+                .requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getOptionMap(formConfig, optionFieldValues);
         // 子表选项字段的选项值 map
-        Map<String, List<OptionDTO>> subOptionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
+        Map<String, List<OptionDTO>> subOptionMap = Objects
+                .requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getOptionMap(formConfig, optionSubFieldValues);
 
-        Set<String> subFieldIds = optionSubFieldValues.stream().map(BaseModuleFieldValue::getFieldId).collect(Collectors.toSet());
+        Set<String> subFieldIds = optionSubFieldValues.stream().map(BaseModuleFieldValue::getFieldId)
+                .collect(Collectors.toSet());
         returnDifferences.forEach(differ -> {
             String originDifferColumn = differ.getColumn();
             String differColumn = differ.getColumn();
@@ -280,14 +276,15 @@ public abstract class BaseModuleLogService {
                         if (value.isSubField()) {
                             if (value instanceof SubField subTableField) {
                                 for (BaseField subField : subTableField.getSubFields()) {
-                                    String subKey = StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId();
+                                    String subKey = StringUtils.isNotBlank(subField.getBusinessKey())
+                                            ? subField.getBusinessKey()
+                                            : subField.getId();
                                     if (Strings.CS.equals(subKey, finalDifferColumn)) {
                                         if (subOptionMap.containsKey(finalDifferColumn)) {
                                             setColumnValueName(subOptionMap.get(finalDifferColumn), differ, subField);
                                         } else {
                                             setColumnValueName(null, differ, subField);
                                         }
-
                                     }
                                 }
                             }
@@ -306,14 +303,12 @@ public abstract class BaseModuleLogService {
                     // 日期时间格式化
                     DateTimeField dateTimeField = (DateTimeField) baseField;
                     switch (dateTimeField.getDateType()) {
-                        case "date" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d"));
-                        case "datetime" ->
-                                setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d HH:mm:ss"));
-                        case "month" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M"));
+                    case "date" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d"));
+                    case "datetime" ->
+                        setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d HH:mm:ss"));
+                    case "month" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M"));
                     }
                 }
-
-
             }
         });
 
@@ -329,11 +324,13 @@ public abstract class BaseModuleLogService {
         List<String> oldNameList = new ArrayList<>();
         List<String> newNameList = new ArrayList<>();
         for (OptionDTO option : options) {
-            if (differ.getOldValue() instanceof String strValue && Strings.CS.equals(option.getIdAsString(), strValue)) {
+            if (differ.getOldValue() instanceof String strValue
+                    && Strings.CS.equals(option.getIdAsString(), strValue)) {
                 // 设置旧值名称
                 differ.setOldValueName(option.getName());
             }
-            if (differ.getNewValue() instanceof String strValue && Strings.CS.equals(option.getIdAsString(), strValue)) {
+            if (differ.getNewValue() instanceof String strValue
+                    && Strings.CS.equals(option.getIdAsString(), strValue)) {
                 // 设置新值名称
                 differ.setNewValueName(option.getName());
             }
@@ -344,10 +341,8 @@ public abstract class BaseModuleLogService {
                         oldNameList.add(option.getName());
                     }
                 }
-
             }
             if (differ.getNewValue() instanceof List<?> newValueList) {
-
                 for (Object newValue : newValueList) {
                     if (newValue instanceof String strValue && Strings.CS.equals(option.getIdAsString(), strValue)) {
                         // 设置新值名称
@@ -355,7 +350,6 @@ public abstract class BaseModuleLogService {
                     }
                 }
             }
-
         }
         if (!oldNameList.isEmpty()) {
             differ.setOldValueName(String.join(",", oldNameList));
@@ -363,7 +357,6 @@ public abstract class BaseModuleLogService {
         if (!newNameList.isEmpty()) {
             differ.setNewValueName(String.join(",", newNameList));
         }
-
     }
 
     private void parseValue(BaseField moduleField, JsonDifferenceDTO differ) {
@@ -410,7 +403,8 @@ public abstract class BaseModuleLogService {
     public Object transformFieldValue(BaseField field, Object value) {
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
         // 将数据库中的字符串值,转换为对应的对象值
-        return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+        return customFieldResolver.transformToValue(field,
+                value instanceof List ? JSON.toJSONString(value) : value.toString());
     }
 
     private String formatDataTime(String value, SimpleDateFormat simpleDateFormat) {
@@ -431,11 +425,8 @@ public abstract class BaseModuleLogService {
         }
     }
 
-
     /**
      * 商机名称
-     *
-     * @param differ
      */
     protected void setOpportunityName(JsonDifferenceDTO differ) {
         OpportunityService opportunityService = CommonBeanFactory.getBean(OpportunityService.class);
@@ -450,11 +441,8 @@ public abstract class BaseModuleLogService {
         }
     }
 
-
     /**
      * 线索名称
-     *
-     * @param differ
      */
     protected void setClueName(JsonDifferenceDTO differ) {
         ClueService clueService = CommonBeanFactory.getBean(ClueService.class);
@@ -469,11 +457,8 @@ public abstract class BaseModuleLogService {
         }
     }
 
-
     /**
      * 联系人
-     *
-     * @param differ
      */
     protected void setContactFieldName(JsonDifferenceDTO differ) {
         CustomerContactService customerContactService = CommonBeanFactory.getBean(CustomerContactService.class);
@@ -490,8 +475,6 @@ public abstract class BaseModuleLogService {
 
     /**
      * 合同名称
-     *
-     * @param differ
      */
     protected void setContractFieldName(JsonDifferenceDTO differ) {
         ContractService contractService = CommonBeanFactory.getBean(ContractService.class);
@@ -508,8 +491,6 @@ public abstract class BaseModuleLogService {
 
     /**
      * 计划名称
-     *
-     * @param differ
      */
     protected void setPlanFieldName(JsonDifferenceDTO differ) {
         ContractPaymentPlanService planService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
@@ -554,8 +535,6 @@ public abstract class BaseModuleLogService {
 
     /**
      * 产品
-     *
-     * @param differ
      */
     protected void setProductName(JsonDifferenceDTO differ) {
         Optional.ofNullable(differ.getOldValue()).ifPresent(oldValue -> {

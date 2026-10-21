@@ -72,7 +72,6 @@ public class CustomerPoolService {
      * 分页获取公海池
      *
      * @param request 分页参数
-     *
      * @return 公海池列表
      */
     public List<CustomerPoolDTO> page(BasePageRequest request, String organizationId) {
@@ -81,7 +80,8 @@ public class CustomerPoolService {
             return new ArrayList<>();
         }
 
-        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
+        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser()))
+                .toList();
         List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
         Map<String, String> userMap = createOrUpdateUsers.stream()
                 .collect(Collectors.toMap(User::getId, User::getName));
@@ -100,7 +100,8 @@ public class CustomerPoolService {
         var recycleRuleWrapper = new LambdaQueryWrapper<CustomerPoolRecycleRule>();
         recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
 
-        List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+        List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper
+                .selectListByLambda(recycleRuleWrapper);
         Map<String, CustomerPoolRecycleRule> recycleRuleMap = recycleRules.stream()
                 .collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 
@@ -108,7 +109,8 @@ public class CustomerPoolService {
                 .stream()
                 .collect(Collectors.groupingBy(CustomerPoolHiddenField::getPoolId));
 
-        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), organizationId).getFields();
+        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), organizationId)
+                .getFields();
 
         pools.forEach(pool -> {
             pool.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
@@ -149,10 +151,10 @@ public class CustomerPoolService {
                     String dateValue = split[0];
                     String dateUnit = split[1];
                     dateUnit = switch (dateUnit) {
-                        case "day" -> "BEFORE_DAY";
-                        case "month" -> "BEFORE_MONTH";
-                        case "week" -> "BEFORE_WEEK";
-                        default -> dateUnit;
+                    case "day" -> "BEFORE_DAY";
+                    case "month" -> "BEFORE_MONTH";
+                    case "week" -> "BEFORE_WEEK";
+                    default -> dateUnit;
                     };
                     condition.setValue("CUSTOM," + dateValue + "," + dateUnit);
                 }
@@ -160,14 +162,14 @@ public class CustomerPoolService {
         });
     }
 
-
     public List<CustomerPoolFieldConfigDTO> getFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
         return fields.stream().map(field -> {
             var hiddenFieldDTO = new CustomerPoolFieldConfigDTO();
             hiddenFieldDTO.setFieldId(field.getId());
             hiddenFieldDTO.setFieldName(field.getName());
             hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
-            hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
+            hiddenFieldDTO.setEditable(
+                    !Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
             return hiddenFieldDTO;
         }).toList();
     }
@@ -276,8 +278,7 @@ public class CustomerPoolService {
                         .resourceName(Translator.get("module.customer.pool.setting"))
                         .originalValue(originCustomerPool)
                         .modifiedValue(customerPoolMapper.selectByPrimaryKey(request.getId()))
-                        .build()
-        );
+                        .build());
     }
 
     private void batchInsertCustomerPoolHiddenFields(String poolId, Set<String> fieldIds) {
@@ -357,15 +358,13 @@ public class CustomerPoolService {
                         .resourceName(Translator.get("module.customer.pool.setting"))
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
 
     /**
      * 校验公海池是否存在
      *
      * @param id 公海池ID
-     *
      * @return 公海池
      */
     private CustomerPool checkPoolExist(String id) {
@@ -381,7 +380,6 @@ public class CustomerPoolService {
      *
      * @param ownerIds       负责人ID集合
      * @param organizationId 组织ID
-     *
      * @return 默认公海
      */
     public Map<String, CustomerPool> getOwnersDefaultPoolMap(List<String> ownerIds, String organizationId) {
@@ -405,7 +403,6 @@ public class CustomerPoolService {
      *
      * @param scopeIds 范围ID集合
      * @param pools    公海列表
-     *
      * @return 命中范围的公海列表
      */
     public List<CustomerPool> matchMultiScope(List<String> scopeIds, List<CustomerPool> pools) {
@@ -430,10 +427,10 @@ public class CustomerPoolService {
      * @param pool           公海池
      * @param collectionTime 领取时间
      * @param createTime     创建时间
-     *
      * @return 剩余归属天数
      */
-    public Integer calcReservedDay(CustomerPool pool, CustomerPoolRecycleRule recycleRule, Long collectionTime, Long createTime) {
+    public Integer calcReservedDay(CustomerPool pool, CustomerPoolRecycleRule recycleRule, Long collectionTime,
+            Long createTime) {
         if (pool == null || !pool.getAuto() || recycleRule == null) {
             return null;
         }
@@ -447,7 +444,6 @@ public class CustomerPoolService {
      * 获取负责人最佳匹配公海
      *
      * @param pools 公海列表
-     *
      * @return 公海集合
      */
     public Map<List<String>, CustomerPool> getOwnersBestMatchPoolMap(List<CustomerPool> pools) {
@@ -457,7 +453,8 @@ public class CustomerPoolService {
             List<String> exitOwnerIds = poolMap.keySet().stream().flatMap(List::stream).toList();
             List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
             List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, pool.getOrganizationId());
-            List<String> defaultOwnerIds = ownerIds.stream().distinct().filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
+            List<String> defaultOwnerIds = ownerIds.stream().distinct()
+                    .filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
             if (CollectionUtils.isEmpty(defaultOwnerIds)) {
                 continue;
             }
@@ -486,7 +483,6 @@ public class CustomerPoolService {
      *
      * @param condition 规则
      * @param customer  客户
-     *
      * @return 是否匹配
      */
     private boolean matchTime(RuleConditionDTO condition, Customer customer) {
@@ -496,7 +492,8 @@ public class CustomerPoolService {
             } else if (condition.getScope().contains(RecycleConditionScopeKey.PICKED)) {
                 return RecycleConditionUtils.matchTime(condition, customer.getCollectionTime());
             } else {
-                return RecycleConditionUtils.matchTime(condition, customer.getCreateTime()) || RecycleConditionUtils.matchTime(condition, customer.getCollectionTime());
+                return RecycleConditionUtils.matchTime(condition, customer.getCreateTime())
+                        || RecycleConditionUtils.matchTime(condition, customer.getCollectionTime());
             }
         } else {
             return RecycleConditionUtils.matchTime(condition, customer.getFollowTime());

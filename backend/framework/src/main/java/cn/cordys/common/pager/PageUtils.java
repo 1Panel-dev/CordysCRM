@@ -20,12 +20,10 @@ public class PageUtils {
      * 此方法将 PageHelper 的分页数据（如：当前页、每页记录数、总记录数）转换为自定义的 {@link Pager} 对象。
      * </p>
      *
+     * @param <T>  数据列表的类型
      * @param page PageHelper 分页对象，包含分页相关的信息
      * @param list 分页查询结果数据列表
-     * @param <T>  数据列表的类型
-     *
      * @return 包含分页信息的自定义分页对象 {@link Pager}
-     *
      * @throws RuntimeException 如果设置分页信息时发生错误，抛出运行时异常
      */
     public static <T> Pager<T> setPageInfo(Page<?> page, T list) {
@@ -44,14 +42,14 @@ public class PageUtils {
     /**
      * 设置带有选项数据的分页信息
      *
+     * @param <T>       数据列表的类型
      * @param page      分页对象
      * @param list      数据列表
-     * @param <T>       数据列表的类型
      * @param optionMap 选项集合
-     *
      * @return 包含分页信息的自定义分页对象
      */
-    public static <T> PagerWithOption<T> setPageInfoWithOption(Page<?> page, T list, Map<String, List<OptionDTO>> optionMap) {
+    public static <T> PagerWithOption<T> setPageInfoWithOption(Page<?> page, T list,
+            Map<String, List<OptionDTO>> optionMap) {
         try {
             PagerWithOption<T> pager = new PagerWithOption<>();
             pager.setList(list);
@@ -68,11 +66,10 @@ public class PageUtils {
     /**
      * 设置带有评论数量的分页信息
      *
-     * @param page      分页对象
-     * @param list      数据列表
-     * @param <T>       数据列表的类型
+     * @param <T>          数据列表的类型
+     * @param page         分页对象
+     * @param list         数据列表
      * @param commentCount 评论数量
-     *
      * @return 包含分页信息的自定义分页对象
      */
     public static <T> PagerWithCommentCount<T> setPageInfoWithCommentCount(Page<?> page, T list, long commentCount) {

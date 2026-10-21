@@ -30,26 +30,30 @@ public class CustomFormLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), "enable")) {
                 differ.setColumnName(Translator.get("log.enable"));
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(Translator.get(Boolean.parseBoolean(differ.getOldValue().toString()) ? "log.enable.true" : "log.enable.false"));
+                    differ.setOldValueName(
+                            Translator.get(Boolean.parseBoolean(differ.getOldValue().toString()) ? "log.enable.true"
+                                    : "log.enable.false"));
                 }
                 if (differ.getNewValue() != null) {
-                    differ.setNewValueName(Translator.get(Boolean.parseBoolean(differ.getNewValue().toString()) ? "log.enable.true" : "log.enable.false"));
+                    differ.setNewValueName(
+                            Translator.get(Boolean.parseBoolean(differ.getNewValue().toString()) ? "log.enable.true"
+                                    : "log.enable.false"));
                 }
             } else if (Strings.CS.equals(differ.getColumn(), "adminUserIds")) {
                 handleAdminUserIdsLogDetail(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "roleUsers")) {
                 handleRoleUsersLogDetail(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "name")) {
-				differ.setColumnName(Translator.get("log.form." + differ.getColumn()));
-				differ.setOldValueName(differ.getOldValue());
-				differ.setNewValueName(differ.getNewValue());
-			} else if (Strings.CS.equals(differ.getColumn(), "fields")) {
-				differ.setColumnName(Translator.get("log." + differ.getColumn()));
-				handleFieldsLogDetail(differ);
-			} else if (Strings.CS.equals("formProp", differ.getColumn())) {
-				differ.setColumnName(Translator.get("log.form.prop"));
-				handleFormPropLogDetail(differ);
-			} else {
+                differ.setColumnName(Translator.get("log.form." + differ.getColumn()));
+                differ.setOldValueName(differ.getOldValue());
+                differ.setNewValueName(differ.getNewValue());
+            } else if (Strings.CS.equals(differ.getColumn(), "fields")) {
+                differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                handleFieldsLogDetail(differ);
+            } else if (Strings.CS.equals("formProp", differ.getColumn())) {
+                differ.setColumnName(Translator.get("log.form.prop"));
+                handleFormPropLogDetail(differ);
+            } else {
                 translatorDifferInfo(differ);
             }
         });
@@ -116,8 +120,8 @@ public class CustomFormLogService extends BaseModuleLogService {
     }
 
     private String formatRoleUsersText(Map<String, List<String>> roleUsers,
-                                        Map<String, String> roleNameMap,
-                                        Map<String, String> userNameMap) {
+            Map<String, String> roleNameMap,
+            Map<String, String> userNameMap) {
         return roleUsers.entrySet().stream()
                 .map(entry -> {
                     String roleName = roleNameMap.getOrDefault(entry.getKey(), entry.getKey());
@@ -156,7 +160,6 @@ public class CustomFormLogService extends BaseModuleLogService {
         return roles.stream().collect(Collectors.toMap(
                 CustomFormRole::getId,
                 role -> Translator.get(role.getName(), role.getName()),
-                (a, b) -> a
-        ));
+                (a, b) -> a));
     }
 }

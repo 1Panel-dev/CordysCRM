@@ -24,9 +24,11 @@ public class ContractInvoiceLogService extends BaseModuleLogService {
             var column = differ.getColumn();
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.INVOICE_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
-            } else if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey())) {
+            } else if (Strings.CS.equals(differ.getColumn(),
+                    BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey())) {
                 setContractFieldName(differ);
-            } else if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey())) {
+            } else if (Strings.CS.equals(differ.getColumn(),
+                    BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey())) {
                 setBusinessTitleName(differ);
             } else if (Strings.CI.equals(differ.getColumn(), "approvalStatus")) {
                 setApprovalName(differ);

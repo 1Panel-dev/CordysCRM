@@ -26,28 +26,28 @@ public class CustomerCapacityController {
 
     @GetMapping("/get")
     @Operation(summary = "获取客户库容设置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public List<CustomerCapacityDTO> list() {
         return customerCapacityService.list(OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
     @Operation(summary = "添加客户库容设置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void add(@Validated @RequestBody CapacityAddRequest request) {
         customerCapacityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "修改客户库容设置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void update(@Validated @RequestBody CapacityUpdateRequest request) {
         customerCapacityService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除客户库容设置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void delete(@PathVariable("id") @Validated String id) {
         customerCapacityService.delete(id);
     }

@@ -18,7 +18,6 @@ public class LogisticRegressionUtils {
      *
      * @param features 输入特征列表，每个元素为一个特征向量。
      * @param labels   对应的标签列表，标签值为 0 或 1。
-     *
      * @return 训练得到的权重数组。
      */
     public static double[] train(List<double[]> features, List<Integer> labels) {
@@ -43,7 +42,6 @@ public class LogisticRegressionUtils {
      * @param features 输入特征列表，每个元素为一个特征向量。
      * @param labels   对应的标签列表，标签值为 0 或 1。
      * @param weights  当前的模型权重。
-     *
      * @return 计算得到的梯度数组。
      */
     private static double[] computeGradients(List<double[]> features, List<Integer> labels, double[] weights) {
@@ -67,7 +65,6 @@ public class LogisticRegressionUtils {
      *
      * @param weights 模型的权重向量。
      * @param feature 输入特征向量。
-     *
      * @return 点积的值。
      */
     private static double dotProduct(double[] weights, double[] feature) {
@@ -82,7 +79,6 @@ public class LogisticRegressionUtils {
      * Sigmoid 激活函数，将线性输出转化为概率值。
      *
      * @param x 输入的线性值。
-     *
      * @return 转化后的概率值（范围在 0 和 1 之间）。
      */
     private static double sigmoid(double x) {
@@ -94,7 +90,6 @@ public class LogisticRegressionUtils {
      *
      * @param weights 训练得到的模型权重。
      * @param feature 输入的特征向量。
-     *
      * @return 预测结果，返回 1 表示正类，返回 0 表示负类。
      */
     public static int predict(double[] weights, double[] feature) {

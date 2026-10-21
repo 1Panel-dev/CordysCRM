@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.mapper;
 
-
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.crm.system.domain.User;
@@ -25,10 +24,10 @@ public interface ExtUserMapper {
 
     List<String> filterEnabledUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
-
     List<String> selectUserIdsByNames(@Param("names") List<String> names);
 
-    List<User> getOrgUserByUserIds(@Param("organizationId") String organizationId, @Param("userIds") List<String> userIds);
+    List<User> getOrgUserByUserIds(@Param("organizationId") String organizationId,
+            @Param("userIds") List<String> userIds);
 
     List<UserRoleConvert> getUserRole(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
@@ -50,7 +49,8 @@ public interface ExtUserMapper {
 
     int countByPhone(@Param("phone") String phone, @Param("id") String id);
 
-    List<EnableOptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId, @Param("defaultOrder") String defaultOrder, @Param("includeDisabled") Boolean includeDisabled);
+    List<EnableOptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId,
+            @Param("defaultOrder") String defaultOrder, @Param("includeDisabled") Boolean includeDisabled);
 
     List<UserDTO> selectNameAndEmail(@Param("orgId") String orgId);
 

@@ -17,9 +17,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
 
     @Override
     public void validate(LocationField customField, Object value) {
-
     }
-
 
     @Override
     public Object transformToValue(LocationField locationField, String value) {

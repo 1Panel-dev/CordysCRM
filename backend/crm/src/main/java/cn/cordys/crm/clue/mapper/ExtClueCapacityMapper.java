@@ -12,7 +12,6 @@ public interface ExtClueCapacityMapper {
      *
      * @param scopeIds       范围ID集合
      * @param organizationId 组织ID
-     *
      * @return 容量
      */
     Integer getCapacityByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String organizationId);

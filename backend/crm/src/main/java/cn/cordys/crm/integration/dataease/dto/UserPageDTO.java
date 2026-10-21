@@ -6,8 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-15  15:54
+ * @author jianxing
  */
 @Data
 public class UserPageDTO {

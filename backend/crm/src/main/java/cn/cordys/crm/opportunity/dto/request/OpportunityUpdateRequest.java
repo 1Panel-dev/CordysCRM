@@ -13,7 +13,6 @@ public class OpportunityUpdateRequest extends OpportunityAddRequest {
     @Size(max = 32)
     private String id;
 
-
     private Boolean agentInvoke = false;
 
     @Schema(description = "是否提审更新  normal-正常更新  approval-评审更新")

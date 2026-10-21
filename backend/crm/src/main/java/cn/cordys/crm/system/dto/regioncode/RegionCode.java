@@ -12,4 +12,3 @@ public class RegionCode {
     private List<RegionCode> children;
 
 }
-

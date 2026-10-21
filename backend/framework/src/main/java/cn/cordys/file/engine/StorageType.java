@@ -1,10 +1,7 @@
 package cn.cordys.file.engine;
 
 /**
- * 存储类型枚举类，用于标识不同的文件存储方式。
- * <p>
- * 此枚举类定义了三种存储方式：MINIO、GIT 和 LOCAL。
- * </p>
+ * 文件存储类型：S3 对象存储和本地存储。
  */
 public enum StorageType {
 
@@ -21,12 +18,11 @@ public enum StorageType {
     /**
      * 根据字符串获取对应的枚举值。
      * <p>
-     * 如果提供的字符串不匹配任何枚举值，返回 {@code null}。
+     * 忽略大小写匹配；输入为空或无匹配项时返回 {@link #LOCAL}。
      * </p>
      *
      * @param storageType 字符串表示的存储类型
-     *
-     * @return 对应的枚举值，或 {@code null} 如果没有匹配的枚举
+     * @return 匹配的存储类型，无匹配项时返回 {@link #LOCAL}
      */
     public static StorageType fromString(String storageType) {
         if (storageType != null) {

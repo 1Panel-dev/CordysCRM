@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -66,7 +65,8 @@ public class ClueOwnerHistoryService {
         }
 
         LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        configLambdaQueryWrapper.eq(DictConfig::getModule, DictModule.CLUE_POOL_RS.name()).eq(DictConfig::getOrganizationId, orgId);
+        configLambdaQueryWrapper.eq(DictConfig::getModule, DictModule.CLUE_POOL_RS.name())
+                .eq(DictConfig::getOrganizationId, orgId);
         List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);
         boolean showReason = CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled();
 
@@ -80,8 +80,7 @@ public class ClueOwnerHistoryService {
         return owners
                 .stream()
                 .map(item -> {
-                    ClueOwnerListResponse clueOwner =
-                            BeanUtils.copyBean(new ClueOwnerListResponse(), item);
+                    ClueOwnerListResponse clueOwner = BeanUtils.copyBean(new ClueOwnerListResponse(), item);
                     UserDeptDTO userDeptDTO = userDeptMap.get(clueOwner.getOwner());
                     if (userDeptDTO != null) {
                         clueOwner.setDepartmentId(userDeptDTO.getDeptId());
@@ -107,7 +106,8 @@ public class ClueOwnerHistoryService {
         clueOwner.setCollectionTime(clue.getCollectionTime());
         clueOwner.setEndTime(System.currentTimeMillis());
         clueOwner.setId(IDGenerator.nextStr());
-        if (addReason && StringUtils.isNotBlank(clue.getReasonId()) && !Strings.CS.equals(clue.getReasonId(), "system")) {
+        if (addReason && StringUtils.isNotBlank(clue.getReasonId())
+                && !Strings.CS.equals(clue.getReasonId(), "system")) {
             clueOwner.setReasonId(clue.getReasonId());
         }
         clueOwnerMapper.insert(clueOwner);

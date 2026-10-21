@@ -35,10 +35,12 @@ public class RoleLogService extends BaseModuleLogService {
                 handlePermissionSettingLogDetail(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "dataScope")) {
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(Translator.get("role.data_permission." + differ.getOldValue().toString().toLowerCase()));
+                    differ.setOldValueName(
+                            Translator.get("role.data_permission." + differ.getOldValue().toString().toLowerCase()));
                 }
                 if (differ.getNewValue() != null) {
-                    differ.setNewValueName(Translator.get("role.data_permission." + differ.getNewValue().toString().toLowerCase()));
+                    differ.setNewValueName(
+                            Translator.get("role.data_permission." + differ.getNewValue().toString().toLowerCase()));
                 }
                 differ.setColumnName(Translator.get("log.dataScope"));
             } else {

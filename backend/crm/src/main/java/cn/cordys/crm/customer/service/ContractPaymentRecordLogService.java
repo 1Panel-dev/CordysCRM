@@ -19,17 +19,20 @@ public class ContractPaymentRecordLogService extends BaseModuleLogService {
         differences = super.handleModuleLogField(differences, orgId, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
 
         for (JsonDifferenceDTO differ : differences) {
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_OWNER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(),
+                    BusinessModuleField.CONTRACT_PAYMENT_RECORD_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
                 continue;
             }
 
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(),
+                    BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey())) {
                 setContractFieldName(differ);
                 continue;
             }
 
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(),
+                    BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey())) {
                 setPlanFieldName(differ);
                 continue;
             }
@@ -40,6 +43,5 @@ public class ContractPaymentRecordLogService extends BaseModuleLogService {
         }
         return differences;
     }
-
 
 }

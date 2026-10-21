@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>用户数据传输对象，用于传输用户信息，包含其他平台对接信息和头像。</p>
+ * <p>
+ * 用户数据传输对象，用于传输用户信息，包含其他平台对接信息和头像。
+ * </p>
  */
 @Data
 public class UserDTO implements java.io.Serializable {
@@ -21,18 +23,18 @@ public class UserDTO implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{user.id.not_blank}", groups = {Updated.class})
-    @Size(min = 1, max = 50, message = "{user.id.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{user.id.not_blank}", groups = { Updated.class })
+    @Size(min = 1, max = 50, message = "{user.id.length_range}", groups = { Created.class, Updated.class })
     private String id;
 
     @Schema(description = "用户名", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{user.name.not_blank}", groups = {Created.class})
-    @Size(min = 1, max = 255, message = "{user.name.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{user.name.not_blank}", groups = { Created.class })
+    @Size(min = 1, max = 255, message = "{user.name.length_range}", groups = { Created.class, Updated.class })
     private String name;
 
     @Schema(description = "用户邮箱", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{user.email.not_blank}", groups = {Created.class})
-    @Size(min = 1, max = 64, message = "{user.email.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{user.email.not_blank}", groups = { Created.class })
+    @Size(min = 1, max = 64, message = "{user.email.length_range}", groups = { Created.class, Updated.class })
     private String email;
 
     @Schema(description = "用户密码")
@@ -57,8 +59,8 @@ public class UserDTO implements java.io.Serializable {
     private String phone;
 
     @Schema(description = "来源：LOCAL OIDC CAS OAUTH2", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{user.source.not_blank}", groups = {Created.class})
-    @Size(min = 1, max = 50, message = "{user.source.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{user.source.not_blank}", groups = { Created.class })
+    @Size(min = 1, max = 50, message = "{user.source.length_range}", groups = { Created.class, Updated.class })
     private String source;
 
     @Schema(description = "创建人")

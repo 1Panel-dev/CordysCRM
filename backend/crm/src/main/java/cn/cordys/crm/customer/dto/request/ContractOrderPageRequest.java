@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-11-26  11:35
+ * @author jianxing
  */
 @Data
 public class ContractOrderPageRequest extends OrderPageRequest {

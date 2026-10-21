@@ -17,13 +17,14 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class LogDTO {
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{operation_log.id.not_blank}", groups = {Updated.class})
-    @Size(min = 1, max = 50, message = "{operation_log.id.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{operation_log.id.not_blank}", groups = { Updated.class })
+    @Size(min = 1, max = 50, message = "{operation_log.id.length_range}", groups = { Created.class, Updated.class })
     private String id;
 
     @Schema(description = "组织id", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{operation_log.organization_id.not_blank}", groups = {Created.class})
-    @Size(min = 1, max = 50, message = "{operation_log.organization_id.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{operation_log.organization_id.not_blank}", groups = { Created.class })
+    @Size(min = 1, max = 50, message = "{operation_log.organization_id.length_range}", groups = { Created.class,
+            Updated.class })
     private String organizationId;
 
     @Schema(description = "操作时间")
@@ -47,13 +48,14 @@ public class LogDTO {
     private String detail;
 
     @Schema(description = "操作方法", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{operation_log.method.not_blank}", groups = {Created.class})
-    @Size(min = 1, max = 255, message = "{operation_log.method.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{operation_log.method.not_blank}", groups = { Created.class })
+    @Size(min = 1, max = 255, message = "{operation_log.method.length_range}", groups = { Created.class,
+            Updated.class })
     private String method;
 
     @Schema(description = "操作类型/add/update/delete", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{operation_log.type.not_blank}", groups = {Created.class})
-    @Size(min = 1, max = 20, message = "{operation_log.type.length_range}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{operation_log.type.not_blank}", groups = { Created.class })
+    @Size(min = 1, max = 20, message = "{operation_log.type.length_range}", groups = { Created.class, Updated.class })
     private String type;
 
     @Schema(description = "操作模块")
@@ -97,7 +99,8 @@ public class LogDTO {
      * @param type           日志类型
      * @param module         模块
      */
-    public LogDTO(String organizationId, String resourceId, String createUser, String type, String module, String resourceName) {
+    public LogDTO(String organizationId, String resourceId, String createUser, String type, String module,
+            String resourceName) {
         this.setOrganizationId(organizationId);
         this.setResourceId(resourceId);
         this.setCreateUser(createUser);

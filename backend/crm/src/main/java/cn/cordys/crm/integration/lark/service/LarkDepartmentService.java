@@ -39,13 +39,15 @@ public class LarkDepartmentService {
         int loop = 0;
 
         while (hasMore && loop++ < maxLoop) {
-            StringBuilder urlBuilder = new StringBuilder(LarkApiPaths.LARK_CHILDREN_DEPARTMENT_URL.replace("{0}", departmentId));
+            StringBuilder urlBuilder = new StringBuilder(
+                    LarkApiPaths.LARK_CHILDREN_DEPARTMENT_URL.replace("{0}", departmentId));
             urlBuilder.append("?fetch_child=true");
             if (StringUtils.isNotBlank(pageToken)) {
                 urlBuilder.append("&page_token=").append(pageToken);
             }
 
-            LarkDepartmentResponse larkResponse = safeRequest(urlBuilder.toString(), tenantAccessToken, LarkDepartmentResponse.class);
+            LarkDepartmentResponse larkResponse = safeRequest(urlBuilder.toString(), tenantAccessToken,
+                    LarkDepartmentResponse.class);
             hasMore = false;
             if (larkResponse != null && larkResponse.getCode() == 0) {
                 LarkDepartmentData data = larkResponse.getData();
@@ -76,7 +78,8 @@ public class LarkDepartmentService {
                 urlBuilder.append("&page_token=").append(pageToken);
             }
 
-            LarkUserResponse larkUserResponse = safeRequest(urlBuilder.toString(), tenantAccessToken, LarkUserResponse.class);
+            LarkUserResponse larkUserResponse = safeRequest(urlBuilder.toString(), tenantAccessToken,
+                    LarkUserResponse.class);
             hasMore = false;
             if (larkUserResponse != null && larkUserResponse.getCode() == 0) {
                 LarkUserResponse.LarkUserData data = larkUserResponse.getData();
@@ -102,31 +105,34 @@ public class LarkDepartmentService {
         return thirdDepartments;
     }
 
-
-    public List<ThirdDepartment> getDepartmentListById(String tenantAccessToken, String departmentId, List<ThirdDepartment> allDepartmentList) {
+    public List<ThirdDepartment> getDepartmentListById(String tenantAccessToken, String departmentId,
+            List<ThirdDepartment> allDepartmentList) {
         List<ThirdDepartment> thirdDepartments = getAllSubDepartments(tenantAccessToken, departmentId).stream()
                 .map(this::toThirdDepartment)
                 .collect(Collectors.toList());
-        ThirdDepartment thirdDepartment = allDepartmentList.stream().filter(department -> Strings.CI.equals(department.getId(), departmentId)).findFirst().orElse(new ThirdDepartment());
+        ThirdDepartment thirdDepartment = allDepartmentList.stream()
+                .filter(department -> Strings.CI.equals(department.getId(), departmentId)).findFirst()
+                .orElse(new ThirdDepartment());
         thirdDepartments.add(thirdDepartment);
         return thirdDepartments;
     }
 
-
     public Map<String, List<ThirdUser>> getDepartmentUserList(String tenantAccessToken, List<String> departmentIds) {
-        return departmentIds.stream().collect(Collectors.toMap(Function.identity(), departmentId ->
-                getDepartmentUsers(tenantAccessToken, departmentId).stream()
-                        .filter(user -> isPrimaryDepartmentUser(user, departmentId))
-                        .map(this::toThirdUser)
-                        .collect(Collectors.toList())
-        ));
+        return departmentIds.stream()
+                .collect(Collectors.toMap(Function.identity(),
+                        departmentId -> getDepartmentUsers(tenantAccessToken, departmentId).stream()
+                                .filter(user -> isPrimaryDepartmentUser(user, departmentId))
+                                .map(this::toThirdUser)
+                                .collect(Collectors.toList())));
     }
 
     public LarkTenant getTenantInfo(String tenantAccessToken) {
         try {
-            LarkTenantResponse larkTenantResponse = safeRequest(LarkApiPaths.LARK_TENANT_INFO_URL, tenantAccessToken, LarkTenantResponse.class);
+            LarkTenantResponse larkTenantResponse = safeRequest(LarkApiPaths.LARK_TENANT_INFO_URL, tenantAccessToken,
+                    LarkTenantResponse.class);
             if (larkTenantResponse != null && larkTenantResponse.getCode() == 0) {
-                return Optional.ofNullable(larkTenantResponse.getData()).map(LarkTenantResponse.LarkTenantData::getTenant).orElse(null);
+                return Optional.ofNullable(larkTenantResponse.getData())
+                        .map(LarkTenantResponse.LarkTenantData::getTenant).orElse(null);
             }
             if (larkTenantResponse != null) {
                 log.error("获取企业信息失败: {}:{}", larkTenantResponse.getCode(), larkTenantResponse.getMsg());
@@ -143,8 +149,7 @@ public class LarkDepartmentService {
                 "Bearer " + tenantAccessToken,
                 "Authorization",
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         return JSON.parseObject(response, responseClass);
     }
 
@@ -191,7 +196,8 @@ public class LarkDepartmentService {
 
     private boolean isPrimaryDepartmentUser(LarkUser user, String departmentId) {
         return Optional.ofNullable(user.getOrders()).orElse(Collections.emptyList()).stream()
-                .anyMatch(order -> order.getIsPrimaryDept() && Strings.CS.equals(order.getDepartmentId(), departmentId));
+                .anyMatch(
+                        order -> order.getIsPrimaryDept() && Strings.CS.equals(order.getDepartmentId(), departmentId));
     }
 
     private String formatMobile(String mobile) {

@@ -174,14 +174,14 @@ public class NotificationConstants {
         @Schema(description = "message.invoice_approval")
         String INVOICE_APPROVAL = "INVOICE_APPROVAL";
 
-		@Schema(description = "message.approval_todo")
-		String APPROVAL_TODO = "APPROVAL_TODO";
+        @Schema(description = "message.approval_todo")
+        String APPROVAL_TODO = "APPROVAL_TODO";
 
         @Schema(description = "message.custom_form_data_approval")
         String CUSTOM_FORM_DATA_APPROVAL = "CUSTOM_FORM_DATA_APPROVAL";
 
-		@Schema(description = "message.approval_cc")
-		String APPROVAL_CC = "APPROVAL_CC";
+        @Schema(description = "message.approval_cc")
+        String APPROVAL_CC = "APPROVAL_CC";
 
         @Schema(description = "message.follow_up_plan_comment_added")
         String CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED = "CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED";
@@ -228,7 +228,6 @@ public class NotificationConstants {
         @Schema(description = "message.create_user")
         String CREATE_USER = "CREATE_USER"; //创建人
     }
-
 
     public interface TemplateText {
         //请注意！${OPERATOR}新建${customerName}客户给您，请知悉！
@@ -374,14 +373,14 @@ public class NotificationConstants {
         @Schema(description = "message.approval_result_text")
         String CUSTOMER_APPROVAL_TEXT = "CUSTOMER_APPROVAL_TEXT";
 
-		@Schema(description = "message.approval_todo_text")
-		String APPROVAL_TODO_TEXT = "APPROVAL_TODO_TEXT";
+        @Schema(description = "message.approval_todo_text")
+        String APPROVAL_TODO_TEXT = "APPROVAL_TODO_TEXT";
 
         @Schema(description = "message.approval_result_text")
         String CUSTOM_FORM_DATA_APPROVAL_TEXT = "CUSTOM_FORM_DATA_APPROVAL_TEXT";
 
-		@Schema(description = "message.approval_cc_text")
-		String APPROVAL_CC_TEXT = "APPROVAL_CC_TEXT";
+        @Schema(description = "message.approval_cc_text")
+        String APPROVAL_CC_TEXT = "APPROVAL_CC_TEXT";
 
         @Schema(description = "message.follow_up_plan_comment_added_text")
         String CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT = "CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT";
@@ -419,7 +418,6 @@ public class NotificationConstants {
         @Schema(description = "message.follow_up_record_comment_mentioned_text")
         String CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT = "CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT";
     }
-
 
     public interface SensitiveField {
         String id = "id";

@@ -1,0 +1,91 @@
+# 代码格式规范见 .codex/guides/code-style.md。
+# 仅作用于 Java 文件。
+[*.java]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+tab_width = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 120
+ij_continuation_indent_size = 8
+
+# 括号、空格与空行。
+ij_java_class_brace_style = end_of_line
+ij_java_method_brace_style = end_of_line
+ij_java_lambda_brace_style = end_of_line
+ij_java_else_on_new_line = false
+ij_java_catch_on_new_line = false
+ij_java_finally_on_new_line = false
+ij_java_while_on_new_line = false
+ij_java_keep_simple_blocks_in_one_line = false
+ij_java_keep_simple_methods_in_one_line = false
+ij_java_keep_simple_classes_in_one_line = false
+ij_java_keep_control_statement_in_one_line = false
+ij_java_space_before_method_parentheses = false
+ij_java_space_before_method_call_parentheses = false
+ij_java_space_before_if_parentheses = true
+ij_java_space_before_for_parentheses = true
+ij_java_space_before_while_parentheses = true
+ij_java_space_before_switch_parentheses = true
+ij_java_space_before_catch_parentheses = true
+ij_java_space_before_try_parentheses = true
+ij_java_space_before_synchronized_parentheses = true
+ij_java_space_after_comma = true
+ij_java_space_before_comma = false
+ij_java_spaces_around_assignment_operators = true
+ij_java_spaces_around_logical_operators = true
+ij_java_spaces_around_equality_operators = true
+ij_java_spaces_around_relational_operators = true
+ij_java_spaces_around_additive_operators = true
+ij_java_spaces_around_multiplicative_operators = true
+ij_java_spaces_around_lambda_arrow = true
+ij_java_spaces_around_method_ref_dbl_colon = false
+ij_java_blank_lines_after_package = 1
+ij_java_blank_lines_after_imports = 1
+ij_java_blank_lines_around_method = 1
+ij_java_blank_lines_around_field = 0
+ij_java_keep_blank_lines_in_code = 1
+ij_java_keep_blank_lines_in_declarations = 1
+
+# 超长表达式按需换行；保留为可读性主动添加的换行。
+ij_java_keep_line_breaks = true
+ij_java_call_parameters_wrap = normal
+ij_java_method_parameters_wrap = normal
+ij_java_method_call_chain_wrap = normal
+ij_java_binary_operation_wrap = normal
+ij_java_binary_operation_sign_on_next_line = true
+ij_java_ternary_operation_wrap = normal
+ij_java_ternary_operation_signs_on_next_line = true
+ij_java_align_multiline_parameters = false
+ij_java_align_multiline_parameters_in_calls = false
+ij_java_align_multiline_chained_methods = false
+ij_java_align_multiline_binary_operation = false
+
+# 普通导入、JDK 导入、静态导入分组；避免自动折叠为通配符。
+ij_java_imports_layout = *,|,javax.**,java.**,|,$*
+ij_java_use_single_class_imports = true
+ij_java_class_count_to_use_import_on_demand = 999
+ij_java_names_count_to_use_import_on_demand = 999
+ij_java_packages_to_use_import_on_demand =
+
+# Javadoc。
+ij_java_doc_enable_formatting = true
+ij_java_doc_enable_leading_asterisks = true
+ij_java_doc_align_param_comments = true
+ij_java_doc_align_exception_comments = true
+ij_java_doc_add_blank_line_after_description = true
+ij_java_doc_add_blank_line_after_param_comments = false
+ij_java_doc_add_blank_line_after_return = false
+ij_java_doc_keep_empty_parameter_tag = false
+ij_java_doc_keep_empty_return_tag = false
+ij_java_doc_keep_empty_throws_tag = false
+ij_java_doc_keep_invalid_tags = false
+ij_java_doc_use_throws_not_exception_tag = true
+ij_java_doc_add_p_tag_on_empty_lines = false
+ij_java_doc_keep_empty_lines = false
+ij_java_doc_do_not_wrap_if_one_line = false
+ij_java_doc_param_description_on_new_line = false
+ij_java_doc_preserve_line_breaks = false
+ij_java_doc_indent_on_continuation = true

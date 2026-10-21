@@ -73,7 +73,8 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
     private DataScopeService dataScopeService;
 
     @Override
-    public PagerWithOption<List<AdvancedCluePoolResponse>> startSearch(BasePageRequest request, String orgId, String userId) {
+    public PagerWithOption<List<AdvancedCluePoolResponse>> startSearch(BasePageRequest request, String orgId,
+            String userId) {
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
 
@@ -93,14 +94,16 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    public List<AdvancedCluePoolResponse> buildListData(List<AdvancedCluePoolResponse> list, String orgId, String userId) {
+    public List<AdvancedCluePoolResponse> buildListData(List<AdvancedCluePoolResponse> list, String orgId,
+            String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         List<String> clueIds = list.stream().map(ClueListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = clueFieldService.getResourceFieldMap(clueIds,
+                true);
 
         List<String> ownerIds = list.stream()
                 .map(ClueListResponse::getOwner)
@@ -135,7 +138,8 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
             LambdaQueryWrapper<CluePoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
             recycleRuleWrapper.in(CluePoolRecycleRule::getPoolId, poolIds);
             List<CluePoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
-            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, rule -> rule));
+            recycleRuleMap = recycleRules.stream()
+                    .collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, rule -> rule));
         }
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
@@ -147,8 +151,11 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
 
         //获取用户线索池
         Map<String, String> userPoolMap = getUserCluePool(orgId, userId);
-        ModuleFormConfigDTO moduleFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
-        List<String> phoneTypeFieldIds = moduleFormConfig.getFields().stream().filter(field -> Strings.CI.equals(field.getType(), FieldType.PHONE.name())).map(BaseField::getId).toList();
+        ModuleFormConfigDTO moduleFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(),
+                orgId);
+        List<String> phoneTypeFieldIds = moduleFormConfig.getFields().stream()
+                .filter(field -> Strings.CI.equals(field.getType(), FieldType.PHONE.name())).map(BaseField::getId)
+                .toList();
 
         list.forEach(clueListResponse -> {
             boolean hasPermission = getHasPermission(userId, orgId, clueListResponse, userPoolMap);
@@ -160,7 +167,6 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
                 clueListResponse.setModuleFields(clueFields);
                 clueListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
                 clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
-
             } else {
                 clueListResponse.setModuleFields(new ArrayList<>());
                 clueListResponse.setRecyclePoolName(null);
@@ -183,17 +189,19 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
             clueListResponse.setUpdateUserName(userNameMap.get(clueListResponse.getUpdateUser()));
             clueListResponse.setOwnerName(userNameMap.get(clueListResponse.getOwner()));
 
-
             clueListResponse.setHasPermission(hasPermission);
             clueListResponse.setPoolName(userPoolMap.get(clueListResponse.getPoolId()));
 
             if (StringUtils.isNotBlank(clueListResponse.getPhone())) {
-                clueListResponse.setPhone((String) getPhoneFieldValue(clueListResponse.getPhone(), clueListResponse.getPhone().length()));
+                clueListResponse.setPhone(
+                        (String) getPhoneFieldValue(clueListResponse.getPhone(), clueListResponse.getPhone().length()));
             }
             if (CollectionUtils.isNotEmpty(clueListResponse.getModuleFields())) {
                 clueListResponse.getModuleFields().stream().forEach(moduleField -> {
-                    if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
-                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                    if (phoneTypeFieldIds.contains(moduleField.getFieldId())
+                            && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(),
+                                moduleField.getFieldValue().toString().length())));
                     }
                 });
             }
@@ -202,7 +210,8 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         return list;
     }
 
-    private boolean getHasPermission(String userId, String orgId, AdvancedCluePoolResponse clueListResponse, Map<String, String> userPoolMap) {
+    private boolean getHasPermission(String userId, String orgId, AdvancedCluePoolResponse clueListResponse,
+            Map<String, String> userPoolMap) {
         if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
         }
@@ -210,16 +219,20 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
             return false;
         }
         boolean hasPool = userPoolMap.containsKey(clueListResponse.getPoolId());
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
+        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(),
+                PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
 
         return hasPool && hasPermission;
     }
 
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCluePoolResponse> list, List<AdvancedCluePoolResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCluePoolResponse> list,
+            List<AdvancedCluePoolResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(),
+                orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ClueListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                ClueListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 

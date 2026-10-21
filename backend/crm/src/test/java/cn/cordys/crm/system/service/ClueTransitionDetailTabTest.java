@@ -73,7 +73,7 @@ class ClueTransitionDetailTabTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"zh-CN,转换记录", "en-US,Conversion records"})
+    @CsvSource({ "zh-CN,转换记录", "en-US,Conversion records" })
     void initializesEnabledStandaloneTabAndResolvesDefaultName(String locale, String expectedName) {
         LocaleContextHolder.setLocale(Locale.forLanguageTag(locale));
         FormProp prop = new FormProp();
@@ -88,8 +88,8 @@ class ClueTransitionDetailTabTest {
 
         service.resolveDetailTabs(FormKey.CLUE.getKey(), ORG_ID, prop);
         assertEquals(expectedName, transitionTab(prop).getName());
-        assertEquals(1, prop.getDetailTabs().stream().filter(item ->
-                InternalDetailTab.CLUE_TRANSITION_RECORD.name().equals(item.getInternalKey())).count());
+        assertEquals(1, prop.getDetailTabs().stream()
+                .filter(item -> InternalDetailTab.CLUE_TRANSITION_RECORD.name().equals(item.getInternalKey())).count());
     }
 
     @Test
@@ -120,17 +120,17 @@ class ClueTransitionDetailTabTest {
         prop.setDetailTabs(List.of(tab));
         tab.setRelatedForm(new OptionDTO(FormKey.CUSTOMER.getKey(), "客户"));
 
-        assertThrows(GenericException.class, () ->
-                service.validateAndResolveDetailTabs(FormKey.CLUE.getKey(), ORG_ID, prop));
+        assertThrows(GenericException.class,
+                () -> service.validateAndResolveDetailTabs(FormKey.CLUE.getKey(), ORG_ID, prop));
 
         tab.setRelatedForm(null);
         tab.setRelatedField(new OptionDTO("changed-field", "关联字段"));
-        assertThrows(GenericException.class, () ->
-                service.validateAndResolveDetailTabs(FormKey.CLUE.getKey(), ORG_ID, prop));
+        assertThrows(GenericException.class,
+                () -> service.validateAndResolveDetailTabs(FormKey.CLUE.getKey(), ORG_ID, prop));
     }
 
     @ParameterizedTest
-    @CsvSource({"负责人历史,负责人历史", "module.form.detail_tab.owner_record,Owner history"})
+    @CsvSource({ "负责人历史,负责人历史", "module.form.detail_tab.owner_record,Owner history" })
     @SuppressWarnings("unchecked")
     void bulkInitializationAddsTabOnceAndPreservesExistingConfiguration(String ownerName, String expectedEnglishName) {
         ModuleForm clueForm = new ModuleForm();
@@ -141,9 +141,10 @@ class ClueTransitionDetailTabTest {
         relatedForm.setId("follow-record-form");
         relatedForm.setFormKey(FormKey.FOLLOW_RECORD.getKey());
         relatedForm.setOrganizationId(ORG_ID);
-        when(formMapper.selectListByLambda(any())).thenAnswer(invocation ->
-                invocation.getArgument(0, LambdaQueryWrapper.class).getParams().containsValue(ORG_ID)
-                        ? List.of(relatedForm) : List.of(clueForm));
+        when(formMapper.selectListByLambda(any())).thenAnswer(
+                invocation -> invocation.getArgument(0, LambdaQueryWrapper.class).getParams().containsValue(ORG_ID)
+                        ? List.of(relatedForm)
+                        : List.of(clueForm));
 
         ModuleField relatedField = new ModuleField();
         relatedField.setId("related-field");

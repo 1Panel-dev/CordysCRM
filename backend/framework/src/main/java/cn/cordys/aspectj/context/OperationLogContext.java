@@ -17,12 +17,14 @@ public class OperationLogContext {
     /**
      * 存储方法级别变量的栈，每个方法调用对应一个栈帧。
      */
-    private static final InheritableThreadLocal<Deque<Map<String, Object>>> VARIABLE_MAP_STACK = new InheritableThreadLocal<>();
+    private static final InheritableThreadLocal<Deque<Map<String, Object>>> VARIABLE_MAP_STACK =
+            new InheritableThreadLocal<>();
 
     /**
      * 存储全局变量的映射。
      */
-    private static final InheritableThreadLocal<Map<String, Object>> GLOBAL_VARIABLE_MAP = new InheritableThreadLocal<>();
+    private static final InheritableThreadLocal<Map<String, Object>> GLOBAL_VARIABLE_MAP =
+            new InheritableThreadLocal<>();
 
     // 防止实例化工具类
     private OperationLogContext() {
@@ -66,22 +68,18 @@ public class OperationLogContext {
 
     /**
      * 设置资源名称
-     *
-     * @param resourceName
      */
     public static void setResourceName(String resourceName) {
         setContext(
                 LogContextInfo.builder()
                         .resourceName(resourceName)
-                        .build()
-        );
+                        .build());
     }
 
     /**
      * 获取当前方法栈中指定的变量值。
      *
      * @param key 变量名
-     *
      * @return 变量值，如果找不到则返回 null
      */
     public static Object getVariable(String key) {
@@ -98,7 +96,6 @@ public class OperationLogContext {
      * </p>
      *
      * @param key 变量名
-     *
      * @return 变量值，如果找不到则返回 null
      */
     public static Object getMethodOrGlobal(String key) {

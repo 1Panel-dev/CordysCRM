@@ -4,12 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 /**
  * 线索历史责任人
  *
  * @author jianxing
- * @date 2025-03-12 15:46:27
  */
 @Data
 @Table(name = "clue_owner")

@@ -8,7 +8,9 @@ import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.security.SessionUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -41,7 +43,8 @@ class FormulaReferenceValueServiceTest {
             when(scope.hasDataPermission("user-1", "org-1", "owner-1", "CUSTOMER_MANAGEMENT:READ")).thenReturn(true);
             field.setType("DATA_SOURCE_MULTIPLE");
             assertEquals("可读客户", service.resolve(field, List.of("record-1")));
-            assertThrows(FormulaEvaluationException.class, () -> service.resolve(field, List.of("record-1", "missing")));
+            assertThrows(FormulaEvaluationException.class,
+                    () -> service.resolve(field, List.of("record-1", "missing")));
             customer.setOrganizationId("other-org");
             clearInvocations(permission);
             assertThrows(FormulaEvaluationException.class, () -> service.resolve(field, List.of("record-1")));

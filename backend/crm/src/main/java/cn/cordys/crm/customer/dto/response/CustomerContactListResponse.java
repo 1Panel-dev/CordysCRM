@@ -7,10 +7,8 @@ import lombok.Data;
 
 import java.util.List;
 
-
 /**
  * @author jianxing
- * @date 2025-02-24 11:06:10
  */
 @Data
 public class CustomerContactListResponse extends CustomerContact {

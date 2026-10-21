@@ -31,7 +31,8 @@ public class ClueCapacityControllerTests extends BaseTest {
         request.setScopeIds(List.of("admin"));
         request.setCapacity(10);
         this.requestPostWithOk("/lead-capacity/add", request);
-        MvcResult mvcResult = this.requestPost("/lead-capacity/add", request).andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestPost("/lead-capacity/add", request).andExpect(status().is5xxServerError())
+                .andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("capacity.scope.duplicate"));
     }
 
@@ -51,7 +52,8 @@ public class ClueCapacityControllerTests extends BaseTest {
         request.setId("not-exist");
         request.setScopeIds(List.of("admin"));
         request.setCapacity(100);
-        MvcResult mvcResult = this.requestPost("/lead-capacity/update", request).andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestPost("/lead-capacity/update", request).andExpect(status().is5xxServerError())
+                .andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("capacity.not.exist"));
         request.setId(CAPACITY_ID);
         this.requestPost("/lead-capacity/update", request);

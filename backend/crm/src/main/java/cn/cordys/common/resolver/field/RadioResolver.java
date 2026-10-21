@@ -1,6 +1,5 @@
 package cn.cordys.common.resolver.field;
 
-
 import cn.cordys.crm.system.dto.field.RadioField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +12,6 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
 
     @Override
     public void validate(RadioField radioField, Object value) {
-
         // 校验必填
         validateRequired(radioField, value);
 

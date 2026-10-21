@@ -11,6 +11,7 @@ import java.util.List;
 
 /**
  * 审批执行参数
+ *
  * @author song-cc-rock
  */
 @Data
@@ -19,16 +20,16 @@ import java.util.List;
 @AllArgsConstructor
 public class ApprovalExecuteParam {
 
-	@NotBlank
-	@Schema(description = "当前审批执行任务ID")
-	private String currentTaskId;
+    @NotBlank
+    @Schema(description = "当前审批执行任务ID")
+    private String currentTaskId;
 
-	@Schema(description = "审批动作", allowableValues = {"APPROVE", "REJECT", "SIGN", "BACK"})
-	private String action;
+    @Schema(description = "审批动作", allowableValues = { "APPROVE", "REJECT", "SIGN", "BACK" })
+    private String action;
 
-	@Schema(description = "审批意见")
-	private String comment;
+    @Schema(description = "审批意见")
+    private String comment;
 
-	@Schema(description = "审批意见的附件集合")
-	private List<String> attachmentIds;
+    @Schema(description = "审批意见的附件集合")
+    private List<String> attachmentIds;
 }

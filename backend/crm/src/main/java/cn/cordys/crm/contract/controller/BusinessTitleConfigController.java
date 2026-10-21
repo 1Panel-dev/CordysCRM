@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
 @Tag(name = "工商抬头配置")
 @RestController
 @RequestMapping("/business-title/config")
@@ -24,17 +23,15 @@ public class BusinessTitleConfigController {
     @Resource
     private BusinessTitleConfigService businessTitleConfigService;
 
-
     @GetMapping("/get")
     @Operation(summary = "获取工商抬头配置")
     public List<BusinessTitleConfig> getStageConfigList() {
         return businessTitleConfigService.getConfigs(OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/switch/{id}")
     @Operation(summary = "必填/非必填设置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void switchRequired(@PathVariable String id) {
         businessTitleConfigService.switchRequired(id);
     }

@@ -18,9 +18,10 @@ import java.util.List;
 
 /**
  * 详情页标签数据统一编排服务。
- *
- * <p>客户端传入的关联表单和字段只用于定位标签，真实查询条件始终取自当前组织的
- * 已保存表单配置，防止通过篡改请求读取未配置的关联数据。</p>
+ * <p>
+ * 客户端传入的关联表单和字段只用于定位标签，真实查询条件始终取自当前组织的
+ * 已保存表单配置，防止通过篡改请求读取未配置的关联数据。
+ * </p>
  */
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class DetailTabDataService {
     private final List<DetailTabDataHandler> handlers;
 
     public PagerWithOption<?> page(String formKey, String resourceId, DetailTabPageRequest request,
-                                   String userId, String organizationId) {
+            String userId, String organizationId) {
         FormDetailTab tab = resolveEnabledTab(formKey, request, organizationId);
         DetailTabQueryContext context = new DetailTabQueryContext(
                 formKey, resourceId, tab, request, userId, organizationId);
@@ -65,7 +66,8 @@ public class DetailTabDataService {
     private boolean matchesTab(FormDetailTab tab, DetailTabPageRequest request) {
         // 独立内置标签没有关联表单，related 接口会以 internalKey 作为其稳定 ID 返回。
         String relatedFormId = tab.getRelatedForm() == null
-                ? tab.getInternalKey() : tab.getRelatedForm().getIdAsString();
+                ? tab.getInternalKey()
+                : tab.getRelatedForm().getIdAsString();
         if (!Strings.CS.equals(relatedFormId, request.getRelatedFormId())) {
             return false;
         }

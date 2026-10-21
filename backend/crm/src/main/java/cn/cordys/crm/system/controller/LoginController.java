@@ -44,10 +44,11 @@ public class LoginController {
     @GetMapping(value = "/is-login")
     @Operation(summary = "是否登录")
     public SessionUser isLogin(HttpServletRequest httpServletRequest,
-                               HttpServletResponse httpServletResponse) {
+            HttpServletResponse httpServletResponse) {
         SessionUser sessionUser = refreshSessionUser();
         if (sessionUser != null) {
-            FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+            FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                    httpServletRequest.isSecure());
         }
         return sessionUser;
     }
@@ -66,9 +67,9 @@ public class LoginController {
         return null;
     }
 
-
     /**
      * 获取当前登录用户信息(带拦截)
+     *
      * @return 返回用户会话信息
      */
     @GetMapping(value = "/get-auth")
@@ -76,11 +77,11 @@ public class LoginController {
     public SessionUser getAutUser() {
         return refreshSessionUser();
     }
+
     /**
      * 获取 RSA 公钥。
      *
      * @return 返回 RSA 公钥。
-     *
      * @throws Exception 可能抛出的异常。
      */
     @GetMapping(value = "/get-key")
@@ -94,16 +95,14 @@ public class LoginController {
      * 用户登录。
      *
      * @param request 登录请求对象，包含用户名和密码。
-     *
      * @return 登录结果。
-     *
      * @throws GenericException 如果已登录且当前用户与请求用户名不同，抛出异常。
      */
     @PostMapping(value = "/login")
     @Operation(summary = "登录")
-    public SessionUser login(@Validated @RequestBody LoginRequest request, 
-                             HttpServletRequest httpServletRequest,
-                             HttpServletResponse httpServletResponse) {
+    public SessionUser login(@Validated @RequestBody LoginRequest request,
+            HttpServletRequest httpServletRequest,
+            HttpServletResponse httpServletResponse) {
         SessionUser sessionUser = SessionUtils.getUser();
         if (sessionUser != null) {
             // 如果当前用户已登录且用户名与请求用户名不匹配，抛出异常

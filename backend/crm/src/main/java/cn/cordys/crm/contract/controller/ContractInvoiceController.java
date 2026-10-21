@@ -40,7 +40,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-
 @Tag(name = "发票")
 @RestController
 @RequestMapping("/invoice")
@@ -61,11 +60,14 @@ public class ContractInvoiceController {
     @PostMapping("/page")
     @CsPermission(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "列表")
-    public PagerWithOption<List<ContractInvoiceListResponse>> list(@Validated @RequestBody ContractInvoicePageRequest request) {
+    public PagerWithOption<List<ContractInvoiceListResponse>> list(
+            @Validated @RequestBody ContractInvoicePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
-        return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_INVOICE_READ);
+        return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
 
     @GetMapping("/get/snapshot/{id}")
@@ -93,14 +95,16 @@ public class ContractInvoiceController {
     @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "更新")
     public ContractInvoice update(@Validated @RequestBody ContractInvoiceUpdateRequest request) {
-        return contractInvoiceService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractInvoiceService.update(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
     @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#id}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
-        contractInvoiceService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        contractInvoiceService.deleteWithApprovalCheck(id, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/module/form/snapshot/{id}")
@@ -114,7 +118,8 @@ public class ContractInvoiceController {
     @CsPermission(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
-        return contractInvoiceService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractInvoiceService.getTabEnableConfig(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/export-select")
@@ -145,7 +150,8 @@ public class ContractInvoiceController {
     public String exportAll(@Validated @RequestBody ContractInvoiceExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_INVOICE_READ);
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CONTRACT_INVOICE.name())
                 .fileName(request.getFileName())
@@ -168,7 +174,6 @@ public class ContractInvoiceController {
         contractInvoiceService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/template/download")
     @CsPermission(PermissionConstants.CONTRACT_INVOICE_IMPORT)
     @Operation(summary = "下载导入模板")
@@ -179,14 +184,18 @@ public class ContractInvoiceController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CONTRACT_INVOICE_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return contractInvoiceService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return contractInvoiceService.importPreCheck(file, request.getImportType(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CONTRACT_INVOICE_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return contractInvoiceService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return contractInvoiceService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 }

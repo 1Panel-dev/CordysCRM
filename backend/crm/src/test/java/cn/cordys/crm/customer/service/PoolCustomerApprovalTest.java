@@ -141,7 +141,8 @@ class PoolCustomerApprovalTest {
 
         // 只有有权限的那条被提审, 也只有它被写库
         verify(approvalResourceService).batchEditTriggerApproval(
-                eq(List.of("customer-1")), eq(FIELD_ID), eq(FormKey.CUSTOMER), eq(ORG_ID), eq(USER_ID), eq("备注"), eq("value"));
+                eq(List.of("customer-1")), eq(FIELD_ID), eq(FormKey.CUSTOMER), eq(ORG_ID), eq(USER_ID), eq("备注"),
+                eq("value"));
         assertEquals(1, response.getSuccess());
         assertEquals(1, response.getFail());
         assertEquals(0, response.getSkip());

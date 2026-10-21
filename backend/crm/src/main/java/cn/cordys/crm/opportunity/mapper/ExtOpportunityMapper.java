@@ -1,6 +1,5 @@
 package cn.cordys.crm.opportunity.mapper;
 
-
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.statistic.StatisticSqlMapper;
@@ -8,9 +7,9 @@ import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityBatchTransferRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunitySearchStatisticRequest;
-import cn.cordys.crm.opportunity.dto.request.OpportunityBatchTransferRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
@@ -21,19 +20,21 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-
 public interface ExtOpportunityMapper extends StatisticSqlMapper {
 
-
     List<OpportunityListResponse> list(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId,
-                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
+            @Param("source") boolean source);
 
-    OpportunitySearchStatisticResponse searchStatistic(@Param("request") OpportunitySearchStatisticRequest request, @Param("orgId") String orgId,
-                                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    OpportunitySearchStatisticResponse searchStatistic(@Param("request") OpportunitySearchStatisticRequest request,
+            @Param("orgId") String orgId,
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId, @Param("id") String id);
+    List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId,
+            @Param("id") String id);
 
-    void batchTransfer(@Param("request") OpportunityBatchTransferRequest request, @Param("userId") String userId, @Param("updateTime") long updateTime, @Param("stage") String stage);
+    void batchTransfer(@Param("request") OpportunityBatchTransferRequest request, @Param("userId") String userId,
+            @Param("updateTime") long updateTime, @Param("stage") String stage);
 
     OpportunityDetailResponse getDetail(@Param("id") String id);
 
@@ -47,14 +48,16 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
 
     List<OptionDTO> getOpportunityOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
-
     List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
 
-    Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount") boolean amount);
+    Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request,
+            @Param("amount") boolean amount);
 
-    List<AdvancedOpportunityResponse> advancedSearchList(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
+    List<AdvancedOpportunityResponse> advancedSearchList(@Param("request") OpportunityPageRequest request,
+            @Param("orgId") String orgId);
 
-    List<GlobalOpportunityResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<GlobalOpportunityResponse> globalSearchList(@Param("request") BasePageRequest request,
+            @Param("orgId") String orgId);
 
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
@@ -68,17 +71,18 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
     /**
      * 审批驳回/撤回时回退阶段
      *
-     * @param id             商机ID
-     * @param stage          回退到的阶段
-     * @param lastStage      回退后的上一阶段(即当前阶段)
-     * @param actualEndTime  结束时间, 回退到非结束阶段时为 null
-     * @param failureReason  失败原因, 回退到非结束阶段时为 null
-     * @param userId         用户ID
-     * @param updateTime     更新时间
+     * @param id            商机ID
+     * @param stage         回退到的阶段
+     * @param lastStage     回退后的上一阶段(即当前阶段)
+     * @param actualEndTime 结束时间, 回退到非结束阶段时为 null
+     * @param failureReason 失败原因, 回退到非结束阶段时为 null
+     * @param userId        用户ID
+     * @param updateTime    更新时间
      */
-    void revertStageByApproval(@Param("id") String id, @Param("stage") String stage, @Param("lastStage") String lastStage,
-                               @Param("actualEndTime") Long actualEndTime, @Param("failureReason") String failureReason,
-                               @Param("userId") String userId, @Param("updateTime") long updateTime);
+    void revertStageByApproval(@Param("id") String id, @Param("stage") String stage,
+            @Param("lastStage") String lastStage,
+            @Param("actualEndTime") Long actualEndTime, @Param("failureReason") String failureReason,
+            @Param("userId") String userId, @Param("updateTime") long updateTime);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
@@ -88,7 +92,8 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
 
     Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
 
-    void transfer(@Param("owner") String owner, @Param("userId") String userId, @Param("id") String id, @Param("updateTime") long updateTime);
+    void transfer(@Param("owner") String owner, @Param("userId") String userId, @Param("id") String id,
+            @Param("updateTime") long updateTime);
 
     void moveDownStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
@@ -103,7 +108,8 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
      * @param userId  用户ID
      * @param orgId   组织ID
      */
-    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId);
 
     /**
      * 获取待合并的客户商机列表
@@ -112,10 +118,12 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
      * @param orgId   组织ID
      * @return 客户商机列表
      */
-    List<Opportunity> getMergeOpportunityList(@Param("request") CustomerMergeRequest request, @Param("orgId") String orgId);
+    List<Opportunity> getMergeOpportunityList(@Param("request") CustomerMergeRequest request,
+            @Param("orgId") String orgId);
 
-    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+    List<ChartResult> chart(@Param("request") ChartAnalysisDbRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId,
+            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     void updateOpportunity(@Param("opportunity") Opportunity opportunity);
 }

@@ -136,7 +136,8 @@ public class PoolCustomerControllerTests extends BaseTest {
         request.setCustomerId(testDataId);
         request.setPoolId(testPoolId);
         MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
-        assert mvcResult.getResponse().getContentAsString().contains(Translator.getWithArgs("customer.capacity.over", 0));
+        assert mvcResult.getResponse().getContentAsString()
+                .contains(Translator.getWithArgs("customer.capacity.over", 0));
         // 清理测试组织的库容，避免残留限制影响后续用例。
         customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<CustomerCapacity>()
                 .eq(CustomerCapacity::getOrganizationId, DEFAULT_ORGANIZATION_ID));
@@ -180,7 +181,6 @@ public class PoolCustomerControllerTests extends BaseTest {
         customerMapper.updateById(customer);
     }
 
-
     @Test
     @Order(6)
     void testExport() throws Exception {
@@ -197,7 +197,8 @@ public class PoolCustomerControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(EXPORT_ALL, request);
         String resultData = getResultData(mvcResult, String.class);
         Thread.sleep(1500); // 等待导出任务完成
-        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService.download(resultData, "admin");
+        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService
+                .download(resultData, "admin");
         Assertions.assertTrue(resourceResponseEntity.getBody().exists());
         ExportTask exportTask = new ExportTask();
         exportTask.setId(resultData);
@@ -229,7 +230,8 @@ public class PoolCustomerControllerTests extends BaseTest {
         pickRequest.setCustomerId(testDataId);
         pickRequest.setPoolId(testPoolId);
         MvcResult result = this.requestPost(PICK, pickRequest).andExpect(status().is5xxServerError()).andReturn();
-        Assertions.assertTrue(result.getResponse().getContentAsString().contains(Translator.getWithArgs("pool.resource.frozen", frozenCustomer.getName())));
+        Assertions.assertTrue(result.getResponse().getContentAsString()
+                .contains(Translator.getWithArgs("pool.resource.frozen", frozenCustomer.getName())));
 
         Customer anotherFrozenCustomer = createCustomer();
         anotherFrozenCustomer.setName("another-frozen-customer");
@@ -300,7 +302,8 @@ public class PoolCustomerControllerTests extends BaseTest {
         PoolBatchAssignRequest request = new PoolBatchAssignRequest();
         request.setBatchIds(List.of("aaa"));
         request.setAssignUserId("cc");
-        MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError())
+                .andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.not.exist"));
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN, BATCH_ASSIGN, request);
     }

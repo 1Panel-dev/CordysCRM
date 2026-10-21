@@ -5,6 +5,7 @@ import cn.idev.excel.write.style.column.AbstractHeadColumnWidthStyleStrategy;
 
 /**
  * 自定义表头列宽策略
+ *
  * @author song-cc-rock
  */
 public class CustomHeadColWidthStyleStrategy extends AbstractHeadColumnWidthStyleStrategy {
@@ -18,6 +19,7 @@ public class CustomHeadColWidthStyleStrategy extends AbstractHeadColumnWidthStyl
 
     /**
      * 处理表头宽度
+     *
      * @param text 文本
      * @return 宽度
      */

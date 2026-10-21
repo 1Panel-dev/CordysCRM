@@ -49,7 +49,6 @@ public class OpportunityControllerTests extends BaseTest {
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
 
-
     @Override
     protected String getBasePath() {
         return BASE_PATH;
@@ -61,7 +60,6 @@ public class OpportunityControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
         moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
     }
-
 
     @Test
     @Order(2)
@@ -79,10 +77,8 @@ public class OpportunityControllerTests extends BaseTest {
         this.requestPostWithOkAndReturn(STATISTIC, request);
     }
 
-
-    @Sql(scripts = {"/dml/init_opportunity_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_opportunity_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     void testAdd() throws Exception {
@@ -102,7 +98,6 @@ public class OpportunityControllerTests extends BaseTest {
         request.setProducts(List.of("11", "22"));
         this.requestPost(DEFAULT_ADD, request);
     }
-
 
     @Test
     @Order(3)
@@ -167,14 +162,12 @@ public class OpportunityControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, TAB);
     }
 
-
     @Test
     @Order(5)
     void testDelete() throws Exception {
         this.requestGet(DEFAULT_DELETE, "123456");
         this.requestGetWithOk(DEFAULT_DELETE, addOpportunity.getId());
     }
-
 
     @Test
     @Order(6)
@@ -191,7 +184,6 @@ public class OpportunityControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(opportunity.getId()));
         Assertions.assertNull(opportunityMapper.selectByPrimaryKey(opportunity.getId()));
     }
-
 
     @Test
     @Order(2)
@@ -213,12 +205,10 @@ public class OpportunityControllerTests extends BaseTest {
 
     @Test
     @Order(7)
-    @Sql(scripts = {"/dml/init_opportunity_rule_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/dml/cleanup_opportunity_rule_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_opportunity_rule_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/cleanup_opportunity_rule_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testPageReservedDay() throws Exception {
         OpportunityAddRequest request = new OpportunityAddRequest();
         request.setName("商机1");
@@ -236,7 +226,6 @@ public class OpportunityControllerTests extends BaseTest {
         pageRequest.setPageSize(10);
         this.requestPostWithOk(DEFAULT_PAGE, pageRequest);
     }
-
 
     @Test
     @Order(2)

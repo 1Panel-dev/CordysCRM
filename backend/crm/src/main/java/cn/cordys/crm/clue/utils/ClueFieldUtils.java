@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
 
 public class ClueFieldUtils {
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data, Map<String, List<OptionDTO>> optionMap, Locale locale) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data,
+            Map<String, List<OptionDTO>> optionMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("owner", data.getOwnerName());
@@ -31,15 +32,18 @@ public class ClueFieldUtils {
         systemFieldMap.put("recyclePoolName", data.getRecyclePoolName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+            systemFieldMap.put("approvalStatus",
+                    Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         return systemFieldMap;
     }
 
     public static Object getProducts(Map<String, List<OptionDTO>> optionMap, List<String> products) {
         List<String> productNames = new ArrayList<>();
-        if (optionMap != null && optionMap.containsKey(BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) && CollectionUtils.isNotEmpty(products)) {
-            Map<String, String> productsMap = optionMap.get(BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()).stream().collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
+        if (optionMap != null && optionMap.containsKey(BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())
+                && CollectionUtils.isNotEmpty(products)) {
+            Map<String, String> productsMap = optionMap.get(BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()).stream()
+                    .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             products.forEach(product -> {
                 if (productsMap.containsKey(product)) {
                     productNames.add(productsMap.get(product));

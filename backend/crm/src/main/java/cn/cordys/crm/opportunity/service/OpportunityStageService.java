@@ -52,19 +52,18 @@ public class OpportunityStageService {
 
     /**
      * 商机阶段配置列表
-     *
-     * @param orgId
-     * @return
      */
     public StageConfigsResponse getStageConfigList(String orgId) {
         StageConfigsResponse stageConfigListResponse = new StageConfigsResponse();
         List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, FormKey.OPPORTUNITY.getKey());
+        List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId,
+                FormKey.OPPORTUNITY.getKey());
         buildList(stageConfigList, stageConfigListResponse, advancedConfigs, orgId);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<OpportunityStageResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs, String orgId) {
+    private void buildList(List<OpportunityStageResponse> stageConfigList, StageConfigsResponse response,
+            List<StageAdvancedConfig> advancedConfigs, String orgId) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
@@ -74,7 +73,8 @@ public class OpportunityStageService {
             response.setCirculationType(first.getCirculationType());
         }
         if (CollectionUtils.isNotEmpty(advancedConfigs)) {
-            Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream().collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
+            Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream()
+                    .collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
             List<CirculationSetting> configs = new ArrayList<>();
             List<CirculationFieldValue> allConfigs = new ArrayList<>();
             originIdMaps.forEach((key, value) -> {
@@ -85,8 +85,9 @@ public class OpportunityStageService {
                     Target target = new Target();
                     target.setTargetId(item.getTargetId());
                     target.setEnable(item.getEnable());
-                    List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
-                    });
+                    List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(),
+                            new TypeReference<List<CirculationFieldValue>>() {
+                            });
                     target.setCirculationFieldValues(circulationFieldValues);
                     targetList.add(target);
                     allConfigs.addAll(circulationFieldValues);
@@ -99,8 +100,7 @@ public class OpportunityStageService {
             Map<String, CirculationSetting> configMap = configs.stream()
                     .collect(Collectors.toMap(
                             CirculationSetting::getOriginId,
-                            Function.identity()
-                    ));
+                            Function.identity()));
 
             List<CirculationSetting> sortedConfigs = stageConfigList.stream()
                     .map(stage -> configMap.get(stage.getId()))
@@ -119,17 +119,14 @@ public class OpportunityStageService {
                     .collect(Collectors.toList());
 
             if (CollectionUtils.isNotEmpty(combinedConditions)) {
-                response.setOptionMap(userViewService.buildOptionMap(orgId, FormKey.OPPORTUNITY.getKey(), combinedConditions));
+                response.setOptionMap(
+                        userViewService.buildOptionMap(orgId, FormKey.OPPORTUNITY.getKey(), combinedConditions));
             }
         }
     }
 
     /**
      * 添加商机配置
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
     public String addStageConfig(OpportunityStageAddRequest request, String userId, String orgId) {
@@ -176,11 +173,8 @@ public class OpportunityStageService {
         return stageConfig.getId();
     }
 
-
     /**
      * 商机阶段配置校验
-     *
-     * @param orgId
      */
     private void checkConfigCount(String orgId) {
         if (extOpportunityStageConfigMapper.countStageConfig(orgId) >= 15) {
@@ -188,18 +182,16 @@ public class OpportunityStageService {
         }
     }
 
-
     /**
      * 删除
-     *
-     * @param id
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String orgId) {
         OpportunityStageConfig stageConfig = deletePreCheck(id, orgId);
         opportunityStageConfigMapper.deleteByPrimaryKey(id);
         // 设置操作对象
-        OperationLogContext.setResourceName(Translator.get("opportunity_stage_setting").concat(":").concat(stageConfig.getName()));
+        OperationLogContext
+                .setResourceName(Translator.get("opportunity_stage_setting").concat(":").concat(stageConfig.getName()));
     }
 
     private OpportunityStageConfig deletePreCheck(String id, String orgId) {
@@ -214,12 +206,8 @@ public class OpportunityStageService {
         return stageConfig;
     }
 
-
     /**
      * 更新商机阶段回退设置
-     *
-     * @param request
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void updateRollBack(StageRollBackRequest request, String orgId) {
@@ -229,8 +217,10 @@ public class OpportunityStageService {
         extOpportunityStageConfigMapper.updateRollBack(request, orgId);
 
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("afootRollBack", Translator.get("log.enable.".concat(stageConfigList.getFirst().getAfootRollBack().toString())));
-        originalVal.put("endRollBack", Translator.get("log.enable.".concat(stageConfigList.getFirst().getEndRollBack().toString())));
+        originalVal.put("afootRollBack",
+                Translator.get("log.enable.".concat(stageConfigList.getFirst().getAfootRollBack().toString())));
+        originalVal.put("endRollBack",
+                Translator.get("log.enable.".concat(stageConfigList.getFirst().getEndRollBack().toString())));
         Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("afootRollBack", Translator.get("log.enable.".concat(request.getAfootRollBack().toString())));
         modifiedVal.put("endRollBack", Translator.get("log.enable.".concat(request.getEndRollBack().toString())));
@@ -242,12 +232,8 @@ public class OpportunityStageService {
                 .build());
     }
 
-
     /**
      * 更新配置
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void update(StageUpdateRequest request, String userId) {
@@ -269,16 +255,11 @@ public class OpportunityStageService {
                         .resourceName(Translator.get("opportunity_stage_setting"))
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
-
 
     /**
      * 排序
-     *
-     * @param ids
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void sort(List<String> ids, String orgId) {
@@ -302,7 +283,6 @@ public class OpportunityStageService {
                         .resourceName(Translator.get("opportunity_stage_setting"))
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
 }

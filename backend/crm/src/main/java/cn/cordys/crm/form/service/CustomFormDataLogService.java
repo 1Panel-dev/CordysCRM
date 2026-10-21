@@ -73,19 +73,19 @@ public class CustomFormDataLogService extends BaseModuleLogService {
         for (int i = 0; i < json.length(); i++) {
             char c = json.charAt(i);
             switch (c) {
-                case '\n' -> sb.append("\\n");
-                case '\r' -> sb.append("\\r");
-                case '\t' -> sb.append("\\t");
-                case '\b' -> sb.append("\\b");
-                case '\f' -> sb.append("\\f");
-                default -> {
-                    if (c < 0x20) {
-                        // 其他控制字符使用Unicode转义
-                        sb.append("\\u").append(String.format("%04x", (int) c));
-                    } else {
-                        sb.append(c);
-                    }
+            case '\n' -> sb.append("\\n");
+            case '\r' -> sb.append("\\r");
+            case '\t' -> sb.append("\\t");
+            case '\b' -> sb.append("\\b");
+            case '\f' -> sb.append("\\f");
+            default -> {
+                if (c < 0x20) {
+                    // 其他控制字符使用Unicode转义
+                    sb.append("\\u").append(String.format("%04x", (int) c));
+                } else {
+                    sb.append(c);
                 }
+            }
             }
         }
         return sb.toString();

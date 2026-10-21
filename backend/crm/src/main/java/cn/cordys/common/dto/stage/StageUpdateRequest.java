@@ -13,4 +13,3 @@ public class StageUpdateRequest {
     private String name;
 
 }
-

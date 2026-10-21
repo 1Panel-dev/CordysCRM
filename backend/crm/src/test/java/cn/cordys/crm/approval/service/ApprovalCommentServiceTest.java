@@ -119,10 +119,11 @@ class ApprovalCommentServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"false, false, false", "true, false, true", "false, true, true"})
+    @CsvSource({ "false, false, false", "true, false, true", "false, true, true" })
     void returnsCommentPermissionFromBusinessOrEffectiveMentions(boolean businessOrTaskPermission,
-                                                               boolean mentioned, boolean expected) {
-        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(businessOrTaskPermission);
+            boolean mentioned, boolean expected) {
+        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG))
+                .thenReturn(businessOrTaskPermission);
         when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(mentioned);
 
         assertEquals(expected, service.hasCommentPermission(INSTANCE, USER, ORG));
@@ -134,7 +135,7 @@ class ApprovalCommentServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"missing-instance, org-a", "instance-a, other-org"})
+    @CsvSource({ "missing-instance, org-a", "instance-a, other-org" })
     void returnsNoCommentPermissionForUnknownInstanceOrAnotherOrganization(String instanceId, String orgId) {
         assertFalse(service.hasCommentPermission(instanceId, USER, orgId));
 
@@ -144,7 +145,7 @@ class ApprovalCommentServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @ValueSource(booleans = { false, true })
     void rejectsUnknownInstanceOrMissingAllPermissions(boolean knownInstance) {
         if (!knownInstance) {
             when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(null);
@@ -157,11 +158,12 @@ class ApprovalCommentServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @ValueSource(booleans = { false, true })
     void allowsBusinessOrTaskPermissionAndEffectiveMention(boolean businessOrTaskPermission) {
         ApprovalCommentResponse detail = detail("comment-a");
         when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of(detail));
-        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(businessOrTaskPermission);
+        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG))
+                .thenReturn(businessOrTaskPermission);
         when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(!businessOrTaskPermission);
 
         assertEquals(List.of(detail), service.list(INSTANCE, USER, ORG));
@@ -303,7 +305,7 @@ class ApprovalCommentServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @ValueSource(booleans = { false, true })
     void rejectsEditingOrDeletingAnotherUsersComment(boolean update) {
         allowExistingPermission();
         when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", "other-user"));
@@ -326,7 +328,8 @@ class ApprovalCommentServiceTest {
         allowExistingPermission();
         ApprovalCommentAddRequest request = addRequest();
         request.setMentionedUserIds(List.of("member-a", "foreign-user"));
-        when(extCommentMapper.selectEnabledUserIds(List.of("member-a", "foreign-user"), ORG)).thenReturn(List.of("member-a"));
+        when(extCommentMapper.selectEnabledUserIds(List.of("member-a", "foreign-user"), ORG))
+                .thenReturn(List.of("member-a"));
 
         assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
 
@@ -372,12 +375,13 @@ class ApprovalCommentServiceTest {
     }
 
     @Test
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     void deduplicatesMentionUsersAndDefaultsReplyRecipientToRootAuthor() {
         allowExistingPermission();
         when(extCommentMapper.selectCommentForUpdate("parent-a", ORG)).thenReturn(comment("parent-a", "root-author"));
         when(extCommentMapper.selectEnabledUserIds(List.of("member-a"), ORG)).thenReturn(List.of("member-a"));
-        when(extCommentMapper.selectDetail(anyString(), eq(ORG))).thenAnswer(invocation -> detail(invocation.getArgument(0)));
+        when(extCommentMapper.selectDetail(anyString(), eq(ORG)))
+                .thenAnswer(invocation -> detail(invocation.getArgument(0)));
         ApprovalCommentAddRequest request = addRequest();
         request.setParentId("parent-a");
         request.setMentionedUserIds(List.of("member-a", "member-a"));

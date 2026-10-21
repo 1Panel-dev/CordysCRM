@@ -1,6 +1,5 @@
 package cn.cordys.config;
 
-
 import cn.cordys.common.util.ServletUtils;
 import cn.cordys.context.OrganizationContext;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,7 @@ public class AsyncConfig implements AsyncConfigurer {
     private static final int STATISTIC_QUEUE_CAPACITY = 64;
 
     // 同时暴露默认名称，便于 @Async 自动装配
-    @Bean(name = {"taskExecutor", "threadPoolTaskExecutor", "applicationTaskExecutor"})
+    @Bean(name = { "taskExecutor", "threadPoolTaskExecutor", "applicationTaskExecutor" })
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setTaskDecorator(task -> {
@@ -63,11 +62,12 @@ public class AsyncConfig implements AsyncConfigurer {
 
     /**
      * 统计字段分批刷新的专用线程池。
-     *
-     * <p>不能复用 {@link #taskExecutor()}: 那个池是无界队列 + CallerRunsPolicy, 而统计刷新任务本身就
+     * <p>
+     * 不能复用 {@link #taskExecutor()}: 那个池是无界队列 + CallerRunsPolicy, 而统计刷新任务本身就
      * 跑在该池上(@Async("threadPoolTaskExecutor")), 一旦池内线程都在等自己提交的分页子任务,
      * 子任务会排在无界队列里永远轮不到执行, 整个池就被自己的子任务拖死。专用池把这个自等待闭环拆开,
-     * 同时用有界队列 + CallerRunsPolicy 保证满载时提交方自己执行(仍然在推进, 不会死等)。</p>
+     * 同时用有界队列 + CallerRunsPolicy 保证满载时提交方自己执行(仍然在推进, 不会死等)。
+     * </p>
      */
     @Bean(name = "statisticRefreshExecutor")
     public ThreadPoolTaskExecutor statisticRefreshExecutor() {

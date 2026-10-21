@@ -9,41 +9,40 @@ import java.math.BigDecimal;
 
 /**
  * 发票
- * 
+ *
  * @author jianxing
- * @date 2025-12-29 18:22:59
  */
 @Data
 @Table(name = "contract_invoice")
 public class ContractInvoice extends BaseModel {
 
-	@Schema(description = "发票名称")
-	private String name;
+    @Schema(description = "发票名称")
+    private String name;
 
-	@Schema(description = "合同id")
-	private String contractId;
+    @Schema(description = "合同id")
+    private String contractId;
 
-	@Schema(description = "负责人")
-	private String owner;
+    @Schema(description = "负责人")
+    private String owner;
 
-	@Schema(description = "开票金额")
-	private BigDecimal amount;
+    @Schema(description = "开票金额")
+    private BigDecimal amount;
 
-	@Schema(description = "发票类型")
-	private String invoiceType;
+    @Schema(description = "发票类型")
+    private String invoiceType;
 
-	@Schema(description = "税率")
-	private BigDecimal taxRate;
+    @Schema(description = "税率")
+    private BigDecimal taxRate;
 
-	@Schema(description = "工商抬头")
-	private String businessTitleId;
+    @Schema(description = "工商抬头")
+    private String businessTitleId;
 
-	@Schema(description = "审核状态")
-	private String approvalStatus;
+    @Schema(description = "审核状态")
+    private String approvalStatus;
 
-	@Schema(description = "组织id")
-	private String organizationId;
+    @Schema(description = "组织id")
+    private String organizationId;
 
-	@Schema(description = "是否审批通过过")
-	private Boolean approved;
+    @Schema(description = "是否审批通过过")
+    private Boolean approved;
 }

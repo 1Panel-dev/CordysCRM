@@ -1,8 +1,8 @@
 package cn.cordys.crm.system.dto.response;
 
+import cn.cordys.crm.system.dto.form.FormDetailTab;
 import cn.cordys.crm.system.dto.form.base.BtnContentProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
-import cn.cordys.crm.system.dto.form.FormDetailTab;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

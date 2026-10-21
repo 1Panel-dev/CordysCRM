@@ -20,11 +20,9 @@ public class BeanCopyUtils {
 
                 // target为空，并且source有值，才赋值
                 if ((targetValue == null || "".equals(targetValue))
-                        && sourceValue != null
-                ) {
+                        && sourceValue != null) {
                     field.set(target, sourceValue);
                 }
-
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }

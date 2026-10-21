@@ -10,14 +10,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Represents a ring buffer based on array.<br>
- * Using array could improve read element performance due to the CUP cache line. To prevent
- * the side effect of False Sharing, {@link PaddedAtomicLong} is using on 'tail' and 'cursor'<p>
+ * Using array could improve read element performance due to the CPU cache line. To prevent
+ * the side effect of False Sharing, {@link PaddedAtomicLong} is using on 'tail' and 'cursor'.
  * <p>
  * A ring buffer is consisted of:
+ * <ul>
  * <li><b>slots:</b> each element of the array is a slot, which is be set with a UID
  * <li><b>flags:</b> flag array corresponding the same index with the slots, indicates whether can take or put slot
  * <li><b>tail:</b> a sequence of the max slot position to produce
  * <li><b>cursor:</b> a sequence of the min slot position to consume
+ * </ul>
  */
 public class RingBuffer {
     public static final int DEFAULT_PADDING_PERCENT = 50;
@@ -66,19 +68,20 @@ public class RingBuffer {
     /**
      * Constructor with buffer size, paddingFactor default as {@value #DEFAULT_PADDING_PERCENT}
      *
-     * @param bufferSize must be positive & a power of 2
+     * @param bufferSize must be positive &amp; a power of 2
      */
     public RingBuffer(int bufferSize) {
         this(bufferSize, DEFAULT_PADDING_PERCENT);
     }
 
     /**
-     * Constructor with buffer size & padding factor
+     * Constructor with buffer size &amp; padding factor
      *
-     * @param bufferSize    must be positive & a power of 2
-     * @param paddingFactor percent in (0 - 100). When the count of rest available UIDs reach the threshold, it will trigger padding buffer<br>
+     * @param bufferSize    must be positive &amp; a power of 2
+     * @param paddingFactor percent in (0 - 100). When the count of rest available UIDs reach the threshold, it will
+     *                      trigger padding buffer<br>
      *                      Sample: paddingFactor=20, bufferSize=1000 -> threshold=1000 * 20 /100,
-     *                      padding buffer will be triggered when tail-cursor<threshold
+     *                      padding buffer will be triggered when {@code tail - cursor < threshold}
      */
     public RingBuffer(int bufferSize, int paddingFactor) {
         // check buffer size is positive & a power of 2; padding factor in (0, 100)
@@ -95,12 +98,13 @@ public class RingBuffer {
     }
 
     /**
-     * Put an UID in the ring & tail moved<br>
-     * We use 'synchronized' to guarantee the UID fill in slot & publish new tail sequence as atomic operations<br>
-     *
-     * <b>Note that: </b> It is recommended to put UID in a serialize way, cause we once batch generate a series UIDs and put
+     * Put an UID in the ring &amp; tail moved<br>
+     * We use 'synchronized' to guarantee the UID fill in slot &amp; publish new tail sequence as atomic operations<br>
+     * <b>Note that: </b> It is recommended to put UID in a serialize way, cause we once batch generate a series UIDs
+     * and put
      * the one by one into the buffer, so it is unnecessary put in multi-threads
-     * * @return false means that the buffer is full, apply {@link RejectedPutBufferHandler}
+     *
+     * @return false means that the buffer is full, apply {@link RejectedPutBufferHandler}
      */
     public synchronized boolean put(long uid) {
         long currentTail = tail.get();
@@ -133,14 +137,14 @@ public class RingBuffer {
     }
 
     /**
-     * Take an UID of the ring at the next cursor, this is a lock free operation by using atomic cursor<p>
+     * Take an UID of the ring at the next cursor, this is a lock free operation by using atomic cursor.
      * <p>
      * Before getting the UID, we also check whether reach the padding threshold,
      * the padding buffer operation will be triggered in another thread<br>
-     * If there is no more available UID to be taken, the specified {@link RejectedTakeBufferHandler} will be applied<br>
+     * If there is no more available UID to be taken, the specified {@link RejectedTakeBufferHandler} will be
+     * applied<br>
      *
      * @return UID
-     *
      * @throws IllegalStateException if the cursor moved back
      */
     public long take() {

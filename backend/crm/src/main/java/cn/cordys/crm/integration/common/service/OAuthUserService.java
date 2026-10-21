@@ -35,8 +35,7 @@ public class OAuthUserService {
      *
      * @param userInfoUrl 获取用户信息url
      * @param accessToken token
-     *
-     * @return Map<String, Object>
+     * @return GitHub 用户信息，键为接口返回的字段名
      */
     public Map<String, Object> getGitHubUser(String userInfoUrl, String accessToken) {
         String body = qrCodeClient.exchange(
@@ -44,8 +43,7 @@ public class OAuthUserService {
                 "Bearer " + accessToken,
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         return JSON.parseObject(body, new TypeReference<HashMap<String, Object>>() {
         });
     }
@@ -55,7 +53,6 @@ public class OAuthUserService {
      *
      * @param assessToken token
      * @param code        code
-     *
      * @return WeComUserResponse
      */
     public WeComUserResponse getWeComUser(String assessToken, String code) {
@@ -86,13 +83,11 @@ public class OAuthUserService {
      * 获取钉钉用户信息
      *
      * @param dingToken 用户token
-     *
      * @return DingTalkUserResponse
      */
     public DingTalkUserResponse getDingTalkUser(String dingToken) {
         return exchangeWithWrap(
-                dingToken
-        );
+                dingToken);
     }
 
     /**
@@ -100,7 +95,6 @@ public class OAuthUserService {
      *
      * @param accessToken access_token
      * @param unionid     unionid
-     *
      * @return userId
      */
     public String getUserIdByUnionId(String accessToken, String unionid) {
@@ -135,8 +129,7 @@ public class OAuthUserService {
                     url, null, null,
                     body,
                     MediaType.APPLICATION_JSON,
-                    MediaType.APPLICATION_JSON
-            );
+                    MediaType.APPLICATION_JSON);
         } catch (Exception e) {
             throw new GenericException(Translator.get("auth.get.user.error"));
         }
@@ -148,8 +141,7 @@ public class OAuthUserService {
                     url, null, null,
                     body,
                     MediaType.APPLICATION_JSON,
-                    MediaType.APPLICATION_JSON
-            );
+                    MediaType.APPLICATION_JSON);
             return JSON.parseObject(response, WeComUserResponse.class);
         } catch (Exception e) {
             throw new GenericException(Translator.get("auth.get.user.error"));
@@ -163,8 +155,7 @@ public class OAuthUserService {
                     token,
                     "x-acs-dingtalk-access-token",
                     MediaType.APPLICATION_JSON,
-                    MediaType.APPLICATION_JSON
-            );
+                    MediaType.APPLICATION_JSON);
             return JSON.parseObject(body, DingTalkUserResponse.class);
         } catch (Exception e) {
             throw new GenericException(Translator.get("auth.get.user.error"));
@@ -186,8 +177,7 @@ public class OAuthUserService {
                 "Bearer " + assessToken,
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         return JSON.parseObject(body, new TypeReference<HashMap<String, Object>>() {
         });
     }

@@ -11,7 +11,6 @@ import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
-
 @Data
 @JsonTypeName(value = "RADIO")
 @EqualsAndHashCode(callSuper = true)
@@ -20,22 +19,22 @@ public class RadioField extends BaseField implements HasOption {
     @Schema(description = "选项值")
     private List<OptionProp> options;
 
-	@Schema(description = "自定义选项值")
-	private List<OptionProp> customOptions;
+    @Schema(description = "自定义选项值")
+    private List<OptionProp> customOptions;
 
-	@Schema(description = "选项来源", allowableValues = {"custom", "ref"})
-	private String optionSource;
+    @Schema(description = "选项来源", allowableValues = { "custom", "ref" })
+    private String optionSource;
 
-	@Schema(description = "选项引用ID (optionSource=ref 时生效)")
-	private String refId;
+    @Schema(description = "选项引用ID (optionSource=ref 时生效)")
+    private String refId;
 
-	@Schema(description = "引用表单key (optionSource=ref 时生效)")
-	private String refFormKey;
+    @Schema(description = "引用表单key (optionSource=ref 时生效)")
+    private String refFormKey;
 
     @Schema(description = "默认值")
     private String defaultValue;
 
-    @Schema(description = "分布方式", allowableValues = {"horizontal", "vertical"})
+    @Schema(description = "分布方式", allowableValues = { "horizontal", "vertical" })
     private String direction;
 
     @Schema(description = "联动属性")

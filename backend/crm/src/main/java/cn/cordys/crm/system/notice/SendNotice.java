@@ -2,7 +2,7 @@ package cn.cordys.crm.system.notice;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface SendNotice {

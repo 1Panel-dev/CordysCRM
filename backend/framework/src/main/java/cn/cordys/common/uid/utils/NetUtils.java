@@ -27,7 +27,6 @@ public abstract class NetUtils {
      * Retrieve the first validated local ip address(the Public and LAN ip addresses are validated).
      *
      * @return the local address
-     *
      * @throws SocketException the socket exception
      */
     public static InetAddress getLocalInetAddress() throws SocketException {

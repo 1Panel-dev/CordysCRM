@@ -88,7 +88,8 @@ class CustomerRelationControllerTests extends BaseTest {
         addCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
 
         customerAddRequest.setName(UUID.randomUUID().toString());
-        anotherAddCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
+        anotherAddCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(),
+                DEFAULT_ORGANIZATION_ID);
 
         // 校验权限 放前面，否则会删掉创建的关系（客户需已存在，否则数据权限校验会直接拒绝）
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, SAVE, List.of(), addCustomer.getId());
@@ -96,7 +97,8 @@ class CustomerRelationControllerTests extends BaseTest {
         List<CustomerRelationSaveRequest> requests = List.of(new CustomerRelationSaveRequest());
         requestPostWithOk(SAVE, requests, addCustomer.getId());
 
-        requests = List.of(new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name()));
+        requests = List.of(
+                new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name()));
         requestPostWithOk(SAVE, requests, addCustomer.getId());
 
         // 校验权限
@@ -109,10 +111,12 @@ class CustomerRelationControllerTests extends BaseTest {
         CustomerAddRequest customerAddRequest = new CustomerAddRequest();
         customerAddRequest.setName(UUID.randomUUID().toString());
         customerAddRequest.setOwner(InternalUser.ADMIN.getValue());
-        Customer otherOwnerCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
+        Customer otherOwnerCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(),
+                DEFAULT_ORGANIZATION_ID);
 
         customerRelationService.save(otherOwnerCustomer.getId(),
-                List.of(new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name())));
+                List.of(new CustomerRelationSaveRequest(anotherAddCustomer.getId(),
+                        CustomerRelationType.SUBSIDIARY.name())));
         CustomerRelation example = new CustomerRelation();
         example.setSourceCustomerId(otherOwnerCustomer.getId());
         CustomerRelation existingRelation = customerRelationBaseMapper.selectOne(example);
@@ -132,13 +136,16 @@ class CustomerRelationControllerTests extends BaseTest {
 
         try {
             // 仅本人数据权限不能整体覆盖其他负责人的客户关系
-            int saveStatus = mockMvc.perform(getPermissionPostRequestBuilder(SAVE, List.of(), otherOwnerCustomer.getId()))
+            int saveStatus = mockMvc
+                    .perform(getPermissionPostRequestBuilder(SAVE, List.of(), otherOwnerCustomer.getId()))
                     .andReturn().getResponse().getStatus();
             Assertions.assertEquals(HttpStatus.FORBIDDEN.value(), saveStatus);
 
             // 仅本人数据权限不能向其他负责人的客户添加关系
-            CustomerRelationSaveRequest addRequest = new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name());
-            int addStatus = mockMvc.perform(getPermissionPostRequestBuilder(ADD, addRequest, otherOwnerCustomer.getId()))
+            CustomerRelationSaveRequest addRequest = new CustomerRelationSaveRequest(anotherAddCustomer.getId(),
+                    CustomerRelationType.SUBSIDIARY.name());
+            int addStatus = mockMvc
+                    .perform(getPermissionPostRequestBuilder(ADD, addRequest, otherOwnerCustomer.getId()))
                     .andReturn().getResponse().getStatus();
             Assertions.assertEquals(HttpStatus.FORBIDDEN.value(), addStatus);
 
@@ -166,7 +173,8 @@ class CustomerRelationControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testAdd() throws Exception {
-        CustomerRelationSaveRequest customerRelationSaveRequest = new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name());
+        CustomerRelationSaveRequest customerRelationSaveRequest = new CustomerRelationSaveRequest(
+                anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name());
 
         MvcResult mvcResult = requestPostWithOkAndReturn(ADD, customerRelationSaveRequest, addCustomer.getId());
         addCustomerRelation = getResultData(mvcResult, CustomerRelation.class);
@@ -175,7 +183,8 @@ class CustomerRelationControllerTests extends BaseTest {
         Assertions.assertEquals(addCustomerRelation.getTargetCustomerId(), anotherAddCustomer.getId());
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, ADD, customerRelationSaveRequest, addCustomer.getId());
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, ADD, customerRelationSaveRequest,
+                addCustomer.getId());
     }
 
     @Test
@@ -192,7 +201,8 @@ class CustomerRelationControllerTests extends BaseTest {
         Assertions.assertEquals(addCustomerRelation.getSourceCustomerId(), anotherAddCustomer.getId());
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, UPDATE, customerRelationUpdateRequest, addCustomer.getId());
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, UPDATE, customerRelationUpdateRequest,
+                addCustomer.getId());
     }
 
     @Test
@@ -204,7 +214,8 @@ class CustomerRelationControllerTests extends BaseTest {
         Long relationCount = customerRelationBaseMapper.countByExample(example);
 
         // 不传关联客户：应返回参数校验失败，而不是落入数据库非空约束导致 500
-        CustomerRelationSaveRequest withoutCustomer = new CustomerRelationSaveRequest(null, CustomerRelationType.SUBSIDIARY.name());
+        CustomerRelationSaveRequest withoutCustomer = new CustomerRelationSaveRequest(null,
+                CustomerRelationType.SUBSIDIARY.name());
         MvcResult result = requestPost(ADD, withoutCustomer, addCustomer.getId()).andReturn();
         Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
         Map<?, ?> response = parseResponse(result);
@@ -261,7 +272,6 @@ class CustomerRelationControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DELETE, addCustomerRelation.getId());
 
         Assertions.assertNull(customerRelationBaseMapper.selectByPrimaryKey(addCustomerRelation.getId()));
-
     }
 
     @Test

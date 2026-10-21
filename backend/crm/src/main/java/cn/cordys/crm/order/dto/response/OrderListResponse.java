@@ -14,7 +14,7 @@ public class OrderListResponse extends Order {
     private String customerName;
 
     @Schema(description = "合同名称")
-    private String  contractName;
+    private String contractName;
 
     @Schema(description = "负责人名称")
     private String ownerName;
@@ -43,9 +43,9 @@ public class OrderListResponse extends Order {
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 
-	@Schema(description = "审批第一个节点是否通过")
-	private Boolean firstApproved;
+    @Schema(description = "审批第一个节点是否通过")
+    private Boolean firstApproved;
 
-	@Schema(description = "提审人ID")
-	private String submitterId;
+    @Schema(description = "提审人ID")
+    private String submitterId;
 }

@@ -57,27 +57,29 @@ public class ModuleController {
     @GetMapping("/user/dept/tree")
     @Operation(summary = "获取部门用户树")
     @RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
-    public List<DeptUserTreeNode> getDeptUserTree(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+    public List<DeptUserTreeNode> getDeptUserTree(
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @GetMapping("/role/tree")
     @Operation(summary = "获取角色树")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_READ,
+            PermissionConstants.PROCESS_SETTING_READ }, logical = Logical.OR)
     public List<RoleUserTreeNode> getRoleTree() {
         return moduleService.getRoleTree(OrganizationContext.getOrganizationId());
     }
 
-	@GetMapping("/advanced-search/settings")
-	@Operation(summary = "高级搜索开关设置")
-	public boolean getAdvancedSetting() {
-		return moduleService.getAdvancedSetting();
-	}
+    @GetMapping("/advanced-search/settings")
+    @Operation(summary = "高级搜索开关设置")
+    public boolean getAdvancedSetting() {
+        return moduleService.getAdvancedSetting();
+    }
 
-	@GetMapping("/advanced-search/switch")
-	@Operation(summary = "高级搜索开关设置")
-	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-	public void switchAdvanced() {
-		moduleService.switchAdvanced(SessionUtils.getUserId());
-	}
+    @GetMapping("/advanced-search/switch")
+    @Operation(summary = "高级搜索开关设置")
+    @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+    public void switchAdvanced() {
+        moduleService.switchAdvanced(SessionUtils.getUserId());
+    }
 }

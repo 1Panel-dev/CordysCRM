@@ -22,8 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanComment> {
@@ -119,6 +119,7 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
         if (plan == null || !Objects.equals(plan.getOrganizationId(), orgId)) {
             throw new GenericException(Translator.get("follow.comment.target_not_found"));
         }
-        return buildTargetInfo(plan.getType(), plan.getOwner(), plan.getClueId(), plan.getCustomerId(), plan.getOpportunityId());
+        return buildTargetInfo(plan.getType(), plan.getOwner(), plan.getClueId(), plan.getCustomerId(),
+                plan.getOpportunityId());
     }
 }

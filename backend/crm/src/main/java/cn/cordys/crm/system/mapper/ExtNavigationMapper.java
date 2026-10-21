@@ -9,7 +9,6 @@ public interface ExtNavigationMapper {
 
     List<Navigation> selectList(@Param("orgId") String orgId);
 
-
     void moveUpNavigation(@Param("start") Long start, @Param("end") Long end);
 
     void moveDownNavigation(@Param("start") Long start, @Param("end") Long end);

@@ -1,6 +1,5 @@
 package cn.cordys.crm.integration.agent.controller;
 
-
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.context.OrganizationContext;
@@ -26,18 +25,16 @@ import java.util.Map;
 @RequestMapping("/agent/module")
 public class AgentModuleController {
 
-
     @Resource
     private AgentModuleService agentModuleService;
-
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.AGENT_ADD)
     @Operation(summary = "智能体-添加文件夹")
     public AgentModule addFileModule(@Validated @RequestBody AgentModuleAddRequest request) {
-        return agentModuleService.addFileModule(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        return agentModuleService.addFileModule(request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
-
 
     @PostMapping("/rename")
     @RequiresPermissions(PermissionConstants.AGENT_UPDATE)

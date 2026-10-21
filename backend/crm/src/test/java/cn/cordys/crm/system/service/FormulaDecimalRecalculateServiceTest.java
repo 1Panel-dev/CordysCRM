@@ -194,7 +194,6 @@ class FormulaDecimalRecalculateServiceTest {
                 "name", "SUM",
                 "args", java.util.Arrays.stream(fieldIds)
                         .map(fieldId -> Map.of("type", "field", "fieldId", fieldId))
-                        .toList()
-        )));
+                        .toList())));
     }
 }

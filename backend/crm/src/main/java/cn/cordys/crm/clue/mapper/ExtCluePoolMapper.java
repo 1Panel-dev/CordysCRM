@@ -16,7 +16,6 @@ public interface ExtCluePoolMapper {
      *
      * @param request 请求参数
      * @param orgId   组织ID
-     *
      * @return 线索池列表
      */
     List<CluePoolDTO> list(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
@@ -39,7 +38,6 @@ public interface ExtCluePoolMapper {
      * 获取公海池集合
      *
      * @param orgId 组织ID
-     *
      * @return 公海池集合
      */
     List<CluePool> getAllPool(@Param("orgId") String orgId);

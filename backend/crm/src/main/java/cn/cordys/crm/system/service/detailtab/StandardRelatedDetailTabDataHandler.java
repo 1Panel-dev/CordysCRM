@@ -57,9 +57,10 @@ import java.util.List;
 
 /**
  * 标准表单自定义关联字段查询。
- *
- * <p>该 Handler 处理“关联表单是系统标准表单，但关联字段是用户新增的数据源字段”的场景。
- * 固定关联条件来自已保存的标签配置，并与用户输入的关键词、高级搜索条件共同以 AND 方式生效。</p>
+ * <p>
+ * 该 Handler 处理“关联表单是系统标准表单，但关联字段是用户新增的数据源字段”的场景。
+ * 固定关联条件来自已保存的标签配置，并与用户输入的关键词、高级搜索条件共同以 AND 方式生效。
+ * </p>
  */
 @Component
 @RequiredArgsConstructor
@@ -100,12 +101,9 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     @Resource
     private FollowUpPlanService followUpPlanService;
 
-
     /**
      * 处理非内置 tab 中的 内置表单的查询
      * (内置的 tab 走原来的接口逻辑)
-     * @param context
-     * @return
      */
     @Override
     public boolean supports(DetailTabQueryContext context) {
@@ -121,20 +119,20 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     public PagerWithOption<?> page(DetailTabQueryContext context) {
         FormKey relatedForm = FormKey.ofKey(context.tab().getRelatedForm().getIdAsString());
         return switch (relatedForm) {
-            case CLUE -> clues(context);
-            case CUSTOMER -> customers(context);
-            case CONTACT -> contacts(context);
-            case OPPORTUNITY -> opportunities(context);
-            case PRODUCT -> products(context);
-            case PRICE -> prices(context);
-            case QUOTATION -> quotations(context);
-            case CONTRACT -> contracts(context);
-            case INVOICE -> invoices(context);
-            case CONTRACT_PAYMENT_PLAN -> paymentPlans(context);
-            case CONTRACT_PAYMENT_RECORD -> paymentRecords(context);
-            case ORDER -> orders(context);
-            case FOLLOW_RECORD -> followRecords(context);
-            case FOLLOW_PLAN -> followPlans(context);
+        case CLUE -> clues(context);
+        case CUSTOMER -> customers(context);
+        case CONTACT -> contacts(context);
+        case OPPORTUNITY -> opportunities(context);
+        case PRODUCT -> products(context);
+        case PRICE -> prices(context);
+        case QUOTATION -> quotations(context);
+        case CONTRACT -> contracts(context);
+        case INVOICE -> invoices(context);
+        case CONTRACT_PAYMENT_PLAN -> paymentPlans(context);
+        case CONTRACT_PAYMENT_RECORD -> paymentRecords(context);
+        case ORDER -> orders(context);
+        case FOLLOW_RECORD -> followRecords(context);
+        case FOLLOW_PLAN -> followPlans(context);
         };
     }
 
@@ -144,8 +142,10 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         DeptDataPermissionDTO clueDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return followUpRecordService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return followUpRecordService.totalList(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
     }
 
     private PagerWithOption<?> followPlans(DetailTabQueryContext context) {
@@ -154,8 +154,10 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         DeptDataPermissionDTO clueDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                clueDataPermission, customerDataPermission);
     }
 
     private void replaceSearchBusinessKey(DetailTabQueryContext context) {
@@ -167,7 +169,8 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         if (StringUtils.isNotBlank(moduleField.getInternalKey())) {
             BusinessModuleField[] values = BusinessModuleField.values();
             for (BusinessModuleField value : values) {
-                if (Strings.CS.equals(value.getKey(), moduleField.getInternalKey()) && StringUtils.isNotBlank(value.getBusinessKey())) {
+                if (Strings.CS.equals(value.getKey(), moduleField.getInternalKey())
+                        && StringUtils.isNotBlank(value.getBusinessKey())) {
                     // 查询使用 businessKey
                     context.tab().getRelatedField().setId(value.getBusinessKey());
                     break;
@@ -225,7 +228,8 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private PagerWithOption<?> quotations(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         checkPermission(PermissionConstants.OPPORTUNITY_QUOTATION_READ);
-        OpportunityQuotationPageRequest request = prepare(new OpportunityQuotationPageRequest(), FormKey.QUOTATION, context);
+        OpportunityQuotationPageRequest request = prepare(new OpportunityQuotationPageRequest(), FormKey.QUOTATION,
+                context);
         return opportunityQuotationService.list(request, context.organizationId(), context.userId(),
                 dataPermission(context, PermissionConstants.OPPORTUNITY_QUOTATION_READ), false);
     }
@@ -249,7 +253,8 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private PagerWithOption<?> paymentPlans(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         checkPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        ContractPaymentPlanPageRequest request = prepare(new ContractPaymentPlanPageRequest(), FormKey.CONTRACT_PAYMENT_PLAN, context);
+        ContractPaymentPlanPageRequest request = prepare(new ContractPaymentPlanPageRequest(),
+                FormKey.CONTRACT_PAYMENT_PLAN, context);
         return contractPaymentPlanService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ));
     }
@@ -257,7 +262,8 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private PagerWithOption<?> paymentRecords(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         checkPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        ContractPaymentRecordPageRequest request = prepare(new ContractPaymentRecordPageRequest(), FormKey.CONTRACT_PAYMENT_RECORD, context);
+        ContractPaymentRecordPageRequest request = prepare(new ContractPaymentRecordPageRequest(),
+                FormKey.CONTRACT_PAYMENT_RECORD, context);
         return contractPaymentRecordService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ));
     }

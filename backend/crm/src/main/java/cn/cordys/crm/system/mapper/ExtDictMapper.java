@@ -20,7 +20,8 @@ public interface ExtDictMapper {
      * @param module 模块
      * @param orgId  组织ID
      */
-    void moveUpDict(@Param("start") Long start, @Param("end") Long end, @Param("module") String module, @Param("orgId") String orgId);
+    void moveUpDict(@Param("start") Long start, @Param("end") Long end, @Param("module") String module,
+            @Param("orgId") String orgId);
 
     /**
      * 字典区间下移
@@ -30,14 +31,14 @@ public interface ExtDictMapper {
      * @param module 模块
      * @param orgId  组织ID
      */
-    void moveDownDict(@Param("start") Long start, @Param("end") Long end, @Param("module") String module, @Param("orgId") String orgId);
+    void moveDownDict(@Param("start") Long start, @Param("end") Long end, @Param("module") String module,
+            @Param("orgId") String orgId);
 
     /**
      * 获取字典模块下一个位置
      *
      * @param module 模块
      * @param orgId  组织ID
-     *
      * @return 下一个位置
      */
     Long getNextPos(@Param("module") String module, @Param("orgId") String orgId);

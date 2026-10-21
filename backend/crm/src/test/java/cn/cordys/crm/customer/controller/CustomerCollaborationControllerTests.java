@@ -48,7 +48,8 @@ class CustomerCollaborationControllerTests extends BaseTest {
         addCustomer();
 
         MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, customerId);
-        List<CustomerCollaborationListResponse> customerCollaborations = getResultDataArray(mvcResult, CustomerCollaborationListResponse.class);
+        List<CustomerCollaborationListResponse> customerCollaborations = getResultDataArray(mvcResult,
+                CustomerCollaborationListResponse.class);
         Assertions.assertTrue(CollectionUtils.isEmpty(customerCollaborations));
 
         // 校验权限
@@ -72,7 +73,8 @@ class CustomerCollaborationControllerTests extends BaseTest {
         request.setUserId(InternalUser.ADMIN.getValue());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         CustomerCollaboration resultData = getResultData(mvcResult, CustomerCollaboration.class);
-        CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(resultData.getId());
+        CustomerCollaboration customerCollaboration = customerCollaborationMapper
+                .selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
         addCustomerCollaboration = customerCollaboration;
@@ -107,10 +109,13 @@ class CustomerCollaborationControllerTests extends BaseTest {
     @Order(4)
     void testList() throws Exception {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, customerId);
-        List<CustomerCollaborationListResponse> list = getResultDataArray(mvcResult, CustomerCollaborationListResponse.class);
+        List<CustomerCollaborationListResponse> list = getResultDataArray(mvcResult,
+                CustomerCollaborationListResponse.class);
         list.forEach(customerCollaborationListResponse -> {
-            CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(customerCollaborationListResponse.getId());
-            CustomerCollaboration result = BeanUtils.copyBean(new CustomerCollaboration(), customerCollaborationListResponse);
+            CustomerCollaboration customerCollaboration = customerCollaborationMapper
+                    .selectByPrimaryKey(customerCollaborationListResponse.getId());
+            CustomerCollaboration result = BeanUtils.copyBean(new CustomerCollaboration(),
+                    customerCollaborationListResponse);
             Assertions.assertEquals(customerCollaboration, result);
             Assertions.assertNotNull(customerCollaborationListResponse.getUpdateUserName());
         });

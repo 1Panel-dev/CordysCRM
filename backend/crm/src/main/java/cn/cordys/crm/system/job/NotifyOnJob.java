@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 @Slf4j
 public class NotifyOnJob {
-    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
+    private static final String ANNOUNCE_PREFIX = "announce_content:"; // Redis 存储信息前缀
     @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource

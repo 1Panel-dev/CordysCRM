@@ -66,8 +66,8 @@ import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -137,29 +137,26 @@ public class ContractInvoiceService extends BaseExportService implements Approva
     @Resource
     private SqlSessionFactory sqlSessionFactory;
 
-
     /**
      * 合同列表
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param deptDataPermission
-     * @return
      */
-    public PagerWithOption<List<ContractInvoiceListResponse>> list(ContractInvoicePageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<ContractInvoiceListResponse>> list(ContractInvoicePageRequest request, String userId,
+            String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<ContractInvoiceListResponse> list = extContractInvoiceMapper.list(request, orgId, userId, deptDataPermission);
+        List<ContractInvoiceListResponse> list = extContractInvoiceMapper.list(request, orgId, userId,
+                deptDataPermission);
         List<ContractInvoiceListResponse> results = buildList(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(list, results, orgId);
 
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
     }
 
-    private Map<String, List<OptionDTO>> buildOptionMap(List<ContractInvoiceListResponse> list, List<ContractInvoiceListResponse> buildList, String orgId) {
+    private Map<String, List<OptionDTO>> buildOptionMap(List<ContractInvoiceListResponse> list,
+            List<ContractInvoiceListResponse> buildList, String orgId) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ContractInvoiceListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                ContractInvoiceListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
         // 补充负责人选项
@@ -175,11 +172,6 @@ public class ContractInvoiceService extends BaseExportService implements Approva
 
     /**
      * 新建合同
-     *
-     * @param request
-     * @param operatorId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.ADD)
     @HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.CREATE, resourceId = "#{request.id}", operatorId = "{#operatorId}")
@@ -191,13 +183,16 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         }
 
         Contract contract = contractMapper.selectByPrimaryKey(request.getContractId());
-        BigDecimal contractInvoiceValidAmount = extContractInvoiceMapper.calculateContractInvoiceValidAmount(request.getContractId(), operatorId, orgId, null);
-        if (request.getAmount() != null && contract != null && request.getAmount().compareTo(contract.getAmount().subtract(contractInvoiceValidAmount)) > 0) {
+        BigDecimal contractInvoiceValidAmount = extContractInvoiceMapper
+                .calculateContractInvoiceValidAmount(request.getContractId(), operatorId, orgId, null);
+        if (request.getAmount() != null && contract != null
+                && request.getAmount().compareTo(contract.getAmount().subtract(contractInvoiceValidAmount)) > 0) {
             // 校验发票金额
             throw new GenericException(Translator.get("invoice.amount.exceed"));
         }
 
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
         ContractInvoice invoice = BeanUtils.copyBean(new ContractInvoice(), request);
         String id = IDGenerator.nextStr();
         invoice.setId(id);
@@ -221,12 +216,14 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         statisticFieldService.refreshDataStatisticFields(FormKey.INVOICE.getKey(), invoice.getId(), orgId);
         // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
         statisticFieldService.refreshByRelatedDataChange(FormKey.INVOICE.getKey(), invoice.getId(), orgId);
-        baseService.handleAddLogWithSubTable(invoice, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
+        baseService.handleAddLogWithSubTable(invoice, moduleFields, Translator.get("products_info"),
+                moduleFormConfigDTO);
         OperationLogContext.getContext().setResourceName(invoice.getName());
         OperationLogContext.getContext().setResourceId(invoice.getId());
 
         // 保存表单配置快照
-        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, invoiceFieldService, invoice.getId());
+        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields,
+                moduleFormConfigDTO, invoiceFieldService, invoice.getId());
         ContractInvoiceGetResponse response = get(invoice, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(invoice, saveModuleFormConfigDTO, response);
 
@@ -235,12 +232,9 @@ public class ContractInvoiceService extends BaseExportService implements Approva
 
     /**
      * 保存合同快照
-     *
-     * @param invoice
-     * @param moduleFormConfigDTO
-     * @param response
      */
-    private void saveSnapshot(ContractInvoice invoice, ModuleFormConfigDTO moduleFormConfigDTO, ContractInvoiceGetResponse response) {
+    private void saveSnapshot(ContractInvoice invoice, ModuleFormConfigDTO moduleFormConfigDTO,
+            ContractInvoiceGetResponse response) {
         ContractInvoiceSnapshot snapshot = new ContractInvoiceSnapshot();
         snapshot.setId(IDGenerator.nextStr());
         snapshot.setInvoiceId(invoice.getId());
@@ -251,11 +245,6 @@ public class ContractInvoiceService extends BaseExportService implements Approva
 
     /**
      * 编辑合同
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
@@ -267,17 +256,22 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             throw new GenericException(Translator.get("invoice.form.config.required"));
         }
 
-        String contractId = request.getContractId() == null ? originContractInvoice.getContractId() : request.getContractId();
+        String contractId = request.getContractId() == null ? originContractInvoice.getContractId()
+                : request.getContractId();
         Contract contract = contractMapper.selectByPrimaryKey(contractId);
-        BigDecimal contractInvoiceValidAmount = extContractInvoiceMapper.calculateContractInvoiceValidAmount(request.getContractId(), userId, orgId, request.getId());
-        if (request.getAmount() != null && contract != null && request.getAmount().compareTo(contract.getAmount().subtract(contractInvoiceValidAmount)) > 0) {
+        BigDecimal contractInvoiceValidAmount = extContractInvoiceMapper
+                .calculateContractInvoiceValidAmount(request.getContractId(), userId, orgId, request.getId());
+        if (request.getAmount() != null && contract != null
+                && request.getAmount().compareTo(contract.getAmount().subtract(contractInvoiceValidAmount)) > 0) {
             // 校验发票金额
             throw new GenericException(Translator.get("invoice.amount.exceed"));
         }
 
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
         Optional.of(originContractInvoice).ifPresentOrElse(item -> {
-            List<BaseModuleFieldValue> originFields = invoiceFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originFields = invoiceFieldService
+                    .getModuleFieldValuesByResourceId(request.getId());
             ContractInvoice invoice = BeanUtils.copyBean(new ContractInvoice(), request);
             invoice.setUpdateTime(System.currentTimeMillis());
             invoice.setUpdateUser(userId);
@@ -301,7 +295,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             if (CollectionUtils.isNotEmpty(invoiceSnapshots)) {
                 ContractInvoiceSnapshot first = invoiceSnapshots.getFirst();
                 if (first != null) {
-                    ContractInvoiceGetResponse response = JSON.parseObject(first.getInvoiceValue(), ContractInvoiceGetResponse.class);
+                    ContractInvoiceGetResponse response = JSON.parseObject(first.getInvoiceValue(),
+                            ContractInvoiceGetResponse.class);
                     List<BaseModuleFieldValue> originModuleFields = response.getModuleFields();
                     if (CollectionUtils.isNotEmpty(originModuleFields)) {
                         originFields.addAll(originModuleFields);
@@ -310,7 +305,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             }
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
-            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, invoiceFieldService, invoice.getId());
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields,
+                    moduleFormConfigDTO, invoiceFieldService, invoice.getId());
             // get 方法需要使用orgId
             invoice.setOrganizationId(orgId);
             ContractInvoiceGetResponse response = get(invoice, resolveFieldValues, moduleFormConfigDTO);
@@ -325,16 +321,11 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         return invoiceMapper.selectByPrimaryKey(request.getId());
     }
 
-
     /**
      * 更新自定义字段
-     *
-     * @param moduleFields
-     * @param invoice
-     * @param orgId
-     * @param userId
      */
-    private void updateFields(List<BaseModuleFieldValue> moduleFields, ContractInvoice invoice, String orgId, String userId) {
+    private void updateFields(List<BaseModuleFieldValue> moduleFields, ContractInvoice invoice, String orgId,
+            String userId) {
         if (moduleFields == null) {
             return;
         }
@@ -342,11 +333,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         invoiceFieldService.saveModuleField(invoice, orgId, userId, moduleFields, true);
     }
 
-
     /**
      * 删除合同
-     *
-     * @param id
      */
     @Override
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.DELETE, resourceId = "{#id}")
@@ -384,17 +372,21 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         return FormKey.INVOICE;
     }
 
-    private ContractInvoiceGetResponse get(ContractInvoice contractInvoice, List<BaseModuleFieldValue> contractInvoiceFields, ModuleFormConfigDTO contractInvoiceFormConfig) {
-        ContractInvoiceGetResponse contractInvoiceGetResponse = BeanUtils.copyBean(new ContractInvoiceGetResponse(), contractInvoice);
+    private ContractInvoiceGetResponse get(ContractInvoice contractInvoice,
+            List<BaseModuleFieldValue> contractInvoiceFields, ModuleFormConfigDTO contractInvoiceFormConfig) {
+        ContractInvoiceGetResponse contractInvoiceGetResponse = BeanUtils.copyBean(new ContractInvoiceGetResponse(),
+                contractInvoice);
         contractInvoiceGetResponse = baseService.setCreateUpdateOwnerUserName(contractInvoiceGetResponse);
 
         // 获取模块字段
-        moduleFormService.processBusinessFieldValues(contractInvoiceGetResponse, contractInvoiceFields, contractInvoiceFormConfig);
+        moduleFormService.processBusinessFieldValues(contractInvoiceGetResponse, contractInvoiceFields,
+                contractInvoiceFormConfig);
         contractInvoiceFields = invoiceFieldService.setBusinessRefFieldValue(List.of(contractInvoiceGetResponse),
                 moduleFormService.getFlattenFormFields(FormKey.INVOICE.getKey(), contractInvoice.getOrganizationId()),
                 new HashMap<>(Map.of(contractInvoice.getId(), contractInvoiceFields))).get(contractInvoice.getId());
 
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractInvoiceFormConfig, contractInvoiceFields);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractInvoiceFormConfig,
+                contractInvoiceFields);
 
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(contractInvoiceGetResponse,
@@ -404,20 +396,23 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         Contract contract = contractMapper.selectByPrimaryKey(contractInvoice.getContractId());
         if (contract != null) {
             contractInvoiceGetResponse.setContractName(contract.getName());
-            optionMap.put(BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
+            optionMap.put(BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey(),
+                    Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
         }
 
         BusinessTitle businessTitle = businessTitleService.selectById(contractInvoiceGetResponse.getBusinessTitleId());
         if (businessTitle != null) {
             contractInvoiceGetResponse.setBusinessTitleName(businessTitle.getName());
-            optionMap.put(BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey(), Collections.singletonList(new OptionDTO(businessTitle.getId(), businessTitle.getName())));
+            optionMap.put(BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey(),
+                    Collections.singletonList(new OptionDTO(businessTitle.getId(), businessTitle.getName())));
         }
 
         contractInvoiceGetResponse.setOptionMap(optionMap);
         contractInvoiceGetResponse.setModuleFields(contractInvoiceFields);
 
         if (contractInvoiceGetResponse.getOwner() != null) {
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractInvoiceGetResponse.getOwner(), contractInvoice.getOrganizationId());
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractInvoiceGetResponse.getOwner(),
+                    contractInvoice.getOrganizationId());
             if (userDeptDTO != null) {
                 contractInvoiceGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 contractInvoiceGetResponse.setDepartmentName(userDeptDTO.getDeptName());
@@ -425,16 +420,14 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         }
 
         // 附件信息
-        contractInvoiceGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(contractInvoiceFormConfig, contractInvoiceFields));
+        contractInvoiceGetResponse
+                .setAttachmentMap(moduleFormService.getAttachmentMap(contractInvoiceFormConfig, contractInvoiceFields));
 
         return contractInvoiceGetResponse;
     }
 
     /**
      * 获取合同详情
-     *
-     * @param id
-     * @return
      */
     public ContractInvoiceGetResponse get(String id, String orgId) {
         ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(id);
@@ -444,7 +437,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         ContractInvoiceGetResponse getResponse = get(contractInvoice, contractInvoiceFields, contractInvoiceFormConfig);
 
         if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+            Map<String, Boolean> firstNodeApproved = baseService
+                    .getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
             getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
             getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
         }
@@ -465,11 +459,14 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         }
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
-        ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst()
+                .orElse(null);
         if (snapshot != null) {
-            ContractInvoiceGetResponse getResponse = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+            ContractInvoiceGetResponse getResponse = JSON.parseObject(snapshot.getInvoiceValue(),
+                    ContractInvoiceGetResponse.class);
             if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-                Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+                Map<String, Boolean> firstNodeApproved = baseService
+                        .getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
                 getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
                 getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
             }
@@ -494,8 +491,10 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         List<String> businessTitleIds = list.stream().map(ContractInvoiceListResponse::getBusinessTitleId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> invoiceFiledMap = invoiceFieldService.getResourceFieldMap(invoiceIds, true);
-        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = invoiceFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.INVOICE.getKey(), orgId), invoiceFiledMap);
+        Map<String, List<BaseModuleFieldValue>> invoiceFiledMap = invoiceFieldService.getResourceFieldMap(invoiceIds,
+                true);
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = invoiceFieldService.setBusinessRefFieldValue(
+                list, moduleFormService.getFlattenFormFields(FormKey.INVOICE.getKey(), orgId), invoiceFiledMap);
         Map<String, String> businessTitleNameMap = businessTitleService.selectByIds(businessTitleIds).stream()
                 .collect(Collectors.toMap(BusinessTitle::getId, BusinessTitle::getName));
 
@@ -506,8 +505,11 @@ public class ContractInvoiceService extends BaseExportService implements Approva
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(ContractInvoiceListResponse::getId).toList();
-        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        List<String> approvingResourceIds = list.stream()
+                .filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
+                .map(ContractInvoiceListResponse::getId).toList();
+        Map<String, Boolean> firstNodeApprovedMap = baseService
+                .getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
         // 提审人仅存在于审批中的发票, 非审批中状态无需查询审批实例, 统一返回空
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
 
@@ -532,10 +534,6 @@ public class ContractInvoiceService extends BaseExportService implements Approva
 
     /**
      * 获取表单快照
-     *
-     * @param id
-     * @param orgId
-     * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
         ContractInvoice invoice = invoiceMapper.selectByPrimaryKey(id);
@@ -544,7 +542,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         }
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
-        ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst()
+                .orElse(null);
         if (snapshot != null) {
             return JSON.parseObject(snapshot.getInvoiceProp(), ModuleFormConfigDTO.class);
         } else {
@@ -569,7 +568,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         moduleFormService.processBusinessFieldValues(response, fvs, formConfig);
         // 部门信息
         if (response.getOwner() != null) {
-            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), contractInvoice.getOrganizationId()));
+            response.setDepartmentId(
+                    baseService.getDeptIdByUserId(response.getOwner(), contractInvoice.getOrganizationId()));
         }
         return response;
     }
@@ -609,9 +609,11 @@ public class ContractInvoiceService extends BaseExportService implements Approva
     public ContractInvoiceGetResponse getFieldValues(String id) {
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
-        ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst()
+                .orElse(null);
         if (snapshot != null) {
-            ContractInvoiceGetResponse getResponse = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+            ContractInvoiceGetResponse getResponse = JSON.parseObject(snapshot.getInvoiceValue(),
+                    ContractInvoiceGetResponse.class);
             return getResponse;
         }
         return null;
@@ -632,8 +634,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
                 PermissionConstants.CONTRACT_INVOICE_DELETE,
                 orgId,
                 ContractInvoice::getId,
-                ContractInvoice::getApprovalStatus
-        );
+                ContractInvoice::getApprovalStatus);
 
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
@@ -643,11 +644,13 @@ public class ContractInvoiceService extends BaseExportService implements Approva
                 .filter(i -> permittedIds.contains(i.getId()))
                 .collect(Collectors.toList());
 
-        Map<String, String> nameMap = invoices.stream().collect(Collectors.toMap(ContractInvoice::getId, ContractInvoice::getName));
+        Map<String, String> nameMap = invoices.stream()
+                .collect(Collectors.toMap(ContractInvoice::getId, ContractInvoice::getName));
 
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
         // 触发批量删除审批流，命中审批流的资源不执行删除，进入审批
-        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(permittedIds, FormKey.INVOICE, orgId, userId, nameMap);
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(permittedIds, FormKey.INVOICE,
+                orgId, userId, nameMap);
 
         // 过滤出未命中审批流的资源，直接删除
         List<String> deleteIds = approvalIds.isEmpty()
@@ -670,18 +673,17 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         List<LogDTO> logs = deleteInvoices.stream()
-                .map(invoice ->
-                        new LogDTO(orgId, invoice.getId(), userId, LogType.DELETE, LogModule.CONTRACT_INVOICE, invoice.getName())
-                )
+                .map(invoice -> new LogDTO(orgId, invoice.getId(), userId, LogType.DELETE, LogModule.CONTRACT_INVOICE,
+                        invoice.getName()))
                 .toList();
         logService.batchAdd(logs);
 
         // 消息通知 todo
-//        invoices.forEach(invoice ->
-//                commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-//                        NotificationConstants.Event.CUSTOMER_DELETED, invoice.getName(), userId,
-//                        orgId, List.of(invoice.getOwner()), true)
-//        );
+        //        invoices.forEach(invoice ->
+        //                commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+        //                        NotificationConstants.Event.CUSTOMER_DELETED, invoice.getName(), userId,
+        //                        orgId, List.of(invoice.getOwner()), true)
+        //        );
     }
 
     public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String orgId) {
@@ -701,13 +703,15 @@ public class ContractInvoiceService extends BaseExportService implements Approva
     }
 
     public ModuleFormConfigDTO getBusinessFormConfig(String organizationId) {
-        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.INVOICE.getKey(), organizationId);
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.INVOICE.getKey(),
+                organizationId);
         Set<String> businessTitleKeySet = Arrays.stream(BusinessTitleConstants.values())
                 .map(BusinessTitleConstants::getKey)
                 .collect(Collectors.toSet());
 
         for (BaseField field : businessFormConfig.getFields()) {
-            if (businessTitleKeySet.contains(field.getId()) || Strings.CS.equals(field.getId(), BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
+            if (businessTitleKeySet.contains(field.getId())
+                    || Strings.CS.equals(field.getId(), BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
                 // 特殊表单，设置可见
                 field.setReadable(true);
             }
@@ -725,7 +729,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         snapshotCriteria.setInvoiceId(param.getResourceId());
         ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
         if (snapshot != null) {
-            ContractInvoiceGetResponse response = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+            ContractInvoiceGetResponse response = JSON.parseObject(snapshot.getInvoiceValue(),
+                    ContractInvoiceGetResponse.class);
             response.setApprovalStatus(param.getApprovalStatus());
             snapshot.setInvoiceValue(JSON.toJSONString(response));
             snapshotBaseMapper.update(snapshot);
@@ -737,7 +742,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
      *
      * @param postFieldParam 参数
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         List<BaseField> fields = formConfig.getFields();
@@ -745,7 +750,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(postFieldParam.getResourceId());
         // 保存原始数据用于日志记录
         ContractInvoice originInvoice = BeanUtils.copyBean(new ContractInvoice(), contractInvoice);
-        List<BaseModuleFieldValue> originFields = invoiceFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<BaseModuleFieldValue> originFields = invoiceFieldService
+                .getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
         List<ContractInvoiceField> contractInvoiceFields = new ArrayList<>();
         List<ContractInvoiceFieldBlob> contractInvoiceFieldBlobs = new ArrayList<>();
         ContractInvoiceSnapshot snapshotCriteria = new ContractInvoiceSnapshot();
@@ -756,17 +762,22 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             response = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
         }
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())
+                    || fieldUpdateParam.getFieldValue() == null) {
                 continue;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                    .getResolver(fieldConfig.getType());
             if (fieldConfig.hasBusinessKey()) {
                 // 业务主表字段
-                invoiceFieldService.setResourceFieldValue(contractInvoice, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+                invoiceFieldService.setResourceFieldValue(contractInvoice, fieldConfig.getBusinessKey(),
+                        fieldUpdateParam.getFieldValue());
             } else {
                 // 快照自定义字段
-                Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
+                Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream()
+                        .filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId()))
+                        .findAny();
                 if (findField.isPresent()) {
                     findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
                 } else {
@@ -777,23 +788,29 @@ public class ContractInvoiceService extends BaseExportService implements Approva
                 }
                 if (fieldConfig.isBlob()) {
                     // 自定义大表
-                    invoiceFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<ContractInvoiceFieldBlob>()
-                            .eq(ContractInvoiceFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractInvoiceFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                    invoiceFieldService.getResourceFieldBlobMapper()
+                            .deleteByLambda(new LambdaQueryWrapper<ContractInvoiceFieldBlob>()
+                                    .eq(ContractInvoiceFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
+                                    .eq(ContractInvoiceFieldBlob::getResourceId, postFieldParam.getResourceId()));
                     ContractInvoiceFieldBlob field = new ContractInvoiceFieldBlob();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     contractInvoiceFieldBlobs.add(field);
                 } else {
                     // 自定义表
-                    invoiceFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<ContractInvoiceField>()
-                            .eq(ContractInvoiceField::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractInvoiceField::getResourceId, postFieldParam.getResourceId()));
+                    invoiceFieldService.getResourceFieldMapper()
+                            .deleteByLambda(new LambdaQueryWrapper<ContractInvoiceField>()
+                                    .eq(ContractInvoiceField::getFieldId, fieldUpdateParam.getFieldId())
+                                    .eq(ContractInvoiceField::getResourceId, postFieldParam.getResourceId()));
                     ContractInvoiceField field = new ContractInvoiceField();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     contractInvoiceFields.add(field);
                 }
             }
@@ -812,13 +829,15 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             snapshotBaseMapper.update(snapshot);
         }
         // 记录审批后置字段更新日志
-        baseService.handleUpdateLogWithSubTable(originInvoice, contractInvoice, originFields, invoiceFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+        baseService.handleUpdateLogWithSubTable(originInvoice, contractInvoice, originFields,
+                invoiceFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
                 postFieldParam.getResourceId(), contractInvoice.getName(), Translator.get("products_info"), formConfig);
         // 从 OperationLogContext 中获取日志信息并手动记录
         LogContextInfo contextInfo = OperationLogContext.getContext();
         if (contextInfo != null) {
             String orgId = OrganizationContext.getOrganizationId();
-            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.CONTRACT_INVOICE, contractInvoice.getName());
+            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(),
+                    LogType.UPDATE, LogModule.CONTRACT_INVOICE, contractInvoice.getName());
             logDTO.setOriginalValue(contextInfo.getOriginalValue());
             logDTO.setModifiedValue(contextInfo.getModifiedValue());
             logService.add(logDTO);
@@ -830,9 +849,12 @@ public class ContractInvoiceService extends BaseExportService implements Approva
      * 处理旧版本审批状态 (APPROVING => NONE)
      */
     public void handleOldApprovalData() {
-        List<ContractInvoice> invoices = contractInvoiceMapper.selectListByLambda(new LambdaQueryWrapper<ContractInvoice>().eq(ContractInvoice::getApprovalStatus, ApprovalStatus.APPROVING.name()));
+        List<ContractInvoice> invoices = contractInvoiceMapper
+                .selectListByLambda(new LambdaQueryWrapper<ContractInvoice>().eq(ContractInvoice::getApprovalStatus,
+                        ApprovalStatus.APPROVING.name()));
         invoices.forEach(invoice -> {
-            ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(invoice.getId()).approvalStatus(ApprovalStatus.NONE.name()).build();
+            ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(invoice.getId())
+                    .approvalStatus(ApprovalStatus.NONE.name()).build();
             updateSnapshotApprovalStatus(param);
         });
         extContractInvoiceMapper.updateOldApprovalStatusNone();
@@ -885,8 +907,10 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         if (contractInvoice == null) {
             return null;
         }
-        List<BaseModuleFieldValue> contractInvoiceFields = invoiceFieldService.getModuleFieldValuesByResourceId(resourceId);
-        ContractInvoiceUpdateRequest snapshotReq = BeanUtils.copyBean(new ContractInvoiceUpdateRequest(), contractInvoice);
+        List<BaseModuleFieldValue> contractInvoiceFields = invoiceFieldService
+                .getModuleFieldValuesByResourceId(resourceId);
+        ContractInvoiceUpdateRequest snapshotReq = BeanUtils.copyBean(new ContractInvoiceUpdateRequest(),
+                contractInvoice);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         ModuleFormConfigDTO contractInvoiceFormConfig = getFormConfig(contractInvoice.getOrganizationId());
         snapshotReq.setModuleFormConfigDTO(contractInvoiceFormConfig);
@@ -908,29 +932,23 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         }
     }
 
-
     /**
      * 下载导入模板
-     *
-     * @param response
-     * @param currentOrg
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.INVOICE.getKey(), currentOrg)),
-                        Translator.get("invoice.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.INVOICE.getKey(), currentOrg)),
+                .exportMultiSheetTplWithSharedHandler(response,
+                        processDuplicateLastLevelHeads(
+                                moduleFormService.getCustomImportHeadsNoRef(FormKey.INVOICE.getKey(), currentOrg)),
+                        Translator.get("invoice.import_tpl.name"), Translator.get(SheetKey.DATA),
+                        Translator.get(SheetKey.COMMENT),
+                        new CustomTemplateWriteHandler(
+                                moduleFormService.getAllCustomImportFields(FormKey.INVOICE.getKey(), currentOrg)),
                         new CustomHeadColWidthStyleStrategy());
     }
 
-
     /**
      * 导入检查
-     *
-     * @param file
-     * @param importType
-     * @param currentOrg
-     * @return
      */
     public ImportResponse importPreCheck(MultipartFile file, String importType, String currentOrg) {
         if (file == null) {
@@ -939,13 +957,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         return checkImportExcel(file, importType, currentOrg);
     }
 
-
     /**
      * 检查导入文件
-     *
-     * @param file
-     * @param currentOrg
-     * @return
      */
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
@@ -962,9 +975,11 @@ public class ContractInvoiceService extends BaseExportService implements Approva
                     .sheet()
                     .doRead();
             // 2 校验数据
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "contract_invoice", "contract_invoice_field", currentOrg,
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "contract_invoice",
+                    "contract_invoice_field", currentOrg,
                     mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -973,15 +988,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         }
     }
 
-
     /**
      * 发票导入
-     *
-     * @param file
-     * @param request
-     * @param currentOrg
-     * @param currentUser
-     * @return
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
@@ -991,8 +999,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             int headRowNumber = supportSubHead ? 2 : 1;
 
             // 1 读取合并单元格信息
-            CustomFieldMergeCellEventListener mergeCellEventListener =
-                    new CustomFieldMergeCellEventListener();
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
 
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
@@ -1002,120 +1009,142 @@ public class ContractInvoiceService extends BaseExportService implements Approva
                     .doRead();
 
             ModuleFormConfigDTO moduleFormConfigDTO = getBusinessFormConfig(currentOrg);
-            ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
-            CustomImportAfterDoConsumer<ContractInvoice, BaseResourceSubField> afterDo = (invoices, invoiceFields, invoiceFieldBlobs) -> {
+            ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                    ModuleFormConfigDTO.class);
+            CustomImportAfterDoConsumer<ContractInvoice, BaseResourceSubField> afterDo = (invoices, invoiceFields,
+                    invoiceFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
-                        invoices.forEach(invoice -> {
-                            invoice.setApprovalStatus(ApprovalStatus.NONE.name());
-                            logs.add(new LogDTO(currentOrg, invoice.getId(), currentUser, LogType.ADD, LogModule.CONTRACT_INVOICE, invoice.getName()));
-                        });
-                        contractInvoiceMapper.batchInsert(invoices);
-                        invoiceFieldMapper.batchInsert(invoiceFields.stream().map(field -> BeanUtils.copyBean(new ContractInvoiceField(), field)).toList());
-                        invoiceFieldBlobMapper.batchInsert(invoiceFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ContractInvoiceFieldBlob(), field)).toList());
-                        // record logs
-                        logService.batchAdd(logs);
+                case ADD -> {
+                    invoices.forEach(invoice -> {
+                        invoice.setApprovalStatus(ApprovalStatus.NONE.name());
+                        logs.add(new LogDTO(currentOrg, invoice.getId(), currentUser, LogType.ADD,
+                                LogModule.CONTRACT_INVOICE, invoice.getName()));
+                    });
+                    contractInvoiceMapper.batchInsert(invoices);
+                    invoiceFieldMapper.batchInsert(invoiceFields.stream()
+                            .map(field -> BeanUtils.copyBean(new ContractInvoiceField(), field)).toList());
+                    invoiceFieldBlobMapper.batchInsert(invoiceFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new ContractInvoiceFieldBlob(), field)).toList());
+                    // record logs
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = invoices.stream().map(ContractInvoice::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
                     }
-                    case UPDATE -> {
-                        List<String> ids = invoices.stream().map(ContractInvoice::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        //原数据
-                        List<ContractInvoice> originInvoiceList = contractInvoiceMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originInvoiceList)) {
-                            break;
-                        }
-                        Map<String, ContractInvoice> originInvoiceMaps = originInvoiceList.stream().collect(Collectors.toMap(ContractInvoice::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = invoiceFieldService.getResourceFieldMap(ids, true);
+                    //原数据
+                    List<ContractInvoice> originInvoiceList = contractInvoiceMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originInvoiceList)) {
+                        break;
+                    }
+                    Map<String, ContractInvoice> originInvoiceMaps = originInvoiceList.stream()
+                            .collect(Collectors.toMap(ContractInvoice::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = invoiceFieldService
+                            .getResourceFieldMap(ids, true);
 
-                        List<ContractInvoiceField> insertField = new ArrayList<>();
-                        List<ContractInvoiceFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtContractInvoiceMapper batchMapper = sqlSession.getMapper(ExtContractInvoiceMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                    List<ContractInvoiceField> insertField = new ArrayList<>();
+                    List<ContractInvoiceFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtContractInvoiceMapper batchMapper = sqlSession.getMapper(ExtContractInvoiceMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
 
-                        if (CollectionUtils.isNotEmpty(invoices)) {
-                            invoices.forEach(invoice -> {
-                                batchMapper.updateInvoice(invoice);
-                            });
-                        }
+                    if (CollectionUtils.isNotEmpty(invoices)) {
+                        invoices.forEach(invoice -> {
+                            batchMapper.updateInvoice(invoice);
+                        });
+                    }
 
-                        if (CollectionUtils.isNotEmpty(invoiceFields)) {
-                            List<ContractInvoiceField> fieldList = invoiceFieldMapper.selectByIds(invoiceFields.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ContractInvoiceField> fieldMap = fieldList.stream().collect(Collectors.toMap(ContractInvoiceField::getId, Function.identity()));
-                            invoiceFields.forEach(invoiceField -> {
-                                if (fieldMap.containsKey(invoiceField.getId())) {
-                                    commonMapper.updateCustomerField("contract_invoice_field", invoiceField);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new ContractInvoiceField(), invoiceField));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(invoiceFieldBlobs)) {
-                            List<ContractInvoiceFieldBlob> blobList = invoiceFieldBlobMapper.selectByIds(invoiceFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ContractInvoiceFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ContractInvoiceFieldBlob::getId, Function.identity()));
-                            invoiceFieldBlobs.forEach(invoiceFieldBlob -> {
-                                if (blobMap.containsKey(invoiceFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("contract_invoice_field_blob", invoiceFieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new ContractInvoiceFieldBlob(), invoiceFieldBlob));
-                                }
-                            });
-
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (CollectionUtils.isNotEmpty(insertField)) {
-                            invoiceFieldMapper.batchInsert(insertField);
-                        }
-                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            invoiceFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, ContractInvoice> modifiedInvoiceMaps = contractInvoiceMapper.selectByIds(ids).stream().collect(Collectors.toMap(ContractInvoice::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = invoiceFieldService.getResourceFieldMap(ids, true);
-
-                        ids.forEach(id -> {
-                            ContractInvoice originDate = originInvoiceMaps.get(id);
-                            ContractInvoice modifiedDate = modifiedInvoiceMaps.get(id);
-                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_INVOICE, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(invoiceFields)) {
+                        List<ContractInvoiceField> fieldList = invoiceFieldMapper
+                                .selectByIds(invoiceFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractInvoiceField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(ContractInvoiceField::getId, Function.identity()));
+                        invoiceFields.forEach(invoiceField -> {
+                            if (fieldMap.containsKey(invoiceField.getId())) {
+                                commonMapper.updateCustomerField("contract_invoice_field", invoiceField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new ContractInvoiceField(), invoiceField));
                             }
                         });
-                        logService.batchAdd(logs);
-                        LambdaQueryWrapper<ContractInvoiceSnapshot> delWrapper = new LambdaQueryWrapper<>();
-                        delWrapper.in(ContractInvoiceSnapshot::getInvoiceId, invoices.stream().map(ContractInvoice::getId).toList());
-                        snapshotBaseMapper.deleteByLambda(delWrapper);
                     }
+
+                    if (CollectionUtils.isNotEmpty(invoiceFieldBlobs)) {
+                        List<ContractInvoiceFieldBlob> blobList = invoiceFieldBlobMapper
+                                .selectByIds(invoiceFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractInvoiceFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(ContractInvoiceFieldBlob::getId, Function.identity()));
+                        invoiceFieldBlobs.forEach(invoiceFieldBlob -> {
+                            if (blobMap.containsKey(invoiceFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("contract_invoice_field_blob", invoiceFieldBlob);
+                            } else {
+                                insertFieldBlob
+                                        .add(BeanUtils.copyBean(new ContractInvoiceFieldBlob(), invoiceFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        invoiceFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        invoiceFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, ContractInvoice> modifiedInvoiceMaps = contractInvoiceMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(ContractInvoice::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = invoiceFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        ContractInvoice originDate = originInvoiceMaps.get(id);
+                        ContractInvoice modifiedDate = modifiedInvoiceMaps.get(id);
+                        baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName(),
+                                Translator.get("products_info"), moduleFormConfigDTO);
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                    LogModule.CONTRACT_INVOICE, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                    LambdaQueryWrapper<ContractInvoiceSnapshot> delWrapper = new LambdaQueryWrapper<>();
+                    delWrapper.in(ContractInvoiceSnapshot::getInvoiceId,
+                            invoices.stream().map(ContractInvoice::getId).toList());
+                    snapshotBaseMapper.deleteByLambda(delWrapper);
                 }
-                List<ContractInvoiceGetResponse> contractInvoiceGetResponses = batchGetSimpleByIds(invoices.stream().map(ContractInvoice::getId).toList());
+                }
+                List<ContractInvoiceGetResponse> contractInvoiceGetResponses = batchGetSimpleByIds(
+                        invoices.stream().map(ContractInvoice::getId).toList());
                 contractInvoiceGetResponses.forEach(response -> {
                     // 保存表单配置快照
-                    List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, invoiceFieldService, response.getId());
-                    ContractInvoiceGetResponse contractInvoiceGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
+                    List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(
+                            response.getModuleFields(), moduleFormConfigDTO, invoiceFieldService, response.getId());
+                    ContractInvoiceGetResponse contractInvoiceGetResponse = get(response, resolveFieldValues,
+                            moduleFormConfigDTO);
                     saveSnapshot(response, saveModuleFormConfigDTO, contractInvoiceGetResponse);
                 });
             };
-            CustomFieldImportEventListener<ContractInvoice> eventListener = new CustomFieldImportEventListener<>(fields, ContractInvoice.class, currentOrg, currentUser,
-                    "contract_invoice_field", "contract_invoice_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+            CustomFieldImportEventListener<ContractInvoice> eventListener = new CustomFieldImportEventListener<>(fields,
+                    ContractInvoice.class, currentOrg, currentUser,
+                    "contract_invoice_field", "contract_invoice_field_blob", afterDo, 2000,
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
                     request.getImportType(), FormKey.INVOICE.getKey());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {

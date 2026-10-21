@@ -5,8 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-10-23  13:42
+ * @author jianxing
  */
 @Data
 public class CustomerChartAnalysisDbRequest extends ChartAnalysisDbRequest {

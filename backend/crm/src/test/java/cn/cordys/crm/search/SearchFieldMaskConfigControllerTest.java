@@ -49,7 +49,6 @@ public class SearchFieldMaskConfigControllerTest extends BaseTest {
         field.setUpdateUser("admin");
         field.setUpdateTime(System.currentTimeMillis());
         moduleFieldMapper.insert(field);
-
     }
 
     @Test
@@ -66,7 +65,6 @@ public class SearchFieldMaskConfigControllerTest extends BaseTest {
         map.put("SEARCH_ADVANCED_CLUE", List.of(FIELD_ID));
         return map;
     }
-
 
     @Test
     @Order(3)

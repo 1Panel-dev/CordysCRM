@@ -31,7 +31,6 @@ public class OperationLogSource {
      * 确定给定方法对应的接口方法（如果可能）。
      *
      * @param method 要处理的方法
-     *
      * @return 对应的接口方法，如果不存在则返回原方法
      */
     public static Method getInterfaceMethodIfPossible(Method method) {
@@ -59,7 +58,6 @@ public class OperationLogSource {
      *
      * @param method      要分析的方法
      * @param targetClass 目标类
-     *
      * @return 日志记录构建器的集合
      */
     public Collection<OperationLogBuilder> computeLogRecordOperations(Method method, Class<?> targetClass) {
@@ -72,8 +70,10 @@ public class OperationLogSource {
 
         Collection<OperationLogBuilder> logRecordOps = parseLogRecordAnnotations(specificMethod);
         Collection<OperationLogBuilder> logRecordsOps = parseLogRecordsAnnotations(specificMethod);
-        Collection<OperationLogBuilder> abstractLogRecordOps = parseLogRecordAnnotations(getInterfaceMethodIfPossible(method));
-        Collection<OperationLogBuilder> abstractLogRecordsOps = parseLogRecordsAnnotations(getInterfaceMethodIfPossible(method));
+        Collection<OperationLogBuilder> abstractLogRecordOps = parseLogRecordAnnotations(
+                getInterfaceMethodIfPossible(method));
+        Collection<OperationLogBuilder> abstractLogRecordsOps = parseLogRecordsAnnotations(
+                getInterfaceMethodIfPossible(method));
 
         Set<OperationLogBuilder> result = new HashSet<>();
         result.addAll(logRecordOps);
@@ -87,7 +87,6 @@ public class OperationLogSource {
      * 解析方法上的 {@code LogRecords} 注解。
      *
      * @param ae 被注解的元素
-     *
      * @return 日志记录构建器的集合
      */
     private Collection<OperationLogBuilder> parseLogRecordsAnnotations(AnnotatedElement ae) {
@@ -101,7 +100,6 @@ public class OperationLogSource {
      * 解析方法上的 {@code LogRecord} 注解。
      *
      * @param ae 被注解的元素
-     *
      * @return 日志记录构建器的集合
      */
     private Collection<OperationLogBuilder> parseLogRecordAnnotations(AnnotatedElement ae) {
@@ -115,7 +113,6 @@ public class OperationLogSource {
      *
      * @param ae               被注解的元素
      * @param recordAnnotation {@code LogRecord} 注解
-     *
      * @return 日志记录构建器
      */
     private OperationLogBuilder parseLogRecordAnnotation(AnnotatedElement ae, OperationLog recordAnnotation) {
@@ -132,7 +129,6 @@ public class OperationLogSource {
      * 验证日志记录操作配置是否合法。
      *
      * @param recordOps 日志记录构建器
-     *
      * @throws IllegalStateException 如果配置不合法
      */
     public boolean isLogRecordOperationValidated(OperationLogBuilder recordOps) {

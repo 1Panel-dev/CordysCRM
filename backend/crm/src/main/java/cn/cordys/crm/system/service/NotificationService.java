@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.service;
 
-
 import cn.cordys.common.constants.TopicConstants;
 import cn.cordys.common.dto.OptionCountDTO;
 import cn.cordys.common.redis.MessagePublisher;
@@ -25,11 +24,11 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class NotificationService {
 
-    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
-    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
-    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
-    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
-    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
+    private static final String USER_ANNOUNCE_PREFIX = "announce_user:"; // Redis 存储用户前缀
+    private static final String ANNOUNCE_PREFIX = "announce_content:"; // Redis 存储信息前缀
+    private static final String USER_PREFIX = "msg_user:"; // Redis 存储系统通知用户前缀
+    private static final String MSG_PREFIX = "msg_content:"; // Redis 存储系统通知内容信息前缀
+    private static final String USER_READ_PREFIX = "user_read:"; // Redis 存储用户读取前缀
     @Resource
     private ExtNotificationMapper extNotificationMapper;
     @Resource
@@ -41,7 +40,8 @@ public class NotificationService {
 
     private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionCountDTO> options) {
         Map<String, Integer> countMap = new HashMap<>();
-        Map<String, List<Notification>> resourceMap = notifications.stream().collect(Collectors.groupingBy(Notification::getResourceType));
+        Map<String, List<Notification>> resourceMap = notifications.stream()
+                .collect(Collectors.groupingBy(Notification::getResourceType));
         resourceMap.forEach((k, v) -> {
             if (k.contains(NotificationConstants.Module.CUSTOMER)) {
                 countMap.merge(NotificationConstants.Module.CUSTOMER, v.size(), Integer::sum);
@@ -56,8 +56,8 @@ public class NotificationService {
             } else if (k.contains(NotificationConstants.Module.SYSTEM)) {
                 countMap.merge(NotificationConstants.Module.SYSTEM, v.size(), Integer::sum);
             } else if (k.contains(NotificationConstants.Module.ORDER)) {
-				countMap.merge(NotificationConstants.Module.ORDER, v.size(), Integer::sum);
-			} else {
+                countMap.merge(NotificationConstants.Module.ORDER, v.size(), Integer::sum);
+            } else {
                 countMap.merge(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), v.size(), Integer::sum);
             }
         });
@@ -90,9 +90,11 @@ public class NotificationService {
         }
     }
 
-    public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId, String organizationId) {
+    public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId,
+            String organizationId) {
         buildParam(notificationRequest, userId);
-        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest, organizationId);
+        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest,
+                organizationId);
         notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
         return notifications;
     }
@@ -155,12 +157,14 @@ public class NotificationService {
         return extNotificationMapper.updateByReceiver(record);
     }
 
-    public List<OptionCountDTO> countNotification(NotificationRequest notificationRequest, String organizationId, String userId) {
+    public List<OptionCountDTO> countNotification(NotificationRequest notificationRequest, String organizationId,
+            String userId) {
         List<OptionCountDTO> options = new ArrayList<>();
         buildParam(notificationRequest, userId);
         notificationRequest.setResourceType(StringUtils.EMPTY);
         notificationRequest.setStatus(NotificationConstants.Status.UNREAD.name());
-        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest, organizationId);
+        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest,
+                organizationId);
         OptionCountDTO totalOptionDTO = new OptionCountDTO();
         totalOptionDTO.setKey("total");
         totalOptionDTO.setCount(notifications.size());

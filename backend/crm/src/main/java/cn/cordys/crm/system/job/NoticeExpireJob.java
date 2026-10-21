@@ -96,8 +96,7 @@ public class NoticeExpireJob {
                 MODULE_OPPORTUNITY,
                 NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRING,
                 this::getOpportunityQuotationList,
-                this::buildOpportunityNoticeContext
-        );
+                this::buildOpportunityNoticeContext);
     }
 
     private void processQuotationExpired() {
@@ -105,8 +104,7 @@ public class NoticeExpireJob {
                 MODULE_OPPORTUNITY,
                 NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED,
                 this::getOpportunityQuotationList,
-                this::buildOpportunityNoticeContext
-        );
+                this::buildOpportunityNoticeContext);
     }
 
     private NoticeContext buildOpportunityNoticeContext(OpportunityQuotation quotation) {
@@ -125,7 +123,7 @@ public class NoticeExpireJob {
                 .createUser(quotation.getCreateUser())
                 .owner(quotation.getCreateUser())
                 .resourceId(quotation.getId())
-                .orgId(quotation.getOrganizationId())   // 关键修复：设置组织ID
+                .orgId(quotation.getOrganizationId()) // 关键修复：设置组织ID
                 .build();
     }
 
@@ -145,7 +143,7 @@ public class NoticeExpireJob {
                 .createUser(paymentPlan.getCreateUser())
                 .owner(paymentPlan.getOwner())
                 .resourceId(paymentPlan.getId())
-                .orgId(paymentPlan.getOrganizationId())   // 设置组织ID
+                .orgId(paymentPlan.getOrganizationId()) // 设置组织ID
                 .build();
     }
 
@@ -160,7 +158,7 @@ public class NoticeExpireJob {
                 .createUser(contract.getCreateUser())
                 .owner(contract.getOwner())
                 .resourceId(contract.getId())
-                .orgId(contract.getOrganizationId())   // 设置组织ID
+                .orgId(contract.getOrganizationId()) // 设置组织ID
                 .build();
     }
 
@@ -169,8 +167,7 @@ public class NoticeExpireJob {
                 MODULE_CONTRACT,
                 NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING,
                 this::getContractPaymentPlanList,
-                this::buildPaymentPlanNoticeContext
-        );
+                this::buildPaymentPlanNoticeContext);
     }
 
     private void processPaymentPlanExpired() {
@@ -178,8 +175,7 @@ public class NoticeExpireJob {
                 MODULE_CONTRACT,
                 NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED,
                 this::getContractPaymentPlanList,
-                this::buildPaymentPlanNoticeContext
-        );
+                this::buildPaymentPlanNoticeContext);
     }
 
     private void processContractExpiring() {
@@ -187,8 +183,7 @@ public class NoticeExpireJob {
                 MODULE_CONTRACT,
                 NotificationConstants.Event.CONTRACT_EXPIRING,
                 this::getContractList,
-                this::buildContractNoticeContext
-        );
+                this::buildContractNoticeContext);
     }
 
     private void processContractExpired() {
@@ -196,8 +191,7 @@ public class NoticeExpireJob {
                 MODULE_CONTRACT,
                 NotificationConstants.Event.CONTRACT_EXPIRED,
                 this::getContractList,
-                this::buildContractNoticeContext
-        );
+                this::buildContractNoticeContext);
     }
 
     /**
@@ -207,8 +201,7 @@ public class NoticeExpireJob {
             String module,
             String event,
             TriFunction<String, Long, Long, List<T>> dataFetcher,
-            Function<T, NoticeContext> contextBuilder
-    ) {
+            Function<T, NoticeContext> contextBuilder) {
         log.info("开始处理 {} 到期提醒", event);
         Set<String> organizationIds = extOrganizationMapper.selectAllOrganizationIds();
 
@@ -260,8 +253,7 @@ public class NoticeExpireJob {
             String module,
             String event,
             TriFunction<String, Long, Long, List<T>> dataFetcher,
-            Function<T, NoticeContext> contextBuilder
-    ) {
+            Function<T, NoticeContext> contextBuilder) {
         log.info("开始处理 {} 即将到期提醒", event);
         Set<String> organizationIds = extOrganizationMapper.selectAllOrganizationIds();
 
@@ -333,7 +325,7 @@ public class NoticeExpireJob {
      * 发送通知
      */
     private void sendNotice(MessageTaskConfigDTO configDTO, String model,
-                            NoticeContext ctx, String event, Integer days) {
+            NoticeContext ctx, String event, Integer days) {
         List<String> receiveUserIds = commonNoticeSendService.getNoticeReceiveUserIds(
                 configDTO, ctx.getCreateUser(), ctx.getOwner(), ctx.getOrgId());
 

@@ -80,7 +80,8 @@ public class WeComDepartmentService {
                 throw new GenericException("获取用户接口返回结果失败: " + response.getErrMsg());
             }
             List<ThirdUser> thirdUsers = response.getUserList().stream()//过滤如果weComUser有mainDepartment属性，过滤department中含有mainDepartment的用户，没有就不过滤
-                    .filter(weComUser -> weComUser.getMainDepartment() == null || weComUser.getMainDepartment().equals(departmentId))
+                    .filter(weComUser -> weComUser.getMainDepartment() == null
+                            || weComUser.getMainDepartment().equals(departmentId))
                     .map(weComUser -> ThirdUser.builder()
                             .userId(weComUser.getUserId())
                             .name(weComUser.getName())
@@ -88,17 +89,16 @@ public class WeComDepartmentService {
                             .mobile(weComUser.getMobile())
                             .position(weComUser.getPosition())
                             .status(weComUser.getStatus() == 1 ? true : false)
-                            .isLeaderInDept(weComUser.getIsLeaderInDept().indexOf(Integer.parseInt(departmentId.toString())) > 0)
+                            .isLeaderInDept(weComUser.getIsLeaderInDept()
+                                    .indexOf(Integer.parseInt(departmentId.toString())) > 0)
                             .build())
                     .collect(Collectors.toList());
-
 
             thirdUserMap.put(departmentId.toString(), thirdUsers);
         }
 
         return thirdUserMap;
     }
-
 
     /**
      * 获取用户列表

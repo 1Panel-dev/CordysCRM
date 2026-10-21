@@ -15,18 +15,18 @@ import java.util.Set;
 @Builder
 public class ExportFieldParam {
 
-	/**
-	 * 子表格ID集合
-	 */
-	private Set<String> subIds;
+    /**
+     * 子表格ID集合
+     */
+    private Set<String> subIds;
 
-	/**
-	 * 字段配置
-	 */
-	private Map<String, BaseField> fieldConfigMap;
+    /**
+     * 字段配置
+     */
+    private Map<String, BaseField> fieldConfigMap;
 
-	/**
-	 * 表单配置
-	 */
-	private ModuleFormConfigDTO formConfig;
+    /**
+     * 表单配置
+     */
+    private ModuleFormConfigDTO formConfig;
 }

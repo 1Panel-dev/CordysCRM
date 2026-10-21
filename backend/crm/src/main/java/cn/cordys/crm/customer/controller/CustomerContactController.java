@@ -42,7 +42,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-24 11:06:10
  */
 @Tag(name = "客户联系人")
 @RestController
@@ -60,17 +59,21 @@ public class CustomerContactController {
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "联系人列表")
-    public PagerWithOption<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
+    public PagerWithOption<List<CustomerContactListResponse>> list(
+            @Validated @RequestBody CustomerContactPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
 
     @PostMapping("/chart")
@@ -78,8 +81,10 @@ public class CustomerContactController {
     @Operation(summary = "联系人图表生成")
     public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        return customerContactService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        return customerContactService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
 
     @GetMapping("/list/{customerId}")
@@ -93,48 +98,49 @@ public class CustomerContactController {
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ }, logical = Logical.OR)
     @Operation(summary = "客户联系人详情")
     public CustomerContactGetResponse get(@PathVariable String id) {
         return customerContactService.get(id);
     }
 
     @PostMapping("/add")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_ADD,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_ADD}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_ADD,
+            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_ADD }, logical = Logical.OR)
     @Operation(summary = "添加客户联系人")
     public CustomerContact add(@Validated @RequestBody CustomerContactAddRequest request) {
         return customerContactService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE }, logical = Logical.OR)
     @Operation(summary = "更新客户联系人")
     public CustomerContact update(@Validated @RequestBody CustomerContactUpdateRequest request) {
-        return customerContactService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customerContactService.update(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/enable/{id}")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE }, logical = Logical.OR)
     @Operation(summary = "启用联系人")
     public void enable(@PathVariable String id) {
         customerContactService.enable(id);
     }
 
     @PostMapping("/disable/{id}")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE }, logical = Logical.OR)
     @Operation(summary = "禁用联系人")
     public void disable(@PathVariable String id, @RequestBody CustomerContactDisableRequest request) {
         customerContactService.disable(id, request);
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_DELETE,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_DELETE,
+            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE }, logical = Logical.OR)
     @Operation(summary = "删除客户联系人")
     public void delete(@PathVariable String id) {
         customerContactService.delete(id);
@@ -148,8 +154,8 @@ public class CustomerContactController {
     }
 
     @GetMapping("/opportunity/check/{id}")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_DELETE,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_DELETE,
+            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE }, logical = Logical.OR)
     @Operation(summary = "检查客户联系人是否有关联商机")
     public boolean checkOpportunity(@PathVariable String id) {
         return customerContactService.checkOpportunity(id);
@@ -159,9 +165,9 @@ public class CustomerContactController {
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "所有所有和部门联系人tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
-        return customerContactService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customerContactService.getTabEnableConfig(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/export-all")
     @Operation(summary = "联系人导出全部")
@@ -169,7 +175,8 @@ public class CustomerContactController {
     public String customerContactExportAll(@Validated @RequestBody CustomerContactExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CUSTOMER_CONTACT.name())
                 .fileName(request.getFileName())
@@ -184,7 +191,6 @@ public class CustomerContactController {
                 .build();
         return customerContactExportService.exportAllWithMergeStrategy(exportDTO);
     }
-
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中联系人")
@@ -218,15 +224,19 @@ public class CustomerContactController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return customerContactService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return customerContactService.importPreCheck(file, request.getImportType(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return customerContactService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return customerContactService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/batch/update")

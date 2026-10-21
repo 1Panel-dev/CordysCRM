@@ -11,13 +11,13 @@ public class ApprovalReturnBackRequest extends ApprovalActionRequest {
     @Schema(description = "退回至节点ID")
     private String returnToNodeId;
 
-	@Schema(description = "退回至加签任务ID，退回普通节点时为空")
-	private String returnToTaskId;
+    @Schema(description = "退回至加签任务ID，退回普通节点时为空")
+    private String returnToTaskId;
 
-	public String getReturnToFlowNodeId() {
-		if (returnToNodeId.contains("-SN")) {
-			return returnToNodeId.split("-SN")[0];
-		}
-		return returnToNodeId;
-	}
+    public String getReturnToFlowNodeId() {
+        if (returnToNodeId.contains("-SN")) {
+            return returnToNodeId.split("-SN")[0];
+        }
+        return returnToNodeId;
+    }
 }

@@ -37,7 +37,8 @@ public class BusinessTitleExportService extends BaseExportService {
      * @return 导出数据列表
      */
     @Override
-    public List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
+    public List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO)
+            throws InterruptedException {
         var orgId = exportDTO.getOrgId();
         var userId = exportDTO.getUserId();
         var allList = extBusinessTitleMapper.getListByIds(ids, userId, orgId);
@@ -45,7 +46,8 @@ public class BusinessTitleExportService extends BaseExportService {
         return buildExportResult(allList, taskId, exportDTO);
     }
 
-    private List<List<Object>> buildExportResult(List<BusinessTitleListResponse> responses, String taskId, ExportDTO exportDTO) throws InterruptedException {
+    private List<List<Object>> buildExportResult(List<BusinessTitleListResponse> responses, String taskId,
+            ExportDTO exportDTO) throws InterruptedException {
         var headList = exportDTO.getHeadList();
         var result = new ArrayList<List<Object>>(responses.size());
         for (var response : responses) {
@@ -61,7 +63,6 @@ public class BusinessTitleExportService extends BaseExportService {
         var dataList = new ArrayList<Object>(headList.size());
         var systemFieldMap = getSystemFieldMap(data);
         return transModuleFieldValue(headList, systemFieldMap, new HashMap<>(), dataList, new HashMap<>());
-
     }
 
     public LinkedHashMap<String, Object> getSystemFieldMap(BusinessTitleListResponse data) {
@@ -84,7 +85,6 @@ public class BusinessTitleExportService extends BaseExportService {
         systemFieldMap.put("industry", data.getIndustry());
         systemFieldMap.put("remark", data.getRemark());
 
-
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFieldMap.put("updateUser", data.getUpdateUserName());
@@ -92,7 +92,6 @@ public class BusinessTitleExportService extends BaseExportService {
         systemFieldMap.put("companyNumber", data.getCompanyNumber());
         return systemFieldMap;
     }
-
 
     /**
      * 构建导出的数据

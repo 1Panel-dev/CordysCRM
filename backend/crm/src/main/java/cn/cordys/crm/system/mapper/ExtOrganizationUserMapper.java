@@ -18,15 +18,16 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-01-09 16:11:37
  */
 public interface ExtOrganizationUserMapper {
 
     int countUserByDepartmentIds(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId);
 
-    List<UserPageResponse> list(@Param("request") UserPageRequest request, @Param("orderByClause") String orderByClause);
+    List<UserPageResponse> list(@Param("request") UserPageRequest request,
+            @Param("orderByClause") String orderByClause);
 
-    void enable(@Param("request") UserBatchEnableRequest request, @Param("operatorId") String operatorId, @Param("time") long time);
+    void enable(@Param("request") UserBatchEnableRequest request, @Param("operatorId") String operatorId,
+            @Param("time") long time);
 
     List<User> getUserList(@Param("request") UserBatchRequest request);
 
@@ -36,7 +37,8 @@ public interface ExtOrganizationUserMapper {
 
     List<OptionDTO> selectEnableOrgUser(@Param("ids") List<String> ids, @Param("enable") boolean enable);
 
-    void updateUserByIds(@Param("request") UserBatchEditRequest request, @Param("operatorId") String operatorId, @Param("orgId") String orgId);
+    void updateUserByIds(@Param("request") UserBatchEditRequest request, @Param("operatorId") String operatorId,
+            @Param("orgId") String orgId);
 
     List<UserImportDTO> selectSupervisor(@Param("nameList") List<String> nameList, @Param("orgId") String orgId);
 
@@ -48,7 +50,8 @@ public interface ExtOrganizationUserMapper {
 
     List<OrganizationUser> selectUserByUserIds(@Param("userIds") List<String> userIds);
 
-    List<UserResponse> getUserDepAndPhoneByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+    List<UserResponse> getUserDepAndPhoneByUserIds(@Param("userIds") List<String> userIds,
+            @Param("orgId") String orgId);
 
     String getOrgUserIdByUserId(@Param("orgId") String orgId, @Param("userId") String userId);
 
@@ -58,7 +61,8 @@ public interface ExtOrganizationUserMapper {
 
     void disableUser(@Param("organizationUser") DepartmentSourceUserDTO organizationUser);
 
-    void updateUserByUserId(@Param("userId") String userId, @Param("time") long time, @Param("operatorId") String operatorId);
+    void updateUserByUserId(@Param("userId") String userId, @Param("time") long time,
+            @Param("operatorId") String operatorId);
 
     String getDepartmentByUserId(@Param("userId") String userId);
 

@@ -3,8 +3,7 @@ package cn.cordys.crm.integration.dataease.dto;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-15  15:54
+ * @author jianxing
  */
 @Data
 public class SysVariableDTO {

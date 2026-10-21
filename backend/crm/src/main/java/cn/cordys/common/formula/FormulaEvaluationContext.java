@@ -27,10 +27,10 @@ public final class FormulaEvaluationContext {
     public FormulaEvaluationContext(
             Map<String, Object> values,
             Map<String, FormulaFieldMetadata> metadata,
-            LocalDateTime evaluationNow
-    ) {
+            LocalDateTime evaluationNow) {
         this(values, Collections.emptyMap(), metadata, evaluationNow,
-                (fieldId, value) -> value, (code, message) -> { }, true);
+                (fieldId, value) -> value, (code, message) -> {
+                }, true);
     }
 
     public FormulaEvaluationContext(
@@ -40,8 +40,7 @@ public final class FormulaEvaluationContext {
             LocalDateTime evaluationNow,
             DisplayValueResolver displayValueResolver,
             BiConsumer<String, String> warningConsumer,
-            boolean createMode
-    ) {
+            boolean createMode) {
         this.values = Objects.requireNonNullElse(values, Collections.emptyMap());
         this.rowValues = Objects.requireNonNullElse(rowValues, Collections.emptyMap());
         this.metadata = Objects.requireNonNullElse(metadata, Collections.emptyMap());

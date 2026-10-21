@@ -101,11 +101,6 @@ public class AgentBaseService extends DashboardSortService {
 
     /**
      * 添加智能体
-     *
-     * @param request
-     * @param orgId
-     * @param userId
-     * @return
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.ADD)
     public Agent addAgent(AgentAddRequest request, String orgId, String userId) {
@@ -140,14 +135,8 @@ public class AgentBaseService extends DashboardSortService {
         return agent;
     }
 
-
     /**
      * 同一文件下智能体名称唯一
-     *
-     * @param name
-     * @param agentModuleId
-     * @param orgId
-     * @param id
      */
     private void checkAgentName(String name, String agentModuleId, String orgId, String id) {
         if (extAgentMapper.countByName(name, agentModuleId, orgId, id) > 0) {
@@ -155,18 +144,13 @@ public class AgentBaseService extends DashboardSortService {
         }
     }
 
-
     private Long getNextPos(String orgId) {
         Long pos = extAgentMapper.getNextPosByOrgId(orgId);
         return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
     }
 
-
     /**
      * 智能体详情
-     *
-     * @param id
-     * @return
      */
     public AgentDetailResponse getDetail(String id) {
         AgentDetailResponse response = extAgentMapper.getDetail(id);
@@ -176,13 +160,8 @@ public class AgentBaseService extends DashboardSortService {
         return response;
     }
 
-
     /**
      * 更新智能体
-     *
-     * @param request
-     * @param orgId
-     * @param userId
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.UPDATE)
     public void updateAgent(AgentUpdateRequest request, String orgId, String userId) {
@@ -207,10 +186,8 @@ public class AgentBaseService extends DashboardSortService {
                         .modifiedValue(newDetail)
                         .resourceId(request.getId())
                         .resourceName(resourceName)
-                        .build()
-        );
+                        .build());
     }
-
 
     private AgentLogDTO getLogDetail(String id) {
         AgentDetailResponse detail = getDetail(id);
@@ -229,13 +206,8 @@ public class AgentBaseService extends DashboardSortService {
         return agent;
     }
 
-
     /**
      * 重命名智能体
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.UPDATE)
     public void rename(AgentRenameRequest request, String userId, String orgId) {
@@ -255,15 +227,11 @@ public class AgentBaseService extends DashboardSortService {
                         .modifiedValue(checkAgent(request.getId()))
                         .resourceId(request.getId())
                         .resourceName(resourceName)
-                        .build()
-        );
+                        .build());
     }
-
 
     /**
      * 删除智能体
-     *
-     * @param id
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
@@ -275,14 +243,8 @@ public class AgentBaseService extends DashboardSortService {
         OperationLogContext.setResourceName(agent.getName());
     }
 
-
     /**
      * 智能体列表
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     public Pager<List<AgentPageResponse>> getList(AgentPageRequest request, String userId, String orgId) {
         List<String> departmentIds = new ArrayList<>();
@@ -292,19 +254,14 @@ public class AgentBaseService extends DashboardSortService {
             departmentIds = agentModuleService.getParentIds(departmentTree, departmentId);
         }
 
-
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<AgentPageResponse> agentList = extAgentMapper.list(request, userId, orgId, departmentIds);
         handleData(agentList, userId);
         return PageUtils.setPageInfo(page, agentList);
     }
 
-
     /**
      * 数据处理
-     *
-     * @param agentList
-     * @param userId
      */
     private void handleData(List<AgentPageResponse> agentList, String userId) {
         if (CollectionUtils.isNotEmpty(agentList)) {
@@ -332,15 +289,10 @@ public class AgentBaseService extends DashboardSortService {
                 }
             });
         }
-
     }
-
 
     /**
      * 收藏
-     *
-     * @param id
-     * @param userId
      */
     public void collect(String id, String userId) {
         checkCollect(id, userId);
@@ -361,25 +313,15 @@ public class AgentBaseService extends DashboardSortService {
         }
     }
 
-
     /**
      * 取消收藏
-     *
-     * @param agentId
-     * @param userId
      */
     public void unCollect(String agentId, String userId) {
         extAgentCollectionMapper.unCollect(agentId, userId);
     }
 
-
     /**
      * 收藏列表
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     public List<AgentPageResponse> collectList(BasePageRequest request, String userId, String orgId) {
         List<AgentPageResponse> agentList = extAgentCollectionMapper.collectList(request, userId, orgId);
@@ -387,17 +329,13 @@ public class AgentBaseService extends DashboardSortService {
         return agentList;
     }
 
-
     /**
      * 拖拽排序
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     public void editPos(AgentEditPosRequest request, String userId, String orgId) {
         Agent agent = checkAgent(request.getMoveId());
-        if (StringUtils.isNotBlank(request.getAgentModuleId()) && !Strings.CS.equals(request.getAgentModuleId(), agent.getAgentModuleId())) {
+        if (StringUtils.isNotBlank(request.getAgentModuleId())
+                && !Strings.CS.equals(request.getAgentModuleId(), agent.getAgentModuleId())) {
             agentModuleService.checkAgentModule(request.getAgentModuleId());
             checkAgentName(agent.getName(), request.getAgentModuleId(), orgId, agent.getId());
 
@@ -412,18 +350,16 @@ public class AgentBaseService extends DashboardSortService {
         moveNode(request, orgId);
     }
 
-
     public void moveNode(AgentEditPosRequest posRequest, String orgId) {
-        NodeMoveRequest request = super.getNodeMoveRequest(posRequest.getMoveId(), posRequest.getTargetId(), posRequest.getMoveMode(), true);
+        NodeMoveRequest request = super.getNodeMoveRequest(posRequest.getMoveId(), posRequest.getTargetId(),
+                posRequest.getMoveMode(), true);
         MoveNodeSortDTO sortDTO = super.getNodeSortDTO(
                 orgId,
                 request,
                 extAgentMapper::selectDragInfoById,
-                extAgentMapper::selectNodeByPosOperator
-        );
+                extAgentMapper::selectNodeByPosOperator);
         super.sort(sortDTO);
     }
-
 
     @Override
     public void updatePos(String id, long pos) {
@@ -442,13 +378,8 @@ public class AgentBaseService extends DashboardSortService {
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
     }
 
-
     /**
      * 获取用户可选智能体选项
-     *
-     * @param userId
-     * @param orgId
-     * @return
      */
     public List<AgentOptionDTO> getAgentOptions(String userId, String orgId) {
         List<String> departmentIds = new ArrayList<>();
@@ -460,12 +391,8 @@ public class AgentBaseService extends DashboardSortService {
         return extAgentMapper.getOptions(userId, orgId, departmentIds);
     }
 
-
     /**
      * 检测配置连接
-     *
-     * @param orgId
-     * @return
      */
     public Boolean checkConfig(String orgId) {
         var configurationDTO = getConfig(orgId);
@@ -477,31 +404,30 @@ public class AgentBaseService extends DashboardSortService {
 
     /**
      * 获取配置
-     *
-     * @param orgId
-     * @return
      */
     private ThirdConfigBaseDTO<?> getConfig(String orgId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
-                orgId, OrganizationConfigConstants.ConfigType.THIRD.name()
-        );
+                orgId, OrganizationConfigConstants.ConfigType.THIRD.name());
         if (organizationConfig == null) {
             return null;
         }
         List<OrganizationConfigDetail> details = extOrganizationConfigDetailMapper
-                .getOrgConfigDetailByType(organizationConfig.getId(), null, List.of(ThirdConfigTypeConstants.MAXKB.name()));
+                .getOrgConfigDetailByType(organizationConfig.getId(), null,
+                        List.of(ThirdConfigTypeConstants.MAXKB.name()));
 
         if (CollectionUtils.isEmpty(details)) {
             return null;
         }
 
-
-        var thirdConfigBaseDTO = JSON.parseObject(new String(details.getFirst().getContent()), ThirdConfigBaseDTO.class);
+        var thirdConfigBaseDTO = JSON.parseObject(new String(details.getFirst().getContent()),
+                ThirdConfigBaseDTO.class);
         MaxKBThirdConfigRequest maxKBThirdConfigRequest;
         if (thirdConfigBaseDTO.getConfig() == null) {
-            maxKBThirdConfigRequest = JSON.parseObject(new String(details.getFirst().getContent()), MaxKBThirdConfigRequest.class);
+            maxKBThirdConfigRequest = JSON.parseObject(new String(details.getFirst().getContent()),
+                    MaxKBThirdConfigRequest.class);
         } else {
-            maxKBThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigBaseDTO.getConfig(), MaxKBThirdConfigRequest.class);
+            maxKBThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigBaseDTO.getConfig(),
+                    MaxKBThirdConfigRequest.class);
         }
 
         thirdConfigBaseDTO.setConfig(maxKBThirdConfigRequest);
@@ -510,9 +436,6 @@ public class AgentBaseService extends DashboardSortService {
 
     /**
      * 获取工作空间
-     *
-     * @param orgId
-     * @return
      */
     public List<OptionDTO> workspace(String orgId) {
         ThirdConfigBaseDTO<?> config = getConfig(orgId);
@@ -523,14 +446,14 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private List<OptionDTO> getWorkspace(ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(),
+                MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 config.getMkAddress().concat(MaxKBApiPaths.WORKSPACE),
                 "Bearer " + config.getAppSecret(),
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         MaxKBDataResponse entity = JSON.parseObject(body, MaxKBDataResponse.class);
         if (entity.getCode() != 200) {
             throw new GenericException("获取工作空间失败，错误信息：" + entity.getMessage());
@@ -538,13 +461,8 @@ public class AgentBaseService extends DashboardSortService {
         return entity.getData();
     }
 
-
     /**
      * 获取智能体应用列表
-     *
-     * @param workspaceId
-     * @param orgId
-     * @return
      */
     public List<OptionDTO> application(String workspaceId, String orgId) {
         ThirdConfigBaseDTO<?> config = getConfig(orgId);
@@ -555,14 +473,14 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private List<OptionDTO> getApplication(String workspaceId, ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(),
+                MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 HttpClientUtils.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.APPLICATION), workspaceId),
                 "Bearer " + config.getAppSecret(),
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         MaxKBDataResponse entity = JSON.parseObject(body, MaxKBDataResponse.class);
         if (entity.getCode() != 200) {
             throw new GenericException("获取智能体应用失败，错误信息：" + entity.getMessage());
@@ -570,13 +488,8 @@ public class AgentBaseService extends DashboardSortService {
         return entity.getData();
     }
 
-
     /**
      * 获取脚本信息
-     *
-     * @param request
-     * @param orgId
-     * @return
      */
     public ScriptResponse script(ScriptRequest request, String orgId) {
         ThirdConfigBaseDTO<?> config = getConfig(orgId);
@@ -587,16 +500,17 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private ScriptResponse getScript(ScriptRequest request, ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(),
+                MaxKBThirdConfigRequest.class);
         ScriptResponse response = new ScriptResponse();
         List<ParameterDTO> parameters = new ArrayList<>();
         String accessToken = qrCodeClient.exchange(
-                HttpClientUtils.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.ACCESS_TOKEN), request.getWorkspaceId(), request.getApplicationId()),
+                HttpClientUtils.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.ACCESS_TOKEN),
+                        request.getWorkspaceId(), request.getApplicationId()),
                 "Bearer " + config.getAppSecret(),
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         MaxKBTokenResponse maxKBResponse = JSON.parseObject(accessToken, MaxKBTokenResponse.class);
         if (maxKBResponse.getCode() != 200) {
             throw new GenericException("获取accessToken失败，错误信息：" + maxKBResponse.getMessage());
@@ -604,12 +518,12 @@ public class AgentBaseService extends DashboardSortService {
         response.setSrc(config.getMkAddress().concat("/chat/").concat(maxKBResponse.getData().getAccessToken()));
 
         String application = qrCodeClient.exchange(
-                HttpClientUtils.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.APPLICATION_DETAIL), request.getWorkspaceId(), request.getApplicationId()),
+                HttpClientUtils.urlTransfer(config.getMkAddress().concat(MaxKBApiPaths.APPLICATION_DETAIL),
+                        request.getWorkspaceId(), request.getApplicationId()),
                 "Bearer " + config.getAppSecret(),
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         MaxKBApplicationResponse applicationResponse = JSON.parseObject(application, MaxKBApplicationResponse.class);
         if (applicationResponse.getCode() != 200) {
             throw new GenericException("获取应用信息失败，错误信息：" + applicationResponse.getMessage());
@@ -617,7 +531,8 @@ public class AgentBaseService extends DashboardSortService {
 
         if (CollectionUtils.isNotEmpty(applicationResponse.getData().getWorkflow().getNodes())) {
             List<Nodes> nodes = applicationResponse.getData().getWorkflow().getNodes();
-            Nodes baseNode = nodes.stream().filter(node -> Strings.CI.equals(node.getId(), "base-node")).toList().getFirst();
+            Nodes baseNode = nodes.stream().filter(node -> Strings.CI.equals(node.getId(), "base-node")).toList()
+                    .getFirst();
             if (baseNode != null) {
                 List<ApiInputFieldList> apiInputFieldList = baseNode.getProperties().getApiInputFieldList();
                 if (CollectionUtils.isNotEmpty(apiInputFieldList)) {
@@ -634,12 +549,8 @@ public class AgentBaseService extends DashboardSortService {
         return response;
     }
 
-
     /**
      * 获取版本
-     *
-     * @param orgId
-     * @return
      */
     public String edition(String orgId) {
         ThirdConfigBaseDTO<?> config = getConfig(orgId);
@@ -650,14 +561,14 @@ public class AgentBaseService extends DashboardSortService {
     }
 
     private String getEdition(ThirdConfigBaseDTO<?> baseConfig) {
-        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(), MaxKBThirdConfigRequest.class);
+        MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(baseConfig.getConfig(),
+                MaxKBThirdConfigRequest.class);
         String body = qrCodeClient.exchange(
                 config.getMkAddress().concat(MaxKBApiPaths.EDITION),
                 "Bearer " + config.getAppSecret(),
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         var map = JSON.parseObject(body, Map.class);
         if ((Integer) map.get("code") != 200) {
             throw new GenericException("获取版本异常，错误信息：" + map.get("message"));
@@ -666,7 +577,6 @@ public class AgentBaseService extends DashboardSortService {
         var dataMap = (Map) map.get("data");
         return (String) dataMap.get("edition");
     }
-
 
     public void checkPermission(String orgId, String userId, String id) {
         List<String> departmentIds = new ArrayList<>();

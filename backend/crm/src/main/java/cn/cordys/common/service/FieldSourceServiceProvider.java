@@ -1,6 +1,5 @@
 package cn.cordys.common.service;
 
-
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.clue.service.ClueService;
@@ -37,10 +36,10 @@ public class FieldSourceServiceProvider {
 
     private static final Map<FieldSourceType, Object> SERVICE_MAP = new HashMap<>();
 
-	/**
-	 * 开启的审批流表单表格映射
-	 */
-	private static final Map<String, Object> APPROVAL_FORM_SERVICE_MAP = new HashMap<>(4);
+    /**
+     * 开启的审批流表单表格映射
+     */
+    private static final Map<String, Object> APPROVAL_FORM_SERVICE_MAP = new HashMap<>(4);
 
     @Resource
     private ClueService clueService;
@@ -60,14 +59,14 @@ public class FieldSourceServiceProvider {
     private ContractService contractService;
     @Resource
     private BusinessTitleService businessTitleService;
-	@Resource
-	private OrderService orderService;
-	@Resource
-	private ContractPaymentRecordService paymentRecordService;
-	@Resource
-	private ContractPaymentPlanService paymentPlanService;
-	@Resource
-	private ContractInvoiceService invoiceService;
+    @Resource
+    private OrderService orderService;
+    @Resource
+    private ContractPaymentRecordService paymentRecordService;
+    @Resource
+    private ContractPaymentPlanService paymentPlanService;
+    @Resource
+    private ContractInvoiceService invoiceService;
 
     @PostConstruct
     public void init() {
@@ -80,18 +79,18 @@ public class FieldSourceServiceProvider {
         SERVICE_MAP.put(FieldSourceType.QUOTATION, opportunityQuotationService);
         SERVICE_MAP.put(FieldSourceType.CONTRACT, contractService);
         SERVICE_MAP.put(FieldSourceType.BUSINESS_TITLE, businessTitleService);
-		SERVICE_MAP.put(FieldSourceType.ORDER, orderService);
-		SERVICE_MAP.put(FieldSourceType.CONTRACT_PAYMENT_RECORD, paymentRecordService);
-		SERVICE_MAP.put(FieldSourceType.PAYMENT_PLAN, paymentPlanService);
-		SERVICE_MAP.put(FieldSourceType.INVOICE, invoiceService);
+        SERVICE_MAP.put(FieldSourceType.ORDER, orderService);
+        SERVICE_MAP.put(FieldSourceType.CONTRACT_PAYMENT_RECORD, paymentRecordService);
+        SERVICE_MAP.put(FieldSourceType.PAYMENT_PLAN, paymentPlanService);
+        SERVICE_MAP.put(FieldSourceType.INVOICE, invoiceService);
 
-		APPROVAL_FORM_SERVICE_MAP.put(FormKey.CLUE.getKey(), clueService);
-		APPROVAL_FORM_SERVICE_MAP.put(FormKey.CUSTOMER.getKey(), customerService);
-		APPROVAL_FORM_SERVICE_MAP.put(FormKey.OPPORTUNITY.getKey(), opportunityService);
-		APPROVAL_FORM_SERVICE_MAP.put(FormKey.QUOTATION.getKey(), opportunityQuotationService);
-		APPROVAL_FORM_SERVICE_MAP.put(FormKey.CONTRACT.getKey(), contractService);
-		APPROVAL_FORM_SERVICE_MAP.put(FormKey.INVOICE.getKey(), invoiceService);
-		APPROVAL_FORM_SERVICE_MAP.put(FormKey.ORDER.getKey(), orderService);
+        APPROVAL_FORM_SERVICE_MAP.put(FormKey.CLUE.getKey(), clueService);
+        APPROVAL_FORM_SERVICE_MAP.put(FormKey.CUSTOMER.getKey(), customerService);
+        APPROVAL_FORM_SERVICE_MAP.put(FormKey.OPPORTUNITY.getKey(), opportunityService);
+        APPROVAL_FORM_SERVICE_MAP.put(FormKey.QUOTATION.getKey(), opportunityQuotationService);
+        APPROVAL_FORM_SERVICE_MAP.put(FormKey.CONTRACT.getKey(), contractService);
+        APPROVAL_FORM_SERVICE_MAP.put(FormKey.INVOICE.getKey(), invoiceService);
+        APPROVAL_FORM_SERVICE_MAP.put(FormKey.ORDER.getKey(), orderService);
     }
 
     /**
@@ -99,129 +98,127 @@ public class FieldSourceServiceProvider {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getService(FieldSourceType type) {
-		Object service = SERVICE_MAP.get(type);
-		if (service != null) {
-			return (T) service;
-		}
-		return (T) CommonBeanFactory.getBean(CustomFormDataService.class);
+        Object service = SERVICE_MAP.get(type);
+        if (service != null) {
+            return (T) service;
+        }
+        return (T) CommonBeanFactory.getBean(CustomFormDataService.class);
     }
 
-	/**
-	 * 根据来源类型获取对应的 Service
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T getServiceOfKey(String key) {
-		Object service = APPROVAL_FORM_SERVICE_MAP.get(key);
-		if (service == null && FormKey.ofKey(key) == null) {
-			// 非标准枚举 key（自定义表单 customFormId）路由到自定义表单数据服务
-			service = CommonBeanFactory.getBean(CustomFormDataService.class);
-		}
-		return (T) service;
-	}
+    /**
+     * 根据来源类型获取对应的 Service
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T getServiceOfKey(String key) {
+        Object service = APPROVAL_FORM_SERVICE_MAP.get(key);
+        if (service == null && FormKey.ofKey(key) == null) {
+            // 非标准枚举 key（自定义表单 customFormId）路由到自定义表单数据服务
+            service = CommonBeanFactory.getBean(CustomFormDataService.class);
+        }
+        return (T) service;
+    }
 
-	/**
-	 * 执行资源详情方法（单个或批量）
-	 *
-	 * @param type        资源或数据源类型
-	 * @param id          单个或批量ID
-	 * @param methodName  方法名称
-	 *
-	 * @return 单个数据对象或数据对象列表
-	 */
-	public Object executeServiceMethod(FieldSourceType type, Object id, String methodName) {
-		Object service = getService(type);
-		if (service == null) {
-			log.error("数据源引用失败, 类型 {} 有误", type.name());
-			return id instanceof List ? Collections.emptyList() : null;
-		}
-		try {
-			if (id instanceof List<?> idList) {
-				if (CollectionUtils.isEmpty(idList)) {
-					return Collections.emptyList();
-				}
-				List<String> ids = idList.stream().map(Object::toString).toList();
-				Method method = service.getClass().getMethod(methodName, List.class);
-				return method.invoke(service, ids);
-			} else {
-				if (!(id instanceof String stringId) || stringId.isEmpty()) {
-					return null;
-				}
-				Method method = service.getClass().getMethod(methodName, String.class);
-				return method.invoke(service, stringId);
-			}
-		} catch (Exception e) {
-			log.error("获取数据源详情异常：type={}, id={}, error={}", type.name(), id, e.getMessage(), e);
-			return id instanceof List ? Collections.emptyList() : null;
-		}
-	}
+    /**
+     * 执行资源详情方法（单个或批量）
+     *
+     * @param type       资源或数据源类型
+     * @param id         单个或批量ID
+     * @param methodName 方法名称
+     * @return 单个数据对象或数据对象列表
+     */
+    public Object executeServiceMethod(FieldSourceType type, Object id, String methodName) {
+        Object service = getService(type);
+        if (service == null) {
+            log.error("数据源引用失败, 类型 {} 有误", type.name());
+            return id instanceof List ? Collections.emptyList() : null;
+        }
+        try {
+            if (id instanceof List<?> idList) {
+                if (CollectionUtils.isEmpty(idList)) {
+                    return Collections.emptyList();
+                }
+                List<String> ids = idList.stream().map(Object::toString).toList();
+                Method method = service.getClass().getMethod(methodName, List.class);
+                return method.invoke(service, ids);
+            } else {
+                if (!(id instanceof String stringId) || stringId.isEmpty()) {
+                    return null;
+                }
+                Method method = service.getClass().getMethod(methodName, String.class);
+                return method.invoke(service, stringId);
+            }
+        } catch (Exception e) {
+            log.error("获取数据源详情异常：type={}, id={}, error={}", type.name(), id, e.getMessage(), e);
+            return id instanceof List ? Collections.emptyList() : null;
+        }
+    }
 
-	public Object executeServiceMethod(String formKey, Object id, String methodName) {
-		Object service = getServiceOfKey(formKey);
-		if (service == null) {
-			log.error("审批表单类型 {} 有误", formKey);
-			return id instanceof List ? Collections.emptyList() : null;
-		}
-		try {
-			if (id instanceof List<?> idList) {
-				if (CollectionUtils.isEmpty(idList)) {
-					return Collections.emptyList();
-				}
-				List<String> ids = idList.stream().map(Object::toString).toList();
-				Method method = service.getClass().getMethod(methodName, List.class);
-				return method.invoke(service, ids);
-			} else {
-				if (!(id instanceof String stringId) || stringId.isEmpty()) {
-					return null;
-				}
-				Method method = service.getClass().getMethod(methodName, String.class);
-				return method.invoke(service, stringId);
-			}
-		} catch (Exception e) {
-			log.error("获取业务数据详情异常：type={}, id={}, error={}", formKey, id, e.getMessage(), e);
-			return id instanceof List ? Collections.emptyList() : null;
-		}
-	}
+    public Object executeServiceMethod(String formKey, Object id, String methodName) {
+        Object service = getServiceOfKey(formKey);
+        if (service == null) {
+            log.error("审批表单类型 {} 有误", formKey);
+            return id instanceof List ? Collections.emptyList() : null;
+        }
+        try {
+            if (id instanceof List<?> idList) {
+                if (CollectionUtils.isEmpty(idList)) {
+                    return Collections.emptyList();
+                }
+                List<String> ids = idList.stream().map(Object::toString).toList();
+                Method method = service.getClass().getMethod(methodName, List.class);
+                return method.invoke(service, ids);
+            } else {
+                if (!(id instanceof String stringId) || stringId.isEmpty()) {
+                    return null;
+                }
+                Method method = service.getClass().getMethod(methodName, String.class);
+                return method.invoke(service, stringId);
+            }
+        } catch (Exception e) {
+            log.error("获取业务数据详情异常：type={}, id={}, error={}", formKey, id, e.getMessage(), e);
+            return id instanceof List ? Collections.emptyList() : null;
+        }
+    }
 
-	/**
-	 * 挂起事务, 防止下游方法异常回滚当前事务
-	 *
-	 * @param type 数据源类型
-	 * @param id   主键ID
-	 *
-	 * @return 数据对象
-	 */
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public Object safeGetSimpleById(FieldSourceType type, String id) {
-		return executeServiceMethod(type, id, "getSimple");
-	}
+    /**
+     * 挂起事务, 防止下游方法异常回滚当前事务
+     *
+     * @param type 数据源类型
+     * @param id   主键ID
+     * @return 数据对象
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public Object safeGetSimpleById(FieldSourceType type, String id) {
+        return executeServiceMethod(type, id, "getSimple");
+    }
 
-	/**
-	 * 获取表单业务数据详情
-	 * @param formKey 表单
-	 * @param id 主表ID
-	 * @return 业务数据详情
-	 */
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public Object safeGetSimpleById(String formKey, String id) {
-		return executeServiceMethod(formKey, id, "getSimple");
-	}
+    /**
+     * 获取表单业务数据详情
+     *
+     * @param formKey 表单
+     * @param id      主表ID
+     * @return 业务数据详情
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public Object safeGetSimpleById(String formKey, String id) {
+        return executeServiceMethod(formKey, id, "getSimple");
+    }
 
-	/**
-	 * 批量获取数据源详情（挂起事务，防止下游方法异常回滚当前事务）
-	 *
-	 * @param type 数据源类型
-	 * @param ids  主键ID集合
-	 *
-	 * @return 数据对象列表
-	 */
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	@SuppressWarnings("unchecked")
-	public List<Object> batchGetSimpleByIds(FieldSourceType type, List<String> ids) {
-		return (List<Object>) executeServiceMethod(type, ids, "batchGetSimpleByIds");
-	}
+    /**
+     * 批量获取数据源详情（挂起事务，防止下游方法异常回滚当前事务）
+     *
+     * @param type 数据源类型
+     * @param ids  主键ID集合
+     * @return 数据对象列表
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @SuppressWarnings("unchecked")
+    public List<Object> batchGetSimpleByIds(FieldSourceType type, List<String> ids) {
+        return (List<Object>) executeServiceMethod(type, ids, "batchGetSimpleByIds");
+    }
 
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public Object safeGetFieldsById(String formKey, String id) {
-		return executeServiceMethod(formKey, id, "getFieldValues");
-	}
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public Object safeGetFieldsById(String formKey, String id) {
+        return executeServiceMethod(formKey, id, "getFieldValues");
+    }
 }

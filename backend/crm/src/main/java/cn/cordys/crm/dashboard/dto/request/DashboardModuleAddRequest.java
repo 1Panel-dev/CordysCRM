@@ -10,11 +10,10 @@ import lombok.Data;
 @Data
 public class DashboardModuleAddRequest {
 
-    @Size(min = 1, max = 255, message = "{department.name.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{dashboard_module.name.not_blank}", groups = {Created.class, Updated.class})
+    @Size(min = 1, max = 255, message = "{department.name.length_range}", groups = { Created.class, Updated.class })
+    @NotBlank(message = "{dashboard_module.name.not_blank}", groups = { Created.class, Updated.class })
     @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
-
 
     @Schema(description = "父级id")
     @NotBlank(message = "{dashboard_module.parent.id.not_blank}")

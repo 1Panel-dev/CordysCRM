@@ -17,8 +17,7 @@ public class IpUtils {
             "HTTP_FORWARDED_FOR",
             "HTTP_FORWARDED",
             "HTTP_VIA",
-            "REMOTE_ADDR"
-    );
+            "REMOTE_ADDR");
 
     private static final String UNKNOWN = "unknown";
 

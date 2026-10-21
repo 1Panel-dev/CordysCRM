@@ -36,30 +36,31 @@ class ApprovalInstanceCleanupSqlTest {
 
     static Stream<Arguments> cleanupStatements() {
         return Stream.of(
-                new String[]{"batchClearNotApprovingTask", """
+                new String[] { "batchClearNotApprovingTask", """
                         update approval_task set node_round = -1
                         where instance_id = ? AND node_id = ? and node_round BETWEEN 0 AND ? and status != 'APPROVING'
-                        """},
-                new String[]{"batchClearApprovingTask", """
+                        """ },
+                new String[] { "batchClearApprovingTask", """
                         update approval_task set status = 'NONE', node_round = -1
                         where instance_id = ? AND node_id = ? and node_round BETWEEN 0 AND ? and status = 'APPROVING'
-                        """},
-                new String[]{"batchClearRecord", """
+                        """ },
+                new String[] { "batchClearRecord", """
                         update approval_record set node_round = -1
                         where instance_id = ? AND node_id = ? and node_round BETWEEN 0 AND ?
-                        """}
-        ).flatMap(statement -> Stream.of(0, 2)
-                .map(round -> Arguments.of(statement[0], statement[1], round)));
+                        """ }).flatMap(
+                        statement -> Stream.of(0, 2)
+                                .map(round -> Arguments.of(statement[0], statement[1], round)));
     }
 
     @ParameterizedTest
     @MethodSource("cleanupStatements")
-    void cleanupInvalidatesEveryEffectiveRoundWithinInstanceAndNode(String statement, String expectedSql, int maxRound) {
+    void cleanupInvalidatesEveryEffectiveRoundWithinInstanceAndNode(String statement, String expectedSql,
+            int maxRound) {
         assertSql(statement, expectedSql, maxRound);
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {0, 2})
+    @ValueSource(ints = { 0, 2 })
     void loseApprovingTaskOnlyStopsSpecifiedRound(int round) {
         assertSql("loseApprovingTask", """
                 update approval_task set status = 'NONE'

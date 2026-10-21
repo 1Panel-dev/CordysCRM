@@ -66,14 +66,12 @@ public class DefaultUidGenerator implements DisposableBean {
         this.workerId = workerIdAssigner.assignWorkerId();
         if (workerId < 0 || workerId > bitsAllocator.getMaxWorkerId()) {
             throw new IllegalStateException(
-                    "WorkerId " + workerId + " exceeds max " + bitsAllocator.getMaxWorkerId()
-            );
+                    "WorkerId " + workerId + " exceeds max " + bitsAllocator.getMaxWorkerId());
         }
 
         log.info(
                 "Initialized UID Generator: epoch={}, bits=(time:{}, worker:{}, seq:{}), workerId={}",
-                epochStr, timeBits, workerBits, seqBits, workerId
-        );
+                epochStr, timeBits, workerBits, seqBits, workerId);
     }
 
     /**
@@ -94,8 +92,7 @@ public class DefaultUidGenerator implements DisposableBean {
         if (currentSecond < lastSecond) {
             long refusedSeconds = lastSecond - currentSecond;
             throw new GenericException(
-                    String.format("Clock moved backwards. Refusing for %d seconds", refusedSeconds)
-            );
+                    String.format("Clock moved backwards. Refusing for %d seconds", refusedSeconds));
         }
 
         if (currentSecond == lastSecond) {
@@ -112,8 +109,7 @@ public class DefaultUidGenerator implements DisposableBean {
         return bitsAllocator.allocate(
                 currentSecond - epochSeconds,
                 workerId,
-                sequence
-        );
+                sequence);
     }
 
     /**
@@ -134,8 +130,7 @@ public class DefaultUidGenerator implements DisposableBean {
         long currentSecond = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
         if (currentSecond - epochSeconds > bitsAllocator.getMaxDeltaSeconds()) {
             throw new GenericException(
-                    "Timestamp bits exhausted. Refusing UID generation. Now=" + currentSecond
-            );
+                    "Timestamp bits exhausted. Refusing UID generation. Now=" + currentSecond);
         }
         return currentSecond;
     }
@@ -144,8 +139,7 @@ public class DefaultUidGenerator implements DisposableBean {
         if (StringUtils.isNotBlank(epochStr)) {
             this.epochStr = epochStr;
             this.epochSeconds = TimeUnit.MILLISECONDS.toSeconds(
-                    TimeUtils.parseByDayPattern(epochStr).getTime()
-            );
+                    TimeUtils.parseByDayPattern(epochStr).getTime());
         }
     }
 

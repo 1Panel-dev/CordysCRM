@@ -1,15 +1,15 @@
 package cn.cordys.crm.form.controller;
 
-import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
+import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
+import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
-import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.service.CustomFormService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +45,7 @@ public class CustomFormController {
 
     @GetMapping("/option/all")
     @Operation(summary = "自定义表单选项(包含未开启的)")
-    @RequiresPermissions(value = {PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.PROCESS_SETTING_READ }, logical = Logical.OR)
     public List<OptionDTO> getAllOptions() {
         return customFormService.getAllOptions(OrganizationContext.getOrganizationId());
     }
@@ -103,6 +103,7 @@ public class CustomFormController {
     @Operation(summary = "查询表单管理员")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public List<OptionDTO> getAdmins(@PathVariable String customFormId) {
-        return customFormService.getAdmins(customFormId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customFormService.getAdmins(customFormId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 }

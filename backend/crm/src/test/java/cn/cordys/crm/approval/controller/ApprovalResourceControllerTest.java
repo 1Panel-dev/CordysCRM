@@ -42,14 +42,14 @@ class ApprovalResourceControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @ValueSource(booleans = { false, true })
     void recordDetailIncludesCurrentInstancesCommentPermission(boolean commentable) {
         ApprovalInstanceDetail detail = new ApprovalInstanceDetail();
         detail.setId("instance-1");
         when(instanceService.getLatestApprovalInstanceDetail("resource-1", "org-1")).thenReturn(detail);
         when(commentService.hasCommentPermission("instance-1", "user-1", "org-1")).thenReturn(commentable);
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
-             var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
+                var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-1");
             organization.when(OrganizationContext::getOrganizationId).thenReturn("org-1");
 

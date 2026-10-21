@@ -12,12 +12,14 @@ import java.util.List;
 
 /**
  * 为 OAuth 登录链路补充 Session Cookie 支持的会话 ID 解析器。
- *
- * <p>系统常规接口仍使用 {@code X-AUTH-TOKEN} 请求头识别会话。OAuth 授权跳转由第三方平台发起，回调请求无法携带
+ * <p>
+ * 系统常规接口仍使用 {@code X-AUTH-TOKEN} 请求头识别会话。OAuth 授权跳转由第三方平台发起，回调请求无法携带
  * 自定义请求头，因此签发 state 与校验回调可能落入不同 Session。本解析器在 state 签发接口额外写入专用 Cookie，
- * 并且只在 {@code /sso/callback/**} 范围读取该 Cookie，使回调能够恢复原 Session。</p>
- *
- * <p>专用 Cookie 不参与普通业务接口的身份认证，避免扩大基于 Cookie 的会话使用范围。</p>
+ * 并且只在 {@code /sso/callback/**} 范围读取该 Cookie，使回调能够恢复原 Session。
+ * </p>
+ * <p>
+ * 专用 Cookie 不参与普通业务接口的身份认证，避免扩大基于 Cookie 的会话使用范围。
+ * </p>
  */
 public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
 
@@ -31,17 +33,18 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
     private static final String OAUTH_STATE_PATH = "/sso/callback/oauth/state/";
 
     /** 常规接口沿用的请求头会话解析器。 */
-    private final HeaderHttpSessionIdResolver headerResolver =
-            new HeaderHttpSessionIdResolver(SessionConstants.HEADER_TOKEN);
+    private final HeaderHttpSessionIdResolver headerResolver = new HeaderHttpSessionIdResolver(
+            SessionConstants.HEADER_TOKEN);
 
     /** 仅服务于 OAuth 授权跳转的 Cookie 会话解析器。 */
     private final CookieHttpSessionIdResolver cookieResolver = createCookieResolver();
 
     /**
      * 解析当前请求的 Session ID。
-     *
-     * <p>SSO 回调优先使用授权前写入的 Cookie，防止浏览器中残留的旧登录请求头覆盖本次 OAuth 会话；
-     * 其他请求始终只读取原有认证请求头。</p>
+     * <p>
+     * SSO 回调优先使用授权前写入的 Cookie，防止浏览器中残留的旧登录请求头覆盖本次 OAuth 会话；
+     * 其他请求始终只读取原有认证请求头。
+     * </p>
      */
     @Override
     public List<String> resolveSessionIds(HttpServletRequest request) {
@@ -56,8 +59,9 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
 
     /**
      * 向响应写入 Session ID。
-     *
-     * <p>所有接口保持原有响应头行为，仅 state 签发接口额外写入 OAuth 专用 Cookie。</p>
+     * <p>
+     * 所有接口保持原有响应头行为，仅 state 签发接口额外写入 OAuth 专用 Cookie。
+     * </p>
      */
     @Override
     public void setSessionId(HttpServletRequest request, HttpServletResponse response, String sessionId) {
@@ -89,9 +93,10 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
 
     /**
      * 创建 OAuth 专用 Cookie 解析器。
-     *
-     * <p>{@code HttpOnly} 禁止前端脚本读取会话标识；{@code SameSite=Lax} 允许用户从 OAuth 服务商顶层跳转回来时
-     * 携带 Cookie，同时限制多数跨站子请求自动携带 Cookie。</p>
+     * <p>
+     * {@code HttpOnly} 禁止前端脚本读取会话标识；{@code SameSite=Lax} 允许用户从 OAuth 服务商顶层跳转回来时
+     * 携带 Cookie，同时限制多数跨站子请求自动携带 Cookie。
+     * </p>
      */
     private CookieHttpSessionIdResolver createCookieResolver() {
         DefaultCookieSerializer cookieSerializer = new DefaultCookieSerializer();

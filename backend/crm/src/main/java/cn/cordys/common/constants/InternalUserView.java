@@ -1,6 +1,5 @@
 package cn.cordys.common.constants;
 
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -10,8 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-07-25  14:05
+ * @author jianxing
  */
 public enum InternalUserView {
     /**
@@ -40,7 +38,6 @@ public enum InternalUserView {
     OPPORTUNITY_SUCCESS;
 
     public static final String CURRENT_USER = "CURRENT_USER";
-
 
     public static List<String> getCurrentUserArrayValue() {
         List<String> values = new ArrayList<>(0);
@@ -71,6 +68,7 @@ public enum InternalUserView {
 
     public static boolean isVisible(String searchType, String permission) {
         // 目前只有客户协作人视图有可见权限
-        return Strings.CS.startsWith(permission, "CUSTOMER_MANAGEMENT") && Strings.CS.equals(CUSTOMER_COLLABORATION.name(), searchType);
+        return Strings.CS.startsWith(permission, "CUSTOMER_MANAGEMENT")
+                && Strings.CS.equals(CUSTOMER_COLLABORATION.name(), searchType);
     }
 }

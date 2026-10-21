@@ -15,11 +15,10 @@ import org.apache.commons.lang3.BooleanUtils;
 @NoArgsConstructor
 public class EnableFieldValue extends BaseModuleFieldValue {
 
-
     @Schema(description = "是否启用")
     private Boolean enable;
 
     public boolean valid() {
-       return super.valid() && BooleanUtils.isTrue(enable);
+        return super.valid() && BooleanUtils.isTrue(enable);
     }
 }

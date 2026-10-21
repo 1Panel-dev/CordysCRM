@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.notice;
 
-
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.DepartmentCommander;
@@ -50,7 +49,8 @@ public class CommonNoticeSendService {
     }
 
     @Async("threadPoolTaskExecutor")
-    public void sendNotice(String module, String event, List<Map> resources, String userId, String currentOrganizationId) {
+    public void sendNotice(String module, String event, List<Map> resources, String userId,
+            String currentOrganizationId) {
         User operator = userBaseMapper.selectByPrimaryKey(userId);
         setLanguage(operator.getLanguage());
         // 有批量操作发送多次
@@ -90,13 +90,13 @@ public class CommonNoticeSendService {
      *
      * @param taskType     发送类型
      * @param event        发送事件
-     * @param currentOrgId 当前组织id
      * @param resourceName 资源名称
+     * @param currentOrgId 当前组织id
      * @param users        需要通知的用户
      * @param excludeSelf  是否排除自己
      */
     public void sendNotice(String taskType, String event, String resourceName, String operatorId, String currentOrgId,
-                           List<String> users, boolean excludeSelf) {
+            List<String> users, boolean excludeSelf) {
         sendNotice(taskType, event, Map.of("name", resourceName), operatorId, currentOrgId, users, excludeSelf);
     }
 
@@ -105,13 +105,14 @@ public class CommonNoticeSendService {
      *
      * @param taskType     发送类型
      * @param event        发送事件
-     * @param currentOrgId 当前组织id
      * @param resource     消息变量的名称 以及其他变量 eg: xxxx 的名称，resource.put("name", "名称");
+     * @param currentOrgId 当前组织id
      * @param users        需要通知的用户
      * @param excludeSelf  是否排除自己
      */
-    public void sendNotice(String taskType, String event, Map<String, Object> resource, String operatorId, String currentOrgId,
-                           List<String> users, boolean excludeSelf) {
+    public void sendNotice(String taskType, String event, Map<String, Object> resource, String operatorId,
+            String currentOrgId,
+            List<String> users, boolean excludeSelf) {
         Map<String, Object> paramMap = new HashMap<>();
         User operator = userBaseMapper.selectByPrimaryKey(operatorId);
         if (operator != null) {
@@ -166,7 +167,8 @@ public class CommonNoticeSendService {
      * @param orgId                组织ID
      * @return 消息接收用户ID列表
      */
-    public List<String> getNoticeReceiveUserIds(MessageTaskConfigDTO messageTaskConfigDTO, String createUser, String owner, String orgId) {
+    public List<String> getNoticeReceiveUserIds(MessageTaskConfigDTO messageTaskConfigDTO, String createUser,
+            String owner, String orgId) {
         List<String> receiveUserIds = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(messageTaskConfigDTO.getUserIds())) {
             if (messageTaskConfigDTO.getUserIds().contains(NotificationConstants.RelatedUser.CREATE_USER)) {
@@ -217,8 +219,9 @@ public class CommonNoticeSendService {
         if (CollectionUtils.isEmpty(departmentIds)) {
             return receiveUserIds;
         }
-        List<DepartmentCommander> departmentCommanderList = departmentCommanderMapper.selectListByLambda(new LambdaQueryWrapper<DepartmentCommander>()
-                .in(DepartmentCommander::getDepartmentId, departmentIds));
+        List<DepartmentCommander> departmentCommanderList = departmentCommanderMapper
+                .selectListByLambda(new LambdaQueryWrapper<DepartmentCommander>()
+                        .in(DepartmentCommander::getDepartmentId, departmentIds));
         if (CollectionUtils.isEmpty(departmentCommanderList)) {
             return receiveUserIds;
         }
@@ -228,7 +231,6 @@ public class CommonNoticeSendService {
         receiveUserIds.addAll(deptCommanderUserIds);
 
         return receiveUserIds.stream().distinct().toList();
-
     }
 
 }

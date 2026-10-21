@@ -8,8 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-10-13  14:34
+ * @author jianxing
  */
 @Data
 public class ChartAnalysisRequest {

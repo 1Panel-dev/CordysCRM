@@ -10,5 +10,4 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class InputMultipleField extends BaseField {
 
-
 }

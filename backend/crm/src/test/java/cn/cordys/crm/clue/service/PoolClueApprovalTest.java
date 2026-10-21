@@ -179,7 +179,8 @@ class PoolClueApprovalTest {
 
         verify(approvalResourceService, never()).batchEditTriggerApproval(
                 anyList(), anyString(), any(), anyString(), anyString(), anyString(), any());
-        verify(clueFieldService, never()).batchUpdate(any(), any(), anyList(), any(), anyString(), any(), anyString(), anyString(), eq(true));
+        verify(clueFieldService, never()).batchUpdate(any(), any(), anyList(), any(), anyString(), any(), anyString(),
+                anyString(), eq(true));
         assertEquals(0, response.getSuccess());
         assertEquals(1, response.getFail());
     }
@@ -251,7 +252,8 @@ class PoolClueApprovalTest {
 
         BatchAffectReasonResponse response = runDelete(List.of("clue-1"));
 
-        verify(approvalResourceService, never()).batchDeleteTriggerApproval(anyList(), any(), anyString(), anyString(), anyMap());
+        verify(approvalResourceService, never()).batchDeleteTriggerApproval(anyList(), any(), anyString(), anyString(),
+                anyMap());
         verify(clueMapper, never()).deleteByLambda(any());
         assertEquals(0, response.getSuccess());
         assertEquals(1, response.getFail());

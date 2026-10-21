@@ -3,16 +3,18 @@ package cn.cordys.common.uid.worker;
 import cn.cordys.common.uid.utils.ValuedEnum;
 
 /**
- * WorkerNodeType
- * <li>CONTAINER: Such as Docker
- * <li>ACTUAL: Actual machine
+ * Worker node types.
+ * <ul>
+ * <li>CONTAINER: Such as Docker</li>
+ * <li>ACTUAL: Actual machine</li>
+ * </ul>
  */
 public enum WorkerNodeType implements ValuedEnum<Integer> {
 
     CONTAINER(1), ACTUAL(2);
 
     /**
-     * Lock type
+     * Worker node type value
      */
     private final Integer type;
 

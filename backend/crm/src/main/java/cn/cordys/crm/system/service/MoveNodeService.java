@@ -32,10 +32,9 @@ public abstract class MoveNodeService {
      * @param request           拖拽的前端请求参数
      * @param selectIdNodeFunc  通过id查询节点的函数
      * @param selectPosNodeFunc 通过parentId和Pos运算符查询节点的函数
-     *
-     * @return
      */
-    public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc, Function<NodeSortQueryParam, BaseTree> selectPosNodeFunc, boolean isDepartment) {
+    public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc,
+            Function<NodeSortQueryParam, BaseTree> selectPosNodeFunc, boolean isDepartment) {
         if (Strings.CS.equals(request.getDragNodeId(), request.getDropNodeId())) {
             //两种节点不能一样
             throw new GenericException(Translator.get("invalid_parameter") + ": drag node  and drop node");
@@ -49,13 +48,13 @@ public abstract class MoveNodeService {
         BaseTree dropNode = selectIdNodeFunc.apply(request.getDropNodeId());
         if (dropNode == null) {
             throw new GenericException(Translator.get(DRAG_NODE_NOT_EXIST) + ":" + request.getDropNodeId());
-
         }
         BaseTree parentModule;
         BaseTree previousNode;
         BaseTree nextNode = null;
         if (request.getDropPosition() == 0) {
-            parentModule = new BaseTree(dropNode.getId(), dropNode.getName(), dropNode.getPos(), dropNode.getOrganizationId(), dropNode.getParentId());
+            parentModule = new BaseTree(dropNode.getId(), dropNode.getName(), dropNode.getPos(),
+                    dropNode.getOrganizationId(), dropNode.getParentId());
 
             NodeSortQueryParam sortParam = new NodeSortQueryParam();
             sortParam.setParentId(dropNode.getId());
@@ -69,7 +68,8 @@ public abstract class MoveNodeService {
                 }
             } else {
                 if (Strings.CI.equals(dropNode.getParentId(), ROOT_NODE_PARENT_ID)) {
-                    parentModule = new BaseTree(ROOT_NODE_PARENT_ID, ROOT_NODE_PARENT_ID, 0, dragNode.getOrganizationId(), ROOT_NODE_PARENT_ID);
+                    parentModule = new BaseTree(ROOT_NODE_PARENT_ID, ROOT_NODE_PARENT_ID, 0,
+                            dragNode.getOrganizationId(), ROOT_NODE_PARENT_ID);
                 } else {
                     parentModule = selectIdNodeFunc.apply(dropNode.getParentId());
                 }

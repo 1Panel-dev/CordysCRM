@@ -11,7 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class ContractInvoiceFieldService extends BaseResourceFieldService<ContractInvoiceField, ContractInvoiceFieldBlob> {
+public class ContractInvoiceFieldService
+        extends BaseResourceFieldService<ContractInvoiceField, ContractInvoiceFieldBlob> {
 
     @Resource
     private BaseMapper<ContractInvoiceField> contractInvoiceFieldMapper;

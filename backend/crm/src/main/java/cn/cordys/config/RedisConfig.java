@@ -28,7 +28,6 @@ public class RedisConfig {
      * 配置 RedisCacheManager，提供全局的缓存配置。
      *
      * @param redisConnectionFactory Redis 连接工厂
-     *
      * @return RedisCacheManager 实例
      */
     @Bean
@@ -37,8 +36,10 @@ public class RedisConfig {
                 // 设置缓存有效时间
                 .entryTtl(Duration.ofHours(1))
                 // 设置 key 和 value 的序列化方式
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                .serializeKeysWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new GenericJackson2JsonRedisSerializer()))
                 // 禁止缓存 null 值
                 .disableCachingNullValues();
 
@@ -51,7 +52,6 @@ public class RedisConfig {
      * 配置 RedisTemplate，提供更灵活的 Redis 操作方式。
      *
      * @param redisConnectionFactory Redis 连接工厂
-     *
      * @return RedisTemplate 实例
      */
     @Bean
@@ -75,7 +75,7 @@ public class RedisConfig {
      * 配置所有 Redis 频道主题集合
      * 用于统一管理订阅和发布的主题
      *
-     * @return List<ChannelTopic> Redis主题集合
+     * @return Redis 频道主题集合
      */
     @Bean
     public List<ChannelTopic> channelTopics() {
@@ -92,7 +92,6 @@ public class RedisConfig {
      * @param factory         Redis连接工厂
      * @param listenerAdapter 消息监听适配器
      * @param channelTopics   Redis主题集合
-     *
      * @return Redis消息监听容器
      */
     @Bean
@@ -115,7 +114,6 @@ public class RedisConfig {
      * 配置消息监听适配器
      *
      * @param subscriber 消息订阅处理器
-     *
      * @return 消息监听适配器
      */
     @Bean

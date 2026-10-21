@@ -70,27 +70,45 @@ public class AnalyticsQueryRequest extends AnalyticsInput {
     @Schema(description = "返回组数；有 orderBy 时表示完整聚合后的 Top N，否则超限明确标记截断")
     private int limit = 200;
 
-    public enum View { ALL, SELF, DEPARTMENT, VISIBLE }
-    public enum Aggregate { COUNT, COUNT_DISTINCT, SUM, AVG, MIN, MAX }
-    public enum Granularity { RAW, DAY, WEEK, MONTH, QUARTER, YEAR }
-    public enum Operator { EQUALS, NOT_EQUALS, IN, NOT_IN, GT, GE, LT, LE, BETWEEN, CONTAINS, NOT_CONTAINS, EMPTY, NOT_EMPTY }
-    public enum Direction { ASC, DESC }
+    public enum View {
+        ALL, SELF, DEPARTMENT, VISIBLE
+    }
+
+    public enum Aggregate {
+        COUNT, COUNT_DISTINCT, SUM, AVG, MIN, MAX
+    }
+
+    public enum Granularity {
+        RAW, DAY, WEEK, MONTH, QUARTER, YEAR
+    }
+
+    public enum Operator {
+        EQUALS, NOT_EQUALS, IN, NOT_IN, GT, GE, LT, LE, BETWEEN, CONTAINS, NOT_CONTAINS, EMPTY, NOT_EMPTY
+    }
+
+    public enum Direction {
+        ASC, DESC
+    }
 
     @Data
     public static class TimeRange extends AnalyticsInput {
-        @NotBlank @Size(max = 128)
+        @NotBlank
+        @Size(max = 128)
         private String field;
-        @NotBlank @Size(max = 64)
+        @NotBlank
+        @Size(max = 64)
         @Schema(description = "包含起点；ISO 日期或时间，无偏移时使用 timezone")
         private String from;
-        @NotBlank @Size(max = 64)
+        @NotBlank
+        @Size(max = 64)
         @Schema(description = "不包含终点；ISO 日期或时间")
         private String toExclusive;
     }
 
     @Data
     public static class Condition extends AnalyticsInput {
-        @NotBlank @Size(max = 128)
+        @NotBlank
+        @Size(max = 128)
         private String field;
         @NotNull
         private Operator operator;
@@ -103,10 +121,14 @@ public class AnalyticsQueryRequest extends AnalyticsInput {
     public static class ValueDeserializer extends JsonDeserializer<Object> {
         @Override
         public Object deserialize(JsonParser parser, DeserializationContext context) throws IOException {
-            if (!parser.isExpectedStartArrayToken()) return scalar(parser, context);
+            if (!parser.isExpectedStartArrayToken()) {
+                return scalar(parser, context);
+            }
             List<Object> values = new ArrayList<>();
             while (parser.nextToken() != JsonToken.END_ARRAY) {
-                if (values.size() == 100) return context.reportInputMismatch(Object.class, "At most 100 condition values");
+                if (values.size() == 100) {
+                    return context.reportInputMismatch(Object.class, "At most 100 condition values");
+                }
                 values.add(scalar(parser, context));
             }
             return values;
@@ -114,17 +136,18 @@ public class AnalyticsQueryRequest extends AnalyticsInput {
 
         private Object scalar(JsonParser parser, DeserializationContext context) throws IOException {
             return switch (parser.currentToken()) {
-                case VALUE_STRING -> parser.getText();
-                case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> parser.getDecimalValue();
-                case VALUE_NULL -> null;
-                default -> context.reportInputMismatch(Object.class, "Condition values must be strings or numbers");
+            case VALUE_STRING -> parser.getText();
+            case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> parser.getDecimalValue();
+            case VALUE_NULL -> null;
+            default -> context.reportInputMismatch(Object.class, "Condition values must be strings or numbers");
             };
         }
     }
 
     @Data
     public static class Dimension extends AnalyticsInput {
-        @NotBlank @Size(max = 128)
+        @NotBlank
+        @Size(max = 128)
         private String field;
         @NotNull
         private Granularity granularity = Granularity.RAW;
@@ -137,13 +160,15 @@ public class AnalyticsQueryRequest extends AnalyticsInput {
         @Size(max = 128)
         @Schema(description = "COUNT 不传字段时统计记录数；传字段时统计非空值数量")
         private String field;
-        @NotBlank @Size(max = 64)
+        @NotBlank
+        @Size(max = 64)
         private String alias;
     }
 
     @Data
     public static class OrderBy extends AnalyticsInput {
-        @NotBlank @Size(max = 64)
+        @NotBlank
+        @Size(max = 64)
         private String metric;
         @NotNull
         private Direction direction = Direction.DESC;

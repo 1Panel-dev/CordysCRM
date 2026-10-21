@@ -92,8 +92,8 @@ public abstract class BaseExportService {
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
     }
 
-
-    public <T extends BasePageRequest> void batchHandleData(String fileId, List<List<String>> headList, ExportTask task, String fileName, T t, CustomFunction<T, List<?>> func) throws InterruptedException {
+    public <T extends BasePageRequest> void batchHandleData(String fileId, List<List<String>> headList, ExportTask task,
+            String fileName, T t, CustomFunction<T, List<?>> func) throws InterruptedException {
         // 准备导出文件
         File file = prepareExportFile(fileId, fileName, task.getOrganizationId());
 
@@ -101,7 +101,6 @@ public abstract class BaseExportService {
                 .head(headList)
                 .excelType(ExcelTypeEnum.XLSX)
                 .build()) {
-
             WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
 
             int current = 1;
@@ -124,26 +123,24 @@ public abstract class BaseExportService {
                 current++;
             }
         }
-
-
     }
 
     /**
      * 分页写入数据并合并
      *
+     * @param <T>          参数类型
      * @param headList     头信息
      * @param task         任务
      * @param fileName     文件名
+     * @param mergeColumns 合并列
      * @param t            请求参数
      * @param func         获取数据方法
-     * @param mergeColumns 合并列
-     * @param <T>          参数类型
      * @throws InterruptedException 异常信息
      */
-    public <T extends BasePageRequest> void batchHandleDataWithMergeStrategy(List<List<String>> headList, ExportTask task, String fileName,
-                                                                             List<Integer> mergeColumns, T t,
-                                                                             CustomFunction<T, MergeResult> func) throws InterruptedException {
-
+    public <T extends BasePageRequest> void batchHandleDataWithMergeStrategy(List<List<String>> headList,
+            ExportTask task, String fileName,
+            List<Integer> mergeColumns, T t,
+            CustomFunction<T, MergeResult> func) throws InterruptedException {
         File file = prepareExportFile(task.getFileId(), fileName, task.getOrganizationId());
 
         try (ExcelWriter writer = EasyExcel.write(file)
@@ -151,7 +148,6 @@ public abstract class BaseExportService {
                 .excelType(ExcelTypeEnum.XLSX)
                 .registerWriteHandler(new CustomHeadColWidthStyleStrategy())
                 .build()) {
-
             WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
             setRowAccessWindowSize(writer);
 
@@ -172,10 +168,12 @@ public abstract class BaseExportService {
                 writer.write(mergeResult.getDataList(), sheet);
                 // 执行合并策略
                 Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-                SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(headList, mergeColumns), offset);
+                SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns,
+                        getSummaryColIdx(headList, mergeColumns), offset);
                 strategy.merge(mergeSheet);
                 // 使用 queryCount（过滤前数量）判断是否还有下一页，避免过滤后数量减少导致提前终止
-                int fetchedCount = mergeResult.getQueryCount() > 0 ? mergeResult.getQueryCount() : mergeResult.getHandleCount();
+                int fetchedCount = mergeResult.getQueryCount() > 0 ? mergeResult.getQueryCount()
+                        : mergeResult.getHandleCount();
                 if (fetchedCount < EXPORT_MAX_COUNT) {
                     break;
                 }
@@ -185,7 +183,6 @@ public abstract class BaseExportService {
             }
         }
     }
-
 
     /**
      * 准备导出文件
@@ -225,7 +222,9 @@ public abstract class BaseExportService {
      * @param dataList       数据列表
      * @param fieldConfigMap 字段配置集合
      */
-    public List<Object> transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFieldMap, Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
+    public List<Object> transModuleFieldValue(List<ExportHeadDTO> headList,
+            LinkedHashMap<String, Object> systemFieldMap, Map<String, Object> moduleFieldMap, List<Object> dataList,
+            Map<String, BaseField> fieldConfigMap) {
         headList.forEach(head -> {
             if (systemFieldMap.containsKey(head.getKey())) {
                 //固定字段
@@ -236,7 +235,6 @@ public abstract class BaseExportService {
             } else {
                 dataList.add(null);
             }
-
         });
         return dataList;
     }
@@ -248,12 +246,16 @@ public abstract class BaseExportService {
      * @return 导出任务ID
      */
     public String exportAllWithMergeStrategy(ExportDTO exportParam) {
-        List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
+        List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(),
+                exportParam.getFormKey());
         List<Integer> mergeColumns = getMergeColumns(exportHeads);
-        exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
-        return exportWithMergeStrategy(exportParam, (task) -> batchHandleDataWithMergeStrategy(processDuplicateLastLevelHeads(exportHeads), task, exportParam.getFileName(),
-                mergeColumns, exportParam.getPageRequest(),
-                t -> getExportMergeData(task.getId(), exportParam)));
+        exportParam.setMergeHeads(
+                getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
+        return exportWithMergeStrategy(exportParam,
+                (task) -> batchHandleDataWithMergeStrategy(processDuplicateLastLevelHeads(exportHeads), task,
+                        exportParam.getFileName(),
+                        mergeColumns, exportParam.getPageRequest(),
+                        t -> getExportMergeData(task.getId(), exportParam)));
     }
 
     /**
@@ -263,12 +265,15 @@ public abstract class BaseExportService {
      * @return 导出任务ID
      */
     public String exportSelectWithMergeStrategy(ExportDTO exportParam) {
-        List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
+        List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(),
+                exportParam.getFormKey());
         List<Integer> mergeColumns = getMergeColumns(exportHeads);
-        exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
+        exportParam.setMergeHeads(
+                getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
         return exportWithMergeStrategy(exportParam, (task) -> {
             File file = prepareExportFile(task.getFileId(), exportParam.getFileName(), task.getOrganizationId());
-            try (ExcelWriter writer = EasyExcel.write(file).head(processDuplicateLastLevelHeads(exportHeads)).excelType(ExcelTypeEnum.XLSX)
+            try (ExcelWriter writer = EasyExcel.write(file).head(processDuplicateLastLevelHeads(exportHeads))
+                    .excelType(ExcelTypeEnum.XLSX)
                     .registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
                 WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
                 setRowAccessWindowSize(writer);
@@ -281,13 +286,15 @@ public abstract class BaseExportService {
                         mergeResult = getExportMergeData(task.getId(), exportParam);
                     } catch (InterruptedException e) {
                         log.error("任务停止中断", e);
-                        exportTaskService.update(task.getId(), ExportConstants.ExportStatus.STOP.toString(), exportParam.getUserId());
+                        exportTaskService.update(task.getId(), ExportConstants.ExportStatus.STOP.toString(),
+                                exportParam.getUserId());
                     }
                     // 写入数据
                     writer.write(mergeResult.getDataList(), sheet);
                     // 执行合并策略
                     Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-                    SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(exportHeads, mergeColumns), offset.get());
+                    SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns,
+                            getSummaryColIdx(exportHeads, mergeColumns), offset.get());
                     strategy.merge(mergeSheet);
                     offset.addAndGet(mergeResult.getDataList().size());
                 });
@@ -306,8 +313,7 @@ public abstract class BaseExportService {
             if (count > 0) {
                 newHead.set(
                         lastIndex,
-                        lastHead + "\u00A0".repeat(count)
-                );
+                        lastHead + "\u00A0".repeat(count));
             }
             countMap.put(lastHead, count + 1);
             result.add(newHead);
@@ -324,8 +330,10 @@ public abstract class BaseExportService {
      */
     private String exportWithMergeStrategy(ExportDTO exportParam, ExportExecutor executor) {
         exportParam.setExportFieldParam(getExportFieldParam(exportParam));
-        exportParam.setExportMetas(getExportFieldMeta(exportParam.getExportFieldParam().getFieldConfigMap(), exportParam.getMergeHeads()));
-        return asyncExport(exportParam.getFileName(), exportParam.getOrgId(), exportParam.getUserId(), exportParam.getLocale(),
+        exportParam.setExportMetas(
+                getExportFieldMeta(exportParam.getExportFieldParam().getFieldConfigMap(), exportParam.getMergeHeads()));
+        return asyncExport(exportParam.getFileName(), exportParam.getOrgId(), exportParam.getUserId(),
+                exportParam.getLocale(),
                 exportParam.getLogModule(), exportParam.getExportType(), executor);
     }
 
@@ -337,7 +345,8 @@ public abstract class BaseExportService {
      * @return 表头信息
      */
     private List<List<String>> getExportMergeHeadList(List<ExportHeadDTO> headList, String currentOrg, String formKey) {
-        return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getAllExportHeads(headList, formKey, currentOrg);
+        return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getAllExportHeads(headList,
+                formKey, currentOrg);
     }
 
     /**
@@ -347,8 +356,9 @@ public abstract class BaseExportService {
      * @param sysFieldValMap 系统字段值
      * @return 单行记录值
      */
-    public List<Object> transFieldValueWithSub(List<FieldExportMeta> metas, LinkedHashMap<String, Object> sysFieldValMap, Map<String, Object> normalFieldMap,
-                                               Map<String, Object> subRowMap, Map<Object, Object> cacheMap) {
+    public List<Object> transFieldValueWithSub(List<FieldExportMeta> metas,
+            LinkedHashMap<String, Object> sysFieldValMap, Map<String, Object> normalFieldMap,
+            Map<String, Object> subRowMap, Map<Object, Object> cacheMap) {
         List<Object> dataList = new ArrayList<>(metas.size());
         for (FieldExportMeta meta : metas) {
             BaseField field = meta.getField();
@@ -385,7 +395,8 @@ public abstract class BaseExportService {
                 value = subRowMap.get(fieldId);
             }
 
-            if (Strings.CI.equals(field.getType(), FieldType.INPUT_NUMBER.name()) && value == null && meta.isSummary()) {
+            if (Strings.CI.equals(field.getType(), FieldType.INPUT_NUMBER.name()) && value == null
+                    && meta.isSummary()) {
                 value = 0;
             }
 
@@ -400,8 +411,9 @@ public abstract class BaseExportService {
         return dataList;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public Object transformFieldValue(AbstractModuleFieldResolver resolver, BaseField field, Object value, Map<Object, Object> cacheMap) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Object transformFieldValue(AbstractModuleFieldResolver resolver, BaseField field, Object value,
+            Map<Object, Object> cacheMap) {
         if (value == null) {
             return null;
         }
@@ -428,7 +440,7 @@ public abstract class BaseExportService {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object transformFieldValue(BaseField field, Object value) {
         if (value == null) {
             return null;
@@ -467,11 +479,14 @@ public abstract class BaseExportService {
      * @param systemFieldMap    系统字段值
      * @return 导出数据列表
      */
-    protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues, ExportFieldParam exportFieldParam, List<FieldExportMeta> metas, LinkedHashMap<String, Object> systemFieldMap, Map<Object, Object> cacheMap) {
+    protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues,
+            ExportFieldParam exportFieldParam, List<FieldExportMeta> metas,
+            LinkedHashMap<String, Object> systemFieldMap, Map<Object, Object> cacheMap) {
         List<List<Object>> dataList = new ArrayList<>();
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(moduleFieldValues)) {
             // 无自定义字段, 导出系统字段值, 单行导出
-            dataList.add(transFieldValueWithSub(metas, systemFieldMap, new LinkedHashMap<>(), new LinkedHashMap<>(), cacheMap));
+            dataList.add(transFieldValueWithSub(metas, systemFieldMap, new LinkedHashMap<>(), new LinkedHashMap<>(),
+                    cacheMap));
             return dataList;
         }
 
@@ -525,7 +540,8 @@ public abstract class BaseExportService {
      * @param dataList       数据列表
      * @param fieldConfigMap 字段配置映射
      */
-    public void getResourceFieldMap(Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
+    public void getResourceFieldMap(Map<String, Object> moduleFieldMap, List<Object> dataList,
+            Map<String, BaseField> fieldConfigMap) {
         moduleFieldMap.forEach((key, value) -> {
             BaseField fieldConfig = fieldConfigMap.get(key);
             if (fieldConfig == null) {
@@ -535,24 +551,23 @@ public abstract class BaseExportService {
         });
     }
 
-
     /**
      * 日志
      *
-     * @param orgId      组织ID
-     * @param taskId     任务ID
-     * @param userId     用户ID
-     * @param logType    日志类型
-     * @param moduleType 模块类型
-     * @param fileName   文件名
+     * @param orgId         组织ID
+     * @param taskId        任务ID
+     * @param userId        用户ID
+     * @param logType       日志类型
+     * @param moduleType    模块类型
+     * @param fileName      文件名
      * @param requestSource 请求来源
      */
-    public void exportLog(String orgId, String taskId, String userId, String logType, String moduleType, String fileName, String requestSource) {
+    public void exportLog(String orgId, String taskId, String userId, String logType, String moduleType,
+            String fileName, String requestSource) {
         LogDTO logDTO = new LogDTO(orgId, taskId, userId, logType, moduleType, fileName);
         logDTO.setRequestSource(requestSource);
         logService.add(logDTO);
     }
-
 
     public void checkFileName(String fileName) {
         if (fileName.contains(SLASH)) {
@@ -575,7 +590,7 @@ public abstract class BaseExportService {
      *
      * @param taskId      任务ID
      * @param exportParam 导出参数
-     * @return 导出数据列表 && 合并区域
+     * @return 导出数据列表 &amp;&amp; 合并区域
      * @throws InterruptedException 异常信息
      */
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) throws InterruptedException {
@@ -585,18 +600,18 @@ public abstract class BaseExportService {
     /**
      * 通用的并行构建导出数据方法
      *
+     * @param <T>              数据类型
      * @param taskId           导出任务ID
      * @param dataList         数据列表
      * @param exportFieldParam 导出字段参数
      * @param exportMetas      导出元数据
      * @param rowBuilder       单行数据构建函数
-     * @param <T>              数据类型
      * @return 合并结果
      */
     protected <T> MergeResult parallelBuildExportData(String taskId, List<T> dataList,
-                                                      ExportFieldParam exportFieldParam,
-                                                      List<FieldExportMeta> exportMetas,
-                                                      ExportRowBuilder<T> rowBuilder) {
+            ExportFieldParam exportFieldParam,
+            List<FieldExportMeta> exportMetas,
+            ExportRowBuilder<T> rowBuilder) {
         int size = dataList.size();
         var cacheMap = new ConcurrentHashMap<>();
         List<List<Object>> mergeRowData = new ArrayList<>(size);
@@ -615,7 +630,8 @@ public abstract class BaseExportService {
                     }
                     dbSemaphore.acquire();
                     try {
-                        List<List<Object>> buildData = rowBuilder.buildRow(detail, exportFieldParam, exportMetas, cacheMap);
+                        List<List<Object>> buildData = rowBuilder.buildRow(detail, exportFieldParam, exportMetas,
+                                cacheMap);
                         return Pair.of(idx, buildData);
                     } finally {
                         dbSemaphore.release();
@@ -637,7 +653,7 @@ public abstract class BaseExportService {
             int offset = 0;
             for (Pair<Integer, List<List<Object>>> r : results) {
                 List<List<Object>> buildData = r.getRight();
-                mergeRegions.add(new int[]{offset, offset + buildData.size() - 1});
+                mergeRegions.add(new int[] { offset, offset + buildData.size() - 1 });
                 offset += buildData.size();
                 mergeRowData.addAll(buildData);
             }
@@ -655,20 +671,21 @@ public abstract class BaseExportService {
     /**
      * 通用的导出数据收集和构建方法
      *
+     * @param <T>             数据类型
      * @param taskId          导出任务ID
      * @param exportParam     导出参数
      * @param dataList        已构建的数据列表
      * @param getModuleFields 获取模块字段的函数
      * @param rowBuilder      单行数据构建函数
-     * @param <T>             数据类型
      * @return 合并结果
      */
     protected <T> MergeResult buildExportMergeResult(String taskId, ExportDTO exportParam,
-                                                     List<T> dataList,
-                                                     Function<T, List<BaseModuleFieldValue>> getModuleFields,
-                                                     ExportRowBuilder<T> rowBuilder) {
+            List<T> dataList,
+            Function<T, List<BaseModuleFieldValue>> getModuleFields,
+            ExportRowBuilder<T> rowBuilder) {
         if (CollectionUtils.isEmpty(dataList)) {
-            return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).handleCount(0).build();
+            return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).handleCount(0)
+                    .build();
         }
         // 处理模块字段值
         ModuleFormService moduleFormService = CommonBeanFactory.getBean(ModuleFormService.class);
@@ -686,7 +703,7 @@ public abstract class BaseExportService {
     @FunctionalInterface
     protected interface ExportRowBuilder<T> {
         List<List<Object>> buildRow(T detail, ExportFieldParam exportFieldParam,
-                                    List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap);
+                List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap);
     }
 
     /**
@@ -695,18 +712,18 @@ public abstract class BaseExportService {
      * @return 导出数据列表
      * @throws InterruptedException 异常信息
      */
-    protected List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
+    protected List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO)
+            throws InterruptedException {
         return null;
     }
-
 
     protected Map<String, Object> getFieldIdValueMap(List<BaseModuleFieldValue> fieldValues) {
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
         Optional.ofNullable(fieldValues).ifPresent(moduleFields -> moduleFieldMap.set(
                 moduleFields.stream()
                         .filter(fv -> fv.getFieldValue() != null)
-                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue)))
-        );
+                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId,
+                                BaseModuleFieldValue::getFieldValue))));
         return moduleFieldMap.get();
     }
 
@@ -720,8 +737,9 @@ public abstract class BaseExportService {
      * @param logModule      日志模块
      * @param executor       导出执行器
      */
-    public String asyncExport(String exportFileName, String currentOrg, String currentUser, Locale locale, String logModule,
-                              String exportType, ExportExecutor executor) {
+    public String asyncExport(String exportFileName, String currentOrg, String currentUser, Locale locale,
+            String logModule,
+            String exportType, ExportExecutor executor) {
         checkFileName(exportFileName);
         exportTaskService.checkUserTaskLimit(currentUser, exportType);
         String fileId = IDGenerator.nextStr();
@@ -743,9 +761,13 @@ public abstract class BaseExportService {
         ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
                 .getBusinessFormConfig(exportParam.getFormKey(), exportParam.getOrgId());
         List<String> exportTitles = exportParam.getHeadList().stream().map(ExportHeadDTO::getTitle).toList();
-        List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).flattenFormAllFieldsWithSubId(formConfig);
-        List<String> subTableIds = flattenFields.stream().filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId).toList();
-        Map<String, BaseField> fieldConfigMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
+        List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
+                .flattenFormAllFieldsWithSubId(formConfig);
+        List<String> subTableIds = flattenFields.stream()
+                .filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId)
+                .toList();
+        Map<String, BaseField> fieldConfigMap = flattenFields.stream()
+                .collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
         return ExportFieldParam.builder().subIds(new HashSet<>(subTableIds)).fieldConfigMap(fieldConfigMap)
                 .formConfig(formConfig)
                 .build();
@@ -793,12 +815,13 @@ public abstract class BaseExportService {
      * 获取表头ID集合
      *
      * @param exportHeads 表头信息
-     * @param currentOrg  当前组织
      * @param formKey     表单Key
+     * @param currentOrg  当前组织
      * @return 表头ID集合
      */
     private List<String> getMergeHeads(List<ExportHeadDTO> exportHeads, String formKey, String currentOrg) {
-        return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getExportMergeHeads(formKey, currentOrg, exportHeads);
+        return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).getExportMergeHeads(formKey,
+                currentOrg, exportHeads);
     }
 
     /**
@@ -822,7 +845,8 @@ public abstract class BaseExportService {
         return mergeColumns;
     }
 
-    public void runExport(String orgId, String userId, String module, Locale locale, ExportTask exportTask, String fileName, ExportTaskFunction func) {
+    public void runExport(String orgId, String userId, String module, Locale locale, ExportTask exportTask,
+            String fileName, ExportTaskFunction func) {
         String requestSource = ServletUtils.getRequestSource();
         Thread.startVirtualThread(() -> {
             try {
@@ -834,22 +858,19 @@ public abstract class BaseExportService {
                 exportTaskService.update(
                         exportTask.getId(),
                         ExportConstants.ExportStatus.SUCCESS.name(),
-                        userId
-                );
+                        userId);
             } catch (InterruptedException e) {
                 log.error("任务停止中断", e);
                 exportTaskService.update(
                         exportTask.getId(),
                         ExportConstants.ExportStatus.STOP.name(),
-                        userId
-                );
+                        userId);
             } catch (Exception e) {
                 log.error("导出任务异常", e);
                 exportTaskService.update(
                         exportTask.getId(),
                         ExportConstants.ExportStatus.ERROR.name(),
-                        userId
-                );
+                        userId);
             } finally {
                 ExportThreadRegistry.remove(exportTask.getId());
                 exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, module, fileName, requestSource);
@@ -883,14 +904,16 @@ public abstract class BaseExportService {
                     data = getSelectExportData(subIds, exportTask.getId(), exportDTO);
                 } catch (InterruptedException e) {
                     log.error("任务停止中断", e);
-                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), exportDTO.getUserId());
+                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(),
+                            exportDTO.getUserId());
                 }
                 writer.write(data, sheet);
             });
         }
 
         //更新导出任务状态
-        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(),
+                exportDTO.getUserId());
     }
 
     /**
@@ -953,7 +976,8 @@ public abstract class BaseExportService {
                 exportDTO.getPageRequest(),
                 t -> getExportData(exportTask.getId(), exportDTO));
         //更新状态
-        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), exportDTO.getUserId());
+        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(),
+                exportDTO.getUserId());
     }
 
     protected String getOptionLabel(String value, List<OptionProp> options) {
@@ -1048,27 +1072,29 @@ public abstract class BaseExportService {
     /**
      * 根据审批流状态权限过滤可导出的数据
      *
+     * @param <T>                 资源类型
      * @param resources           原始数据列表
      * @param orgId               组织ID
      * @param formKey             表单类型
      * @param idGetter            获取资源ID的函数
      * @param statusGetter        获取审批状态的函数
      * @param approvalFlowService 审批流服务
-     * @param <T>                 资源类型
      * @return 过滤后可导出的数据列表
      */
     protected <T> List<T> filterApprovalExportPermission(List<T> resources, String orgId, String formKey,
-                                                         Function<T, String> idGetter,
-                                                         Function<T, String> statusGetter,
-                                                         ApprovalFlowService approvalFlowService) {
+            Function<T, String> idGetter,
+            Function<T, String> statusGetter,
+            ApprovalFlowService approvalFlowService) {
         if (CollectionUtils.isEmpty(resources)) {
             return resources;
         }
-        List<String> filteredIds = approvalFlowService.filterResourcesWithExportPermission(formKey, resources, orgId, idGetter, statusGetter);
+        List<String> filteredIds = approvalFlowService.filterResourcesWithExportPermission(formKey, resources, orgId,
+                idGetter, statusGetter);
         if (CollectionUtils.isEmpty(filteredIds)) {
             return new ArrayList<>();
         }
-        Map<String, T> resourceMap = resources.stream().collect(Collectors.toMap(idGetter, Function.identity(), (a, b) -> a));
+        Map<String, T> resourceMap = resources.stream()
+                .collect(Collectors.toMap(idGetter, Function.identity(), (a, b) -> a));
         return filteredIds.stream()
                 .map(resourceMap::get)
                 .filter(Objects::nonNull)
@@ -1092,18 +1118,17 @@ public abstract class BaseExportService {
         }
     }
 
-
     public void resolveAndPutTimeField(LinkedHashMap<String, Object> sysMap, Map<String, FieldExportMeta> metaMap,
-                                       String businessKey, Object rawValue) {
+            String businessKey, Object rawValue) {
         if (rawValue == null) {
             return;
         }
         FieldExportMeta meta = metaMap.get(businessKey);
         if (meta != null && meta.getField() != null) {
-            sysMap.put(businessKey, transformFieldValue(meta.getResolver(), meta.getField(), rawValue, new HashMap<>()));
+            sysMap.put(businessKey,
+                    transformFieldValue(meta.getResolver(), meta.getField(), rawValue, new HashMap<>()));
         }
     }
-
 
     /**
      * 取当前表单中「公式里引用了流水号字段」的计算字段。
@@ -1118,7 +1143,6 @@ public abstract class BaseExportService {
                 .toList();
     }
 
-
     /**
      * 公式中的占位符替换成真实流水号。
      *
@@ -1129,7 +1153,7 @@ public abstract class BaseExportService {
      * @param serialNo       已生成的流水号
      */
     public <K> void fillSerialNumberFormulas(K resource, BaseField serialField, List<BaseField> formulaFields,
-                                             List<BaseResourceSubField> resourceFields, String serialNo) {
+            List<BaseResourceSubField> resourceFields, String serialNo) {
         String placeholder = "${" + serialField.getName() + "}";
         BeanWrapper resourceWrapper = new BeanWrapperImpl(resource);
         Object resourceId = resourceWrapper.getPropertyValue("id");
@@ -1137,7 +1161,8 @@ public abstract class BaseExportService {
             if (field.hasBusinessKey()) {
                 Object value = resourceWrapper.getPropertyValue(field.getBusinessKey());
                 if (value != null) {
-                    resourceWrapper.setPropertyValue(field.getBusinessKey(), value.toString().replace(placeholder, serialNo));
+                    resourceWrapper.setPropertyValue(field.getBusinessKey(),
+                            value.toString().replace(placeholder, serialNo));
                 }
                 continue;
             }

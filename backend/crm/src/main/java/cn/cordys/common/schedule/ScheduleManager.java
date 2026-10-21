@@ -12,11 +12,10 @@ import org.quartz.*;
  * <p>
  * 主要功能包括：
  * <ul>
- *   <li>添加和删除定时任务</li>
- *   <li>修改 Cron 表达式</li>
- *   <li>启动和关闭调度器</li>
+ * <li>添加和删除定时任务</li>
+ * <li>修改 Cron 表达式</li>
+ * <li>启动和关闭调度器</li>
  * </ul>
- * </p>
  *
  * @since 1.0
  */
@@ -50,16 +49,17 @@ public class ScheduleManager {
      * @param jobDataMap         任务数据
      * @throws SchedulerException 如果调度失败
      */
-    public void addSimpleJob(JobKey jobKey, TriggerKey triggerKey, Class<? extends Job> cls, int repeatIntervalTime, JobDataMap jobDataMap)
+    public void addSimpleJob(JobKey jobKey, TriggerKey triggerKey, Class<? extends Job> cls, int repeatIntervalTime,
+            JobDataMap jobDataMap)
             throws SchedulerException {
-
         JobBuilder jobBuilder = JobBuilder.newJob(cls).withIdentity(jobKey);
         if (jobDataMap != null) {
             jobBuilder.usingJobData(jobDataMap);
         }
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger().withIdentity(triggerKey)
-                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInHours(repeatIntervalTime).repeatForever())
+                .withSchedule(
+                        SimpleScheduleBuilder.simpleSchedule().withIntervalInHours(repeatIntervalTime).repeatForever())
                 .startNow().build();
 
         scheduler.scheduleJob(jobBuilder.build(), trigger);
@@ -74,7 +74,8 @@ public class ScheduleManager {
      * @param cron       Cron 表达式
      * @param jobDataMap 任务数据
      */
-    public void addCronJob(JobKey jobKey, TriggerKey triggerKey, Class<? extends Job> jobClass, String cron, JobDataMap jobDataMap) {
+    public void addCronJob(JobKey jobKey, TriggerKey triggerKey, Class<? extends Job> jobClass, String cron,
+            JobDataMap jobDataMap) {
         try {
             log.info("addCronJob: {},{}", triggerKey.getName(), triggerKey.getGroup());
             JobBuilder jobBuilder = JobBuilder.newJob(jobClass).withIdentity(jobKey);
@@ -88,7 +89,6 @@ public class ScheduleManager {
             triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(cron));
             CronTrigger trigger = (CronTrigger) triggerBuilder.build();
             scheduler.scheduleJob(jobBuilder.build(), trigger);
-
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new GenericException("定时任务配置异常: " + e.getMessage(), e);
@@ -114,7 +114,6 @@ public class ScheduleManager {
      * @param cron       新的 Cron 表达式
      */
     public void modifyCronJobTime(TriggerKey triggerKey, String cron) {
-
         log.info("modifyCronJobTime: {}", triggerKey.getName() + "," + triggerKey.getGroup());
         try {
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
@@ -182,7 +181,8 @@ public class ScheduleManager {
      * @param jobDataMap 任务数据
      * @throws SchedulerException 如果添加或更新任务失败
      */
-    public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron, JobDataMap jobDataMap)
+    public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron,
+            JobDataMap jobDataMap)
             throws SchedulerException {
         log.info("AddOrUpdateCronJob: {}", jobKey.getName() + "," + triggerKey.getGroup());
 
@@ -202,7 +202,8 @@ public class ScheduleManager {
      * @param cron       Cron 表达式
      * @throws SchedulerException 如果添加或更新任务失败
      */
-    public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron) throws SchedulerException {
+    public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron)
+            throws SchedulerException {
         addOrUpdateCronJob(jobKey, triggerKey, jobClass, cron, null);
     }
 

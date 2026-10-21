@@ -35,8 +35,7 @@ class FormulaEngineTest {
             values.put("items", List.of(Map.of("price", 3), Map.of("price", 4)));
             Map<String, FormulaFieldMetadata> metadata = Map.of(
                     "amount", numberMeta("金额"),
-                    "items.price", numberMeta("明细.价格")
-            );
+                    "items.price", numberMeta("明细.价格"));
 
             Object result = evaluate(fn("SUM", field("amount"), field("items.price")), context(values, metadata));
 
@@ -96,14 +95,16 @@ class FormulaEngineTest {
 
         @Test
         void formatsNumberWithThousandsAndDecimals() {
-            Object result = evaluate(fn("TEXT", literal(1234.5, "number"), literal("#,##0.00", "string")), emptyContext);
+            Object result = evaluate(fn("TEXT", literal(1234.5, "number"), literal("#,##0.00", "string")),
+                    emptyContext);
 
             assertEquals("1,234.50", result);
         }
 
         @Test
         void returnsEmptyForInvalidDateValue() {
-            Object result = evaluate(fn("TEXT", literal("not-a-date", "string"), literal("yyyy-mm-dd", "string")), emptyContext);
+            Object result = evaluate(fn("TEXT", literal("not-a-date", "string"), literal("yyyy-mm-dd", "string")),
+                    emptyContext);
 
             assertEquals("", result);
         }
@@ -244,8 +245,7 @@ class FormulaEngineTest {
 
     private FormulaEvaluationContext context(
             Map<String, Object> values,
-            Map<String, FormulaFieldMetadata> metadata
-    ) {
+            Map<String, FormulaFieldMetadata> metadata) {
         return new FormulaEvaluationContext(values, metadata, NOW);
     }
 
@@ -264,8 +264,7 @@ class FormulaEngineTest {
                 "source", "test",
                 "display", "test",
                 "fields", List.of(),
-                "ir", ir
-        ));
+                "ir", ir));
     }
 
     private Map<String, Object> literal(Object value, String valueType) {

@@ -162,7 +162,8 @@ class ClueTransferApprovalTest {
                 eq(ApprovalFormTypeEnum.CLUE.getValue()), same(clues),
                 eq(PermissionConstants.CLUE_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("clue-1", "clue-2"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER, null);
+                List.of("clue-1", "clue-2"), BusinessModuleField.CLUE_OWNER, FormKey.CLUE, ORG_ID, USER_ID, NEW_OWNER,
+                null);
     }
 
     @Test
@@ -194,7 +195,8 @@ class ClueTransferApprovalTest {
 
         BatchAffectReasonResponse response = runTransfer();
 
-        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any(), any());
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any(),
+                any());
         verify(extClueMapper, never()).batchTransfer(any());
         verify(poolClueService, never()).validateCapacity(anyInt(), anyString(), anyString());
         assertEquals(0, response.getSuccess());

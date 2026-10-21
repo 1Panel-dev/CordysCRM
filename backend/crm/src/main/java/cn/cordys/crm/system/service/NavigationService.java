@@ -28,24 +28,15 @@ public class NavigationService {
     @Resource
     private ExtNavigationMapper extNavigationMapper;
 
-
     /**
      * 获取系统导航栏配置列表
-     *
-     * @param orgId
-     *
-     * @return
      */
     public List<Navigation> getNavigationList(String orgId) {
         return extNavigationMapper.selectList(orgId);
     }
 
-
     /**
      * 导航栏排序
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
     public void sort(ModuleSortRequest request, String userId, String orgId) {

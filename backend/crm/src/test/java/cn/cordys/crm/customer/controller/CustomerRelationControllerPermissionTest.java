@@ -26,7 +26,8 @@ class CustomerRelationControllerPermissionTest {
 
     @Test
     void addShouldCheckCustomerScope() throws NoSuchMethodException {
-        var method = CustomerRelationController.class.getDeclaredMethod("add", String.class, CustomerRelationSaveRequest.class);
+        var method = CustomerRelationController.class.getDeclaredMethod("add", String.class,
+                CustomerRelationSaveRequest.class);
         var permission = method.getAnnotation(CsPermission.class);
 
         assertNotNull(permission);

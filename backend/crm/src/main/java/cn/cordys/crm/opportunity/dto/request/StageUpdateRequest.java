@@ -15,4 +15,3 @@ public class StageUpdateRequest {
     @Schema(description = "赢率")
     private String rate;
 }
-

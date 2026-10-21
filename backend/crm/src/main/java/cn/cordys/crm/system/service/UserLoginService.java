@@ -86,9 +86,7 @@ public class UserLoginService {
      * 用户登录
      *
      * @param request 登录请求
-     *
      * @return 会话用户信息
-     *
      * @throws AuthenticationException 登录失败时抛出相应异常
      */
     public SessionUser login(LoginRequest request) {
@@ -141,9 +139,7 @@ public class UserLoginService {
      * 认证用户并获取用户详细信息
      *
      * @param userKey 用户标识（用户名/手机号/邮箱）
-     *
      * @return 用户详细信息
-     *
      * @throws AuthenticationException 如果用户不存在或被禁用
      */
     public UserDTO authenticateUser(String userKey) {
@@ -173,8 +169,6 @@ public class UserLoginService {
 
     /**
      * 检查默认密码
-     *
-     * @param userDTO
      */
     private void checkDefaultPwd(UserDTO userDTO) {
         String defaultPwd = "";
@@ -189,7 +183,6 @@ public class UserLoginService {
         if (Strings.CI.equals(defaultPwd, userDTO.getPassword())) {
             userDTO.setDefaultPwd(true);
         }
-
     }
 
     /**
@@ -197,9 +190,7 @@ public class UserLoginService {
      *
      * @param userId   用户ID
      * @param password 密码
-     *
      * @return 密码是否正确
-     *
      * @throws GenericException 如果用户ID或密码为空
      */
     public boolean checkUserPassword(String userId, String password) {
@@ -220,7 +211,6 @@ public class UserLoginService {
      * 检查移动端认证配置
      *
      * @param organizationId 组织ID
-     *
      * @throws AuthenticationException 如果未配置移动端认证或配置无效
      */
     public void checkMobileAuthConfig(String organizationId) {
@@ -362,7 +352,8 @@ public class UserLoginService {
      */
     private List<OrganizationConfigDetail> getEnabledWeComOauthConfigs(String configId) {
         return extOrganizationConfigDetailMapper
-                .getEnableOrganizationConfigDetails(configId, List.of(ThirdDetailType.WECOM_SYNC.name(), ThirdDetailType.DINGTALK_SYNC.name(), ThirdDetailType.LARK_SYNC.name()));
+                .getEnableOrganizationConfigDetails(configId, List.of(ThirdDetailType.WECOM_SYNC.name(),
+                        ThirdDetailType.DINGTALK_SYNC.name(), ThirdDetailType.LARK_SYNC.name()));
     }
 
     /**

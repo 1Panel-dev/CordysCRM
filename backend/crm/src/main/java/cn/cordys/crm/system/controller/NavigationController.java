@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.domain.Navigation;
@@ -24,13 +23,11 @@ public class NavigationController {
     @Resource
     private NavigationService navigationService;
 
-
     @GetMapping("/list")
     @Operation(summary = "获取导航栏列表")
     public List<Navigation> getNavigationList() {
         return navigationService.getNavigationList(OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/sort")
     @Operation(summary = "导航栏排序")

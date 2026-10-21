@@ -22,7 +22,8 @@ public interface ExtProductPriceMapper extends StatisticSqlMapper {
      * @param currentOrg 当前组织
      * @return 价格列表
      */
-    List<ProductPriceResponse> list(@Param("request") ProductPricePageRequest request, @Param("currentOrg") String currentOrg);
+    List<ProductPriceResponse> list(@Param("request") ProductPricePageRequest request,
+            @Param("currentOrg") String currentOrg);
 
     /**
      * 获取位置值
@@ -41,7 +42,8 @@ public interface ExtProductPriceMapper extends StatisticSqlMapper {
      * @param resourceType 资源类型
      * @return 位置值
      */
-    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId,
+            @Param("resourceType") String resourceType);
 
     /**
      * 获取后置位置值
@@ -52,7 +54,8 @@ public interface ExtProductPriceMapper extends StatisticSqlMapper {
      * @param resourceType 资源类型
      * @return 位置值
      */
-    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId,
+            @Param("resourceType") String resourceType);
 
     /**
      * 批量更新
@@ -73,7 +76,9 @@ public interface ExtProductPriceMapper extends StatisticSqlMapper {
 
     List<String> getBizIdsByResource(@Param("resourceId") String resourceId, @Param("productName") String productName);
 
-    List<ProductPriceField> getPriceData(@Param("resourceId") Object resourceId, @Param("fieldId") String fieldId, @Param("fieldValue") Object fieldValue);
+    List<ProductPriceField> getPriceData(@Param("resourceId") Object resourceId, @Param("fieldId") String fieldId,
+            @Param("fieldValue") Object fieldValue);
 
-    List<ProductPriceField> getPriceBlobData(@Param("resourceId") Object resourceId, @Param("fieldId") String fieldId, @Param("fieldValue") String fieldValue);
+    List<ProductPriceField> getPriceBlobData(@Param("resourceId") Object resourceId, @Param("fieldId") String fieldId,
+            @Param("fieldValue") String fieldValue);
 }

@@ -9,4 +9,3 @@ import java.lang.annotation.*;
 public @interface OperationLogs {
     OperationLog[] value();
 }
-

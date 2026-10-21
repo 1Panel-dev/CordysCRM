@@ -10,7 +10,6 @@ public class IndustryResolver extends AbstractModuleFieldResolver<IndustryField>
 
     @Override
     public void validate(IndustryField customField, Object value) {
-
     }
 
     @Override

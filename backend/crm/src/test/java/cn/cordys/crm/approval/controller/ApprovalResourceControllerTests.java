@@ -28,11 +28,8 @@ class ApprovalResourceControllerTests extends BaseTest {
         return "/approval-resource";
     }
 
-    @Sql(
-            scripts = {"/dml/init_resource_approval_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_resource_approval_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     void testResourceDetailOnlyCurrentNodeTasks() throws Exception {

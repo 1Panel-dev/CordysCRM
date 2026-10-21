@@ -54,7 +54,8 @@ public class ContractInvoiceExportService extends BaseExportService {
         var filteredList = queryResult.getLeft();
         var queryCount = queryResult.getRight();
         if (CollectionUtils.isEmpty(filteredList)) {
-            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).queryCount(queryCount).build();
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0)
+                    .queryCount(queryCount).build();
         }
         var dataList = contractInvoiceService.buildList(filteredList, exportParam.getOrgId());
         var result = buildExportMergeResult(taskId, exportParam, dataList,
@@ -71,7 +72,8 @@ public class ContractInvoiceExportService extends BaseExportService {
         var deptDataPermission = exportParam.getDeptDataPermission();
         List<ContractInvoiceListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            exportList = extContractInvoiceMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
+            exportList = extContractInvoiceMapper.getListByIds(exportParam.getSelectIds(), userId, orgId,
+                    deptDataPermission);
             List<ContractInvoiceListResponse> contractInvoiceListResponses = filterExportPermission(exportList, orgId);
             return Pair.of(contractInvoiceListResponses, contractInvoiceListResponses.size());
         } else {
@@ -84,7 +86,8 @@ public class ContractInvoiceExportService extends BaseExportService {
         }
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractInvoiceListResponse data, List<FieldExportMeta> exportMetas, Locale locale) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractInvoiceListResponse data,
+            List<FieldExportMeta> exportMetas, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("contractId", data.getContractName());
         systemFieldMap.put("id", data.getId());
@@ -95,16 +98,21 @@ public class ContractInvoiceExportService extends BaseExportService {
         Map<String, FieldExportMeta> metaMap = exportMetas.stream()
                 .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
         resolveAndPutTimeField(systemFieldMap, metaMap, "amount", data.getAmount());
-        FieldExportMeta taxRate = metaMap.values().stream().filter(meta -> Strings.CI.equals(meta.getBusinessKey(), BusinessModuleField.INVOICE_TAX_RATE.getBusinessKey())).findFirst().orElse(null);
+        FieldExportMeta taxRate = metaMap.values().stream().filter(
+                meta -> Strings.CI.equals(meta.getBusinessKey(), BusinessModuleField.INVOICE_TAX_RATE.getBusinessKey()))
+                .findFirst().orElse(null);
         if (taxRate != null && taxRate.getField() != null && data.getTaxRate() != null) {
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(taxRate.getField().getType());
-            systemFieldMap.put("taxRate", customFieldResolver.transformToValue(taxRate.getField(), data.getTaxRate().stripTrailingZeros().toPlainString()));
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                    .getResolver(taxRate.getField().getType());
+            systemFieldMap.put("taxRate", customFieldResolver.transformToValue(taxRate.getField(),
+                    data.getTaxRate().stripTrailingZeros().toPlainString()));
         }
         systemFieldMap.put("businessTitleId", data.getBusinessTitleName());
-        systemFieldMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+        systemFieldMap.put("approvalStatus", data.getApprovalStatus() == null ? null
+                : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
 
-
-        FieldExportMeta invoiceType = metaMap.values().stream().filter(meta -> Strings.CI.equals(meta.getBusinessKey(), BusinessModuleField.INVOICE_INVOICE_TYPE.getBusinessKey())).findFirst().orElse(null);
+        FieldExportMeta invoiceType = metaMap.values().stream().filter(meta -> Strings.CI.equals(meta.getBusinessKey(),
+                BusinessModuleField.INVOICE_INVOICE_TYPE.getBusinessKey())).findFirst().orElse(null);
         if (invoiceType != null && invoiceType.getField() != null
                 && invoiceType.getField() instanceof SelectField invoiceTypeField) {
             String invoiceTypeName = getOptionLabel(data.getInvoiceType(), invoiceTypeField.getOptions());
@@ -125,7 +133,8 @@ public class ContractInvoiceExportService extends BaseExportService {
      * @param orgId      组织ID
      * @return 过滤后可导出的数据列表
      */
-    private List<ContractInvoiceListResponse> filterExportPermission(List<ContractInvoiceListResponse> exportList, String orgId) {
+    private List<ContractInvoiceListResponse> filterExportPermission(List<ContractInvoiceListResponse> exportList,
+            String orgId) {
         return filterApprovalExportPermission(exportList, orgId, FormKey.INVOICE.getKey(),
                 ContractInvoiceListResponse::getId, ContractInvoiceListResponse::getApprovalStatus,
                 approvalFlowService);

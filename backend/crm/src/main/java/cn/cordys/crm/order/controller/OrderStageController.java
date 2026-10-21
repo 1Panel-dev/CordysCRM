@@ -32,38 +32,34 @@ public class OrderStageController {
         return orderStageService.getStageConfigList(OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/add")
     @Operation(summary = "添加订单状态流")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public String add(@RequestBody StageAddRequest request) {
-        return orderStageService.addStageConfig(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return orderStageService.addStageConfig(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除订单状态流")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void delete(@PathVariable("id") @Validated String id) {
         orderStageService.delete(id, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update-rollback")
     @Operation(summary = "订单状态流回退设置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void update(@Validated @RequestBody StageRollBackRequest request) {
         orderStageService.updateRollBack(request, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update")
     @Operation(summary = "更新订单阶段配置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void update(@Validated @RequestBody StageUpdateRequest request) {
         orderStageService.update(request, SessionUtils.getUserId());
     }
-
 
     @PostMapping("/sort")
     @Operation(summary = "订单阶段排序")
@@ -72,21 +68,19 @@ public class OrderStageController {
         orderStageService.sort(ids, OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/circulation-type/{type}")
     @Operation(summary = "基础/高级流转切换")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void circulationType(@PathVariable String type) {
         stageAdvancedConfigService.switchType(type, FormKey.ORDER.getKey(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/advanced/config")
     @Operation(summary = "订单流转配置保存")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void advancedConfigAdd(@RequestBody StageAdvancedConfigRequest request) {
-        stageAdvancedConfigService.saveAdvancedConfig(request, FormKey.ORDER.getKey(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        stageAdvancedConfigService.saveAdvancedConfig(request, FormKey.ORDER.getKey(),
+                OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
-
 
 }

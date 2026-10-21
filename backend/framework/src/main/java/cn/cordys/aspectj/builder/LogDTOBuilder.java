@@ -6,8 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * <p>用于构建 {@link LogDTO} 的建造者类。</p>
- * <p>通过 {@link Builder} 模式构建 {@link LogDTO} 对象，确保日志数据的完整性和一致性。</p>
+ * <p>
+ * 用于构建 {@link LogDTO} 的建造者类。
+ * </p>
+ * <p>
+ * 通过 {@link Builder} 模式构建 {@link LogDTO} 对象，确保日志数据的完整性和一致性。
+ * </p>
  */
 @Getter
 @Setter

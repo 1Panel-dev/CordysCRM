@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface ExtAgentModuleMapper {
 
-    int countByName(@Param("name") String name, @Param("parentId") String parentId, @Param("orgId") String orgId, @Param("id") String id);
+    int countByName(@Param("name") String name, @Param("parentId") String parentId, @Param("orgId") String orgId,
+            @Param("id") String id);
 
     Long getNextPosByOrgId(@Param("orgId") String orgId);
 

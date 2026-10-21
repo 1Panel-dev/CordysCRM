@@ -80,10 +80,14 @@ public class OpportunityLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), "status")) {
                 differ.setColumnName(Translator.get("log.opportunity." + differ.getColumn()));
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(Boolean.parseBoolean(differ.getOldValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
+                    differ.setOldValueName(Boolean.parseBoolean(differ.getOldValueName().toString())
+                            ? Translator.get("log.opportunity.status.true")
+                            : Translator.get("log.opportunity.status.false"));
                 }
                 if (differ.getNewValue() != null) {
-                    differ.setNewValueName(Boolean.parseBoolean(differ.getNewValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
+                    differ.setNewValueName(Boolean.parseBoolean(differ.getNewValueName().toString())
+                            ? Translator.get("log.opportunity.status.true")
+                            : Translator.get("log.opportunity.status.false"));
                 }
             }
 
@@ -106,6 +110,5 @@ public class OpportunityLogService extends BaseModuleLogService {
         }
         return differences;
     }
-
 
 }

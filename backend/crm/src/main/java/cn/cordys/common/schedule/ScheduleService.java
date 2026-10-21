@@ -117,7 +117,6 @@ public class ScheduleService {
         }
     }
 
-
     public Schedule getScheduleByResource(String resourceType, String resourceId, String name) {
         LambdaQueryWrapper<Schedule> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Schedule::getResourceId, resourceId);
@@ -129,7 +128,6 @@ public class ScheduleService {
         }
         return null;
     }
-
 
     public void deleteSchedule(String key, String job) {
         LambdaQueryWrapper<Schedule> wrapper = new LambdaQueryWrapper<>();

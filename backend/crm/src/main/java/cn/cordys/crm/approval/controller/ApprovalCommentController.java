@@ -25,7 +25,8 @@ public class ApprovalCommentController {
     @GetMapping("/list/{instanceId}")
     @Operation(summary = "查询审批实例的一级评论及二级回复")
     public List<ApprovalCommentResponse> list(@PathVariable String instanceId) {
-        return approvalCommentService.list(instanceId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return approvalCommentService.list(instanceId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
@@ -37,7 +38,8 @@ public class ApprovalCommentController {
     @PostMapping("/update")
     @Operation(summary = "编辑审批评论")
     public ApprovalCommentResponse update(@Validated @RequestBody ApprovalCommentUpdateRequest request) {
-        return approvalCommentService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return approvalCommentService.update(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")

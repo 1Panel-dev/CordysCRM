@@ -13,7 +13,6 @@ public class FollowUpPlanStatusRequest {
     @Size(max = 32)
     private String id;
 
-
     @Schema(description = "状态: PREPARED/UNDERWAY/COMPLETED/CANCELLED", requiredMode = Schema.RequiredMode.REQUIRED)
     private String status;
 

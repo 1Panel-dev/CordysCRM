@@ -134,7 +134,8 @@ class CustomerControllerTests extends BaseTest {
         // 校验字段
         List<BaseModuleFieldValue> fieldValues = getCustomerFields(customer.getId())
                 .stream().map(customerField -> {
-                    BaseModuleFieldValue baseModuleFieldValue = BeanUtils.copyBean(new BaseModuleFieldValue(), customerField);
+                    BaseModuleFieldValue baseModuleFieldValue = BeanUtils.copyBean(new BaseModuleFieldValue(),
+                            customerField);
                     baseModuleFieldValue.setFieldValue(customerField.getFieldValue().toString());
                     return baseModuleFieldValue;
                 })
@@ -210,7 +211,6 @@ class CustomerControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, DEFAULT_GET, addCustomer.getId());
     }
 
-
     @Test
     @Order(3)
     void testPage() throws Exception {
@@ -263,7 +263,9 @@ class CustomerControllerTests extends BaseTest {
         this.requestPostWithOkAndReturn(CONTRACT_PAGE, request);
 
         // 校验权限
-        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_READ), CONTRACT_PAGE, request);
+        requestPostPermissionsTest(
+                List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_READ), CONTRACT_PAGE,
+                request);
     }
 
     @Test
@@ -278,7 +280,9 @@ class CustomerControllerTests extends BaseTest {
         this.requestPostWithOkAndReturn(CONTRACT_PAYMENT_PLAN_PAGE, request);
 
         // 校验权限
-        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ), CONTRACT_PAYMENT_PLAN_PAGE, request);
+        requestPostPermissionsTest(
+                List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ),
+                CONTRACT_PAYMENT_PLAN_PAGE, request);
     }
 
     @Test
@@ -370,7 +374,8 @@ class CustomerControllerTests extends BaseTest {
     @Test
     @Order(11)
     void testBatchDelete() throws Exception {
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherCustomer.getId()));
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE,
+                List.of(anotherCustomer.getId()));
         Assertions.assertNull(customerMapper.selectByPrimaryKey(anotherCustomer.getId()));
 
         List<CustomerField> fields = getCustomerFields(anotherCustomer.getId());
@@ -379,12 +384,10 @@ class CustomerControllerTests extends BaseTest {
 
     @Test
     @Order(12)
-    @Sql(scripts = {"/dml/init_customer_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/dml/cleanup_customer_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_customer_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/cleanup_customer_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testPageReservedDay() throws Exception {
         CustomerAddRequest addRequest = new CustomerAddRequest();
         addRequest.setName("aa");
@@ -405,12 +408,10 @@ class CustomerControllerTests extends BaseTest {
 
     @Test
     @Order(13)
-    @Sql(scripts = {"/dml/init_customer_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/dml/cleanup_customer_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_customer_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/cleanup_customer_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testBatchToPool() throws Exception {
         CustomerAddRequest addRequest = new CustomerAddRequest();
         addRequest.setName("pool-permission-test");
@@ -432,7 +433,9 @@ class CustomerControllerTests extends BaseTest {
         request.setCustomerId(addCustomer.getId());
         this.requestPostWithOk(OPPORTUNITY_PAGE, request);
         // check permission
-        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ), OPPORTUNITY_PAGE, request);
+        requestPostPermissionsTest(
+                List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ),
+                OPPORTUNITY_PAGE, request);
     }
 
     @Test
@@ -461,6 +464,5 @@ class CustomerControllerTests extends BaseTest {
         example.setResourceId(customerId);
         return customerFieldMapper.select(example);
     }
-
 
 }

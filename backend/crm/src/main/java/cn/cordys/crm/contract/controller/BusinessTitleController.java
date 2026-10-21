@@ -5,7 +5,6 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
-import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -15,6 +14,7 @@ import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
 import cn.cordys.crm.contract.service.BusinessTitleExportService;
 import cn.cordys.crm.contract.service.BusinessTitleService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.security.SessionUtils;
@@ -40,13 +40,11 @@ public class BusinessTitleController {
     @Resource
     private BusinessTitleExportService businessTitleExportService;
 
-
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return businessTitleService.getBusinessFormConfig();
     }
-
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_ADD)
@@ -54,7 +52,6 @@ public class BusinessTitleController {
     public BusinessTitle add(@Validated @RequestBody BusinessTitleAddRequest request) {
         return businessTitleService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_UPDATE)
@@ -70,14 +67,12 @@ public class BusinessTitleController {
         businessTitleService.delete(id);
     }
 
-
     @GetMapping("/invoice/check/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_DELETE)
     @Operation(summary = "检查工商抬头是否开过票")
     public boolean checkInvoice(@PathVariable String id) {
         return businessTitleService.checkHasInvoice(id);
     }
-
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_READ)
@@ -87,7 +82,6 @@ public class BusinessTitleController {
         return businessTitleService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_READ)
     @Operation(summary = "详情")
@@ -95,12 +89,12 @@ public class BusinessTitleController {
         return businessTitleService.get(id);
     }
 
-
     @PostMapping("/approval")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_APPROVAL)
     @Operation(summary = "审核通过/不通过")
     public void approval(@Validated @RequestBody BusinessTitleApprovalRequest request) {
-        businessTitleService.approvalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        businessTitleService.approvalContract(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/revoke/{id}")
@@ -127,7 +121,6 @@ public class BusinessTitleController {
         return businessTitleExportService.exportSelect(exportDTO);
     }
 
-
     @PostMapping("/export-all")
     @Operation(summary = "导出全部")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_EXPORT)
@@ -146,7 +139,6 @@ public class BusinessTitleController {
         return businessTitleExportService.export(exportDTO);
     }
 
-
     @GetMapping("/template/download")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
     @Operation(summary = "下载导入模板")
@@ -154,30 +146,30 @@ public class BusinessTitleController {
         businessTitleService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/import/pre-check")
     @Operation(summary = "excel导入检查")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
-    public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") ImportRequest request) {
+    public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file,
+            @Validated @RequestPart("request") ImportRequest request) {
         return businessTitleService.importPreCheck(file, OrganizationContext.getOrganizationId(), request);
     }
-
 
     @PostMapping(value = "/import")
     @Operation(summary = "导入")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
-    public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") ImportRequest request) {
-        return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request);
+    public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file,
+            @Validated @RequestPart("request") ImportRequest request) {
+        return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                request);
     }
-
 
     @PostMapping("/third-query/option")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_ADD)
     @Operation(summary = "第三方接口分页模糊查询工商名称")
     public Pager<List<String>> thirdQueryOptions(@Validated @RequestBody BasePageRequest request) {
-        return businessTitleService.thirdQueryOption(request.getKeyword(), request.getCurrent(), OrganizationContext.getOrganizationId());
+        return businessTitleService.thirdQueryOption(request.getKeyword(), request.getCurrent(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/third-query")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_ADD)

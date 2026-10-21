@@ -23,8 +23,7 @@ public class CustomerContactLogService extends BaseModuleLogService {
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         List<JsonDifferenceDTO> result = super.handleModuleLogField(
-                differences, orgId, FormKey.CONTACT.getKey()
-        );
+                differences, orgId, FormKey.CONTACT.getKey());
 
         for (JsonDifferenceDTO differ : result) {
             var column = differ.getColumn();

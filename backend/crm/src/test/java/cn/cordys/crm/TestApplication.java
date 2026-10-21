@@ -14,9 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
         Neo4jAutoConfiguration.class
 })
 @ServletComponentScan
-@ComponentScan(
-        basePackages = {"cn.cordys"}
-)
+@ComponentScan(basePackages = { "cn.cordys" })
 public class TestApplication {
 
     public static void main(String[] args) {

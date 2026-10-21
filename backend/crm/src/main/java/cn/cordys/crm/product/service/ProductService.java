@@ -46,8 +46,8 @@ import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -109,9 +109,11 @@ public class ProductService {
         List<ProductListResponse> list = extProductMapper.list(request, orgId);
         List<ProductListResponse> buildList = buildListData(list);
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO productFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), orgId);
+        ModuleFormConfigDTO productFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(),
+                orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ProductListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                ProductListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(productFormConfig, moduleFieldValues);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
@@ -121,7 +123,8 @@ public class ProductService {
         List<String> productIds = list.stream().map(ProductListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFieldMap(productIds, true);
+        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFieldMap(productIds,
+                true);
 
         list.forEach(productListResponse -> {
             // 获取自定义字段
@@ -149,7 +152,8 @@ public class ProductService {
         List<BaseModuleFieldValue> productFields = productFieldService.getModuleFieldValuesByResourceId(id);
 
         productGetResponse.setModuleFields(productFields);
-        ModuleFormConfigDTO productFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), product.getOrganizationId());
+        ModuleFormConfigDTO productFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(),
+                product.getOrganizationId());
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(productFormConfig, productFields);
         productGetResponse.setOptionMap(optionMap);
         // 附件信息
@@ -238,7 +242,8 @@ public class ProductService {
         product.setOrganizationId(orgId);
 
         // 获取模块字段
-        List<BaseModuleFieldValue> originCustomerFields = productFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originCustomerFields = productFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
 
         // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
         // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
@@ -252,12 +257,14 @@ public class ProductService {
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
 
         //添加日志
-        baseService.handleUpdateLog(oldProduct, product, originCustomerFields, request.getModuleFields(), request.getId(), product.getName());
+        baseService.handleUpdateLog(oldProduct, product, originCustomerFields, request.getModuleFields(),
+                request.getId(), product.getName());
 
         return productBaseMapper.selectByPrimaryKey(product.getId());
     }
 
-    private void updateModuleField(Product product, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(Product product, List<BaseModuleFieldValue> moduleFields, String orgId,
+            String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -305,7 +312,8 @@ public class ProductService {
         // 这一步在服务内部直接短路, 只多一次反查
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.PRODUCT.getKey(), request.getFieldId(), request.getIds(), organizationId);
-        productFieldService.batchUpdate(request, field, products, Product.class, LogModule.PRODUCT_MANAGEMENT, extProductMapper::batchUpdate, userId, organizationId, true);
+        productFieldService.batchUpdate(request, field, products, Product.class, LogModule.PRODUCT_MANAGEMENT,
+                extProductMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }
@@ -317,7 +325,6 @@ public class ProductService {
      * @param userId 操作人id
      */
     public void batchDelete(List<String> ids, String userId) {
-
         List<Product> products = productBaseMapper.selectByIds(ids);
 
         if (products == null || products.isEmpty()) {
@@ -338,8 +345,7 @@ public class ProductService {
                             userId,
                             LogType.DELETE,
                             LogModule.PRODUCT_MANAGEMENT,
-                            p.getName()
-                    );
+                            p.getName());
                     log.setOriginalValue(p.getName());
                     return log;
                 })
@@ -360,7 +366,6 @@ public class ProductService {
     }
 
     public void editPos(PosRequest request) {
-
         ServiceUtils.updatePosFieldByAsc(request,
                 Product.class,
                 null,
@@ -398,9 +403,13 @@ public class ProductService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.PRODUCT.getKey(), currentOrg),
-                        Translator.get("product.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
+                .exportMultiSheetTplWithSharedHandler(response,
+                        moduleFormService.getCustomImportHeadsNoRef(FormKey.PRODUCT.getKey(), currentOrg),
+                        Translator.get("product.import_tpl.name"), Translator.get(SheetKey.DATA),
+                        Translator.get(SheetKey.COMMENT),
+                        new CustomTemplateWriteHandler(
+                                moduleFormService.getAllCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg)),
+                        new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -428,111 +437,124 @@ public class ProductService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
-
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.PRODUCT.getKey(), currentOrg);
             AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
-            CustomImportAfterDoConsumer<Product, BaseResourceSubField> afterDo = (products, productFields, productFieldBlobs) -> {
+            CustomImportAfterDoConsumer<Product, BaseResourceSubField> afterDo = (products, productFields,
+                    productFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
-                        products.forEach(product -> {
-                            product.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
-                            logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_MANAGEMENT, product.getName()));
-                        });
-                        productBaseMapper.batchInsert(products);
-                        productFieldMapper.batchInsert(productFields.stream().map(field -> BeanUtils.copyBean(new ProductField(), field)).toList());
-                        productFieldBlobMapper.batchInsert(productFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductFieldBlob(), field)).toList());
-                        // record logs
-                        logService.batchAdd(logs);
+                case ADD -> {
+                    products.forEach(product -> {
+                        product.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
+                        logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD,
+                                LogModule.PRODUCT_MANAGEMENT, product.getName()));
+                    });
+                    productBaseMapper.batchInsert(products);
+                    productFieldMapper.batchInsert(productFields.stream()
+                            .map(field -> BeanUtils.copyBean(new ProductField(), field)).toList());
+                    productFieldBlobMapper.batchInsert(productFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new ProductFieldBlob(), field)).toList());
+                    // record logs
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = products.stream().map(Product::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
                     }
-                    case UPDATE -> {
-                        List<String> ids = products.stream().map(Product::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        //原数据
-                        List<Product> originProductList = productBaseMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originProductList)) {
-                            break;
-                        }
-                        Map<String, Product> originProductMaps = originProductList.stream().collect(Collectors.toMap(Product::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = productFieldService.getResourceFieldMap(ids, true);
+                    //原数据
+                    List<Product> originProductList = productBaseMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originProductList)) {
+                        break;
+                    }
+                    Map<String, Product> originProductMaps = originProductList.stream()
+                            .collect(Collectors.toMap(Product::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = productFieldService
+                            .getResourceFieldMap(ids, true);
 
-                        List<ProductField> insertField = new ArrayList<>();
-                        List<ProductFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtProductMapper batchMapper = sqlSession.getMapper(ExtProductMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                    List<ProductField> insertField = new ArrayList<>();
+                    List<ProductFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtProductMapper batchMapper = sqlSession.getMapper(ExtProductMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
 
-                        if (CollectionUtils.isNotEmpty(products)) {
-                            products.forEach(product -> {
-                                batchMapper.updateProduct(product);
-                            });
-                        }
+                    if (CollectionUtils.isNotEmpty(products)) {
+                        products.forEach(product -> {
+                            batchMapper.updateProduct(product);
+                        });
+                    }
 
-                        if (CollectionUtils.isNotEmpty(productFields)) {
-                            List<ProductField> fieldList = productFieldMapper.selectByIds(productFields.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ProductField> fieldMap = fieldList.stream().collect(Collectors.toMap(ProductField::getId, Function.identity()));
-                            productFields.forEach(productField -> {
-                                if (fieldMap.containsKey(productField.getId())) {
-                                    commonMapper.updateCustomerField("product_field", productField);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new ProductField(), productField));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(productFieldBlobs)) {
-                            List<ProductFieldBlob> blobList = productFieldBlobMapper.selectByIds(productFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ProductFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ProductFieldBlob::getId, Function.identity()));
-                            productFieldBlobs.forEach(productFieldBlob -> {
-                                if (blobMap.containsKey(productFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("product_field_blob", productFieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new ProductFieldBlob(), productFieldBlob));
-                                }
-                            });
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(insertField)) {
-                            productFieldMapper.batchInsert(insertField);
-                        }
-                        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            productFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, Product> modifiedProductMaps = productBaseMapper.selectByIds(ids).stream().collect(Collectors.toMap(Product::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = productFieldService.getResourceFieldMap(ids, true);
-
-                        ids.forEach(id -> {
-                            Product originDate = originProductMaps.get(id);
-                            Product modifiedDate = modifiedProductMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(productFields)) {
+                        List<ProductField> fieldList = productFieldMapper
+                                .selectByIds(productFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ProductField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(ProductField::getId, Function.identity()));
+                        productFields.forEach(productField -> {
+                            if (fieldMap.containsKey(productField.getId())) {
+                                commonMapper.updateCustomerField("product_field", productField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new ProductField(), productField));
                             }
                         });
-                        logService.batchAdd(logs);
-
                     }
+
+                    if (CollectionUtils.isNotEmpty(productFieldBlobs)) {
+                        List<ProductFieldBlob> blobList = productFieldBlobMapper
+                                .selectByIds(productFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ProductFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(ProductFieldBlob::getId, Function.identity()));
+                        productFieldBlobs.forEach(productFieldBlob -> {
+                            if (blobMap.containsKey(productFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("product_field_blob", productFieldBlob);
+                            } else {
+                                insertFieldBlob.add(BeanUtils.copyBean(new ProductFieldBlob(), productFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (org.apache.commons.collections.CollectionUtils.isNotEmpty(insertField)) {
+                        productFieldMapper.batchInsert(insertField);
+                    }
+                    if (org.apache.commons.collections.CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        productFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, Product> modifiedProductMaps = productBaseMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(Product::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = productFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        Product originDate = originProductMaps.get(id);
+                        Product modifiedDate = modifiedProductMaps.get(id);
+                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                    LogModule.PRODUCT_MANAGEMENT, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                }
                 }
             };
-            CustomFieldImportEventListener<Product> eventListener = new CustomFieldImportEventListener<>(fields, Product.class, currentOrg, currentUser,
+            CustomFieldImportEventListener<Product> eventListener = new CustomFieldImportEventListener<>(fields,
+                    Product.class, currentOrg, currentUser,
                     "product_field", "product_field_blob", afterDo, 2000, null, null, request.getImportType());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -551,8 +573,10 @@ public class ProductService {
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product", "product_field", currentOrg, importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product",
+                    "product_field", currentOrg, importType);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {

@@ -12,13 +12,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 /**
- * <p>统一处理返回结果集的响应体增强类。</p>
- * <p>该类用于在返回响应之前统一包装返回的结果，使得所有响应都遵循统一格式。
- * 如果返回的是空值，自动包装为一个成功的响应。<p>
- *
- * <p>支持的消息转换器类型为：MappingJackson2HttpMessageConverter 和 StringHttpMessageConverter。</p>
+ * <p>
+ * 统一处理返回结果集的响应体增强类。
+ * </p>
+ * <p>
+ * 该类用于在返回响应之前统一包装返回的结果，使得所有响应都遵循统一格式。
+ * 如果返回的是空值，自动包装为一个成功的响应。
+ * </p>
+ * <p>
+ * 支持的消息转换器类型为：MappingJackson2HttpMessageConverter 和 StringHttpMessageConverter。
+ * </p>
  */
-@RestControllerAdvice(value = {"cn.cordys"})
+@RestControllerAdvice(value = { "cn.cordys" })
 public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     /**
@@ -26,12 +31,11 @@ public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
      *
      * @param methodParameter 当前请求的方法参数
      * @param converterType   转换器类型
-     *
      * @return 如果支持则返回 true，否则返回 false
      */
     @Override
     public boolean supports(MethodParameter methodParameter,
-                            Class<? extends HttpMessageConverter<?>> converterType) {
+            Class<? extends HttpMessageConverter<?>> converterType) {
         return MappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType) ||
                 StringHttpMessageConverter.class.isAssignableFrom(converterType);
     }
@@ -45,16 +49,15 @@ public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
      * @param converterType      当前使用的消息转换器类型
      * @param serverHttpRequest  当前的 HTTP 请求
      * @param serverHttpResponse 当前的 HTTP 响应
-     *
      * @return 处理后的响应体内容
      */
     @Override
     public Object beforeBodyWrite(Object body,
-                                  MethodParameter methodParameter,
-                                  MediaType mediaType,
-                                  Class<? extends HttpMessageConverter<?>> converterType,
-                                  ServerHttpRequest serverHttpRequest,
-                                  ServerHttpResponse serverHttpResponse) {
+            MethodParameter methodParameter,
+            MediaType mediaType,
+            Class<? extends HttpMessageConverter<?>> converterType,
+            ServerHttpRequest serverHttpRequest,
+            ServerHttpResponse serverHttpResponse) {
         // 处理空值响应，转换为 JSON 格式的成功响应
         if (body == null && StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
             serverHttpResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);

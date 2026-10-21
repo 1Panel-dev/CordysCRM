@@ -12,7 +12,9 @@ import cn.cordys.security.SessionUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -60,9 +62,12 @@ class FormulaRecordSnapshotServiceTest {
     }
 
     @CsPermission(value = "QUOTATION:UPDATE", formType = "quotation")
-    private void endpoint(Request request) {}
+    private void endpoint(Request request) {
+    }
 
     public static class Request {
-        public String getId() { return "record-1"; }
+        public String getId() {
+            return "record-1";
+        }
     }
 }

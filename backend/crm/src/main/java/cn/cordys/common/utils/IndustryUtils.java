@@ -62,7 +62,7 @@ public class IndustryUtils {
     /**
      * 行业分类映射
      *
-     * @param str 解析字符串
+     * @param str        解析字符串
      * @param nameToCode 是否名称转编码
      * @return 编码
      */
@@ -172,12 +172,14 @@ public class IndustryUtils {
 
     /**
      * 递归查找行业分类路径
+     *
      * @param industryTree 行业分类树
-     * @param findQueue 查找队列
-     * @param path 路径
+     * @param findQueue    查找队列
+     * @param path         路径
      * @return 是否找到
      */
-    private static boolean findRecursive(List<IndustryDict> industryTree, Queue<String> findQueue, List<String> path, boolean nameToCode) {
+    private static boolean findRecursive(List<IndustryDict> industryTree, Queue<String> findQueue, List<String> path,
+            boolean nameToCode) {
         if (CollectionUtils.isEmpty(industryTree) || findQueue.isEmpty()) {
             return false;
         }
@@ -202,7 +204,6 @@ public class IndustryUtils {
         }
         return false;
     }
-
 
     public static List<String> getValues(List<IndustryDict> tree, List<String> targetValues) {
         List<String> result = new ArrayList<>();
@@ -229,7 +230,9 @@ public class IndustryUtils {
 
             if (node.getChildren() != null) {
                 List<String> res = getValuesForSingle(node.getChildren(), targetValue);
-                if (res != null) return res;
+                if (res != null) {
+                    return res;
+                }
             }
         }
         return null;

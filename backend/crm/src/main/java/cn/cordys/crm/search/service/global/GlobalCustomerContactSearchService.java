@@ -40,7 +40,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class GlobalCustomerContactSearchService extends BaseSearchService<BasePageRequest, GlobalCustomerContactResponse> {
+public class GlobalCustomerContactSearchService
+        extends BaseSearchService<BasePageRequest, GlobalCustomerContactResponse> {
 
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
@@ -56,7 +57,8 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
     private ExtCustomerMapper extCustomerMapper;
 
     @Override
-    public Pager<List<GlobalCustomerContactResponse>> startSearchNoOption(BasePageRequest request, String orgId, String userId) {
+    public Pager<List<GlobalCustomerContactResponse>> startSearchNoOption(BasePageRequest request, String orgId,
+            String userId) {
         //获取查询关键字
         String keyword = request.getKeyword();
         if (StringUtils.isBlank(keyword)) {
@@ -79,7 +81,9 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT)).toList();
+            List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT))
+                    .toList();
             if (CollectionUtils.isEmpty(contactSearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
                 return PageUtils.setPageInfo(page, List.of());
@@ -88,8 +92,10 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
                 //如果和固定展示列名重复不加入fieldIdSet
                 if (StringUtils.isBlank(userSearchConfig.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
-                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CUSTOMER_CONTACT_PHONE.getBusinessKey())) {
+                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                        BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CUSTOMER_CONTACT_PHONE.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
                 }
                 buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
@@ -98,7 +104,8 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
             //设置默认查询属性
             List<String> list = getCustomerIds(keyword, orgId);
             if (CollectionUtils.isNotEmpty(list)) {
-                FilterCondition customerCondition = getFilterCondition("customerId", list, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+                FilterCondition customerCondition = getFilterCondition("customerId", list,
+                        FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
                 conditions.add(customerCondition);
             }
             StringUtils.deleteWhitespace(keyword);
@@ -107,7 +114,8 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
             }
-            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList,
+                    FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
 
@@ -120,20 +128,25 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
         ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         //搜索客户
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<GlobalCustomerContactResponse> globalContactResponses = extCustomerContactMapper.globalSearchList(request, orgId);
+        List<GlobalCustomerContactResponse> globalContactResponses = extCustomerContactMapper.globalSearchList(request,
+                orgId);
         if (CollectionUtils.isEmpty(globalContactResponses)) {
             return PageUtils.setPageInfo(page, List.of());
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CONTACT);
-        List<GlobalCustomerContactResponse> buildList = buildListData(globalContactResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId,
+                SearchModuleEnum.SEARCH_ADVANCED_CONTACT);
+        List<GlobalCustomerContactResponse> buildList = buildListData(globalContactResponses, orgId, userId,
+                searchFieldMaskConfigs, fieldIdSet);
         return PageUtils.setPageInfo(page, buildList);
     }
 
-    private List<GlobalCustomerContactResponse> buildListData(List<GlobalCustomerContactResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
+    private List<GlobalCustomerContactResponse> buildListData(List<GlobalCustomerContactResponse> list, String orgId,
+            String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
         List<String> customerContactIds = list.stream().map(GlobalCustomerContactResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> customerFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds, true);
+        Map<String, List<BaseModuleFieldValue>> customerFiledMap = customerContactFieldService
+                .getResourceFieldMap(customerContactIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(GlobalCustomerContactResponse::getOwner)
@@ -152,14 +165,19 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
                 .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
-        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(),
+                orgId);
+        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream()
+                .collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
         list.forEach(customerContactResponse -> {
             // 判断该数据是否有权限
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, customerContactResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId,
+                    customerContactResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
             // 处理自定义字段数据
             if (CollectionUtils.isNotEmpty(fieldIdSet)) {
-                List<BaseModuleFieldValue> returnCustomerFields = getBaseModuleFieldValues(fieldIdSet, customerContactResponse.getId(), customerFiledMap, customerFormConfig, searchFieldMaskConfigMap, hasPermission);
+                List<BaseModuleFieldValue> returnCustomerFields = getBaseModuleFieldValues(fieldIdSet,
+                        customerContactResponse.getId(), customerFiledMap, customerFormConfig, searchFieldMaskConfigMap,
+                        hasPermission);
 
                 customerContactResponse.setModuleFields(returnCustomerFields);
             }
@@ -174,13 +192,17 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
             if (!hasPermission) {
                 searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "customerId")) {
-                        customerContactResponse.setCustomerName((String) getInputFieldValue(customerName, customerName.length()));
+                        customerContactResponse
+                                .setCustomerName((String) getInputFieldValue(customerName, customerName.length()));
                     }
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
-                        customerContactResponse.setName((String) getInputFieldValue(customerContactResponse.getName(), customerContactResponse.getName().length()));
+                        customerContactResponse.setName((String) getInputFieldValue(customerContactResponse.getName(),
+                                customerContactResponse.getName().length()));
                     }
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone") && StringUtils.isNotBlank(customerContactResponse.getPhone())) {
-                        customerContactResponse.setPhone((String) getPhoneFieldValue(customerContactResponse.getPhone(), customerContactResponse.getPhone().length()));
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone")
+                            && StringUtils.isNotBlank(customerContactResponse.getPhone())) {
+                        customerContactResponse.setPhone((String) getPhoneFieldValue(customerContactResponse.getPhone(),
+                                customerContactResponse.getPhone().length()));
                     }
                 });
             }

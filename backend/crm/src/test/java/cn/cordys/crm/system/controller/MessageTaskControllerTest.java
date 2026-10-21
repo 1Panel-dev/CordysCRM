@@ -40,7 +40,6 @@ public class MessageTaskControllerTest extends BaseTest {
 
     public static final String GET_MESSAGE_TASK_CONFIG = "/message/task/config/query";
 
-
     @Resource
     private ExtMessageTaskMapper extMessageTaskMapper;
     @Resource
@@ -76,7 +75,8 @@ public class MessageTaskControllerTest extends BaseTest {
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
         MessageTask messageTask = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), MessageTask.class);
         Assertions.assertNotNull(messageTask);
-        MessageTask messageTask1 = extMessageTaskMapper.getMessageByModuleAndEvent(messageTaskRequest.getModule(), messageTaskRequest.getEvent(), DEFAULT_ORGANIZATION_ID);
+        MessageTask messageTask1 = extMessageTaskMapper.getMessageByModuleAndEvent(messageTaskRequest.getModule(),
+                messageTaskRequest.getEvent(), DEFAULT_ORGANIZATION_ID);
         Assertions.assertNotNull(messageTask1);
         messageTaskRequest = new MessageTaskRequest();
         messageTaskRequest.setModule(NotificationConstants.Module.CUSTOMER);
@@ -91,7 +91,9 @@ public class MessageTaskControllerTest extends BaseTest {
         Map<String, Object> resource = new HashMap<>();
         resource.put("relatedUsers", "aa");
         resource.put("name", "cc");
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin", DEFAULT_ORGANIZATION_ID, List.of("aa"), true);
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin", DEFAULT_ORGANIZATION_ID,
+                List.of("aa"), true);
 
         messageTaskRequest.setSysEnable(false);
         messageTaskRequest.setWeComEnable(true);
@@ -103,9 +105,9 @@ public class MessageTaskControllerTest extends BaseTest {
         resource = new HashMap<>();
         resource.put("relatedUsers", "aa");
         resource.put("name", "cc");
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin", DEFAULT_ORGANIZATION_ID, List.of("aa"), true);
-
-
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin", DEFAULT_ORGANIZATION_ID,
+                List.of("aa"), true);
     }
 
     private @NotNull MessageTaskConfigDTO getMessageTaskConfigDTO() {
@@ -140,7 +142,9 @@ public class MessageTaskControllerTest extends BaseTest {
         messageTaskRequest.setEmailEnable(true);
         messageTaskRequest.setSysEnable(true);
         this.requestPostWithOk(BATCH_SAVE_MESSAGE_TASK, messageTaskRequest);
-        MessageTask messageTask1 = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, DEFAULT_ORGANIZATION_ID);
+        MessageTask messageTask1 = extMessageTaskMapper.getMessageByModuleAndEvent(
+                NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS,
+                DEFAULT_ORGANIZATION_ID);
         Assertions.assertTrue(messageTask1.getEmailEnable());
     }
 
@@ -153,7 +157,8 @@ public class MessageTaskControllerTest extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(GET_MESSAGE_TASK_CONFIG, messageTaskConfigRequest);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
-        MessageTaskConfigWithNameDTO messageTaskConfigDTO = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), MessageTaskConfigWithNameDTO.class);
+        MessageTaskConfigWithNameDTO messageTaskConfigDTO = JSON.parseObject(JSON.toJSONString(resultHolder.getData()),
+                MessageTaskConfigWithNameDTO.class);
         Assertions.assertNotNull(messageTaskConfigDTO);
     }
 }

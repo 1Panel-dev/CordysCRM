@@ -1,8 +1,7 @@
 package cn.cordys.crm.customer.constants;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-03-05  16:57
+ * @author jianxing
  */
 public enum CustomerCollaborationType {
     /**

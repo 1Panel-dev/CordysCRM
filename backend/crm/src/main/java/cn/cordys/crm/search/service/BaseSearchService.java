@@ -88,14 +88,14 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     /**
      * 获取当前组织下所有已开启的模块key
      *
-     * @return List<String>EnabledModuleKeys
+     * @return 已启用的模块标识列表
      */
     public List<String> getEnabledModules() {
         return moduleMapper.selectListByLambda(
-                        new LambdaQueryWrapper<Module>()
-                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
-                                .eq(Module::getEnable, true)
-                ).stream()
+                new LambdaQueryWrapper<Module>()
+                        .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
+                        .eq(Module::getEnable, true))
+                .stream()
                 .map(Module::getModuleKey)
                 .toList();
     }
@@ -107,7 +107,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param value    字段值
      * @param operator 操作符
      * @param type     字段类型
-     *
      * @return FilterCondition
      */
     public FilterCondition getFilterCondition(String name, Object value, String operator, String type) {
@@ -120,12 +119,10 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         return nameCondition;
     }
 
-
     /**
      * 获取产品ID和名称的映射关系
      *
      * @param orgId 组织ID
-     *
      * @return 产品ID和名称的映射关系
      */
     public Map<String, String> getProductNameMap(String orgId) {
@@ -138,7 +135,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param keyword 关键字
      * @param orgId   组织ID
-     *
      * @return 客户ID列表
      */
     public List<String> getCustomerIds(String keyword, String orgId) {
@@ -156,7 +152,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param orgId  组织ID
      * @param userId 用户ID
-     *
      * @return 公海池ID和名称的映射关系
      */
     public Map<String, String> getUserCustomerPool(String orgId, String userId) {
@@ -166,22 +161,23 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
         List<CustomerPool> pools = customerPoolMapper.selectListByLambda(poolWrapper);
         pools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
-            if (scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class),
+                    orgId);
+            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class),
+                    orgId);
+            if (scopeIds.contains(userId) || ownerIds.contains(userId)
+                    || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
                 poolMap.put(pool.getId(), pool.getName());
             }
         });
         return poolMap;
     }
 
-
     /**
      * 获取用户有权限的线索池
      *
      * @param orgId  组织ID
      * @param userId 用户ID
-     *
      * @return 线索池ID和名称的映射关系
      */
     public Map<String, String> getUserCluePool(String orgId, String userId) {
@@ -191,9 +187,12 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         poolWrapper.orderByDesc(CluePool::getUpdateTime);
         List<CluePool> pools = cluePoolMapper.selectListByLambda(poolWrapper);
         pools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
-            if (scopeIds.contains(userId) || ownerIds.contains(userId) || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class),
+                    orgId);
+            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class),
+                    orgId);
+            if (scopeIds.contains(userId) || ownerIds.contains(userId)
+                    || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
                 poolMap.put(pool.getId(), pool.getName());
             }
         });
@@ -208,7 +207,8 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param keyword          关键字
      * @param conditions       过滤条件列表
      */
-    public void buildOtherFilterCondition(String orgId, UserSearchConfig userSearchConfig, String keyword, List<FilterCondition> conditions) {
+    public void buildOtherFilterCondition(String orgId, UserSearchConfig userSearchConfig, String keyword,
+            List<FilterCondition> conditions) {
         String name;
         if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey())) {
             // 计数和列表共用此入口，业务键必须是完整标识符，不能依赖可配置的 SQL 黑名单。
@@ -221,33 +221,40 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         }
         //如果是businessKey不为空，说明是固定列,则name 给businessKey
         // 如果不是数据源类型的字段，直接添加到查询条件中
-        if (StringUtils.isBlank(userSearchConfig.getDataSourceType()) && !Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
-            FilterCondition filterCondition = getFilterCondition(name, keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+        if (StringUtils.isBlank(userSearchConfig.getDataSourceType())
+                && !Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
+            FilterCondition filterCondition = getFilterCondition(name, keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(filterCondition);
             return;
         }
         // 如果是PHONE类型的字段，使用精确查询
         if (Strings.CI.equals(userSearchConfig.getType(), FieldType.PHONE.toString())) {
             keyword = StringUtils.deleteWhitespace(keyword);
-            FilterCondition filterCondition = getFilterCondition(name, keyword, FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
+            FilterCondition filterCondition = getFilterCondition(name, keyword,
+                    FilterCondition.CombineConditionOperator.EQUALS.toString(), FieldType.PHONE.toString());
             conditions.add(filterCondition);
             return;
         }
         // 如果是数据源类型的字段，使用IN查询
-        if (Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE.toString()) || Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE_MULTIPLE.toString())) {
+        if (Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE.toString())
+                || Strings.CI.equals(userSearchConfig.getType(), FieldType.DATA_SOURCE_MULTIPLE.toString())) {
             List<String> ids = new ArrayList<>();
 
             Map<String, String> sourceMap = moduleFormService.initTypeSourceMap();
             String tableName = sourceMap.get(userSearchConfig.getDataSourceType());
             if (StringUtils.isBlank(tableName)) {
-                extModuleFieldMapper.getCustomFormOptionsByName(keyword, orgId).forEach(option -> ids.add(option.getIdAsString()));
+                extModuleFieldMapper.getCustomFormOptionsByName(keyword, orgId)
+                        .forEach(option -> ids.add(option.getIdAsString()));
             } else {
-                extModuleFieldMapper.getSourceOptionsByName(tableName, keyword, orgId).forEach(option -> ids.add(option.getIdAsString()));
+                extModuleFieldMapper.getSourceOptionsByName(tableName, keyword, orgId)
+                        .forEach(option -> ids.add(option.getIdAsString()));
             }
             if (CollectionUtils.isEmpty(ids)) {
                 return; // 如果没有匹配的数据，直接返回
             }
-            FilterCondition filterCondition = getFilterCondition(name, ids, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition filterCondition = getFilterCondition(name, ids,
+                    FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(filterCondition);
         }
     }
@@ -256,12 +263,12 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * 获取搜索字段脱敏配置
      *
      * @param orgId 组织ID
-     *
      * @return 搜索字段脱敏配置列表
      */
     public List<SearchFieldMaskConfig> getSearchFieldMaskConfigs(String orgId, String moduleType) {
         LambdaQueryWrapper<SearchFieldMaskConfig> sysWrapper = new LambdaQueryWrapper<>();
-        sysWrapper.eq(SearchFieldMaskConfig::getModuleType, moduleType).eq(SearchFieldMaskConfig::getOrganizationId, orgId);
+        sysWrapper.eq(SearchFieldMaskConfig::getModuleType, moduleType).eq(SearchFieldMaskConfig::getOrganizationId,
+                orgId);
         return searchFieldMaskConfigBaseMapper.selectListByLambda(sysWrapper);
     }
 
@@ -269,7 +276,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * 获取用户搜索配置
      *
      * @param userId 用户ID
-     *
      * @return 用户搜索配置列表
      */
     public List<UserSearchConfig> getUserSearchConfigs(String userId, String orgId) {
@@ -291,13 +297,16 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
         }
         List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(formKey, orgId).getFields();
         for (UserSearchConfig config : moduleConfigs) {
-            BaseField field = fields.stream().filter(candidate -> Strings.CI.equals(candidate.getId(), config.getFieldId()))
+            BaseField field = fields.stream()
+                    .filter(candidate -> Strings.CI.equals(candidate.getId(), config.getFieldId()))
                     .findFirst().orElse(null);
             String businessKey = config.getBusinessKey();
             if (field == null || !Strings.CS.equals(config.getType(), field.getType())
-                    || !Strings.CS.equals(StringUtils.defaultIfBlank(businessKey, null), StringUtils.defaultIfBlank(field.getBusinessKey(), null))
+                    || !Strings.CS.equals(StringUtils.defaultIfBlank(businessKey, null),
+                            StringUtils.defaultIfBlank(field.getBusinessKey(), null))
                     || (StringUtils.isNotBlank(businessKey) && !BUSINESS_KEY_PATTERN.matcher(businessKey).matches())
-                    || !Strings.CS.equals(config.getDataSourceType(), field instanceof DatasourceField source ? source.getDataSourceType() : null)) {
+                    || !Strings.CS.equals(config.getDataSourceType(),
+                            field instanceof DatasourceField source ? source.getDataSourceType() : null)) {
                 throw new GenericException(Translator.get("search.config.invalid"));
             }
         }
@@ -313,21 +322,25 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      * @param moduleFormConfigDTO      模块表单配置
      * @param searchFieldMaskConfigMap 脱敏配置映射关系
      * @param hasPermission            是否有权限查看
-     *
      * @return 自定义字段值列表
      */
-    public List<BaseModuleFieldValue> getBaseModuleFieldValues(Set<String> fieldIdSet, String id, Map<String, List<BaseModuleFieldValue>> moduleFiledMap, ModuleFormConfigDTO moduleFormConfigDTO, Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap, boolean hasPermission) {
+    public List<BaseModuleFieldValue> getBaseModuleFieldValues(Set<String> fieldIdSet, String id,
+            Map<String, List<BaseModuleFieldValue>> moduleFiledMap, ModuleFormConfigDTO moduleFormConfigDTO,
+            Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap, boolean hasPermission) {
         List<BaseModuleFieldValue> returnBaseModuleFieldValues = new ArrayList<>();
         //此条数据所带的自定义字段及其值
         List<BaseModuleFieldValue> baseModuleFieldValues = moduleFiledMap.get(id);
         if (CollectionUtils.isEmpty(baseModuleFieldValues)) {
             return new ArrayList<>();
         }
-        Map<String, Object> fieldValueMap = baseModuleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+        Map<String, Object> fieldValueMap = baseModuleFieldValues.stream()
+                .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
         //获取自定义字段选项，用于补充数据源的值
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO, baseModuleFieldValues);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(moduleFormConfigDTO,
+                baseModuleFieldValues);
         List<BaseField> fields = moduleFormConfigDTO.getFields();
-        Map<String, String> fieldTypeMap = fields.stream().collect(Collectors.toMap(BaseField::getId, BaseField::getType));
+        Map<String, String> fieldTypeMap = fields.stream()
+                .collect(Collectors.toMap(BaseField::getId, BaseField::getType));
         for (BaseModuleFieldValue baseModuleFieldValue : baseModuleFieldValues) {
             String fieldId = baseModuleFieldValue.getFieldId();
             if (fieldIdSet.contains(fieldId)) {
@@ -387,15 +400,16 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param searchFieldMaskConfig 脱敏配置
      * @param fieldValue            字段值
-     *
      * @return 脱敏后的字段值
      */
     private Object setStringFieldValue(SearchFieldMaskConfig searchFieldMaskConfig, Object fieldValue) {
         int length = ((String) fieldValue).length();
-        if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.PHONE.toString()) || Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.SERIAL_NUMBER.toString())) {
+        if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.PHONE.toString())
+                || Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.SERIAL_NUMBER.toString())) {
             //fieldValue后6位以*替代
             fieldValue = getPhoneFieldValue(fieldValue, length);
-        } else if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.INPUT.toString()) || Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.DATA_SOURCE.toString())) {
+        } else if (Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.INPUT.toString())
+                || Strings.CI.equals(searchFieldMaskConfig.getType(), FieldType.DATA_SOURCE.toString())) {
             fieldValue = getInputFieldValue(fieldValue, length);
         }
         return fieldValue;
@@ -425,7 +439,6 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
      *
      * @param products       产品ID列表
      * @param productNameMap 产品ID和名称的映射关系
-     *
      * @return 产品名称列表
      */
     public List<String> getProductNames(List<String> products, Map<String, String> productNameMap) {
@@ -463,15 +476,15 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
     /**
      * 构建内置字段
      *
+     * @param <A>            实体类型
      * @param internalKeyMap 内置字段映射关系
      * @param entity         实体对象
      * @param clazz          实体类
-     * @param <A>            实体类型
-     *
      * @return 内置字段列表
      */
-    public <A> List<BaseModuleFieldValue> buildInternalField(Map<String, String> internalKeyMap, Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap, boolean hasPermission, A entity,
-                                                             Class<A> clazz) {
+    public <A> List<BaseModuleFieldValue> buildInternalField(Map<String, String> internalKeyMap,
+            Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap, boolean hasPermission, A entity,
+            Class<A> clazz) {
         List<BaseModuleFieldValue> returnOpportunityFields = new ArrayList<>();
         if (entity == null) {
             return returnOpportunityFields;
@@ -490,7 +503,8 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
                         baseModuleFieldValue.setFieldId(k);
                     }
                 });
-                SearchFieldMaskConfig searchFieldMaskConfig = searchFieldMaskConfigMap.get(baseModuleFieldValue.getFieldId());
+                SearchFieldMaskConfig searchFieldMaskConfig = searchFieldMaskConfigMap
+                        .get(baseModuleFieldValue.getFieldId());
                 if (!hasPermission && searchFieldMaskConfig != null) {
                     Object fieldValue = setStringFieldValue(searchFieldMaskConfig, value);
                     baseModuleFieldValue.setFieldValue(fieldValue);

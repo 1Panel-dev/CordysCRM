@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.excel.constants;
 
-
 import cn.cordys.crm.system.excel.domain.UserExcelData;
 import lombok.Getter;
 

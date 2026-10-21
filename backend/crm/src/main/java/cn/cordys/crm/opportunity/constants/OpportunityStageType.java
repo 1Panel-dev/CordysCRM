@@ -5,7 +5,6 @@ package cn.cordys.crm.opportunity.constants;
  */
 public enum OpportunityStageType {
 
-
     /**
      * 进行中
      */

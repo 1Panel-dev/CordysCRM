@@ -22,8 +22,9 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
     private ExtWorkerNodeMapper extWorkerNodeMapper;
 
     /**
-     * Assign worker id base on database.<p>
-     * If there is host name & port in the environment, we considered that the node runs in Docker container<br>
+     * Assign worker id base on database.
+     * <p>
+     * If there is host name &amp; port in the environment, we considered that the node runs in Docker container<br>
      * Otherwise, the node runs on an actual machine.
      *
      * @return assigned worker id
@@ -53,7 +54,6 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
             workerNode.setType(WorkerNodeType.CONTAINER.value());
             workerNode.setHostName(DockerUtils.getDockerHost());
             workerNode.setPort(DockerUtils.getDockerPort());
-
         } else {
             workerNode.setType(WorkerNodeType.ACTUAL.value());
             workerNode.setHostName(NetUtils.getLocalAddress());

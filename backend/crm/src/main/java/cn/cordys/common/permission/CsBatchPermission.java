@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * 仅校验角色权限位和数据权限，不校验待办和审批状态权限
  * 状态权限业务代理里有校验，待办没有批量操作
  */
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CsBatchPermission {
 
@@ -21,7 +21,7 @@ public @interface CsBatchPermission {
     String value();
 
     /**
-     * 资源ID的SpEL表达式，支持解析为单个ID或List<String>
+     * 资源ID的SpEL表达式，支持解析为单个ID或 {@code List<String>}
      * 为空时仅校验角色权限位
      */
     String resourceId() default "";

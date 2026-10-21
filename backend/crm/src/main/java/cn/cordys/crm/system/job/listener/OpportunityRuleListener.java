@@ -83,7 +83,8 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
         }
 
         // 获取所有者与规则的最佳匹配映射
-        Map<List<String>, OpportunityRule> ownersBestMatchRuleMap = opportunityRuleService.getOwnersBestMatchRuleMap(rules);
+        Map<List<String>, OpportunityRule> ownersBestMatchRuleMap = opportunityRuleService
+                .getOwnersBestMatchRuleMap(rules);
         List<String> handleOwnerIds = ownersBestMatchRuleMap.keySet().stream().flatMap(List::stream).toList();
 
         // 查询相关所有者的商机
@@ -98,8 +99,8 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
         List<OpportunityStageConfig> stageConfigList = extOpportunityStageConfigMapper.getAllStageConfigList();
 
         Map<String, String> orgFailStageConfigMap = stageConfigList.stream()
-                .filter(config ->
-                        Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "0"))
+                .filter(config -> Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
+                        && Strings.CI.equals(config.getRate(), "0"))
                 .collect(Collectors.toMap(
                         OpportunityStageConfig::getOrganizationId,
                         OpportunityStageConfig::getId));

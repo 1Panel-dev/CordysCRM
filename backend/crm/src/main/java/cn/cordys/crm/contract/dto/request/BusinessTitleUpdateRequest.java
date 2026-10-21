@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class BusinessTitleUpdateRequest extends BusinessTitleAddRequest{
+public class BusinessTitleUpdateRequest extends BusinessTitleAddRequest {
 
     @NotBlank
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)

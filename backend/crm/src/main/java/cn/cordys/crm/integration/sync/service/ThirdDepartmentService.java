@@ -100,10 +100,12 @@ public class ThirdDepartmentService {
      */
     @Async
     public void syncUser(SyncUserRequest request, String operatorId, String orgId, Locale locale) {
-        syncUserAndDepartment(request.getSyncScope().stream().map(OptionDTO::getName).filter(Objects::nonNull).toList(), operatorId, orgId, request.getType(), locale);
+        syncUserAndDepartment(request.getSyncScope().stream().map(OptionDTO::getName).filter(Objects::nonNull).toList(),
+                operatorId, orgId, request.getType(), locale);
     }
 
-    public void syncUserAndDepartment(List<String> syncDepartmentIds, String operatorId, String orgId, String resourceType, Locale locale) {
+    public void syncUserAndDepartment(List<String> syncDepartmentIds, String operatorId, String orgId,
+            String resourceType, Locale locale) {
         Redisson redisson = CommonBeanFactory.getBean(Redisson.class);
         assert redisson != null;
         RLock lock = redisson.getLock(LOCK_PREFIX + orgId);
@@ -129,7 +131,6 @@ public class ThirdDepartmentService {
             lock.unlock();
         }
     }
-
 
     /**
      * 获取同步状态
@@ -176,54 +177,55 @@ public class ThirdDepartmentService {
         Map<String, List<ThirdUser>> departmentUserMap;
         DepartmentHandleUtils departmentHandleUtils = new DepartmentHandleUtils();
         switch (deptType) {
-            case WECOM -> {
-                // 通过选择的部门获取企业微信部门列表和部门用户列表
-                if (CollectionUtils.isNotEmpty(syncDepartmentIds)) {
-                    departments = departmentHandleUtils.handleWecom(accessToken, syncDepartmentIds);
-                } else {
-                    // 如果没有选择部门，则获取所有部门
-                    departments = weComDepartmentService.getDepartmentList(accessToken, null);
-                }
-                log.info("企业微信部门数：{}", departments.size());
-
-                var departmentIds = departments.stream()
-                        .map(ThirdDepartment::getId)
-                        .map(Long::parseLong)
-                        .toList();
-                departmentUserMap = weComDepartmentService.getDepartmentUser(accessToken, departmentIds);
-                log.info("企业微信部门用户数：{}", departmentUserMap.values().stream().mapToLong(List::size).sum());
+        case WECOM -> {
+            // 通过选择的部门获取企业微信部门列表和部门用户列表
+            if (CollectionUtils.isNotEmpty(syncDepartmentIds)) {
+                departments = departmentHandleUtils.handleWecom(accessToken, syncDepartmentIds);
+            } else {
+                // 如果没有选择部门，则获取所有部门
+                departments = weComDepartmentService.getDepartmentList(accessToken, null);
             }
-            case DINGTALK -> {
-                ThirdOrgDataDTO thirdOrgDataDTO = null;
-                if (CollectionUtils.isNotEmpty(syncDepartmentIds)) {
-                    thirdOrgDataDTO = departmentHandleUtils.handleDingTalk(accessToken, syncDepartmentIds);
-                } else {
-                    // 如果没有选择部门，则获取所有部门
-                    thirdOrgDataDTO = dingTalkDepartmentService.convertToThirdOrgDataDTO(accessToken, null, true);
-                }
-                if (thirdOrgDataDTO == null) {
-                    throw new GenericException("钉钉组织数据为空");
-                }
-                departments = thirdOrgDataDTO.getDepartments();
-                departmentUserMap = thirdOrgDataDTO.getUsers();
-                log.info("钉钉部门数：{}，部门用户数：{}", departments.size(), departmentUserMap.values().stream().mapToLong(List::size).sum());
-            }
-            case LARK -> {
-                List<ThirdDepartment> allDepartmentList = larkDepartmentService.getDepartmentList(accessToken, null);
-                if (CollectionUtils.isNotEmpty(syncDepartmentIds)) {
-                    departments = departmentHandleUtils.handleLark(accessToken, syncDepartmentIds, allDepartmentList);
-                } else {
-                    // 如果没有选择部门，则获取所有部门
-                    departments = allDepartmentList;
-                }
-                log.info("飞书部门数：{}", departments.size());
+            log.info("企业微信部门数：{}", departments.size());
 
-                var departmentIds = departments.stream().map(ThirdDepartment::getId).toList();
-                departmentUserMap = larkDepartmentService.getDepartmentUserList(accessToken, departmentIds);
-
-                log.info("飞书部门用户数：{}", departmentUserMap.values().stream().mapToLong(List::size).sum());
+            var departmentIds = departments.stream()
+                    .map(ThirdDepartment::getId)
+                    .map(Long::parseLong)
+                    .toList();
+            departmentUserMap = weComDepartmentService.getDepartmentUser(accessToken, departmentIds);
+            log.info("企业微信部门用户数：{}", departmentUserMap.values().stream().mapToLong(List::size).sum());
+        }
+        case DINGTALK -> {
+            ThirdOrgDataDTO thirdOrgDataDTO = null;
+            if (CollectionUtils.isNotEmpty(syncDepartmentIds)) {
+                thirdOrgDataDTO = departmentHandleUtils.handleDingTalk(accessToken, syncDepartmentIds);
+            } else {
+                // 如果没有选择部门，则获取所有部门
+                thirdOrgDataDTO = dingTalkDepartmentService.convertToThirdOrgDataDTO(accessToken, null, true);
             }
-            default -> throw new GenericException("不支持的同步类型：" + type);
+            if (thirdOrgDataDTO == null) {
+                throw new GenericException("钉钉组织数据为空");
+            }
+            departments = thirdOrgDataDTO.getDepartments();
+            departmentUserMap = thirdOrgDataDTO.getUsers();
+            log.info("钉钉部门数：{}，部门用户数：{}", departments.size(),
+                    departmentUserMap.values().stream().mapToLong(List::size).sum());
+        }
+        case LARK -> {
+            List<ThirdDepartment> allDepartmentList = larkDepartmentService.getDepartmentList(accessToken, null);
+            if (CollectionUtils.isNotEmpty(syncDepartmentIds)) {
+                departments = departmentHandleUtils.handleLark(accessToken, syncDepartmentIds, allDepartmentList);
+            } else {
+                // 如果没有选择部门，则获取所有部门
+                departments = allDepartmentList;
+            }
+            log.info("飞书部门数：{}", departments.size());
+
+            var departmentIds = departments.stream().map(ThirdDepartment::getId).toList();
+            departmentUserMap = larkDepartmentService.getDepartmentUserList(accessToken, departmentIds);
+
+            log.info("飞书部门用户数：{}", departmentUserMap.values().stream().mapToLong(List::size).sum());
+        }
+        default -> throw new GenericException("不支持的同步类型：" + type);
         }
 
         if (CollectionUtils.isEmpty(departments)) {
@@ -253,19 +255,22 @@ public class ThirdDepartmentService {
 
         var deptType = parseDepartmentType(type);
         var accessToken = switch (deptType) {
-            case WECOM -> {
-                WecomThirdConfigRequest config = JSON.MAPPER.convertValue(thirdConfig.getConfig(), WecomThirdConfigRequest.class);
-                yield tokenService.getAssessToken(config.getCorpId(), config.getAppSecret());
-            }
-            case DINGTALK -> {
-                DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), DingTalkThirdConfigRequest.class);
-                yield tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
-            }
-            case LARK -> {
-                LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), LarkThirdConfigRequest.class);
-                yield tokenService.getLarkToken(larkConfig.getAgentId(), larkConfig.getAppSecret());
-            }
-            default -> throw new GenericException("不支持的同步类型：" + type);
+        case WECOM -> {
+            WecomThirdConfigRequest config = JSON.MAPPER.convertValue(thirdConfig.getConfig(),
+                    WecomThirdConfigRequest.class);
+            yield tokenService.getAssessToken(config.getCorpId(), config.getAppSecret());
+        }
+        case DINGTALK -> {
+            DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(),
+                    DingTalkThirdConfigRequest.class);
+            yield tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
+        }
+        case LARK -> {
+            LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(),
+                    LarkThirdConfigRequest.class);
+            yield tokenService.getLarkToken(larkConfig.getAgentId(), larkConfig.getAppSecret());
+        }
+        default -> throw new GenericException("不支持的同步类型：" + type);
         };
 
         log.debug("获取访问令牌成功，类型：{}", deptType.name());
@@ -291,8 +296,8 @@ public class ThirdDepartmentService {
      * 同步部门和用户数据
      */
     private void syncDepartmentsAndUsers(String orgId, List<ThirdDepartment> departments,
-                                         Map<String, List<ThirdUser>> departmentUserMap,
-                                         boolean isUpdate, String operatorId, String type) {
+            Map<String, List<ThirdUser>> departmentUserMap,
+            boolean isUpdate, String operatorId, String type) {
         DataHandleUtils dataHandleUtils = new DataHandleUtils(orgId, departmentUserMap, type);
 
         if (isUpdate) {
@@ -324,19 +329,20 @@ public class ThirdDepartmentService {
         try {
             // 设置通知参数
             Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put("name", Translator.get("message.sync_organization_structure", LocaleContextHolder.getLocale()));
+            paramMap.put("name",
+                    Translator.get("message.sync_organization_structure", LocaleContextHolder.getLocale()));
             paramMap.put("syncType", getSyncTypeName(type));
             paramMap.put("organizationId", orgId);
 
             // 发送通知给操作人
             commonNoticeSendService.sendNotice(
-                    NotificationConstants.Module.SYSTEM,  // 模块类型
-                    NotificationConstants.Event.SYNC_ORGANIZATION_STRUCTURE,  // 事件类型
+                    NotificationConstants.Module.SYSTEM, // 模块类型
+                    NotificationConstants.Event.SYNC_ORGANIZATION_STRUCTURE, // 事件类型
                     paramMap,
                     operatorId,
                     orgId,
-                    List.of(operatorId),  // 只发送给操作人
-                    false  // 不排除自己
+                    List.of(operatorId), // 只发送给操作人
+                    false // 不排除自己
             );
             log.info("组织架构同步成功通知已发送，操作人：{}，同步类型：{}", operatorId, type);
         } catch (Exception e) {
@@ -349,10 +355,10 @@ public class ThirdDepartmentService {
      */
     private String getSyncTypeName(String type) {
         return switch (parseDepartmentType(type)) {
-            case WECOM -> "企业微信";
-            case DINGTALK -> "钉钉";
-            case LARK -> "飞书";
-            default -> type;
+        case WECOM -> "企业微信";
+        case DINGTALK -> "钉钉";
+        case LARK -> "飞书";
+        default -> type;
         };
     }
 
@@ -377,8 +383,7 @@ public class ThirdDepartmentService {
                     key,
                     statusJson,
                     SYNC_STATUS_EXPIRE_SECONDS,
-                    java.util.concurrent.TimeUnit.SECONDS
-            );
+                    java.util.concurrent.TimeUnit.SECONDS);
             log.info("已存入同步状态到Redis， key: {}, status: {}, operatorId: {}", key, statusJson, operatorId);
         } catch (Exception e) {
             log.error("存入同步状态到Redis失败", e);
@@ -423,13 +428,8 @@ public class ThirdDepartmentService {
         }
     }
 
-
     /**
      * 同步定时任务配置
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, resourceId = "{#userId}")
     public void scheduleConfig(SyncUserScheduleConfigRequest request, String userId, String orgId) {
@@ -438,14 +438,16 @@ public class ThirdDepartmentService {
         Map<String, String> originalVal = new HashMap<>(1);
         Map<String, String> modifiedVal = new HashMap<>(1);
 
-        Schedule schedule = scheduleService.getScheduleByResource(request.getResourceType(), orgId, SyncUserScheduleJob.class.getName());
+        Schedule schedule = scheduleService.getScheduleByResource(request.getResourceType(), orgId,
+                SyncUserScheduleJob.class.getName());
         if (schedule != null) {
             originalVal.put("syncEnable", Translator.get("log.enable." + schedule.getEnable()));
             originalVal.put("syncCycle", Translator.get(SyncCycleCron.getByCron(schedule.getValue()).name()));
             List<OptionDTO> syncScope = JSON.parseObject(schedule.getConfig(), new TypeReference<List<OptionDTO>>() {
             });
             if (CollectionUtils.isNotEmpty(syncScope)) {
-                originalVal.put("syncScope", syncScope.stream().map(OptionDTO::getName).filter(Objects::nonNull).toList().toString());
+                originalVal.put("syncScope",
+                        syncScope.stream().map(OptionDTO::getName).filter(Objects::nonNull).toList().toString());
             } else {
                 originalVal.put("syncScope", Translator.get("ENTIRE_COMPANY"));
             }
@@ -459,11 +461,13 @@ public class ThirdDepartmentService {
             s.setResourceType(request.getResourceType());
             s.setUpdateUser(userId);
             scheduleService.editSchedule(s);
-            scheduleService.addOrUpdateCronJob(s, SyncUserScheduleJob.getJobKey(s.getKey()), SyncUserScheduleJob.getTriggerKey(s.getKey()), SyncUserScheduleJob.class);
+            scheduleService.addOrUpdateCronJob(s, SyncUserScheduleJob.getJobKey(s.getKey()),
+                    SyncUserScheduleJob.getTriggerKey(s.getKey()), SyncUserScheduleJob.class);
             modifiedVal.put("syncEnable", Translator.get("log.enable." + request.isEnable()));
             modifiedVal.put("syncCycle", Translator.get(request.getSyncCycle()));
             if (CollectionUtils.isNotEmpty(request.getSyncScope())) {
-                modifiedVal.put("syncScope", request.getSyncScope().stream().map(OptionDTO::getName).filter(Objects::nonNull).toList().toString());
+                modifiedVal.put("syncScope", request.getSyncScope().stream().map(OptionDTO::getName)
+                        .filter(Objects::nonNull).toList().toString());
             } else {
                 modifiedVal.put("syncScope", Translator.get("ENTIRE_COMPANY"));
             }
@@ -483,12 +487,14 @@ public class ThirdDepartmentService {
             addSchedule.setOrganizationId(orgId);
             addSchedule.setConfig(JSON.toJSONString(request.getSyncScope()));
             scheduleService.addSchedule(addSchedule);
-            scheduleService.addOrUpdateCronJob(addSchedule, SyncUserScheduleJob.getJobKey(key), SyncUserScheduleJob.getTriggerKey(key), SyncUserScheduleJob.class);
+            scheduleService.addOrUpdateCronJob(addSchedule, SyncUserScheduleJob.getJobKey(key),
+                    SyncUserScheduleJob.getTriggerKey(key), SyncUserScheduleJob.class);
 
             modifiedVal.put("syncEnable", Translator.get("log.enable." + request.isEnable()));
             modifiedVal.put("syncCycle", request.getSyncCycle());
             if (CollectionUtils.isNotEmpty(request.getSyncScope())) {
-                modifiedVal.put("syncScope", request.getSyncScope().stream().map(OptionDTO::getName).filter(Objects::nonNull).toList().toString());
+                modifiedVal.put("syncScope", request.getSyncScope().stream().map(OptionDTO::getName)
+                        .filter(Objects::nonNull).toList().toString());
             } else {
                 modifiedVal.put("syncScope", Translator.get("ENTIRE_COMPANY"));
             }
@@ -502,15 +508,12 @@ public class ThirdDepartmentService {
                 .build());
     }
 
-
     /**
      * 获取同步配置
-     *
-     * @param orgId
-     * @return
      */
     public SyncUserScheduleConfigResponse getScheduleConfig(String resourceType, String orgId) {
-        Schedule schedule = scheduleService.getScheduleByResource(resourceType, orgId, SyncUserScheduleJob.class.getName());
+        Schedule schedule = scheduleService.getScheduleByResource(resourceType, orgId,
+                SyncUserScheduleJob.class.getName());
         SyncUserScheduleConfigResponse response = new SyncUserScheduleConfigResponse();
         if (schedule == null) {
             return response;
@@ -522,16 +525,10 @@ public class ThirdDepartmentService {
         }));
         response.setNextTriggerTime(ScheduleUtils.getNextTriggerTime(schedule.getValue()));
         return response;
-
     }
-
 
     /**
      * 获取组织架构
-     *
-     * @param type
-     * @param orgId
-     * @return
      */
     public List<ThirdDepartment> getThirdOrg(String type, String orgId) {
         var thirdConfig = getThirdConfig(orgId, type);
@@ -546,23 +543,24 @@ public class ThirdDepartmentService {
 
         List<ThirdDepartment> departments;
         switch (deptType) {
-            case WECOM -> {
-                departments = weComDepartmentService.getDepartmentList(accessToken, null);
-                log.info("企业微信部门数：{}", departments.size());
+        case WECOM -> {
+            departments = weComDepartmentService.getDepartmentList(accessToken, null);
+            log.info("企业微信部门数：{}", departments.size());
+        }
+        case DINGTALK -> {
+            ThirdOrgDataDTO thirdOrgDataDTO = dingTalkDepartmentService.convertToThirdOrgDataDTO(accessToken, null,
+                    false);
+            if (thirdOrgDataDTO == null) {
+                throw new GenericException("钉钉组织数据为空");
             }
-            case DINGTALK -> {
-                ThirdOrgDataDTO thirdOrgDataDTO = dingTalkDepartmentService.convertToThirdOrgDataDTO(accessToken, null, false);
-                if (thirdOrgDataDTO == null) {
-                    throw new GenericException("钉钉组织数据为空");
-                }
-                departments = thirdOrgDataDTO.getDepartments();
-                log.info("钉钉部门数：{}", departments.size());
-            }
-            case LARK -> {
-                departments = larkDepartmentService.getDepartmentList(accessToken, null);
-                log.info("飞书部门数：{}", departments.size());
-            }
-            default -> throw new GenericException("不支持的同步类型：" + type);
+            departments = thirdOrgDataDTO.getDepartments();
+            log.info("钉钉部门数：{}", departments.size());
+        }
+        case LARK -> {
+            departments = larkDepartmentService.getDepartmentList(accessToken, null);
+            log.info("飞书部门数：{}", departments.size());
+        }
+        default -> throw new GenericException("不支持的同步类型：" + type);
         }
 
         return ThirdDepartment.buildThirdDepartmentTree(departments);

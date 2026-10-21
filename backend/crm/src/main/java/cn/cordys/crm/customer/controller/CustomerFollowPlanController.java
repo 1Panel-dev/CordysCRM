@@ -41,7 +41,6 @@ public class CustomerFollowPlanController {
         return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update")
     @Operation(summary = "更新客户跟进计划")
     public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
@@ -49,23 +48,26 @@ public class CustomerFollowPlanController {
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/page")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进计划列表")
-    public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
+    public PagerWithOption<List<FollowUpPlanListResponse>> list(
+            @Validated @RequestBody FollowUpPlanPageRequest request) {
         FollowUpPlan followPlanRecord = new FollowUpPlan();
         followPlanRecord.setCustomerId(request.getSourceId());
         followPlanRecord.setType(ModuleKey.CUSTOMER.name());
-        followUpPlanService.checkPlanPermission(followPlanRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpPlanService.checkPlanPermission(followPlanRecord, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                "CUSTOMER", "CUSTOMER");
     }
 
     @GetMapping("/get/{id}")
     @Operation(summary = "客户跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
-        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(),
+                true);
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
 
@@ -76,14 +78,12 @@ public class CustomerFollowPlanController {
         followUpPlanService.cancelPlan(id, SessionUtils.getUserId());
     }
 
-
     @GetMapping("/delete/{id}")
     @Operation(summary = "客户删除跟进计划")
     public void deletePlan(@PathVariable String id) {
         followUpPlanService.checkUpdatePermission(id, SessionUtils.getUserId());
         followUpPlanService.delete(id);
     }
-
 
     @PostMapping("/status/update")
     @Operation(summary = "客户更新跟进计划状态")

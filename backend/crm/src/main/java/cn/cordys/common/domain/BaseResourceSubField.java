@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BaseResourceSubField extends BaseResourceField {
 
-	@Schema(description = "关联子表格ID")
-	private String refSubId;
+    @Schema(description = "关联子表格ID")
+    private String refSubId;
 
-	@Schema(description = "行ID")
-	private String rowId;
+    @Schema(description = "行ID")
+    private String rowId;
 
-	@Schema(description = "行唯一标识")
-	private String bizId;
+    @Schema(description = "行唯一标识")
+    private String bizId;
 }

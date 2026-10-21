@@ -12,101 +12,104 @@ import java.util.List;
 
 /**
  * 动态合并单元格策略(汇总)
+ *
  * @author song-cc-rock
  */
 public class SummaryMergeHandler {
 
-	private final List<int[]> mergeRegions;
-	private final List<Integer> mergeColumns;
-	private final List<Integer> summaryCols;
-	private final int offset;
-	private CellStyle cachedSummaryStyle;
+    private final List<int[]> mergeRegions;
+    private final List<Integer> mergeColumns;
+    private final List<Integer> summaryCols;
+    private final int offset;
+    private CellStyle cachedSummaryStyle;
 
-	public SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeColumns, List<Integer> summaryCols, int offset) {
-		this.mergeRegions = mergeRegions;
-		this.mergeColumns = mergeColumns;
-		this.summaryCols = summaryCols;
-		this.offset = offset;
-	}
+    public SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeColumns, List<Integer> summaryCols,
+            int offset) {
+        this.mergeRegions = mergeRegions;
+        this.mergeColumns = mergeColumns;
+        this.summaryCols = summaryCols;
+        this.offset = offset;
+    }
 
-	/**
-	 * 获取或创建汇总单元格样式（缓存复用，避免重复创建）
-	 */
-	private CellStyle getOrCreateSummaryStyle(Workbook workbook) {
-		if (cachedSummaryStyle == null) {
-			cachedSummaryStyle = workbook.createCellStyle();
-			cachedSummaryStyle.setAlignment(HorizontalAlignment.RIGHT);
-			cachedSummaryStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-		}
-		return cachedSummaryStyle;
-	}
+    /**
+     * 获取或创建汇总单元格样式（缓存复用，避免重复创建）
+     */
+    private CellStyle getOrCreateSummaryStyle(Workbook workbook) {
+        if (cachedSummaryStyle == null) {
+            cachedSummaryStyle = workbook.createCellStyle();
+            cachedSummaryStyle.setAlignment(HorizontalAlignment.RIGHT);
+            cachedSummaryStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        }
+        return cachedSummaryStyle;
+    }
 
-	public void merge(Sheet sheet) {
-		if (CollectionUtils.isEmpty(mergeRegions) || CollectionUtils.isEmpty(mergeColumns)) {
-			return;
-		}
+    public void merge(Sheet sheet) {
+        if (CollectionUtils.isEmpty(mergeRegions) || CollectionUtils.isEmpty(mergeColumns)) {
+            return;
+        }
 
-		Workbook workbook = sheet.getWorkbook();
-		CellStyle summaryStyle = getOrCreateSummaryStyle(workbook);
+        Workbook workbook = sheet.getWorkbook();
+        CellStyle summaryStyle = getOrCreateSummaryStyle(workbook);
 
-		// 合并行区域内的汇总列的值
-		for (int[] region : mergeRegions) {
-			int start = region[0] + offset;
-			int end = region[1] + offset;
-			for (Integer colIndex : summaryCols) {
-				BigDecimal total = BigDecimal.ZERO;
-				boolean showThousandsSeparator = false;
-				boolean hasPercent = false;
-				int decimalPlaces = 0;
-				for (int r = start; r <= end; r++) {
-					Cell cell = sheet.getRow(r).getCell(colIndex);
-					if (cell != null) {
-						String val = switch (cell.getCellType()) {
-							case STRING -> cell.getStringCellValue();
-							case NUMERIC -> String.valueOf(cell.getNumericCellValue());
-							default -> null;
-						};
-						if (StringUtils.isEmpty(val)) {
-							continue;
-						}
-						// 记住汇总列格式
-						if (val.contains(",") && !showThousandsSeparator) {
-							showThousandsSeparator = true;
-						}
-						if (val.contains("%") && !hasPercent) {
-							hasPercent = true;
-						}
-						val = val.replace(",", StringUtils.EMPTY).replace("%", StringUtils.EMPTY);
-						if (NumberUtils.isParsable(val)) {
-							if (decimalPlaces == 0 && val.contains(".")) {
-								decimalPlaces = val.length() - val.indexOf(".") - 1;
-							}
-							total = total.add(new BigDecimal(val));
-						}
-					}
-				}
+        // 合并行区域内的汇总列的值
+        for (int[] region : mergeRegions) {
+            int start = region[0] + offset;
+            int end = region[1] + offset;
+            for (Integer colIndex : summaryCols) {
+                BigDecimal total = BigDecimal.ZERO;
+                boolean showThousandsSeparator = false;
+                boolean hasPercent = false;
+                int decimalPlaces = 0;
+                for (int r = start; r <= end; r++) {
+                    Cell cell = sheet.getRow(r).getCell(colIndex);
+                    if (cell != null) {
+                        String val = switch (cell.getCellType()) {
+                        case STRING -> cell.getStringCellValue();
+                        case NUMERIC -> String.valueOf(cell.getNumericCellValue());
+                        default -> null;
+                        };
+                        if (StringUtils.isEmpty(val)) {
+                            continue;
+                        }
+                        // 记住汇总列格式
+                        if (val.contains(",") && !showThousandsSeparator) {
+                            showThousandsSeparator = true;
+                        }
+                        if (val.contains("%") && !hasPercent) {
+                            hasPercent = true;
+                        }
+                        val = val.replace(",", StringUtils.EMPTY).replace("%", StringUtils.EMPTY);
+                        if (NumberUtils.isParsable(val)) {
+                            if (decimalPlaces == 0 && val.contains(".")) {
+                                decimalPlaces = val.length() - val.indexOf(".") - 1;
+                            }
+                            total = total.add(new BigDecimal(val));
+                        }
+                    }
+                }
 
-				Cell sumCell = sheet.getRow(start).getCell(colIndex);
-				sumCell.setCellValue(InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
-				sumCell.setCellStyle(summaryStyle);
+                Cell sumCell = sheet.getRow(start).getCell(colIndex);
+                sumCell.setCellValue(
+                        InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
+                sumCell.setCellStyle(summaryStyle);
 
-				// 只保留第一行, 清空其他行汇总列的单元格值 (不同值合并展示有误)
-				for (int r = start + 1; r <= end; r++) {
-					sheet.getRow(r).getCell(colIndex).setCellValue("");
-				}
-			}
-		}
+                // 只保留第一行, 清空其他行汇总列的单元格值 (不同值合并展示有误)
+                for (int r = start + 1; r <= end; r++) {
+                    sheet.getRow(r).getCell(colIndex).setCellValue("");
+                }
+            }
+        }
 
-		// 合并单元格
-		for (int[] region : mergeRegions) {
-			int start = region[0] + offset;
-			int end = region[1] + offset;
-			if(start >= end) {
-				continue; // 如果起始行和结束行相同，则不需要合并
-			}
-			for (Integer colIndex : mergeColumns) {
-				sheet.addMergedRegionUnsafe(new CellRangeAddress(start, end, colIndex, colIndex));
-			}
-		}
-	}
+        // 合并单元格
+        for (int[] region : mergeRegions) {
+            int start = region[0] + offset;
+            int end = region[1] + offset;
+            if (start >= end) {
+                continue; // 如果起始行和结束行相同，则不需要合并
+            }
+            for (Integer colIndex : mergeColumns) {
+                sheet.addMergedRegionUnsafe(new CellRangeAddress(start, end, colIndex, colIndex));
+            }
+        }
+    }
 }

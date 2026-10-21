@@ -21,9 +21,8 @@ public class OperationLogControllerTest extends BaseTest {
     public static final String OPERATION_LOG_LIST = "/operation/log/list";
     public static final String OPERATION_LOG_DETAIL = "/operation/log/detail/";
 
-    @Sql(scripts = {"/dml/init_operation_log_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_operation_log_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     public void operationLogList() throws Exception {

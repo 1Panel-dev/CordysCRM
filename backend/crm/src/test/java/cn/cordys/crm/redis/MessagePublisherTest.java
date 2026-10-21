@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MessagePublisherTest {
 
-
     @Resource
     private MessagePublisher publisher;
 
@@ -29,19 +28,14 @@ public class MessagePublisherTest {
     @Test
     @Order(0)
     public void publishMessageTest() throws InterruptedException {
-
-
         NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
         noticeRedisMessage.setMessage("admin");
         noticeRedisMessage.setNoticeType(NotificationConstants.Type.SYSTEM_NOTICE.toString());
         publisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
         // 这里可以添加断言来验证消息是否成功发布
-// 等待异步消息处理
+        // 等待异步消息处理
         Thread.sleep(1000); // 可根据实际延迟调整
         System.out.println(sseConsumer.getChannel());
-
-
     }
-
 
 }

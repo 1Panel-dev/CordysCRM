@@ -10,7 +10,8 @@ import java.util.Map;
 
 public class PoolClueFieldUtils {
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data, Map<String, List<OptionDTO>> optionMap, Locale locale) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data,
+            Map<String, List<OptionDTO>> optionMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = ClueFieldUtils.getSystemFieldMap(data, optionMap, locale);
         systemFieldMap.put("id", data.getId());
         systemFieldMap.put("reasonId", data.getReasonName());

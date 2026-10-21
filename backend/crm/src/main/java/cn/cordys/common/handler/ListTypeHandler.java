@@ -1,6 +1,5 @@
 package cn.cordys.common.handler;
 
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonParser;
@@ -42,10 +41,10 @@ public class ListTypeHandler extends BaseTypeHandler<List<String>> {
         objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         // 设置JSON处理字符长度限制
         objectMapper.getFactory()
-                .setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(DEFAULT_MAX_STRING_LEN).build());
+                .setStreamReadConstraints(
+                        StreamReadConstraints.builder().maxStringLength(DEFAULT_MAX_STRING_LEN).build());
         // 处理时间格式
         objectMapper.registerModule(new JavaTimeModule());
-
     }
 
     public static String toJSONString(Object value) {
@@ -66,7 +65,8 @@ public class ListTypeHandler extends BaseTypeHandler<List<String>> {
     }
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType)
+            throws SQLException {
         String d = toJSONString(parameter);
         ps.setString(i, d);
     }

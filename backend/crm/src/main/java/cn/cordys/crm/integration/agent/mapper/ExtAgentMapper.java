@@ -1,6 +1,5 @@
 package cn.cordys.crm.integration.agent.mapper;
 
-
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.NodeSortQueryParam;
 import cn.cordys.crm.dashboard.dto.DropNode;
@@ -14,14 +13,15 @@ import java.util.List;
 
 public interface ExtAgentMapper {
 
-
-    int countByName(@Param("name") String name, @Param("agentModuleId") String agentModuleId, @Param("orgId") String orgId, @Param("id") String id);
+    int countByName(@Param("name") String name, @Param("agentModuleId") String agentModuleId,
+            @Param("orgId") String orgId, @Param("id") String id);
 
     Long getNextPosByOrgId(@Param("orgId") String orgId);
 
     AgentDetailResponse getDetail(@Param("id") String id);
 
-    List<AgentPageResponse> list(@Param("request") AgentPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId, @Param("departmentIds") List<String> departmentIds);
+    List<AgentPageResponse> list(@Param("request") AgentPageRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("departmentIds") List<String> departmentIds);
 
     DropNode selectDragInfoById(@Param("dragNodeId") String dragNodeId);
 
@@ -31,9 +31,12 @@ public interface ExtAgentMapper {
 
     List<String> selectIdByOrgIdOrderByPos(@Param("orgId") String orgId);
 
-    List<BaseTreeNode> selectAgentNode(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId, @Param("userId") String userId);
+    List<BaseTreeNode> selectAgentNode(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId,
+            @Param("userId") String userId);
 
-    List<AgentOptionDTO> getOptions(@Param("userId") String userId, @Param("orgId") String orgId, @Param("departmentIds") List<String> departmentIds);
+    List<AgentOptionDTO> getOptions(@Param("userId") String userId, @Param("orgId") String orgId,
+            @Param("departmentIds") List<String> departmentIds);
 
-    int checkPermission(@Param("userId") String userId, @Param("id") String id, @Param("departmentIds") List<String> departmentIds);
+    int checkPermission(@Param("userId") String userId, @Param("id") String id,
+            @Param("departmentIds") List<String> departmentIds);
 }

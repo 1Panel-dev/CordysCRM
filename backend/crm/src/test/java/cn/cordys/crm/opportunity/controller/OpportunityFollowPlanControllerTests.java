@@ -78,7 +78,6 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         addFollowUpPlan = followUpPlanMapper.selectByPrimaryKey(resultData.getId());
     }
 
-
     @Test
     @Order(2)
     void testUpdate() throws Exception {
@@ -122,7 +121,6 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         return customer;
     }
 
-
     @Test
     @Order(3)
     void testList() throws Exception {
@@ -138,7 +136,6 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
     void testGet() throws Exception {
         this.requestGet(DEFAULT_GET, addFollowUpPlan.getId());
     }
-
 
     @Test
     @Order(4)
@@ -160,7 +157,6 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
     void tesDeletePlan() throws Exception {
         this.requestGetWithOk(DEFAULT_DELETE, addFollowUpPlan.getId());
     }
-
 
     @Test
     @Order(3)

@@ -8,18 +8,18 @@ import java.util.regex.Pattern;
 public class SqlInjectionChecker {
 
     private static final Pattern DANGEROUS_PATTERN = Pattern.compile(
-            "--[^\\n]*|#|/\\*!?|\\*/" +           // SQL 注释
-                    "|'|\"|\\\\|;" +                      // 危险分隔符
-                    "|\\b(?:xp_\\w+|sp_\\w+|dbms_\\w+|utl_\\w+)\\b" +  // 危险存储过程
-                    "|\\b(?:select|insert|update|delete|drop|alter|truncate|exec|execute|merge|replace|load_file|outfile|dumpfile)\\b" +
+            "--[^\\n]*|#|/\\*!?|\\*/" + // SQL 注释
+                    "|'|\"|\\\\|;" + // 危险分隔符
+                    "|\\b(?:xp_\\w+|sp_\\w+|dbms_\\w+|utl_\\w+)\\b" + // 危险存储过程
+                    "|\\b(?:select|insert|update|delete|drop|alter|truncate|exec|execute|merge|replace|load_file|outfile|dumpfile)\\b"
+                    +
                     "|\\b(?:union\\s+(?:all\\s+)?select|information_schema|table_name|column_name)\\b" +
-                    "|\\b(?:sleep|benchmark|pg_sleep|dbms_lock\\.sleep|dbms_pipe\\.receive_message|waitfor\\s+delay)\\b" +
+                    "|\\b(?:sleep|benchmark|pg_sleep|dbms_lock\\.sleep|dbms_pipe\\.receive_message|waitfor\\s+delay)\\b"
+                    +
                     "|\\b(?:and|or)\\b\\s*(?:'|[0-9]|\\()",
-            Pattern.CASE_INSENSITIVE | Pattern.DOTALL
-    );
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private static volatile Pattern dangerousPattern = DANGEROUS_PATTERN;
-
 
     /**
      * 用户自定义配置注入检测规则，覆盖默认规则。
@@ -38,7 +38,6 @@ public class SqlInjectionChecker {
      * 检测输入字符串是否包含可疑的 SQL 注入特征。
      *
      * @param input 待检测的用户输入
-     *
      * @return true 表示可能存在注入风险
      */
     public static boolean containsSqlInjectionRisk(String input) {

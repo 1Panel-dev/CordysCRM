@@ -107,7 +107,8 @@ public class CustomerPoolControllerTests extends BaseTest {
     @Test
     @Order(5)
     void switchStatus() throws Exception {
-        MvcResult mvcResult = this.requestGet("/account-pool/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestGet("/account-pool/switch/default-pool")
+                .andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer_pool_not_exist"));
         this.requestGetWithOk("/account-pool/switch/" + testCustomerPool.getId());
     }
@@ -115,7 +116,8 @@ public class CustomerPoolControllerTests extends BaseTest {
     @Test
     @Order(6)
     void delete() throws Exception {
-        MvcResult mvcResult = this.requestGet("/account-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestGet("/account-pool/delete/default-pool")
+                .andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer_pool_not_exist"));
         // insert free customer on the pool, then delete it
         Customer freeCustomer = createFreeCustomer();

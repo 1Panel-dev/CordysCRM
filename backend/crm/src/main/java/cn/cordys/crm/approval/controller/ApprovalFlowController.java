@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- *  @author jianxing ai
+ * @author jianxing ai
  */
 @Tag(name = "审批流设置")
 @RestController
@@ -96,7 +96,6 @@ public class ApprovalFlowController {
     public List<OptionDTO> getFlowFormOptions() {
         return approvalFlowService.getFlowFormOptions(OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/webhook/test")
     @Operation(summary = "webhook-测试连接")

@@ -101,14 +101,8 @@ public class BusinessTitleService {
     @Resource
     private SqlSessionFactory sqlSessionFactory;
 
-
     /**
      * 添加工商抬头
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.ADD, resourceName = "{#request.name}")
     public BusinessTitle add(BusinessTitleAddRequest request, String userId, String orgId) {
@@ -133,18 +127,12 @@ public class BusinessTitleService {
                         .resourceId(businessTitle.getId())
                         .resourceName(businessTitle.getName())
                         .modifiedValue(businessTitle)
-                        .build()
-        );
+                        .build());
         return businessTitle;
     }
 
-
     /**
      * 校验名称
-     *
-     * @param businessName
-     * @param orgId
-     * @param id
      */
     private void checkName(String businessName, String orgId, String id) {
         if (extBusinessTitleMapper.countByName(businessName, orgId, id) > 0) {
@@ -152,14 +140,8 @@ public class BusinessTitleService {
         }
     }
 
-
     /**
      * 编辑工商抬头
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.UPDATE, resourceId = "{#request.id}")
     public BusinessTitle update(BusinessTitleUpdateRequest request, String userId, String orgId) {
@@ -181,8 +163,7 @@ public class BusinessTitleService {
                         .resourceName(request.getName())
                         .originalValue(oldTitle)
                         .modifiedValue(newTitle)
-                        .build()
-        );
+                        .build());
         return newTitle;
     }
 
@@ -194,11 +175,8 @@ public class BusinessTitleService {
         return title;
     }
 
-
     /**
      * 删除
-     *
-     * @param id
      */
     @OperationLog(module = LogModule.CONTRACT_BUSINESS_TITLE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
@@ -209,12 +187,8 @@ public class BusinessTitleService {
         }
     }
 
-
     /**
      * 校验是否开过票
-     *
-     * @param id
-     * @return
      */
     public boolean checkHasInvoice(String id) {
         LambdaQueryWrapper<ContractInvoice> invoiceLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -223,14 +197,8 @@ public class BusinessTitleService {
         return !CollectionUtils.isEmpty(contractInvoices);
     }
 
-
     /**
      * 列表
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     public Pager<List<BusinessTitleListResponse>> list(BusinessTitlePageRequest request, String userId, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -239,20 +207,18 @@ public class BusinessTitleService {
         return PageUtils.setPageInfo(page, list);
     }
 
-
     /**
      * 详情
-     *
-     * @param id
-     * @return
      */
     public BusinessTitleListResponse get(String id) {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
         if (businessTitle == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
-        BusinessTitleListResponse businessTitleListResponse = BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
+        businessTitle
+                .setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
+        BusinessTitleListResponse businessTitleListResponse = BeanUtils.copyBean(new BusinessTitleListResponse(),
+                businessTitle);
         baseService.setCreateAndUpdateUserName(List.of(businessTitleListResponse));
         return businessTitleListResponse;
     }
@@ -268,7 +234,8 @@ public class BusinessTitleService {
         if (businessTitle == null) {
             return null;
         }
-        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
+        businessTitle
+                .setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
         return BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
     }
 
@@ -292,13 +259,8 @@ public class BusinessTitleService {
         return titles.stream().map(title -> BeanUtils.copyBean(new BusinessTitleListResponse(), title)).toList();
     }
 
-
     /**
      * 审核通过/不通过
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     public void approvalContract(BusinessTitleApprovalRequest request, String userId, String orgId) {
         BusinessTitle businessTitle = checkTitle(request.getId());
@@ -309,12 +271,13 @@ public class BusinessTitleService {
         businessTitle.setUpdateUser(userId);
         businessTitleMapper.update(businessTitle);
         // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, businessTitle.getName(), state, request.getApprovalStatus());
+        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, businessTitle.getName(), state,
+                request.getApprovalStatus());
         logService.add(logDTO);
     }
 
-
-    private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String state, String newState) {
+    private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String state,
+            String newState) {
         LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_BUSINESS_TITLE, response);
         Map<String, String> oldMap = new HashMap<>();
         oldMap.put("approvalStatus", Translator.get("contract.approval_status." + state.toLowerCase()));
@@ -325,14 +288,8 @@ public class BusinessTitleService {
         return logDTO;
     }
 
-
     /**
      * 撤销审核
-     *
-     * @param id
-     * @param userId
-     * @param orgId
-     * @return
      */
     public String revoke(String id, String userId, String orgId) {
         BusinessTitle businessTitle = checkTitle(id);
@@ -344,9 +301,9 @@ public class BusinessTitleService {
         businessTitle.setUpdateTime(System.currentTimeMillis());
         businessTitleMapper.update(businessTitle);
 
-
         // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, businessTitle.getName(), originApprovalStatus, ApprovalState.REVOKED.toString());
+        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, businessTitle.getName(), originApprovalStatus,
+                ApprovalState.REVOKED.toString());
         logService.add(logDTO);
 
         return businessTitle.getApprovalStatus();
@@ -354,9 +311,6 @@ public class BusinessTitleService {
 
     /**
      * 下载模板
-     *
-     * @param response
-     * @param orgId
      */
     public void downloadImportTpl(HttpServletResponse response, String orgId) {
         //获取表头字段
@@ -364,29 +318,26 @@ public class BusinessTitleService {
 
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response, heads,
-                        Translator.get("business_title_import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new BusinessTitleTemplateWriteHandler(heads, getBusinessTitleConfig(orgId)), new CustomHeadColWidthStyleStrategy());
+                        Translator.get("business_title_import_tpl.name"), Translator.get(SheetKey.DATA),
+                        Translator.get(SheetKey.COMMENT),
+                        new BusinessTitleTemplateWriteHandler(heads, getBusinessTitleConfig(orgId)),
+                        new CustomHeadColWidthStyleStrategy());
     }
-
 
     private Map<String, Boolean> getBusinessTitleConfig(String orgId) {
         LambdaQueryWrapper<BusinessTitleConfig> configWrapper = new LambdaQueryWrapper<>();
         configWrapper.eq(BusinessTitleConfig::getOrganizationId, orgId);
         List<BusinessTitleConfig> businessTitleConfigs = businessTitleConfigMapper.selectListByLambda(configWrapper);
-        return businessTitleConfigs.stream().collect(Collectors.toMap(BusinessTitleConfig::getField, BusinessTitleConfig::getRequired));
+        return businessTitleConfigs.stream()
+                .collect(Collectors.toMap(BusinessTitleConfig::getField, BusinessTitleConfig::getRequired));
     }
 
     private List<List<String>> getTemplateHead() {
         return new BusinessTitleExcelDataFactory().getExcelDataLocal().getHead();
     }
 
-
     /**
      * 导入检查
-     *
-     * @param file
-     * @param orgId
-     * @return
      */
     public ImportResponse importPreCheck(MultipartFile file, String orgId, ImportRequest request) {
         if (file == null) {
@@ -395,19 +346,16 @@ public class BusinessTitleService {
         return checkImportExcel(file, orgId, request);
     }
 
-
     /**
      * 检查导入文件
-     *
-     * @param file
-     * @param orgId
-     * @return
      */
     private ImportResponse checkImportExcel(MultipartFile file, String orgId, ImportRequest request) {
         try {
             Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
-            BusinessTitleCheckEventListener eventListener = new BusinessTitleCheckEventListener(clazz, getBusinessTitleConfig(orgId), orgId, getTemplateHead(), request);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            BusinessTitleCheckEventListener eventListener = new BusinessTitleCheckEventListener(clazz,
+                    getBusinessTitleConfig(orgId), orgId, getTemplateHead(), request);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -416,14 +364,8 @@ public class BusinessTitleService {
         }
     }
 
-
     /**
      * 导入
-     *
-     * @param file
-     * @param userId
-     * @param orgId
-     * @return
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, String userId, String orgId, ImportRequest request) {
@@ -436,49 +378,55 @@ public class BusinessTitleService {
             ImportType businessTitleImportType = EnumUtils.valueOf(ImportType.class, request.getImportType());
             Consumer<List<BusinessTitle>> afterDto = null;
             switch (businessTitleImportType) {
-                case ADD -> {
-                    afterDto = (businessTitles) -> {
-                        List<LogDTO> logs = new ArrayList<>();
-                        businessTitles.forEach(title -> {
-                            title.setType(BusinessTitleType.CUSTOM.name());
-                            title.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
-                            logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD, LogModule.CONTRACT_BUSINESS_TITLE, title.getName()));
-                        });
-                        businessTitleMapper.batchInsert(businessTitles);
-                        logService.batchAdd(logs);
-                    };
-                }
-                case UPDATE -> {
-                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                    ExtBusinessTitleMapper mapper = sqlSession.getMapper(ExtBusinessTitleMapper.class);
-                    afterDto = (businessTitles) -> {
-                        List<BusinessTitle> titleList = businessTitleMapper.selectByIds(businessTitles.stream().map(BusinessTitle::getId).toList());
-                        Map<String, BusinessTitle> idMap = titleList.stream().collect(Collectors.toMap(BusinessTitle::getId, Function.identity()));
-                        List<LogDTO> logs = new ArrayList<>();
-                        Set<String> titleSet = new HashSet<>();
-                        businessTitles.removeIf(user -> !titleSet.add(user.getName()));
-                        businessTitles.forEach(title -> {
-                            if (idMap.containsKey(title.getId())) {
-                                BusinessTitle originTitle = idMap.get(title.getId());
-                                BeanCopyUtils.fillEmptyFields(title, originTitle);
-                                title.setUpdateTime(System.currentTimeMillis());
-                                title.setUpdateUser(userId);
-                                mapper.updateById(title);
-                                LogDTO logDTO = new LogDTO(orgId, title.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_BUSINESS_TITLE, title.getName());
-                                logDTO.setOriginalValue(originTitle);
-                                logDTO.setModifiedValue(title);
-                                logs.add(logDTO);
-                            }
-                        });
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-                        logService.batchAdd(logs);
-                    };
-                }
+            case ADD -> {
+                afterDto = (businessTitles) -> {
+                    List<LogDTO> logs = new ArrayList<>();
+                    businessTitles.forEach(title -> {
+                        title.setType(BusinessTitleType.CUSTOM.name());
+                        title.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
+                        logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD,
+                                LogModule.CONTRACT_BUSINESS_TITLE, title.getName()));
+                    });
+                    businessTitleMapper.batchInsert(businessTitles);
+                    logService.batchAdd(logs);
+                };
+            }
+            case UPDATE -> {
+                SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                ExtBusinessTitleMapper mapper = sqlSession.getMapper(ExtBusinessTitleMapper.class);
+                afterDto = (businessTitles) -> {
+                    List<BusinessTitle> titleList = businessTitleMapper
+                            .selectByIds(businessTitles.stream().map(BusinessTitle::getId).toList());
+                    Map<String, BusinessTitle> idMap = titleList.stream()
+                            .collect(Collectors.toMap(BusinessTitle::getId, Function.identity()));
+                    List<LogDTO> logs = new ArrayList<>();
+                    Set<String> titleSet = new HashSet<>();
+                    businessTitles.removeIf(user -> !titleSet.add(user.getName()));
+                    businessTitles.forEach(title -> {
+                        if (idMap.containsKey(title.getId())) {
+                            BusinessTitle originTitle = idMap.get(title.getId());
+                            BeanCopyUtils.fillEmptyFields(title, originTitle);
+                            title.setUpdateTime(System.currentTimeMillis());
+                            title.setUpdateUser(userId);
+                            mapper.updateById(title);
+                            LogDTO logDTO = new LogDTO(orgId, title.getId(), userId, LogType.UPDATE,
+                                    LogModule.CONTRACT_BUSINESS_TITLE, title.getName());
+                            logDTO.setOriginalValue(originTitle);
+                            logDTO.setModifiedValue(title);
+                            logs.add(logDTO);
+                        }
+                    });
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+                    logService.batchAdd(logs);
+                };
+            }
             }
 
-            var eventListener = new BusinessTitleImportEventListener(clazz, BusinessTitle.class, getBusinessTitleConfig(orgId), orgId, userId, afterDto, getTemplateHead(), request);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            var eventListener = new BusinessTitleImportEventListener(clazz, BusinessTitle.class,
+                    getBusinessTitleConfig(orgId), orgId, userId, afterDto, getTemplateHead(), request);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -487,18 +435,16 @@ public class BusinessTitleService {
         }
     }
 
-
     /**
      * 三方查询
-     *
-     * @param keyword
-     * @param orgId
      */
     public BusinessTitle thirdQuery(String keyword, String orgId) {
         BusinessTitle businessTitle = new BusinessTitle();
-        ThirdConfigBaseDTO<?> thirdConfig = integrationConfigService.getThirdConfigForPublic(ThirdConfigTypeConstants.QCC.name(), orgId);
+        ThirdConfigBaseDTO<?> thirdConfig = integrationConfigService
+                .getThirdConfigForPublic(ThirdConfigTypeConstants.QCC.name(), orgId);
         if (thirdConfig.getVerify()) {
-            QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), QccThirdConfigRequest.class);
+            QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(),
+                    QccThirdConfigRequest.class);
             if (qccConfig != null && qccConfig.getQccEnable()) {
                 businessTitle = getTitleInfo(keyword, qccConfig);
             }
@@ -510,7 +456,9 @@ public class BusinessTitleService {
     private BusinessTitle getTitleInfo(String keyword, QccThirdConfigRequest qccConfig) {
         Map<String, String> headers = buildHeaders(qccConfig);
         try {
-            String url = HttpClientUtils.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.ENTERPRISE_INFO_VERIFY_API), qccConfig.getQccAccessKey(), keyword);
+            String url = HttpClientUtils.urlTransfer(
+                    qccConfig.getQccAddress().concat(QccApiPaths.ENTERPRISE_INFO_VERIFY_API),
+                    qccConfig.getQccAccessKey(), keyword);
             String json = HttpClientUtils.sendGetRequest(url, headers);
             QccEnterpriseInfo qccEnterpriseInfo = JSON.parseObject(json, QccEnterpriseInfo.class);
             if (!Strings.CI.equals("200", qccEnterpriseInfo.getStatus())) {
@@ -554,20 +502,16 @@ public class BusinessTitleService {
         return businessTitle;
     }
 
-
     /**
      * 分页查询
-     *
-     * @param keyword
-     * @param pageIndex
-     * @param orgId
-     * @return
      */
     public Pager<List<String>> thirdQueryOption(String keyword, Integer pageIndex, String orgId) {
         Pager<List<String>> page = new Pager<>();
-        ThirdConfigBaseDTO<?> thirdConfig = integrationConfigService.getThirdConfigForPublic(ThirdConfigTypeConstants.QCC.name(), orgId);
+        ThirdConfigBaseDTO<?> thirdConfig = integrationConfigService
+                .getThirdConfigForPublic(ThirdConfigTypeConstants.QCC.name(), orgId);
         if (thirdConfig.getVerify()) {
-            QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), QccThirdConfigRequest.class);
+            QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(),
+                    QccThirdConfigRequest.class);
             if (qccConfig != null && qccConfig.getQccEnable()) {
                 getNameList(keyword, qccConfig, String.valueOf(pageIndex), page);
             }
@@ -575,10 +519,13 @@ public class BusinessTitleService {
         return page;
     }
 
-    private void getNameList(String keyword, QccThirdConfigRequest qccConfig, String pageIndex, Pager<List<String>> page) {
+    private void getNameList(String keyword, QccThirdConfigRequest qccConfig, String pageIndex,
+            Pager<List<String>> page) {
         Map<String, String> headers = buildHeaders(qccConfig);
         try {
-            String url = HttpClientUtils.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.FUZZY_SEARCH_LIST_API), qccConfig.getQccAccessKey(), keyword, pageIndex);
+            String url = HttpClientUtils.urlTransfer(
+                    qccConfig.getQccAddress().concat(QccApiPaths.FUZZY_SEARCH_LIST_API), qccConfig.getQccAccessKey(),
+                    keyword, pageIndex);
             String json = HttpClientUtils.sendGetRequest(url, headers);
             QccFuzzyQueryInfo queryInfo = JSON.parseObject(json, QccFuzzyQueryInfo.class);
             if (!Strings.CI.equals("200", queryInfo.getStatus())) {

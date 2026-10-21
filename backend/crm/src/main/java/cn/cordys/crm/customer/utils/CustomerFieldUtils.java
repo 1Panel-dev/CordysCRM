@@ -25,7 +25,8 @@ public class CustomerFieldUtils {
         systemFieldMap.put("recyclePoolName", data.getRecyclePoolName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+            systemFieldMap.put("approvalStatus",
+                    Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         return systemFieldMap;
     }

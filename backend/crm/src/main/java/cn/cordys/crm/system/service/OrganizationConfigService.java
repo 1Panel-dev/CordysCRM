@@ -49,13 +49,14 @@ public class OrganizationConfigService {
     @Resource
     private MailSender mailSender;
 
-
     public EmailDTO getEmail(String organizationId) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId,
+                OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (organizationConfig == null) {
             return new EmailDTO();
         }
-        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
+        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper
+                .getOrganizationConfigDetail(organizationConfig.getId());
         if (organizationConfigDetail == null) {
             return new EmailDTO();
         }
@@ -64,7 +65,8 @@ public class OrganizationConfigService {
 
     @OperationLog(module = LogModule.SYSTEM_BUSINESS_MAIL, type = LogType.UPDATE, operator = "{#userId}")
     public void editEmail(EmailDTO emailDTO, String organizationId, String userId) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId,
+                OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (organizationConfig == null) {
             organizationConfig = new OrganizationConfig();
             organizationConfig.setId(IDGenerator.nextStr());
@@ -77,9 +79,11 @@ public class OrganizationConfigService {
             organizationConfigBaseMapper.insert(organizationConfig);
         }
         EmailDTO emailDTOOld = new EmailDTO();
-        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
+        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper
+                .getOrganizationConfigDetail(organizationConfig.getId());
         if (organizationConfigDetail == null) {
-            organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(emailDTO));
+            organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig,
+                    JSON.toJSONString(emailDTO));
             organizationConfigDetail.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
             organizationConfigDetail.setName(Translator.get("email.setting"));
             organizationConfigDetail.setEnable(true);
@@ -99,10 +103,10 @@ public class OrganizationConfigService {
                 .resourceId(organizationConfigDetail.getId())
                 .modifiedValue(emailDTO)
                 .build());
-
     }
 
-    private OrganizationConfigDetail getOrganizationConfigDetail(String userId, OrganizationConfig organizationConfig, String jsonString) {
+    private OrganizationConfigDetail getOrganizationConfigDetail(String userId, OrganizationConfig organizationConfig,
+            String jsonString) {
         OrganizationConfigDetail organizationConfigDetail = new OrganizationConfigDetail();
         organizationConfigDetail.setId(IDGenerator.nextStr());
         organizationConfigDetail.setContent(jsonString.getBytes());
@@ -130,7 +134,8 @@ public class OrganizationConfigService {
             String username = javaMailSender.getUsername();
             String email = StringUtils.isNotBlank(username) && username.contains("@")
                     ? username
-                    : username + "@" + Objects.requireNonNull(javaMailSender.getHost()).substring(javaMailSender.getHost().indexOf(".") + 1);
+                    : username + "@" + Objects.requireNonNull(javaMailSender.getHost())
+                            .substring(javaMailSender.getHost().indexOf(".") + 1);
 
             InternetAddress from = new InternetAddress();
             String smtpFrom = emailDTO.getFrom();
@@ -155,12 +160,10 @@ public class OrganizationConfigService {
         }
     }
 
-
     /**
      * 当前组织的用户数据是否是第三方同步的
      *
      * @param organizationId 组织ID
-     *
      * @return true 是第三方同步的 false 不是第三方同步的
      */
     public boolean syncCheck(String organizationId) {
@@ -182,7 +185,6 @@ public class OrganizationConfigService {
         return extOrganizationConfigMapper.getSyncFlag(organizationId, type) > 0;
     }
 
-
     /**
      * 更新三方同步标识
      *
@@ -190,9 +192,8 @@ public class OrganizationConfigService {
      * @param syncResource 同步来源
      */
     public void updateSyncFlag(String orgId, String syncResource, Boolean syncStatus) {
-        extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.THIRD.name(), syncStatus);
+        extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource,
+                OrganizationConfigConstants.ConfigType.THIRD.name(), syncStatus);
     }
 
-
 }
-

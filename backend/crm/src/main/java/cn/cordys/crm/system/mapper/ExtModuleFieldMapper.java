@@ -24,11 +24,15 @@ public interface ExtModuleFieldMapper {
     void deletePropByIds(@Param("ids") List<String> ids);
 
     List<OptionDTO> getSourceOptionsByIds(@Param("tableName") String table, @Param("ids") List<String> ids);
-    List<OptionDTO> getCustomFormOptionsByIds(@Param("ids") List<String> ids);
-	List<OptionDTO> getSourceOptionsByName(@Param("tableName") String table, @Param("keyword") String keyword, @Param("orgId") String orgId);
-	List<OptionDTO> getCustomFormOptionsByName(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
-	List<ModuleField> getModuleField(@Param("orgId") String orgId, @Param("formKeys") List<String> formKeys);
+    List<OptionDTO> getCustomFormOptionsByIds(@Param("ids") List<String> ids);
+
+    List<OptionDTO> getSourceOptionsByName(@Param("tableName") String table, @Param("keyword") String keyword,
+            @Param("orgId") String orgId);
+
+    List<OptionDTO> getCustomFormOptionsByName(@Param("keyword") String keyword, @Param("orgId") String orgId);
+
+    List<ModuleField> getModuleField(@Param("orgId") String orgId, @Param("formKeys") List<String> formKeys);
 
     /**
      * 批量更新移动端显示
@@ -38,17 +42,19 @@ public interface ExtModuleFieldMapper {
      */
     void batchUpdateMobile(@Param("ids") List<String> ids, @Param("mobile") Boolean mobile);
 
-	/**
-	 * 获取表单字段最大位次
-	 * @param formId 表单ID
-	 * @return 位置下标
-	 */
-	Long getMaxFieldPosByFormId(String formId);
+    /**
+     * 获取表单字段最大位次
+     *
+     * @param formId 表单ID
+     * @return 位置下标
+     */
+    Long getMaxFieldPosByFormId(String formId);
 
-	/**
-	 * 获取表单子表格字段集合
-	 * @param formKey 表单Key
-	 * @return 子表格字段集合
-	 */
-	List<ModuleFieldBlob> getFormSubFields(@Param("formKey") String formKey);
+    /**
+     * 获取表单子表格字段集合
+     *
+     * @param formKey 表单Key
+     * @return 子表格字段集合
+     */
+    List<ModuleFieldBlob> getFormSubFields(@Param("formKey") String formKey);
 }

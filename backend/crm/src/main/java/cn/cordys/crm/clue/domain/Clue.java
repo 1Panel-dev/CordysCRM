@@ -7,12 +7,10 @@ import lombok.Data;
 
 import java.util.List;
 
-
 /**
  * 线索
  *
  * @author jianxing
- * @date 2025-03-10 11:57:28
  */
 @Data
 @Table(name = "clue")

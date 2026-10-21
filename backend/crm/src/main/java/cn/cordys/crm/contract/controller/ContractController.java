@@ -49,7 +49,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.List;
 
-
 @Tag(name = "合同")
 @RestController
 @RequestMapping("/contract")
@@ -71,13 +70,12 @@ public class ContractController {
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
-
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.CONTRACT_ADD)
@@ -99,7 +97,6 @@ public class ContractController {
     public void updateStage(@Validated @RequestBody ContractStageRequest request) {
         contractService.updateStage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @CsPermission(value = PermissionConstants.CONTRACT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT)
@@ -136,7 +133,6 @@ public class ContractController {
         return contractService.getFormSnapshot(id, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/page")
     @CsPermission(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "列表")
@@ -144,7 +140,8 @@ public class ContractController {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
-        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
+        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, false);
     }
 
     @PostMapping("/batch/update")
@@ -155,25 +152,31 @@ public class ContractController {
     }
 
     @PostMapping("/contract-payment-plan/page")
-    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})
+    @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ })
     @Operation(summary = "合同详情-回款列表")
-    public PagerWithOption<List<ContractPaymentPlanListResponse>> paymentPlanList(@Validated @RequestBody ContractDetailPaymentPlanPageRequest request) {
+    public PagerWithOption<List<ContractPaymentPlanListResponse>> paymentPlanList(
+            @Validated @RequestBody ContractDetailPaymentPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        return contractPaymentPlanService.list(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @PostMapping("/contract-payment-record/page")
-    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
+    @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ })
     @Operation(summary = "合同详情-回款记录")
-    public PagerWithOption<List<ContractPaymentRecordResponse>> paymentRecordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
+    public PagerWithOption<List<ContractPaymentRecordResponse>> paymentRecordList(
+            @Validated @RequestBody ContractPaymentRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.list(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @GetMapping("/tab")
@@ -228,32 +231,38 @@ public class ContractController {
     }
 
     @PostMapping("/invoice/page")
-    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
+    @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ })
     @Operation(summary = "合同详情-发票列表")
-    public PagerWithOption<List<ContractInvoiceListResponse>> invoiceList(@Validated @RequestBody ContractDetailInvoicePageRequest request) {
+    public PagerWithOption<List<ContractInvoiceListResponse>> invoiceList(
+            @Validated @RequestBody ContractDetailInvoicePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
-        return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_INVOICE_READ);
+        return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
 
     @PostMapping("/order/page")
-    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.ORDER_READ})
+    @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.ORDER_READ })
     @Operation(summary = "合同详情-订单列表")
-    public PagerWithOption<List<OrderListResponse>> invoiceList(@Validated @RequestBody ContractOrderPageRequest request) {
+    public PagerWithOption<List<OrderListResponse>> invoiceList(
+            @Validated @RequestBody ContractOrderPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
-        return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
+        return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, false);
     }
 
     @GetMapping("/invoice/statistic/{contractId}")
-    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
+    @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ })
     @Operation(summary = "合同详情-发票列表统计")
     public CustomerInvoiceStatisticResponse calculateCustomerInvoiceStatistic(@PathVariable String contractId) {
-        BigDecimal invoiceAmount = contractInvoiceService.calculateContractInvoiceAmount(contractId, SessionUtils.getUserId(),
+        BigDecimal invoiceAmount = contractInvoiceService.calculateContractInvoiceAmount(contractId,
+                SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
 
         CustomerInvoiceStatisticResponse response = new CustomerInvoiceStatisticResponse();
@@ -264,7 +273,6 @@ public class ContractController {
         return response;
     }
 
-
     @PostMapping("/statistic")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "合同统计")
@@ -272,7 +280,8 @@ public class ContractController {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
-        return contractService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return contractService.searchStatistic(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @PostMapping("/sort")
@@ -281,7 +290,6 @@ public class ContractController {
     public void sortModule(@Validated @RequestBody StageSortRequest request) {
         contractService.sort(request, SessionUtils.getUserId());
     }
-
 
     @GetMapping("/template/download")
     @RequiresPermissions(PermissionConstants.CONTRACT_IMPORT)
@@ -293,14 +301,17 @@ public class ContractController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @RequiresPermissions(PermissionConstants.CONTRACT_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") @NotNull MultipartFile file) {
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") @NotNull MultipartFile file) {
         return contractService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @RequiresPermissions(PermissionConstants.CONTRACT_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return contractService.realImport(file, request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return contractService.realImport(file, request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 }

@@ -26,9 +26,9 @@ import cn.cordys.crm.system.service.ExportTaskCenterService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -130,7 +130,8 @@ public class PoolClueControllerTests extends BaseTest {
         request.setClueId(testDataId);
         request.setPoolId(testPoolId);
         MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
-        assert mvcResult.getResponse().getContentAsString().contains(Translator.getWithArgs("customer.capacity.over", 0));
+        assert mvcResult.getResponse().getContentAsString()
+                .contains(Translator.getWithArgs("customer.capacity.over", 0));
         // 清理测试组织的库容，避免残留限制影响后续用例。
         clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<ClueCapacity>()
                 .eq(ClueCapacity::getOrganizationId, DEFAULT_ORGANIZATION_ID));
@@ -190,7 +191,8 @@ public class PoolClueControllerTests extends BaseTest {
         pickRequest.setClueId(testDataId);
         pickRequest.setPoolId(testPoolId);
         MvcResult result = this.requestPost(PICK, pickRequest).andExpect(status().is5xxServerError()).andReturn();
-        Assertions.assertTrue(result.getResponse().getContentAsString().contains(Translator.getWithArgs("pool.resource.frozen", frozenClue.getName())));
+        Assertions.assertTrue(result.getResponse().getContentAsString()
+                .contains(Translator.getWithArgs("pool.resource.frozen", frozenClue.getName())));
 
         Clue anotherFrozenClue = createClue();
         anotherFrozenClue.setName("another-frozen-clue");
@@ -263,7 +265,8 @@ public class PoolClueControllerTests extends BaseTest {
         PoolBatchAssignRequest request = new PoolBatchAssignRequest();
         request.setBatchIds(List.of("aaa"));
         request.setAssignUserId("cc");
-        MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError())
+                .andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue.not.exist"));
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN, BATCH_ASSIGN, request);
 

@@ -51,7 +51,8 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
     private BaseService baseService;
 
     @Override
-    public Pager<List<GlobalCustomerResponse>> startSearchNoOption(BasePageRequest request, String orgId, String userId) {
+    public Pager<List<GlobalCustomerResponse>> startSearchNoOption(BasePageRequest request, String orgId,
+            String userId) {
         //获取查询关键字
         String keyword = request.getKeyword();
         if (StringUtils.isBlank(keyword)) {
@@ -74,7 +75,9 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> customerSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER)).toList();
+            List<UserSearchConfig> customerSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER))
+                    .toList();
             if (CollectionUtils.isEmpty(customerSearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
                 return PageUtils.setPageInfo(page, List.of());
@@ -83,15 +86,18 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
                 //如果和固定展示列名重复不加入fieldIdSet
                 if (StringUtils.isBlank(userSearchConfig.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
-                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CUSTOMER_NAME.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
+                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                        BusinessModuleField.CUSTOMER_NAME.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
                 }
                 buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
             }
         } else {
             //设置默认查询属性
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -108,15 +114,19 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
             return PageUtils.setPageInfo(page, List.of());
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER);
-        List<GlobalCustomerResponse> buildList = buildListData(globalCustomerResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId,
+                SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER);
+        List<GlobalCustomerResponse> buildList = buildListData(globalCustomerResponses, orgId, userId,
+                searchFieldMaskConfigs, fieldIdSet);
         return PageUtils.setPageInfo(page, buildList);
     }
 
-    private List<GlobalCustomerResponse> buildListData(List<GlobalCustomerResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
+    private List<GlobalCustomerResponse> buildListData(List<GlobalCustomerResponse> list, String orgId, String userId,
+            List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet) {
         List<String> customerIds = list.stream().map(GlobalCustomerResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> customerFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
+        Map<String, List<BaseModuleFieldValue>> customerFiledMap = customerFieldService.getResourceFieldMap(customerIds,
+                true);
 
         List<String> ownerIds = list.stream()
                 .map(GlobalCustomerResponse::getOwner)
@@ -128,14 +138,19 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
-        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(),
+                orgId);
+        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream()
+                .collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
         list.forEach(customerResponse -> {
             // 判断该数据是否有权限
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, customerResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, customerResponse.getOwner(),
+                    PermissionConstants.CUSTOMER_MANAGEMENT_READ);
             // 处理自定义字段数据
             if (CollectionUtils.isNotEmpty(fieldIdSet)) {
-                List<BaseModuleFieldValue> returnCustomerFields = getBaseModuleFieldValues(fieldIdSet, customerResponse.getId(), customerFiledMap, customerFormConfig, searchFieldMaskConfigMap, hasPermission);
+                List<BaseModuleFieldValue> returnCustomerFields = getBaseModuleFieldValues(fieldIdSet,
+                        customerResponse.getId(), customerFiledMap, customerFormConfig, searchFieldMaskConfigMap,
+                        hasPermission);
 
                 customerResponse.setModuleFields(returnCustomerFields);
             }
@@ -148,14 +163,13 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
             if (!hasPermission) {
                 searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
-                        customerResponse.setName((String) getInputFieldValue(customerResponse.getName(), customerResponse.getName().length()));
+                        customerResponse.setName((String) getInputFieldValue(customerResponse.getName(),
+                                customerResponse.getName().length()));
                     }
                 });
             }
             customerResponse.setHasPermission(hasPermission);
         });
         return list;
-
-
     }
 }

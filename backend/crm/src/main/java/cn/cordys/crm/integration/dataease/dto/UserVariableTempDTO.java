@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-21  18:21
+ * @author jianxing
  */
 @Data
 public class UserVariableTempDTO {

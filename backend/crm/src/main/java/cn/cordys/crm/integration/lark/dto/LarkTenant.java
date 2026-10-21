@@ -5,7 +5,6 @@ import lombok.Data;
 
 /**
  * @author guoyuqi
- * @date 2024-07-26
  */
 @Data
 public class LarkTenant {

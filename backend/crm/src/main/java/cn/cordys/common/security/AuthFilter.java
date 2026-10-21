@@ -7,22 +7,13 @@ import org.apache.shiro.web.filter.authc.AuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-04-23  10:47
+ * @author jianxing
  */
 public class AuthFilter extends AuthenticationFilter {
-
 
     /**
      * 重写 onAccessDenied 方法，避免认证失败返回 302 重定向
      * 没有认证返回 401 状态码
-     *
-     * @param request
-     * @param response
-     *
-     * @return
-     *
-     * @throws Exception
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {

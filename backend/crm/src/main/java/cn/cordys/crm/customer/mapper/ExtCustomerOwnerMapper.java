@@ -5,7 +5,6 @@ import org.apache.ibatis.annotations.Param;
 
 /**
  * @author jianxing
- * @date 2025-02-24 11:06:10
  */
 public interface ExtCustomerOwnerMapper {
 
@@ -20,13 +19,13 @@ public interface ExtCustomerOwnerMapper {
      * @param owner          转移前的负责人
      * @param collectionTime 转移前的领取时间
      */
-    void deleteTransferHistory(@Param("customerId") String customerId, @Param("owner") String owner, @Param("collectionTime") Long collectionTime);
+    void deleteTransferHistory(@Param("customerId") String customerId, @Param("owner") String owner,
+            @Param("collectionTime") Long collectionTime);
 
     /**
      * 获取最近的客户负责人
      *
      * @param customerId 客户ID
-     *
      * @return 负责人ID
      */
     String getRecentOwner(@Param("customerId") String customerId);

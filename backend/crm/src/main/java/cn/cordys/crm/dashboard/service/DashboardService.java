@@ -79,12 +79,6 @@ public class DashboardService extends DashboardSortService {
 
     /**
      * 添加仪表板
-     *
-     * @param request
-     * @param orgId
-     * @param userId
-     *
-     * @return
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.ADD)
     public Dashboard addDashboard(DashboardAddRequest request, String orgId, String userId) {
@@ -123,20 +117,14 @@ public class DashboardService extends DashboardSortService {
         return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
     }
 
-
     private void checkDashboardName(String name, String dashboardModuleId, String orgId, String id) {
         if (extDashboardMapper.countByName(name, dashboardModuleId, orgId, id) > 0) {
             throw new GenericException(Translator.get("dashboard_name_exist"));
         }
     }
 
-
     /**
      * 仪表板详情
-     *
-     * @param id
-     *
-     * @return
      */
     public DashboardDetailResponse getDashboardDetail(String id) {
         DashboardDetailResponse response = extDashboardMapper.getDetail(id);
@@ -148,10 +136,6 @@ public class DashboardService extends DashboardSortService {
 
     /**
      * 更新仪表板
-     *
-     * @param request
-     * @param orgId
-     * @param userId
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.UPDATE)
     public void updateDashboard(DashboardUpdateRequest request, String orgId, String userId) {
@@ -176,8 +160,7 @@ public class DashboardService extends DashboardSortService {
                         .modifiedValue(newDetail)
                         .resourceId(request.getId())
                         .resourceName(resourceName)
-                        .build()
-        );
+                        .build());
     }
 
     private DashboardLogDTO getLogDetail(String id) {
@@ -197,12 +180,8 @@ public class DashboardService extends DashboardSortService {
         return dashboard;
     }
 
-
     /**
      * 重命名仪表板
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.UPDATE)
     public void rename(DashboardRenameRequest request, String userId, String orgId) {
@@ -223,15 +202,11 @@ public class DashboardService extends DashboardSortService {
                         .modifiedValue(checkDashboard(request.getId()))
                         .resourceId(request.getId())
                         .resourceName(resourceName)
-                        .build()
-        );
+                        .build());
     }
-
 
     /**
      * 删除仪表板
-     *
-     * @param id
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
@@ -243,15 +218,8 @@ public class DashboardService extends DashboardSortService {
         OperationLogContext.setResourceName(dashboard.getName());
     }
 
-
     /**
      * 列表查询
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public Pager<List<DashboardPageResponse>> getList(DashboardPageRequest request, String userId, String orgId) {
         List<String> departmentIds = new ArrayList<>();
@@ -261,7 +229,6 @@ public class DashboardService extends DashboardSortService {
             departmentIds = dashboardModuleService.getParentIds(departmentTree, departmentId);
         }
 
-
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<DashboardPageResponse> dashboardList = extDashboardMapper.list(request, userId, orgId, departmentIds);
         handleData(dashboardList, userId);
@@ -270,8 +237,6 @@ public class DashboardService extends DashboardSortService {
 
     /**
      * 数据处理
-     *
-     * @param dashboardList
      */
     private void handleData(List<DashboardPageResponse> dashboardList, String userId) {
         if (CollectionUtils.isNotEmpty(dashboardList)) {
@@ -301,12 +266,8 @@ public class DashboardService extends DashboardSortService {
         }
     }
 
-
     /**
      * 收藏仪表板
-     *
-     * @param id
-     * @param userId
      */
     public void collect(String id, String userId) {
         checkCollect(id, userId);
@@ -327,15 +288,8 @@ public class DashboardService extends DashboardSortService {
         }
     }
 
-
     /**
      * 我的收藏列表
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public List<DashboardPageResponse> collectList(BasePageRequest request, String userId, String orgId) {
         List<DashboardPageResponse> dashboardList = extDashboardCollectionMapper.collectList(request, userId, orgId);
@@ -347,13 +301,8 @@ public class DashboardService extends DashboardSortService {
         extDashboardCollectionMapper.unCollect(dashboardId, userId);
     }
 
-
     /**
      * 仪表板排序
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     public void editPos(DashboardEditPosRequest request, String userId, String orgId) {
         Dashboard dashboard = checkDashboard(request.getMoveId());
@@ -372,18 +321,16 @@ public class DashboardService extends DashboardSortService {
         moveNode(request, orgId);
     }
 
-
     public void moveNode(DashboardEditPosRequest posRequest, String orgId) {
-        NodeMoveRequest request = super.getNodeMoveRequest(posRequest.getMoveId(), posRequest.getTargetId(), posRequest.getMoveMode(), true);
+        NodeMoveRequest request = super.getNodeMoveRequest(posRequest.getMoveId(), posRequest.getTargetId(),
+                posRequest.getMoveMode(), true);
         MoveNodeSortDTO sortDTO = super.getNodeSortDTO(
                 orgId,
                 request,
                 extDashboardMapper::selectDragInfoById,
-                extDashboardMapper::selectNodeByPosOperator
-        );
+                extDashboardMapper::selectNodeByPosOperator);
         super.sort(sortDTO);
     }
-
 
     @Override
     public void updatePos(String id, long pos) {

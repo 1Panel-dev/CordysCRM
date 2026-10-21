@@ -12,7 +12,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-08 17:42:41
  */
 public interface ExtProductMapper extends StatisticSqlMapper {
 
@@ -30,9 +29,11 @@ public interface ExtProductMapper extends StatisticSqlMapper {
 
     Long getPos(@Param("orgId") String orgId);
 
-    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId,
+            @Param("resourceType") String resourceType);
 
-    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId,
+            @Param("resourceType") String resourceType);
 
     void updateProduct(@Param("product") Product product);
 

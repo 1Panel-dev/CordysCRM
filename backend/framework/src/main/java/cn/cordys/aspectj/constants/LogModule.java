@@ -33,7 +33,6 @@ public class LogModule {
      */
     public static final String SYSTEM_BUSINESS_UI = "SYSTEM_BUSINESS_UI";
 
-
     /**
      * 用户
      */
@@ -100,7 +99,6 @@ public class LogModule {
      */
     public static final String OPPORTUNITY_QUOTATION = "OPPORTUNITY_QUOTATION";
 
-
     //todo end
 
     // 可以根据需要扩展其他模块常量
@@ -131,9 +129,9 @@ public class LogModule {
      * 合同回款计划
      */
     public static final String CONTRACT_PAYMENT = "CONTRACT_PAYMENT";
-	/**
-	 * 合同回款记录
-	 */
+    /**
+     * 合同回款记录
+     */
     public static final String CONTRACT_PAYMENT_RECORD = "CONTRACT_PAYMENT_RECORD";
     /**
      * 发票

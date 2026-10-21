@@ -18,7 +18,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-08 17:42:41
  */
 @Tag(name = "线索责任人历史")
 @RestController
@@ -28,7 +27,8 @@ public class ClueOwnerHistoryController {
     private ClueOwnerHistoryService clueOwnerHistoryService;
 
     @GetMapping("/list/{clueId}")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
+            PermissionConstants.CLUE_MANAGEMENT_POOL_READ }, logical = Logical.OR)
     @Operation(summary = "线索责任人历史列表")
     public List<ClueOwnerListResponse> list(@PathVariable String clueId) {
         return clueOwnerHistoryService.list(clueId, OrganizationContext.getOrganizationId());

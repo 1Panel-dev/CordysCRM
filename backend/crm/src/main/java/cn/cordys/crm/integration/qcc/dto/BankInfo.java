@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class BankInfo {
 
-
     /**
      * 开户银行
      */
@@ -18,6 +17,5 @@ public class BankInfo {
      */
     @JsonProperty("BankAccount")
     private String bankAccount;
-
 
 }

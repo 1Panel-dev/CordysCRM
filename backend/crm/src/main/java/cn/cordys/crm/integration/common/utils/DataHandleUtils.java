@@ -46,7 +46,6 @@ public class DataHandleUtils {
     private List<ThirdDepartment> thirdDepartmentTree;
     private Long nextPos;
 
-
     public DataHandleUtils(String orgId, Map<String, List<ThirdUser>> departmentUserMap, String type) {
         this.departmentService = CommonBeanFactory.getBean(DepartmentService.class);
         this.organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
@@ -58,7 +57,8 @@ public class DataHandleUtils {
         this.departmentUserMap = departmentUserMap;
 
         assert departmentService != null;
-        this.internalDepartment = departmentService.getInternalDepartment(orgId, ThirdConfigTypeConstants.INTERNAL.name());
+        this.internalDepartment = departmentService.getInternalDepartment(orgId,
+                ThirdConfigTypeConstants.INTERNAL.name());
         this.nextPos = departmentService.getNextPos(orgId);
         this.type = type;
     }
@@ -100,9 +100,7 @@ public class DataHandleUtils {
         if (CollectionUtils.isNotEmpty(thirdDepartment.getChildren())) {
             thirdDepartment.getChildren().stream()
                     .sorted(Comparator.comparing(ThirdDepartment::getOrder).reversed())
-                    .forEach(department ->
-                            handleTreeAddData(department, operatorId)
-                    );
+                    .forEach(department -> handleTreeAddData(department, operatorId));
         }
     }
 
@@ -171,7 +169,8 @@ public class DataHandleUtils {
             String id = IDGenerator.nextStr();
 
             if (CollectionUtils.isNotEmpty(organizationUsers)) {
-                OrganizationUser organizationUser = organizationUsers.stream().filter(user -> Strings.CI.equals(user.getResourceUserId(), thirdUser.getUserId()))
+                OrganizationUser organizationUser = organizationUsers.stream()
+                        .filter(user -> Strings.CI.equals(user.getResourceUserId(), thirdUser.getUserId()))
                         .findFirst().orElse(null);
                 if (organizationUser != null) {
                     return;
@@ -204,14 +203,16 @@ public class DataHandleUtils {
     public void handleUpdateData(List<ThirdDepartment> thirdDepartments, String operatorId) {
         List<DepartmentSourceUserDTO> disableUserList = new ArrayList<>();
 
-        Map<String, List<DepartmentSourceUserDTO>> userMap = organizationUserService.getuserBySourceId(orgId, departmentUserMap.keySet());
+        Map<String, List<DepartmentSourceUserDTO>> userMap = organizationUserService.getuserBySourceId(orgId,
+                departmentUserMap.keySet());
         departmentUserMap.forEach((k, v) -> {
             if (userMap.containsKey(k)) {
                 // 系统 当前部门下的用户
                 List<DepartmentSourceUserDTO> userList = userMap.get(k);
                 List<DepartmentSourceUserDTO> disableUser = userList.stream()
                         .filter(user -> v.stream()
-                                .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(), user.getResourceUserId())))
+                                .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(),
+                                        user.getResourceUserId())))
                         .collect(Collectors.toList());
 
                 if (CollectionUtils.isNotEmpty(disableUser)) {
@@ -235,52 +236,52 @@ public class DataHandleUtils {
             thirdDepartmentTree = ThirdDepartment.buildDepartmentTreeMultiple(
                     internalDepartment.getId(),
                     currentDepartmentList,
-                    thirdDepartments
-            );
+                    thirdDepartments);
         }
 
-        thirdDepartmentTree.forEach(thirdDepartment ->
-                handleTreeUpdateData(thirdDepartment, operatorId, currentDepartmentList, currentUserList, currentCommander)
-        );
+        thirdDepartmentTree.forEach(thirdDepartment -> handleTreeUpdateData(thirdDepartment, operatorId,
+                currentDepartmentList, currentUserList, currentCommander));
 
         saveAllEntities();
     }
 
     private void handleTreeUpdateData(ThirdDepartment thirdDepartment, String operatorId,
-                                      List<Department> currentDepartmentList,
-                                      List<OrganizationUser> currentUserList,
-                                      List<DepartmentCommander> currentCommander) {
+            List<Department> currentDepartmentList,
+            List<OrganizationUser> currentUserList,
+            List<DepartmentCommander> currentCommander) {
         buildUpdateData(thirdDepartment, operatorId, currentDepartmentList, currentUserList, currentCommander);
 
         if (CollectionUtils.isNotEmpty(thirdDepartment.getChildren())) {
             thirdDepartment.getChildren().stream()
-                    .sorted(Comparator.comparing(ThirdDepartment::getOrder, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-                    .forEach(department ->
-                            handleTreeUpdateData(department, operatorId, currentDepartmentList, currentUserList, currentCommander)
-                    );
+                    .sorted(Comparator
+                            .comparing(ThirdDepartment::getOrder, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .reversed())
+                    .forEach(department -> handleTreeUpdateData(department, operatorId, currentDepartmentList,
+                            currentUserList, currentCommander));
         }
     }
 
     private void buildUpdateData(ThirdDepartment thirdDepartment, String operatorId,
-                                 List<Department> currentDepartmentList,
-                                 List<OrganizationUser> currentUserList,
-                                 List<DepartmentCommander> currentCommander) {
+            List<Department> currentDepartmentList,
+            List<OrganizationUser> currentUserList,
+            List<DepartmentCommander> currentCommander) {
         List<ThirdUser> thirdUsers = getThirdUsers(thirdDepartment);
 
         // 构建更新和新增部门参数
         buildUpdateAndAddDepartment(thirdDepartment, operatorId, currentDepartmentList);
 
         // 构建更新和新增用户参数
-        buildUpdateAndAddUser(thirdDepartment, thirdUsers, operatorId, currentUserList, currentDepartmentList, currentCommander);
+        buildUpdateAndAddUser(thirdDepartment, thirdUsers, operatorId, currentUserList, currentDepartmentList,
+                currentCommander);
     }
 
     /**
      * 构建更新和新增用户数据
      */
     private void buildUpdateAndAddUser(ThirdDepartment thirdDepartment, List<ThirdUser> thirdUsers, String operatorId,
-                                       List<OrganizationUser> currentUserList,
-                                       List<Department> currentDepartmentList,
-                                       List<DepartmentCommander> currentCommander) {
+            List<OrganizationUser> currentUserList,
+            List<Department> currentDepartmentList,
+            List<DepartmentCommander> currentCommander) {
         if (CollectionUtils.isEmpty(thirdUsers)) {
             return;
         }
@@ -312,7 +313,8 @@ public class DataHandleUtils {
     /**
      * 同步构建更新和新增部门数据
      */
-    private void buildUpdateAndAddDepartment(ThirdDepartment thirdDepartment, String operatorId, List<Department> currentDepartmentList) {
+    private void buildUpdateAndAddDepartment(ThirdDepartment thirdDepartment, String operatorId,
+            List<Department> currentDepartmentList) {
         if (thirdDepartment.getIsRoot()) {
             // 更新根部门
             Department department = new Department();
@@ -331,7 +333,8 @@ public class DataHandleUtils {
     /**
      * 构建子部门数据
      */
-    private void buildChildrenDepartment(ThirdDepartment thirdDepartment, String operatorId, List<Department> currentDepartmentList) {
+    private void buildChildrenDepartment(ThirdDepartment thirdDepartment, String operatorId,
+            List<Department> currentDepartmentList) {
         long currentTime = System.currentTimeMillis();
 
         if (CollectionUtils.isEmpty(currentDepartmentList)) {
@@ -392,7 +395,7 @@ public class DataHandleUtils {
     }
 
     private OrganizationUser createOrganizationUser(String userId, ThirdDepartment thirdDepartment,
-                                                    ThirdUser thirdUser, String operatorId, long timestamp) {
+            ThirdUser thirdUser, String operatorId, long timestamp) {
         OrganizationUser orgUser = new OrganizationUser();
         orgUser.setId(IDGenerator.nextStr());
         orgUser.setDepartmentId(thirdDepartment.getCrmId());
@@ -409,8 +412,7 @@ public class DataHandleUtils {
     }
 
     private void addDepartmentCommanderIfNeeded(String userId, ThirdDepartment thirdDepartment,
-                                                ThirdUser thirdUser, String operatorId, long timestamp) {
-
+            ThirdUser thirdUser, String operatorId, long timestamp) {
         if (thirdUser.getIsLeaderInDept()) {
             DepartmentCommander commander = new DepartmentCommander();
             commander.setId(IDGenerator.nextStr());
@@ -443,7 +445,7 @@ public class DataHandleUtils {
     }
 
     private void updateExistingUser(OrganizationUser orgUser, ThirdUser thirdUser,
-                                    String departmentId, String operatorId, long timestamp) {
+            String departmentId, String operatorId, long timestamp) {
         // 更新用户基本信息
         User updateUser = new User();
         updateUser.setId(orgUser.getUserId());
@@ -466,9 +468,8 @@ public class DataHandleUtils {
     }
 
     private void addCommanderIfNeeded(String userId, String departmentId, ThirdUser thirdUser,
-                                      List<DepartmentCommander> currentCommander,
-                                      String operatorId, long timestamp) {
-
+            List<DepartmentCommander> currentCommander,
+            String operatorId, long timestamp) {
         if (thirdUser.getIsLeaderInDept()) {
             boolean commanderExists = Optional.ofNullable(currentCommander)
                     .orElse(Collections.emptyList())
@@ -491,11 +492,12 @@ public class DataHandleUtils {
     }
 
     private void addNewUser(ThirdUser thirdUser, ThirdDepartment thirdDepartment,
-                            String departmentId, String operatorId, long timestamp) {
+            String departmentId, String operatorId, long timestamp) {
         String id = IDGenerator.nextStr();
 
         if (CollectionUtils.isNotEmpty(organizationUsers)) {
-            OrganizationUser organizationUser = organizationUsers.stream().filter(user -> Strings.CI.equals(user.getResourceUserId(), thirdUser.getUserId()))
+            OrganizationUser organizationUser = organizationUsers.stream()
+                    .filter(user -> Strings.CI.equals(user.getResourceUserId(), thirdUser.getUserId()))
                     .findFirst().orElse(null);
             if (organizationUser != null) {
                 return;
@@ -530,7 +532,7 @@ public class DataHandleUtils {
     }
 
     private void updateExistingDepartment(Department existingDept, ThirdDepartment thirdDepartment,
-                                          List<Department> currentDepartmentList, String operatorId, long timestamp) {
+            List<Department> currentDepartmentList, String operatorId, long timestamp) {
         Department updateDept = new Department();
         updateDept.setId(existingDept.getId());
         updateDept.setName(thirdDepartment.getName());

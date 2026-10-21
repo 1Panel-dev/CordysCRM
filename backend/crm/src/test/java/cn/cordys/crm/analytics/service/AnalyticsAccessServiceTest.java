@@ -45,23 +45,28 @@ class AnalyticsAccessServiceTest {
         ReflectionTestUtils.setField(service, "customFormAccess", forms);
         ReflectionTestUtils.setField(service, "poolCustomerService", customerPools);
         ReflectionTestUtils.setField(service, "poolClueService", cluePools);
-        when(scopes.getDeptDataPermission(anyString(), anyString(), anyString(), anyString())).thenAnswer(invocation -> {
-            var scope = new DeptDataPermissionDTO();
-            String view = invocation.getArgument(2);
-            scope.setViewId(view);
-            scope.setAll(view.equals("ALL"));
-            scope.setSelf(view.equals("SELF"));
-            scope.setVisible(view.equals("VISIBLE"));
-            if (view.equals("DEPARTMENT")) scope.getDeptIds().add("dept-a");
-            return scope;
-        });
+        when(scopes.getDeptDataPermission(anyString(), anyString(), anyString(), anyString()))
+                .thenAnswer(invocation -> {
+                    var scope = new DeptDataPermissionDTO();
+                    String view = invocation.getArgument(2);
+                    scope.setViewId(view);
+                    scope.setAll(view.equals("ALL"));
+                    scope.setSelf(view.equals("SELF"));
+                    scope.setVisible(view.equals("VISIBLE"));
+                    if (view.equals("DEPARTMENT")) {
+                        scope.getDeptIds().add("dept-a");
+                    }
+                    return scope;
+                });
     }
 
     static Configuration configuration() throws Exception {
         Configuration configuration = new Configuration();
         parse(configuration, "cn/cordys/common/mapper/CommonMapper.xml");
         for (var source : AnalyticsAccessService.SOURCES.values()) {
-            parse(configuration, source.statementId().substring(0, source.statementId().lastIndexOf('.')).replace('.', '/') + ".xml");
+            parse(configuration,
+                    source.statementId().substring(0, source.statementId().lastIndexOf('.')).replace('.', '/')
+                            + ".xml");
         }
         parse(configuration, ExtCustomFormDataMapper.class.getName().replace('.', '/') + ".xml");
         return configuration;
@@ -74,21 +79,28 @@ class AnalyticsAccessServiceTest {
         }
     }
 
-    static Stream<String> modules() { return AnalyticsAccessService.SOURCES.keySet().stream().sorted(); }
+    static Stream<String> modules() {
+        return AnalyticsAccessService.SOURCES.keySet().stream().sorted();
+    }
 
     @ParameterizedTest
     @MethodSource("modules")
     void everyModuleRendersAndBindsItsOriginalList(String formKey) throws Exception {
         try (var permission = permitted()) {
             for (View view : View.values()) {
-                if (view == View.VISIBLE && !formKey.equals("customer")) continue;
-                if ((formKey.equals("product") || formKey.equals("price")) && view != View.ALL) continue;
+                if (view == View.VISIBLE && !formKey.equals("customer")) {
+                    continue;
+                }
+                if ((formKey.equals("product") || formKey.equals("price")) && view != View.ALL) {
+                    continue;
+                }
                 var access = service.resolve(formKey, view, null, "viewer", "org-a");
                 assertFalse(access.empty());
                 assertFalse(access.boundSql().getSql().contains("${"));
                 assertFalse(access.boundSql().getSql().toLowerCase().contains(" limit "));
                 PreparedStatement statement = mock(PreparedStatement.class);
-                new DefaultParameterHandler(access.statement(), access.boundSql().getParameterObject(), access.boundSql()).setParameters(statement);
+                new DefaultParameterHandler(access.statement(), access.boundSql().getParameterObject(),
+                        access.boundSql()).setParameters(statement);
                 verify(statement, atLeastOnce()).setString(anyInt(), eq("org-a"));
                 // 从实体发现字段存储能力应覆盖全部模块，不允许首次请求时才发现缺类。
                 assertDoesNotThrow(access.source()::hasSubtableFields);
@@ -106,7 +118,8 @@ class AnalyticsAccessServiceTest {
 
     @Test
     void emptyPermissionCannotBecomeUnrestrictedCustomerQuery() {
-        when(scopes.getDeptDataPermission(anyString(), anyString(), anyString(), anyString())).thenReturn(new DeptDataPermissionDTO());
+        when(scopes.getDeptDataPermission(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(new DeptDataPermissionDTO());
         try (var permission = permitted()) {
             assertTrue(service.resolve("customer", View.ALL, null, "viewer", "org-a").empty());
             assertTrue(service.resolve("record", View.ALL, null, "viewer", "org-a").empty());
@@ -116,14 +129,19 @@ class AnalyticsAccessServiceTest {
     @Test
     void poolPermissionAndMembershipAreBothRequired() {
         try (var permission = mockStatic(PermissionUtils.class)) {
-            permission.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)).thenReturn(true);
-            assertThrows(GenericException.class, () -> service.resolve("customer", View.ALL, "pool-a", "viewer", "org-a"));
+            permission.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+                    .thenReturn(true);
+            assertThrows(GenericException.class,
+                    () -> service.resolve("customer", View.ALL, "pool-a", "viewer", "org-a"));
             verifyNoInteractions(customerPools);
-            permission.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)).thenReturn(true);
+            permission.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ))
+                    .thenReturn(true);
             service.resolve("customer", View.ALL, "pool-a", "viewer", "org-a");
             verify(customerPools).checkPoolMember("pool-a", "viewer", "org-a");
-            doThrow(new GenericException("denied")).when(customerPools).checkPoolMember("foreign-pool", "viewer", "org-a");
-            assertThrows(GenericException.class, () -> service.resolve("customer", View.ALL, "foreign-pool", "viewer", "org-a"));
+            doThrow(new GenericException("denied")).when(customerPools).checkPoolMember("foreign-pool", "viewer",
+                    "org-a");
+            assertThrows(GenericException.class,
+                    () -> service.resolve("customer", View.ALL, "foreign-pool", "viewer", "org-a"));
         }
     }
 
@@ -137,16 +155,20 @@ class AnalyticsAccessServiceTest {
             assertTrue(own.boundSql().getSql().contains("custom_form_id = ?"));
             verify(forms).manageOwn("custom-a", "viewer", "org-a");
             doThrow(new GenericException("denied")).when(forms).manageOwn("foreign-form", "viewer", "org-a");
-            assertThrows(GenericException.class, () -> service.resolve("foreign-form", View.ALL, null, "viewer", "org-a"));
+            assertThrows(GenericException.class,
+                    () -> service.resolve("foreign-form", View.ALL, null, "viewer", "org-a"));
         }
     }
 
     @Test
     void rejectsUnsupportedScopesInsteadOfIgnoringThem() {
         try (var permission = permitted()) {
-            assertThrows(GenericException.class, () -> service.resolve("contract", View.VISIBLE, null, "viewer", "org-a"));
-            assertThrows(GenericException.class, () -> service.resolve("customer", View.SELF, "pool-a", "viewer", "org-a"));
-            assertThrows(GenericException.class, () -> service.resolve("custom-a", View.DEPARTMENT, null, "viewer", "org-a"));
+            assertThrows(GenericException.class,
+                    () -> service.resolve("contract", View.VISIBLE, null, "viewer", "org-a"));
+            assertThrows(GenericException.class,
+                    () -> service.resolve("customer", View.SELF, "pool-a", "viewer", "org-a"));
+            assertThrows(GenericException.class,
+                    () -> service.resolve("custom-a", View.DEPARTMENT, null, "viewer", "org-a"));
             assertThrows(GenericException.class, () -> service.resolve("product", View.SELF, null, "viewer", "org-a"));
         }
     }

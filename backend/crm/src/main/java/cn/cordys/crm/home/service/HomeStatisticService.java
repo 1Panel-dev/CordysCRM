@@ -60,23 +60,26 @@ public class HomeStatisticService {
     @Resource
     private RoleService roleService;
 
-    public HomeClueStatistic getClueStatistic(HomeStatisticBaseSearchRequest request, DeptDataPermissionDTO deptDataPermission, String orgId, String userId) {
+    public HomeClueStatistic getClueStatistic(HomeStatisticBaseSearchRequest request,
+            DeptDataPermissionDTO deptDataPermission, String orgId, String userId) {
         HomeClueStatistic clueStatistic = new HomeClueStatistic();
         try {
             for (HomeStatisticPeriod statisticPeriod : HomeStatisticPeriod.values()) {
-                HomeStatisticSearchRequest searchRequest = BeanUtils.copyBean(new HomeStatisticSearchRequest(), request);
+                HomeStatisticSearchRequest searchRequest = BeanUtils.copyBean(new HomeStatisticSearchRequest(),
+                        request);
                 searchRequest.setPeriod(statisticPeriod.name());
-                HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(searchRequest, deptDataPermission, orgId, userId);
+                HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(searchRequest,
+                        deptDataPermission, orgId, userId);
 
                 // 多线程执行
-                Future<HomeStatisticSearchResponse> getNewClueStatistic = executor.submit(() ->
-                        getStatisticSearchResponse(wrapperRequest, this::getNewClueCount));
+                Future<HomeStatisticSearchResponse> getNewClueStatistic = executor
+                        .submit(() -> getStatisticSearchResponse(wrapperRequest, this::getNewClueCount));
 
                 switch (statisticPeriod) {
-                    case TODAY -> clueStatistic.setTodayClue(getNewClueStatistic.get());
-                    case THIS_WEEK -> clueStatistic.setThisWeekClue(getNewClueStatistic.get());
-                    case THIS_MONTH -> clueStatistic.setThisMonthClue(getNewClueStatistic.get());
-                    case THIS_YEAR -> clueStatistic.setThisYearClue(getNewClueStatistic.get());
+                case TODAY -> clueStatistic.setTodayClue(getNewClueStatistic.get());
+                case THIS_WEEK -> clueStatistic.setThisWeekClue(getNewClueStatistic.get());
+                case THIS_MONTH -> clueStatistic.setThisMonthClue(getNewClueStatistic.get());
+                case THIS_YEAR -> clueStatistic.setThisYearClue(getNewClueStatistic.get());
                 }
             }
         } catch (Exception e) {
@@ -86,41 +89,42 @@ public class HomeStatisticService {
     }
 
     public HomeOpportunityStatistic getOpportunityStatistic(HomeStatisticBaseSearchRequest request,
-                                                            OpportunityStageScenario opportunityStageScenario,
-                                                            DeptDataPermissionDTO deptDataPermission,
-                                                            String orgId, String userId) {
+            OpportunityStageScenario opportunityStageScenario,
+            DeptDataPermissionDTO deptDataPermission,
+            String orgId, String userId) {
         HomeOpportunityStatistic opportunityStatistic = new HomeOpportunityStatistic();
         for (HomeStatisticPeriod statisticPeriod : HomeStatisticPeriod.values()) {
             HomeStatisticSearchRequest searchRequest = BeanUtils.copyBean(new HomeStatisticSearchRequest(), request);
             searchRequest.setPeriod(statisticPeriod.name());
-            HomeOppStatisticSearchWrapperRequest wrapperRequest = new HomeOppStatisticSearchWrapperRequest(searchRequest, deptDataPermission, orgId, userId);
+            HomeOppStatisticSearchWrapperRequest wrapperRequest = new HomeOppStatisticSearchWrapperRequest(
+                    searchRequest, deptDataPermission, orgId, userId);
             if (opportunityStageScenario != null) {
                 wrapperRequest.setStageScenario(opportunityStageScenario.name());
             }
 
             // 多线程执行
-            Future<HomeStatisticSearchResponse> getNewOpportunityStatistic = executor.submit(() ->
-                    getStatisticSearchResponse(wrapperRequest, this::getOpportunityCount));
-            Future<HomeStatisticSearchResponse> getNewOpportunityTotalAmount = executor.submit(() ->
-                    getStatisticSearchResponse(wrapperRequest, this::getOpportunityAmount));
+            Future<HomeStatisticSearchResponse> getNewOpportunityStatistic = executor
+                    .submit(() -> getStatisticSearchResponse(wrapperRequest, this::getOpportunityCount));
+            Future<HomeStatisticSearchResponse> getNewOpportunityTotalAmount = executor
+                    .submit(() -> getStatisticSearchResponse(wrapperRequest, this::getOpportunityAmount));
             try {
                 switch (statisticPeriod) {
-                    case TODAY -> {
-                        opportunityStatistic.setTodayOpportunity(getNewOpportunityStatistic.get());
-                        opportunityStatistic.setTodayOpportunityAmount(getNewOpportunityTotalAmount.get());
-                    }
-                    case THIS_WEEK -> {
-                        opportunityStatistic.setThisWeekOpportunity(getNewOpportunityStatistic.get());
-                        opportunityStatistic.setThisWeekOpportunityAmount(getNewOpportunityTotalAmount.get());
-                    }
-                    case THIS_MONTH -> {
-                        opportunityStatistic.setThisMonthOpportunity(getNewOpportunityStatistic.get());
-                        opportunityStatistic.setThisMonthOpportunityAmount(getNewOpportunityTotalAmount.get());
-                    }
-                    case THIS_YEAR -> {
-                        opportunityStatistic.setThisYearOpportunity(getNewOpportunityStatistic.get());
-                        opportunityStatistic.setThisYearOpportunityAmount(getNewOpportunityTotalAmount.get());
-                    }
+                case TODAY -> {
+                    opportunityStatistic.setTodayOpportunity(getNewOpportunityStatistic.get());
+                    opportunityStatistic.setTodayOpportunityAmount(getNewOpportunityTotalAmount.get());
+                }
+                case THIS_WEEK -> {
+                    opportunityStatistic.setThisWeekOpportunity(getNewOpportunityStatistic.get());
+                    opportunityStatistic.setThisWeekOpportunityAmount(getNewOpportunityTotalAmount.get());
+                }
+                case THIS_MONTH -> {
+                    opportunityStatistic.setThisMonthOpportunity(getNewOpportunityStatistic.get());
+                    opportunityStatistic.setThisMonthOpportunityAmount(getNewOpportunityTotalAmount.get());
+                }
+                case THIS_YEAR -> {
+                    opportunityStatistic.setThisYearOpportunity(getNewOpportunityStatistic.get());
+                    opportunityStatistic.setThisYearOpportunityAmount(getNewOpportunityTotalAmount.get());
+                }
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -131,25 +135,18 @@ public class HomeStatisticService {
 
     /**
      * 获取新增线索统计
-     *
-     * @param request
-     *
-     * @return
      */
     public Long getNewClueCount(HomeStatisticSearchWrapperRequest request) {
         return extClueMapper.selectClueCount(request, false);
     }
 
-    private HomeStatisticSearchWrapperRequest copyHomeStatisticSearchWrapperRequest(HomeStatisticSearchWrapperRequest request) {
+    private HomeStatisticSearchWrapperRequest copyHomeStatisticSearchWrapperRequest(
+            HomeStatisticSearchWrapperRequest request) {
         return JSON.parseObject(JSON.toJSONString(request), request.getClass());
     }
 
     /**
      * 获取商机数量
-     *
-     * @param request
-     *
-     * @return
      */
     public Long getOpportunityCount(HomeStatisticSearchWrapperRequest request) {
         return extOpportunityMapper.selectOpportunityCount(request, false);
@@ -157,10 +154,6 @@ public class HomeStatisticService {
 
     /**
      * 获取商机总额数量
-     *
-     * @param request
-     *
-     * @return
      */
     public Long getOpportunityAmount(HomeStatisticSearchWrapperRequest request) {
         return Optional.ofNullable(extOpportunityMapper.selectOpportunityCount(request, true)).orElse(0L);
@@ -168,18 +161,12 @@ public class HomeStatisticService {
 
     /**
      * 获取统计数量和较上期对比率的通用方法
-     *
-     * @param request
-     * @param statisticFunction
-     *
-     * @return
      */
     public HomeStatisticSearchResponse getStatisticSearchResponse(HomeStatisticSearchWrapperRequest request,
-                                                                  Function<HomeStatisticSearchWrapperRequest, Long> statisticFunction) {
+            Function<HomeStatisticSearchWrapperRequest, Long> statisticFunction) {
         HomeStatisticSearchResponse response = new HomeStatisticSearchResponse();
         Future<Long> getCount = executor.submit(() -> statisticFunction.apply(request));
         try {
-
             Long count = getCount.get();
             response.setValue(count);
 
@@ -203,11 +190,6 @@ public class HomeStatisticService {
 
     /**
      * 获取部门数据权限
-     *
-     * @param request
-     * @param permission
-     *
-     * @return
      */
     public DeptDataPermissionDTO getDeptDataPermissionDTO(HomeStatisticBaseSearchRequest request, String permission) {
         if (Strings.CS.equals(request.getSearchType(), BusinessSearchType.DEPARTMENT.name())) {
@@ -279,11 +261,6 @@ public class HomeStatisticService {
     /**
      * 剪枝
      * 从树中移除不在已选部门ID中的节点，同时保留已选部门ID的子节点
-     *
-     * @param tree
-     * @param deptIds
-     *
-     * @return
      */
     public List<BaseTreeNode> pruningTree(List<BaseTreeNode> tree, Set<String> deptIds) {
         Iterator<BaseTreeNode> iterator = tree.iterator();

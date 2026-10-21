@@ -56,7 +56,6 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
     @Resource
     private CustomerContactService customerContactService;
 
-
     @Override
     public void onApplicationEvent(ExecuteEvent event) {
         try {
@@ -120,7 +119,6 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      * 获取需要被考虑回收的客户列表
      *
      * @param recycleOwnersIds 需要考虑回收的负责人ID列表
-     *
      * @return 符合初步条件的客户列表
      */
     private List<Customer> getCustomersForRecycle(List<String> recycleOwnersIds) {
@@ -133,7 +131,6 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      * 获取客户池回收规则
      *
      * @param pools 客户池列表
-     *
      * @return 池ID到回收规则的映射
      */
     private Map<String, CustomerPoolRecycleRule> getPoolRecycleRules(List<CustomerPool> pools) {
@@ -152,7 +149,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      * @param recycleRuleMap       池ID与回收规则的映射
      */
     private void recycleCustomers(List<Customer> customers, Map<List<String>, CustomerPool> ownersDefaultPoolMap,
-                                  Map<String, CustomerPoolRecycleRule> recycleRuleMap) {
+            Map<String, CustomerPoolRecycleRule> recycleRuleMap) {
         customers.forEach(customer -> ownersDefaultPoolMap.forEach((ownerIds, pool) -> {
             if (ownerIds.contains(customer.getOwner())) {
                 CustomerPoolRecycleRule rule = recycleRuleMap.get(pool.getId());
@@ -172,7 +169,8 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      */
     private void processCustomerRecycle(Customer customer, CustomerPool pool) {
         //更新责任人
-        customerContactService.updateContactOwner(customer.getId(), "-", customer.getOwner(), customer.getOrganizationId());
+        customerContactService.updateContactOwner(customer.getId(), "-", customer.getOwner(),
+                customer.getOrganizationId());
 
         // 消息通知
         commonNoticeSendService.sendNotice(
@@ -182,8 +180,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
                 InternalUser.ADMIN.getValue(),
                 customer.getOrganizationId(),
                 List.of(customer.getOwner()),
-                true
-        );
+                true);
 
         // 插入责任人历史
         customerOwnerHistoryService.add(customer, InternalUser.ADMIN.getValue(), false);

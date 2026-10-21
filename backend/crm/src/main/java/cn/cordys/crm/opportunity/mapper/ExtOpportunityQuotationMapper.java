@@ -1,6 +1,5 @@
 package cn.cordys.crm.opportunity.mapper;
 
-
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.statistic.StatisticSqlMapper;
@@ -11,18 +10,22 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-
 public interface ExtOpportunityQuotationMapper extends StatisticSqlMapper {
 
-    List<OpportunityQuotationListResponse> list(@Param("request") OpportunityQuotationPageRequest request, @Param("orgId") String orgId,
-                                                @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
+    List<OpportunityQuotationListResponse> list(@Param("request") OpportunityQuotationPageRequest request,
+            @Param("orgId") String orgId,
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
+            @Param("source") boolean source);
 
-    void updateApprovalStatus(@Param("approvingId") String approvingId, @Param("approvalStatus") String approvalStatus, @Param("userId") String userId, @Param("updateTime") long updateTime);
+    void updateApprovalStatus(@Param("approvingId") String approvingId, @Param("approvalStatus") String approvalStatus,
+            @Param("userId") String userId, @Param("updateTime") long updateTime);
 
-    void voided(@Param("approvingId") String approvingId, @Param("userId") String userId, @Param("updateTime") long updateTime);
+    void voided(@Param("approvingId") String approvingId, @Param("userId") String userId,
+            @Param("updateTime") long updateTime);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     //根据时间戳获取报价单列表
-    List<OpportunityQuotation> getQuotationByTimestamp(@Param("timestamp") long timestamp, @Param("timestampOld") long timestampOld, @Param("orgId") String orgId);
+    List<OpportunityQuotation> getQuotationByTimestamp(@Param("timestamp") long timestamp,
+            @Param("timestampOld") long timestampOld, @Param("orgId") String orgId);
 }

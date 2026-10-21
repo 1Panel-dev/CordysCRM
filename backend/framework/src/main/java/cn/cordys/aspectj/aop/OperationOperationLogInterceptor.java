@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
  * </p>
  */
 @Slf4j
-public class OperationOperationLogInterceptor extends OperationLogValueParser implements MethodInterceptor, Serializable, SmartInitializingSingleton {
+public class OperationOperationLogInterceptor extends OperationLogValueParser
+        implements MethodInterceptor, Serializable, SmartInitializingSingleton {
 
     @Setter
     private OperationLogSource operationLogSource;
@@ -42,9 +43,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * 拦截方法执行，进行日志记录逻辑的处理。
      *
      * @param invocation 方法调用上下文
-     *
      * @return 方法执行结果
-     *
      * @throws Throwable 执行过程中的异常
      */
     @Override
@@ -60,9 +59,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * @param target  目标对象
      * @param method  目标方法
      * @param args    方法参数
-     *
      * @return 方法的返回结果
-     *
      * @throws Throwable 执行过程中的异常
      */
     private Object execute(MethodInvocation invoker, Object target, Method method, Object[] args) throws Throwable {
@@ -106,7 +103,8 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * @param methodExecuteResult 方法执行结果
      * @param operations          日志操作集合
      */
-    private void processLogRecords(MethodExecuteResult methodExecuteResult, Collection<OperationLogBuilder> operations) {
+    private void processLogRecords(MethodExecuteResult methodExecuteResult,
+            Collection<OperationLogBuilder> operations) {
         if (CollectionUtils.isEmpty(operations)) {
             return;
         }
@@ -148,7 +146,8 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * @param operatorId       操作人 ID
      * @param expressionValues 模板解析后的值
      */
-    private void saveLogRecord(Method method, OperationLogBuilder operation, String operatorId, Map<String, String> expressionValues) {
+    private void saveLogRecord(Method method, OperationLogBuilder operation, String operatorId,
+            Map<String, String> expressionValues) {
         OperationLog operationLog = OperationLog.builder()
                 .type(expressionValues.get(operation.getType()))
                 .resourceId(expressionValues.get(operation.getResourceId()))
@@ -165,8 +164,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
     private Map<CodeVariableType, Object> resolveCodeVariable(Method method) {
         return Map.of(
                 CodeVariableType.ClassName, method.getDeclaringClass(),
-                CodeVariableType.MethodName, method.getName()
-        );
+                CodeVariableType.MethodName, method.getName());
     }
 
     private String resolveOperatorId(OperationLogBuilder operation, List<String> templates) {

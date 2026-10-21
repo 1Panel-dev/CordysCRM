@@ -31,14 +31,16 @@ public class FollowUpPlanCommentController {
     @PostMapping("/page")
     @Operation(summary = "分页查询跟进计划顶层评论")
     public PagerWithCommentCount<List<CommentResponse>> page(@Validated @RequestBody CommentPageRequest request) {
-        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         return commentService.page(request, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
     @Operation(summary = "添加跟进计划评论")
     public FollowUpPlanComment add(@Validated @RequestBody CommentAddRequest request) {
-        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         return commentService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

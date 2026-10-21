@@ -11,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class CustomerContactFieldService extends BaseResourceFieldService<CustomerContactField, CustomerContactFieldBlob> {
+public class CustomerContactFieldService
+        extends BaseResourceFieldService<CustomerContactField, CustomerContactFieldBlob> {
     @Resource
     private BaseMapper<CustomerContactField> customerContactFieldMapper;
     @Resource

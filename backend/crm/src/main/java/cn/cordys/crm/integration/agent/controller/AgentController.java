@@ -1,6 +1,5 @@
 package cn.cordys.crm.integration.agent.controller;
 
-
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.dto.BasePageRequest;
@@ -47,7 +46,6 @@ public class AgentController {
         return agentBaseService.addAgent(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-
     @GetMapping("/detail/{id}")
     @Operation(summary = "智能体-详情")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
@@ -56,21 +54,21 @@ public class AgentController {
         return agentBaseService.getDetail(id);
     }
 
-
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
     @Operation(summary = "智能体-更新")
     public void updateAgent(@Validated @RequestBody AgentUpdateRequest request) {
-        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), request.getId());
+        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(),
+                request.getId());
         agentBaseService.updateAgent(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
-
 
     @PostMapping("/rename")
     @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
     @Operation(summary = "智能体-重命名")
     public void rename(@Validated @RequestBody AgentRenameRequest request) {
-        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), request.getId());
+        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(),
+                request.getId());
         agentBaseService.rename(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -81,7 +79,6 @@ public class AgentController {
         agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), id);
         agentBaseService.delete(id);
     }
-
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
@@ -97,7 +94,6 @@ public class AgentController {
         agentBaseService.collect(id, SessionUtils.getUserId());
     }
 
-
     @GetMapping("/un-collect/{id}")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
     @Operation(summary = "智能体取消收藏")
@@ -105,15 +101,14 @@ public class AgentController {
         agentBaseService.unCollect(id, SessionUtils.getUserId());
     }
 
-
     @PostMapping("/collect/page")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
     @Operation(summary = "智能体收藏列表")
     public Pager<List<AgentPageResponse>> collectPage(@Validated @RequestBody BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, agentBaseService.collectList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
+        return PageUtils.setPageInfo(page, agentBaseService.collectList(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId()));
     }
-
 
     @PostMapping("/edit/pos")
     @Operation(summary = "智能体-拖拽排序")
@@ -122,13 +117,11 @@ public class AgentController {
         agentBaseService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping(value = "/option")
     @Operation(summary = "用户可选智能体下拉option")
     public List<AgentOptionDTO> getAgentList() {
         return agentBaseService.getAgentOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/check")
     @Operation(summary = "配置连接检测")
@@ -144,7 +137,6 @@ public class AgentController {
         return agentBaseService.workspace(OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/application/{workspaceId}")
     @Operation(summary = "获取智能体应用")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
@@ -159,7 +151,6 @@ public class AgentController {
         return agentBaseService.script(request, OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/edition")
     @Operation(summary = "获取版本")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
@@ -167,11 +158,11 @@ public class AgentController {
         return agentBaseService.edition(OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/application/config")
     @Operation(summary = "获取智能体设置")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
     public ThirdConfigBaseDTO<?> getApplicationConfig() {
-        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), ThirdConfigTypeConstants.MAXKB.name());
+        return integrationConfigService.getApplicationConfig(OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), ThirdConfigTypeConstants.MAXKB.name());
     }
 }

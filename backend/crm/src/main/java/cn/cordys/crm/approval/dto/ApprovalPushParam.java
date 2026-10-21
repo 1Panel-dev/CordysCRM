@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApprovalPushParam extends ApprovalResourceBaseParam{
-	private String resourceId;
-	private String formKey;
-	private String comment;
-	private String orgId;
-	private String userId;
-	private ExecuteTimingEnum executeTimingEnum;
-	private String updateFields;
+public class ApprovalPushParam extends ApprovalResourceBaseParam {
+    private String resourceId;
+    private String formKey;
+    private String comment;
+    private String orgId;
+    private String userId;
+    private ExecuteTimingEnum executeTimingEnum;
+    private String updateFields;
 }

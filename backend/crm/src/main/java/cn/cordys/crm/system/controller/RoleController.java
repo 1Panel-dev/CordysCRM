@@ -31,7 +31,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-01-03 16:52:34
  */
 @Tag(name = "角色")
 @RestController
@@ -91,7 +90,8 @@ public class RoleController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
     public Pager<List<RoleUserListResponse>> listUser(@Validated @RequestBody RoleUserPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, userRoleService.listUserByRoleId(request, OrganizationContext.getOrganizationId()));
+        return PageUtils.setPageInfo(page,
+                userRoleService.listUserByRoleId(request, OrganizationContext.getOrganizationId()));
     }
 
     @GetMapping("/dept/tree")
@@ -105,7 +105,7 @@ public class RoleController {
     @Operation(summary = "获取部门用户树")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
     public List<DeptUserTreeNode> getDeptUserTree(@PathVariable String roleId,
-                                                   @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return userRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), roleId, includeDisabled);
     }
 
@@ -120,7 +120,7 @@ public class RoleController {
     @Operation(summary = "获取所有用户选项")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
     public List<RoleUserOptionResponse> RoleUserOptionResponse(@PathVariable String roleId,
-                                                                @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return userRoleService.getUserOptionByRoleId(OrganizationContext.getOrganizationId(), roleId, includeDisabled);
     }
 
@@ -144,7 +144,6 @@ public class RoleController {
     public void batchDeleteRoleUser(@RequestBody List<String> ids) {
         userRoleService.batchDeleteRoleUser(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/sort")
     @Operation(summary = "角色权限排序")

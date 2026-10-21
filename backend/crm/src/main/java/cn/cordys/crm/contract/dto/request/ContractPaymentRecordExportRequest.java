@@ -11,14 +11,14 @@ import java.util.List;
 @Data
 public class ContractPaymentRecordExportRequest extends ContractPaymentRecordPageRequest {
 
-	@Schema(description = "合同ID")
-	private String contractId;
+    @Schema(description = "合同ID")
+    private String contractId;
 
-	@NotBlank
-	@Schema(description = "文件名")
-	private String fileName;
+    @NotBlank
+    @Schema(description = "文件名")
+    private String fileName;
 
-	@Schema(description = "表头信息")
-	@NotEmpty(message = "{export_head_list_is_empty}")
-	private List<ExportHeadDTO> headList;
+    @Schema(description = "表头信息")
+    @NotEmpty(message = "{export_head_list_is_empty}")
+    private List<ExportHeadDTO> headList;
 }

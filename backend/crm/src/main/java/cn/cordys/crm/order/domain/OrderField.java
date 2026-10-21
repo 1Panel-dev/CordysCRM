@@ -4,7 +4,6 @@ import cn.cordys.common.domain.BaseResourceSubField;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 @Data
 @Table(name = "sales_order_field")
 public class OrderField extends BaseResourceSubField {

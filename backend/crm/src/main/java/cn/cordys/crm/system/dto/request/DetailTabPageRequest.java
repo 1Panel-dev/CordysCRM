@@ -7,9 +7,10 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 详情页标签数据分页请求。
- *
- * <p>标签统一通过 {@code relatedFormId} 定位；同一关联表单可配置多个自定义标签时，
- * 再通过 {@code relatedFieldId} 区分。标签名称允许修改，因此不能作为查询标识。</p>
+ * <p>
+ * 标签统一通过 {@code relatedFormId} 定位；同一关联表单可配置多个自定义标签时，
+ * 再通过 {@code relatedFieldId} 区分。标签名称允许修改，因此不能作为查询标识。
+ * </p>
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -32,7 +32,7 @@ public class MessageTemplateUtils {
     /**
      * 获取模块翻译后的名称map
      *
-     * @return Map<String, String> moduleMap
+     * @return 模块字段名到翻译后名称的映射
      */
     public static Map<String, String> getModuleMap() {
         Field[] moduleFields = FieldUtils.getAllFields(NotificationConstants.Module.class);
@@ -41,11 +41,10 @@ public class MessageTemplateUtils {
         return moduleMap;
     }
 
-
     /**
      * 获取事件翻译后的名称map
      *
-     * @return Map<String, String> eventMap
+     * @return 事件字段名到翻译后名称的映射
      */
     public static Map<String, String> getEventMap() {
         Map<String, String> eventMap = new HashMap<>();
@@ -57,7 +56,7 @@ public class MessageTemplateUtils {
     /**
      * 获取事件的默认模版
      *
-     * @return Map<String, String> defaultTemplateMap
+     * @return 模板字段名到翻译后默认模板的映射
      */
     public static Map<String, String> getDefaultTemplateMap() {
         Map<String, String> defaultTemplateMap = new HashMap<>();
@@ -114,6 +113,5 @@ public class MessageTemplateUtils {
             }
         });
     }
-
 
 }

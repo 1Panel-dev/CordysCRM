@@ -56,7 +56,8 @@ public class ProductPriceController {
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
@@ -126,15 +127,18 @@ public class ProductPriceController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") @NotNull MultipartFile file) {
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") @NotNull MultipartFile file) {
         return priceService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return priceService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return priceService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/export")
@@ -142,9 +146,12 @@ public class ProductPriceController {
     @Operation(summary = "导出全部")
     public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
-        ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
-                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
-                .locale(LocaleContextHolder.getLocale()).pageRequest(request).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
+        ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+                .exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
+                .locale(LocaleContextHolder.getLocale()).pageRequest(request)
+                .logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
         return priceExportService.exportAllWithMergeStrategy(exportParam);
     }
 
@@ -152,9 +159,12 @@ public class ProductPriceController {
     @RequiresPermissions(PermissionConstants.PRICE_EXPORT)
     @Operation(summary = "导出选中")
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
-                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
-                .locale(LocaleContextHolder.getLocale()).selectIds(request.getIds()).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
+        ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+                .exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
+                .locale(LocaleContextHolder.getLocale()).selectIds(request.getIds())
+                .logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
         return priceExportService.exportSelectWithMergeStrategy(exportParam);
     }
 }

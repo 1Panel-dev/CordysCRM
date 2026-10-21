@@ -16,7 +16,6 @@ public class S3Repository implements FileRepository {
 
     @Override
     public void saveFile(byte[] bytes, FileRequest request) throws Exception {
-
     }
 
     @Override
@@ -26,12 +25,10 @@ public class S3Repository implements FileRepository {
 
     @Override
     public void delete(FileRequest request) throws Exception {
-
     }
 
     @Override
     public void deleteFolder(FileRequest request, boolean onlyDir) throws Exception {
-
     }
 
     @Override
@@ -46,7 +43,6 @@ public class S3Repository implements FileRepository {
 
     @Override
     public void downloadFile(FileRequest request, String localPath) throws Exception {
-
     }
 
     @Override
@@ -66,7 +62,6 @@ public class S3Repository implements FileRepository {
 
     @Override
     public void copyFile(FileCopyRequest request) throws Exception {
-
     }
 
     @Override

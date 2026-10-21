@@ -101,12 +101,6 @@ public class AgentModuleService extends MoveNodeService {
 
     /**
      * 添加文件夹
-     *
-     * @param request
-     * @param orgId
-     * @param userId
-     *
-     * @return
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.ADD)
     public AgentModule addFileModule(AgentModuleAddRequest request, String orgId, String userId) {
@@ -134,7 +128,6 @@ public class AgentModuleService extends MoveNodeService {
         return agentModule;
     }
 
-
     public Long getNextPos(String orgId) {
         Long pos = extAgentModuleMapper.getNextPosByOrgId(orgId);
         return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
@@ -142,11 +135,6 @@ public class AgentModuleService extends MoveNodeService {
 
     /**
      * 文件名重复校验
-     *
-     * @param name
-     * @param parentId
-     * @param orgId
-     * @param id
      */
     private void checkFileName(String name, String parentId, String orgId, String id) {
         if (extAgentModuleMapper.countByName(name, parentId, orgId, id) > 0) {
@@ -154,17 +142,14 @@ public class AgentModuleService extends MoveNodeService {
         }
     }
 
-
     /**
      * 重命名
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.AGENT, type = LogType.UPDATE)
     public void rename(AgentModuleRenameRequest request, String userId) {
         AgentModule originalAgentModule = checkAgentModule(request.getId());
-        checkFileName(request.getName(), originalAgentModule.getParentId(), originalAgentModule.getOrganizationId(), originalAgentModule.getId());
+        checkFileName(request.getName(), originalAgentModule.getParentId(), originalAgentModule.getOrganizationId(),
+                originalAgentModule.getId());
 
         AgentModule agentModule = BeanUtils.copyBean(new AgentModule(), request);
         agentModule.setUpdateTime(System.currentTimeMillis());
@@ -180,17 +165,11 @@ public class AgentModuleService extends MoveNodeService {
                         .modifiedValue(checkAgentModule(request.getId()))
                         .resourceId(request.getId())
                         .resourceName(resourceName)
-                        .build()
-        );
+                        .build());
     }
-
 
     /**
      * 删除文件夹
-     *
-     * @param ids
-     * @param userId
-     * @param orgId
      */
     public void delete(List<String> ids, String userId, String orgId) {
         deleteCheck(ids, orgId);
@@ -200,19 +179,16 @@ public class AgentModuleService extends MoveNodeService {
         List<LogDTO> logs = new ArrayList<>();
         // 添加日志上下文
         agentModules.forEach(agentModule -> {
-            LogDTO logDTO = new LogDTO(agentModule.getOrganizationId(), agentModule.getId(), userId, LogType.DELETE, LogModule.AGENT, agentModule.getName());
+            LogDTO logDTO = new LogDTO(agentModule.getOrganizationId(), agentModule.getId(), userId, LogType.DELETE,
+                    LogModule.AGENT, agentModule.getName());
             logDTO.setOriginalValue(agentModule);
             logs.add(logDTO);
         });
         logService.batchAdd(logs);
     }
 
-
     /**
      * 删除校验
-     *
-     * @param ids
-     * @param orgId
      */
     private void deleteCheck(List<String> ids, String orgId) {
         if (extAgentModuleMapper.countAgentByIds(ids, orgId) > 0) {
@@ -220,19 +196,13 @@ public class AgentModuleService extends MoveNodeService {
         }
     }
 
-
     /**
      * 智能体树结构
-     *
-     * @param orgId
-     *
-     * @return
      */
     public List<BaseTreeNode> getTree(String orgId) {
         List<BaseTreeNode> moduleNode = extAgentModuleMapper.selectTreeNode(orgId);
         return BaseTreeNode.buildTree(moduleNode);
     }
-
 
     private List<String> getDepartmentIds(String userId, String orgId) {
         List<String> departmentIds = new ArrayList<>();
@@ -244,14 +214,8 @@ public class AgentModuleService extends MoveNodeService {
         return departmentIds;
     }
 
-
     /**
      * 文件夹数量
-     *
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public Map<String, Long> moduleCount(String userId, String orgId) {
         List<BaseTreeNode> moduleNode = extAgentModuleMapper.selectTreeNode(orgId);
@@ -264,8 +228,7 @@ public class AgentModuleService extends MoveNodeService {
         Map<String, Integer> moduleCountMap = agentNode.stream()
                 .collect(Collectors.groupingBy(
                         BaseTreeNode::getParentId,
-                        Collectors.summingInt(node -> 1)
-                ));
+                        Collectors.summingInt(node -> 1)));
 
         Map<String, Long> countMap = new HashMap<>();
         for (BaseTreeNode root : agentTreeNodes) {
@@ -279,8 +242,8 @@ public class AgentModuleService extends MoveNodeService {
         return countMap;
     }
 
-
-    private int calculateAgentCount(BaseTreeNode node, Map<String, Long> countMap, Map<String, Integer> moduleCountMap) {
+    private int calculateAgentCount(BaseTreeNode node, Map<String, Long> countMap,
+            Map<String, Integer> moduleCountMap) {
         int count = 0;
 
         if (moduleCountMap.containsKey(node.getId())) {
@@ -298,19 +261,14 @@ public class AgentModuleService extends MoveNodeService {
         return count;
     }
 
-
     /**
      * 移动文件夹
-     *
-     * @param request
-     * @param userId
      */
     public void moveNode(NodeMoveRequest request, String userId) {
         NodeSortDTO nodeSortDTO = super.getNodeSortDTO(request,
                 extAgentModuleMapper::selectBaseModuleById,
                 extAgentModuleMapper::selectModuleByParentIdAndPosOperator,
                 false);
-
 
         AgentModule agentModule = new AgentModule();
         agentModule.setParentId(nodeSortDTO.getParent().getId());
@@ -346,6 +304,5 @@ public class AgentModuleService extends MoveNodeService {
         }
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
     }
 }

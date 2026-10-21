@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * @author wx
  */
-@Target({ElementType.FIELD})
+@Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface NotRequired {

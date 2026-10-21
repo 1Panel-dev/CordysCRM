@@ -58,8 +58,6 @@ public class SortRequest {
 
     /**
      * mapper 中调用
-     *
-     * @return
      */
     public boolean valid() {
         return StringUtils.isNotBlank(name) && !SqlInjectionChecker.containsSqlInjectionRisk(name);

@@ -31,7 +31,6 @@ public class Index {
         return "mobile/index.html";
     }
 
-
     /**
      * 处理登录页面（"/login"）的请求，并返回 `index.html` 页面。
      *

@@ -79,7 +79,8 @@ public class ModuleService {
                 .map(module -> {
                     ModuleDTO dto = new ModuleDTO();
                     BeanUtils.copyProperties(module, dto);
-                    dto.setDisabled(Strings.CS.equals(dto.getModuleKey(), "dashboard") && !isDashboardEnabled(request.getOrganizationId()));
+                    dto.setDisabled(Strings.CS.equals(dto.getModuleKey(), "dashboard")
+                            && !isDashboardEnabled(request.getOrganizationId()));
                     return dto;
                 })
                 .sorted(Comparator.comparing(ModuleDTO::getPos))
@@ -92,7 +93,8 @@ public class ModuleService {
      * @return 表单集合
      */
     public List<OptionDTO> getFormList() {
-        return Arrays.stream(FormKey.values()).map(formKey -> new OptionDTO(formKey.getKey(), Translator.get(formKey.getKey()))).toList();
+        return Arrays.stream(FormKey.values())
+                .map(formKey -> new OptionDTO(formKey.getKey(), Translator.get(formKey.getKey()))).toList();
     }
 
     /**
@@ -113,9 +115,11 @@ public class ModuleService {
 
         //添加日志上下文
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("module.switch", !module.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        originalVal.put("module.switch",
+                !module.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
         Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("module.switch", module.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        modifiedVal.put("module.switch",
+                module.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(originalVal)
                 .resourceName(Translator.get(module.getModuleKey()) + "模块开关")
@@ -167,7 +171,7 @@ public class ModuleService {
     /**
      * 获取带用户的信息的部门树
      *
-     * @return List<DeptUserTreeNode>
+     * @return 部门及用户树
      */
     public List<DeptUserTreeNode> getDeptUserTree(String orgId, Boolean includeDisabled) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
@@ -215,7 +219,10 @@ public class ModuleService {
         Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
 
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("module.switch", parameter != null && Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        originalVal.put("module.switch",
+                parameter != null && Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE)
+                        ? Translator.get("log.enable.true")
+                        : Translator.get("log.enable.false"));
         if (parameter != null) {
             parameterMapper.deleteByPrimaryKey("advance.search.setting");
             boolean current = Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE);
@@ -230,7 +237,9 @@ public class ModuleService {
 
         //日志上下文
         Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("module.switch", Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        modifiedVal.put("module.switch",
+                Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true")
+                        : Translator.get("log.enable.false"));
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(originalVal)
                 .resourceName(Translator.get("log.global.search"))
@@ -316,7 +325,8 @@ public class ModuleService {
 
     //删除多余模块
     public void deleteExtraModules() {
-        List<Module> contractFormList = extModuleMapper.selectModuleListByKeyOrderPosDesc(DEFAULT_ORGANIZATION_ID, "contract");
+        List<Module> contractFormList = extModuleMapper.selectModuleListByKeyOrderPosDesc(DEFAULT_ORGANIZATION_ID,
+                "contract");
         if (CollectionUtils.isNotEmpty(contractFormList) && contractFormList.size() > 1) {
             moduleMapper.deleteByPrimaryKey(contractFormList.getFirst().getId());
         }

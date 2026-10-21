@@ -5,7 +5,6 @@ import org.apache.ibatis.annotations.Param;
 
 /**
  * @author jianxing
- * @date 2025-02-24 11:06:10
  */
 public interface ExtClueOwnerMapper {
 
@@ -20,5 +19,6 @@ public interface ExtClueOwnerMapper {
      * @param owner          转移前的负责人
      * @param collectionTime 转移前的领取时间
      */
-    void deleteTransferHistory(@Param("clueId") String clueId, @Param("owner") String owner, @Param("collectionTime") Long collectionTime);
+    void deleteTransferHistory(@Param("clueId") String clueId, @Param("owner") String owner,
+            @Param("collectionTime") Long collectionTime);
 }

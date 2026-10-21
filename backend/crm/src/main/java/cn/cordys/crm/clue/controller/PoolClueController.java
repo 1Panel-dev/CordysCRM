@@ -62,38 +62,42 @@ public class PoolClueController {
 
     @GetMapping("/options")
     @Operation(summary = "获取当前用户线索池选项")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_READ})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_READ })
     public List<CluePoolDTO> getPoolOptions() {
         return poolClueService.getPoolOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
     @Operation(summary = "线索列表")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_READ})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_READ })
     public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
         if (StringUtils.isEmpty(request.getPoolId())) {
             throw new GenericException(Translator.get("miss.lead_pool_id"));
         }
-        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
-        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null, false);
+        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null,
+                false);
     }
 
     @PostMapping("/pick")
     @Operation(summary = "领取线索")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_PICK})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_PICK })
     public void pick(@Validated @RequestBody PoolCluePickRequest request) {
-        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         poolClueService.pick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/assign")
     @Operation(summary = "分配线索")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN })
     public void assign(@Validated @RequestBody PoolClueAssignRequest request) {
         String poolId = poolClueService.getPoolIdByClueId(request.getClueId());
         poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolClueService.assign(request.getClueId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        poolClueService.assign(request.getClueId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/freeze")
@@ -116,7 +120,7 @@ public class PoolClueController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除线索")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE })
     public void delete(@PathVariable String id) {
         String poolId = poolClueService.getPoolIdByClueId(id);
         poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -139,22 +143,24 @@ public class PoolClueController {
 
     @PostMapping("/batch-pick")
     @Operation(summary = "批量领取线索")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_PICK})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_PICK })
     public void batchPick(@Validated @RequestBody PoolBatchPickRequest request) {
-        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         poolClueService.batchPick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch-assign")
     @Operation(summary = "批量分配线索")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN })
     public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
         // 先校验全部记录，避免首条合法记录授权整批操作。
         for (String id : request.getBatchIds()) {
             String poolId = poolClueService.getPoolIdByClueId(id);
             poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         }
-        poolClueService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        poolClueService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/batch-update")
@@ -170,7 +176,7 @@ public class PoolClueController {
 
     @PostMapping("/batch-delete")
     @Operation(summary = "批量删除线索")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE})
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE })
     public BatchAffectReasonResponse batchDelete(@RequestBody @NotEmpty List<String> ids) {
         for (String id : ids) {
             String poolId = poolClueService.getPoolIdByClueId(id);
@@ -183,7 +189,8 @@ public class PoolClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_EXPORT)
     @Operation(summary = "导出全部")
     public String exportAll(@Validated @RequestBody ClueExportRequest request) {
-        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CLUE_POOL.name())
@@ -224,10 +231,11 @@ public class PoolClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户图表生成")
     public List<ChartResult> chart(@Validated @RequestBody PoolClueChartAnalysisRequest request) {
-        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        return cluePoolExportService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
+        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
+        return cluePoolExportService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                null);
     }
-
 
     @GetMapping("/template/download")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_POOL_IMPORT)
@@ -239,17 +247,21 @@ public class PoolClueController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_POOL_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") CluePoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") CluePoolImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         return poolClueService.importPreCheck(file, request, OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_POOL_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") CluePoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        return poolClueService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") CluePoolImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        poolClueService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
+        return poolClueService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 }

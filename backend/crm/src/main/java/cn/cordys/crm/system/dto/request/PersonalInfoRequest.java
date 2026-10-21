@@ -19,5 +19,4 @@ public class PersonalInfoRequest {
     @NotBlank
     private String email;
 
-
 }

@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-01-13 17:33:23
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -101,15 +100,16 @@ public class UserRoleService {
                 .filter(userExtend -> userExtend != null && StringUtils.isNotBlank(userExtend.getId()))
                 .collect(Collectors.toMap(
                         UserExtend::getId,
-                        userExtend -> StringUtils.defaultIfBlank(userExtend.getAvatar(), "")
-                ));
+                        userExtend -> StringUtils.defaultIfBlank(userExtend.getAvatar(), "")));
     }
 
     private Map<String, String> getDeptNameMap(List<RoleUserListResponse> users) {
         if (CollectionUtils.isEmpty(users)) {
             return Map.of();
         }
-        return departmentMapper.selectByIds(users.stream().map(RoleUserListResponse::getDepartmentId).distinct().toArray(String[]::new))
+        return departmentMapper
+                .selectByIds(
+                        users.stream().map(RoleUserListResponse::getDepartmentId).distinct().toArray(String[]::new))
                 .stream()
                 .collect(Collectors.toMap(Department::getId, Department::getName));
     }
@@ -130,7 +130,7 @@ public class UserRoleService {
     /**
      * 获取带用户的信息的部门树
      *
-     * @return List<DeptUserTreeNode>
+     * @return 用于关联角色的部门及用户树，已关联用户标记为不可选
      */
     public List<DeptUserTreeNode> getDeptUserTree(String orgId, String roleId, Boolean includeDisabled) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
@@ -218,7 +218,8 @@ public class UserRoleService {
             List<LogDTO> logs = new ArrayList<>();
             userRoles.forEach(u -> {
                 // 记录日志
-                LogDTO logDTO = new LogDTO(orgId, u.getRoleId(), operator, LogType.ADD_USER, LogModule.SYSTEM_ROLE, role.getName());
+                LogDTO logDTO = new LogDTO(orgId, u.getRoleId(), operator, LogType.ADD_USER, LogModule.SYSTEM_ROLE,
+                        role.getName());
                 String detail = Translator.getWithArgs("role.add_user", role.getName(),
                         userNameMap.get(u.getUserId()));
                 logDTO.setDetail(detail);
@@ -244,7 +245,8 @@ public class UserRoleService {
         role.setName(roleService.translateInternalRole(role.getName()));
         String userName = baseService.getUserName(userRole.getUserId());
         // 记录日志
-        LogDTO logDTO = new LogDTO(orgId, role.getId(), userId, LogType.REMOVE_USER, LogModule.SYSTEM_ROLE, role.getName());
+        LogDTO logDTO = new LogDTO(orgId, role.getId(), userId, LogType.REMOVE_USER, LogModule.SYSTEM_ROLE,
+                role.getName());
         String detail = Translator.getWithArgs("role.remove_user", role.getName(),
                 userName);
         logDTO.setDetail(detail);
@@ -265,7 +267,8 @@ public class UserRoleService {
         List<LogDTO> logs = new ArrayList<>();
         userRoles.forEach(userRole -> {
             // 记录日志
-            LogDTO logDTO = new LogDTO(orgId, userRole.getRoleId(), userId, LogType.REMOVE_USER, LogModule.SYSTEM_ROLE, role.getName());
+            LogDTO logDTO = new LogDTO(orgId, userRole.getRoleId(), userId, LogType.REMOVE_USER, LogModule.SYSTEM_ROLE,
+                    role.getName());
             String detail = Translator.getWithArgs("role.remove_user", role.getName(),
                     userNameMap.get(userRole.getUserId()));
             logDTO.setDetail(detail);
@@ -278,8 +281,10 @@ public class UserRoleService {
         logService.batchAdd(logs);
     }
 
-    public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId, Boolean includeDisabled) {
-        List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOption(organizationId, includeDisabled);
+    public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId,
+            Boolean includeDisabled) {
+        List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOption(organizationId,
+                includeDisabled);
         Set<String> roleUserIdSet = new HashSet<>(extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId)));
 
         roleUserOptions.forEach(userOption -> userOption.setEnabled(!roleUserIdSet.contains(userOption.getId())));

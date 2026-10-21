@@ -7,7 +7,6 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-
 @Data
 @Schema(description = "用户扩展信息")
 @Table(name = "sys_user_extend")

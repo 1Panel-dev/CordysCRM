@@ -52,14 +52,14 @@ public class PermissionCache {
                             rolePermissions
                                     .stream()
                                     .map(RolePermission::getPermissionId)
-                                    .collect(Collectors.toSet())
-                    );
+                                    .collect(Collectors.toSet()));
                     return rolePermission;
                 }).collect(Collectors.toList());
     }
 
     public Set<String> getPermissionIds(String userId, String orgId) {
-        List<RolePermissionDTO> rolePermissions = Objects.requireNonNull(CommonBeanFactory.getBean(PermissionCache.class)).getRolePermissions(userId, orgId);
+        List<RolePermissionDTO> rolePermissions = Objects
+                .requireNonNull(CommonBeanFactory.getBean(PermissionCache.class)).getRolePermissions(userId, orgId);
         return rolePermissions.stream()
                 .flatMap(rolePermissionDTO -> rolePermissionDTO.getPermissions().stream())
                 .collect(Collectors.toSet());

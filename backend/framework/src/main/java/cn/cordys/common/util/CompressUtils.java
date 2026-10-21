@@ -12,7 +12,7 @@ public class CompressUtils {
     private CompressUtils() {
     }
 
-    /***
+    /**
      * Zip压缩
      *
      * @param data 待压缩数据
@@ -24,7 +24,7 @@ public class CompressUtils {
         }
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ZipOutputStream zip = new ZipOutputStream(bos)) {
+                ZipOutputStream zip = new ZipOutputStream(bos)) {
             ZipEntry entry = new ZipEntry("zip");
             zip.putNextEntry(entry);
             zip.write(temp);
@@ -34,7 +34,6 @@ public class CompressUtils {
             return data;
         }
     }
-
 
     private static File getFile(String filePath) throws IOException {
         // 创建文件对象
@@ -56,7 +55,7 @@ public class CompressUtils {
     private static void zipFile(File file, ZipOutputStream zipOutputStream) throws IOException {
         if (file.exists() && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file);
-                 BufferedInputStream bis = new BufferedInputStream(fis)) {
+                    BufferedInputStream bis = new BufferedInputStream(fis)) {
                 ZipEntry entry = new ZipEntry(file.getName());
                 zipOutputStream.putNextEntry(entry);
 
@@ -74,7 +73,6 @@ public class CompressUtils {
             }
         }
     }
-
 
     /**
      * 将多个文件压缩
@@ -102,9 +100,8 @@ public class CompressUtils {
     /**
      * 将多个文件压缩至指定路径
      *
-     * @param fileList    待压缩的文件列表
      * @param zipFilePath 压缩文件路径
-     *
+     * @param fileList    待压缩的文件列表
      * @return 返回压缩好的文件
      */
     public static File zipFilesToPath(String zipFilePath, List<File> fileList) throws IOException {
@@ -112,8 +109,7 @@ public class CompressUtils {
 
         // 创建输出流和压缩流
         try (FileOutputStream outputStream = new FileOutputStream(zipFile);
-             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
-
+                ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
             // 遍历文件列表进行压缩
             for (File file : fileList) {
                 if (file != null && file.exists() && file.isFile()) {
@@ -125,8 +121,7 @@ public class CompressUtils {
         return zipFile;
     }
 
-
-    /***
+    /**
      * Zip解压
      *
      * @param data 待解压数据
@@ -138,8 +133,7 @@ public class CompressUtils {
         }
 
         try (ByteArrayInputStream bis = new ByteArrayInputStream(temp);
-             ZipInputStream zip = new ZipInputStream(bis)) {
-
+                ZipInputStream zip = new ZipInputStream(bis)) {
             ByteArrayOutputStream bas = new ByteArrayOutputStream();
 
             // 处理压缩包中的每个条目
@@ -158,7 +152,6 @@ public class CompressUtils {
             return data;
         }
     }
-
 
     public static Object zipString(Object data) {
         if (!(data instanceof String)) {

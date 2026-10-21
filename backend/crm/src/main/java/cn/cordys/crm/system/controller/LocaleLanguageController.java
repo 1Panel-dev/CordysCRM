@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-
 import cn.cordys.crm.system.dto.request.LocaleLanguageRequest;
 import cn.cordys.crm.system.service.LocalLanguageService;
 import cn.cordys.security.SessionUtils;
@@ -18,7 +17,6 @@ public class LocaleLanguageController {
 
     @Resource
     private LocalLanguageService localLanguageService;
-
 
     @PostMapping("/locale-language/change")
     @Operation(summary = "修改本地语言")

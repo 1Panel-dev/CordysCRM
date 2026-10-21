@@ -1,6 +1,5 @@
 package cn.cordys.crm.integration.common.client;
 
-
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -57,7 +56,8 @@ public class QrCodeClient {
     /**
      * 发送带 Header 参数的 GET 请求
      */
-    public String exchange(String url, String headerParam, String paramName, MediaType mediaType, MediaType acceptMediaType) {
+    public String exchange(String url, String headerParam, String paramName, MediaType mediaType,
+            MediaType acceptMediaType) {
         var headers = createHeaders(headerParam, paramName, mediaType, acceptMediaType);
         var request = new HttpEntity<>(headers);
         try {
@@ -72,7 +72,8 @@ public class QrCodeClient {
     /**
      * 发送带 Header 参数的 GET 请求，并返回 String 类型的响应
      */
-    public String exchangeString(String url, String headerParam, String paramName, MediaType mediaType, MediaType acceptMediaType) {
+    public String exchangeString(String url, String headerParam, String paramName, MediaType mediaType,
+            MediaType acceptMediaType) {
         var headers = createHeaders(headerParam, paramName, mediaType, acceptMediaType);
         var request = new HttpEntity<>(headers);
         try {
@@ -90,7 +91,8 @@ public class QrCodeClient {
     /**
      * 发送带 Header 参数的 POST 请求
      */
-    public String postExchange(String url, String headerParam, String paramName, Object body, MediaType mediaType, MediaType acceptMediaType) {
+    public String postExchange(String url, String headerParam, String paramName, Object body, MediaType mediaType,
+            MediaType acceptMediaType) {
         var headers = createHeaders(headerParam, paramName, mediaType, acceptMediaType);
         var requestEntity = new HttpEntity<>(body, headers);
         try {
@@ -105,7 +107,8 @@ public class QrCodeClient {
     /**
      * 创建 HttpHeaders，避免重复代码
      */
-    private HttpHeaders createHeaders(String headerParam, String paramName, MediaType mediaType, MediaType acceptMediaType) {
+    private HttpHeaders createHeaders(String headerParam, String paramName, MediaType mediaType,
+            MediaType acceptMediaType) {
         var headers = new HttpHeaders();
         headers.setContentType(mediaType);
         if (acceptMediaType != null) {

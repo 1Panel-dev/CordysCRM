@@ -118,8 +118,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
                             followUpPlan.getCreateUser(),
                             followUpPlan.getOrganizationId(),
                             List.of(followUpPlan.getOwner()),
-                            false
-                    );
+                            false);
                 }
 
                 // 发送商机跟进计划提醒
@@ -131,8 +130,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
                             followUpPlan.getCreateUser(),
                             followUpPlan.getOrganizationId(),
                             List.of(followUpPlan.getOwner()),
-                            false
-                    );
+                            false);
                 }
 
                 // 发送线索跟进计划提醒
@@ -144,8 +142,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
                             followUpPlan.getCreateUser(),
                             followUpPlan.getOrganizationId(),
                             List.of(followUpPlan.getOwner()),
-                            false
-                    );
+                            false);
                 }
             }
         }

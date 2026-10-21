@@ -53,21 +53,21 @@ public class ContractPaymentRecordExportService extends BaseExportService {
                         getSystemFieldMap(detail, metas, exportParam.getLocale()), cache));
     }
 
-
     private List<ContractPaymentRecordResponse> collectExportList(ExportDTO exportParam) {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            return extContractPaymentRecordMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
+            return extContractPaymentRecordMapper.getListByIds(exportParam.getSelectIds(), userId, orgId,
+                    deptDataPermission);
         }
         var request = (ContractPaymentRecordPageRequest) exportParam.getPageRequest();
         PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
         return extContractPaymentRecordMapper.list(request, userId, orgId, deptDataPermission);
     }
 
-
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentRecordResponse data, List<FieldExportMeta> exportMetas, Locale locale) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentRecordResponse data,
+            List<FieldExportMeta> exportMetas, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -80,8 +80,9 @@ public class ContractPaymentRecordExportService extends BaseExportService {
                 .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
         resolveAndPutTimeField(systemFieldMap, metaMap, "recordAmount", data.getRecordAmount());
 
-        systemFieldMap.put("recordEndTime", getInternalDateStr(data.getRecordEndTime(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
-                data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_END_TIME.getKey()));
+        systemFieldMap.put("recordEndTime",
+                getInternalDateStr(data.getRecordEndTime(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                        data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_END_TIME.getKey()));
 
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
@@ -102,9 +103,9 @@ public class ContractPaymentRecordExportService extends BaseExportService {
     private String getInternalDateStr(Long timestamp, String formKey, String orgId, String internalKey) {
         String dateType = moduleFieldExtService.getDateFieldType(formKey, orgId, internalKey);
         return switch (dateType) {
-            case "date" -> TimeUtils.getDateStr(timestamp);
-            case "month" -> TimeUtils.getMonthStr(timestamp);
-            default -> TimeUtils.getDateTimeStr(timestamp);
+        case "date" -> TimeUtils.getDateStr(timestamp);
+        case "month" -> TimeUtils.getMonthStr(timestamp);
+        default -> TimeUtils.getDateTimeStr(timestamp);
         };
     }
 }

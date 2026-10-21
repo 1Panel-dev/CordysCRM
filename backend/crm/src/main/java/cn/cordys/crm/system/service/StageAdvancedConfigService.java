@@ -61,13 +61,13 @@ public class StageAdvancedConfigService {
         STAGE_CONFIG_TABLE.put(FormKey.OPPORTUNITY.getKey(), "opportunity_stage_config");
     }
 
-
     public void saveAdvancedConfig(StageAdvancedConfigRequest request, String moduleType, String orgId, String userId) {
         String tableName = STAGE_CONFIG_TABLE.get(moduleType);
         if (StringUtils.isBlank(tableName)) {
             return;
         }
-        extStageAdvancedConfigMapper.update(tableName, request.getCirculationType(), orgId, userId, System.currentTimeMillis());
+        extStageAdvancedConfigMapper.update(tableName, request.getCirculationType(), orgId, userId,
+                System.currentTimeMillis());
 
         List<StageAdvancedConfig> oldConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, moduleType);
 
@@ -78,9 +78,11 @@ public class StageAdvancedConfigService {
         circulationSettings.forEach(setting -> {
             List<Target> targets = setting.getTargets();
             targets.forEach(target -> {
-                StageAdvancedConfig stageAdvancedConfig = oldConfigs.stream().filter(oldConfig -> Strings.CI.equals(oldConfig.getOriginId(), setting.getOriginId())
-                        && Strings.CI.equals(oldConfig.getTargetId(), target.getTargetId())
-                        && Strings.CI.equals(oldConfig.getModuleType(), moduleType)).findFirst().orElse(null);
+                StageAdvancedConfig stageAdvancedConfig = oldConfigs.stream()
+                        .filter(oldConfig -> Strings.CI.equals(oldConfig.getOriginId(), setting.getOriginId())
+                                && Strings.CI.equals(oldConfig.getTargetId(), target.getTargetId())
+                                && Strings.CI.equals(oldConfig.getModuleType(), moduleType))
+                        .findFirst().orElse(null);
                 if (stageAdvancedConfig == null) {
                     StageAdvancedConfig stageAdvanceConfig = new StageAdvancedConfig();
                     stageAdvanceConfig.setId(IDGenerator.nextStr());
@@ -108,13 +110,11 @@ public class StageAdvancedConfigService {
                     stageAdvanceConfigList.add(updateConfig);
                 }
             });
-
         });
 
         if (CollectionUtils.isNotEmpty(oldConfigs)) {
             List<String> ids = oldConfigs.stream().map(StageAdvancedConfig::getId).toList();
             stageAdvanceConfigMapper.deleteByIds(ids);
-
         }
 
         if (CollectionUtils.isNotEmpty(stageAdvanceConfigList)) {
@@ -127,12 +127,13 @@ public class StageAdvancedConfigService {
         final Map<String, Object> modifiedVal = new HashMap<>(1);
         modifiedVal.put(moduleType + "Setting", newConfigs);
 
-        LogDTO logDTO = new LogDTO(orgId, IDGenerator.nextStr(), userId, CollectionUtils.isNotEmpty(oldConfigs) ? LogType.UPDATE : LogType.ADD, LogModule.SYSTEM_MODULE, Translator.get(moduleType) + Translator.get("advanced_circulation_setting"));
+        LogDTO logDTO = new LogDTO(orgId, IDGenerator.nextStr(), userId,
+                CollectionUtils.isNotEmpty(oldConfigs) ? LogType.UPDATE : LogType.ADD, LogModule.SYSTEM_MODULE,
+                Translator.get(moduleType) + Translator.get("advanced_circulation_setting"));
         logDTO.setOriginalValue(originalVal);
         logDTO.setModifiedValue(modifiedVal);
         logService.add(logDTO);
     }
-
 
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void switchType(String type, String moduleType, String orgId) {
@@ -141,7 +142,10 @@ public class StageAdvancedConfigService {
             extStageAdvancedConfigMapper.update(tableName, type, orgId, null, null);
         }
         final Map<String, Object> originalVal = new HashMap<>(1);
-        originalVal.put("circulationType", Strings.CI.equals(CirculationTypeEnum.NORMAL.name(), type) ? Translator.get(CirculationTypeEnum.ADVANCED.name()) : Translator.get(CirculationTypeEnum.NORMAL.name()));
+        originalVal.put("circulationType",
+                Strings.CI.equals(CirculationTypeEnum.NORMAL.name(), type)
+                        ? Translator.get(CirculationTypeEnum.ADVANCED.name())
+                        : Translator.get(CirculationTypeEnum.NORMAL.name()));
         final Map<String, Object> modifiedVal = new HashMap<>(1);
         modifiedVal.put("circulationType", Translator.get(type));
         OperationLogContext.setContext(
@@ -150,17 +154,11 @@ public class StageAdvancedConfigService {
                         .resourceName(Translator.get(moduleType) + Translator.get("advanced_circulation_setting"))
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
-
 
     /**
      * stage校验
-     *
-     * @param originStage
-     * @param targetStage
-     * @param moduleType
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public boolean checkStage(String originStage, String targetStage, String moduleType) {
@@ -189,19 +187,20 @@ public class StageAdvancedConfigService {
         }
 
         return false;
-
     }
 
-    private boolean handleAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
-        StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originConfig.getId(), targetConfig.getId(), moduleType);
+    private boolean handleAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig,
+            String moduleType) {
+        StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originConfig.getId(),
+                targetConfig.getId(), moduleType);
         if (config == null || !config.getEnable()) {
             throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
         }
         return config.getEnable();
     }
 
-
-    private boolean handleNormal(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
+    private boolean handleNormal(StageConfigResponse originConfig, StageConfigResponse targetConfig,
+            String moduleType) {
         // 基础流转
         if (originConfig.getEndRollBack() && originConfig.getAfootRollBack()) {
             // 进行中&完结 同时开启 任意流转
@@ -226,7 +225,8 @@ public class StageAdvancedConfigService {
             String originType = originConfig.getType();
             String targetType = targetConfig.getType();
 
-            boolean bothAfoot = Strings.CI.equals(OpportunityStageType.AFOOT.name(), originType) && Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
+            boolean bothAfoot = Strings.CI.equals(OpportunityStageType.AFOOT.name(), originType)
+                    && Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
             if (!bothAfoot) {
                 return true;
             }
@@ -245,7 +245,8 @@ public class StageAdvancedConfigService {
 
             // 源阶段为 AFOOT 时，允许目标为 AFOOT 或 END（不限制 pos）
             String targetType = targetConfig.getType();
-            return Strings.CI.equals(OpportunityStageType.END.name(), targetType) || Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
+            return Strings.CI.equals(OpportunityStageType.END.name(), targetType)
+                    || Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
         }
 
         throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
@@ -253,13 +254,16 @@ public class StageAdvancedConfigService {
 
     /**
      * 商机「反签」: 完结阶段之间唯一合法的一步 —— 成功(赢率100) 流转到 失败(赢率0)。
-     *
-     * <p>只配置了进行中回退时, 完结阶段本不允许任何切换; 有反签权限时才放开这一步, 且方向固定:
-     * 失败不能回到成功, 完结阶段也不能退回进行中。反签权限已在校验入口统一把关, 这里只判方向和配置。</p>
-     *
-     * <p>仅对商机状态流生效, 订单/合同没有赢率概念, 流转口径不受影响。</p>
+     * <p>
+     * 只配置了进行中回退时, 完结阶段本不允许任何切换; 有反签权限时才放开这一步, 且方向固定:
+     * 失败不能回到成功, 完结阶段也不能退回进行中。反签权限已在校验入口统一把关, 这里只判方向和配置。
+     * </p>
+     * <p>
+     * 仅对商机状态流生效, 订单/合同没有赢率概念, 流转口径不受影响。
+     * </p>
      */
-    private boolean isOpportunityResignSuccessToFail(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
+    private boolean isOpportunityResignSuccessToFail(StageConfigResponse originConfig, StageConfigResponse targetConfig,
+            String moduleType) {
         if (!Strings.CI.equals(FormKey.OPPORTUNITY.getKey(), moduleType)
                 || !Strings.CI.equals(OpportunityStageType.END.name(), targetConfig.getType())) {
             return false;

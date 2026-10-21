@@ -3,7 +3,9 @@ package cn.cordys.common.formula;
 import cn.cordys.common.resolver.field.FormulaResolver;
 import cn.cordys.crm.system.dto.field.FormulaField;
 import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FormulaResolverTest {

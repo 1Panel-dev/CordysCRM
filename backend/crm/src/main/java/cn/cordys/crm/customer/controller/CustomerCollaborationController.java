@@ -20,7 +20,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-08 17:42:41
  */
 @Tag(name = "客户协作人")
 @RestController
@@ -40,7 +39,8 @@ public class CustomerCollaborationController {
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#request.customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "添加客户协作人")
     public CustomerCollaboration add(@Validated @RequestBody CustomerCollaborationAddRequest request) {
-        return customerCollaborationService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customerCollaborationService.add(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")

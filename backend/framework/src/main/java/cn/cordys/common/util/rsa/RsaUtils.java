@@ -46,7 +46,6 @@ public class RsaUtils {
      * 获取当前的 RSA 密钥对，如果未创建则生成新的密钥对。
      *
      * @return 当前的 RSA 密钥对
-     *
      * @throws NoSuchAlgorithmException 如果无法生成密钥对
      */
     public static RsaKey getRsaKey() throws NoSuchAlgorithmException {
@@ -69,7 +68,6 @@ public class RsaUtils {
      * 创建一个 1024 位的 RSA 密钥对。
      *
      * @return 生成的 RSA 密钥对
-     *
      * @throws NoSuchAlgorithmException 如果无法生成密钥对
      */
     public static RsaKey createKeys() throws NoSuchAlgorithmException {
@@ -79,10 +77,8 @@ public class RsaUtils {
     /**
      * 创建一个指定大小的 RSA 密钥对。
      *
-     * @param keySize 密钥大小（例如：1024，2048）
-     *
+     * @param keySize 密钥长度（位）（例如：1024，2048）
      * @return 生成的 RSA 密钥对
-     *
      * @throws NoSuchAlgorithmException 如果无法生成密钥对
      */
     public static RsaKey createKeys(int keySize) throws NoSuchAlgorithmException {
@@ -113,10 +109,8 @@ public class RsaUtils {
      *
      * @param originalText 原文
      * @param privateKey   私钥（Base64 编码）
-     *
      * @return 加密后的密文
-     *
-     * @throws NoSuchAlgorithmException 如果加密失败
+     * @throws Exception 如果解析私钥或加密失败
      */
     public static String privateEncrypt(String originalText, String privateKey) throws Exception {
         RSAPrivateKey rsaPrivateKey = getPrivateKey(privateKey);
@@ -128,16 +122,15 @@ public class RsaUtils {
      *
      * @param originalText 原文
      * @param privateKey   私钥
-     *
      * @return 加密后的密文
-     *
      * @throws Exception 如果加密失败
      */
     private static String privateEncrypt(String originalText, RSAPrivateKey privateKey) throws Exception {
         Cipher cipher = Cipher.getInstance(RSA_CIPHER_TRANSFORMATION_OAEP);
         cipher.init(Cipher.ENCRYPT_MODE, privateKey);
 
-        byte[] encryptedData = rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, originalText.getBytes(CHARSET), privateKey.getModulus().bitLength());
+        byte[] encryptedData = rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, originalText.getBytes(CHARSET),
+                privateKey.getModulus().bitLength());
         return Base64.getEncoder().encodeToString(encryptedData);
     }
 
@@ -146,10 +139,8 @@ public class RsaUtils {
      *
      * @param cipherText 密文
      * @param privateKey 私钥（Base64 编码）
-     *
      * @return 解密后的原文
-     *
-     * @throws NoSuchAlgorithmException 如果解密失败
+     * @throws Exception 如果解析私钥或解密失败
      */
     public static String privateDecrypt(String cipherText, String privateKey) throws Exception {
         RSAPrivateKey rsaPrivateKey = getPrivateKey(privateKey);
@@ -161,16 +152,15 @@ public class RsaUtils {
      *
      * @param cipherText 密文
      * @param privateKey 私钥
-     *
      * @return 解密后的原文
-     *
      * @throws Exception 如果解密失败
      */
     private static String privateDecrypt(String cipherText, RSAPrivateKey privateKey) throws Exception {
         Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
 
-        byte[] decryptedData = rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.getDecoder().decode(cipherText), privateKey.getModulus().bitLength());
+        byte[] decryptedData = rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.getDecoder().decode(cipherText),
+                privateKey.getModulus().bitLength());
         return new String(decryptedData, CHARSET);
     }
 
@@ -178,9 +168,7 @@ public class RsaUtils {
      * 获取私钥对象。
      *
      * @param privateKey 私钥（Base64 编码）
-     *
      * @return 私钥对象
-     *
      * @throws NoSuchAlgorithmException 如果无法获取私钥
      */
     private static RSAPrivateKey getPrivateKey(String privateKey) throws NoSuchAlgorithmException {
@@ -194,15 +182,13 @@ public class RsaUtils {
     }
 
     /**
-     * 分块处理加密和解密过程，避免一次性数据过大导致的内存问题。
+     * 按密钥长度和操作模式分块处理，限制每次 RSA 运算的输入长度。
      *
      * @param cipher  加解密器
      * @param opmode  操作模式（加密/解密）
      * @param data    待加解密的数据
-     * @param keySize 密钥大小
-     *
+     * @param keySize 密钥长度（位）
      * @return 处理后的数据
-     *
      * @throws Exception 如果处理过程中发生错误
      */
     private static byte[] rsaSplitCodec(Cipher cipher, int opmode, byte[] data, int keySize) throws Exception {
@@ -239,7 +225,8 @@ public class RsaUtils {
         Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
-        byte[] encryptedData = rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, originalText.getBytes(CHARSET), publicKey.getModulus().bitLength());
+        byte[] encryptedData = rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, originalText.getBytes(CHARSET),
+                publicKey.getModulus().bitLength());
         return Base64.getEncoder().encodeToString(encryptedData);
     }
 }

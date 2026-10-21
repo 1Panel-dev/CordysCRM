@@ -71,7 +71,8 @@ class ApprovalCommentMapperTest {
         for (String statement : List.of("selectList", "selectChildren")) {
             boolean children = statement.equals("selectChildren");
             assertSql(statement, parameters,
-                    children ? List.of("org-a", "instance-a", "comment-a", "comment-b") : List.of("org-a", "instance-a"),
+                    children ? List.of("org-a", "instance-a", "comment-a", "comment-b")
+                            : List.of("org-a", "instance-a"),
                     "where c.organization_id = ?", "and c.instance_id = ?",
                     children ? "and c.parent_id in" : "and c.parent_id is null",
                     "order by c.create_time desc, c.id desc",
@@ -82,7 +83,7 @@ class ApprovalCommentMapperTest {
     }
 
     private static void assertSql(String statement, Map<String, Object> parameters,
-                                  List<String> expectedValues, String... requiredPredicates) {
+            List<String> expectedValues, String... requiredPredicates) {
         BoundSql boundSql = configuration.getMappedStatement(ExtApprovalCommentMapper.class.getName() + "." + statement)
                 .getBoundSql(parameters);
         String sql = boundSql.getSql().replaceAll("\\s+", " ").trim().toLowerCase(Locale.ROOT);

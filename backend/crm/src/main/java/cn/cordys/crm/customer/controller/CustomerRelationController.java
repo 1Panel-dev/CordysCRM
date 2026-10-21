@@ -20,7 +20,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-08 17:42:41
  */
 @Tag(name = "客户关系")
 @RestController
@@ -40,7 +39,8 @@ public class CustomerRelationController {
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "添加客户关系")
     public CustomerRelation add(@PathVariable String customerId,
-                                @Validated(CustomerRelationSaveRequest.SingleOperation.class) @RequestBody CustomerRelationSaveRequest request) {
+            @Validated(CustomerRelationSaveRequest.SingleOperation.class)
+            @RequestBody CustomerRelationSaveRequest request) {
         return customerRelationService.add(request, customerId);
     }
 
@@ -48,7 +48,8 @@ public class CustomerRelationController {
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "更新客户关系")
     public CustomerRelation update(@PathVariable String customerId,
-                                   @Validated(CustomerRelationSaveRequest.SingleOperation.class) @RequestBody CustomerRelationUpdateRequest request) {
+            @Validated(CustomerRelationSaveRequest.SingleOperation.class)
+            @RequestBody CustomerRelationUpdateRequest request) {
         return customerRelationService.update(request, customerId);
     }
 
@@ -62,7 +63,8 @@ public class CustomerRelationController {
     @PostMapping("/save/{customerId}")
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "整体客户关系")
-    public void save(@PathVariable String customerId, @Validated @RequestBody @Valid @NotNull List<CustomerRelationSaveRequest> requests) {
+    public void save(@PathVariable String customerId,
+            @Validated @RequestBody @Valid @NotNull List<CustomerRelationSaveRequest> requests) {
         customerRelationService.save(customerId, requests);
     }
 }

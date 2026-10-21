@@ -3,8 +3,7 @@ package cn.cordys.crm.integration.dataease.dto.request;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-15  14:52
+ * @author jianxing
  */
 @Data
 public class UserUpdateRequest extends UserCreateRequest {

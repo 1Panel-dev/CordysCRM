@@ -3,8 +3,7 @@ package cn.cordys.crm.clue.constants;
 import org.apache.commons.lang3.Strings;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-03-11  15:53
+ * @author jianxing
  */
 public enum ClueStatus {
 

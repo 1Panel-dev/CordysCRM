@@ -12,7 +12,8 @@ public interface ExtExportTaskMapper {
 
     int updateExportTaskStatus(@Param("newStatus") String newStatus, @Param("oldStatus") String oldStatus);
 
-    List<ExportTask> selectExportTaskList(@Param("request") ExportTaskCenterQueryRequest request, @Param("oneDayBefore") long oneDayBefore, @Param("userId") String userId);
+    List<ExportTask> selectExportTaskList(@Param("request") ExportTaskCenterQueryRequest request,
+            @Param("oneDayBefore") long oneDayBefore, @Param("userId") String userId);
 
     int checkPreparedUniqueness(@Param("createUser") String createUser, @Param("resourceType") String resourceType);
 }

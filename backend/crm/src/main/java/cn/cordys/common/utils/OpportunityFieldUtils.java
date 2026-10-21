@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
 
 public class OpportunityFieldUtils {
 
-
-    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap, Map<String, BaseField> fieldConfigMap, Locale locale) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data,
+            Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap,
+            Map<String, BaseField> fieldConfigMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -29,14 +30,18 @@ public class OpportunityFieldUtils {
         systemFieldMap.put("failureReason", data.getFailureReason());
 
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+            systemFieldMap.put("approvalStatus",
+                    Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
 
         if (fieldConfigMap != null) {
-            BaseField possible = fieldConfigMap.values().stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "possible")).findFirst().orElse(null);
+            BaseField possible = fieldConfigMap.values().stream()
+                    .filter(field -> Strings.CI.equals(field.getBusinessKey(), "possible")).findFirst().orElse(null);
             if (possible != null && data.getPossible() != null) {
-                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(possible.getType());
-                systemFieldMap.put("possible", customFieldResolver.transformToValue(possible, data.getPossible().stripTrailingZeros().toPlainString()));
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                        .getResolver(possible.getType());
+                systemFieldMap.put("possible", customFieldResolver.transformToValue(possible,
+                        data.getPossible().stripTrailingZeros().toPlainString()));
             }
         }
         systemFieldMap.put("products", getProducts(optionMap, data.getProducts()));
@@ -54,15 +59,15 @@ public class OpportunityFieldUtils {
         systemFieldMap.put("updateUser", data.getUpdateUserName());
         systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
 
-
         return systemFieldMap;
     }
 
-
     private static Object getProducts(Map<String, List<OptionDTO>> optionMap, List<String> products) {
         List<String> productNames = new ArrayList<>();
-        if (optionMap != null && optionMap.containsKey(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey()) && CollectionUtils.isNotEmpty(products)) {
-            Map<String, String> productsMap = optionMap.get(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey()).stream().collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
+        if (optionMap != null && optionMap.containsKey(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())
+                && CollectionUtils.isNotEmpty(products)) {
+            Map<String, String> productsMap = optionMap.get(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())
+                    .stream().collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             products.forEach(product -> {
                 if (productsMap.containsKey(product)) {
                     productNames.add(productsMap.get(product));

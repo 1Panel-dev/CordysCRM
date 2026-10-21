@@ -71,7 +71,6 @@ public class LicenseService {
                             .modifiedValue(licenseLogDTO)
                             .build()
 
-
             );
         } else {
             LicenseLogDTO oldLogDTO = new LicenseLogDTO();
@@ -89,8 +88,7 @@ public class LicenseService {
                             .resourceId(license.getId())
                             .resourceName("license")
                             .modifiedValue(updateDTO)
-                            .build()
-            );
+                            .build());
         }
         return licenseDTO;
     }

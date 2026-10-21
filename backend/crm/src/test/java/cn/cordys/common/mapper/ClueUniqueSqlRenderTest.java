@@ -71,7 +71,7 @@ class ClueUniqueSqlRenderTest {
     @ParameterizedTest(name = "{0}.{1}")
     @MethodSource("commonUniqueQueries")
     void commonUniqueQueriesKeepExistingConditions(String table, String statement, String expectedSql,
-                                                   List<String> expectedValues) {
+            List<String> expectedValues) {
         Map<String, Object> parameters = Map.of(
                 "tableName", table,
                 "dataTable", table,
@@ -98,7 +98,7 @@ class ClueUniqueSqlRenderTest {
     }
 
     private static void assertSql(Class<?> mapper, String statement, Map<String, Object> parameters,
-                                  String expectedSql, List<String> expectedValues) {
+            String expectedSql, List<String> expectedValues) {
         BoundSql boundSql = configuration.getMappedStatement(mapper.getName() + "." + statement)
                 .getBoundSql(parameters);
         assertEquals(normalize(expectedSql), normalize(boundSql.getSql()));

@@ -27,5 +27,4 @@ public class FollowUpPlanControllerTests extends BaseTest {
         this.requestGetWithOkAndReturn(MODULE_FORM);
     }
 
-
 }

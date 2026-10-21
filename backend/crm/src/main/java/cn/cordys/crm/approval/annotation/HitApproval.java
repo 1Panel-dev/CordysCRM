@@ -16,48 +16,48 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HitApproval {
 
-	/**
-	 * 业务表单类型。标准审批表单使用 FormKey 枚举值（如 {@link FormKey#CONTRACT}）。
-	 * 自定义表单不在 FormKey 枚举中，此时依赖 {@link #formKeyExpr()} 在运行时确定表单类型，
-	 * 本字段仅作编译期占位（默认 {@link FormKey#ORDER}，实际以 formKeyExpr 为准）。
-	 */
-	FormKey formKey() default FormKey.ORDER;
+    /**
+     * 业务表单类型。标准审批表单使用 FormKey 枚举值（如 {@link FormKey#CONTRACT}）。
+     * 自定义表单不在 FormKey 枚举中，此时依赖 {@link #formKeyExpr()} 在运行时确定表单类型，
+     * 本字段仅作编译期占位（默认 {@link FormKey#ORDER}，实际以 formKeyExpr 为准）。
+     */
+    FormKey formKey() default FormKey.ORDER;
 
-	/**
-	 * 动态表单类型表达式 (支持SpEL，从方法参数中获取 formKey 字符串)。
-	 * 用于自定义表单等运行时才能确定的表单类型（如 customFormId）。
-	 * 为空时使用 {@link #formKey()} 的枚举 key。
-	 */
-	String formKeyExpr() default "";
+    /**
+     * 动态表单类型表达式 (支持SpEL，从方法参数中获取 formKey 字符串)。
+     * 用于自定义表单等运行时才能确定的表单类型（如 customFormId）。
+     * 为空时使用 {@link #formKey()} 的枚举 key。
+     */
+    String formKeyExpr() default "";
 
-	/**
-	 * 执行时机
-	 */
-	ExecuteTimingEnum executeType();
+    /**
+     * 执行时机
+     */
+    ExecuteTimingEnum executeType();
 
-	/**
-	 * 资源ID表达式 (支持SpEL表达式，从返回值或者方法参数中获取资源ID)
-	 */
-	String resourceId() default "";
+    /**
+     * 资源ID表达式 (支持SpEL表达式，从返回值或者方法参数中获取资源ID)
+     */
+    String resourceId() default "";
 
-	/**
-	 * TODO: 是否触发自动提审
-	 */
-	boolean autoSubmit() default false;
+    /**
+     * TODO: 是否触发自动提审
+     */
+    boolean autoSubmit() default false;
 
-	/**
-	 * 更新类型 (支持SpEL表达式，从返回值或者方法参数中获取资源ID) normal-正常更新(需要走评审切面)  approval-评审时候的更新（直接更新不走切面）
-	 * {@link cn.cordys.crm.approval.constants.ApprovalResourceUpdateType}
-	 */
-	String updateType() default "normal";
+    /**
+     * 更新类型 (支持SpEL表达式，从返回值或者方法参数中获取资源ID) normal-正常更新(需要走评审切面) approval-评审时候的更新（直接更新不走切面）
+     * {@link cn.cordys.crm.approval.constants.ApprovalResourceUpdateType}
+     */
+    String updateType() default "normal";
 
-	/**
-	 * 操作人 (审批流触发的用户ID)
-	 */
-	String operatorId();
+    /**
+     * 操作人 (审批流触发的用户ID)
+     */
+    String operatorId();
 
-	/**
-	 * 变更说明
-	 */
-	String comment() default Strings.EMPTY;
+    /**
+     * 变更说明
+     */
+    String comment() default Strings.EMPTY;
 }

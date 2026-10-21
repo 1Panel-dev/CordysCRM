@@ -42,7 +42,6 @@ public class OpportunityFollowPlanController {
         return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update")
     @Operation(summary = "更新商机跟进计划")
     public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
@@ -50,26 +49,27 @@ public class OpportunityFollowPlanController {
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/page")
     @Operation(summary = "商机跟进计划列表")
-    public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
+    public PagerWithOption<List<FollowUpPlanListResponse>> list(
+            @Validated @RequestBody FollowUpPlanPageRequest request) {
         FollowUpPlan followPlanRecord = new FollowUpPlan();
         followPlanRecord.setOpportunityId(request.getSourceId());
         followPlanRecord.setType(ModuleKey.CUSTOMER.name());
-        followUpPlanService.checkPlanPermission(followPlanRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpPlanService.checkPlanPermission(followPlanRecord, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER");
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                "OPPORTUNITY", "CUSTOMER");
     }
-
 
     @GetMapping("/get/{id}")
     @Operation(summary = "商机跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
-        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(),
+                true);
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/cancel/{id}")
     @Operation(summary = "取消商机跟进计划")
@@ -77,7 +77,6 @@ public class OpportunityFollowPlanController {
         followUpPlanService.checkUpdatePermission(id, SessionUtils.getUserId());
         followUpPlanService.cancelPlan(id, SessionUtils.getUserId());
     }
-
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "商机删除跟进计划")

@@ -10,12 +10,10 @@ import lombok.Data;
 
 import java.util.List;
 
-
 /**
  * 角色
  *
  * @author jianxing
- * @date 2025-01-03 09:54:59
  */
 @Data
 public class RoleAddRequest {

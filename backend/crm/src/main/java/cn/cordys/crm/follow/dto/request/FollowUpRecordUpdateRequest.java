@@ -13,5 +13,4 @@ public class FollowUpRecordUpdateRequest extends FollowUpRecordAddRequest {
     @Size(max = 32)
     private String id;
 
-
 }

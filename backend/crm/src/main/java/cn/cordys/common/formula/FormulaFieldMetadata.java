@@ -8,8 +8,7 @@ public record FormulaFieldMetadata(
         String fieldType,
         ValueType valueType,
         NumberType numberType,
-        boolean referenceField
-) {
+        boolean referenceField) {
 
     public enum ValueType {
         NUMBER,

@@ -12,7 +12,7 @@ import java.util.Map;
  * @author song-cc-rock
  */
 @Data
-public class ProductPriceGetResponse extends ProductPriceResponse{
+public class ProductPriceGetResponse extends ProductPriceResponse {
 
     @Schema(description = "选项集合")
     private Map<String, List<OptionDTO>> optionMap;

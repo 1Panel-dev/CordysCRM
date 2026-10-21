@@ -2,8 +2,9 @@ package cn.cordys.crm.system.constants;
 
 /**
  * 平均值统计时, 被统计字段为空值的处理方式。
- *
- * <p>仅 AVG 生效。</p>
+ * <p>
+ * 仅 AVG 生效。
+ * </p>
  */
 public enum StatisticEmptyValueMode {
 

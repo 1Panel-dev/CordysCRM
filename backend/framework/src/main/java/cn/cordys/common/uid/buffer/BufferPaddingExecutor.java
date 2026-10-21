@@ -38,7 +38,7 @@ public class BufferPaddingExecutor {
     private final PaddedAtomicLong lastSecond;
 
     /**
-     * RingBuffer & BufferUidProvider
+     * RingBuffer &amp; BufferUidProvider
      */
     private final RingBuffer ringBuffer;
     private final BufferedUidProvider uidProvider;
@@ -96,7 +96,8 @@ public class BufferPaddingExecutor {
      */
     public void start() {
         if (bufferPadSchedule != null) {
-            bufferPadSchedule.scheduleWithFixedDelay(this::paddingBuffer, scheduleInterval, scheduleInterval, TimeUnit.SECONDS);
+            bufferPadSchedule.scheduleWithFixedDelay(this::paddingBuffer, scheduleInterval, scheduleInterval,
+                    TimeUnit.SECONDS);
         }
     }
 

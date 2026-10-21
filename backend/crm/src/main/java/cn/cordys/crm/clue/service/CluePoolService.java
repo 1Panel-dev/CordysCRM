@@ -72,7 +72,6 @@ public class CluePoolService {
      * 分页获取线索池
      *
      * @param request 分页参数
-     *
      * @return 线索池列表
      */
     public List<CluePoolDTO> page(BasePageRequest request, String organizationId) {
@@ -81,7 +80,8 @@ public class CluePoolService {
             return new ArrayList<>();
         }
 
-        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
+        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser()))
+                .toList();
         List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
         Map<String, String> userMap = createOrUpdateUsers.stream()
                 .collect(Collectors.toMap(User::getId, User::getName));
@@ -108,7 +108,8 @@ public class CluePoolService {
                 .stream()
                 .collect(Collectors.groupingBy(CluePoolHiddenField::getPoolId));
 
-        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), organizationId).getFields();
+        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), organizationId)
+                .getFields();
 
         pools.forEach(pool -> {
             pool.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
@@ -150,10 +151,10 @@ public class CluePoolService {
                     String dateValue = split[0];
                     String dateUnit = split[1];
                     dateUnit = switch (dateUnit) {
-                        case "day" -> "BEFORE_DAY";
-                        case "month" -> "BEFORE_MONTH";
-                        case "week" -> "BEFORE_WEEK";
-                        default -> dateUnit;
+                    case "day" -> "BEFORE_DAY";
+                    case "month" -> "BEFORE_MONTH";
+                    case "week" -> "BEFORE_WEEK";
+                    default -> dateUnit;
                     };
                     condition.setValue("CUSTOM," + dateValue + "," + dateUnit);
                 }
@@ -167,7 +168,8 @@ public class CluePoolService {
             hiddenFieldDTO.setFieldId(field.getId());
             hiddenFieldDTO.setFieldName(field.getName());
             hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
-            hiddenFieldDTO.setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
+            hiddenFieldDTO
+                    .setEditable(!Strings.CS.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
             return hiddenFieldDTO;
         }).toList();
     }
@@ -286,10 +288,8 @@ public class CluePoolService {
                         .resourceName(Translator.get("module.clue.pool.setting"))
                         .originalValue(originPool)
                         .modifiedValue(cluePoolMapper.selectByPrimaryKey(request.getId()))
-                        .build()
-        );
+                        .build());
     }
-
 
     private void batchInsertCluePoolHiddenFields(String poolId, Set<String> fieldIds) {
         if (CollectionUtils.isEmpty(fieldIds)) {
@@ -372,8 +372,7 @@ public class CluePoolService {
                         .resourceName(Translator.get("module.clue.pool.setting"))
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
 
     /**
@@ -381,7 +380,6 @@ public class CluePoolService {
      *
      * @param ownerIds       负责人ID集合
      * @param organizationId 组织ID
-     *
      * @return 默认线索池
      */
     public Map<String, CluePool> getOwnersDefaultPoolMap(List<String> ownerIds, String organizationId) {
@@ -405,7 +403,6 @@ public class CluePoolService {
      *
      * @param scopeIds 范围ID集合
      * @param pools    线索池列表
-     *
      * @return 命中范围的线索池列表
      */
     public List<CluePool> matchMultiScope(List<String> scopeIds, List<CluePool> pools) {
@@ -430,10 +427,10 @@ public class CluePoolService {
      * @param pool           线索池
      * @param collectionTime 领取时间
      * @param createTime     创建时间
-     *
      * @return 剩余归属天数
      */
-    public Integer calcReservedDay(CluePool pool, CluePoolRecycleRule recycleRule, Long collectionTime, Long createTime) {
+    public Integer calcReservedDay(CluePool pool, CluePoolRecycleRule recycleRule, Long collectionTime,
+            Long createTime) {
         if (pool == null || !pool.getAuto() || recycleRule == null) {
             return null;
         }
@@ -447,7 +444,6 @@ public class CluePoolService {
      * 校验线索池是否存在
      *
      * @param id 线索池ID
-     *
      * @return 线索池
      */
     private CluePool checkPoolExist(String id) {
@@ -462,7 +458,6 @@ public class CluePoolService {
      * 获取负责人最佳匹配公海
      *
      * @param pools 公海列表
-     *
      * @return 公海集合
      */
     public Map<List<String>, CluePool> getOwnersBestMatchPoolMap(List<CluePool> pools) {
@@ -472,7 +467,8 @@ public class CluePoolService {
             List<String> exitOwnerIds = poolMap.keySet().stream().flatMap(List::stream).toList();
             List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
             List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, pool.getOrganizationId());
-            List<String> defaultOwnerIds = ownerIds.stream().distinct().filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
+            List<String> defaultOwnerIds = ownerIds.stream().distinct()
+                    .filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
             if (CollectionUtils.isEmpty(defaultOwnerIds)) {
                 continue;
             }
@@ -486,7 +482,6 @@ public class CluePoolService {
      *
      * @param clue        线索
      * @param recycleRule 回收规则
-     *
      * @return 是否符合回收规则
      */
     public boolean checkRecycled(Clue clue, CluePoolRecycleRule recycleRule) {
@@ -504,7 +499,6 @@ public class CluePoolService {
      *
      * @param condition 规则
      * @param clue      线索
-     *
      * @return 是否匹配
      */
     private boolean matchTime(RuleConditionDTO condition, Clue clue) {
@@ -514,7 +508,8 @@ public class CluePoolService {
             } else if (condition.getScope().contains(RecycleConditionScopeKey.PICKED)) {
                 return RecycleConditionUtils.matchTime(condition, clue.getCollectionTime());
             } else {
-                return RecycleConditionUtils.matchTime(condition, clue.getCreateTime()) || RecycleConditionUtils.matchTime(condition, clue.getCollectionTime());
+                return RecycleConditionUtils.matchTime(condition, clue.getCreateTime())
+                        || RecycleConditionUtils.matchTime(condition, clue.getCollectionTime());
             }
         } else {
             return RecycleConditionUtils.matchTime(condition, clue.getFollowTime());
@@ -523,10 +518,10 @@ public class CluePoolService {
 
     public void checkPermission(String id, String userId, String orgId) {
         CluePool cluePool = checkPoolExist(id);
-        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(cluePool.getOwnerId(), String.class), orgId);
+        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(cluePool.getOwnerId(), String.class),
+                orgId);
         if (!ownerIds.contains(userId)) {
             throw new GenericException(Translator.get("no.operation.permission"));
         }
-
     }
 }

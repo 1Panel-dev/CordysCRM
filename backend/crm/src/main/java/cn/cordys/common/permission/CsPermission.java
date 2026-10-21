@@ -10,12 +10,12 @@ import java.lang.annotation.Target;
  * 该注解可以替换 @RequiresPermissions，支持更复杂的权限校验逻辑，包括资源ID和审批状态权限。
  * 注：该注解不支持校验多个权限码，多个请使用 @RequiresPermissions 注解。
  * <p>
- * 四个判断依据：当前资源是你待办的资源 or (角色的权限位 && 角色的数据权限 && 审批流的状态权限)
+ * 四个判断依据：当前资源是你待办的资源 or (角色的权限位 &amp;&amp; 角色的数据权限 &amp;&amp; 审批流的状态权限)
  * <p>
  * 当 resourceId 为空时，仅校验角色权限位；
- * 指定 resourceId 时，若 approvalTaskId 不为空，则校验审批状态权限；否则校order验(角色的权限位 && 角色的数据权限 && 审批流的状态权限)。
+ * 指定 resourceId 时，若 approvalTaskId 不为空，则校验审批状态权限；否则校order验(角色的权限位 &amp;&amp; 角色的数据权限 &amp;&amp; 审批流的状态权限)。
  */
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CsPermission {
 

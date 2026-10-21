@@ -37,8 +37,8 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -81,12 +81,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     /**
      * 添加跟进记录
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public FollowUpRecord add(FollowUpRecordAddRequest request, String userId, String orgId) {
         FollowUpRecord followUpRecord = BeanUtils.copyBean(new FollowUpRecord(), request);
@@ -111,21 +105,16 @@ public class FollowUpRecordService extends BaseFollowUpService {
         statisticFieldService.refreshDataStatisticFields(FormKey.FOLLOW_RECORD.getKey(), followUpRecord.getId(), orgId);
         // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
         statisticFieldService.refreshByRelatedDataChange(FormKey.FOLLOW_RECORD.getKey(), followUpRecord.getId(), orgId);
-        handleFollowTimeAndFollower(request.getCustomerId(), request.getOpportunityId(), request.getClueId(), request.getFollowTime(), request.getOwner());
+        handleFollowTimeAndFollower(request.getCustomerId(), request.getOpportunityId(), request.getClueId(),
+                request.getFollowTime(), request.getOwner());
         return followUpRecord;
     }
 
-
     /**
-     * 处理最新跟进使时间&最新跟进人
-     *
-     * @param customerId
-     * @param opportunityId
-     * @param clueId
-     * @param followTime
-     * @param owner
+     * 处理最新跟进使时间&amp;最新跟进人
      */
-    private void handleFollowTimeAndFollower(String customerId, String opportunityId, String clueId, Long followTime, String owner) {
+    private void handleFollowTimeAndFollower(String customerId, String opportunityId, String clueId, Long followTime,
+            String owner) {
         if (StringUtils.isNotBlank(customerId)) {
             Customer customer = new Customer();
             customer.setId(customerId);
@@ -151,14 +140,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         }
     }
 
-
     /**
      * 更新跟进记录
-     *
-     * @param request
-     * @param userId
-     *
-     * @return
      */
     @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE, resourceId = "{#request.id}")
     public FollowUpRecord update(FollowUpRecordUpdateRequest request, String userId, String orgId) {
@@ -168,7 +151,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
             FollowUpRecord newRecord = BeanUtils.copyBean(new FollowUpRecord(), record);
             FollowUpRecord updateFollowUpRecord = newRecord(newRecord, request, userId);
             // 获取模块字段
-            List<BaseModuleFieldValue> originCustomerFields = followUpRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originCustomerFields = followUpRecordFieldService
+                    .getModuleFieldValuesByResourceId(request.getId());
             // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
             // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
             StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
@@ -178,8 +162,11 @@ public class FollowUpRecordService extends BaseFollowUpService {
             followUpRecordMapper.update(updateFollowUpRecord);
             // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
             statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
-            handleFollowTimeAndFollower(updateFollowUpRecord.getCustomerId(), updateFollowUpRecord.getOpportunityId(), updateFollowUpRecord.getClueId(), updateFollowUpRecord.getFollowTime(), updateFollowUpRecord.getOwner());
-            baseService.handleUpdateLog(followUpRecord, updateFollowUpRecord, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
+            handleFollowTimeAndFollower(updateFollowUpRecord.getCustomerId(), updateFollowUpRecord.getOpportunityId(),
+                    updateFollowUpRecord.getClueId(), updateFollowUpRecord.getFollowTime(),
+                    updateFollowUpRecord.getOwner());
+            baseService.handleUpdateLog(followUpRecord, updateFollowUpRecord, originCustomerFields,
+                    request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
         }, () -> {
             throw new GenericException("record_not_found");
         });
@@ -187,7 +174,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return followUpRecordMapper.selectByPrimaryKey(request.getId());
     }
 
-    private void updateModuleField(FollowUpRecord updateFollowUpRecord, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(FollowUpRecord updateFollowUpRecord, List<BaseModuleFieldValue> moduleFields,
+            String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -197,7 +185,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
         // 再保存
         followUpRecordFieldService.saveModuleField(updateFollowUpRecord, orgId, userId, moduleFields, true);
     }
-
 
     private FollowUpRecord newRecord(FollowUpRecord record, FollowUpRecordUpdateRequest request, String userId) {
         record.setCustomerId(request.getCustomerId());
@@ -214,27 +201,22 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return record;
     }
 
-
     /**
      * 池/公海 跟进记录列表查询
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param resourceType
-     * @param type
-     *
-     * @return
      */
-    public PagerWithOption<List<FollowUpRecordListResponse>> poolList(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> poolList(FollowUpRecordPageRequest request, String userId,
+            String orgId, String resourceType, String type) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectPoolList(request, userId, orgId, resourceType, type);
+        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectPoolList(request, userId, orgId,
+                resourceType, type);
         buildListData(list, orgId);
 
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, FollowUpRecordListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                FollowUpRecordListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -253,11 +235,12 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     private void buildListData(List<FollowUpRecordListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpRecordListResponse::getId).toList();
-        Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService.getResourceFieldMap(ids, true);
-		Map<String, List<BaseModuleFieldValue>> resolveFvMap = followUpRecordFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.FOLLOW_RECORD.getKey(), orgId), recordCustomFieldMap);
+        Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService
+                .getResourceFieldMap(ids, true);
+        Map<String, List<BaseModuleFieldValue>> resolveFvMap = followUpRecordFieldService.setBusinessRefFieldValue(list,
+                moduleFormService.getFlattenFormFields(FormKey.FOLLOW_RECORD.getKey(), orgId), recordCustomFieldMap);
 
-
-		List<String> createUserIds = list.stream().map(FollowUpRecordListResponse::getCreateUser).toList();
+        List<String> createUserIds = list.stream().map(FollowUpRecordListResponse::getCreateUser).toList();
         List<String> updateUserIds = list.stream().map(FollowUpRecordListResponse::getUpdateUser).toList();
         List<String> ownerIds = list.stream().map(FollowUpRecordListResponse::getOwner).toList();
         List<String> userIds = Stream.of(createUserIds, updateUserIds, ownerIds)
@@ -302,13 +285,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         });
     }
 
-
     /**
      * 获取跟进记录详情
-     *
-     * @param id
-     *
-     * @return
      */
     public FollowUpRecordDetailResponse get(String id, String orgId) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
@@ -318,11 +296,15 @@ public class FollowUpRecordService extends BaseFollowUpService {
         FollowUpRecordDetailResponse response = BeanUtils.copyBean(new FollowUpRecordDetailResponse(), followUpRecord);
         buildListData(List.of(response), orgId);
 
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(List.of(response), FollowUpRecordDetailResponse::getModuleFields);
-		moduleFieldValues = followUpRecordFieldService.setBusinessRefFieldValue(List.of(response),
-				moduleFormService.getFlattenFormFields(FormKey.FOLLOW_RECORD.getKey(), followUpRecord.getOrganizationId()), new HashMap<>(Map.of(id, moduleFieldValues))).get(id);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(List.of(response),
+                FollowUpRecordDetailResponse::getModuleFields);
+        moduleFieldValues = followUpRecordFieldService.setBusinessRefFieldValue(List.of(response),
+                moduleFormService.getFlattenFormFields(FormKey.FOLLOW_RECORD.getKey(),
+                        followUpRecord.getOrganizationId()),
+                new HashMap<>(Map.of(id, moduleFieldValues))).get(id);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
         // 补充负责人选项
@@ -357,21 +339,14 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return response;
     }
 
-
     /**
      * 跟进记录
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param resourceType
-     * @param type
-     *
-     * @return
      */
-    public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId,
+            String orgId, String resourceType, String type) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type);
+        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType,
+                type);
         buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list);
         return PageUtils.setPageInfoWithOption(page, list, optionMap);
@@ -385,14 +360,15 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param orgId                  组织ID
      * @param clueDataPermission     线索业务数据权限
      * @param customerDataPermission 客户业务数据权限
-     *
      * @return 记录的汇总列表
      */
-    public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId, String orgId,
-                                                                       DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId,
+            String orgId,
+            DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 解析当前用户数据权限
-        List<FollowUpRecordListResponse> recordList = extFollowUpRecordMapper.selectTotalList(request, userId, orgId, clueDataPermission, customerDataPermission);
+        List<FollowUpRecordListResponse> recordList = extFollowUpRecordMapper.selectTotalList(request, userId, orgId,
+                clueDataPermission, customerDataPermission);
         buildListData(recordList, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, recordList);
         return PageUtils.setPageInfoWithOption(page, recordList, optionMap);
@@ -403,14 +379,15 @@ public class FollowUpRecordService extends BaseFollowUpService {
      *
      * @param orgId      组织ID
      * @param recordList 记录列表
-     *
      * @return 选项集合
      */
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<FollowUpRecordListResponse> recordList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(recordList, FollowUpRecordListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(recordList,
+                FollowUpRecordListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
         // 补充负责人选项
@@ -424,11 +401,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return optionMap;
     }
 
-
     /**
      * 删除跟进记录
-     *
-     * @param id
      */
     @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
@@ -446,26 +420,23 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     /**
      * 删除跟进记录，更新客户/商机/线索的最新跟进时间和跟进人
-     *
-     * @param followUpRecord
      */
     private void getFollowTimeAndFollower(FollowUpRecord followUpRecord) {
         switch (followUpRecord.getType()) {
-            case "CUSTOMER" -> updateCustomerOrOpportunity(followUpRecord);
-            case "CLUE" -> updateClue(followUpRecord);
-            default -> {
-            }
+        case "CUSTOMER" -> updateCustomerOrOpportunity(followUpRecord);
+        case "CLUE" -> updateClue(followUpRecord);
+        default -> {
+        }
         }
     }
 
     /**
      * 跟新线索的最新跟进时间和跟进人
-     *
-     * @param followUpRecord
      */
     private void updateClue(FollowUpRecord followUpRecord) {
         if (StringUtils.isNotBlank(followUpRecord.getClueId())) {
-            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(null, null, followUpRecord.getClueId(), followUpRecord.getOrganizationId(), "CLUE");
+            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(null, null, followUpRecord.getClueId(),
+                    followUpRecord.getOrganizationId(), "CLUE");
             Optional.ofNullable(record).ifPresent(r -> {
                 Clue clue = new Clue();
                 clue.setId(r.getClueId());
@@ -476,16 +447,13 @@ public class FollowUpRecordService extends BaseFollowUpService {
         }
     }
 
-
     /**
-     * 更新客户&商机 最近跟进时间&最近跟进人
-     *
-     * @param followUpRecord
+     * 更新客户&amp;商机 最近跟进时间&amp;最近跟进人
      */
     private void updateCustomerOrOpportunity(FollowUpRecord followUpRecord) {
-
         if (StringUtils.isNotBlank(followUpRecord.getCustomerId())) {
-            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(followUpRecord.getCustomerId(), null, null, followUpRecord.getOrganizationId(), "CUSTOMER");
+            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(followUpRecord.getCustomerId(), null, null,
+                    followUpRecord.getOrganizationId(), "CUSTOMER");
             Optional.ofNullable(record).ifPresent(r -> {
                 Customer customer = new Customer();
                 customer.setId(r.getCustomerId());
@@ -496,7 +464,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         }
 
         if (StringUtils.isNotBlank(followUpRecord.getOpportunityId())) {
-            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(null, followUpRecord.getOpportunityId(), null, followUpRecord.getOrganizationId(), "CUSTOMER");
+            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(null, followUpRecord.getOpportunityId(), null,
+                    followUpRecord.getOrganizationId(), "CUSTOMER");
             Optional.ofNullable(record).ifPresent(r -> {
                 Opportunity opportunity = new Opportunity();
                 opportunity.setId(r.getOpportunityId());
@@ -561,14 +530,15 @@ public class FollowUpRecordService extends BaseFollowUpService {
      *
      * @param currentUser    当前用户ID
      * @param organizationId 组织ID
-     *
      * @return 数据权限配置
      */
     public ResourceTabEnableDTO getTabEnableConfig(String currentUser, String organizationId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(currentUser, organizationId);
         // 由于统一的记录/计划页面会展示多个业务模块的数据，因此需要合并多个数据权限, 展示范围更大的数据权限配置
-        ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
-        ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
+        ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
+                PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
+        ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
         return clueTabConfig.or(customerTabConfig);
     }
 
@@ -587,7 +557,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         if (followUpRecord == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-        if (Strings.CS.equals(userId, InternalUser.ADMIN.toString()) || Strings.CS.equals(followUpRecord.getOwner(), userId)) {
+        if (Strings.CS.equals(userId, InternalUser.ADMIN.toString())
+                || Strings.CS.equals(followUpRecord.getOwner(), userId)) {
             return;
         }
         throw new GenericException(Translator.get("no.operation.permission"));

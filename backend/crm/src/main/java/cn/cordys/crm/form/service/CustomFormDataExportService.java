@@ -47,7 +47,6 @@ public class CustomFormDataExportService extends BaseExportService {
                         getSystemFieldMap(detail, exportParam.getLocale()), cache));
     }
 
-
     private List<CustomFormDataListResponse> collectExportList(ExportDTO exportParam) {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
@@ -72,7 +71,8 @@ public class CustomFormDataExportService extends BaseExportService {
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+            systemFieldMap.put("approvalStatus",
+                    Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));

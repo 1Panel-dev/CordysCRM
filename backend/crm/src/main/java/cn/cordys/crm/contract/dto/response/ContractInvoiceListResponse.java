@@ -9,9 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- *
  * @author jianxing
- * @date 2025-12-29 18:22:59
  */
 @Data
 public class ContractInvoiceListResponse extends ContractInvoice {
@@ -43,9 +41,9 @@ public class ContractInvoiceListResponse extends ContractInvoice {
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 
-	@Schema(description = "审批第一个节点是否通过")
-	private Boolean firstApproved;
+    @Schema(description = "审批第一个节点是否通过")
+    private Boolean firstApproved;
 
-	@Schema(description = "提审人ID")
-	private String submitterId;
+    @Schema(description = "提审人ID")
+    private String submitterId;
 }

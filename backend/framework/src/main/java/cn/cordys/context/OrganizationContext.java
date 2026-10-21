@@ -18,16 +18,18 @@ import java.util.Set;
  * 组织ID使用 {@link InheritableThreadLocal} 实现父子线程自动传递，请求来源由异步执行器显式传递。
  * 任务执行完毕后必须清理，否则会造成上下文泄漏。
  * </p>
+ * <p>
+ * 典型用法：
+ * </p>
  *
- * <p>典型用法：</p>
  * <pre>
- *   OrganizationContext.setOrganizationId("123456");
- *   OrganizationContext.setRequestSource("API");
- *   try {
- *       // 业务逻辑
- *   } finally {
- *       OrganizationContext.clear();
- *   }
+ * OrganizationContext.setOrganizationId("123456");
+ * OrganizationContext.setRequestSource("API");
+ * try {
+ *     // 业务逻辑
+ * } finally {
+ *     OrganizationContext.clear();
+ * }
  * </pre>
  *
  * @author jianxing
@@ -49,15 +51,15 @@ public final class OrganizationContext {
      * <p>
      * 优先级：
      * <ol>
-     *   <li>ThreadLocal 中已有值时，直接校验权限后返回</li>
-     *   <li>无值时，根据用户信息自动推导（优先使用上次登录组织，否则任选一个）</li>
-     *   <li>管理员且无组织权限时返回默认组织ID</li>
+     * <li>ThreadLocal 中已有值时，直接校验权限后返回</li>
+     * <li>无值时，根据用户信息自动推导（优先使用上次登录组织，否则任选一个）</li>
+     * <li>管理员且无组织权限时返回默认组织ID</li>
      * </ol>
+     * <p>
      * 自动推导成功后会将结果存入 ThreadLocal，后续调用直接复用。
      * </p>
      *
      * @return 组织ID（可能为 {@code null}，仅当未登录且未手动设置时）
-     *
      * @throws GenericException 如果当前用户对组织无权限
      */
     public static String getOrganizationId() {

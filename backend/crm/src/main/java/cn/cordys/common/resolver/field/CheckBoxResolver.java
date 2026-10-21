@@ -1,6 +1,5 @@
 package cn.cordys.common.resolver.field;
 
-
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.dto.field.CheckBoxField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
@@ -68,7 +67,8 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
             }
             Map<String, String> optionMap = field.getOptions().stream()
                     .filter(option -> option.getValue() != null)
-                    .collect(Collectors.toMap(OptionProp::getLabel, option -> option.getValue().toString(), (v1, v2) -> v1));
+                    .collect(Collectors.toMap(OptionProp::getLabel, option -> option.getValue().toString(),
+                            (v1, v2) -> v1));
             List<String> values = texts.stream()
                     .filter(item -> item != null && optionMap.containsKey(item))
                     .map(optionMap::get)

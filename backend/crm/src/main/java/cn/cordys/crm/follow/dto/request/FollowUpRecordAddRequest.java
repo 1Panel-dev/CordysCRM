@@ -47,7 +47,6 @@ public class FollowUpRecordAddRequest {
     @Schema(description = "联系人")
     private String contactId;
 
-
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 

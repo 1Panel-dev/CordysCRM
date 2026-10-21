@@ -11,11 +11,11 @@ import lombok.Data;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "nodeType", visible = true)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = ApprovalNodeApproverRequest.class, name = "APPROVER"),
-    @JsonSubTypes.Type(value = ApprovalNodeConditionRequest.class, name = "CONDITION"),
-    @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "START"),
-    @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "END"),
-    @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "DEFAULT"),
+        @JsonSubTypes.Type(value = ApprovalNodeApproverRequest.class, name = "APPROVER"),
+        @JsonSubTypes.Type(value = ApprovalNodeConditionRequest.class, name = "CONDITION"),
+        @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "START"),
+        @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "END"),
+        @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "DEFAULT"),
 })
 public class ApprovalNodeRequest {
 

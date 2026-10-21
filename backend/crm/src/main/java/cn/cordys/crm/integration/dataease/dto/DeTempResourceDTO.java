@@ -12,8 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-21  18:21
+ * @author jianxing
  */
 @Data
 public class DeTempResourceDTO {

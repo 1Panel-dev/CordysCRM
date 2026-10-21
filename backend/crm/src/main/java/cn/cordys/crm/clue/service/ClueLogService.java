@@ -16,7 +16,6 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class ClueLogService extends BaseModuleLogService {
 
-
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         differences = super.handleModuleLogField(differences, orgId, FormKey.CLUE.getKey());

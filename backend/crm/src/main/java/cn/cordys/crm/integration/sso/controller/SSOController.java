@@ -31,7 +31,8 @@ public class SSOController {
     private HttpSessionIdResolver sessionIdResolver;
 
     @GetMapping("/oauth/state/{flow}")
-    public String generateOauthState(@PathVariable String flow, HttpServletRequest request, HttpServletResponse response) {
+    public String generateOauthState(@PathVariable String flow, HttpServletRequest request,
+            HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("Pragma", "no-cache");
         HttpSession session = request.getSession(true);
@@ -47,7 +48,8 @@ public class SSOController {
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.QR_WECOM, state, httpServletRequest.getSession(true));
         SessionUser sessionUser = ssoService.exchangeWeComCode(code, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
         return sessionUser;
     }
 
@@ -56,7 +58,8 @@ public class SSOController {
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.WECOM, state, httpServletRequest.getSession(true));
         SessionUser sessionUser = ssoService.exchangeWeComOauth2(code, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
         return sessionUser;
     }
 
@@ -66,7 +69,8 @@ public class SSOController {
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.QR_DING_TALK, state, httpServletRequest.getSession(true));
         SessionUser sessionUser = ssoService.exchangeDingTalkCode(code, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
         return sessionUser;
     }
 
@@ -74,8 +78,10 @@ public class SSOController {
     public SessionUser callbackDingTalkOauth(@RequestParam("code") String code, @RequestParam("state") String state,
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.DING_TALK, state, httpServletRequest.getSession(true));
-        SessionUser sessionUser = ssoService.exchangeDingTalkOauth2(code, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+        SessionUser sessionUser = ssoService.exchangeDingTalkOauth2(code,
+                IpUtils.getClientIpAddress(httpServletRequest));
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
         return sessionUser;
     }
 
@@ -85,7 +91,8 @@ public class SSOController {
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.LARK, state, httpServletRequest.getSession(true));
         SessionUser sessionUser = ssoService.exchangeLarkCode(code, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
         return sessionUser;
     }
 
@@ -93,8 +100,10 @@ public class SSOController {
     public SessionUser callbackLarkOauth(@RequestParam("code") String code, @RequestParam("state") String state,
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.LARK, state, httpServletRequest.getSession(true));
-        SessionUser sessionUser = ssoService.exchangeLarkOauth2(code, false, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+        SessionUser sessionUser = ssoService.exchangeLarkOauth2(code, false,
+                IpUtils.getClientIpAddress(httpServletRequest));
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
         return sessionUser;
     }
 
@@ -102,8 +111,10 @@ public class SSOController {
     public SessionUser callbackLarkOauthByMobile(@RequestParam("code") String code, @RequestParam("state") String state,
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.LARK_MOBILE, state, httpServletRequest.getSession(true));
-        SessionUser sessionUser = ssoService.exchangeLarkOauth2(code, true, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
+        SessionUser sessionUser = ssoService.exchangeLarkOauth2(code, true,
+                IpUtils.getClientIpAddress(httpServletRequest));
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
         return sessionUser;
     }
 
@@ -112,7 +123,9 @@ public class SSOController {
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         oauthStateService.validateAndConsume(OAuthStateFlow.GITHUB, state, httpServletRequest.getSession(true));
         SessionUser sessionUser = ssoService.exchangeGitOauth2(code, IpUtils.getClientIpAddress(httpServletRequest));
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
-        return new ModelAndView("redirect:/#/?_token=" + CodingUtils.base64Encoding(sessionUser.getSessionId()) + "&_csrf=" + sessionUser.getCsrfToken());
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(),
+                httpServletRequest.isSecure());
+        return new ModelAndView("redirect:/#/?_token=" + CodingUtils.base64Encoding(sessionUser.getSessionId())
+                + "&_csrf=" + sessionUser.getCsrfToken());
     }
 }

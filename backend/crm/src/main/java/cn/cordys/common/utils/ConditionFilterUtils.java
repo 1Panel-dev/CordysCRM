@@ -1,6 +1,5 @@
 package cn.cordys.common.utils;
 
-
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.ChartAnalysisDbRequest;
@@ -39,13 +38,12 @@ import java.util.stream.Collectors;
 import static cn.cordys.common.utils.IndustryUtils.getIndustries;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-07-28  17:31
- * 拦截高级搜索等查询
- * 处理高级搜索等通用查询条件
- * 1. 处理视图查询条件
- * 2. 预先过滤不合法的查询条件
- * 3. 处理成员选项中的 CURRENT_USER
+ * @author jianxing
+ *         拦截高级搜索等查询
+ *         处理高级搜索等通用查询条件
+ *         1. 处理视图查询条件
+ *         2. 预先过滤不合法的查询条件
+ *         3. 处理成员选项中的 CURRENT_USER
  */
 @Aspect
 @Component
@@ -53,7 +51,8 @@ public class ConditionFilterUtils {
 
     private static final String COUNT_FIELD = "COUNT";
 
-    public static ChartAnalysisDbRequest parseChartAnalysisRequest(ChartAnalysisRequest request, ModuleFormConfigDTO formConfig) {
+    public static ChartAnalysisDbRequest parseChartAnalysisRequest(ChartAnalysisRequest request,
+            ModuleFormConfigDTO formConfig) {
         List<BaseField> fields = formConfig.getFields();
 
         BaseField departmentField = new DepartmentField();
@@ -63,11 +62,14 @@ public class ConditionFilterUtils {
         fields.add(departmentField);
 
         ChartAnalysisDbRequest chartAnalysisDbRequest = BeanUtils.copyBean(new ChartAnalysisDbRequest(), request);
-        chartAnalysisDbRequest.setCategoryAxisParam(BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getCategoryAxis()));
+        chartAnalysisDbRequest.setCategoryAxisParam(
+                BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getCategoryAxis()));
         if (request.getChartConfig().getSubCategoryAxis() != null) {
-            chartAnalysisDbRequest.setSubCategoryAxisParam(BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getSubCategoryAxis()));
+            chartAnalysisDbRequest.setSubCategoryAxisParam(
+                    BeanUtils.copyBean(new ChartCategoryAxisDbParam(), request.getChartConfig().getSubCategoryAxis()));
         }
-        chartAnalysisDbRequest.setValueAxisParam(BeanUtils.copyBean(new ChartValueAxisDbParam(), request.getChartConfig().getValueAxis()));
+        chartAnalysisDbRequest.setValueAxisParam(
+                BeanUtils.copyBean(new ChartValueAxisDbParam(), request.getChartConfig().getValueAxis()));
 
         // 处理视图查询条件
         chartAnalysisDbRequest.setViewFilterCondition(getViewCondition(chartAnalysisDbRequest.getViewId()));
@@ -126,7 +128,8 @@ public class ConditionFilterUtils {
 
     public static void parseCondition(BaseCondition baseCondition, String formKey) {
         ModuleFormCacheService moduleFormCacheService = CommonBeanFactory.getBean(ModuleFormCacheService.class);
-        ModuleFormConfigDTO businessFormConfig = Objects.requireNonNull(moduleFormCacheService).getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
+        ModuleFormConfigDTO businessFormConfig = Objects.requireNonNull(moduleFormCacheService)
+                .getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
         List<BaseField> fields = businessFormConfig.getFields();
 
         // 处理视图查询条件
@@ -147,9 +150,6 @@ public class ConditionFilterUtils {
 
     /**
      * 将 FilterCondition 替换成 FilterDBCondition，并设置数据库查询相关属性
-     *
-     * @param fields
-     * @param combineSearch
      */
     private static void replaceDBCondition(List<BaseField> fields, CombineSearch combineSearch) {
         if (combineSearch == null || CollectionUtils.isEmpty(combineSearch.getConditions())) {
@@ -197,20 +197,24 @@ public class ConditionFilterUtils {
                             // 暂时只处理显示字段
                             dbCondition.setName(CaseFormatUtils.camelToUnderscore(baseField.getBusinessKey()));
                         } else {
-                            String actualFieldId = baseField.getId().replace((baseField.getResourceFieldId() + BaseResourceFieldService.REF_UNDERLINE), StringUtils.EMPTY);
+                            String actualFieldId = baseField.getId().replace(
+                                    (baseField.getResourceFieldId() + BaseResourceFieldService.REF_UNDERLINE),
+                                    StringUtils.EMPTY);
                             dbCondition.setName(actualFieldId);
                         }
                         dbCondition.setRefFiled(true);
 
                         dbCondition.setRefMainFieldName(refResourceField.idOrBusinessKey());
                         if (refResourceField.hasBusinessKey()) {
-                            dbCondition.setRefMainFieldName(CaseFormatUtils.camelToUnderscore(refResourceField.getBusinessKey()));
+                            dbCondition.setRefMainFieldName(
+                                    CaseFormatUtils.camelToUnderscore(refResourceField.getBusinessKey()));
                         } else {
                             dbCondition.setRefMainFieldName(refResourceField.getId());
                         }
                         dbCondition.setRefMainCustomField(!refResourceField.hasBusinessKey());
 
-                        FieldSourceType fieldSourceType = FieldSourceType.safeValueOf(datasourceField.getDataSourceType());
+                        FieldSourceType fieldSourceType = FieldSourceType
+                                .safeValueOf(datasourceField.getDataSourceType());
                         if (fieldSourceType != null) {
                             dbCondition.setRefMainTableName(fieldSourceType.getTableName());
                         } else {
@@ -240,15 +244,17 @@ public class ConditionFilterUtils {
             item.setValue(combineValue);
             item.setOperator(combineOperator);
             if (item.getValue() != null && item.getCombineValue() instanceof String strValue
-                    && Strings.CS.equalsAny(item.getCombineOperator(), FilterCondition.CombineConditionOperator.CONTAINS.name(),
-                    FilterCondition.CombineConditionOperator.NOT_CONTAINS.name())) {
+                    && Strings.CS.equalsAny(item.getCombineOperator(),
+                            FilterCondition.CombineConditionOperator.CONTAINS.name(),
+                            FilterCondition.CombineConditionOperator.NOT_CONTAINS.name())) {
                 // 转义 mysql 的特殊字符
                 item.setValue(BaseCondition.transferKeyword(strValue));
             }
 
             if (item.getValue() != null && Strings.CS.contains(item.getType(), "MULTIPLE")
-                    && Strings.CS.equalsAny(item.getCombineOperator(), FilterCondition.CombineConditionOperator.EQUALS.name(),
-                    FilterCondition.CombineConditionOperator.NOT_EQUALS.name())) {
+                    && Strings.CS.equalsAny(item.getCombineOperator(),
+                            FilterCondition.CombineConditionOperator.EQUALS.name(),
+                            FilterCondition.CombineConditionOperator.NOT_EQUALS.name())) {
                 // 转义 mysql 的特殊字符
                 item.setValue(JSON.toJSONString(item.getCombineValue()));
             }
@@ -257,10 +263,10 @@ public class ConditionFilterUtils {
                 // 附件类型转义名称
                 List<String> attachmentNames = List.of(item.getCombineValue().toString().split(StringUtils.SPACE));
                 ExtAttachmentMapper attachmentMapper = CommonBeanFactory.getBean(ExtAttachmentMapper.class);
-                List<String> attachmentIds = Objects.requireNonNull(attachmentMapper).getAttachmentIdsByNames(attachmentNames);
+                List<String> attachmentIds = Objects.requireNonNull(attachmentMapper)
+                        .getAttachmentIdsByNames(attachmentNames);
                 item.setValue(CollectionUtils.isEmpty(attachmentIds) ? attachmentNames : attachmentIds);
             }
-
 
             if (item.getValue() != null && Strings.CS.equals(item.getType(), FieldType.INDUSTRY.name())) {
                 String str = item.getValue().toString()
@@ -287,7 +293,8 @@ public class ConditionFilterUtils {
             List<FilterCondition> viewConditions = userViewService.getFilterConditions(viewId);
 
             //新增子节点数据
-            List<BaseTreeNode> tree = Objects.requireNonNull(CommonBeanFactory.getBean(DepartmentService.class)).getTree(OrganizationContext.getOrganizationId());
+            List<BaseTreeNode> tree = Objects.requireNonNull(CommonBeanFactory.getBean(DepartmentService.class))
+                    .getTree(OrganizationContext.getOrganizationId());
             buildConditions(viewConditions, tree);
 
             CombineSearch viewCondition = new CombineSearch();
@@ -298,11 +305,8 @@ public class ConditionFilterUtils {
         return null;
     }
 
-
     /**
      * 包含新增子节点数据
-     *
-     * @param conditions
      */
     private static void buildConditions(List<FilterCondition> conditions, List<BaseTreeNode> tree) {
         if (CollectionUtils.isNotEmpty(conditions)) {
@@ -317,7 +321,6 @@ public class ConditionFilterUtils {
             });
         }
     }
-
 
     public static List<String> getIds(List<BaseTreeNode> tree, String targetId) {
         List<String> ids = new ArrayList<>();
@@ -354,12 +357,11 @@ public class ConditionFilterUtils {
     /**
      * 处理成员选项中的 CURRENT_USER
      * 替换当前用户的用户ID
-     *
-     * @param validConditions
      */
     private static void replaceCurrentUser(List<FilterCondition> validConditions) {
         for (FilterCondition validCondition : validConditions) {
-            if (!Strings.CS.equalsAny(validCondition.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
+            if (!Strings.CS.equalsAny(validCondition.getType(), FieldType.MEMBER.name(),
+                    FieldType.MEMBER_MULTIPLE.name())) {
                 continue;
             }
             Object value = validCondition.getCombineValue();

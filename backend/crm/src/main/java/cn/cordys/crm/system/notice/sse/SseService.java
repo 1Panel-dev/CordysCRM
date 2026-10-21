@@ -150,7 +150,9 @@ public class SseService {
      */
     public void broadcastPeriodically(String userId, String sendType) {
         Map<ClientKey, ClientSinkWrapper> clients = userClients.get(userId);
-        if (clients == null) return;
+        if (clients == null) {
+            return;
+        }
         clients.keySet().stream().map(ClientKey::organizationId).distinct().toList().forEach(organizationId -> {
             SseMessageDTO msg = buildMessage(userId, organizationId, sendType);
             sendToUser(userId, organizationId, msg);
@@ -180,15 +182,15 @@ public class SseService {
             }
         }
         dto.setRead(Boolean.parseBoolean(
-                stringRedisTemplate.opsForValue().get(USER_READ_PREFIX + userId)
-        ));
+                stringRedisTemplate.opsForValue().get(USER_READ_PREFIX + userId)));
         return dto;
     }
 
     /**
      * 根据 Redis 构建 DTO 列表
      */
-    private List<NotificationDTO> buildDTOList(Set<String> values, String prefix, String userId, String organizationId) {
+    private List<NotificationDTO> buildDTOList(Set<String> values, String prefix, String userId,
+            String organizationId) {
         if (CollectionUtils.isEmpty(values)) {
             return Collections.emptyList();
         }

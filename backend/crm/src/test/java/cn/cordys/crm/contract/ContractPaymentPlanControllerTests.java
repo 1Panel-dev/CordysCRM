@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.math.BigDecimal;
 import java.util.List;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ContractPaymentPlanControllerTests extends BaseTest {
@@ -47,7 +47,8 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         request.setPageSize(10);
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
-        Pager<List<ContractPaymentPlanListResponse>> pageResult = getPageResult(mvcResult, ContractPaymentPlanListResponse.class);
+        Pager<List<ContractPaymentPlanListResponse>> pageResult = getPageResult(mvcResult,
+                ContractPaymentPlanListResponse.class);
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
@@ -66,7 +67,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
     void testAdd() throws Exception {
         // 请求成功
         ContractPaymentPlanAddRequest request = new ContractPaymentPlanAddRequest();
-		request.setName("test");
+        request.setName("test");
         request.setPlanAmount(BigDecimal.valueOf(111));
         request.setOwner(InternalUser.ADMIN.getValue());
         request.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
@@ -89,17 +90,19 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         // 请求成功
         ContractPaymentPlanUpdateRequest request = new ContractPaymentPlanUpdateRequest();
         request.setId(addContractPaymentPlan.getId());
-		request.setName("test");
+        request.setName("test");
         request.setPlanAmount(BigDecimal.valueOf(222));
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
-        ContractPaymentPlan userContractPaymentPlanResult = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
-        Assertions.assertEquals(request.getPlanAmount().intValue(), userContractPaymentPlanResult.getPlanAmount().intValue());
+        ContractPaymentPlan userContractPaymentPlanResult = contractPaymentPlanMapper
+                .selectByPrimaryKey(request.getId());
+        Assertions.assertEquals(request.getPlanAmount().intValue(),
+                userContractPaymentPlanResult.getPlanAmount().intValue());
 
         // 不修改信息
         ContractPaymentPlanUpdateRequest emptyRequest = new ContractPaymentPlanUpdateRequest();
         emptyRequest.setId(addContractPaymentPlan.getId());
-		emptyRequest.setName("test");
+        emptyRequest.setName("test");
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // 校验权限
@@ -113,12 +116,14 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         ContractPaymentPlanGetResponse getResponse = getResultData(mvcResult, ContractPaymentPlanGetResponse.class);
 
         // 校验请求成功数据
-        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(addContractPaymentPlan.getId());
+        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper
+                .selectByPrimaryKey(addContractPaymentPlan.getId());
         ContractPaymentPlan responseContractPaymentPlan = BeanUtils.copyBean(new ContractPaymentPlan(), getResponse);
         Assertions.assertEquals(responseContractPaymentPlan, contractPaymentPlan);
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_GET, addContractPaymentPlan.getId());
+        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_GET,
+                addContractPaymentPlan.getId());
     }
 
     @Test
@@ -129,9 +134,10 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         request.setPageSize(10);
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
-        Pager<List<ContractPaymentPlanListResponse>> pageResult = getPageResult(mvcResult, ContractPaymentPlanListResponse.class);
+        Pager<List<ContractPaymentPlanListResponse>> pageResult = getPageResult(mvcResult,
+                ContractPaymentPlanListResponse.class);
         List<ContractPaymentPlanListResponse> contractPaymentPlanList = pageResult.getList();
-        
+
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);
     }
@@ -139,8 +145,10 @@ class ContractPaymentPlanControllerTests extends BaseTest {
     @Test
     @Order(10)
     void delete() throws Exception {
-        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_DELETE, DEFAULT_DELETE, addContractPaymentPlan.getId());
-        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(addContractPaymentPlan.getId());
+        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_DELETE, DEFAULT_DELETE,
+                addContractPaymentPlan.getId());
+        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper
+                .selectByPrimaryKey(addContractPaymentPlan.getId());
         Assertions.assertNull(contractPaymentPlan);
     }
 }

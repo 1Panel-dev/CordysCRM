@@ -48,7 +48,8 @@ public class ContractExportService extends BaseExportService {
         var filteredList = queryResult.getLeft();
         var queryCount = queryResult.getRight();
         if (CollectionUtils.isEmpty(filteredList)) {
-            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).queryCount(queryCount).build();
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0)
+                    .queryCount(queryCount).build();
         }
         var dataList = contractService.buildList(filteredList, exportParam.getOrgId());
         // 从缓存获取阶段配置，避免重复查询
@@ -64,9 +65,10 @@ public class ContractExportService extends BaseExportService {
     @SuppressWarnings("unchecked")
     private Map<String, String> getOrLoadStageConfigMap(ExportDTO exportParam) {
         return (Map<String, String>) exportParam.getExtraParams()
-                .computeIfAbsent(STAGE_CONFIG_MAP_KEY, key ->
-                        extContractStageConfigMapper.getStageConfigList(exportParam.getOrgId())
-                                .stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName)));
+                .computeIfAbsent(STAGE_CONFIG_MAP_KEY,
+                        key -> extContractStageConfigMapper.getStageConfigList(exportParam.getOrgId())
+                                .stream()
+                                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName)));
     }
 
     private Pair<List<ContractListResponse>, Integer> collectExportList(ExportDTO exportParam) {
@@ -94,7 +96,8 @@ public class ContractExportService extends BaseExportService {
                 approvalFlowService);
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractListResponse data, List<FieldExportMeta> exportMetas, Map<String, String> stageConfigMap, Locale locale) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractListResponse data, List<FieldExportMeta> exportMetas,
+            Map<String, String> stageConfigMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -105,7 +108,8 @@ public class ContractExportService extends BaseExportService {
         systemFieldMap.put("number", data.getNumber());
 
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+            systemFieldMap.put("approvalStatus",
+                    Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         if (StringUtils.isNotBlank(data.getStage())) {
             systemFieldMap.put("stage", stageConfigMap.get(data.getStage()));
@@ -125,6 +129,5 @@ public class ContractExportService extends BaseExportService {
 
         return systemFieldMap;
     }
-
 
 }

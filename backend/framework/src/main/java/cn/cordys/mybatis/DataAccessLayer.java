@@ -78,15 +78,18 @@ public class DataAccessLayer implements ApplicationContextAware {
     /**
      * 生成缓存键
      */
-    private String generateCacheKey(String sql, String methodName, Class<?> parameterType, SqlCommandType sqlCommandType) {
+    private String generateCacheKey(String sql, String methodName, Class<?> parameterType,
+            SqlCommandType sqlCommandType) {
         // 排序、查询列等会改变 SQL，不能只按实体和方法复用第一次生成的语句。
-        return String.format("%s:%s:%s:%s", sqlCommandType.name(), parameterType.getName(), methodName, CodingUtils.hashStr(sql));
+        return String.format("%s:%s:%s:%s", sqlCommandType.name(), parameterType.getName(), methodName,
+                CodingUtils.hashStr(sql));
     }
 
     /**
      * 执行 SQL，返回 MappedStatement ID
      */
-    private String execute(Configuration configuration, String sql, String methodName, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
+    private String execute(Configuration configuration, String sql, String methodName, Class<?> parameterType,
+            Class<?> resultType, SqlCommandType sqlCommandType) {
         var msId = generateCacheKey(sql, methodName, parameterType, sqlCommandType);
 
         if (!configuration.hasStatement(msId, false)) {
@@ -114,7 +117,8 @@ public class DataAccessLayer implements ApplicationContextAware {
     /**
      * 创建并注册新的 MappedStatement
      */
-    private void newMappedStatement(Configuration configuration, String msId, SqlSource sqlSource, Class<?> resultType, SqlCommandType sqlCommandType) {
+    private void newMappedStatement(Configuration configuration, String msId, SqlSource sqlSource, Class<?> resultType,
+            SqlCommandType sqlCommandType) {
         var resultMap = new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<>(0))
                 .build();
 
@@ -152,35 +156,40 @@ public class DataAccessLayer implements ApplicationContextAware {
         @Override
         public List<E> selectAll(String orderBy) {
             var sql = new SelectAllSqlProvider().buildSql(orderBy, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.selectAll", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            var msId = execute(configuration, sql, "BaseMapper.selectAll", table.getEntityClass(), resultType,
+                    SqlCommandType.SELECT);
             return sqlSession.selectList(msId, orderBy);
         }
 
         @Override
         public List<E> select(E criteria) {
             var sql = new SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.select", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            var msId = execute(configuration, sql, "BaseMapper.select", table.getEntityClass(), resultType,
+                    SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public List<E> selectListByLambda(LambdaQueryWrapper<E> wrapper) {
             var sql = new SelectByLambdaSqlProvider().buildSql(wrapper, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.selectListByLambda", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            var msId = execute(configuration, sql, "BaseMapper.selectListByLambda", table.getEntityClass(), resultType,
+                    SqlCommandType.SELECT);
             return sqlSession.selectList(msId, wrapper.getParams());
         }
 
         @Override
         public E selectByPrimaryKey(Serializable criteria) {
             var sql = new SelectByIdSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.selectByPrimaryKey", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            var msId = execute(configuration, sql, "BaseMapper.selectByPrimaryKey", table.getEntityClass(), resultType,
+                    SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
         @Override
         public E selectOne(E criteria) {
             var sql = new SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.selectOne", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            var msId = execute(configuration, sql, "BaseMapper.selectOne", table.getEntityClass(), resultType,
+                    SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
@@ -191,56 +200,64 @@ public class DataAccessLayer implements ApplicationContextAware {
             params.put("array", criteria);
 
             var sql = new SelectInSqlProvider().buildSql(params, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.selectByColumn", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            var msId = execute(configuration, sql, "BaseMapper.selectByColumn", table.getEntityClass(), resultType,
+                    SqlCommandType.SELECT);
             return sqlSession.selectList(msId, params);
         }
 
         @Override
         public Long countByExample(E criteria) {
             var sql = new CountByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.countByExample", table.getEntityClass(), Long.class, SqlCommandType.SELECT);
+            var msId = execute(configuration, sql, "BaseMapper.countByExample", table.getEntityClass(), Long.class,
+                    SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
         @Override
         public Integer insert(E criteria) {
             var sql = new InsertSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.insert", table.getEntityClass(), int.class, SqlCommandType.INSERT);
+            var msId = execute(configuration, sql, "BaseMapper.insert", table.getEntityClass(), int.class,
+                    SqlCommandType.INSERT);
             return sqlSession.insert(msId, criteria);
         }
 
         @Override
         public Integer updateById(E criteria) {
             var sql = new UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.updateById", table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+            var msId = execute(configuration, sql, "BaseMapper.updateById", table.getEntityClass(), int.class,
+                    SqlCommandType.UPDATE);
             return sqlSession.update(msId, criteria);
         }
 
         @Override
         public Integer update(E criteria) {
             var sql = new UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.update", table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+            var msId = execute(configuration, sql, "BaseMapper.update", table.getEntityClass(), int.class,
+                    SqlCommandType.UPDATE);
             return sqlSession.update(msId, criteria);
         }
 
         @Override
         public Integer delete(E criteria) {
             var sql = new DeleteByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.delete", table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            var msId = execute(configuration, sql, "BaseMapper.delete", table.getEntityClass(), int.class,
+                    SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
         }
 
         @Override
         public void deleteByLambda(LambdaQueryWrapper<E> wrapper) {
             var sql = new DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.deleteByLambda", table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            var msId = execute(configuration, sql, "BaseMapper.deleteByLambda", table.getEntityClass(), int.class,
+                    SqlCommandType.DELETE);
             sqlSession.delete(msId, wrapper.getParams());
         }
 
         @Override
         public void deleteByIds(List<String> ids) {
             var sql = new DeleteByIdsSqlProvider().buildSql(ids, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.deleteByIds", table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            var msId = execute(configuration, sql, "BaseMapper.deleteByIds", table.getEntityClass(), int.class,
+                    SqlCommandType.DELETE);
             var params = new HashMap<>();
             params.put("array", ids);
             sqlSession.delete(msId, params);
@@ -249,7 +266,8 @@ public class DataAccessLayer implements ApplicationContextAware {
         @Override
         public Integer deleteByPrimaryKey(Serializable criteria) {
             var sql = new DeleteSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.deleteByPrimaryKey", table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            var msId = execute(configuration, sql, "BaseMapper.deleteByPrimaryKey", table.getEntityClass(), int.class,
+                    SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
         }
 
@@ -273,7 +291,8 @@ public class DataAccessLayer implements ApplicationContextAware {
             }
 
             var sql = new BatchInsertSqlProvider().buildSql(entities, this.table);
-            var msId = execute(configuration, sql, "BaseMapper.batchInsert", table.getEntityClass(), int.class, SqlCommandType.INSERT);
+            var msId = execute(configuration, sql, "BaseMapper.batchInsert", table.getEntityClass(), int.class,
+                    SqlCommandType.INSERT);
             var sqlSessionFactory = template.getSqlSessionFactory();
 
             try (var batchSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false)) {

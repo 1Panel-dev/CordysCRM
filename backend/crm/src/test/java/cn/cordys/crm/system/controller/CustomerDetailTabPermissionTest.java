@@ -176,30 +176,32 @@ class CustomerDetailTabPermissionTest {
         OrganizationContext.clear();
         OrganizationContext.setOrganizationId(previousOrg);
         ThreadContext.unbindSubject();
-        if (previousSubject != null) ThreadContext.bind(previousSubject);
+        if (previousSubject != null) {
+            ThreadContext.bind(previousSubject);
+        }
         new CommonBeanFactory().setApplicationContext(previousContext);
     }
 
     @ParameterizedTest
-    @CsvSource({"RELATION,READ_ONLY", "RELATION,COLLABORATION", "COLLABORATION,READ_ONLY",
-            "COLLABORATION,COLLABORATION", "TAB,READ_ONLY", "TAB,COLLABORATION"})
+    @CsvSource({ "RELATION,READ_ONLY", "RELATION,COLLABORATION", "COLLABORATION,READ_ONLY",
+            "COLLABORATION,COLLABORATION", "TAB,READ_ONLY", "TAB,COLLABORATION" })
     void 范围外协作客户可读取关系协作人和已配置标签(String entry, String type) {
         collaboration.setCollaborationType(type);
         assertDoesNotThrow(() -> invoke(entry));
         switch (entry) {
-            case "RELATION" -> verify(relations).list(CUSTOMER);
-            case "COLLABORATION" -> verify(collaborations).list(CUSTOMER, ORG);
-            default -> verify(opportunities).list(any(), eq(USER), eq(ORG), same(relatedScope), eq(false));
+        case "RELATION" -> verify(relations).list(CUSTOMER);
+        case "COLLABORATION" -> verify(collaborations).list(CUSTOMER, ORG);
+        default -> verify(opportunities).list(any(), eq(USER), eq(ORG), same(relatedScope), eq(false));
         }
     }
 
     @ParameterizedTest
-    @CsvSource({"RELATION,NO_RELATION", "COLLABORATION,NO_ROLE", "TAB,FOREIGN_ORG"})
+    @CsvSource({ "RELATION,NO_RELATION", "COLLABORATION,NO_ROLE", "TAB,FOREIGN_ORG" })
     void 父客户授权失败时不能进入标签业务(String entry, String denied) {
         switch (denied) {
-            case "NO_RELATION" -> collaboration.setCollaborationType(null);
-            case "NO_ROLE" -> granted.remove(READ);
-            default -> customer.setOrganizationId("foreign-org");
+        case "NO_RELATION" -> collaboration.setCollaborationType(null);
+        case "NO_ROLE" -> granted.remove(READ);
+        default -> customer.setOrganizationId("foreign-org");
         }
         assertForbidden(() -> invoke(entry));
         verifyNoInteractions(relations, collaborations, opportunities, customData, forms);
@@ -233,7 +235,7 @@ class CustomerDetailTabPermissionTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @ValueSource(booleans = { false, true })
     void 自定义标签仍委派表单角色校验且不吞权限错误(boolean formRoleDenied) {
         savedTab(CUSTOM_FORM);
         // 此处仅验证真实 Handler 的委派契约，具体表单角色算法由其自身测试覆盖。
@@ -253,9 +255,9 @@ class CustomerDetailTabPermissionTest {
 
     private Object invoke(String entry) {
         return switch (entry) {
-            case "RELATION" -> relationController.list(CUSTOMER);
-            case "COLLABORATION" -> collaborationController.list(CUSTOMER);
-            default -> tabController.customerPage(CUSTOMER, request("opportunity"));
+        case "RELATION" -> relationController.list(CUSTOMER);
+        case "COLLABORATION" -> collaborationController.list(CUSTOMER);
+        default -> tabController.customerPage(CUSTOMER, request("opportunity"));
         };
     }
 
@@ -299,8 +301,10 @@ class CustomerDetailTabPermissionTest {
         assertEquals(2, query.getCurrent());
         assertEquals(20, query.getPageSize());
         assertEquals("搜索词", query.getKeyword());
-        assertEquals(List.of("client-filter", LINK), query.getFilters().stream().map(FilterCondition::getName).toList());
-        assertEquals(List.of("client-value", CUSTOMER), query.getFilters().stream().map(FilterCondition::getValue).toList());
+        assertEquals(List.of("client-filter", LINK),
+                query.getFilters().stream().map(FilterCondition::getName).toList());
+        assertEquals(List.of("client-value", CUSTOMER),
+                query.getFilters().stream().map(FilterCondition::getValue).toList());
         assertTrue(query.getFilters().stream().allMatch(filter -> "EQUALS".equals(filter.getOperator())));
     }
 

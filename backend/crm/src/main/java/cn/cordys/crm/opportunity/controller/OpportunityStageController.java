@@ -29,45 +29,40 @@ public class OpportunityStageController {
     @Resource
     private StageAdvancedConfigService stageAdvancedConfigService;
 
-
     @GetMapping("/get")
     @Operation(summary = "商机阶段配置列表")
     public StageConfigsResponse getStageConfigList() {
         return opportunityStageService.getStageConfigList(OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/add")
     @Operation(summary = "添加商机阶段")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public String add(@RequestBody OpportunityStageAddRequest request) {
-        return opportunityStageService.addStageConfig(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return opportunityStageService.addStageConfig(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除商机阶段")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void delete(@PathVariable("id") @Validated String id) {
         opportunityStageService.delete(id, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update-rollback")
     @Operation(summary = "商机阶段回退设置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void update(@Validated @RequestBody StageRollBackRequest request) {
         opportunityStageService.updateRollBack(request, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update")
     @Operation(summary = "更新商机阶段配置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void update(@Validated @RequestBody StageUpdateRequest request) {
         opportunityStageService.update(request, SessionUtils.getUserId());
     }
-
 
     @PostMapping("/sort")
     @Operation(summary = "商机阶段排序")
@@ -76,20 +71,20 @@ public class OpportunityStageController {
         opportunityStageService.sort(ids, OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/circulation-type/{type}")
     @Operation(summary = "基础/高级流转切换")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void circulationType(@PathVariable String type) {
-        stageAdvancedConfigService.switchType(type, FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());
+        stageAdvancedConfigService.switchType(type, FormKey.OPPORTUNITY.getKey(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/advanced/config")
     @Operation(summary = "商机流转配置保存")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void advancedConfigAdd(@RequestBody StageAdvancedConfigRequest request) {
-        stageAdvancedConfigService.saveAdvancedConfig(request, FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        stageAdvancedConfigService.saveAdvancedConfig(request, FormKey.OPPORTUNITY.getKey(),
+                OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
 }

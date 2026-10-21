@@ -1,6 +1,5 @@
 package cn.cordys.common.resolver.field;
 
-
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.dto.field.MemberField;

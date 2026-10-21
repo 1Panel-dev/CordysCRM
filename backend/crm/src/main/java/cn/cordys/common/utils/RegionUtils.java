@@ -146,7 +146,8 @@ public class RegionUtils {
         String regionName = "";
         List<RegionCode> regionCodes = getRegionCodes();
         if (Strings.CS.equals("CN", locationField.getScope())) {
-            RegionCode chn = regionCodes.stream().filter(regionCode -> Strings.CS.equals(regionCode.getCode(), "CHN")).findFirst().get();
+            RegionCode chn = regionCodes.stream().filter(regionCode -> Strings.CS.equals(regionCode.getCode(), "CHN"))
+                    .findFirst().get();
             regionName = getRegionFullName(code, chn.getChildren());
         } else {
             regionName = getRegionFullName(code, regionCodes);

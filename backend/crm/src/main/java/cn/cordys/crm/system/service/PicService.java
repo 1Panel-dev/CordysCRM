@@ -18,7 +18,6 @@ public class PicService {
     @Resource
     private AttachmentService attachmentService;
 
-
     /**
      * 上传临时图片
      *
@@ -38,7 +37,6 @@ public class PicService {
      * 获取图片文件流
      *
      * @param picId 图片ID
-     *
      * @return 文件流
      */
     public ResponseEntity<org.springframework.core.io.Resource> getResource(String picId) {

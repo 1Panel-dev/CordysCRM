@@ -20,12 +20,10 @@ public class DingTalkUserResponse {
      */
     private String mobile;
 
-
     /**
      * 用户的openId
      */
     private String openId;
-
 
     /**
      * 用户的unionId
@@ -37,11 +35,9 @@ public class DingTalkUserResponse {
      */
     private String email;
 
-
     /**
      * 手机号对应的国家号
      */
     private String stateCode;
-
 
 }

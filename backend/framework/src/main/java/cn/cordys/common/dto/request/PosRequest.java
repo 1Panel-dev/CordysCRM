@@ -34,7 +34,8 @@ public class PosRequest implements Serializable {
     @NotBlank(message = "{system.target_id.not_blank}")
     private String targetId;
 
-    @Schema(description = "移动类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"BEFORE", "AFTER", "APPEND"})
+    @Schema(description = "移动类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "BEFORE", "AFTER",
+            "APPEND" })
     @NotBlank(message = "{system.move_mode.not_blank}")
     private String moveMode;
 }

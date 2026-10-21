@@ -29,7 +29,6 @@ public class TaskCleanupJob {
         runAll();
     }
 
-
     public void runAll() {
         log.info("开始执行所有清理任务");
         publisher.publishEvent(new ExecuteEvent(this));

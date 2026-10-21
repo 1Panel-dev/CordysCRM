@@ -1,8 +1,7 @@
 package cn.cordys.crm.approval.constants;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2026-07-03  11:24
+ * @author jianxing
  */
 public enum ApprovalResourceUpdateType {
 
@@ -17,6 +16,7 @@ public enum ApprovalResourceUpdateType {
     APPROVAL("approval");
 
     private final String value;
+
     ApprovalResourceUpdateType(String value) {
         this.value = value;
     }

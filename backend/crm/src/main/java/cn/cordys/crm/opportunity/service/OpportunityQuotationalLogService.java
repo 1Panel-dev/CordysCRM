@@ -20,7 +20,6 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
         differences = super.handleModuleLogField(differences, orgId, FormKey.QUOTATION.getKey());
 
         for (JsonDifferenceDTO differ : differences) {
-
             if (Strings.CS.equals(differ.getColumn(), "product")) {
                 setProductName(differ);
                 continue;
@@ -31,14 +30,12 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
                 continue;
             }
 
-
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.QUOTATION_TOTAL_AMOUNT.getBusinessKey())) {
                 differ.setColumnName(Translator.get("log.amount"));
             }
 
             if (differ.getColumn().contains("-")) {
                 differ.setColumnName(differ.getColumn());
-
             }
 
             if (Strings.CS.equals(differ.getColumn(), "approvalStatus")) {
@@ -50,10 +47,8 @@ public class OpportunityQuotationalLogService extends BaseModuleLogService {
                     differ.setNewValueName(Translator.get("log.approvalStatus." + differ.getNewValueName().toString()));
                 }
             }
-
         }
         return differences;
     }
-
 
 }

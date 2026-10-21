@@ -11,9 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- *
  * @author jianxing
- * @date 2025-12-29 18:22:59
  */
 @Data
 public class ContractInvoiceUpdateRequest {

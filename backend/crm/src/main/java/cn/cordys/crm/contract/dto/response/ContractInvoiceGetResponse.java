@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author jianxing
- * @date 2025-12-29 18:22:59
  */
 @Data
 public class ContractInvoiceGetResponse extends ContractInvoice {
@@ -47,9 +45,9 @@ public class ContractInvoiceGetResponse extends ContractInvoice {
     @Schema(description = "附件集合")
     private Map<String, List<Attachment>> attachmentMap;
 
-	@Schema(description = "审批第一个节点是否通过")
-	private Boolean firstApproved;
+    @Schema(description = "审批第一个节点是否通过")
+    private Boolean firstApproved;
 
-	@Schema(description = "提审人ID")
-	private String submitterId;
+    @Schema(description = "提审人ID")
+    private String submitterId;
 }

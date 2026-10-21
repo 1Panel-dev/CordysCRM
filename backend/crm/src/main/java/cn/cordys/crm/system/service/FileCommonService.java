@@ -51,9 +51,6 @@ public class FileCommonService {
 
     /**
      * 上传文件
-     *
-     * @param file
-     * @param request
      */
     public void upload(File file, FileRequest request) {
         try {
@@ -68,7 +65,6 @@ public class FileCommonService {
      * 获取目录下的所有文件
      *
      * @param request 文件请求参数
-     *
      * @return 文件列表
      */
     public List<File> getFolderFiles(FileRequest request) {
@@ -98,7 +94,6 @@ public class FileCommonService {
      * 获取文件输入流
      *
      * @param request 文件请求参数
-     *
      * @return 文件输入流
      */
     public InputStream getFileInputStream(FileRequest request) {
@@ -127,12 +122,10 @@ public class FileCommonService {
      * 下载文件
      *
      * @param request 文件请求信息，包含待下载的文件标识符或路径。
-     *
      * @throws Exception 如果下载文件过程中发生错误，抛出异常。
      */
     public ResponseEntity<Resource> download(FileRequest request) throws Exception {
         return FileCenter.getRepository(request.getStorage()).downloadFile(request);
     }
-
 
 }

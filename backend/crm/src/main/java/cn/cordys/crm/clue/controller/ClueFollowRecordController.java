@@ -38,7 +38,6 @@ public class ClueFollowRecordController {
         return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update")
     @Operation(summary = "更新线索跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
@@ -46,36 +45,40 @@ public class ClueFollowRecordController {
         return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/pool/page")
     @Operation(summary = "线索池跟进记录列表")
-    public PagerWithOption<List<FollowUpRecordListResponse>> poolList(@Validated @RequestBody FollowUpRecordPageRequest request) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> poolList(
+            @Validated @RequestBody FollowUpRecordPageRequest request) {
         FollowUpRecord followUpRecord = new FollowUpRecord();
         followUpRecord.setClueId(request.getSourceId());
         followUpRecord.setType(ModuleKey.CLUE.name());
-        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
-        return followUpRecordService.poolList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE");
+        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
+        return followUpRecordService.poolList(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), "CLUE", "CLUE");
     }
 
     @PostMapping("/page")
     @Operation(summary = "线索跟进记录列表")
-    public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(
+            @Validated @RequestBody FollowUpRecordPageRequest request) {
         FollowUpRecord followUpRecord = new FollowUpRecord();
         followUpRecord.setClueId(request.getSourceId());
         followUpRecord.setType(ModuleKey.CLUE.name());
-        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
-        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE");
+        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                "CLUE", "CLUE");
     }
-
 
     @GetMapping("/get/{id}")
     @Operation(summary = "线索跟进记录详情")
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
-        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "线索删除跟进记录")

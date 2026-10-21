@@ -34,7 +34,6 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
         return getStringValue(value);
     }
 
-
     @Override
     public Object transformToValue(DepartmentField departmentField, String value) {
         if (StringUtils.isBlank(value)) {

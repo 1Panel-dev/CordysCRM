@@ -123,7 +123,8 @@ class ApprovalAutoPassFlowTest {
             User user = new User();
             user.setId(id);
             return user;
-        }).toList()).when(flowService).getCurrentNodeApproverList(anyString(), anyList(), anyString(), anyString(), any());
+        }).toList()).when(flowService).getCurrentNodeApproverList(anyString(), anyList(), anyString(), anyString(),
+                any());
         doAnswer(invocation -> nodes.get(invocation.getArgument(1)).getApproverList())
                 .when(flowService).getCurrentNodeApproverList(any(ApprovalInstance.class), anyString(), anyString());
         doAnswer(invocation -> nodes.get(invocation.getArgument(0)).getApproverList().size() > 1)
@@ -145,14 +146,20 @@ class ApprovalAutoPassFlowTest {
             LambdaQueryWrapper<ApprovalTask> wrapper = invocation.getArgument(0);
             Map<String, Object> params = wrapper.getParams();
             return tasks.stream()
-                    .filter(task -> !params.containsKey("node_id_eq") || params.get("node_id_eq").equals(task.getNodeId()))
-                    .filter(task -> !params.containsKey("node_round_eq") || params.get("node_round_eq").equals(task.getNodeRound()))
-                    .filter(task -> !params.containsKey("type_eq") || params.get("type_eq").toString().equals(task.getType()))
-                    .filter(task -> !params.containsKey("status_eq") || params.get("status_eq").toString().equals(task.getStatus()))
-                    .filter(task -> !params.containsKey("array_status") || ((List<?>) params.get("array_status")).contains(task.getStatus()))
+                    .filter(task -> !params.containsKey("node_id_eq")
+                            || params.get("node_id_eq").equals(task.getNodeId()))
+                    .filter(task -> !params.containsKey("node_round_eq")
+                            || params.get("node_round_eq").equals(task.getNodeRound()))
+                    .filter(task -> !params.containsKey("type_eq")
+                            || params.get("type_eq").toString().equals(task.getType()))
+                    .filter(task -> !params.containsKey("status_eq")
+                            || params.get("status_eq").toString().equals(task.getStatus()))
+                    .filter(task -> !params.containsKey("array_status")
+                            || ((List<?>) params.get("array_status")).contains(task.getStatus()))
                     .toList();
         });
-        when(extInstanceMapper.selectApprovalStatus("opportunity", "opportunity-1")).thenAnswer(invocation -> resourceStatus.get());
+        when(extInstanceMapper.selectApprovalStatus("opportunity", "opportunity-1"))
+                .thenAnswer(invocation -> resourceStatus.get());
         doAnswer(invocation -> {
             resourceStatus.set(invocation.getArgument(2));
             return null;
@@ -201,7 +208,7 @@ class ApprovalAutoPassFlowTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"DIRECT", "CONDITION", "DEFAULT"})
+    @ValueSource(strings = { "DIRECT", "CONDITION", "DEFAULT" })
     void consecutiveManualApproversContinueThroughAutomaticAgreementAndConditionBranches(String branch) {
         ApprovalTask first = firstApprovedTask(List.of("approver-a"));
         ApprovalNodeApproverResponse second = node("NODE002", MultiApproverModeEnum.ANY, List.of("approver-a"));
@@ -217,12 +224,13 @@ class ApprovalAutoPassFlowTest {
 
         process(first);
 
-        assertEquals(2, tasks.stream().filter(task -> ApprovalStatus.AUTO_APPROVED.name().equals(task.getStatus())).count());
+        assertEquals(2,
+                tasks.stream().filter(task -> ApprovalStatus.AUTO_APPROVED.name().equals(task.getStatus())).count());
         assertCompleted();
     }
 
     @ParameterizedTest
-    @EnumSource(value = MultiApproverModeEnum.class, names = {"ALL", "SEQUENTIAL"})
+    @EnumSource(value = MultiApproverModeEnum.class, names = { "ALL", "SEQUENTIAL" })
     void fullyAutomaticMultiApproverTasksContinueAndUpdateInstanceAndOpportunity(MultiApproverModeEnum mode) {
         ApprovalTask first = firstApprovedTask(List.of("approver-a", "approver-b"));
         nextNodes.put("NODE001", node("NODE003", mode, List.of("approver-a", "approver-b")));
@@ -230,7 +238,8 @@ class ApprovalAutoPassFlowTest {
         process(first);
 
         assertEquals(4, tasks.size());
-        assertEquals(2, tasks.stream().filter(task -> ApprovalStatus.AUTO_APPROVED.name().equals(task.getStatus())).count());
+        assertEquals(2,
+                tasks.stream().filter(task -> ApprovalStatus.AUTO_APPROVED.name().equals(task.getStatus())).count());
         assertCompleted();
         verifyNoInteractions(notices);
     }
@@ -243,17 +252,18 @@ class ApprovalAutoPassFlowTest {
         process(first);
 
         assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
-        verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
+        verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
+                eq(NotificationConstants.Event.APPROVAL_TODO),
                 anyMap(), eq("submitter"), eq("org-1"), eq(List.of("approver-b")), eq(true));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"FIRST", "MIDDLE", "LAST"})
+    @ValueSource(strings = { "FIRST", "MIDDLE", "LAST" })
     void missingSupervisorOnlySkipsSubmitterAndPreservesSequentialApprovers(String position) {
         List<String> approvers = switch (position) {
-            case "FIRST" -> List.of("submitter", "approver-b");
-            case "MIDDLE" -> List.of("approver-a", "submitter", "approver-b");
-            default -> List.of("approver-a", "approver-b", "submitter");
+        case "FIRST" -> List.of("submitter", "approver-b");
+        case "MIDDLE" -> List.of("approver-a", "submitter", "approver-b");
+        default -> List.of("approver-a", "approver-b", "submitter");
         };
         enterNodeWithSubmitter(MultiApproverModeEnum.SEQUENTIAL, approvers, null);
 
@@ -264,7 +274,8 @@ class ApprovalAutoPassFlowTest {
             List<ApprovalTask> pending = tasks.stream()
                     .filter(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus())).toList();
             assertEquals(List.of(approver), pending.stream().map(ApprovalTask::getApproverId).toList());
-            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
+            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
+                    eq(NotificationConstants.Event.APPROVAL_TODO),
                     anyMap(), eq("submitter"), eq("org-1"), eq(List.of(approver)), eq(true));
             verifyNoMoreInteractions(notices);
             clearInvocations(notices);
@@ -272,7 +283,8 @@ class ApprovalAutoPassFlowTest {
             process(pending.getFirst());
         }
 
-        List<ApprovalTask> submitterTasks = tasks.stream().filter(task -> "submitter".equals(task.getApproverId())).toList();
+        List<ApprovalTask> submitterTasks = tasks.stream().filter(task -> "submitter".equals(task.getApproverId()))
+                .toList();
         assertEquals(1, submitterTasks.size());
         assertEquals(ApprovalStatus.AUTO_APPROVED.name(), submitterTasks.getFirst().getStatus());
         assertCompleted();
@@ -286,12 +298,14 @@ class ApprovalAutoPassFlowTest {
         assertEquals("NODE003", instance.getCurrentNodeId());
         assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
         assertEquals(ApprovalStatus.APPROVING.name(), resourceStatus.get());
-        ApprovalTask submitter = tasks.stream().filter(task -> "submitter".equals(task.getApproverId())).findFirst().orElseThrow();
+        ApprovalTask submitter = tasks.stream().filter(task -> "submitter".equals(task.getApproverId())).findFirst()
+                .orElseThrow();
         assertEquals(ApprovalStatus.AUTO_APPROVED.name(), submitter.getStatus());
         ApprovalTask pending = tasks.getLast();
         assertEquals("approver-b", pending.getApproverId());
         assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
-        verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
+        verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
+                eq(NotificationConstants.Event.APPROVAL_TODO),
                 anyMap(), eq("submitter"), eq("org-1"), eq(List.of("approver-b")), eq(true));
         verifyNoMoreInteractions(notices);
 
@@ -301,7 +315,7 @@ class ApprovalAutoPassFlowTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @ValueSource(booleans = { false, true })
     void missingSupervisorStillCompletesSingleApproverAndAnyApproval(boolean singleApprover) {
         enterNodeWithSubmitter(MultiApproverModeEnum.ANY,
                 singleApprover ? List.of("submitter") : List.of("submitter", "approver-b"), null);
@@ -322,7 +336,8 @@ class ApprovalAutoPassFlowTest {
             ApprovalTask pending = tasks.getLast();
             assertEquals(approver, pending.getApproverId());
             assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
-            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL), eq(NotificationConstants.Event.APPROVAL_TODO),
+            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
+                    eq(NotificationConstants.Event.APPROVAL_TODO),
                     anyMap(), eq("submitter"), eq("org-1"), eq(List.of(approver)), eq(true));
             clearInvocations(notices);
             pending.setStatus(ApprovalStatus.APPROVED.name());
@@ -351,7 +366,8 @@ class ApprovalAutoPassFlowTest {
         ReflectionTestUtils.setField(flowService, "organizationUserMapper", organizationUsers);
         ReflectionTestUtils.setField(flowService, "approvalNodeApproverMapper", nodeMapper);
         // 后续取人真实走同人转交逻辑，仅替换与本用例无关的成员解析。
-        doCallRealMethod().when(flowService).getCurrentNodeApproverList(any(ApprovalInstance.class), anyString(), anyString());
+        doCallRealMethod().when(flowService).getCurrentNodeApproverList(any(ApprovalInstance.class), anyString(),
+                anyString());
         doAnswer(invocation -> ((List<String>) invocation.getArgument(3)).stream().map(id -> {
             User user = new User();
             user.setId(id);
@@ -398,7 +414,8 @@ class ApprovalAutoPassFlowTest {
     }
 
     private void process(ApprovalTask task) {
-        ReflectionTestUtils.invokeMethod(actionService, "approvedProcess", instance, task, task.getApproverId(), "org-1", "示例商机");
+        ReflectionTestUtils.invokeMethod(actionService, "approvedProcess", instance, task, task.getApproverId(),
+                "org-1", "示例商机");
     }
 
     private void assertCompleted() {

@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-01-10 18:35:02
  */
 public interface ExtRoleMapper {
 
@@ -22,7 +21,7 @@ public interface ExtRoleMapper {
 
     Long selectNextPos(@Param("orgId") String orgId);
 
-    List<Role> selectList(@Param("orgId")String orgId);
+    List<Role> selectList(@Param("orgId") String orgId);
 
     void moveUpNavigation(@Param("start") Long start, @Param("end") Long end);
 

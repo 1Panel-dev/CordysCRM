@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.mapper;
 
-
 import cn.cordys.crm.system.domain.Notification;
 import cn.cordys.crm.system.dto.request.NotificationRequest;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
@@ -10,7 +9,8 @@ import java.util.List;
 
 public interface ExtNotificationMapper {
 
-    List<NotificationDTO> listNotification(@Param("request") NotificationRequest notificationRequest, @Param("organizationId") String organizationId);
+    List<NotificationDTO> listNotification(@Param("request") NotificationRequest notificationRequest,
+            @Param("organizationId") String organizationId);
 
     void deleteByTime(@Param("timestamp") long timestamp);
 
@@ -24,9 +24,11 @@ public interface ExtNotificationMapper {
 
     List<NotificationDTO> selectByAnyOne(@Param("request") Notification request);
 
-    List<NotificationDTO> selectLastList(@Param("userId") String userId, @Param("organizationId") String organizationId, @Param("modules") List<String> modules);
+    List<NotificationDTO> selectLastList(@Param("userId") String userId, @Param("organizationId") String organizationId,
+            @Param("modules") List<String> modules);
 
-    List<NotificationDTO> selectLastAnnouncementList(@Param("userId") String userId, @Param("organizationId") String organizationId);
+    List<NotificationDTO> selectLastAnnouncementList(@Param("userId") String userId,
+            @Param("organizationId") String organizationId);
 
     void deleteByReceivers(@Param("receivers") List<String> receivers, @Param("organizationId") String organizationId);
 

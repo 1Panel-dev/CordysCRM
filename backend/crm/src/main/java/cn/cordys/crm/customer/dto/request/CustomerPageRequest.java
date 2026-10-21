@@ -7,10 +7,8 @@ import lombok.Data;
 
 import java.util.List;
 
-
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Data
 public class CustomerPageRequest extends BasePageRequest {
@@ -24,6 +22,6 @@ public class CustomerPageRequest extends BasePageRequest {
     @Schema(description = "查询需要关联的公海客户传参")
     private List<String> transitionPoolIds;
 
-	@Schema(description = "关联客户数据权限")
-	private DeptDataPermissionDTO transitionDataPermission;
+    @Schema(description = "关联客户数据权限")
+    private DeptDataPermissionDTO transitionDataPermission;
 }

@@ -12,8 +12,9 @@ import java.util.List;
 
 /**
  * 用于生成数字 ID 的生成器类，支持根据不同的应用场景（Scope）生成唯一的 ID。
- *
- * <p>该类使用 Redisson 的分布式 ID 生成器和 Redis 进行管理。</p>
+ * <p>
+ * 该类使用 Redisson 的分布式 ID 生成器和 Redis 进行管理。
+ * </p>
  */
 @Component
 public class NumGenerator {
@@ -34,7 +35,6 @@ public class NumGenerator {
      * 根据指定的应用场景生成唯一的数字 ID。
      *
      * @param scope 应用场景（例如：接口用例）
-     *
      * @return 唯一的数字 ID
      */
     public static long nextNum(ApplicationNumScope scope) {
@@ -46,7 +46,6 @@ public class NumGenerator {
      *
      * @param prefix 前缀，例如：ORGANIZATION_ID + "_" + DOMAIN
      * @param scope  应用场景（例如：接口用例）
-     *
      * @return 唯一的数字 ID
      */
     public static long nextNum(String prefix, ApplicationNumScope scope) {
@@ -60,7 +59,8 @@ public class NumGenerator {
                 idGenerator.tryInit(1, LIMIT);
             }
             // 返回格式化后的 ID，保留 3 位
-            return Long.parseLong(prefix.split("_")[1] + StringUtils.leftPad(String.valueOf(idGenerator.nextId()), 3, "0"));
+            return Long.parseLong(
+                    prefix.split("_")[1] + StringUtils.leftPad(String.valueOf(idGenerator.nextId()), 3, "0"));
         } else {
             // 其他范围的用例，初始化 ID 生成器
             if (!idGenerator.isExists()) {

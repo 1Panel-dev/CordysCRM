@@ -2,7 +2,6 @@ package cn.cordys.crm.follow.constants;
 
 public enum FollowUpPlanStatusType {
 
-
     /**
      * 未开始
      */

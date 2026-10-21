@@ -20,9 +20,10 @@ import java.util.Map;
 
 /**
  * HTTP 请求工具类，基于 Spring RestTemplate 实现，内建重试机制。
- *
- * <p>默认重试 3 次，采用指数退避策略（1s → 2s → 4s，上限 30s）。
- * 支持 GET / POST / 通用 method 请求，可通过重载方法自定义重试次数。</p>
+ * <p>
+ * 默认重试 3 次，采用指数退避策略（1s → 2s → 4s，上限 30s）。
+ * 支持 GET / POST / 通用 method 请求，可通过重载方法自定义重试次数。
+ * </p>
  */
 @Slf4j
 public class HttpClientUtils {
@@ -119,7 +120,8 @@ public class HttpClientUtils {
     /**
      * 发送指定 HTTP 方法的请求，指定重试次数
      */
-    public static String sendRequest(HttpMethod method, String url, String body, Map<String, String> headers, int maxRetries) {
+    public static String sendRequest(HttpMethod method, String url, String body, Map<String, String> headers,
+            int maxRetries) {
         return executeWithRetry(() -> doRequest(method, url, body, headers), maxRetries, url);
     }
 
@@ -198,13 +200,14 @@ public class HttpClientUtils {
      * URL 模板拼接，参数自动 URL 编码，null 值替换为空字符串。
      *
      * <pre>{@code
-     *   urlTransfer("https://api.example.com/{0}/{1}", token, keyword)
+     * urlTransfer("https://api.example.com/{0}/{1}", token, keyword)
      * }</pre>
      */
     public static String urlTransfer(String urlPattern, Object... params) {
         var vars = new Object[params.length];
         for (int i = 0; i < params.length; i++) {
-            vars[i] = (params[i] == null) ? "" : URLEncoder.encode(StringUtils.stripToEmpty(params[i].toString()), StandardCharsets.UTF_8);
+            vars[i] = (params[i] == null) ? ""
+                    : URLEncoder.encode(StringUtils.stripToEmpty(params[i].toString()), StandardCharsets.UTF_8);
         }
         return MessageFormat.format(urlPattern, vars);
     }

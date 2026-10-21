@@ -8,9 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- *
  * @author jianxing
- * @date 2025-11-21 15:11:29
  */
 @Data
 public class ContractPaymentPlanListResponse extends ContractPaymentPlan {

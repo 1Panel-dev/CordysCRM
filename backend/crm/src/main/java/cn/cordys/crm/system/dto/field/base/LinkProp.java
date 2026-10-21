@@ -25,7 +25,8 @@ public class LinkProp implements Serializable {
         private Object current;
 
         @NotEmpty
-        @Schema(description = "联动方式", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"AUTO", "HIDDEN"})
+        @Schema(description = "联动方式", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "AUTO",
+                "HIDDEN" })
         private String method;
 
         @NotBlank

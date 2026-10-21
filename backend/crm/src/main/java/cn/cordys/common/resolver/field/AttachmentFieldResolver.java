@@ -13,7 +13,6 @@ import java.util.Objects;
 
 public class AttachmentFieldResolver extends AbstractModuleFieldResolver<AttachmentField> {
 
-
     private static final ExtAttachmentMapper extAttachmentMapper;
 
     static {
@@ -22,7 +21,6 @@ public class AttachmentFieldResolver extends AbstractModuleFieldResolver<Attachm
 
     @Override
     public void validate(AttachmentField customField, Object value) {
-
     }
 
     @Override

@@ -10,7 +10,6 @@ public class HikariCPUtils {
      * 获取 HikariCP 连接池的使用情况
      *
      * @param dataSource HikariDataSource 实例
-     *
      * @return HikariCP 连接池状态信息
      */
     public static String getHikariCPStatus(HikariDataSource dataSource) {
@@ -31,7 +30,6 @@ public class HikariCPUtils {
      * 获取 HikariCP 连接池的配置情况
      *
      * @param dataSource HikariDataSource 实例
-     *
      * @return 连接池配置情况
      */
     public static String getHikariCPConfig(HikariDataSource dataSource) {

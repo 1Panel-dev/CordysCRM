@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-
 /**
  * 通用 Mapper接口，提供基本的增删改查方法。
  *
@@ -23,7 +22,6 @@ public interface BaseMapper<E> {
      * 插入一条记录。
      *
      * @param entity 要插入的实体
-     *
      * @return 插入的行数
      */
     @InsertProvider(type = InsertSqlProvider.class, method = "invoke")
@@ -34,7 +32,6 @@ public interface BaseMapper<E> {
      * 批量插入记录。
      *
      * @param entities 要插入的实体列表
-     *
      * @return 插入的行数
      */
     @InsertProvider(type = BatchInsertSqlProvider.class, method = "invoke")
@@ -45,7 +42,6 @@ public interface BaseMapper<E> {
      * 根据主键更新记录。
      *
      * @param entity 要更新的实体
-     *
      * @return 更新的行数
      */
     @UpdateProvider(type = UpdateSqlProvider.class, method = "invoke")
@@ -55,7 +51,6 @@ public interface BaseMapper<E> {
      * 选择性更新记录（仅更新非空字段）。
      *
      * @param entity 要更新的实体
-     *
      * @return 更新的行数
      */
     @UpdateProvider(type = UpdateSelectiveSqlProvider.class, method = "invoke")
@@ -65,7 +60,6 @@ public interface BaseMapper<E> {
      * 根据主键删除记录。
      *
      * @param id 主键值
-     *
      * @return 删除的行数
      */
     @DeleteProvider(type = DeleteSqlProvider.class, method = "invoke")
@@ -75,7 +69,6 @@ public interface BaseMapper<E> {
      * 根据条件删除记录。
      *
      * @param criteria 删除的条件
-     *
      * @return 删除的行数
      * @throws IllegalArgumentException 如果未提供任何删除条件
      */
@@ -103,7 +96,6 @@ public interface BaseMapper<E> {
      * 根据主键查询记录。
      *
      * @param id 主键值
-     *
      * @return 查询到的实体
      */
     @SelectProvider(type = SelectByIdSqlProvider.class, method = "invoke")
@@ -113,7 +105,6 @@ public interface BaseMapper<E> {
      * 查询所有记录。
      *
      * @param orderBy 排序条件
-     *
      * @return 查询到的实体列表
      */
     @SelectProvider(type = SelectAllSqlProvider.class, method = "invoke")
@@ -123,7 +114,6 @@ public interface BaseMapper<E> {
      * 根据条件查询记录。
      *
      * @param criteria 查询条件
-     *
      * @return 查询到的实体列表
      */
     @SelectProvider(type = SelectByCriteriaSqlProvider.class, method = "invoke")
@@ -133,7 +123,6 @@ public interface BaseMapper<E> {
      * 使用 LambdaQueryWrapper 查询记录列表。
      *
      * @param wrapper LambdaQueryWrapper 查询条件
-     *
      * @return 查询结果列表
      */
     @SelectProvider(type = SelectByLambdaSqlProvider.class, method = "invoke")
@@ -143,7 +132,6 @@ public interface BaseMapper<E> {
      * 根据条件查询单条记录。
      *
      * @param criteria 查询条件
-     *
      * @return 查询到的实体
      */
     @SelectProvider(type = SelectByCriteriaSqlProvider.class, method = "invoke")
@@ -154,7 +142,6 @@ public interface BaseMapper<E> {
      *
      * @param column 列名
      * @param ids    查询的值数组
-     *
      * @return 查询到的实体列表
      */
     @SelectProvider(type = SelectInSqlProvider.class, method = "invoke")
@@ -164,7 +151,6 @@ public interface BaseMapper<E> {
      * 根据条件统计记录数。
      *
      * @param criteria 查询条件
-     *
      * @return 记录数
      */
     @SelectProvider(type = CountByCriteriaSqlProvider.class, method = "invoke")
@@ -174,7 +160,6 @@ public interface BaseMapper<E> {
      * 根据主键数组查询记录。
      *
      * @param ids 主键值数组
-     *
      * @return 查询到的实体列表
      */
     default List<E> selectByIds(@Param("array") Serializable[] ids) {
@@ -188,7 +173,6 @@ public interface BaseMapper<E> {
      * 根据主键数组查询记录。
      *
      * @param ids 主键值数组
-     *
      * @return 查询到的实体列表
      */
     default List<E> selectByIds(List<String> ids) {
@@ -202,7 +186,6 @@ public interface BaseMapper<E> {
      * 判断记录是否存在。
      *
      * @param criteria 查询条件
-     *
      * @return 如果存在返回true，否则返回false
      */
     default boolean exist(E criteria) {
@@ -214,7 +197,6 @@ public interface BaseMapper<E> {
      * 插入或更新记录。
      *
      * @param criteria 查询条件
-     *
      * @return 执行的行数
      */
     default Integer upsert(E criteria) {

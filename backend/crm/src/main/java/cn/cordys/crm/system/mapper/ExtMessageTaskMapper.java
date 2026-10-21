@@ -8,14 +8,17 @@ import java.util.List;
 
 public interface ExtMessageTaskMapper {
 
-    List<MessageTask> getEnableMessageTaskByReceiveTypeAndTaskType(@Param("module") String taskType, @Param("organizationId") String organizationId);
+    List<MessageTask> getEnableMessageTaskByReceiveTypeAndTaskType(@Param("module") String taskType,
+            @Param("organizationId") String organizationId);
 
     List<MessageTask> getMessageTaskList(@Param("organizationId") String organizationId);
 
-    MessageTask getMessageByModuleAndEvent(@Param("module") String taskType, @Param("event") String event, @Param("organizationId") String organizationId);
+    MessageTask getMessageByModuleAndEvent(@Param("module") String taskType, @Param("event") String event,
+            @Param("organizationId") String organizationId);
 
     MessageTask getMessageByEvent(@Param("event") String event, @Param("organizationId") String organizationId);
 
-    void updateMessageTask(@Param("request") MessageTaskBatchRequest messageTaskBatchRequest, @Param("organizationId") String organizationId);
+    void updateMessageTask(@Param("request") MessageTaskBatchRequest messageTaskBatchRequest,
+            @Param("organizationId") String organizationId);
 
 }

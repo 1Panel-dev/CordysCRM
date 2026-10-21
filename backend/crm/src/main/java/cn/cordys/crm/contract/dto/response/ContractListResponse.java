@@ -35,8 +35,8 @@ public class ContractListResponse extends Contract {
     @Schema(description = "部门名称")
     private String departmentName;
 
-	@Schema(description = "已回款金额")
-	private BigDecimal alreadyPayAmount;
+    @Schema(description = "已回款金额")
+    private BigDecimal alreadyPayAmount;
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
@@ -44,9 +44,9 @@ public class ContractListResponse extends Contract {
     @Schema(description = "商机阶段")
     private String stageName;
 
-	@Schema(description = "审批第一个节点是否通过")
-	private Boolean firstApproved;
+    @Schema(description = "审批第一个节点是否通过")
+    private Boolean firstApproved;
 
-	@Schema(description = "提审人ID")
-	private String submitterId;
+    @Schema(description = "提审人ID")
+    private String submitterId;
 }

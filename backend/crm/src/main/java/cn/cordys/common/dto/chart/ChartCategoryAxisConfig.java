@@ -5,8 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-10-13  14:54
+ * @author jianxing
  */
 @Data
 public class ChartCategoryAxisConfig {

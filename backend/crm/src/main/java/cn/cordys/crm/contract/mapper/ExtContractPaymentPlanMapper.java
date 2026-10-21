@@ -12,21 +12,24 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- *
  * @author jianxing
- * @date 2025-11-21 15:11:29
  */
 public interface ExtContractPaymentPlanMapper extends StatisticSqlMapper {
-    List<ContractPaymentPlanListResponse> list(@Param("request") ContractPaymentPlanPageRequest request, @Param("userId") String userId,
-                                               @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    List<ContractPaymentPlanListResponse> list(@Param("request") ContractPaymentPlanPageRequest request,
+            @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    List<ContractPaymentPlanListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    List<ContractPaymentPlanListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(@Param("customerId") String customerId,
+            @Param("userId") String userId, @Param("orgId") String orgId,
+            @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    List<ContractPaymentPlan> selectByTimestamp(@Param("timestamp") long timestamp, @Param("timestampOld") long timestampOld, @Param("orgId") String organizationId);
+    List<ContractPaymentPlan> selectByTimestamp(@Param("timestamp") long timestamp,
+            @Param("timestampOld") long timestampOld, @Param("orgId") String organizationId);
 
-    void updatePaymentPlan(@Param("contractPaymentPlan")ContractPaymentPlan contractPaymentPlan);
+    void updatePaymentPlan(@Param("contractPaymentPlan") ContractPaymentPlan contractPaymentPlan);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }

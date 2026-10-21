@@ -40,8 +40,7 @@ public class DataEaseService {
         String token = generateJwtToken(
                 thirdConfig.getAgentId(),
                 thirdConfig.getAppSecret(),
-                account
-        );
+                account);
 
         return DeAuthDTO.builder()
                 .token(token)
@@ -53,34 +52,25 @@ public class DataEaseService {
         var config = Optional.ofNullable(
                 extOrganizationConfigMapper.getOrganizationConfig(
                         organizationId,
-                        OrganizationConfigConstants.ConfigType.THIRD.name()
-                )
-        ).orElseThrow(() ->
-                new GenericException("未找到 DataEase 相关配置")
-        );
+                        OrganizationConfigConstants.ConfigType.THIRD.name()))
+                .orElseThrow(() -> new GenericException("未找到 DataEase 相关配置"));
 
         var detail = extOrganizationConfigDetailMapper
                 .getOrgConfigDetailByType(
                         config.getId(),
                         null,
-                        List.of(ThirdDetailType.DE_BOARD.name())
-                )
+                        List.of(ThirdDetailType.DE_BOARD.name()))
                 .stream()
                 .findFirst()
-                .orElseThrow(() ->
-                        new GenericException("未找到 DataEase 配置详情")
-                );
+                .orElseThrow(() -> new GenericException("未找到 DataEase 配置详情"));
 
         var baseDTO = Optional.ofNullable(
-                JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class)
-        ).orElseThrow(() ->
-                new GenericException("DataEase 配置内容解析失败")
-        );
+                JSON.parseObject(new String(detail.getContent()), ThirdConfigBaseDTO.class))
+                .orElseThrow(() -> new GenericException("DataEase 配置内容解析失败"));
 
         return JSON.MAPPER.convertValue(
                 baseDTO.getConfig(),
-                DeThirdConfigRequest.class
-        );
+                DeThirdConfigRequest.class);
     }
 
     /**
@@ -88,7 +78,6 @@ public class DataEaseService {
      *
      * @param appId     应用ID
      * @param appSecret 应用密钥
-     *
      * @return JWT Token
      */
     private String generateJwtToken(String appId, String appSecret, String account) {

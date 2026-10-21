@@ -71,10 +71,9 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
     @Resource
     private BaseMapper<CluePoolRecycleRule> recycleRuleMapper;
 
-
     @Override
-    public PagerWithOption<List<AdvancedClueResponse>> startSearch(CluePageRequest request, String orgId, String userId) {
-
+    public PagerWithOption<List<AdvancedClueResponse>> startSearch(CluePageRequest request, String orgId,
+            String userId) {
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
         // 检查：如果客户模块未启用，抛出异常
@@ -96,11 +95,14 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    public Map<String, List<OptionDTO>> buildClueOptionMap(String orgId, List<ClueListResponse> list, List<AdvancedClueResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildClueOptionMap(String orgId, List<ClueListResponse> list,
+            List<AdvancedClueResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(),
+                orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ClueListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                ClueListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -115,7 +117,6 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
         return optionMap;
     }
 
-
     public List<AdvancedClueResponse> buildClueList(List<ClueListResponse> list, String orgId, String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return new ArrayList<>();
@@ -123,7 +124,8 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
         List<String> clueIds = list.stream().map(ClueListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = clueFieldService.getResourceFieldMap(clueIds,
+                true);
 
         List<String> ownerIds = list.stream()
                 .map(ClueListResponse::getOwner)
@@ -158,7 +160,8 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
             LambdaQueryWrapper<CluePoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
             recycleRuleWrapper.in(CluePoolRecycleRule::getPoolId, poolIds);
             List<CluePoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
-            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, rule -> rule));
+            recycleRuleMap = recycleRules.stream()
+                    .collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, rule -> rule));
         }
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
@@ -195,7 +198,8 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
             clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
             AdvancedClueResponse advancedClueResponse = new AdvancedClueResponse();
             BeanUtils.copyBean(advancedClueResponse, clueListResponse);
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, clueListResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, clueListResponse.getOwner(),
+                    PermissionConstants.CLUE_MANAGEMENT_READ);
             advancedClueResponse.setHasPermission(hasPermission);
             if (!hasPermission) {
                 advancedClueResponse.setPhone(null);

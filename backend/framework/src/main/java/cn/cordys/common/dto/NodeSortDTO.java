@@ -25,4 +25,3 @@ public class NodeSortDTO {
     @Schema(description = "后一个节点")
     private BaseTree nextNode;
 }
-

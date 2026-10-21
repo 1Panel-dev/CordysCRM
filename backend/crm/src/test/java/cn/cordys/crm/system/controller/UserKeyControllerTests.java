@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.system.domain.UserKey;
 import cn.cordys.crm.system.dto.request.UserKeyUpdateRequest;
@@ -30,7 +29,6 @@ public class UserKeyControllerTests extends BaseTest {
         return BASE_PATH;
     }
 
-
     @Test
     @Order(1)
     public void addApiKey() throws Exception {
@@ -44,7 +42,6 @@ public class UserKeyControllerTests extends BaseTest {
         List<UserKey> result = getResultDataArray(mvcResult, UserKey.class);
         APIKEY_ID = result.getFirst().getId();
     }
-
 
     @Test
     @Order(3)

@@ -1,5 +1,7 @@
 package cn.cordys.crm.approval.controller;
 
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
@@ -9,8 +11,6 @@ import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
-import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.Translator;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,29 +27,29 @@ public class ApprovalResourceController {
 
     @Resource
     private ApprovalResourceService approvalResourceService;
-	@Resource
-	private ApprovalInstanceService approvalInstanceService;
-	@Resource
-	private ApprovalCommentService approvalCommentService;
+    @Resource
+    private ApprovalInstanceService approvalInstanceService;
+    @Resource
+    private ApprovalCommentService approvalCommentService;
 
-	@PostMapping("/push")
-	@Operation(summary = "提审")
-	public void push(@RequestBody ApprovalResourceBaseParam param) {
-		ApprovalPushParam approvalPushParam = ApprovalPushParam.builder()
-				.orgId(OrganizationContext.getOrganizationId())
-				.userId(SessionUtils.getUserId())
-				.resourceId(param.getResourceId())
-				.formKey(param.getFormKey())
-				.executeTimingEnum(ExecuteTimingEnum.CREATE)
-				.build();
-		approvalResourceService.push(approvalPushParam);
-	}
+    @PostMapping("/push")
+    @Operation(summary = "提审")
+    public void push(@RequestBody ApprovalResourceBaseParam param) {
+        ApprovalPushParam approvalPushParam = ApprovalPushParam.builder()
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .resourceId(param.getResourceId())
+                .formKey(param.getFormKey())
+                .executeTimingEnum(ExecuteTimingEnum.CREATE)
+                .build();
+        approvalResourceService.push(approvalPushParam);
+    }
 
-	@PostMapping("/revoke")
-	@Operation(summary = "撤销")
-	public void revoke(@RequestBody ApprovalResourceBaseParam param) {
-		approvalResourceService.revoke(param, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/revoke")
+    @Operation(summary = "撤销")
+    public void revoke(@RequestBody ApprovalResourceBaseParam param) {
+        approvalResourceService.revoke(param, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
     @GetMapping("/simple-detail/{resourceId}")
     @Operation(summary = "列表详情")
@@ -58,14 +58,15 @@ public class ApprovalResourceController {
         return approvalResourceService.resourceDetail(resourceId);
     }
 
-	@GetMapping("/detail/{resourceId}")
+    @GetMapping("/detail/{resourceId}")
     @Operation(summary = "记录详情")
     public ApprovalInstanceDetail getRecordDetail(@PathVariable String resourceId) {
         approvalResourceService.checkViewPermission(resourceId);
         String orgId = OrganizationContext.getOrganizationId();
         ApprovalInstanceDetail detail = approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, orgId);
         if (detail != null) {
-            detail.setCommentable(approvalCommentService.hasCommentPermission(detail.getId(), SessionUtils.getUserId(), orgId));
+            detail.setCommentable(
+                    approvalCommentService.hasCommentPermission(detail.getId(), SessionUtils.getUserId(), orgId));
         }
         return detail;
     }

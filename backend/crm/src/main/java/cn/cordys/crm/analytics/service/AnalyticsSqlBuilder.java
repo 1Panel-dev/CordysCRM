@@ -1,7 +1,7 @@
 package cn.cordys.crm.analytics.service;
 
-import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.*;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
 import cn.cordys.crm.analytics.service.AnalyticsAccessService.Access;
 import cn.cordys.crm.analytics.service.AnalyticsSchemaService.Catalog;
 import cn.cordys.crm.analytics.service.AnalyticsSchemaService.Field;
@@ -22,7 +22,8 @@ public final class AnalyticsSqlBuilder {
     private static final String NUMBER_PATTERN = "^[+-]?[0-9]{1,65}([.][0-9]{1,65})?([eE][+-]?[0-9]{1,3})?$";
     private static final String DATE_PATTERN = "^-?[0-9]{1,15}$";
 
-    private AnalyticsSqlBuilder() { }
+    private AnalyticsSqlBuilder() {
+    }
 
     public static Plan compile(Access access, Catalog catalog, AnalyticsQueryRequest request) {
         return compile(access, catalog, request, null);
@@ -38,34 +39,58 @@ public final class AnalyticsSqlBuilder {
         Map<String, Field> used = new LinkedHashMap<>();
         Set<String> aliases = new HashSet<>();
         for (Metric metric : request.getMetrics()) {
-            if (metric == null) throw invalid("INVALID_METRIC");
-            if (!aliases.add(metric.getAlias())) throw invalid("DUPLICATE_METRIC_ALIAS");
+            if (metric == null) {
+                throw invalid("INVALID_METRIC");
+            }
+            if (!aliases.add(metric.getAlias())) {
+                throw invalid("DUPLICATE_METRIC_ALIAS");
+            }
             if (metric.getField() == null) {
-                if (metric.getOp() != Aggregate.COUNT) throw invalid("METRIC_FIELD_REQUIRED");
+                if (metric.getOp() != Aggregate.COUNT) {
+                    throw invalid("METRIC_FIELD_REQUIRED");
+                }
             } else {
                 Field field = use(catalog, used, metric.getField());
-                if (!field.schema().aggregates().contains(metric.getOp())) throw invalid("UNSUPPORTED_AGGREGATE");
+                if (!field.schema().aggregates().contains(metric.getOp())) {
+                    throw invalid("UNSUPPORTED_AGGREGATE");
+                }
             }
         }
         Set<String> dimensions = new HashSet<>();
         for (Dimension dimension : request.getDimensions()) {
-            if (dimension == null || !dimensions.add(dimension.getField())) throw invalid("INVALID_DIMENSION");
+            if (dimension == null || !dimensions.add(dimension.getField())) {
+                throw invalid("INVALID_DIMENSION");
+            }
             Field field = use(catalog, used, dimension.getField());
-            if (!field.schema().date() && dimension.getGranularity() != Granularity.RAW) throw invalid("DATE_DIMENSION_REQUIRED");
+            if (!field.schema().date() && dimension.getGranularity() != Granularity.RAW) {
+                throw invalid("DATE_DIMENSION_REQUIRED");
+            }
         }
         for (Condition condition : request.getConditions()) {
-            if (condition == null) throw invalid("INVALID_CONDITION");
+            if (condition == null) {
+                throw invalid("INVALID_CONDITION");
+            }
             Field field = use(catalog, used, condition.getField());
-            if (!field.schema().operators().contains(condition.getOperator())) throw invalid("UNSUPPORTED_OPERATOR");
+            if (!field.schema().operators().contains(condition.getOperator())) {
+                throw invalid("UNSUPPORTED_OPERATOR");
+            }
         }
         TimeRange timeRange = request.getTimeRange();
-        if (timeRange != null && !use(catalog, used, timeRange.getField()).schema().date()) throw invalid("DATE_FIELD_REQUIRED");
-        if (request.getOrderBy() != null && !aliases.contains(request.getOrderBy().getMetric())) throw invalid("UNKNOWN_ORDER_METRIC");
+        if (timeRange != null && !use(catalog, used, timeRange.getField()).schema().date()) {
+            throw invalid("DATE_FIELD_REQUIRED");
+        }
+        if (request.getOrderBy() != null && !aliases.contains(request.getOrderBy().getMetric())) {
+            throw invalid("UNKNOWN_ORDER_METRIC");
+        }
 
-        if (request.getSubTableFieldId() != null && !access.source().hasSubtableFields()) throw invalid("UNSUPPORTED_SUBTABLE_STORAGE");
+        if (request.getSubTableFieldId() != null && !access.source().hasSubtableFields()) {
+            throw invalid("UNSUPPORTED_SUBTABLE_STORAGE");
+        }
         if (request.getRelationField() != null) {
             Field relation = use(catalog, used, request.getRelationField());
-            if (related == null || relation.schema().relatedFormKey() == null) throw invalid("INVALID_RELATION");
+            if (related == null || relation.schema().relatedFormKey() == null) {
+                throw invalid("INVALID_RELATION");
+            }
         }
         List<Object> parameters = new ArrayList<>();
         Map<String, String> names = new LinkedHashMap<>();
@@ -77,7 +102,8 @@ public final class AnalyticsSqlBuilder {
             Field field = entry.getValue();
             String value = rawValue(access, field, request.getSubTableFieldId(), parameters);
             // 与 CRM 表的文本排序规则一致，避免 MySQL 8 连接默认规则在关联权限比较时产生冲突。
-            rawColumns.add("nullif(cast(" + value + " as char character set utf8mb4) collate utf8mb4_general_ci, '') as " + name);
+            rawColumns.add("nullif(cast(" + value
+                    + " as char character set utf8mb4) collate utf8mb4_general_ci, '') as " + name);
         }
         String join = "";
         if (request.getSubTableFieldId() != null) {
@@ -96,13 +122,16 @@ public final class AnalyticsSqlBuilder {
         parameters.add(access.orgId());
 
         List<String> typedColumns = new ArrayList<>(List.of("id"));
-        if (request.getSubTableFieldId() != null) typedColumns.add("_row_id");
+        if (request.getSubTableFieldId() != null) {
+            typedColumns.add("_row_id");
+        }
         List<String> invalidValues = new ArrayList<>();
         for (var entry : used.entrySet()) {
             String name = names.get(entry.getKey());
             Field field = entry.getValue();
             if (field.schema().multiple()) {
-                String valid = "case when json_valid(" + name + ") then json_type(" + name + ") = 'ARRAY' else false end";
+                String valid = "case when json_valid(" + name + ") then json_type(" + name
+                        + ") = 'ARRAY' else false end";
                 typedColumns.add("case when " + valid + " then " + name + " else '[]' end as " + name);
                 invalidValues.add("case when " + name + " is not null and not (" + valid + ") then 1 else 0 end");
             } else if (field.schema().numeric() || field.schema().date()) {
@@ -139,13 +168,16 @@ public final class AnalyticsSqlBuilder {
 
         List<String> predicates = new ArrayList<>();
         for (Condition condition : request.getConditions()) {
-            predicates.add(condition(names.get(condition.getField()), used.get(condition.getField()), condition, zone, parameters,
+            predicates.add(condition(names.get(condition.getField()), used.get(condition.getField()), condition, zone,
+                    parameters,
                     related != null && condition.getField().equals(request.getRelationField())));
         }
         if (timeRange != null) {
             long from = instant(timeRange.getFrom(), zone);
             long to = instant(timeRange.getToExclusive(), zone);
-            if (from >= to) throw invalid("INVALID_TIME_RANGE");
+            if (from >= to) {
+                throw invalid("INVALID_TIME_RANGE");
+            }
             String name = names.get(timeRange.getField());
             predicates.add(name + " >= ? and " + name + " < ?");
             parameters.add(from);
@@ -155,9 +187,10 @@ public final class AnalyticsSqlBuilder {
             String name = names.get(request.getRelationField());
             String visible = "select id from analytics_related";
             Field relation = used.get(request.getRelationField());
-            predicates.add(related.empty() ? "1 = 0" : relation.schema().multiple()
-                    ? hasMember(name, "rel", "rel.value in (" + visible + ")")
-                    : name + " in (" + visible + ")");
+            predicates.add(related.empty() ? "1 = 0"
+                    : relation.schema().multiple()
+                            ? hasMember(name, "rel", "rel.value in (" + visible + ")")
+                            : name + " in (" + visible + ")");
         }
         List<String> aggregates = new ArrayList<>(groupNames);
         aggregates.add("count(*) as _records");
@@ -194,15 +227,19 @@ public final class AnalyticsSqlBuilder {
         // MySQL 8 合并含 JSON_TABLE 相关引用的 CTE 会报 1210 或错误返回空集；仅该语句禁用合并。
         // MariaDB 忽略此 MySQL 优化提示，继续使用原执行计划。
         String optimizerHint = used.values().stream().anyMatch(field -> field.schema().multiple())
-                ? "/*+ SET_VAR(optimizer_switch='derived_merge=off') */ " : "";
+                ? "/*+ SET_VAR(optimizer_switch='derived_merge=off') */ "
+                : "";
         String sql = "with analytics_visible as (" + access.boundSql().getSql() + "), "
                 + (related == null ? "" : "analytics_related as (" + related.boundSql().getSql() + "), ")
                 + "analytics_raw as (" + raw + "), "
                 + "analytics_typed as (select " + String.join(", ", typedColumns) + " from analytics_raw), "
                 + "analytics_bucketed as (select " + String.join(", ", buckets) + " from analytics_typed), "
-                + "analytics_quality as (select coalesce(sum(" + String.join(" + ", quality) + "), 0) as _invalid_total from analytics_bucketed), "
+                + "analytics_quality as (select coalesce(sum(" + String.join(" + ", quality)
+                + "), 0) as _invalid_total from analytics_bucketed), "
                 + "analytics_filtered as (select * from analytics_bucketed"
-                + (predicates.isEmpty() ? "" : " where " + predicates.stream().map(p -> "(" + p + ")").collect(Collectors.joining(" and "))) + "), "
+                + (predicates.isEmpty() ? ""
+                        : " where " + predicates.stream().map(p -> "(" + p + ")").collect(Collectors.joining(" and ")))
+                + "), "
                 + "analytics_expanded as (select distinct " + String.join(", ", expandedColumns)
                 + " from analytics_filtered" + String.join("", expansions) + expandedFilter + "), "
                 + "analytics_groups as (select " + String.join(", ", aggregates) + " from analytics_expanded"
@@ -217,7 +254,9 @@ public final class AnalyticsSqlBuilder {
 
     private static String rawValue(Access access, Field field, String subTableId, List<Object> parameters) {
         String value;
-        if (field.line() && "_rowId".equals(field.column())) return "concat(a.id, ':', r.row_id)";
+        if (field.line() && "_rowId".equals(field.column())) {
+            return "concat(a.id, ':', r.row_id)";
+        }
         if (field.department()) {
             value = "(select department_id from sys_organization_user where user_id = a.owner and organization_id = ?)";
             parameters.add(access.orgId());
@@ -226,7 +265,8 @@ public final class AnalyticsSqlBuilder {
         } else {
             String suffix = field.base().isBlob() ? "_field_blob" : "_field";
             // 标量子查询不使用 LIMIT/MAX；重复持久化值必须报错。
-            value = "(select field_value from `" + access.source().table() + suffix + "` where resource_id = a.id and field_id = ?";
+            value = "(select field_value from `" + access.source().table() + suffix
+                    + "` where resource_id = a.id and field_id = ?";
             parameters.add(field.line() ? field.base().idOrBusinessKey() : field.base().getId());
             if (field.line()) {
                 value += " and ref_sub_id = ? and row_id = r.row_id";
@@ -262,7 +302,8 @@ public final class AnalyticsSqlBuilder {
         String exponent = "(case when locate('e', lower(" + name + ")) > 0 then cast(substring_index(lower("
                 + name + "), 'e', -1) as signed) else 0 end)";
         // 在 CAST 前检查有效整数/小数位，不能让越界数被数据库悄悄舍入成可用结果。
-        return "case when " + name + " regexp '" + NUMBER_PATTERN + "' then (trim(leading '0' from " + digits + ") = '' or ("
+        return "case when " + name + " regexp '" + NUMBER_PATTERN + "' then (trim(leading '0' from " + digits
+                + ") = '' or ("
                 + "char_length(trim(leading '0' from " + digits + ")) - " + scale + " + " + exponent + " <= 45 and "
                 + scale + " - char_length(" + digits + ") + char_length(trim(trailing '0' from " + digits + ")) - "
                 + exponent + " <= 20)) else false end";
@@ -275,9 +316,14 @@ public final class AnalyticsSqlBuilder {
     }
 
     private static String bucket(String field, Granularity granularity, ZoneId zone, List<Object> parameters) {
-        if (granularity == Granularity.RAW) return field;
-        String timezone = zone.getRules().isFixedOffset() ? zone.getRules().getOffset(Instant.EPOCH).getId() : zone.getId();
-        if (timezone.equals("Z")) timezone = "+00:00";
+        if (granularity == Granularity.RAW) {
+            return field;
+        }
+        String timezone = zone.getRules().isFixedOffset() ? zone.getRules().getOffset(Instant.EPOCH).getId()
+                : zone.getId();
+        if (timezone.equals("Z")) {
+            timezone = "+00:00";
+        }
         // CONVERT_TZ 超出 MySQL 8.0.28+ (64 位) 的范围会原样返回，而非报错；必须先拦截，防止错分时间桶。
         String local = "case when " + field + " between 1000 and 32536771199999 then "
                 + "convert_tz(timestampadd(microsecond, cast(" + field
@@ -288,46 +334,60 @@ public final class AnalyticsSqlBuilder {
             return "concat(date_format(" + local + ", '%Y'), '-Q', quarter(" + local + "))";
         }
         String format = switch (granularity) {
-            case DAY -> "%Y-%m-%d";
-            case WEEK -> "%x-W%v";
-            case MONTH -> "%Y-%m";
-            case YEAR -> "%Y";
-            default -> throw invalid("INVALID_GRANULARITY");
+        case DAY -> "%Y-%m-%d";
+        case WEEK -> "%x-W%v";
+        case MONTH -> "%Y-%m";
+        case YEAR -> "%Y";
+        default -> throw invalid("INVALID_GRANULARITY");
         };
         return "date_format(" + local + ", '" + format + "')";
     }
 
     private static String condition(String name, Field field, Condition condition, ZoneId zone, List<Object> parameters,
-                                    boolean scopedRelation) {
+            boolean scopedRelation) {
         Operator op = condition.getOperator();
         Object value = condition.getValue();
         if (field.schema().multiple()) {
             // 条件与关联权限必须命中同一成员，不能由不可见 B 满足条件、可见 A 满足权限。
             String visible = scopedRelation ? "cv.value in (select id from analytics_related)" : "true";
             if (op == Operator.EMPTY || op == Operator.NOT_EMPTY) {
-                if (value != null) throw invalid("EMPTY_OPERATOR_HAS_VALUE");
+                if (value != null) {
+                    throw invalid("EMPTY_OPERATOR_HAS_VALUE");
+                }
                 return (op == Operator.EMPTY ? "not " : "") + hasMember(name, "cv", visible);
             }
             boolean negate = op == Operator.NOT_EQUALS || op == Operator.NOT_IN;
             List<?> values = op == Operator.IN || op == Operator.NOT_IN
-                    ? value instanceof List<?> list ? list : List.of() : value == null ? List.of() : List.of(value);
-            if (values.isEmpty() || values.size() > 100) throw invalid("INVALID_CONDITION_VALUES");
+                    ? value instanceof List<?> list ? list : List.of()
+                    : value == null ? List.of() : List.of(value);
+            if (values.isEmpty() || values.size() > 100) {
+                throw invalid("INVALID_CONDITION_VALUES");
+            }
             values.forEach(v -> parameters.add(value(field, v, zone)));
             return (negate ? "not " : "") + hasMember(name, "cv",
                     visible + " and cv.value in (" + String.join(",", Collections.nCopies(values.size(), "?")) + ")");
         }
         if (op == Operator.EMPTY || op == Operator.NOT_EMPTY) {
-            if (value != null) throw invalid("EMPTY_OPERATOR_HAS_VALUE");
+            if (value != null) {
+                throw invalid("EMPTY_OPERATOR_HAS_VALUE");
+            }
             return name + (op == Operator.EMPTY ? " is null" : " is not null");
         }
         if (op == Operator.IN || op == Operator.NOT_IN || op == Operator.BETWEEN) {
             if (!(value instanceof List<?> values) || values.isEmpty() || values.size() > 100
-                    || op == Operator.BETWEEN && values.size() != 2) throw invalid("INVALID_CONDITION_VALUES");
+                    || op == Operator.BETWEEN && values.size() != 2) {
+                throw invalid("INVALID_CONDITION_VALUES");
+            }
             List<Object> converted = values.stream().map(v -> value(field, v, zone)).toList();
-            if (op == Operator.BETWEEN && compare(converted.getFirst(), converted.getLast()) > 0) throw invalid("INVALID_BETWEEN_RANGE");
+            if (op == Operator.BETWEEN && compare(converted.getFirst(), converted.getLast()) > 0) {
+                throw invalid("INVALID_BETWEEN_RANGE");
+            }
             parameters.addAll(converted);
-            if (op == Operator.BETWEEN) return name + " between ? and ?";
-            String in = name + (op == Operator.IN ? " in (" : " not in (") + String.join(",", Collections.nCopies(values.size(), "?")) + ")";
+            if (op == Operator.BETWEEN) {
+                return name + " between ? and ?";
+            }
+            String in = name + (op == Operator.IN ? " in (" : " not in (")
+                    + String.join(",", Collections.nCopies(values.size(), "?")) + ")";
             return op == Operator.NOT_IN ? "(" + name + " is null or " + in + ")" : in;
         }
         Object converted = value(field, value, zone);
@@ -338,13 +398,13 @@ public final class AnalyticsSqlBuilder {
             return op == Operator.NOT_CONTAINS ? "(" + name + " is null or " + contains + ")" : contains;
         }
         String operator = switch (op) {
-            case EQUALS -> "=";
-            case NOT_EQUALS -> "<>";
-            case GT -> ">";
-            case GE -> ">=";
-            case LT -> "<";
-            case LE -> "<=";
-            default -> throw invalid("UNSUPPORTED_OPERATOR");
+        case EQUALS -> "=";
+        case NOT_EQUALS -> "<>";
+        case GT -> ">";
+        case GE -> ">=";
+        case LT -> "<";
+        case LE -> "<=";
+        default -> throw invalid("UNSUPPORTED_OPERATOR");
         };
         parameters.add(converted);
         String comparison = name + " " + operator + " ?";
@@ -356,24 +416,34 @@ public final class AnalyticsSqlBuilder {
     }
 
     private static Object value(Field field, Object value, ZoneId zone) {
-        if (!(value instanceof String || value instanceof Number) || value.toString().isEmpty() || value.toString().length() > 1000) {
+        if (!(value instanceof String || value instanceof Number) || value.toString().isEmpty()
+                || value.toString().length() > 1000) {
             throw invalid("INVALID_CONDITION_VALUE");
         }
         if (field.schema().date()) {
             if (value instanceof Number n) {
-                try { return new BigDecimal(n.toString()).longValueExact(); }
-                catch (ArithmeticException | NumberFormatException e) { throw invalid("INVALID_DATE_VALUE"); }
+                try {
+                    return new BigDecimal(n.toString()).longValueExact();
+                } catch (ArithmeticException | NumberFormatException e) {
+                    throw invalid("INVALID_DATE_VALUE");
+                }
             }
             return instant(value.toString(), zone);
         }
         if (field.schema().numeric()) {
             try {
                 BigDecimal number = new BigDecimal(value.toString()).stripTrailingZeros();
-                if (number.scale() > 20 || number.precision() - number.scale() > 45) throw invalid("NUMBER_OUT_OF_RANGE");
+                if (number.scale() > 20 || number.precision() - number.scale() > 45) {
+                    throw invalid("NUMBER_OUT_OF_RANGE");
+                }
                 return number;
-            } catch (NumberFormatException e) { throw invalid("INVALID_NUMBER_VALUE"); }
+            } catch (NumberFormatException e) {
+                throw invalid("INVALID_NUMBER_VALUE");
+            }
         }
-        if (!(value instanceof String)) throw invalid("STRING_VALUE_REQUIRED");
+        if (!(value instanceof String)) {
+            throw invalid("STRING_VALUE_REQUIRED");
+        }
         return value;
     }
 
@@ -382,14 +452,21 @@ public final class AnalyticsSqlBuilder {
             try {
                 return OffsetDateTime.parse(value).toInstant().toEpochMilli();
             } catch (DateTimeParseException ignored) {
-                if (value.length() == 10) return LocalDate.parse(value).atStartOfDay(zone).toInstant().toEpochMilli();
+                if (value.length() == 10) {
+                    return LocalDate.parse(value).atStartOfDay(zone).toInstant().toEpochMilli();
+                }
                 LocalDateTime local = LocalDateTime.parse(value);
                 List<ZoneOffset> offsets = zone.getRules().getValidOffsets(local);
-                if (offsets.size() != 1) throw invalid("AMBIGUOUS_LOCAL_TIME");
+                if (offsets.size() != 1) {
+                    throw invalid("AMBIGUOUS_LOCAL_TIME");
+                }
                 return local.toInstant(offsets.getFirst()).toEpochMilli();
             }
-        } catch (DateTimeException | ArithmeticException e) { throw invalid("INVALID_DATE_VALUE"); }
+        } catch (DateTimeException | ArithmeticException e) {
+            throw invalid("INVALID_DATE_VALUE");
+        }
     }
 
-    public record Plan(Access access, Access related, String sql, List<Object> parameters) { }
+    public record Plan(Access access, Access related, String sql, List<Object> parameters) {
+    }
 }

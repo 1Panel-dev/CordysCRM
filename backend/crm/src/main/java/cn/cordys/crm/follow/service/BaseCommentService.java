@@ -16,8 +16,8 @@ import cn.cordys.crm.follow.domain.CommentMention;
 import cn.cordys.crm.follow.dto.request.CommentAddRequest;
 import cn.cordys.crm.follow.dto.request.CommentPageRequest;
 import cn.cordys.crm.follow.dto.request.CommentUpdateRequest;
-import cn.cordys.crm.follow.dto.response.CommentResponse;
 import cn.cordys.crm.follow.dto.response.CommentMentionUserResponse;
+import cn.cordys.crm.follow.dto.response.CommentResponse;
 import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.domain.MessageTask;
@@ -75,8 +75,9 @@ public abstract class BaseCommentService<C extends Comment> {
 
         List<CommentResponse> comments = extCommentMapper.selectPage(
                 getTargetType().name(), request.getResourceId(), null, orgId);
-        List<CommentResponse> children = comments.isEmpty() ? List.of() : extCommentMapper.selectChildren(
-                getTargetType().name(), comments.stream().map(CommentResponse::getId).toList(), orgId);
+        List<CommentResponse> children = comments.isEmpty() ? List.of()
+                : extCommentMapper.selectChildren(
+                        getTargetType().name(), comments.stream().map(CommentResponse::getId).toList(), orgId);
 
         List<CommentResponse> allComments = new ArrayList<>(comments.size() + children.size());
         allComments.addAll(comments);
@@ -112,7 +113,8 @@ public abstract class BaseCommentService<C extends Comment> {
         saveMentionUsers(comment.getId(), request.getMentionedUserIds());
         updateCommentCount(request.getResourceId(), orgId);
 
-        sendNotifications(request.getResourceId(), request.getReplyToUserId(), request.getMentionedUserIds(), userId, orgId);
+        sendNotifications(request.getResourceId(), request.getReplyToUserId(), request.getMentionedUserIds(), userId,
+                orgId);
 
         // 设置日志上下文
         OperationLogContext.setContext(
@@ -120,12 +122,12 @@ public abstract class BaseCommentService<C extends Comment> {
                         .resourceId(comment.getResourceId())
                         .resourceName(Translator.get("permission.add") + Translator.get("log.comment"))
                         .modifiedValue(Map.of("comment", comment.getContent()))
-                        .build()
-        );
+                        .build());
         return comment;
     }
 
-    private void sendNotifications(String resourceId, String replyToUserId, List<String> mentionedUserIds, String userId, String orgId) {
+    private void sendNotifications(String resourceId, String replyToUserId, List<String> mentionedUserIds,
+            String userId, String orgId) {
         List<String> noticeMentionedUserIds = mergeNotificationUsers(mentionedUserIds, replyToUserId);
         CommentResourceInfo resourceInfo = getNoticeResource(resourceId, orgId);
         sendNotifications(resourceInfo, resourceId, noticeMentionedUserIds, userId, orgId);
@@ -140,7 +142,8 @@ public abstract class BaseCommentService<C extends Comment> {
         getCommentMapper().update(comment);
         replaceMentionUsers(comment.getId(), request.getMentionedUserIds());
 
-        sendNotifications(comment.getResourceId(), comment.getReplyToUserId(), request.getMentionedUserIds(), userId, orgId);
+        sendNotifications(comment.getResourceId(), comment.getReplyToUserId(), request.getMentionedUserIds(), userId,
+                orgId);
 
         // 设置日志上下文
         OperationLogContext.setContext(
@@ -149,8 +152,7 @@ public abstract class BaseCommentService<C extends Comment> {
                         .resourceName(Translator.get("permission.update") + Translator.get("log.comment"))
                         .originalValue(Map.of("comment", originContent))
                         .modifiedValue(Map.of("comment", comment.getContent()))
-                        .build()
-        );
+                        .build());
         return comment;
     }
 
@@ -175,8 +177,7 @@ public abstract class BaseCommentService<C extends Comment> {
                         .resourceId(comment.getResourceId())
                         .resourceName(Translator.get("permission.delete") + Translator.get("log.comment"))
                         .originalValue(Map.of("comment", originContent))
-                        .build()
-        );
+                        .build());
         return comment;
     }
 
@@ -185,7 +186,8 @@ public abstract class BaseCommentService<C extends Comment> {
         updateResourceCommentCount(resourceId, orgId, commentCount);
     }
 
-    protected CommentResourceInfo buildTargetInfo(String followType, String owner, String clueId, String customerId, String opportunityId) {
+    protected CommentResourceInfo buildTargetInfo(String followType, String owner, String clueId, String customerId,
+            String opportunityId) {
         if (Strings.CI.equals(followType, ModuleKey.CLUE.name())) {
             if (StringUtils.isNotBlank(clueId)) {
                 Clue clue = clueMapper.selectByPrimaryKey(clueId);
@@ -232,10 +234,11 @@ public abstract class BaseCommentService<C extends Comment> {
     }
 
     private void saveMentionUsers(String commentId, List<String> userIds) {
-        List<String> distinctUserIds = userIds == null ? List.of() : userIds.stream()
-                .filter(StringUtils::isNotBlank)
-                .distinct()
-                .toList();
+        List<String> distinctUserIds = userIds == null ? List.of()
+                : userIds.stream()
+                        .filter(StringUtils::isNotBlank)
+                        .distinct()
+                        .toList();
         if (distinctUserIds.isEmpty()) {
             return;
         }
@@ -276,7 +279,7 @@ public abstract class BaseCommentService<C extends Comment> {
     }
 
     private void sendNotifications(CommentResourceInfo resourceInfo, String resourceId, List<String> mentionedUserIds,
-                                   String operator, String orgId) {
+            String operator, String orgId) {
         Map<String, Object> resource = new HashMap<>();
         resource.put("name", resourceInfo.name());
         resource.put("resourceId", resourceId);

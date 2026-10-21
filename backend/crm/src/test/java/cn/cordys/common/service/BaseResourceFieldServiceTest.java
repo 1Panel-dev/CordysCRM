@@ -1,15 +1,15 @@
 package cn.cordys.common.service;
 
-import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.contract.service.ContractPaymentPlanFieldService;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.contract.service.ContractPaymentPlanFieldService;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormDataField;
 import cn.cordys.crm.form.domain.CustomFormDataFieldBlob;
@@ -44,8 +44,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,7 +70,8 @@ class BaseResourceFieldServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"SUB_PRODUCT", "SUB_PRICE", "SERIAL_NUMBER", "FORMULA", "STATISTIC", "ATTACHMENT", "PICTURE", "DIVIDER"})
+    @ValueSource(strings = { "SUB_PRODUCT", "SUB_PRICE", "SERIAL_NUMBER", "FORMULA", "STATISTIC", "ATTACHMENT",
+            "PICTURE", "DIVIDER" })
     void batchUpdateRejectsUnsupportedFieldTypes(String type) {
         InputField field = new InputField();
         field.setType(type);
@@ -78,15 +79,15 @@ class BaseResourceFieldServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"system", "readonly", "child", "reference"})
+    @ValueSource(strings = { "system", "readonly", "child", "reference" })
     void batchUpdateRejectsDisplayAndSubtableChildFields(String scope) {
         InputField field = new InputField();
         field.setType("INPUT");
         switch (scope) {
-            case "system" -> field.setSys(true);
-            case "readonly" -> field.setEditable(false);
-            case "child" -> field.setSubTableFieldId("subtable");
-            case "reference" -> field.setResourceFieldId("source");
+        case "system" -> field.setSys(true);
+        case "readonly" -> field.setEditable(false);
+        case "child" -> field.setSubTableFieldId("subtable");
+        case "reference" -> field.setResourceFieldId("source");
         }
         assertThrows(GenericException.class, () -> checkBatchField(field, "新值"));
     }
@@ -189,8 +190,7 @@ class BaseResourceFieldServiceTest {
                         "description-field", "新说明")),
                 true);
 
-        ArgumentCaptor<CustomFormDataFieldBlob> updated =
-                ArgumentCaptor.forClass(CustomFormDataFieldBlob.class);
+        ArgumentCaptor<CustomFormDataFieldBlob> updated = ArgumentCaptor.forClass(CustomFormDataFieldBlob.class);
         verify(blobMapper).update(updated.capture());
         assertEquals("blob-row-1", updated.getValue().getId());
         assertEquals("新说明", updated.getValue().getFieldValue());
@@ -268,16 +268,14 @@ class BaseResourceFieldServiceTest {
 
         List<Map<String, Object>> rows = List.of(
                 Map.of("id", "row-1"),
-                Map.of("id", "row-2", "child-field", "保留值")
-        );
+                Map.of("id", "row-2", "child-field", "保留值"));
         List<CustomFormDataField> savedFields = new ArrayList<>();
         service.saveSubFieldValue(
                 "record-1",
                 subtable,
                 new BaseModuleFieldValue("subtable-field", rows),
                 savedFields,
-                new ArrayList<>()
-        );
+                new ArrayList<>());
 
         assertEquals(2, savedFields.size());
         assertEquals("id", savedFields.get(0).getFieldId());

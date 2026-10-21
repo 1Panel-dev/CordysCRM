@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.notice.sender.insite;
 
-
 import cn.cordys.common.constants.TopicConstants;
 import cn.cordys.common.redis.MessagePublisher;
 import cn.cordys.common.uid.IDGenerator;
@@ -29,9 +28,9 @@ import java.util.Set;
 @Slf4j
 public class InSiteNoticeSender extends AbstractNoticeSender {
 
-    protected static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
-    protected static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
-    protected static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
+    protected static final String USER_PREFIX = "msg_user:"; // Redis 存储系统通知用户前缀
+    protected static final String MSG_PREFIX = "msg_content:"; // Redis 存储系统通知内容信息前缀
+    protected static final String USER_READ_PREFIX = "user_read:"; // Redis 存储用户读取前缀
     @Resource
     private BaseMapper<Notification> notificationBaseMapper;
     @Resource
@@ -39,8 +38,10 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
     @Resource
     private MessagePublisher messagePublisher;
 
-    public void sendAnnouncement(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel, String context, String subjectText) {
-        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
+    public void sendAnnouncement(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel, String context,
+            String subjectText) {
+        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(),
+                noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             // 日志记录没有接收者
             log.info("系统内没有接收者");
@@ -52,7 +53,8 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             Map<String, Object> paramMap = noticeModel.getParamMap();
             Notification notification = new Notification();
             notification.setId(id);
-            notification.setSubject(StringUtils.isBlank(subjectText) ? Translator.get("notice.default.subject") : subjectText);
+            notification.setSubject(
+                    StringUtils.isBlank(subjectText) ? Translator.get("notice.default.subject") : subjectText);
             notification.setOrganizationId(messageDetailDTO.getOrganizationId());
             notification.setOperator(noticeModel.getOperator());
             notification.setOperation(noticeModel.getEvent());
@@ -100,7 +102,6 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             noticeRedisMessage.setNoticeType(NotificationConstants.Type.SYSTEM_NOTICE.toString());
             messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
         });
-
     }
 
     @Override

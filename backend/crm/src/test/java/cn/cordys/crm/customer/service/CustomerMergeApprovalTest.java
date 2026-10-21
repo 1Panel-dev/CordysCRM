@@ -104,6 +104,7 @@ class CustomerMergeApprovalTest {
         when(approvalFlowService.filterResourcesWithPermission(any(), any(), any(), any(), any(), any()))
                 .thenAnswer(invocation -> idsOf(invocation.getArgument(1)));
     }
+
     @AfterEach
     void tearDown() {
         translator.close();
@@ -131,7 +132,8 @@ class CustomerMergeApprovalTest {
         doReturn(List.of("customer-1", "customer-2")).when(approvalFlowService)
                 .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
 
-        GenericException exception = assertThrows(GenericException.class, () -> service.merge(request, USER_ID, ORG_ID));
+        GenericException exception = assertThrows(GenericException.class,
+                () -> service.merge(request, USER_ID, ORG_ID));
         // 提示要指向"这几个客户里有的合不了", 而不是笼统的没有操作权限 —— 用户得知道去重挑
         assertEquals("no.customer.merge.permission", exception.getMessage());
 

@@ -1,6 +1,5 @@
 package cn.cordys.crm.order.service;
 
-
 import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
@@ -47,22 +46,20 @@ public class OrderStageService {
     @Resource
     private UserViewService userViewService;
 
-
     /**
      * 订单状态配置列表
-     *
-     * @param orgId
-     * @return
      */
     public StageConfigsResponse getStageConfigList(String orgId) {
         StageConfigsResponse stageConfigListResponse = new StageConfigsResponse();
         List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
-        List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, FormKey.ORDER.getKey());
+        List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId,
+                FormKey.ORDER.getKey());
         buildList(stageConfigList, stageConfigListResponse, advancedConfigs, orgId);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs, String orgId) {
+    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response,
+            List<StageAdvancedConfig> advancedConfigs, String orgId) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
@@ -72,7 +69,8 @@ public class OrderStageService {
             response.setCirculationType(first.getCirculationType());
         }
         if (CollectionUtils.isNotEmpty(advancedConfigs)) {
-            Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream().collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
+            Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream()
+                    .collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
             List<CirculationSetting> configs = new ArrayList<>();
             List<CirculationFieldValue> allConfigs = new ArrayList<>();
             originIdMaps.forEach((key, value) -> {
@@ -83,8 +81,9 @@ public class OrderStageService {
                     Target target = new Target();
                     target.setTargetId(item.getTargetId());
                     target.setEnable(item.getEnable());
-                    List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
-                    });
+                    List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(),
+                            new TypeReference<List<CirculationFieldValue>>() {
+                            });
                     target.setCirculationFieldValues(circulationFieldValues);
                     targetList.add(target);
                     allConfigs.addAll(circulationFieldValues);
@@ -97,8 +96,7 @@ public class OrderStageService {
             Map<String, CirculationSetting> configMap = configs.stream()
                     .collect(Collectors.toMap(
                             CirculationSetting::getOriginId,
-                            Function.identity()
-                    ));
+                            Function.identity()));
 
             List<CirculationSetting> sortedConfigs = stageConfigList.stream()
                     .map(stage -> configMap.get(stage.getId()))
@@ -117,20 +115,14 @@ public class OrderStageService {
                     .collect(Collectors.toList());
 
             if (CollectionUtils.isNotEmpty(combinedConditions)) {
-                response.setOptionMap(userViewService.buildOptionMap(orgId, FormKey.ORDER.getKey(), combinedConditions));
+                response.setOptionMap(
+                        userViewService.buildOptionMap(orgId, FormKey.ORDER.getKey(), combinedConditions));
             }
         }
-
     }
-
 
     /**
      * 添加订单状态配置
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
     public String addStageConfig(StageAddRequest request, String userId, String orgId) {
@@ -175,13 +167,10 @@ public class OrderStageService {
                 .build());
 
         return stageConfig.getId();
-
     }
 
     /**
      * 配置数量校验
-     *
-     * @param orgId
      */
     private void checkConfigCount(String orgId) {
         if (extOrderStageConfigMapper.countStageConfig(orgId) > 15) {
@@ -189,21 +178,17 @@ public class OrderStageService {
         }
     }
 
-
     /**
      * 删除
-     *
-     * @param id
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String orgId) {
         OrderStageConfig stageConfig = deletePreCheck(id, orgId);
         orderStageConfigMapper.deleteByPrimaryKey(id);
         // 设置操作对象
-        OperationLogContext.setResourceName(Translator.get("order_stage_setting").concat(":").concat(stageConfig.getName()));
+        OperationLogContext
+                .setResourceName(Translator.get("order_stage_setting").concat(":").concat(stageConfig.getName()));
     }
-
 
     private OrderStageConfig deletePreCheck(String id, String orgId) {
         OrderStageConfig stageConfig = orderStageConfigMapper.selectByPrimaryKey(id);
@@ -213,12 +198,8 @@ public class OrderStageService {
         return stageConfig;
     }
 
-
     /**
      * 更新订单流阶段回退设置
-     *
-     * @param request
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void updateRollBack(StageRollBackRequest request, String orgId) {
@@ -228,8 +209,10 @@ public class OrderStageService {
         extOrderStageConfigMapper.updateRollBack(request, orgId);
 
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("afootRollBack", Translator.get("log.enable.".concat(stageConfigList.getFirst().getAfootRollBack().toString())));
-        originalVal.put("endRollBack", Translator.get("log.enable.".concat(stageConfigList.getFirst().getEndRollBack().toString())));
+        originalVal.put("afootRollBack",
+                Translator.get("log.enable.".concat(stageConfigList.getFirst().getAfootRollBack().toString())));
+        originalVal.put("endRollBack",
+                Translator.get("log.enable.".concat(stageConfigList.getFirst().getEndRollBack().toString())));
         Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("afootRollBack", Translator.get("log.enable.".concat(request.getAfootRollBack().toString())));
         modifiedVal.put("endRollBack", Translator.get("log.enable.".concat(request.getEndRollBack().toString())));
@@ -241,12 +224,8 @@ public class OrderStageService {
                 .build());
     }
 
-
     /**
      * 更新配置
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void update(StageUpdateRequest request, String userId) {
@@ -266,16 +245,11 @@ public class OrderStageService {
                         .resourceName(Translator.get("order_stage_setting"))
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
-
 
     /**
      * 排序
-     *
-     * @param ids
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void sort(List<String> ids, String orgId) {
@@ -299,7 +273,6 @@ public class OrderStageService {
                         .resourceName(Translator.get("order_stage_setting"))
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
 }

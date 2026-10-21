@@ -60,7 +60,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
         differences.forEach(differ -> {
             if (isLinkFormKey(differ.getColumn()) && differ.getColumn().split(LINK_KEY_SPILT).length == 2) {
                 String[] splitKey = differ.getColumn().split(LINK_KEY_SPILT);
-                differ.setColumnName(Translator.get("log." + splitKey[0] + ".link") + "-" + Translator.get(splitKey[1].toLowerCase()));
+                differ.setColumnName(Translator.get("log." + splitKey[0] + ".link") + "-"
+                        + Translator.get(splitKey[1].toLowerCase()));
                 handleLinkFieldsLogDetail(differ);
             }
             if (Strings.CS.equals("module.switch", differ.getColumn())) {
@@ -102,7 +103,6 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 }
             }
 
-
             if (Strings.CI.equalsAny(differ.getColumn(),
                     "rate", "stage", "contractStage", "orderStage", "afootRollBack", "endRollBack", "name")) {
                 differ.setColumnName(Translator.get("log.".concat(differ.getColumn())));
@@ -131,20 +131,26 @@ public class SystemModuleLogService extends BaseModuleLogService {
             if (Strings.CS.equalsAny(differ.getColumn(), "orderSetting", "contractSetting", "opportunitySetting")) {
                 differ.setColumnName(Translator.get("advanced_circulation_setting"));
                 switch (differ.getColumn()) {
-                    case "orderSetting" -> {
-                        differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.ORDER.getKey())));
-                        differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.ORDER.getKey()).toString()));
-                    }
-                    case "contractSetting" -> {
-                        differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.CONTRACT.getKey())));
-                        differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.CONTRACT.getKey()).toString()));
-                    }
-                    case "opportunitySetting" -> {
-                        differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.OPPORTUNITY.getKey())));
-                        differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.OPPORTUNITY.getKey()).toString()));
-                    }
-                    default -> {
-                    }
+                case "orderSetting" -> {
+                    differ.setNewValueName(
+                            String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.ORDER.getKey())));
+                    differ.setOldValueName(String.join(", ",
+                            handleConfig(differ.getOldValue(), orgId, FormKey.ORDER.getKey()).toString()));
+                }
+                case "contractSetting" -> {
+                    differ.setNewValueName(
+                            String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.CONTRACT.getKey())));
+                    differ.setOldValueName(String.join(", ",
+                            handleConfig(differ.getOldValue(), orgId, FormKey.CONTRACT.getKey()).toString()));
+                }
+                case "opportunitySetting" -> {
+                    differ.setNewValueName(
+                            String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.OPPORTUNITY.getKey())));
+                    differ.setOldValueName(String.join(", ",
+                            handleConfig(differ.getOldValue(), orgId, FormKey.OPPORTUNITY.getKey()).toString()));
+                }
+                default -> {
+                }
                 }
             }
 
@@ -153,7 +159,6 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setNewValueName(differ.getNewValue());
                 differ.setOldValueName(differ.getOldValue());
             }
-
         });
 
         differences.removeIf(differ -> differ.getOldValueName() == null && differ.getNewValueName() == null);
@@ -206,7 +211,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
     private String optionName(OptionDTO option) {
         return option.getName() != null && !option.getName().isBlank()
-                ? option.getName() : Objects.toString(option.getId(), "");
+                ? option.getName()
+                : Objects.toString(option.getId(), "");
     }
 
     private List<String> handleConfig(Object value, String orgId, String formKey) {
@@ -215,9 +221,10 @@ public class SystemModuleLogService extends BaseModuleLogService {
             try {
                 List<StageAdvancedConfig> values = JSON.parseArray(
                         JSON.toJSONString(value),
-                        StageAdvancedConfig.class
-                );
-                List<StageAdvancedConfig> list = values.stream().filter(valueConfig -> !Strings.CI.equals(valueConfig.getOriginId(), valueConfig.getTargetId())).toList();
+                        StageAdvancedConfig.class);
+                List<StageAdvancedConfig> list = values.stream()
+                        .filter(valueConfig -> !Strings.CI.equals(valueConfig.getOriginId(), valueConfig.getTargetId()))
+                        .toList();
 
                 if (CollectionUtils.isNotEmpty(list)) {
                     if (Strings.CI.equals(formKey, FormKey.ORDER.getKey())) {
@@ -229,39 +236,53 @@ public class SystemModuleLogService extends BaseModuleLogService {
                     }
                     fields = moduleFormCacheService.getBusinessFormConfig(formKey, orgId).getFields();
 
-                    Map<String, String> configNameMap = stageConfigList.stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+                    Map<String, String> configNameMap = stageConfigList.stream()
+                            .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
                     list.forEach(item -> {
-                        String stageName = configNameMap.getOrDefault(item.getOriginId(), "") + " - " + configNameMap.getOrDefault(item.getTargetId(), "")
+                        String stageName = configNameMap.getOrDefault(item.getOriginId(), "") + " - "
+                                + configNameMap.getOrDefault(item.getTargetId(), "")
                                 + ": " + Translator.get("log.enable." + String.valueOf(item.getEnable()));
-                        List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
-                        });
+                        List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(),
+                                new TypeReference<List<CirculationFieldValue>>() {
+                                });
                         if (CollectionUtils.isNotEmpty(circulationFieldValues)) {
                             String title = Translator.get("advanced_circulation_condition") + "\n" +
-                                    Translator.get("advanced_circulation_condition_field") + "|" + Translator.get("advanced_circulation_condition_type") + "|" + Translator.get("advanced_circulation_condition_default_value") + "|" + Translator.get("isRequired");
+                                    Translator.get("advanced_circulation_condition_field") + "|"
+                                    + Translator.get("advanced_circulation_condition_type") + "|"
+                                    + Translator.get("advanced_circulation_condition_default_value") + "|"
+                                    + Translator.get("isRequired");
                             String data = "";
                             String dateDefaultType = "";
-                            try{
+                            try {
                                 for (CirculationFieldValue fieldValue : circulationFieldValues) {
-                                    BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldValue.getFieldId())).findFirst().orElse(null);
+                                    BaseField baseField = fields.stream()
+                                            .filter(field -> Strings.CI.equals(field.getId(), fieldValue.getFieldId()))
+                                            .findFirst().orElse(null);
                                     if (baseField != null) {
                                         if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
                                             switch (fieldValue.getDateDefaultType()) {
-                                                case "custom" -> dateDefaultType = Translator.get("CUSTOM");
-                                                case "current" -> dateDefaultType = Translator.get("CURRENT");
-                                                default -> {
-                                                }
+                                            case "custom" -> dateDefaultType = Translator.get("CUSTOM");
+                                            case "current" -> dateDefaultType = Translator.get("CURRENT");
+                                            default -> {
+                                            }
                                             }
                                         }
                                         String s = baseField.getName() + "|" +
                                                 Translator.get(fieldValue.getValueType()) + "|" + dateDefaultType +
-                                                ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "|" +
+                                                ((Strings.CI.equals(fieldValue.getValueType(),
+                                                        CirculationFieldValueTypeEnum.FIXED_VALUE.name())
+                                                        && (fieldValue.getFieldValue() != null))
+                                                                ? transformFieldValue(baseField,
+                                                                        fieldValue.getFieldValue())
+                                                                : "")
+                                                + "|" +
                                                 Translator.get(fieldValue.getRequired().toString());
                                         data = (data + s) + "\n";
                                     }
                                 }
                                 newValuesList.add(stageName + "\n" + title + "\n" + data);
-                            }catch (Exception e) {
+                            } catch (Exception e) {
                                 log.error("handleConfig error: ", e);
                                 newValuesList.add(stageName + "\n");
                             }
@@ -270,7 +291,6 @@ public class SystemModuleLogService extends BaseModuleLogService {
                         }
                     });
                 }
-
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 //return newValuesList;
@@ -284,7 +304,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
         if (value != null) {
             try {
                 List<Map<String, Object>> newValues = (List<Map<String, Object>>) value;
-                newValuesList = newValues.stream().filter(newValue -> newValue.get("enable") != null && (Boolean) newValue.get("enable"))
+                newValuesList = newValues.stream()
+                        .filter(newValue -> newValue.get("enable") != null && (Boolean) newValue.get("enable"))
                         .map(newValue -> (String) newValue.get("text"))
                         .toList();
             } catch (Exception e) {
@@ -329,24 +350,25 @@ public class SystemModuleLogService extends BaseModuleLogService {
                     .toList());
         }
         switch (differ.getColumn()) {
-            case SearchModuleEnum.SEARCH_ADVANCED_CLUE -> differ.setColumnName(Translator.get("clue"));
-            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER -> differ.setColumnName(Translator.get("customer"));
-            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT -> differ.setColumnName(Translator.get("contact"));
-            case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC -> differ.setColumnName(Translator.get("customer_pool"));
-            case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL -> differ.setColumnName(Translator.get("clue_pool"));
-            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY -> differ.setColumnName(Translator.get("opportunity"));
+        case SearchModuleEnum.SEARCH_ADVANCED_CLUE -> differ.setColumnName(Translator.get("clue"));
+        case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER -> differ.setColumnName(Translator.get("customer"));
+        case SearchModuleEnum.SEARCH_ADVANCED_CONTACT -> differ.setColumnName(Translator.get("contact"));
+        case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC -> differ.setColumnName(Translator.get("customer_pool"));
+        case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL -> differ.setColumnName(Translator.get("clue_pool"));
+        case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY -> differ.setColumnName(Translator.get("opportunity"));
         }
     }
 
     private void handlePoolOwnerOrMember(JsonDifferenceDTO differ) {
-
         if (differ.getOldValue() != null) {
-            List<ScopeNameDTO> oldScope = userExtendService.getScope(JSON.parseArray((String) differ.getOldValue(), String.class));
+            List<ScopeNameDTO> oldScope = userExtendService
+                    .getScope(JSON.parseArray((String) differ.getOldValue(), String.class));
             differ.setOldValueName(JSON.toJSONString(oldScope.stream().map(ScopeNameDTO::getName).toList()));
         }
 
         if (differ.getNewValue() != null) {
-            List<ScopeNameDTO> newScope = userExtendService.getScope(JSON.parseArray((String) differ.getNewValue(), String.class));
+            List<ScopeNameDTO> newScope = userExtendService
+                    .getScope(JSON.parseArray((String) differ.getNewValue(), String.class));
             differ.setNewValue(JSON.toJSONString(newScope.stream().map(ScopeNameDTO::getName).toList()));
         }
     }

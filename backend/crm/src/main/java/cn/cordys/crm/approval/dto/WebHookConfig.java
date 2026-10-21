@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class WebHookConfig {
 
-
     @Schema(description = "是否启用")
     private Boolean webHookEnable;
 
@@ -24,7 +23,6 @@ public class WebHookConfig {
 
     @Schema(description = "说明")
     private String webHookDescribe;
-
 
     public WebHookConfig() {
     }

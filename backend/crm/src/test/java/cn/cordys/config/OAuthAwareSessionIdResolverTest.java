@@ -37,13 +37,11 @@ class OAuthAwareSessionIdResolverTest {
         resolver.setSessionId(
                 new MockHttpServletRequest("GET", "/sso/callback/oauth/state/wecom"),
                 response,
-                "pre-auth-session"
-        );
+                "pre-auth-session");
         String cookiePair = response.getHeader(HttpHeaders.SET_COOKIE).split(";", 2)[0];
         Cookie cookie = new Cookie(
                 OAuthAwareSessionIdResolver.OAUTH_SESSION_COOKIE,
-                cookiePair.split("=", 2)[1]
-        );
+                cookiePair.split("=", 2)[1]);
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/sso/callback/oauth/wecom");
         request.setCookies(cookie);
 
@@ -64,15 +62,13 @@ class OAuthAwareSessionIdResolverTest {
         resolver.setSessionId(
                 new MockHttpServletRequest("GET", "/sso/callback/oauth/state/wecom"),
                 response,
-                "pre-auth-session"
-        );
+                "pre-auth-session");
         String cookiePair = response.getHeader(HttpHeaders.SET_COOKIE).split(";", 2)[0];
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/sso/callback/oauth/wecom");
         request.addHeader(SessionConstants.HEADER_TOKEN, "old-auth-session");
         request.setCookies(new Cookie(
                 OAuthAwareSessionIdResolver.OAUTH_SESSION_COOKIE,
-                cookiePair.split("=", 2)[1]
-        ));
+                cookiePair.split("=", 2)[1]));
 
         assertEquals(List.of("pre-auth-session"), resolver.resolveSessionIds(request));
     }

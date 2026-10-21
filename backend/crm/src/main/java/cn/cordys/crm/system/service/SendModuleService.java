@@ -32,10 +32,10 @@ public class SendModuleService {
 
     public List<String> getNoticeModules(String organizationId) {
         List<String> enabledModules = moduleMapper.selectListByLambda(
-                        new LambdaQueryWrapper<Module>()
-                                .eq(Module::getOrganizationId, organizationId)
-                                .eq(Module::getEnable, true)
-                ).stream()
+                new LambdaQueryWrapper<Module>()
+                        .eq(Module::getOrganizationId, organizationId)
+                        .eq(Module::getEnable, true))
+                .stream()
                 .map(Module::getModuleKey).distinct()
                 .toList();
 

@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-01-03 12:01:54
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -94,13 +93,8 @@ public class BaseService {
     @Resource
     private ExtApprovalInstanceMapper extApprovalInstanceMapper;
 
-
     /**
      * 设置创建人和更新人名称
-     *
-     * @param object
-     * @param <T>
-     * @return
      */
     public <T> T setCreateAndUpdateUserName(T object) {
         return setCreateAndUpdateUserName(List.of(object)).getFirst();
@@ -108,17 +102,12 @@ public class BaseService {
 
     /**
      * 设置创建人和更新人名称
-     *
-     * @param list
-     * @param <T>
-     * @return
      */
     public <T> List<T> setCreateAndUpdateUserName(List<T> list) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         try {
-
             Class<?> clazz = list.getFirst().getClass();
             Method setCreateUserName = clazz.getMethod("setCreateUserName", String.class);
             Method setUpdateUserName = clazz.getMethod("setUpdateUserName", String.class);
@@ -150,10 +139,6 @@ public class BaseService {
 
     /**
      * 设置创建人、更新人和责任人名称
-     *
-     * @param object
-     * @param <T>
-     * @return
      */
     public <T> T setCreateUpdateOwnerUserName(T object) {
         return setCreateUpdateOwnerUserName(List.of(object)).getFirst();
@@ -161,10 +146,6 @@ public class BaseService {
 
     /**
      * 设置创建人、更新人和责任人名称
-     *
-     * @param object
-     * @param <T>
-     * @return
      */
     public <T> T setCreateAndUpdateOwnerUserName(T object) {
         return setCreateUpdateOwnerUserName(List.of(object)).getFirst();
@@ -172,17 +153,12 @@ public class BaseService {
 
     /**
      * 设置创建人、更新人和责任人名称
-     *
-     * @param list
-     * @param <T>
-     * @return
      */
     public <T> List<T> setCreateUpdateOwnerUserName(List<T> list) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         try {
-
             Class<?> clazz = list.getFirst().getClass();
             Method setCreateUserName = clazz.getMethod("setCreateUserName", String.class);
             Method setUpdateUserName = clazz.getMethod("setUpdateUserName", String.class);
@@ -200,7 +176,6 @@ public class BaseService {
 
             Map<String, String> userNameMap = getUserNameMap(userIds);
             for (T item : list) {
-
                 String createUserId = (String) getCreateUser.invoke(item);
                 String updateUserId = (String) getUpdateUser.invoke(item);
                 String ownerId = (String) getOwner.invoke(item);
@@ -221,9 +196,6 @@ public class BaseService {
 
     /**
      * 根据用户ID列表，获取用户ID和名称的映射
-     *
-     * @param userIds
-     * @return
      */
     public Map<String, String> getUserNameMap(List<String> userIds) {
         if (CollectionUtils.isEmpty(userIds)) {
@@ -247,9 +219,6 @@ public class BaseService {
 
     /**
      * 根据用户ID列表，获取用户ID和名称的映射
-     *
-     * @param userIds
-     * @return
      */
     public Map<String, String> getUserNameMap(Set<String> userIds) {
         return getUserNameMap(new ArrayList<>(userIds));
@@ -281,12 +250,8 @@ public class BaseService {
                 .collect(Collectors.toMap(UserDeptDTO::getUserId, Function.identity()));
     }
 
-
     /**
      * 获取联系人ID和名称的映射
-     *
-     * @param contactIds
-     * @return
      */
     public Map<String, String> getContactMap(List<String> contactIds) {
         if (CollectionUtils.isEmpty(contactIds)) {
@@ -296,7 +261,6 @@ public class BaseService {
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
-
 
     public Map<String, UserResponse> getUserDepAndPhoneByUserIds(List<String> ownerIds, String orgId) {
         if (CollectionUtils.isEmpty(ownerIds)) {
@@ -312,9 +276,7 @@ public class BaseService {
         if (moduleFields != null) {
             moduleFields.stream()
                     .filter(BaseModuleFieldValue::valid)
-                    .forEach(field ->
-                            resourceLog.put(field.getFieldId(), field.getFieldValue())
-                    );
+                    .forEach(field -> resourceLog.put(field.getFieldId(), field.getFieldValue()));
         }
 
         writeAddLogContext(resource, resourceLog);
@@ -323,9 +285,9 @@ public class BaseService {
     /**
      * 新增日志, 替换资源名称
      *
+     * @param <T>          资源类型
      * @param resource     资源信息
      * @param moduleFields 自定义字段
-     * @param <T>          资源类型
      */
     public <T> void handleAddLogWithResourceName(T resource, List<BaseModuleFieldValue> moduleFields) {
         Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
@@ -333,9 +295,7 @@ public class BaseService {
         if (moduleFields != null) {
             moduleFields.stream()
                     .filter(BaseModuleFieldValue::valid)
-                    .forEach(field ->
-                            resourceLog.put(field.getFieldId(), field.getFieldValue())
-                    );
+                    .forEach(field -> resourceLog.put(field.getFieldId(), field.getFieldValue()));
         }
 
         writeAddLogContextWithResourceName(resource, resourceLog);
@@ -346,7 +306,6 @@ public class BaseService {
             List<BaseModuleFieldValue> moduleFields,
             String subTableKeyName,
             ModuleFormConfigDTO moduleFormConfigDTO) {
-
         Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
         Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
         if (moduleFields != null) {
@@ -355,12 +314,12 @@ public class BaseService {
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(resourceLog, validFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
+            fillResourceLog(resourceLog, validFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey,
+                    moduleFormConfigDTO);
         }
 
         writeAddLogContextWithResourceName(resource, resourceLog);
     }
-
 
     /**
      * 写入操作日志上下文
@@ -372,8 +331,7 @@ public class BaseService {
                     LogContextInfo.builder()
                             .resourceId((String) idGetter.invoke(resource))
                             .modifiedValue(resourceLog)
-                            .build()
-            );
+                            .build());
         } catch (Exception e) {
             throw new GenericException(e);
         }
@@ -382,9 +340,9 @@ public class BaseService {
     /**
      * 写入操作日志上下文，替换资源名称 (参数资源名存在占位符)
      *
+     * @param <T>         资源类型
      * @param resource    资源
      * @param resourceLog 日志信息
-     * @param <T>         资源类型
      */
     private <T> void writeAddLogContextWithResourceName(T resource, Map<String, Object> resourceLog) {
         try {
@@ -395,8 +353,7 @@ public class BaseService {
                             .resourceId((String) idGetter.invoke(resource))
                             .resourceName((String) nameGetter.invoke(resource))
                             .modifiedValue(resourceLog)
-                            .build()
-            );
+                            .build());
         } catch (Exception e) {
             throw new GenericException(e);
         }
@@ -409,7 +366,6 @@ public class BaseService {
             List<BaseModuleFieldValue> modifiedResourceFields,
             String id,
             String name) {
-
         Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
 
@@ -460,13 +416,11 @@ public class BaseService {
                             .resourceName(name)
                             .originalValue(originResourceLog)
                             .modifiedValue(modifiedResourceLog)
-                            .build()
-            );
+                            .build());
         } catch (Exception e) {
             throw new GenericException(e);
         }
     }
-
 
     public <T> void handleUpdateLogWithSubTable(
             T originResource,
@@ -477,7 +431,6 @@ public class BaseService {
             String name,
             String subTableKeyName,
             ModuleFormConfigDTO moduleFormConfigDTO) {
-
         Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
         Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
@@ -491,7 +444,8 @@ public class BaseService {
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(originResourceLog, validFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
+            fillResourceLog(originResourceLog, validFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName,
+                    subRefKey, moduleFormConfigDTO);
         }
 
         if (CollectionUtils.isNotEmpty(modifiedResourceFields)) {
@@ -500,7 +454,8 @@ public class BaseService {
                     .filter(BaseModuleFieldValue::valid)
                     .toList();
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
-            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
+            fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName,
+                    subRefKey, moduleFormConfigDTO);
         }
 
         // 将附件字段中的附件ID替换为附件名称
@@ -514,8 +469,7 @@ public class BaseService {
                             .resourceName(name)
                             .originalValue(originResourceLog)
                             .modifiedValue(modifiedResourceLog)
-                            .build()
-            );
+                            .build());
         } catch (Exception e) {
             throw new GenericException(e);
         }
@@ -541,20 +495,24 @@ public class BaseService {
             }
 
             // 子表字段
-            List<Map<String, Object>> subTableList =
-                    JSON.parseArray(JSON.toJSONString(field.getFieldValue()), new TypeReference<>() {
+            List<Map<String, Object>> subTableList = JSON.parseArray(JSON.toJSONString(field.getFieldValue()),
+                    new TypeReference<>() {
                     });
             if (CollectionUtils.isEmpty(subTableList)) {
                 return;
             }
-            AtomicReference<String> subTableName = new AtomicReference<>(moduleFormConfigDTO.getFields().stream().filter(BaseField::isSubField).filter(subField -> subField.getId().equals(fieldId)).findFirst().map(BaseField::getName).orElse(subTableKeyName));
+            AtomicReference<String> subTableName = new AtomicReference<>(moduleFormConfigDTO.getFields().stream()
+                    .filter(BaseField::isSubField).filter(subField -> subField.getId().equals(fieldId)).findFirst()
+                    .map(BaseField::getName).orElse(subTableKeyName));
             if (Strings.CI.equals(fieldId, "products")) {
                 subTableKeyMap.forEach((key, value) -> {
-                    if (StringUtils.isNotBlank(value) && Strings.CI.equals(value, fieldId))
-                        subTableName.set(moduleFormConfigDTO.getFields().stream().filter(BaseField::isSubField).filter(subField -> subField.getId().equals(key)).findFirst().map(BaseField::getName).orElse(subTableKeyName));
+                    if (StringUtils.isNotBlank(value) && Strings.CI.equals(value, fieldId)) {
+                        subTableName.set(moduleFormConfigDTO.getFields().stream().filter(BaseField::isSubField)
+                                .filter(subField -> subField.getId().equals(key)).findFirst().map(BaseField::getName)
+                                .orElse(subTableKeyName));
+                    }
                 });
             }
-
 
             int size = subTableList.size();
             for (int i = 0; i < size; i++) {
@@ -566,7 +524,8 @@ public class BaseService {
                         if (!fieldNameMap.containsKey(key) || subRefKey.contains(key)) {
                             return;
                         }
-                        resourceLog.put(finalSubTableName1 + "-" + fieldNameMap.get(key) + "-" + Translator.get("row") + (finalI + 1) + "-" + key, value);
+                        resourceLog.put(finalSubTableName1 + "-" + fieldNameMap.get(key) + "-" + Translator.get("row")
+                                + (finalI + 1) + "-" + key, value);
                     });
                 } else {
                     String finalSubTableName = subTableName.get();
@@ -581,11 +540,11 @@ public class BaseService {
         });
     }
 
-
     /**
      * 字段 ID → 字段名称 映射表
      */
-    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields, ModuleFormConfigDTO moduleFormConfigDTO) {
+    private Map<String, String> getFieldNameMap(List<BaseModuleFieldValue> fields,
+            ModuleFormConfigDTO moduleFormConfigDTO) {
         List<String> fieldIds = new ArrayList<>(fields.stream()
                 .map(BaseModuleFieldValue::getFieldId)
                 .distinct()
@@ -602,11 +561,11 @@ public class BaseService {
                 if (field.isSubField()) {
                     if (field instanceof SubField objectSubField) {
                         objectSubField.getSubFields().forEach(subField -> {
-                            nameMap.put(StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey() : subField.getId(), subField.getName());
+                            nameMap.put(StringUtils.isNotBlank(subField.getBusinessKey()) ? subField.getBusinessKey()
+                                    : subField.getId(), subField.getName());
                         });
                     }
                 }
-
             }
         }
         return nameMap;
@@ -622,7 +581,6 @@ public class BaseService {
             }
         }
         return subTableIdKeyMap;
-
     }
 
     /**
@@ -645,12 +603,8 @@ public class BaseService {
         return Collections.emptySet();
     }
 
-
     /**
      * 客户id与名称映射
-     *
-     * @param customerIds
-     * @return
      */
     public Map<String, String> getCustomerMap(List<String> customerIds) {
         if (CollectionUtils.isEmpty(customerIds)) {
@@ -663,9 +617,6 @@ public class BaseService {
 
     /**
      * 商机id与名称映射
-     *
-     * @param opportunityIds
-     * @return
      */
     public Map<String, String> getOpportunityMap(List<String> opportunityIds) {
         if (CollectionUtils.isEmpty(opportunityIds)) {
@@ -676,12 +627,8 @@ public class BaseService {
                 .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
-
     /**
      * 线索id与名称映射
-     *
-     * @param clueIds
-     * @return
      */
     public Map<String, String> getClueMap(List<String> clueIds) {
         if (CollectionUtils.isEmpty(clueIds)) {
@@ -690,14 +637,10 @@ public class BaseService {
         return extClueMapper.selectOptionByIds(clueIds)
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
-
     }
 
     /**
      * 联系人id和电话映射
-     *
-     * @param contactIds
-     * @return
      */
     public Map<String, String> getContactPhone(List<String> contactIds) {
         if (CollectionUtils.isEmpty(contactIds)) {
@@ -727,22 +670,37 @@ public class BaseService {
         if (CollectionUtils.isEmpty(latestInstances)) {
             return Map.of();
         }
-        List<String> flowVersionIds = latestInstances.stream().map(ApprovalInstance::getFlowVersionId).distinct().toList();
-        List<ApprovalNodeLink> nodeLinks = nodeLinkMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNodeLink>().in(ApprovalNodeLink::getFlowVersionId, flowVersionIds));
-        List<ApprovalNode> allNodes = approvalNodeMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNode>().in(ApprovalNode::getFlowVersionId, flowVersionIds));
-        List<ApprovalTask> allTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, latestInstances.stream().map(ApprovalInstance::getId).toList()));
-        Map<String, String> nodeTypeMap = allNodes.stream().collect(Collectors.toMap(ApprovalNode::getId, ApprovalNode::getNodeType));
-        Map<String, List<String>> nodeLinkMap = nodeLinks.stream().filter(nodeLink -> nodeTypeMap.containsKey(nodeLink.getToNodeId()) && ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(nodeLink.getToNodeId())) != ApprovalNodeTypeEnum.END)
-                .collect(Collectors.groupingBy(ApprovalNodeLink::getToNodeId, Collectors.mapping(ApprovalNodeLink::getFromNodeId, Collectors.toList())));
+        List<String> flowVersionIds = latestInstances.stream().map(ApprovalInstance::getFlowVersionId).distinct()
+                .toList();
+        List<ApprovalNodeLink> nodeLinks = nodeLinkMapper.selectListByLambda(
+                new LambdaQueryWrapper<ApprovalNodeLink>().in(ApprovalNodeLink::getFlowVersionId, flowVersionIds));
+        List<ApprovalNode> allNodes = approvalNodeMapper.selectListByLambda(
+                new LambdaQueryWrapper<ApprovalNode>().in(ApprovalNode::getFlowVersionId, flowVersionIds));
+        List<ApprovalTask> allTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
+                .in(ApprovalTask::getInstanceId, latestInstances.stream().map(ApprovalInstance::getId).toList()));
+        Map<String, String> nodeTypeMap = allNodes.stream()
+                .collect(Collectors.toMap(ApprovalNode::getId, ApprovalNode::getNodeType));
+        Map<String, List<String>> nodeLinkMap = nodeLinks.stream()
+                .filter(nodeLink -> nodeTypeMap.containsKey(nodeLink.getToNodeId()) && ApprovalNodeTypeEnum
+                        .valueOf(nodeTypeMap.get(nodeLink.getToNodeId())) != ApprovalNodeTypeEnum.END)
+                .collect(Collectors.groupingBy(ApprovalNodeLink::getToNodeId,
+                        Collectors.mapping(ApprovalNodeLink::getFromNodeId, Collectors.toList())));
         latestInstances.forEach(latestInstance -> {
             if (isFirstApproverNode(nodeLinkMap, nodeTypeMap, latestInstance.getCurrentNodeId())) {
                 // 当前审批实例处于第一个审批节点, 所以第一个节点为审批中
-                boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(latestInstance.getCurrentNodeId(), latestInstance.getSubmitterId(), currentOrgId);
+                boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(
+                        latestInstance.getCurrentNodeId(), latestInstance.getSubmitterId(), currentOrgId);
                 if (!multiApprover) {
                     // 单人审批, 判断是否存在加签通过
-                    Integer nodeRound = extApprovalInstanceMapper.getNodeRound(latestInstance.getId(), latestInstance.getCurrentNodeId());
-                    Optional<ApprovalTask> signApproved = allTasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.SN.name()) && Strings.CI.equals(task.getNodeId(), latestInstance.getCurrentNodeId())
-                            && Strings.CI.equals(task.getInstanceId(), latestInstance.getId()) && nodeRound.equals(task.getNodeRound()) && Strings.CI.equals(task.getStatus(), ApprovalStatus.APPROVED.name())).findAny();
+                    Integer nodeRound = extApprovalInstanceMapper.getNodeRound(latestInstance.getId(),
+                            latestInstance.getCurrentNodeId());
+                    Optional<ApprovalTask> signApproved = allTasks.stream()
+                            .filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.SN.name())
+                                    && Strings.CI.equals(task.getNodeId(), latestInstance.getCurrentNodeId())
+                                    && Strings.CI.equals(task.getInstanceId(), latestInstance.getId())
+                                    && nodeRound.equals(task.getNodeRound())
+                                    && Strings.CI.equals(task.getStatus(), ApprovalStatus.APPROVED.name()))
+                            .findAny();
                     if (signApproved.isPresent()) {
                         firstNodeApproved.put(latestInstance.getResourceId(), true);
                         return;
@@ -787,7 +745,6 @@ public class BaseService {
         return getApprovingResourceSubmitterIds(List.of(resourceId)).get(resourceId);
     }
 
-
     /**
      * 当前节点是否第一个审批节点
      *
@@ -796,7 +753,8 @@ public class BaseService {
      * @param currentNodeId 当前节点ID
      * @return 是否第一个审批节点
      */
-    private boolean isFirstApproverNode(Map<String, List<String>> nodeLinkMap, Map<String, String> nodeTypeMap, String currentNodeId) {
+    private boolean isFirstApproverNode(Map<String, List<String>> nodeLinkMap, Map<String, String> nodeTypeMap,
+            String currentNodeId) {
         return isFirstApproverNodeRecursive(nodeLinkMap, nodeTypeMap, currentNodeId, new HashSet<>());
     }
 
@@ -809,7 +767,8 @@ public class BaseService {
      * @param visited     已访问的节点集合(防止循环)
      * @return 是否第一个审批节点
      */
-    private boolean isFirstApproverNodeRecursive(Map<String, List<String>> nodeLinkMap, Map<String, String> nodeTypeMap, String nodeId, Set<String> visited) {
+    private boolean isFirstApproverNodeRecursive(Map<String, List<String>> nodeLinkMap, Map<String, String> nodeTypeMap,
+            String nodeId, Set<String> visited) {
         // 防止循环引用
         if (visited.contains(nodeId)) {
             return false;

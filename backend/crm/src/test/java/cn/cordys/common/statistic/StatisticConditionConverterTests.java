@@ -18,14 +18,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * 筛选弹窗条件结构 -> 高级搜索结构的转换测试。
- *
- * <p>不需要 Spring 也不需要数据库: 转换是纯函数, 而这正是它存在的理由 ——
- * 出问题的地方在键名对应关系上, 与 SQL、与库都无关。</p>
- *
- * <p>这里最要紧的一组断言是「转完之后条件还在」。不转换时 {@code leftFieldId} 无处安放,
+ * <p>
+ * 不需要 Spring 也不需要数据库: 转换是纯函数, 而这正是它存在的理由 ——
+ * 出问题的地方在键名对应关系上, 与 SQL、与库都无关。
+ * </p>
+ * <p>
+ * 这里最要紧的一组断言是「转完之后条件还在」。不转换时 {@code leftFieldId} 无处安放,
  * {@code name} 落成 null, {@code getConditions()} 按 {@code valid()} 一过滤整条消失 ——
  * 统计范围会静默退化成「不过滤」, 统计值偏大, 而配置、日志、返回体里都看不出问题。
- * 所以每个用例都断言「条件数量对不对」, 不只看字段值。</p>
+ * 所以每个用例都断言「条件数量对不对」, 不只看字段值。
+ * </p>
  */
 class StatisticConditionConverterTests {
 
@@ -93,9 +95,10 @@ class StatisticConditionConverterTests {
 
     /**
      * 没有条件(统计范围=全部、或配置被改坏)时返回空条件而不是 null。
-     *
-     * <p>条件片段里写着 {@code ${conditions}.size() > 0}, 传 null 会让 OGNL 直接抛异常,
-     * 而不是短路成「不过滤」。</p>
+     * <p>
+     * 条件片段里写着 {@code ${conditions}.size() > 0}, 传 null 会让 OGNL 直接抛异常,
+     * 而不是短路成「不过滤」。
+     * </p>
      */
     @Test
     void returnsEmptyConditionForMissingStructure() {
@@ -111,9 +114,10 @@ class StatisticConditionConverterTests {
 
     /**
      * 半成品条件(只选了左字段、还没选操作符)转完之后一条能用的都不剩。
-     *
-     * <p>这是保存校验与刷新共用的判据: {@code getConditions()} 会按 {@code valid()} 过滤,
-     * 校验据此把「一条能用的条件都没有」的配置拦在保存之前, 不至于存进去以后静默不过滤。</p>
+     * <p>
+     * 这是保存校验与刷新共用的判据: {@code getConditions()} 会按 {@code valid()} 过滤,
+     * 校验据此把「一条能用的条件都没有」的配置拦在保存之前, 不至于存进去以后静默不过滤。
+     * </p>
      */
     @Test
     void dropsHalfFilledCondition() {
@@ -129,9 +133,10 @@ class StatisticConditionConverterTests {
 
     /**
      * 已经是高级搜索结构的条件(带 {@code name})原样绑定, 不被当成弹窗结构再转一遍。
-     *
-     * <p>弹窗结构里没有 {@code name} 这个键, 所以拿它当判据是可靠的; 这条路径是给按新结构存过的配置留的,
-     * 不能因为改了存储结构把已有配置读废。</p>
+     * <p>
+     * 弹窗结构里没有 {@code name} 这个键, 所以拿它当判据是可靠的; 这条路径是给按新结构存过的配置留的,
+     * 不能因为改了存储结构把已有配置读废。
+     * </p>
      */
     @Test
     void passesThroughConditionAlreadyInCombineSearchShape() {
@@ -151,9 +156,10 @@ class StatisticConditionConverterTests {
 
     /**
      * 结构不认识时不抛异常: 条件不是对象、conditions 不是数组, 都当作「没有条件」处理。
-     *
-     * <p>刷新入口的 try/catch 会把这个字段记下来继续跑别的, 但保存校验已经拦过一道,
-     * 走到这里的多是历史数据或直接改库 —— 为此整个刷新失败不值当, 丢条件并留痕即可。</p>
+     * <p>
+     * 刷新入口的 try/catch 会把这个字段记下来继续跑别的, 但保存校验已经拦过一道,
+     * 走到这里的多是历史数据或直接改库 —— 为此整个刷新失败不值当, 丢条件并留痕即可。
+     * </p>
      */
     @Test
     void ignoresUnrecognizedStructureInsteadOfFailing() {
@@ -174,10 +180,11 @@ class StatisticConditionConverterTests {
 
     /**
      * 右侧字段还没选(操作符选「为空」时前端允许这样存)的「匹配字段」条件, 转出来仍是一个引用对象。
-     *
-     * <p>钉住的是消费端的判据: 认「匹配字段」只能看右值是不是对象, 不能看它里面的 {@code refFieldId}
+     * <p>
+     * 钉住的是消费端的判据: 认「匹配字段」只能看右值是不是对象, 不能看它里面的 {@code refFieldId}
      * 有没有值 —— 这个引用里的 {@code refFieldId} 就是 null, 按后者判断会把它当成普通字面量放到
-     * 绑定参数里, 刷新时直接报错。</p>
+     * 绑定参数里, 刷新时直接报错。
+     * </p>
      */
     @Test
     void keepsReferenceShapeEvenWhenRightFieldIsNotChosen() {
@@ -218,11 +225,11 @@ class StatisticConditionConverterTests {
     /**
      * 造一个弹窗产出的条件项。
      *
-     * @param matchType   {@code MATCH_FIELD} 时右值取 {@code rightFieldId}, 否则取字面量
+     * @param matchType    {@code MATCH_FIELD} 时右值取 {@code rightFieldId}, 否则取字面量
      * @param rightFieldId 匹配字段时的右侧字段ID
      */
     private static Map<String, Object> condition(String leftFieldId, String leftFieldType, String operator,
-                                                 String matchType, String rightFieldId) {
+            String matchType, String rightFieldId) {
         Map<String, Object> condition = new HashMap<>();
         condition.put("leftFieldId", leftFieldId);
         condition.put("leftFieldType", leftFieldType);

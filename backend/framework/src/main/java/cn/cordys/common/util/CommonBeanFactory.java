@@ -35,7 +35,6 @@ public class CommonBeanFactory implements ApplicationContextAware {
      * 根据Bean名称获取Bean实例
      *
      * @param beanName Bean的名称
-     *
      * @return 返回Bean实例，若未找到则返回null
      */
     public static Object getBean(String beanName) {
@@ -54,9 +53,8 @@ public class CommonBeanFactory implements ApplicationContextAware {
     /**
      * 根据Bean类型获取Bean实例
      *
-     * @param className Bean的类型
      * @param <T>       返回的Bean类型
-     *
+     * @param className Bean的类型
      * @return 返回Bean实例，若未找到则返回null
      */
     public static <T> T getBean(Class<T> className) {
@@ -75,9 +73,8 @@ public class CommonBeanFactory implements ApplicationContextAware {
     /**
      * 获取指定类型的所有Bean实例
      *
-     * @param className Bean的类型
      * @param <T>       返回的Bean类型
-     *
+     * @param className Bean的类型
      * @return 返回所有类型为className的Bean实例的Map
      */
     public static <T> Map<String, T> getBeansOfType(Class<T> className) {
@@ -90,7 +87,6 @@ public class CommonBeanFactory implements ApplicationContextAware {
      * @param beanName       Bean的名称
      * @param methodFunction 方法选择器函数，接受Bean的类类型并返回一个Method对象
      * @param args           方法调用的参数
-     *
      * @return 返回方法的执行结果，若发生异常则返回null
      */
     public static Object invoke(String beanName, Function<Class<?>, Method> methodFunction, Object... args) {
@@ -114,8 +110,7 @@ public class CommonBeanFactory implements ApplicationContextAware {
 
     public static boolean packageExists(String basePackage) {
         // 不使用默认的候选者过滤器（不只扫描 @Component）
-        ClassPathScanningCandidateComponentProvider scanner =
-                new ClassPathScanningCandidateComponentProvider(false);
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
 
         // 添加一个总是匹配的过滤器：只要有类就算命中
         scanner.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
@@ -134,7 +129,8 @@ public class CommonBeanFactory implements ApplicationContextAware {
             if (!packageExists()) {
                 return null;
             }
-            final Class<? extends Filter> clazz = Class.forName(BASE_X_P + ".crm.ApiKeyPreFilter").asSubclass(Filter.class);
+            final Class<? extends Filter> clazz = Class.forName(BASE_X_P + ".crm.ApiKeyPreFilter")
+                    .asSubclass(Filter.class);
             return clazz.getDeclaredConstructor().newInstance();
         } catch (Exception ignored) {
             return null;
@@ -159,14 +155,12 @@ public class CommonBeanFactory implements ApplicationContextAware {
     }
 
     /**
-     * 调用指定类的静态方法
+     * 调用指定类的静态方法，丢弃返回值；反射调用失败时忽略异常。
      *
      * @param className      类的全名，例如 "com.example.MyClass"
      * @param methodName     方法名
      * @param parameterTypes 方法参数类型
      * @param args           方法参数
-     *
-     * @return 方法返回值
      */
     public static void invokeStatic(String className, String methodName, Class<?>[] parameterTypes, Object... args) {
         try {
@@ -178,7 +172,6 @@ public class CommonBeanFactory implements ApplicationContextAware {
 
             // 3. 调用静态方法，第一个参数传 null
             method.invoke(null, args);
-
         } catch (Exception ignored) {
         }
     }
@@ -187,7 +180,6 @@ public class CommonBeanFactory implements ApplicationContextAware {
      * 设置ApplicationContext，Spring容器会自动注入上下文。
      *
      * @param ctx 当前的Spring应用上下文
-     *
      * @throws BeansException 如果出现错误
      */
     public void setApplicationContext(ApplicationContext ctx) throws BeansException {

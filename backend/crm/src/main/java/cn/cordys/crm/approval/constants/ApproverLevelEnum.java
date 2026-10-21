@@ -1,8 +1,7 @@
 package cn.cordys.crm.approval.constants;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2026-05-09  17:04
+ * @author jianxing
  */
 public enum ApproverLevelEnum {
     FIRST_LEVEL("1"),

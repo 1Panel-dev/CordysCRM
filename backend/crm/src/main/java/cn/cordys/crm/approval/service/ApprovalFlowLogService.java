@@ -68,9 +68,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
-
         differences.removeIf(differ -> Strings.CS.equalsAny(differ.getColumn(), "currentVersionId", "links", "nodes",
-                "optionMap", "createUserName", "updateUserName", "createNodeConfig", "updateNodeConfig", "deleteNodeConfig"));
+                "optionMap", "createUserName", "updateUserName", "createNodeConfig", "updateNodeConfig",
+                "deleteNodeConfig"));
 
         Map<String, Consumer<JsonDifferenceDTO>> handlers = Map.ofEntries(
                 Map.entry("formType", this::handleFormType),
@@ -86,8 +86,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 Map.entry("requireRejectComment", this::handleBooleanValue),
                 Map.entry("duplicateApproverRule", this::handleDuplicateApproverRule),
                 Map.entry("description", this::handleDescription),
-                Map.entry("statusPermissions", this::handleStatusPermissions)
-        );
+                Map.entry("statusPermissions", this::handleStatusPermissions));
 
         differences.forEach(differ -> {
             Consumer<JsonDifferenceDTO> handler = handlers.get(differ.getColumn());
@@ -102,10 +101,17 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             oldApprovalFlowDetail = JSON.parseObject(oldValue, ApprovalFlowDetailResponse.class);
             newApprovalFlowDetail = JSON.parseObject(newValue, ApprovalFlowDetailResponse.class);
             formType = oldApprovalFlowDetail.getFormType();
-            fields = moduleFormCacheService.getBusinessFormConfig(oldApprovalFlowDetail.getFormType(), orgId).getFields();
-            List<JsonDifferenceDTO> createNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getCreateNodeConfig(), newApprovalFlowDetail.getCreateNodeConfig(), Translator.get("opportunity.add"));
-            List<JsonDifferenceDTO> updateNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getUpdateNodeConfig(), newApprovalFlowDetail.getUpdateNodeConfig(), Translator.get("permission.edit"));
-            List<JsonDifferenceDTO> deleteNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getDeleteNodeConfig(), newApprovalFlowDetail.getDeleteNodeConfig(), Translator.get("permission.delete"));
+            fields = moduleFormCacheService.getBusinessFormConfig(oldApprovalFlowDetail.getFormType(), orgId)
+                    .getFields();
+            List<JsonDifferenceDTO> createNodeDiffs = handleNodeConfigDifference(
+                    oldApprovalFlowDetail.getCreateNodeConfig(), newApprovalFlowDetail.getCreateNodeConfig(),
+                    Translator.get("opportunity.add"));
+            List<JsonDifferenceDTO> updateNodeDiffs = handleNodeConfigDifference(
+                    oldApprovalFlowDetail.getUpdateNodeConfig(), newApprovalFlowDetail.getUpdateNodeConfig(),
+                    Translator.get("permission.edit"));
+            List<JsonDifferenceDTO> deleteNodeDiffs = handleNodeConfigDifference(
+                    oldApprovalFlowDetail.getDeleteNodeConfig(), newApprovalFlowDetail.getDeleteNodeConfig(),
+                    Translator.get("permission.delete"));
             differences.addAll(createNodeDiffs);
             differences.addAll(updateNodeDiffs);
             differences.addAll(deleteNodeDiffs);
@@ -114,7 +120,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         return differences;
     }
 
-    private List<JsonDifferenceDTO> handleNodeConfigDifference(ApprovalFlowNodeConfigResponse oldCreateNodeConfig, ApprovalFlowNodeConfigResponse newNodeConfig, String prefix) {
+    private List<JsonDifferenceDTO> handleNodeConfigDifference(ApprovalFlowNodeConfigResponse oldCreateNodeConfig,
+            ApprovalFlowNodeConfigResponse newNodeConfig, String prefix) {
         SysOperationLogService logService = CommonBeanFactory.getBean(SysOperationLogService.class);
         String oldStr = oldCreateNodeConfig == null ? "{}" : JSON.toJSONString(oldCreateNodeConfig);
         String newStr = newNodeConfig == null ? "{}" : JSON.toJSONString(newNodeConfig);
@@ -126,7 +133,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             nodesDifference.forEach(diff -> diff.setColumnName(prefix + "-" + diff.getColumnName()));
             return nodesDifference;
         } catch (Exception e) {
-           log.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
         return List.of();
     }
@@ -236,7 +243,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     /**
      * 比较节点属性
      */
-    private void compareNodeProperties(String number, JsonNode oldNode, JsonNode newNode, List<JsonDifferenceDTO> differences) {
+    private void compareNodeProperties(String number, JsonNode oldNode, JsonNode newNode,
+            List<JsonDifferenceDTO> differences) {
         // 需要比较的属性及其翻译 key
         Map<String, String> propertyNames = new LinkedHashMap<>();
         propertyNames.put("name", "log.nodeName");
@@ -347,124 +355,137 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
      * @param hasOldValue 是否有旧值
      * @param hasNewValue 是否有新值
      */
-    private void setNodePropertyValue(JsonDifferenceDTO diff, String field, JsonNode oldNode, JsonNode newNode, boolean hasOldValue, boolean hasNewValue) {
+    private void setNodePropertyValue(JsonDifferenceDTO diff, String field, JsonNode oldNode, JsonNode newNode,
+            boolean hasOldValue, boolean hasNewValue) {
         switch (field) {
-            case "approvalType":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(Translator.get("approval_flow.approval_type." + diff.getOldValue().toString().toLowerCase()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(Translator.get("approval_flow.approval_type." + diff.getNewValue().toString().toLowerCase()));
-                }
-                break;
-            case "approverType":
-            case "ccType":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(Translator.get("approval_flow.approver_type." + diff.getOldValue().toString().toLowerCase()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(Translator.get("approval_flow.approver_type." + diff.getNewValue().toString().toLowerCase()));
-                }
-                break;
-            case "multiApproverMode":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(Translator.get("approval_flow.multi_approver_mode." + diff.getOldValue().toString().toLowerCase()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(Translator.get("approval_flow.multi_approver_mode." + diff.getNewValue().toString().toLowerCase()));
-                }
-                break;
-            case "emptyApproverAction":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(Translator.get("approval_flow.empty_approver_action." + diff.getOldValue().toString().toLowerCase()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(Translator.get("approval_flow.empty_approver_action." + diff.getNewValue().toString().toLowerCase()));
-                }
-                break;
-            case "sameSubmitterAction":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(Translator.get("approval_flow.same_submitter_action." + diff.getOldValue().toString().toLowerCase()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(Translator.get("approval_flow.same_submitter_action." + diff.getNewValue().toString().toLowerCase()));
-                }
-                break;
-            case "nodeType":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(Translator.get("approval_flow.node_type." + diff.getOldValue().toString().toLowerCase()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(Translator.get("approval_flow.node_type." + diff.getNewValue().toString().toLowerCase()));
-                }
-                break;
-            case "approverList":
-                if (hasOldValue && oldNode != null) {
-                    String oldApproverType = getNodeFieldValue(oldNode, "approverType");
-                    diff.setOldValueName(translateApproverList(diff.getOldValue(), oldApproverType));
-                }
-                if (hasNewValue && newNode != null) {
-                    String newApproverType = getNodeFieldValue(newNode, "approverType");
-                    diff.setNewValueName(translateApproverList(diff.getNewValue(), newApproverType));
-                }
-                break;
-            case "ccList":
-                if (hasOldValue && oldNode != null) {
-                    String oldCcType = getNodeFieldValue(oldNode, "ccType");
-                    diff.setOldValueName(translateApproverList(diff.getOldValue(), oldCcType));
-                }
-                if (hasNewValue && newNode != null) {
-                    String newCcType = getNodeFieldValue(newNode, "ccType");
-                    diff.setNewValueName(translateApproverList(diff.getNewValue(), newCcType));
-                }
-                break;
-            case "fallbackApprover":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(translateMemberList(diff.getOldValue()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(translateMemberList(diff.getNewValue()));
-                }
-                break;
-            case "passPostConfig":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(translatePostConfig(diff.getOldValue()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(translatePostConfig(diff.getNewValue()));
-                }
-                break;
-            case "rejectPostConfig":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(translatePostConfig(diff.getOldValue()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(translatePostConfig(diff.getNewValue()));
-                }
-                break;
-            case "fieldPermissions":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(translateFieldPermissions(diff.getOldValue()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(translateFieldPermissions(diff.getNewValue()));
-                }
-                break;
-            case "conditionConfig":
-                if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(translateConditionConfig(diff.getOldValue()));
-                }
-                if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(translateConditionConfig(diff.getNewValue()));
-                }
-                break;
-            default:
-                if (hasOldValue) {
-                    diff.setOldValueName(diff.getOldValue());
-                }
-                if (hasNewValue) {
-                    diff.setNewValueName(diff.getNewValue());
-                }
+        case "approvalType":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(
+                        Translator.get("approval_flow.approval_type." + diff.getOldValue().toString().toLowerCase()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(
+                        Translator.get("approval_flow.approval_type." + diff.getNewValue().toString().toLowerCase()));
+            }
+            break;
+        case "approverType":
+        case "ccType":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(
+                        Translator.get("approval_flow.approver_type." + diff.getOldValue().toString().toLowerCase()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(
+                        Translator.get("approval_flow.approver_type." + diff.getNewValue().toString().toLowerCase()));
+            }
+            break;
+        case "multiApproverMode":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(Translator
+                        .get("approval_flow.multi_approver_mode." + diff.getOldValue().toString().toLowerCase()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(Translator
+                        .get("approval_flow.multi_approver_mode." + diff.getNewValue().toString().toLowerCase()));
+            }
+            break;
+        case "emptyApproverAction":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(Translator
+                        .get("approval_flow.empty_approver_action." + diff.getOldValue().toString().toLowerCase()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(Translator
+                        .get("approval_flow.empty_approver_action." + diff.getNewValue().toString().toLowerCase()));
+            }
+            break;
+        case "sameSubmitterAction":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(Translator
+                        .get("approval_flow.same_submitter_action." + diff.getOldValue().toString().toLowerCase()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(Translator
+                        .get("approval_flow.same_submitter_action." + diff.getNewValue().toString().toLowerCase()));
+            }
+            break;
+        case "nodeType":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(
+                        Translator.get("approval_flow.node_type." + diff.getOldValue().toString().toLowerCase()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(
+                        Translator.get("approval_flow.node_type." + diff.getNewValue().toString().toLowerCase()));
+            }
+            break;
+        case "approverList":
+            if (hasOldValue && oldNode != null) {
+                String oldApproverType = getNodeFieldValue(oldNode, "approverType");
+                diff.setOldValueName(translateApproverList(diff.getOldValue(), oldApproverType));
+            }
+            if (hasNewValue && newNode != null) {
+                String newApproverType = getNodeFieldValue(newNode, "approverType");
+                diff.setNewValueName(translateApproverList(diff.getNewValue(), newApproverType));
+            }
+            break;
+        case "ccList":
+            if (hasOldValue && oldNode != null) {
+                String oldCcType = getNodeFieldValue(oldNode, "ccType");
+                diff.setOldValueName(translateApproverList(diff.getOldValue(), oldCcType));
+            }
+            if (hasNewValue && newNode != null) {
+                String newCcType = getNodeFieldValue(newNode, "ccType");
+                diff.setNewValueName(translateApproverList(diff.getNewValue(), newCcType));
+            }
+            break;
+        case "fallbackApprover":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(translateMemberList(diff.getOldValue()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(translateMemberList(diff.getNewValue()));
+            }
+            break;
+        case "passPostConfig":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(translatePostConfig(diff.getOldValue()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(translatePostConfig(diff.getNewValue()));
+            }
+            break;
+        case "rejectPostConfig":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(translatePostConfig(diff.getOldValue()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(translatePostConfig(diff.getNewValue()));
+            }
+            break;
+        case "fieldPermissions":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(translateFieldPermissions(diff.getOldValue()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(translateFieldPermissions(diff.getNewValue()));
+            }
+            break;
+        case "conditionConfig":
+            if (hasOldValue && isValidValue(diff.getOldValue())) {
+                diff.setOldValueName(translateConditionConfig(diff.getOldValue()));
+            }
+            if (hasNewValue && isValidValue(diff.getNewValue())) {
+                diff.setNewValueName(translateConditionConfig(diff.getNewValue()));
+            }
+            break;
+        default:
+            if (hasOldValue) {
+                diff.setOldValueName(diff.getOldValue());
+            }
+            if (hasNewValue) {
+                diff.setNewValueName(diff.getNewValue());
+            }
         }
     }
 
@@ -671,40 +692,48 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private void handleFormType(JsonDifferenceDTO differ) {
         differ.setColumnName(Translator.get("log.formType"));
         if (isValidValue(differ.getOldValue())) {
-            differ.setOldValueName(Translator.get("approval_flow.form_type." + differ.getOldValue().toString().toLowerCase()));
+            differ.setOldValueName(
+                    Translator.get("approval_flow.form_type." + differ.getOldValue().toString().toLowerCase()));
         }
         if (isValidValue(differ.getNewValue())) {
-            differ.setNewValueName(Translator.get("approval_flow.form_type." + differ.getNewValue().toString().toLowerCase()));
+            differ.setNewValueName(
+                    Translator.get("approval_flow.form_type." + differ.getNewValue().toString().toLowerCase()));
         }
     }
 
     private void handleEnable(JsonDifferenceDTO differ) {
         differ.setColumnName(Translator.get("log.enable"));
         if (isValidValue(differ.getOldValue())) {
-            differ.setOldValueName(Translator.get("approval_flow.enable." + (Boolean.parseBoolean(differ.getOldValue().toString()) ? "true" : "false")));
+            differ.setOldValueName(Translator.get("approval_flow.enable."
+                    + (Boolean.parseBoolean(differ.getOldValue().toString()) ? "true" : "false")));
         }
         if (isValidValue(differ.getNewValue())) {
-            differ.setNewValueName(Translator.get("approval_flow.enable." + (Boolean.parseBoolean(differ.getNewValue().toString()) ? "true" : "false")));
+            differ.setNewValueName(Translator.get("approval_flow.enable."
+                    + (Boolean.parseBoolean(differ.getNewValue().toString()) ? "true" : "false")));
         }
     }
 
     private void handleBooleanValue(JsonDifferenceDTO differ) {
         differ.setColumnName(Translator.get("log." + differ.getColumn()));
         if (isValidValue(differ.getOldValue())) {
-            differ.setOldValueName(Translator.get("log.enable." + (Boolean.parseBoolean(differ.getOldValue().toString()) ? "true" : "false")));
+            differ.setOldValueName(Translator
+                    .get("log.enable." + (Boolean.parseBoolean(differ.getOldValue().toString()) ? "true" : "false")));
         }
         if (isValidValue(differ.getNewValue())) {
-            differ.setNewValueName(Translator.get("log.enable." + (Boolean.parseBoolean(differ.getNewValue().toString()) ? "true" : "false")));
+            differ.setNewValueName(Translator
+                    .get("log.enable." + (Boolean.parseBoolean(differ.getNewValue().toString()) ? "true" : "false")));
         }
     }
 
     private void handleDuplicateApproverRule(JsonDifferenceDTO differ) {
         differ.setColumnName(Translator.get("log.duplicateApproverRule"));
         if (isValidValue(differ.getOldValue())) {
-            differ.setOldValueName(Translator.get("approval_flow.duplicate_approver_rule." + differ.getOldValue().toString().toLowerCase()));
+            differ.setOldValueName(Translator
+                    .get("approval_flow.duplicate_approver_rule." + differ.getOldValue().toString().toLowerCase()));
         }
         if (isValidValue(differ.getNewValue())) {
-            differ.setNewValueName(Translator.get("approval_flow.duplicate_approver_rule." + differ.getNewValue().toString().toLowerCase()));
+            differ.setNewValueName(Translator
+                    .get("approval_flow.duplicate_approver_rule." + differ.getNewValue().toString().toLowerCase()));
         }
     }
 
@@ -797,7 +826,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
      * 将 fieldUpdateConfigs 翻译为 "字段名: 值 (启用/禁用)" 格式
      */
     private String translatePostConfig(Object value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         try {
             String jsonStr = value instanceof String text ? text : JSON.toJSONString(value);
             ApprovalPostConfigDTO postConfig = JSON.parseObject(jsonStr, ApprovalPostConfigDTO.class);
@@ -812,7 +843,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
 
             List<String> parts = new ArrayList<>();
             for (EnableFieldValue config : postConfig.getFieldUpdateConfigs()) {
-                if (config.getFieldId() == null) continue;
+                if (config.getFieldId() == null) {
+                    continue;
+                }
 
                 BaseField field = fieldMap.get(config.getFieldId());
                 String fieldName = field != null ? field.getName() : config.getFieldId();
@@ -829,7 +862,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             }
             if (postConfig.getWebHookConfig() != null) {
                 WebHookConfig webHookConfig = postConfig.getWebHookConfig();
-                parts.add(Translator.get("webhook.enable") + ": " + (BooleanUtils.isTrue(webHookConfig.getWebHookEnable()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false")));
+                parts.add(Translator.get("webhook.enable") + ": "
+                        + (BooleanUtils.isTrue(webHookConfig.getWebHookEnable()) ? Translator.get("log.enable.true")
+                                : Translator.get("log.enable.false")));
                 parts.add(Translator.get("webhook.describe") + ": " + webHookConfig.getWebHookDescribe());
                 parts.add(Translator.get("webhook.url") + ": " + webHookConfig.getWebHookUrl());
                 parts.add(Translator.get("webhook.method") + ": " + webHookConfig.getWebHookMethod());
@@ -848,7 +883,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
      * 将 conditionConfig 翻译为 "字段名-操作符" 格式，如 [名称-新值不等于旧值，创建时间-动态-本周]
      */
     private String translateConditionConfig(Object value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         try {
             String jsonStr = value instanceof String text ? text : JSON.toJSONString(value);
             ObjectMapper mapper = new ObjectMapper();
@@ -873,7 +910,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 String operator = condition.has("operator") ? condition.get("operator").asText() : "";
 
                 String fieldName = translateConditionFieldName(nameValue, fieldMap);
-                String operatorName = Translator.get("approval_flow.condition.operator." + operator.toLowerCase(), operator);
+                String operatorName = Translator.get("approval_flow.condition.operator." + operator.toLowerCase(),
+                        operator);
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(fieldName).append("-").append(operatorName);
@@ -927,7 +965,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
      * 支持单值（WEEK, MONTH等）和自定义格式（0,1,BEFORE_DAY等）
      */
     private String translateDynamicTimeValue(String value) {
-        if (value == null || value.isEmpty()) return "";
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
         String[] parts = value.split(",");
         if (parts.length == 1) {
             return Translator.get("approval_flow.condition.dynamics." + parts[0].toLowerCase(), parts[0]);
@@ -993,7 +1033,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
         // approvalStatus → 审批状态
         if ("approvalStatus".equals(fieldName)) {
-            return Translator.get("approval_flow.condition.approval_status." + valueNode.asText("").toLowerCase(), valueNode.asText(""));
+            return Translator.get("approval_flow.condition.approval_status." + valueNode.asText("").toLowerCase(),
+                    valueNode.asText(""));
         }
 
         if (valueNode.isArray()) {
@@ -1026,9 +1067,15 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             ContractStageService contractStageService = CommonBeanFactory.getBean(ContractStageService.class);
             List<StageConfigResponse> stages;
             if (formType != null && (formType.equals(FormKey.ORDER.getKey()))) {
-                stages = orderStageService != null ? (List<StageConfigResponse>) orderStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
+                stages = orderStageService != null
+                        ? (List<StageConfigResponse>) orderStageService
+                                .getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList()
+                        : List.of();
             } else if (formType != null && formType.equals(FormKey.CONTRACT.getKey())) {
-                stages = contractStageService != null ? (List<StageConfigResponse>) contractStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
+                stages = contractStageService != null
+                        ? (List<StageConfigResponse>) contractStageService
+                                .getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList()
+                        : List.of();
             } else {
                 return String.join(", ", stageIds);
             }
@@ -1061,7 +1108,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     }
 
     private String translateFieldPermissions(Object value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         try {
             List<?> list = value instanceof List<?> items ? items : JSON.parseArray(value.toString(), Object.class);
 
@@ -1073,11 +1122,14 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             for (Object item : list) {
                 if (item instanceof Map<?, ?> map) {
                     String fieldId = map.get("fieldId") != null ? map.get("fieldId").toString() : "";
-                    String permissionType = map.get("permissionType") != null ? map.get("permissionType").toString() : "";
+                    String permissionType = map.get("permissionType") != null ? map.get("permissionType").toString()
+                            : "";
 
                     BaseField field = fieldMap.get(fieldId);
-                    String fieldName = field != null ? field.getName() : "[" + Translator.get("module.field.not_exist") + "]";
-                    String translatedPermission = Translator.get("approval_flow.field_permission." + permissionType.toLowerCase(), permissionType);
+                    String fieldName = field != null ? field.getName()
+                            : "[" + Translator.get("module.field.not_exist") + "]";
+                    String translatedPermission = Translator
+                            .get("approval_flow.field_permission." + permissionType.toLowerCase(), permissionType);
 
                     parts.add(fieldName + ": " + translatedPermission);
                 }

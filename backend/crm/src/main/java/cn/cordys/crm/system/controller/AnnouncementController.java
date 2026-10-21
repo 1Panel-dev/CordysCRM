@@ -33,7 +33,6 @@ public class AnnouncementController {
     @Resource
     private AnnouncementService announcementService;
 
-
     @PostMapping("/announcement/page")
     @Operation(summary = "公告列表分页查询")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
@@ -41,7 +40,6 @@ public class AnnouncementController {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, announcementService.page(request));
     }
-
 
     /**
      * 获取公告。

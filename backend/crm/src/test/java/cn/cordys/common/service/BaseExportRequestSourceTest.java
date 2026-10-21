@@ -28,7 +28,8 @@ class BaseExportRequestSourceTest {
 
     @Test
     void exportRetainsSourceAfterOriginalRequestEnds() throws Exception {
-        BaseExportService service = new BaseExportService() {};
+        BaseExportService service = new BaseExportService() {
+        };
         CompletableFuture<LogDTO> captured = new CompletableFuture<>();
         LogService logService = new LogService() {
             @Override
