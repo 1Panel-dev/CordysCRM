@@ -1,4 +1,5 @@
 export default {
+  'taskDrawer.mentionTime': 'Mention Time',
   'taskDrawer.applicant': 'Applicant',
   'taskDrawer.approvalType': 'Approval Type',
   'taskDrawer.applyTime': 'Apply Time',

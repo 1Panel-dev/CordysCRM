@@ -2,6 +2,8 @@ package cn.cordys.crm.form.service;
 
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
 import cn.cordys.crm.form.domain.CustomFormRole;
@@ -12,10 +14,16 @@ import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormMapper;
 import cn.cordys.crm.system.dto.form.FormProp;
+import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -23,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +43,56 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class CustomFormAuthorizationServiceTest {
+
+    private MessageSource previousMessageSource;
+
+    @BeforeEach
+    void initializeTranslator() {
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        ReflectionTestUtils.setField(Translator.class, "messageSource", new StaticMessageSource());
+    }
+
+    @AfterEach
+    void restoreTranslator() {
+        ReflectionTestUtils.setField(Translator.class, "messageSource", previousMessageSource);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void commentMentionReadsOnlyItsCustomFormMetadataWithoutAdministratorRights() {
+        CustomFormService service = new CustomFormService();
+        BaseMapper<CustomForm> forms = mock(BaseMapper.class);
+        BaseMapper<CustomFormAdmin> admins = mock(BaseMapper.class);
+        BaseMapper<ModuleForm> modules = mock(BaseMapper.class);
+        ResourcePermissionService permissions = mock(ResourcePermissionService.class);
+        ModuleFormService formService = mock(ModuleFormService.class);
+        ReflectionTestUtils.setField(service, "customFormMapper", forms);
+        ReflectionTestUtils.setField(service, "customFormAdminMapper", admins);
+        ReflectionTestUtils.setField(service, "moduleFormMapper", modules);
+        ReflectionTestUtils.setField(service, "moduleFormService", formService);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
+        ReflectionTestUtils.setField(service, "customFormRoleUserMapper", mock(BaseMapper.class));
+        CustomForm form = form("form-1", "org-1");
+        when(forms.selectByPrimaryKey("form-1")).thenReturn(form);
+        when(permissions.hasApprovalCommentMentionFormPermission("form-1", "reader", "org-1")).thenReturn(true);
+        ModuleForm module = new ModuleForm();
+        module.setFormKey("form-1");
+        when(modules.selectByPrimaryKey("form-1")).thenReturn(module);
+        ModuleFormConfigDTO config = new ModuleFormConfigDTO();
+        config.setFields(List.of());
+        config.setFormProp(new FormProp());
+        when(formService.getBusinessFormConfig("form-1", "org-1")).thenReturn(config);
+
+        var response = service.get("form-1", "reader", "org-1");
+
+        assertEquals(List.of(), response.getFields());
+        assertEquals(config.getFormProp(), response.getFormProp());
+        assertFalse(response.getIsAdmin());
+        assertThrows(GenericException.class, () -> service.get("other-form", "reader", "org-1"));
+        assertThrows(GenericException.class, () -> service.getAdmins("form-1", "reader", "org-1"));
+        assertThrows(GenericException.class, () -> service.updateEnable("form-1", "reader", "org-1", false));
+        verify(forms, never()).update(any());
+    }
 
     @Test
     @SuppressWarnings("unchecked")

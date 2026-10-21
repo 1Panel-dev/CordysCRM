@@ -40,7 +40,7 @@
       />
     </div>
     <div
-      v-if="props.fieldPermissions.length"
+      v-if="!props.commentMentionId && props.fieldPermissions.length"
       class="sticky bottom-0 z-10 flex shrink-0 justify-start border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[12px_16px]"
     >
       <n-button v-if="!isEditing" type="primary" @click="startEditing">
@@ -84,6 +84,7 @@
       isContractTableDetail?: boolean;
       customFormId?: string;
       approvalTaskId?: string;
+      commentMentionId?: string;
       setLoading: (loading: boolean) => void;
     }>(),
     {
@@ -119,6 +120,7 @@
   const otherSaveParams = computed(() => ({
     updateType: 'approval',
     approvalTaskId: props.approvalTaskId || props.taskNode?.taskId,
+    commentMentionId: props.commentMentionId,
     ...(props.customFormId ? { customFormId: props.customFormId } : {}),
   }));
 

@@ -1,4 +1,5 @@
 export default {
+  'workbench.dataOverview.mentionedMe': '@我的',
   'workbench.duplicateCheck': '查重',
   'workbench.duplicateCheck.inputPlaceholder': '请输入客户名或手机号',
   'workbench.duplicateCheck.result': '客户相关',

@@ -5,7 +5,7 @@
         v-if="list.length"
         v-model:data="list"
         :virtual-scroll-height="props.virtualScrollHeight"
-        :key-field="props.keyField"
+        :key-field="getTaskListType() === ApprovalListTypeEnum.MENTION ? 'commentMentionId' : props.keyField"
         :item-height="114"
         mode="remote"
         @reach-bottom="handleReachBottom"
@@ -83,8 +83,10 @@
                     <div>{{ getExecuteType(item.executeTime) }}</div>
                   </div>
                   <div class="flex items-center gap-[8px]">
-                    <div class="text-[var(--text-n2)]">{{ t('taskDrawer.applyTime') }}</div>
-                    <div>{{ dayjs(item.submitTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
+                    <div class="text-[var(--text-n2)]">{{
+                      t(item.commentMentionId ? 'taskDrawer.mentionTime' : 'taskDrawer.applyTime')
+                    }}</div>
+                    <div>{{ dayjs(item.mentionTime ?? item.submitTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
                   </div>
                 </div>
                 <div v-if="props.activeTaskType?.includes('pending')" class="flex gap-[12px]">
@@ -139,6 +141,7 @@
   import {
     getCcApprovalList,
     getInitiatedApprovalList,
+    getMentionApprovalList,
     getPendingApprovalList,
     getProcessedApprovalList,
   } from '@/api/modules/index';
@@ -181,6 +184,7 @@
     [ApprovalListTypeEnum.APPROVAL]: getProcessedApprovalList,
     [ApprovalListTypeEnum.INITIATED]: getInitiatedApprovalList,
     [ApprovalListTypeEnum.COPIED]: getCcApprovalList,
+    [ApprovalListTypeEnum.MENTION]: getMentionApprovalList,
   };
 
   function getTaskListType() {
@@ -339,6 +343,9 @@
   }
 
   function getResourcePermission(item: ApprovalTodoItem) {
+    if (getTaskListType() === ApprovalListTypeEnum.MENTION) {
+      return Boolean(item.commentMentionId);
+    }
     switch (item.resourceType) {
       case ApprovalResourceTypeEnum.CLUE:
         return hasAnyPermission(['CLUE_MANAGEMENT:READ']);

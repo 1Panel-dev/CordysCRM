@@ -1,4 +1,5 @@
 export default {
+  'taskDrawer.mentionTime': '@时间',
   'taskDrawer.applicant': '申请人',
   'taskDrawer.approvalType': '审批类型',
   'taskDrawer.applyTime': '提交时间',

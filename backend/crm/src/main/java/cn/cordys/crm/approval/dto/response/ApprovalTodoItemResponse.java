@@ -36,6 +36,15 @@ public class ApprovalTodoItemResponse {
     @Schema(description = "审批任务ID")
     private String approvalTaskId;
 
+    @Schema(description = "评论@关系ID，仅评论@我的待办返回")
+    private String commentMentionId;
+
+    @Schema(description = "评论ID，仅评论@我的待办返回")
+    private String commentId;
+
+    @Schema(description = "被@时间，毫秒时间戳，仅评论@我的待办返回")
+    private Long mentionTime;
+
     @Schema(description = "审批节点ID")
     private String approvalNodeId;
 

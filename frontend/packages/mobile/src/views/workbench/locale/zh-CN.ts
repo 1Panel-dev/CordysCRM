@@ -1,4 +1,5 @@
 export default {
+  'workbench.mentionedMe': '@我的',
   'workbench.searchPlaceholder': '请输入客户名或手机号',
   'workbench.smartWorkbench': '智慧工作台',
   'workbench.myDashboard': '我的看板',

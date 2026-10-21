@@ -1,5 +1,6 @@
 package cn.cordys.common.permission;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
@@ -7,6 +8,7 @@ import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.PostConstruct;
@@ -38,6 +40,8 @@ public class ResourcePermissionService {
     private BaseMapper<ApprovalTask> approvalTaskMapper;
     @Resource
     private BaseMapper<ApprovalInstance> approvalInstanceMapper;
+    @Resource(name = "extApprovalCommentMapper")
+    private ExtApprovalCommentMapper extApprovalCommentMapper;
 
     @Resource
     private List<ResourceAccessContextProvider> contextProviders;
@@ -77,6 +81,12 @@ public class ResourcePermissionService {
             String orgId) {
         if (StringUtils.isBlank(resourceId)) {
             checkPermission(permission);
+            return;
+        }
+
+        // 评论@只授权当前GET请求读取该实例对应的业务数据。
+        if (permission != null && permission.endsWith(":READ")
+                && hasApprovalCommentMentionPermission(resourceId, userId, orgId, formType)) {
             return;
         }
 
@@ -129,6 +139,52 @@ public class ResourcePermissionService {
             return true;
         }
         return false;
+    }
+
+    public boolean hasApprovalViewPermission(String resourceId, String userId, String orgId) {
+        return hasApprovalViewPermission(resourceId, userId, orgId, null);
+    }
+
+    public boolean hasApprovalViewPermission(String resourceId, String userId, String orgId, String formType) {
+        return hasApprovalTaskPermission(resourceId, userId)
+                || hasApprovalCommentMentionPermission(resourceId, userId, orgId, formType);
+    }
+
+    public boolean hasApprovalCommentMentionPermission(String resourceId, String userId, String orgId) {
+        return hasApprovalCommentMentionPermission(resourceId, userId, orgId, null);
+    }
+
+    private boolean hasApprovalCommentMentionPermission(String resourceId, String userId, String orgId, String formType) {
+        if (StringUtils.isBlank(resourceId)) {
+            return false;
+        }
+        ApprovalInstance instance = getApprovalCommentMentionInstance(userId, orgId);
+        return instance != null && resourceId.equals(instance.getResourceId())
+                && (StringUtils.isBlank(formType) || formType.equals(instance.getType()));
+    }
+
+    public boolean hasApprovalCommentMentionFormPermission(String formId, String userId, String orgId) {
+        if (StringUtils.isBlank(formId)) {
+            return false;
+        }
+        ApprovalInstance instance = getApprovalCommentMentionInstance(userId, orgId);
+        return instance != null && formId.equals(instance.getType()) && FormKey.ofKey(instance.getType()) == null;
+    }
+
+    private ApprovalInstance getApprovalCommentMentionInstance(String userId, String orgId) {
+        if (StringUtils.isAnyBlank(userId, orgId)
+                || !(RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes)) {
+            return null;
+        }
+        HttpServletRequest request = attributes.getRequest();
+        if (!"GET".equalsIgnoreCase(request.getMethod())) {
+            return null;
+        }
+        String mentionId = StringUtils.trimToNull(request.getHeader("Approval-Comment-Mention-Id"));
+        if (mentionId == null) {
+            mentionId = StringUtils.trimToNull(request.getParameter("commentMentionId"));
+        }
+        return mentionId == null ? null : extApprovalCommentMapper.selectMentionInstance(mentionId, userId, orgId);
     }
 
     /**

@@ -13,7 +13,7 @@
         <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
       </div>
     </template>
-    <template v-if="!props.readonly" #titleRight>
+    <template v-if="!props.readonly && !props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :not-show-divider="true"
@@ -46,6 +46,7 @@
         <div v-show="activeTab === 'invoice'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.INVOICE"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -57,6 +58,8 @@
             <template #left="{ fieldPermissions, taskNode, setLoading }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
+                :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :form-key="FormDesignKeyEnum.INVOICE"
                 :description-form-key="FormDesignKeyEnum.INVOICE_SNAPSHOT"
                 :source-id="props.sourceId"
@@ -65,7 +68,9 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
-                :readonly="props.readonly || !hasAnyPermission(['CONTRACT_INVOICE:UPDATE'])"
+                :readonly="
+                  Boolean(props.commentMentionId) || props.readonly || !hasAnyPermission(['CONTRACT_INVOICE:UPDATE'])
+                "
                 @init="handleInit"
                 @open-contract-detail="emit('openContractDrawer', $event)"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
@@ -131,6 +136,7 @@
     sourceId: string;
     readonly?: boolean;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;

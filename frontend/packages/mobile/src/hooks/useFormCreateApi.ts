@@ -372,7 +372,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey];
       if (!asyncApi || !props.sourceId?.value) return;
-      const form = await asyncApi(props.sourceId?.value, props.otherSaveParams?.approvalTaskId);
+      const form = await asyncApi(
+        props.sourceId?.value,
+        props.otherSaveParams?.approvalTaskId,
+        props.otherSaveParams?.commentMentionId
+      );
       descriptions.value = [];
       detail.value = form;
       collaborationType.value = form.collaborationType;
@@ -830,14 +834,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           ? getDatasourceFieldConfig
           : getFormConfigApiMap[props.formKey];
       if (props.formKey === FormDesignKeyEnum.CUSTOM_FORM) {
-        const res = await api(props.customFormId?.value ?? '');
+        const res = await api(
+          props.customFormId?.value ?? '',
+          props.otherSaveParams?.approvalTaskId,
+          props.otherSaveParams?.commentMentionId
+        );
         initFormFieldConfig(res.fields);
         formConfig.value = res.formProp;
         customFormConfig.value = res as CustomFormDetail;
       } else {
         const res = await api(
           props.isDatasource ? props.formKey : props.sourceId?.value ?? '',
-          props.otherSaveParams?.value?.approvalTaskId
+          props.otherSaveParams?.approvalTaskId,
+          props.otherSaveParams?.commentMentionId
         );
         initFormFieldConfig(res.fields);
         formConfig.value = res.formProp;

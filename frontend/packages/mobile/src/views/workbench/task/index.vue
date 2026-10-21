@@ -44,6 +44,7 @@
         :class="selectedKeys.length > 0 ? 'mb-[36px]' : ''"
         :item-gap="16"
         :keyword="keyword"
+        :transform="(item) => ({ ...item, id: item.commentMentionId || item.id })"
         :load-list-api="lisApiMap[activeName as ApprovalListTypeEnum]"
         @refresh="initStatistic()"
       >
@@ -112,7 +113,7 @@
                       <div class="text-[var(--text-n2)]">{{ t('workbench.approvalType') }}</div>
                       <div>{{ getExecuteType(item.executeTime) }}</div>
                     </div>
-                    <div>{{ dayjs(item.submitTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
+                    <div>{{ dayjs(item.mentionTime ?? item.submitTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
                   </div>
                 </div>
               </div>
@@ -155,6 +156,7 @@
   import {
     getApprovalConfigDetail,
     getCcApprovalList,
+    getMentionApprovalList,
     getApprovalFlowFormOptions,
     getInitiatedApprovalList,
     getPendingApprovalList,
@@ -203,6 +205,11 @@
       title: t('workbench.copyToMe'),
       count: 0,
     },
+    {
+      name: ApprovalListTypeEnum.MENTION,
+      title: t('workbench.mentionedMe'),
+      count: 0,
+    },
   ];
 
   const keyword = ref('');
@@ -227,6 +234,7 @@
     [ApprovalListTypeEnum.APPROVAL]: getProcessedApprovalList,
     [ApprovalListTypeEnum.INITIATED]: getInitiatedApprovalList,
     [ApprovalListTypeEnum.COPIED]: getCcApprovalList,
+    [ApprovalListTypeEnum.MENTION]: getMentionApprovalList,
   };
   const listParams = computed(() => {
     return {
@@ -262,6 +270,9 @@
   }
 
   function getResourcePermission(item: ApprovalTodoItem) {
+    if (activeName.value === ApprovalListTypeEnum.MENTION) {
+      return Boolean(item.commentMentionId);
+    }
     switch (item.resourceType) {
       case ApprovalResourceTypeEnum.CLUE:
         return hasAnyPermission(['CLUE_MANAGEMENT:READ']);
@@ -285,6 +296,7 @@
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
 
   async function initApprovalConfig() {
+    if (activeName.value === ApprovalListTypeEnum.MENTION) return;
     try {
       if (!resourceType.value) {
         approvalConfig.value = undefined;
@@ -423,6 +435,7 @@
         formKey: getDetailFormKey(item),
         customFormId: formKeyMap[item.resourceType] ? undefined : item.resourceType,
         taskId: item.approvalTaskId,
+        commentMentionId: item.commentMentionId,
         approvalStatus: item.approvalOperation,
         poolId: item.poolId ? item.poolId : undefined,
       },

@@ -63,7 +63,8 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             } else {
                 notification.setResourceId(messageDetailDTO.getId());
             }
-            notification.setResourceType(messageDetailDTO.getTaskType());
+            // 通知配置模块与消息分类可以不同，未指定分类时沿用配置模块。
+            notification.setResourceType((String) paramMap.getOrDefault("resourceType", messageDetailDTO.getTaskType()));
             if (paramMap.get("name") != null) {
                 notification.setResourceName((String) paramMap.get("name"));
             }

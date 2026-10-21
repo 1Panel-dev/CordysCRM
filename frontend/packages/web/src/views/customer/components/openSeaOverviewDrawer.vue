@@ -3,7 +3,7 @@
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
-    <template #titleRight>
+    <template v-if="!props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :group-list="detailActions.groupList"
@@ -39,6 +39,7 @@
         <div v-show="activeTab === 'openSea'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="show"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.CUSTOMER"
             :source-id="props.sourceId"
             :refresh-key="refreshKey"
@@ -61,6 +62,7 @@
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
                   approvalTaskId: props.approvalTaskId || taskNode?.taskId,
+                  commentMentionId: props.commentMentionId,
                 }"
                 @init="handleDescriptionInit"
                 @refresh="emit('change')"
@@ -137,6 +139,7 @@
     hiddenColumns: string[];
     refreshDetailKey?: number;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;

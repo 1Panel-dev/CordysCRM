@@ -108,6 +108,7 @@
     v-model:visible="contractDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @show-customer-drawer="handleOpenCustomerDetail"
     @refresh="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
@@ -116,6 +117,7 @@
     v-model:visible="quotationDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @refresh="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
   />
@@ -123,6 +125,7 @@
     v-model:visible="orderDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @refresh="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
   />
@@ -130,6 +133,7 @@
     v-model:visible="invoiceDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @refresh="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
     @open-contract-drawer="handleOpenContractDetail"
@@ -139,6 +143,7 @@
     v-model:show="customerDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @saved="handleDetailRefresh"
     @deleted="handleApproveSuccess"
     @refresh="handleDetailRefresh"
@@ -150,6 +155,7 @@
     :pool-id="activePoolId"
     :hidden-columns="openSeaHiddenColumns"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @change="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
     @delete="handleApproveSuccess"
@@ -158,6 +164,7 @@
     v-model:show="clueDetailVisible"
     :detail="activeResourceDetail"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @saved="handleDetailRefresh"
     @remove="handleApproveSuccess"
     @refresh="handleDetailRefresh"
@@ -170,6 +177,7 @@
     :pool-id="activePoolId"
     :hidden-columns="cluePoolHiddenColumns"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @remove="handleApproveSuccess"
     @refresh="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
@@ -178,6 +186,7 @@
     v-model:show="opportunityDetailVisible"
     :detail="activeResourceDetail"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @remove="handleApproveSuccess"
     @refresh="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
@@ -188,6 +197,7 @@
     :source-id="activeResourceId"
     :customFormId="resourceType"
     :approvalTaskId="approvalTaskId"
+    :comment-mention-id="commentMentionId"
     @edit="handleCustomFormEdit"
     @refresh="handleDetailRefresh"
     @approval-success="handleDetailApprovalSuccess"
@@ -303,6 +313,12 @@
       title: t('workbench.dataOverview.copiedToMe'),
       count: 0,
       children: moduleItems.value.map((e) => ({ ...e, name: `copied-${e.name}` })),
+    },
+    {
+      name: 'mention',
+      title: t('workbench.dataOverview.mentionedMe'),
+      count: 0,
+      children: moduleItems.value.map((e) => ({ ...e, name: `mention-${e.name}` })),
     },
   ]);
 
@@ -421,6 +437,7 @@
     }
   );
 
+  const taskListRef = ref<InstanceType<typeof taskList>>();
   async function handleSuccessfulProcessing(count = 1, listAlreadyReloaded = false) {
     if (!activeTaskType.value.startsWith('pending-')) return;
     processedCount.value += count;
@@ -448,7 +465,6 @@
     }
   }
 
-  const taskListRef = ref<InstanceType<typeof taskList>>();
   function searchData(val?: string) {
     taskListRef.value?.loadTaskList(true, val);
   }
@@ -487,6 +503,7 @@
   const approvalConfigDetail = ref<ApprovalProcessDetail>();
 
   async function initApprovalConfigDetail() {
+    if (activeTaskType.value.startsWith('mention-')) return;
     try {
       const [_, resourceType] = activeTaskType.value.split('-');
       if (!resourceType) {
@@ -523,6 +540,7 @@
   const customFormDetailVisible = ref(false);
   const customFormEditVisible = ref(false);
   const approvalTaskId = ref('');
+  const commentMentionId = ref<string>();
   const resourceType = ref('');
   const activeResourceName = ref('');
   const activePoolId = ref('');
@@ -583,6 +601,7 @@
   ) {
     activeResourceId.value = resourceId;
     approvalTaskId.value = _approvalTaskId;
+    commentMentionId.value = item.commentMentionId;
     resourceType.value = _resourceType;
     activeResourceName.value = item.resourceName;
     activePoolId.value = item.poolId ? String(item.poolId) : '';

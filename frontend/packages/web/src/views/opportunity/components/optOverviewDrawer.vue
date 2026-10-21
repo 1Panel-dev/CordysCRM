@@ -18,7 +18,7 @@
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
-    <template #titleRight>
+    <template v-if="!props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :group-list="detailActions.groupList"
@@ -46,7 +46,7 @@
         class="mb-[16px]"
         :stageConfig="stageConfig"
         is-limit-back
-        :readonly="!canUpdateStage"
+        :readonly="Boolean(props.commentMentionId) || !canUpdateStage"
         :failure-reason="lastFailureReason"
         :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
         :source-id="sourceId"
@@ -71,6 +71,7 @@
         <div v-show="activeTab === 'opportunity'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="showOptOverviewDrawer"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.BUSINESS"
             :source-id="sourceId"
             :refresh-key="refreshKey"
@@ -82,13 +83,18 @@
             <template #left="{ fieldPermissions, taskNode, setLoading }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
+                :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :form-key="FormDesignKeyEnum.BUSINESS"
                 :source-id="sourceId"
                 :refresh-key="refreshKey"
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
-                :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+                :readonly="
+                  Boolean(props.commentMentionId) ||
+                  !hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])
+                "
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
                 @refresh="emit('refresh')"
@@ -193,6 +199,7 @@
   const props = defineProps<{
     detail?: Partial<OpportunityItem>;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
 
   const emit = defineEmits<{

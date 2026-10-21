@@ -19,6 +19,7 @@ export const GetProcessedApprovalTodosUrl = '/approval-todo/processed/page'; // 
 export const GetPendingApprovalTodosUrl = '/approval-todo/pending/page'; // 待处理审批待办列表
 export const GetInitiatedApprovalTodosUrl = '/approval-todo/initiated/page'; // 我发起审批待办列表
 export const GetCcApprovalTodosUrl = '/approval-todo/cc/page'; // 抄送我的审批待办列表
+export const GetMentionApprovalTodosUrl = '/approval-todo/mention/page'; // 评论@我的审批待办列表
 export const GetTodoStatisticUrl = '/approval-todo/pending/count'; // 获取待办统计
 export const GetCCStatisticUrl = '/approval-todo/cc/count'; // 获取抄送统计
 

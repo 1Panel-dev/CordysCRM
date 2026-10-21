@@ -244,6 +244,9 @@ export interface ApprovalTodoTableParams extends TableQueryParams {
 
 export interface ApprovalTodoItem {
   approvalTaskId: string;
+  commentMentionId?: string;
+  commentId?: string;
+  mentionTime?: number;
   approvalNodeId: string;
   approvalInstanceId: string;
   approvalId: string;
@@ -308,6 +311,8 @@ export interface ApprovalDetail {
   submitter: string;
   submitTime: number;
   comment: string;
+  commentCount: number;
+  commentable: boolean;
   result: string;
   approvalStatus: ProcessStatusEnum;
   currentNodeId: string;

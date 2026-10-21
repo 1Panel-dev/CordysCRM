@@ -490,6 +490,7 @@ export const {
   getProcessedApprovalList,
   getInitiatedApprovalList,
   getCcApprovalList,
+  getMentionApprovalList,
   getApprovalFlowFormOptions,
   getApprovalConfigDetail,
   agreeApproval,

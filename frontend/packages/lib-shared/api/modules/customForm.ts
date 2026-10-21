@@ -67,8 +67,11 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateCustomFormUrl, data });
   }
 
-  function getCustomFormDetail(id?: string) {
-    return CDR.get<CustomFormDetail>({ url: `${GetCustomFormUrl}/${id}` });
+  function getCustomFormDetail(id?: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<CustomFormDetail>({
+      url: `${GetCustomFormUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   function getCustomFormAdmins(customFormId: string) {
@@ -120,8 +123,11 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<CustomFormItem[]>({ url: GetCustomFormListUrl });
   }
 
-  function getCustomFormDataDetail(id: string, approvalTaskId?: string) {
-    return CDR.get<CustomFormDataDetail>({ url: `${GetCustomFormDataDetailUrl}/${id}`, params: { approvalTaskId } });
+  function getCustomFormDataDetail(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<CustomFormDataDetail>({
+      url: `${GetCustomFormDataDetailUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   function getCustomFormDataPage(data: GetCustomFormDataPageParams) {

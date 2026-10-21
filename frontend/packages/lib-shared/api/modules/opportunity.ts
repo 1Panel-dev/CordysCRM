@@ -143,8 +143,11 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 商机详情
-  function getOpportunityDetail(id: string, approvalTaskId?: string) {
-    return CDR.get<OpportunityDetail>({ url: `${GetOptDetailUrl}/${id}`, params: { approvalTaskId } });
+  function getOpportunityDetail(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<OpportunityDetail>({
+      url: `${GetOptDetailUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   // 商机看板拖拽排序
@@ -420,13 +423,19 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 报价详情
-  function getQuotationDetail(id: string, approvalTaskId?: string) {
-    return CDR.get<QuotationItem>({ url: `${GetQuotationDetailUrl}/${id}`, params: { approvalTaskId } });
+  function getQuotationDetail(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<QuotationItem>({
+      url: `${GetQuotationDetailUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   // 报价单快照详情
-  function getQuotationSnapshotDetail(id: string, approvalTaskId?: string) {
-    return CDR.get<QuotationItem>({ url: `${GetQuotationSnapshotDetailUrl}/${id}`, params: { approvalTaskId } });
+  function getQuotationSnapshotDetail(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<QuotationItem>({
+      url: `${GetQuotationSnapshotDetailUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   // 获取报价表单配置
@@ -435,10 +444,10 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取报价表单快照配置
-  function getQuotationSnapshotFormConfig(id?: string, approvalTaskId?: string) {
+  function getQuotationSnapshotFormConfig(id?: string, approvalTaskId?: string, commentMentionId?: string) {
     return CDR.get<FormDesignConfigDetailParams>({
       url: `${GetQuotationSnapshotFormConfigUrl}/${id}`,
-      params: { approvalTaskId },
+      params: { approvalTaskId, commentMentionId },
     });
   }
 

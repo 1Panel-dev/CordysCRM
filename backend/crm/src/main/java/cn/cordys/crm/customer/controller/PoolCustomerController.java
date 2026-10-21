@@ -130,8 +130,8 @@ public class PoolCustomerController {
     @GetMapping("/get/{id}")
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
-        // 待办审批人可查看资源详情，无需再校验权限
-        if (!resourcePermissionService.hasApprovalTaskPermission(id, SessionUtils.getUserId())) {
+        // 待办审批人和有效评论@用户可查看对应资源详情。
+        if (!resourcePermissionService.hasApprovalViewPermission(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.CUSTOMER.getKey())) {
             if (!PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }

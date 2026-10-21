@@ -3,7 +3,7 @@
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
-    <template #titleRight>
+    <template v-if="!props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :group-list="detailActions.groupList"
@@ -40,6 +40,7 @@
         <div v-show="activeTab === 'clue'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="show"
+            :comment-mention-id="props.commentMentionId"
             :refresh-key="refreshKey"
             :form-key="FormDesignKeyEnum.CLUE"
             :source-id="sourceId"
@@ -51,13 +52,18 @@
             <template #left="{ fieldPermissions, taskNode, setLoading }">
               <ApprovalFieldEditor
                 ref="descriptionRef"
+                :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :form-key="FormDesignKeyEnum.CLUE"
                 :source-id="sourceId"
                 :refresh-key="refreshKey"
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
-                :readonly="!hasApprovalScopedPermission(detailInfo, ['CLUE_MANAGEMENT:UPDATE'])"
+                :readonly="
+                  Boolean(props.commentMentionId) ||
+                  !hasApprovalScopedPermission(detailInfo, ['CLUE_MANAGEMENT:UPDATE'])
+                "
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
                 @refresh="emit('refresh')"
@@ -163,6 +169,7 @@
   const props = defineProps<{
     detail?: Partial<ClueListItem>;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
 
   const show = defineModel<boolean>('show', {

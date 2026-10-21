@@ -16,7 +16,7 @@
         </CrmTag>
       </div>
     </template>
-    <template #titleRight>
+    <template v-if="!props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :not-show-divider="true"
@@ -49,6 +49,7 @@
         <div v-show="activeTab === 'quotation'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -60,6 +61,8 @@
             <template #left="{ fieldPermissions, taskNode, setLoading }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
+                :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
                 :description-form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
                 :source-id="props.sourceId"
@@ -68,7 +71,10 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
-                :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
+                :readonly="
+                  Boolean(props.commentMentionId) ||
+                  !hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])
+                "
                 @init="handleInit"
                 @refresh="emit('refresh')"
                 @saved="handleSavedRefresh"
@@ -141,6 +147,7 @@
   const props = defineProps<{
     sourceId: string;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
 
   const emit = defineEmits<{

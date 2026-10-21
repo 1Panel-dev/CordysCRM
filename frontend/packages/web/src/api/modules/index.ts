@@ -962,6 +962,7 @@ export const {
   getPendingApprovalList,
   getInitiatedApprovalList,
   getCcApprovalList,
+  getMentionApprovalList,
   rejectApproval,
   backApproval,
   addSignApproval,

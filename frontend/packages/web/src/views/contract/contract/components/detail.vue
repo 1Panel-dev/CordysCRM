@@ -5,7 +5,7 @@
         <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
       </div>
     </template>
-    <template #titleRight>
+    <template v-if="!props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :not-show-divider="true"
@@ -29,7 +29,7 @@
         :formKey="FormDesignKeyEnum.CONTRACT"
         is-limit-back
         is-no-resign-flow
-        :readonly="!canUpdateStage"
+        :readonly="Boolean(props.commentMentionId) || !canUpdateStage"
         :back-stage-permission="['CONTRACT:UPDATE']"
         :source-id="sourceId"
         :operation-permission="['CONTRACT:UPDATE']"
@@ -55,6 +55,7 @@
         <div v-show="activeTab === 'contract'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -66,6 +67,7 @@
             <template #left="{ fieldPermissions, taskNode, setLoading }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
+                :comment-mention-id="props.commentMentionId"
                 :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
                 :source-id="props.sourceId"
                 :column="2"
@@ -74,7 +76,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
-                :readonly="!hasAnyPermission(['CONTRACT:UPDATE'])"
+                :readonly="Boolean(props.commentMentionId) || !hasAnyPermission(['CONTRACT:UPDATE'])"
                 :is-contract-table-detail="props.isContractTableDetail"
                 :approval-task-id="props.approvalTaskId"
                 @init="handleInit"
@@ -202,6 +204,7 @@
     sourceId: string;
     isContractTableDetail?: boolean;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;

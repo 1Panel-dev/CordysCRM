@@ -98,6 +98,7 @@ export enum ApprovalListTypeEnum {
   APPROVAL = 'approved',
   INITIATED = 'initiated',
   COPIED = 'copied',
+  MENTION = 'mention',
 }
 
 export enum ApprovalTaskExecuteTimeEnum {

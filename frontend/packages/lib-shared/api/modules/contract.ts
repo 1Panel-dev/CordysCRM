@@ -217,13 +217,19 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 合同详情
-  function getContractDetail(id: string, approvalTaskId?: string) {
-    return CDR.get<ContractDetail>({ url: `${GetContractDetailUrl}/${id}`, params: { approvalTaskId } });
+  function getContractDetail(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<ContractDetail>({
+      url: `${GetContractDetailUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   // 合同详情快照
-  function getContractDetailSnapshot(id: string, approvalTaskId?: string) {
-    return CDR.get<ContractDetail>({ url: `${GetContractDetailSnapshotUrl}/${id}`, params: { approvalTaskId } });
+  function getContractDetailSnapshot(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<ContractDetail>({
+      url: `${GetContractDetailSnapshotUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   // 获取合同表单配置
@@ -233,10 +239,10 @@ export default function useContractApi(CDR: CordysAxios) {
     });
   }
 
-  function getContractFormSnapshotConfig(id?: string, approvalTaskId?: string) {
+  function getContractFormSnapshotConfig(id?: string, approvalTaskId?: string, commentMentionId?: string) {
     return CDR.get<FormDesignConfigDetailParams>({
       url: `${GetContractFormSnapshotConfigUrl}/${id}`,
-      params: { approvalTaskId },
+      params: { approvalTaskId, commentMentionId },
     });
   }
 
@@ -656,15 +662,18 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 发票详情
-  function getInvoicedDetail(id: string, approvalTaskId?: string) {
-    return CDR.get<ContractInvoiceDetail>({ url: `${ContractInvoicedDetailUrl}/${id}`, params: { approvalTaskId } });
+  function getInvoicedDetail(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<ContractInvoiceDetail>({
+      url: `${ContractInvoicedDetailUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   // 发票详情快照
-  function getInvoicedDetailSnapshot(id: string, approvalTaskId?: string) {
+  function getInvoicedDetailSnapshot(id: string, approvalTaskId?: string, commentMentionId?: string) {
     return CDR.get<ContractInvoiceDetail>({
       url: `${ContractInvoicedDetailSnapshotUrl}/${id}`,
-      params: { approvalTaskId },
+      params: { approvalTaskId, commentMentionId },
     });
   }
 
@@ -676,10 +685,10 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 获取发票表单配置快照
-  function getInvoicedFormSnapshotConfig(id?: string, approvalTaskId?: string) {
+  function getInvoicedFormSnapshotConfig(id?: string, approvalTaskId?: string, commentMentionId?: string) {
     return CDR.get<FormDesignConfigDetailParams>({
       url: `${ContractInvoicedFormConfigSnapshotUrl}/${id}`,
-      params: { approvalTaskId },
+      params: { approvalTaskId, commentMentionId },
     });
   }
 

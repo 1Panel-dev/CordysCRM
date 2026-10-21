@@ -15,6 +15,7 @@ import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
+import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.dto.request.ClueTransitionCustomerRequest;
@@ -87,12 +88,14 @@ class ResourcePermissionServiceTest {
     private final CommonNoticeSendService notices = mock(CommonNoticeSendService.class);
     private final ClueTransitionCustomerRequest conversionRequest = new ClueTransitionCustomerRequest();
     private final ExtClueMapper extClueMapper = mock(ExtClueMapper.class);
+    private final ExtApprovalCommentMapper commentMentions = mock(ExtApprovalCommentMapper.class);
     private MessageSource previousMessageSource;
     private LocaleContext previousLocaleContext;
 
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(service, "dataScopeService", dataScope);
+        ReflectionTestUtils.setField(service, "extApprovalCommentMapper", commentMentions);
         ReflectionTestUtils.setField(opportunities, "opportunityMapper", opportunityMapper);
         ReflectionTestUtils.setField(quotations, "quotationMapper", quotationMapper);
         ReflectionTestUtils.setField(clues, "clueMapper", clueMapper);
@@ -155,6 +158,7 @@ class ResourcePermissionServiceTest {
         }
         new Translator().setMessageSource(previousMessageSource);
         LocaleContextHolder.setLocaleContext(previousLocaleContext);
+        RequestContextHolder.resetRequestAttributes();
     }
 
     private void register(List<ResourceAccessContextProvider> providers) {
@@ -644,6 +648,106 @@ class ResourcePermissionServiceTest {
         } finally {
             RequestContextHolder.resetRequestAttributes();
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void effectiveCommentMentionGrantsOnlyTheMentionedResourceReadWithoutRolePermission(boolean header) {
+        bindCommentMention("GET", header);
+        try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
+            assertTrue(service.hasApprovalCommentMentionPermission(clue.getId(), "sales", "org"));
+            assertTrue(service.hasApprovalViewPermission(clue.getId(), "sales", "org"));
+            assertDoesNotThrow(() -> service.checkResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+            roles.verifyNoInteractions();
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {PermissionConstants.CLUE_MANAGEMENT_UPDATE, PermissionConstants.CLUE_MANAGEMENT_DELETE,
+            PermissionConstants.CLUE_MANAGEMENT_TRANSFER})
+    void commentMentionCannotAuthorizeWritesEvenOnGetRequests(String permission) {
+        bindCommentMention("GET", true);
+        try (MockedStatic<PermissionUtils> ignored = mockPermissions()) {
+            assertThrows(GenericException.class, () -> service.checkResourcePermission(permission,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+        }
+        verifyNoInteractions(commentMentions);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"unknown", "other-user", "other-org", "other-resource", "no-context", "POST"})
+    void rejectsCommentMentionOutsideItsUserOrganizationResourceOrGetContext(String reason) {
+        bindCommentMention("POST".equals(reason) ? "POST" : "GET", true);
+        String resourceId = "other-resource".equals(reason) ? "another-resource" : clue.getId();
+        String userId = "other-user".equals(reason) ? "other-user" : "sales";
+        String orgId = "other-org".equals(reason) ? "other-org" : "org";
+        if ("unknown".equals(reason)) {
+            when(commentMentions.selectMentionInstance("mention-id", "sales", "org")).thenReturn(null);
+        } else if ("no-context".equals(reason)) {
+            RequestContextHolder.resetRequestAttributes();
+        }
+        try (MockedStatic<PermissionUtils> ignored = mockPermissions()) {
+            assertFalse(service.hasApprovalCommentMentionPermission(resourceId, userId, orgId));
+            assertThrows(GenericException.class, () -> service.checkResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    resourceId, FormKeyConstants.CLUE, userId, orgId));
+        }
+    }
+
+    @Test
+    void removingMentionImmediatelyRevokesItsReadGrantAndDoesNotAuthorizeBatchReads() {
+        bindCommentMention("GET", true);
+        try (MockedStatic<PermissionUtils> ignored = mockPermissions()) {
+            assertDoesNotThrow(() -> service.checkResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+            assertThrows(GenericException.class, () -> service.checkBatchResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    List.of(clue.getId()), FormKeyConstants.CLUE, "sales", "org"));
+
+            when(commentMentions.selectMentionInstance("mention-id", "sales", "org")).thenReturn(null);
+            assertFalse(service.hasApprovalViewPermission(clue.getId(), "sales", "org"));
+            assertThrows(GenericException.class, () -> service.checkResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+        }
+    }
+
+    @Test
+    void commentMentionFormPermissionIsLimitedToTheInstancesCustomForm() {
+        ApprovalInstance instance = bindCommentMention("GET", false);
+        instance.setType("custom-form-a");
+
+        assertTrue(service.hasApprovalCommentMentionFormPermission("custom-form-a", "sales", "org"));
+        assertFalse(service.hasApprovalCommentMentionFormPermission("custom-form-b", "sales", "org"));
+        assertFalse(service.hasApprovalCommentMentionFormPermission("custom-form-a", "sales", "other-org"));
+
+        instance.setType(FormKeyConstants.CONTRACT);
+        assertFalse(service.hasApprovalCommentMentionFormPermission(FormKeyConstants.CONTRACT, "sales", "org"));
+    }
+
+    @Test
+    void commentMentionCannotReadAnotherResourceTypeWithTheSameResourceId() {
+        ApprovalInstance instance = bindCommentMention("GET", true);
+        instance.setType(FormKeyConstants.CUSTOMER);
+        try (MockedStatic<PermissionUtils> ignored = mockPermissions()) {
+            assertFalse(service.hasApprovalViewPermission(clue.getId(), "sales", "org", FormKeyConstants.CLUE));
+            assertThrows(GenericException.class, () -> service.checkResourcePermission(PermissionConstants.CLUE_MANAGEMENT_READ,
+                    clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+        }
+    }
+
+    private ApprovalInstance bindCommentMention(String method, boolean header) {
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setId("mentioned-instance");
+        instance.setResourceId(clue.getId());
+        instance.setType(FormKeyConstants.CLUE);
+        when(commentMentions.selectMentionInstance("mention-id", "sales", "org")).thenReturn(instance);
+        MockHttpServletRequest request = new MockHttpServletRequest(method, "/clue/get/" + clue.getId());
+        if (header) {
+            request.addHeader("Approval-Comment-Mention-Id", "mention-id");
+        } else {
+            request.addParameter("commentMentionId", "mention-id");
+        }
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        return instance;
     }
 
     private ApprovalTask pendingTask(String taskId) {

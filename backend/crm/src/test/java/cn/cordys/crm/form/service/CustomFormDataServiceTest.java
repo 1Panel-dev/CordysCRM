@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -375,9 +376,10 @@ class CustomFormDataServiceTest {
         verify(formCacheService, never()).delete(anyString(), anyString());
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
     @SuppressWarnings("unchecked")
-    void getFillsDepartmentFromOwnerDepartment() {
+    void getFillsDepartmentAndKeepsApprovalViewReadOnly(boolean approvalView) {
         BaseMapper<CustomFormData> dataMapper = mock(BaseMapper.class);
         CustomFormDataFieldService fieldService = mock(CustomFormDataFieldService.class);
         ModuleFormCacheService formCacheService = mock(ModuleFormCacheService.class);
@@ -389,8 +391,9 @@ class CustomFormDataServiceTest {
         ReflectionTestUtils.setField(service, "moduleFormCacheService", formCacheService);
         ReflectionTestUtils.setField(service, "baseService", baseService);
         ReflectionTestUtils.setField(service, "moduleFormService", moduleFormService);
-        ReflectionTestUtils.setField(service, "resourcePermissionService",
-                mock(ResourcePermissionService.class));
+        ResourcePermissionService permissions = mock(ResourcePermissionService.class);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
+        when(permissions.hasApprovalViewPermission("record-1", "owner-1", "org-1", "form-1")).thenReturn(approvalView);
 
         CustomFormData data = record("record-1", "form-1", "org-1", "owner-1");
         data.setCreateUser("owner-1");
@@ -408,6 +411,7 @@ class CustomFormDataServiceTest {
 
         assertEquals("dept-1", response.getDepartmentId());
         assertEquals("销售部", response.getDepartmentName());
+        assertEquals(!approvalView, response.getIsAdmin());
     }
 
     @Test

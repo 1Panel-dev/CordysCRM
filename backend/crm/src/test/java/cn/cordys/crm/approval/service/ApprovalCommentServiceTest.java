@@ -29,11 +29,14 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,6 +45,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -60,6 +64,7 @@ class ApprovalCommentServiceTest {
     private BaseMapper<ApprovalCommentMention> mentionMapper;
     private ExtApprovalCommentMapper extCommentMapper;
     private ApprovalResourceService approvalResourceService;
+    private ApprovalCommentNoticeService approvalCommentNoticeService;
     private ApprovalInstance instance;
 
     @BeforeAll
@@ -89,10 +94,12 @@ class ApprovalCommentServiceTest {
         mentionMapper = mock(BaseMapper.class);
         extCommentMapper = mock(ExtApprovalCommentMapper.class);
         approvalResourceService = mock(ApprovalResourceService.class);
+        approvalCommentNoticeService = mock(ApprovalCommentNoticeService.class);
         ReflectionTestUtils.setField(service, "commentMapper", commentMapper);
         ReflectionTestUtils.setField(service, "mentionMapper", mentionMapper);
         ReflectionTestUtils.setField(service, "extCommentMapper", extCommentMapper);
         ReflectionTestUtils.setField(service, "approvalResourceService", approvalResourceService);
+        ReflectionTestUtils.setField(service, "approvalCommentNoticeService", approvalCommentNoticeService);
         instance = new ApprovalInstance();
         instance.setId(INSTANCE);
         when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(instance);
@@ -108,6 +115,7 @@ class ApprovalCommentServiceTest {
             context.getBeanFactory().registerSingleton("commentMapper", commentMapper);
             context.getBeanFactory().registerSingleton("mentionMapper", mentionMapper);
             context.getBeanFactory().registerSingleton("approvalResourceService", approvalResourceService);
+            context.getBeanFactory().registerSingleton("approvalCommentNoticeService", approvalCommentNoticeService);
             context.registerBean(ApprovalCommentService.class);
             context.refresh();
 
@@ -339,7 +347,8 @@ class ApprovalCommentServiceTest {
     @Test
     void allowsFinishingOwnEditWhenItRemovesTheLastMentionGrant() {
         when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
-        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(true);
+        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(true, false);
+        when(mentionMapper.select(any())).thenReturn(List.of(mention("mention-a", "comment-a", USER)));
         ApprovalCommentResponse detail = detail("comment-a");
         when(extCommentMapper.selectDetail("comment-a", ORG)).thenReturn(detail);
 
@@ -349,9 +358,10 @@ class ApprovalCommentServiceTest {
         verify(commentMapper).update(updated.capture());
         assertEquals("修改后的评论", updated.getValue().getContent());
         assertEquals(USER, updated.getValue().getUpdateUser());
-        verify(extCommentMapper).existsMention(INSTANCE, USER, ORG);
-        verify(extCommentMapper).deleteMentions(List.of("comment-a"), ORG);
-        verifyNoInteractions(mentionMapper);
+        assertFalse(service.hasCommentPermission(INSTANCE, USER, ORG));
+        verify(extCommentMapper, times(2)).existsMention(INSTANCE, USER, ORG);
+        verify(mentionMapper).deleteByIds(List.of("mention-a"));
+        verifyNoInteractions(approvalCommentNoticeService);
     }
 
     @Test
@@ -397,6 +407,151 @@ class ApprovalCommentServiceTest {
         assertEquals(1, mentionCaptor.getValue().size());
         assertEquals("member-a", mentionCaptor.getValue().getFirst().getUserId());
         assertEquals(commentCaptor.getValue().getId(), mentionCaptor.getValue().getFirst().getCommentId());
+        assertEquals(commentCaptor.getValue().getCreateTime(), mentionCaptor.getValue().getFirst().getCreateTime());
+        verify(approvalCommentNoticeService).sendMentionNotice(commentCaptor.getValue(), List.of("member-a"));
+    }
+
+    @Test
+    void unchangedMentionKeepsTodoIdentityAndTimeWithoutAnotherNotice() {
+        prepareOwnEdit();
+        ApprovalCommentMention existing = mention("mention-kept", "comment-a", "member-a");
+        when(mentionMapper.select(any())).thenReturn(List.of(existing));
+        when(extCommentMapper.selectEnabledUserIds(List.of("member-a"), ORG)).thenReturn(List.of("member-a"));
+        ApprovalCommentUpdateRequest request = updateRequest();
+        request.setMentionedUserIds(List.of("member-a"));
+
+        service.update(request, USER, ORG);
+
+        assertEquals("mention-kept", existing.getId());
+        assertEquals(100L, existing.getCreateTime());
+        verify(mentionMapper, never()).deleteByIds(any());
+        verify(mentionMapper, never()).batchInsert(any());
+        verifyNoInteractions(approvalCommentNoticeService);
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void editingMentionsOnlyCreatesAndNotifiesNewRecipients() {
+        prepareOwnEdit();
+        ApprovalCommentMention kept = mention("mention-kept", "comment-a", "member-a");
+        ApprovalCommentMention removed = mention("mention-removed", "comment-a", "member-b");
+        when(mentionMapper.select(any())).thenReturn(List.of(kept, removed));
+        when(extCommentMapper.selectEnabledUserIds(List.of("member-a", "member-c"), ORG)).thenReturn(List.of("member-a", "member-c"));
+        ApprovalCommentUpdateRequest request = updateRequest();
+        request.setMentionedUserIds(List.of("member-a", "member-c"));
+
+        service.update(request, USER, ORG);
+
+        verify(mentionMapper).deleteByIds(List.of(removed.getId()));
+        ArgumentCaptor<List<ApprovalCommentMention>> created = ArgumentCaptor.forClass((Class) List.class);
+        verify(mentionMapper).batchInsert(created.capture());
+        assertEquals(List.of("member-c"), created.getValue().stream().map(ApprovalCommentMention::getUserId).toList());
+        assertEquals("comment-a", created.getValue().getFirst().getCommentId());
+        assertEquals("mention-kept", kept.getId());
+        assertEquals(100L, kept.getCreateTime());
+        ArgumentCaptor<ApprovalComment> notifiedComment = ArgumentCaptor.forClass(ApprovalComment.class);
+        verify(approvalCommentNoticeService).sendMentionNotice(notifiedComment.capture(), eq(List.of("member-c")));
+        assertEquals(notifiedComment.getValue().getUpdateTime(), created.getValue().getFirst().getCreateTime());
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void removedRecipientCanReceiveANewTodoAndNoticeWhenMentionedAgain() {
+        prepareOwnEdit();
+        ApprovalCommentMention removed = mention("mention-old", "comment-a", "member-a");
+        when(mentionMapper.select(any())).thenReturn(List.of(removed), List.of());
+        when(extCommentMapper.selectEnabledUserIds(List.of("member-a"), ORG)).thenReturn(List.of("member-a"));
+        ApprovalCommentUpdateRequest request = updateRequest();
+
+        service.update(request, USER, ORG);
+        verifyNoInteractions(approvalCommentNoticeService);
+        request.setMentionedUserIds(List.of("member-a"));
+        service.update(request, USER, ORG);
+
+        verify(mentionMapper).deleteByIds(List.of(removed.getId()));
+        ArgumentCaptor<List<ApprovalCommentMention>> created = ArgumentCaptor.forClass((Class) List.class);
+        verify(mentionMapper).batchInsert(created.capture());
+        assertNotEquals(removed.getId(), created.getValue().getFirst().getId());
+        assertTrue(created.getValue().getFirst().getCreateTime() > removed.getCreateTime());
+        verify(approvalCommentNoticeService).sendMentionNotice(any(), eq(List.of("member-a")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void eachCommentNotifiesOnlyAfterCommitAndRollbackDoesNotNotify(boolean commit) {
+        allowExistingPermission();
+        when(extCommentMapper.selectEnabledUserIds(List.of("member-a"), ORG)).thenReturn(List.of("member-a"));
+        when(extCommentMapper.selectDetail(anyString(), eq(ORG))).thenAnswer(invocation -> detail(invocation.getArgument(0)));
+        ApprovalCommentAddRequest request = addRequest();
+        request.setMentionedUserIds(List.of("member-a"));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.add(request, USER, ORG);
+            service.add(request, USER, ORG);
+
+            verifyNoInteractions(approvalCommentNoticeService);
+            ArgumentCaptor<ApprovalComment> comments = ArgumentCaptor.forClass(ApprovalComment.class);
+            verify(commentMapper, times(2)).insert(comments.capture());
+            assertNotEquals(comments.getAllValues().getFirst().getId(), comments.getAllValues().getLast().getId());
+            assertTrue(comments.getAllValues().stream().allMatch(comment -> INSTANCE.equals(comment.getInstanceId())));
+            ArgumentCaptor<List<ApprovalCommentMention>> mentions = ArgumentCaptor.forClass((Class) List.class);
+            verify(mentionMapper, times(2)).batchInsert(mentions.capture());
+            for (int i = 0; i < 2; i++) {
+                assertEquals(comments.getAllValues().get(i).getId(), mentions.getAllValues().get(i).getFirst().getCommentId());
+                assertEquals(comments.getAllValues().get(i).getCreateTime(), mentions.getAllValues().get(i).getFirst().getCreateTime());
+            }
+            List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
+            if (commit) {
+                synchronizations.forEach(TransactionSynchronization::afterCommit);
+                verify(approvalCommentNoticeService, times(2)).sendMentionNotice(any(), eq(List.of("member-a")));
+            } else {
+                synchronizations.forEach(synchronization -> synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+                verifyNoInteractions(approvalCommentNoticeService);
+            }
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
+    void mentionContextReturnsTheOriginalApprovalInstance() {
+        instance.setResourceId("resource-a");
+        when(extCommentMapper.selectMentionInstance("mention-a", USER, ORG)).thenReturn(instance);
+
+        assertSame(instance, service.getMentionInstance("mention-a", "resource-a", USER, ORG));
+
+        verify(extCommentMapper).selectMentionInstance("mention-a", USER, ORG);
+        verifyNoInteractions(approvalResourceService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void invalidMentionContextOrMismatchedResourceIsRejected(boolean existingMention) {
+        if (existingMention) {
+            instance.setResourceId("another-resource");
+            when(extCommentMapper.selectMentionInstance("mention-a", USER, ORG)).thenReturn(instance);
+        }
+
+        assertThrows(GenericException.class, () -> service.getMentionInstance("mention-a", "resource-a", USER, ORG));
+
+        verify(extCommentMapper).selectMentionInstance("mention-a", USER, ORG);
+        verifyNoInteractions(approvalResourceService);
+    }
+
+    private void prepareOwnEdit() {
+        allowExistingPermission();
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
+        when(extCommentMapper.selectDetail("comment-a", ORG)).thenReturn(detail("comment-a"));
+    }
+
+    private ApprovalCommentMention mention(String id, String commentId, String userId) {
+        ApprovalCommentMention mention = new ApprovalCommentMention();
+        mention.setId(id);
+        mention.setCommentId(commentId);
+        mention.setUserId(userId);
+        mention.setCreateTime(100L);
+        return mention;
     }
 
     private void allowExistingPermission() {

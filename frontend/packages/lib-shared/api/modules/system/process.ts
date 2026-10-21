@@ -17,6 +17,7 @@ import {
   GetPendingApprovalTodosUrl,
   GetInitiatedApprovalTodosUrl,
   GetCcApprovalTodosUrl,
+  GetMentionApprovalTodosUrl,
   RejectApprovalUrl,
   BackApprovalUrl,
   AddSignApprovalUrl,
@@ -88,8 +89,8 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.get<OptionDTO[]>({ url: ApprovalFlowFormOptionsUrl });
   }
   // 获取对应资源审批状态详情用于（列表小卡片）
-  function getResourceApprovingDetail(sourceId: string) {
-    return CDR.get({ url: `${GetResourceApprovingDetailUrl}/${sourceId}` });
+  function getResourceApprovingDetail(sourceId: string, commentMentionId?: string) {
+    return CDR.get({ url: `${GetResourceApprovingDetailUrl}/${sourceId}`, params: { commentMentionId } });
   }
 
   // 获取已处理审批待办列表
@@ -110,6 +111,11 @@ export default function useProcessApi(CDR: CordysAxios) {
   // 获取抄送我的审批待办列表
   function getCcApprovalList(data: ApprovalTodoTableParams) {
     return CDR.post<CommonList<ApprovalTodoItem>>({ url: GetCcApprovalTodosUrl, data });
+  }
+
+  // 获取评论@我的审批待办列表
+  function getMentionApprovalList(data: ApprovalTodoTableParams) {
+    return CDR.post<CommonList<ApprovalTodoItem>>({ url: GetMentionApprovalTodosUrl, data });
   }
 
   // 驳回
@@ -148,8 +154,8 @@ export default function useProcessApi(CDR: CordysAxios) {
   }
 
   // 获取审批资源详情
-  function getApprovalResourceDetail(id: string) {
-    return CDR.get<ApprovalDetail>({ url: `${GetApprovalResourceDetailUrl}/${id}` });
+  function getApprovalResourceDetail(id: string, commentMentionId?: string) {
+    return CDR.get<ApprovalDetail>({ url: `${GetApprovalResourceDetailUrl}/${id}`, params: { commentMentionId } });
   }
 
   // 获取待办统计
@@ -194,6 +200,7 @@ export default function useProcessApi(CDR: CordysAxios) {
     getPendingApprovalList,
     getInitiatedApprovalList,
     getCcApprovalList,
+    getMentionApprovalList,
     rejectApproval,
     backApproval,
     addSignApproval,

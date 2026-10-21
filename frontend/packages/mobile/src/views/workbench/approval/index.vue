@@ -34,7 +34,7 @@
         </div>
       </van-tab>
     </van-tabs>
-    <template v-if="approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING" #footer>
+    <template v-if="!commentMentionId && approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING" #footer>
       <CrmApprovalRecordActions
         :source-id="sourceId"
         :form-key="approvalFormKey"
@@ -75,6 +75,7 @@
   const route = useRoute();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
+  const commentMentionId = computed(() => route.query.commentMentionId?.toString());
   const routeFormKey = computed(() => route.query.formKey?.toString() as FormDesignKeyEnum);
   const customFormId = computed(() => route.query.customFormId?.toString());
   const approvalFormKey = computed(() => {
@@ -96,6 +97,7 @@
     needInitDetail: true,
     otherSaveParams: {
       approvalTaskId: route.query.taskId,
+      commentMentionId: commentMentionId.value,
     },
     customFormId,
   });
@@ -116,6 +118,7 @@
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
 
   async function initApprovalConfig() {
+    if (commentMentionId.value) return;
     try {
       if (approvalFormKey.value) {
         approvalConfig.value = await getApprovalConfigDetail(approvalFormKey.value);
@@ -138,7 +141,7 @@
   });
   // 只有当前审批中的人才展示编辑权限，其他节点展示只读权限
   const filedPermission = computed(() => {
-    if (currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
+    if (!commentMentionId.value && currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
       return (JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]) || [];
     }
     return [];
@@ -172,7 +175,7 @@
   const noApproval = ref(false);
   async function initApprovalDetail() {
     try {
-      approvalInfo.value = await getApprovalResourceDetail(route.query.id?.toString() || '');
+      approvalInfo.value = await getApprovalResourceDetail(route.query.id?.toString() || '', commentMentionId.value);
       if (!approvalInfo.value) {
         noApproval.value = true;
       }

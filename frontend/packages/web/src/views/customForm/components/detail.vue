@@ -11,7 +11,7 @@
     <template #titleLeft>
       <CrmApprovalStatus :status="currentApprovalStatus" />
     </template>
-    <template #titleRight>
+    <template v-if="!props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :not-show-divider="true"
@@ -44,6 +44,7 @@
         <div v-show="activeTab === 'customForm'" class="h-full p-[24px]">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="props.customFormId"
             :source-id="props.sourceId"
             :refresh-key="detailRefreshKey"
@@ -56,6 +57,8 @@
             <template #left="{ fieldPermissions, taskNode, setLoading }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
+                :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :form-key="FormDesignKeyEnum.CUSTOM_FORM"
                 :source-id="props.sourceId"
                 :column="3"
@@ -64,7 +67,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
-                :readonly="!canUpdateDetail"
+                :readonly="Boolean(props.commentMentionId) || !canUpdateDetail"
                 :custom-form-id="props.customFormId"
                 @init="handleInit"
                 @refresh="emit('refresh')"
@@ -118,6 +121,7 @@
     refreshId?: number;
     customFormId: string;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'edit', sourceId: string): void;

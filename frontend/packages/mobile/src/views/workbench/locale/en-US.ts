@@ -1,4 +1,5 @@
 export default {
+  'workbench.mentionedMe': '@Me',
   'workbench.searchPlaceholder': 'Please input the account name or phone number',
   'workbench.smartWorkbench': 'Smart Workbench',
   'workbench.myDashboard': 'My Dashboard',

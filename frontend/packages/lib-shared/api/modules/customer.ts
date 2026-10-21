@@ -221,8 +221,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取客户详情
-  function getCustomer(id: string, approvalTaskId?: string) {
-    return CDR.get<CustomerDetail>({ url: `${GetCustomerUrl}/${id}`, params: { approvalTaskId } });
+  function getCustomer(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<CustomerDetail>({ url: `${GetCustomerUrl}/${id}`, params: { approvalTaskId, commentMentionId } });
   }
 
   // 删除客户
@@ -490,8 +490,11 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取公海客户详情
-  function getOpenSeaCustomer(id: string, approvalTaskId?: string) {
-    return CDR.get<CustomerDetail>({ url: `${GetOpenSeaCustomerUrl}/${id}`, params: { approvalTaskId } });
+  function getOpenSeaCustomer(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<CustomerDetail>({
+      url: `${GetOpenSeaCustomerUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   // 删除公海客户

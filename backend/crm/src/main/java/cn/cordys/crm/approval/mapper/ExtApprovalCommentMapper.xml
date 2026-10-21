@@ -11,6 +11,50 @@
           AND afv.organization_id = #{organizationId}
     </select>
 
+    <sql id="mentionInstanceJoins">
+        FROM approval_comment_mention m
+        INNER JOIN approval_comment c ON c.id = m.comment_id
+        INNER JOIN approval_instance ai ON ai.id = c.instance_id
+        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+    </sql>
+
+    <select id="selectMentionTodos" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
+        SELECT ai.resource_id AS resourceId,
+               COALESCE(ai.resource_name, '资源不存在') AS resourceName,
+               UPPER(ai.type) AS resourceType,
+               u.name AS applicant,
+               ai.submit_time AS submitTime,
+               ai.execute_time,
+               ai.approval_status AS dataResult,
+               ai.id AS approvalInstanceId,
+               afv.flow_id AS approvalFlowId,
+               afv.id AS approvalFlowVersionId,
+               m.id AS commentMentionId,
+               c.id AS commentId,
+               m.create_time AS mentionTime
+        <include refid="mentionInstanceJoins"/>
+        LEFT JOIN sys_user u ON u.id = ai.submitter_id
+        WHERE m.user_id = #{userId}
+          AND c.organization_id = #{organizationId}
+          AND afv.organization_id = #{organizationId}
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND ai.resource_name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY m.create_time DESC, m.id DESC
+    </select>
+
+    <select id="selectMentionInstance" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
+        SELECT ai.*
+        <include refid="mentionInstanceJoins"/>
+        WHERE m.id = #{mentionId}
+          AND m.user_id = #{userId}
+          AND c.organization_id = #{organizationId}
+          AND afv.organization_id = #{organizationId}
+    </select>
+
     <select id="selectCommentForUpdate" resultType="cn.cordys.crm.approval.domain.ApprovalComment">
         SELECT c.*
         FROM approval_comment c

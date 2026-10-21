@@ -3,7 +3,7 @@
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
-    <template #titleRight>
+    <template v-if="!props.commentMentionId" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :group-list="detailActions.groupList"
@@ -44,6 +44,7 @@
         <div v-show="activeTab === 'customer'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="show"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.CUSTOMER"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -55,13 +56,18 @@
             <template #left="{ fieldPermissions, taskNode, setLoading }">
               <ApprovalFieldEditor
                 ref="descriptionRef"
+                :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :form-key="FormDesignKeyEnum.CUSTOMER"
                 :source-id="props.sourceId"
                 :refresh-key="refreshKey"
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
-                :readonly="!hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
+                :readonly="
+                  Boolean(props.commentMentionId) ||
+                  !hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])
+                "
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"
                 @saved="handleSaved"
@@ -74,7 +80,7 @@
             :refresh-key="refreshKey"
             :source-id="props.sourceId"
             :initial-source-name="sourceName"
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :readonly="Boolean(props.commentMentionId) || collaborationType === 'READ_ONLY' || props.readonly"
             :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
           />
         </div>
@@ -105,7 +111,7 @@
         <div v-if="activeTab === 'relation'" class="h-full px-[24px] pt-[24px]">
           <customerRelation
             :source-id="props.sourceId"
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :readonly="Boolean(props.commentMentionId) || collaborationType === 'READ_ONLY' || props.readonly"
           />
         </div>
         <div v-if="activeTab === 'opportunityInfo'" class="h-full px-[24px] pt-[24px]">
@@ -114,12 +120,15 @@
             :customer-name="sourceName"
             is-customer-tab
             :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :readonly="Boolean(props.commentMentionId) || collaborationType === 'READ_ONLY' || props.readonly"
             hideBoard
           />
         </div>
         <div v-if="activeTab === 'collaborator'" class="h-full px-[24px] pt-[24px]">
-          <collaborator :source-id="props.sourceId" :readonly="collaborationType === 'READ_ONLY' || props.readonly" />
+          <collaborator
+            :source-id="props.sourceId"
+            :readonly="Boolean(props.commentMentionId) || collaborationType === 'READ_ONLY' || props.readonly"
+          />
         </div>
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
           <ContractTimeline :form-key="FormDesignKeyEnum.CONTRACT" :source-id="props.sourceId" />
@@ -138,7 +147,7 @@
             :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
             :sourceId="props.sourceId"
             isCustomerTab
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :readonly="Boolean(props.commentMentionId) || collaborationType === 'READ_ONLY' || props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
@@ -222,6 +231,7 @@
     sourceId: string;
     readonly?: boolean;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;

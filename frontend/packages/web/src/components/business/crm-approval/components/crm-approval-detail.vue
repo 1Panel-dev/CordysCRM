@@ -1,13 +1,6 @@
 <template>
   <CrmCard hide-footer no-content-padding>
-    <CrmSplitPanel
-      v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
-      :size="0.7"
-      :max="0.8"
-      :min="0.4"
-      :default-size="0.7"
-      collapse-side="right"
-    >
+    <CrmSplitPanel v-if="hasApprovalRecord" :size="0.7" :max="0.8" :min="0.4" :default-size="0.7" collapse-side="right">
       <template #1>
         <div class="relative flex h-full w-full p-[24px_8px_24px_24px]">
           <Transition name="approval-left-skeleton">
@@ -280,6 +273,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    commentMentionId?: string;
     formKey: FormDesignKeyEnum | string;
     refreshKey?: number;
     layout?: 'horizontal' | 'vertical';
@@ -317,6 +311,13 @@
   const message = useMessage();
   const userStore = useUserStore();
 
+  const hasApprovalRecord = computed(
+    () =>
+      Boolean(props.commentMentionId) ||
+      Boolean(
+        props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)
+      )
+  );
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
   const leftSlotLoading = ref(props.leftLoading ?? false);
@@ -326,6 +327,7 @@
   }
 
   async function initApprovalConfig() {
+    if (props.commentMentionId) return;
     try {
       if (props.formKey) {
         approvalConfig.value = await getApprovalConfigDetail(props.formKey);
@@ -376,7 +378,7 @@
   });
   // 只有当前审批中的人才展示编辑权限，其他节点展示只读权限
   const filedPermission = computed(() => {
-    if (currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
+    if (!props.commentMentionId && currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
       return (JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]) || [];
     }
     return [];
@@ -384,6 +386,7 @@
 
   // 是否是审批人
   const isApprover = computed(() => {
+    if (props.commentMentionId) return false;
     if (currentApprovalNode.value?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
       // 顺序审批，只有当前审批人可以操作
       return (
@@ -398,6 +401,7 @@
   });
   // 是否可以撤销审批申请
   const canCancelApply = computed(() => {
+    if (props.commentMentionId) return false;
     // 未配置撤销申请
     if (
       !approvalConfig.value?.submitterCanRevoke &&
@@ -435,6 +439,7 @@
   });
   // 是否可以撤销审批
   const canCancelApproval = computed(() => {
+    if (props.commentMentionId) return false;
     // 未配置撤销
     if (!approvalConfig.value?.allowWithdraw) {
       return false;
@@ -494,7 +499,7 @@
   const noApproval = ref(false);
   async function initApprovalDetail() {
     try {
-      approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
+      approvalInfo.value = await getApprovalResourceDetail(props.sourceId, props.commentMentionId);
       if (!approvalInfo.value) {
         noApproval.value = true;
       }
@@ -833,9 +838,9 @@
   }
 
   watch(
-    () => props.approvalStatus,
+    [() => props.approvalStatus, () => props.commentMentionId],
     () => {
-      if (props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)) {
+      if (hasApprovalRecord.value) {
         initApprovalDetail();
         initApprovalConfig();
       }
@@ -848,7 +853,7 @@
   watch(
     () => props.refreshKey,
     () => {
-      if (props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)) {
+      if (hasApprovalRecord.value) {
         initApprovalDetail();
       }
     }

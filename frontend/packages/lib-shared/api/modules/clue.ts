@@ -194,8 +194,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取线索详情
-  function getClue(id: string, approvalTaskId?: string) {
-    return CDR.get<ClueDetail>({ url: `${GetClueUrl}/${id}`, params: { approvalTaskId } });
+  function getClue(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<ClueDetail>({ url: `${GetClueUrl}/${id}`, params: { approvalTaskId, commentMentionId } });
   }
 
   // 删除线索
@@ -329,8 +329,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取线索池详情
-  function getPoolClue(id: string, approvalTaskId?: string) {
-    return CDR.get<ClueDetail>({ url: `${GetPoolClueUrl}/${id}`, params: { approvalTaskId } });
+  function getPoolClue(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<ClueDetail>({ url: `${GetPoolClueUrl}/${id}`, params: { approvalTaskId, commentMentionId } });
   }
 
   // 生成线索池图表

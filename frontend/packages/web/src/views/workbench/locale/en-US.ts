@@ -1,4 +1,5 @@
 export default {
+  'workbench.dataOverview.mentionedMe': '@Me',
   'workbench.duplicateCheck': 'Duplicate check',
   'workbench.duplicateCheck.inputPlaceholder': 'Enter your account name or mobile phone number',
   'workbench.duplicateCheck.result': 'Account related',
