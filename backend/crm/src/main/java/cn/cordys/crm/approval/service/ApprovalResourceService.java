@@ -44,6 +44,7 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.form.domain.CustomFormData;
+import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.SessionUtils;
@@ -79,6 +80,8 @@ public class ApprovalResourceService {
     @Resource
     private BaseMapper<ApprovalInstance> approvalInstanceMapper;
     @Resource
+    private BaseMapper<ApprovalFlowVersion> approvalFlowVersionMapper;
+    @Resource
     private BaseMapper<ApprovalTask> approvalTaskMapper;
     @Resource
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
@@ -104,6 +107,8 @@ public class ApprovalResourceService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private CustomFormDataService customFormDataService;
 
     @Resource
     private List<ApprovalResourceHandler> approvalResourceHandlers;
@@ -1294,6 +1299,37 @@ public class ApprovalResourceService {
     }
 
     /**
+     * 按指定审批实例校验经办人或业务数据查看权限，不读取资源的最新审批实例。
+     */
+    public boolean hasInstanceViewPermission(ApprovalInstance instance, String userId, String orgId) {
+        if (instance == null || StringUtils.isAnyBlank(instance.getId(), instance.getFlowVersionId(), userId, orgId)) {
+            return false;
+        }
+        ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(instance.getFlowVersionId());
+        if (version == null || !orgId.equals(version.getOrganizationId())) {
+            return false;
+        }
+        if (userId.equals(instance.getSubmitterId()) || hasApprovalTaskPermission(instance, userId)) {
+            // 审批流程实例的经办人放行 (提审人, 当前或历史节点的审批人, 抄送人;)
+            return true;
+        }
+
+        // 拥有业务数据的数据查看权限放行
+        String readPermission = getReadPermissionByFormType(instance.getType());
+        if (StringUtils.isBlank(readPermission) || !PermissionUtils.hasPermission(readPermission)) {
+            return false;
+        }
+        if (FormKey.ofKey(instance.getType()) == null) {
+            return customFormDataService.hasViewPermission(instance.getResourceId(), userId, orgId);
+        }
+        ResourceAccessContextProvider provider = getResourceAccessContextProvider(instance.getType());
+        ResourceAccessContext context = provider != null ? provider.getAccessContext(instance.getResourceId(), orgId) : null;
+        return context != null
+                && (!provider.requiresOwner() || StringUtils.isNotBlank(context.getOwnerId()))
+                && hasResourceDataPermission(context, userId, orgId, readPermission);
+    }
+
+    /**
      * 校验用户是否参与过当前审批实例（包括审批任务和抄送任务）
      */
     private boolean hasApprovalTaskPermission(ApprovalInstance instance, String userId) {
@@ -1339,11 +1375,15 @@ public class ApprovalResourceService {
         ResourceAccessContextProvider provider = getResourceAccessContextProvider(formType);
         if (provider != null) {
             ResourceAccessContext context = provider.getAccessContext(resourceId, orgId);
-            String ownerId = context != null ? context.getOwnerId() : null;
-            return !StringUtils.isNotBlank(ownerId) || dataScopeService.hasDataPermission(userId, orgId, ownerId, readPermission);
+            return hasResourceDataPermission(context, userId, orgId, readPermission);
         }
 
         return true;
+    }
+
+    private boolean hasResourceDataPermission(ResourceAccessContext context, String userId, String orgId, String readPermission) {
+        String ownerId = context != null ? context.getOwnerId() : null;
+        return StringUtils.isBlank(ownerId) || dataScopeService.hasDataPermission(userId, orgId, ownerId, readPermission);
     }
 
     /**

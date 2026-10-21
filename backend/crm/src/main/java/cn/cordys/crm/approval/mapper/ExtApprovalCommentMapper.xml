@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper">
+
+    <select id="selectInstance" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
+        SELECT ai.*
+        FROM approval_instance ai
+        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+        WHERE ai.id = #{instanceId}
+          AND afv.organization_id = #{organizationId}
+    </select>
+
+    <select id="selectCommentForUpdate" resultType="cn.cordys.crm.approval.domain.ApprovalComment">
+        SELECT c.*
+        FROM approval_comment c
+        WHERE c.id = #{id}
+          AND c.organization_id = #{organizationId}
+        FOR UPDATE
+    </select>
+
+    <sql id="commentColumns">
+        c.id,
+        c.instance_id,
+        c.parent_id,
+        c.reply_to_user_id,
+        ru.name AS reply_to_user_name,
+        c.content,
+        c.create_user,
+        u.name AS create_user_name,
+        ue.avatar AS create_user_avatar,
+        c.create_time,
+        c.update_time,
+        (SELECT COUNT(1)
+         FROM approval_comment reply
+         WHERE reply.parent_id = c.id
+           AND reply.instance_id = c.instance_id
+           AND reply.organization_id = c.organization_id) AS reply_count
+    </sql>
+
+    <sql id="commentUserJoins">
+        LEFT JOIN sys_user u ON u.id = c.create_user
+        LEFT JOIN sys_user_extend ue ON ue.id = c.create_user
+        LEFT JOIN sys_user ru ON ru.id = c.reply_to_user_id
+    </sql>
+
+    <select id="selectList" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentResponse">
+        SELECT
+        <include refid="commentColumns"/>
+        FROM approval_comment c
+        <include refid="commentUserJoins"/>
+        WHERE c.organization_id = #{organizationId}
+          AND c.instance_id = #{instanceId}
+          AND c.parent_id IS NULL
+        ORDER BY c.create_time DESC, c.id DESC
+    </select>
+
+    <select id="selectChildren" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentResponse">
+        SELECT
+        <include refid="commentColumns"/>
+        FROM approval_comment c
+        <include refid="commentUserJoins"/>
+        WHERE c.organization_id = #{organizationId}
+          AND c.instance_id = #{instanceId}
+          AND c.parent_id IN
+        <foreach collection="parentIds" item="parentId" open="(" separator="," close=")">
+            #{parentId}
+        </foreach>
+        ORDER BY c.create_time DESC, c.id DESC
+    </select>
+
+    <select id="selectDetail" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentResponse">
+        SELECT
+        <include refid="commentColumns"/>
+        FROM approval_comment c
+        <include refid="commentUserJoins"/>
+        WHERE c.id = #{id}
+          AND c.organization_id = #{organizationId}
+    </select>
+
+    <select id="selectMentionUsers" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentMentionUserResponse">
+        SELECT m.comment_id,
+               u.id,
+               u.name,
+               ue.avatar,
+               COALESCE(ou.enable, FALSE) AS enable
+        FROM approval_comment_mention m
+        INNER JOIN approval_comment c ON c.id = m.comment_id
+        INNER JOIN sys_user u ON u.id = m.user_id
+        LEFT JOIN sys_user_extend ue ON ue.id = u.id
+        LEFT JOIN sys_organization_user ou
+               ON ou.user_id = u.id
+              AND ou.organization_id = #{organizationId}
+        WHERE c.organization_id = #{organizationId}
+          AND m.comment_id IN
+        <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+    </select>
+
+    <select id="existsMention" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM approval_comment_mention m
+            INNER JOIN approval_comment c ON c.id = m.comment_id
+            WHERE c.instance_id = #{instanceId}
+              AND c.organization_id = #{organizationId}
+              AND m.user_id = #{userId}
+        )
+    </select>
+
+    <delete id="deleteMentions">
+        DELETE m
+        FROM approval_comment_mention m
+        INNER JOIN approval_comment c ON c.id = m.comment_id
+        WHERE c.organization_id = #{organizationId}
+          AND m.comment_id IN
+        <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteComments">
+        DELETE FROM approval_comment
+        WHERE organization_id = #{organizationId}
+          AND instance_id = #{instanceId}
+          AND id IN
+        <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+    </delete>
+
+    <select id="selectEnabledUserIds" resultType="string">
+        SELECT DISTINCT u.id
+        FROM sys_user u
+        INNER JOIN sys_organization_user ou ON ou.user_id = u.id
+        WHERE ou.organization_id = #{organizationId}
+          AND ou.enable = TRUE
+          AND u.id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </select>
+
+    <select id="existsReplyUser" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM approval_comment
+            WHERE organization_id = #{organizationId}
+              AND instance_id = #{instanceId}
+              AND (id = #{parentId} OR parent_id = #{parentId})
+              AND create_user = #{userId}
+        )
+    </select>
+
+</mapper>

@@ -6,6 +6,7 @@ import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
+import cn.cordys.crm.approval.service.ApprovalCommentService;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.common.exception.GenericException;
@@ -28,6 +29,8 @@ public class ApprovalResourceController {
     private ApprovalResourceService approvalResourceService;
 	@Resource
 	private ApprovalInstanceService approvalInstanceService;
+	@Resource
+	private ApprovalCommentService approvalCommentService;
 
 	@PostMapping("/push")
 	@Operation(summary = "提审")
@@ -59,6 +62,11 @@ public class ApprovalResourceController {
     @Operation(summary = "记录详情")
     public ApprovalInstanceDetail getRecordDetail(@PathVariable String resourceId) {
         approvalResourceService.checkViewPermission(resourceId);
-        return approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, OrganizationContext.getOrganizationId());
+        String orgId = OrganizationContext.getOrganizationId();
+        ApprovalInstanceDetail detail = approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, orgId);
+        if (detail != null) {
+            detail.setCommentable(approvalCommentService.hasCommentPermission(detail.getId(), SessionUtils.getUserId(), orgId));
+        }
+        return detail;
     }
 }
