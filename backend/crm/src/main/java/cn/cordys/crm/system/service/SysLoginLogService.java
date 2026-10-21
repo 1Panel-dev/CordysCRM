@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.service;
 
-
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.Translator;
@@ -30,8 +29,6 @@ public class SysLoginLogService {
 
     /**
      * 处理数据
-     *
-     * @param list
      */
     private List<LoginLogListResponse> handleData(List<LoginLogListResponse> list) {
         if (CollectionUtils.isNotEmpty(list)) {
@@ -44,9 +41,6 @@ public class SysLoginLogService {
 
     /**
      * 时间校验
-     *
-     * @param startTime
-     * @param endTime
      */
     private void checkTime(Long startTime, Long endTime) {
         int compare = Long.compare(startTime, endTime);
@@ -55,13 +49,8 @@ public class SysLoginLogService {
         }
     }
 
-
     /**
      * 登录日志列表查询
-     *
-     * @param request
-     *
-     * @return
      */
     public List<LoginLogListResponse> list(LoginLogRequest request, String orgId) {
         checkTime(request.getStartTime(), request.getEndTime());

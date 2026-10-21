@@ -27,11 +27,11 @@ public class RecycleConditionUtils {
      *
      * @param conditions  回收条件
      * @param reserveTime 回收时间
-     *
      * @return 回收天数
      */
     public static Integer calcRecycleDays(List<RuleConditionDTO> conditions, Long reserveTime) {
-        List<RuleConditionDTO> reservedConditions = conditions.stream().filter(condition -> RecycleConditionColumnKey.matchReserved(condition.getColumn())).toList();
+        List<RuleConditionDTO> reservedConditions = conditions.stream()
+                .filter(condition -> RecycleConditionColumnKey.matchReserved(condition.getColumn())).toList();
         if (CollectionUtils.isEmpty(reservedConditions)) {
             return null;
         }
@@ -41,7 +41,8 @@ public class RecycleConditionUtils {
         }
 
         //动态非自定义时间也按照区间处理
-        if (StringUtils.isNotBlank(condition.getValue()) && StringUtils.split(condition.getValue(), ",").length == DYNAMIC_TIME_LEN) {
+        if (StringUtils.isNotBlank(condition.getValue())
+                && StringUtils.split(condition.getValue(), ",").length == DYNAMIC_TIME_LEN) {
             return null;
         }
         LocalDateTime dynamicTime = condition.getDynamicTime();
@@ -54,7 +55,6 @@ public class RecycleConditionUtils {
             betweenDays++;
         }
         return betweenDays < 0 ? 0 : (int) betweenDays;
-
     }
 
     /**
@@ -62,7 +62,6 @@ public class RecycleConditionUtils {
      *
      * @param condition 回收条件
      * @param matchTime 匹配时间
-     *
      * @return 是否匹配
      */
     public static boolean matchTime(RuleConditionDTO condition, Long matchTime) {
@@ -71,7 +70,8 @@ public class RecycleConditionUtils {
             return true;
         }
         boolean match = false;
-        if (Strings.CS.equals(condition.getOperator(), RecycleConditionOperator.FIXED.name()) && StringUtils.isNotBlank(condition.getValue())) {
+        if (Strings.CS.equals(condition.getOperator(), RecycleConditionOperator.FIXED.name())
+                && StringUtils.isNotBlank(condition.getValue())) {
             // 固定时间
             String[] split = StringUtils.split(condition.getValue(), ",");
             if (split.length == FIX_TIME_LEN) {
@@ -88,7 +88,8 @@ public class RecycleConditionUtils {
                 LocalDateTime dynamicTime = condition.getDynamicTime();
                 if (dynamicTime != null) {
                     //这里区分日期前，日期后
-                    LocalDateTime pickedTime = Instant.ofEpochMilli(matchTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    LocalDateTime pickedTime = Instant.ofEpochMilli(matchTime).atZone(ZoneId.systemDefault())
+                            .toLocalDateTime();
                     if (split.length == FIX_TIME_LEN) {
                         match = pickedTime.isBefore(dynamicTime);
                     }

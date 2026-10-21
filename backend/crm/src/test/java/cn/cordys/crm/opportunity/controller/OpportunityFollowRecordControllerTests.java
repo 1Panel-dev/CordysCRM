@@ -1,6 +1,5 @@
 package cn.cordys.crm.opportunity.controller;
 
-
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
@@ -38,8 +37,8 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
 
     @Test
     @Order(1)
-    @Sql(scripts = {"/dml/init_opportunity_for_record.sql"}, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_opportunity_for_record.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void testAdd() throws Exception {
         FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
         request.setCustomerId("123");

@@ -35,7 +35,6 @@ public class UserExcelDataCn extends UserExcelData {
     @ColumnWidth(50)
     private String department;
 
-
     @ColumnWidth(50)
     @ExcelProperty("职位")
     private String position;
@@ -58,7 +57,6 @@ public class UserExcelDataCn extends UserExcelData {
     @ColumnWidth(50)
     @ExcelProperty("员工类型")
     private String employeeType;
-
 
     @Override
     public List<List<String>> getHead() {

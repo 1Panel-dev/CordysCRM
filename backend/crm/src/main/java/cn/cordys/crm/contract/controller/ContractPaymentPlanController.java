@@ -44,7 +44,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-11-21 15:11:29
  */
 @Tag(name = "合同回款计划")
 @RestController
@@ -62,17 +61,21 @@ public class ContractPaymentPlanController {
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_PLAN.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     @Operation(summary = "合同回款计划列表")
-    public PagerWithOption<List<ContractPaymentPlanListResponse>> list(@Validated @RequestBody ContractPaymentPlanPageRequest request) {
+    public PagerWithOption<List<ContractPaymentPlanListResponse>> list(
+            @Validated @RequestBody ContractPaymentPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        return contractPaymentPlanService.list(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @GetMapping("/get/{id}")
@@ -86,21 +89,24 @@ public class ContractPaymentPlanController {
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_ADD)
     @Operation(summary = "添加合同回款计划")
     public ContractPaymentPlan add(@Validated @RequestBody ContractPaymentPlanAddRequest request) {
-        return contractPaymentPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractPaymentPlanService.add(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_PLAN_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT_PAYMENT_PLAN)
     @Operation(summary = "更新合同回款计划")
     public ContractPaymentPlan update(@Validated @RequestBody ContractPaymentPlanUpdateRequest request) {
-        return contractPaymentPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractPaymentPlanService.update(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_PLAN_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_PLAN)
     @Operation(summary = "批量更新合同回款计划")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        contractPaymentPlanService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        contractPaymentPlanService.batchUpdate(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
@@ -121,7 +127,8 @@ public class ContractPaymentPlanController {
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     @Operation(summary = "tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
-        return contractPaymentPlanService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractPaymentPlanService.getTabEnableConfig(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/export-select")
@@ -152,7 +159,8 @@ public class ContractPaymentPlanController {
     public String exportAll(@Validated @RequestBody ContractPaymentPlanExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_PLAN.name())
                 .fileName(request.getFileName())
@@ -168,7 +176,6 @@ public class ContractPaymentPlanController {
         return contractPaymentPlanExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
-
     @GetMapping("/template/download")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_IMPORT)
     @Operation(summary = "下载导入模板")
@@ -176,19 +183,21 @@ public class ContractPaymentPlanController {
         contractPaymentPlanService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return contractPaymentPlanService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return contractPaymentPlanService.importPreCheck(file, request.getImportType(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return contractPaymentPlanService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return contractPaymentPlanService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 }

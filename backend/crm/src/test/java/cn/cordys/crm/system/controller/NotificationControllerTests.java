@@ -35,12 +35,10 @@ public class NotificationControllerTests extends BaseTest {
     public static final String NOTIFICATION_LAST_LIST = "/notification/last/list";
     public static final String ANNOUNCEMENT_LAST_LIST = "/notification/last/announcement/list";
 
-
     @Resource
     private ExtNotificationMapper extNotificationMapper;
     @Resource
     private BaseMapper<Notification> notificationMapper;
-
 
     void saveNotice(String type) {
         Notification notification = new Notification();
@@ -75,7 +73,8 @@ public class NotificationControllerTests extends BaseTest {
         notificationRequest.setResourceType("CASE");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(NOTIFICATION_LIST_PAGE, notificationRequest);
         Pager<List<Notification>> tableData = JSON.parseObject(JSON.toJSONString(
-                        JSON.parseObject(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                JSON.parseObject(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class)
+                        .getData()),
                 Pager.class);
         //返回值的页码和当前页码相同
         Assertions.assertEquals(tableData.getCurrent(), notificationRequest.getCurrent());
@@ -97,7 +96,6 @@ public class NotificationControllerTests extends BaseTest {
         notification.setStatus(NotificationConstants.Status.READ.name());
         List<NotificationDTO> readNotifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertFalse(readNotifications.isEmpty());
-
     }
 
     @Test
@@ -110,7 +108,6 @@ public class NotificationControllerTests extends BaseTest {
         notification.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         List<NotificationDTO> notifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertFalse(notifications.isEmpty());
-
     }
 
     @Test
@@ -142,7 +139,8 @@ public class NotificationControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(NOTIFICATION_LAST_LIST);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
-        List<NotificationDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
+        List<NotificationDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()),
+                NotificationDTO.class);
         Assertions.assertFalse(options.isEmpty());
     }
 
@@ -154,9 +152,9 @@ public class NotificationControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(ANNOUNCEMENT_LAST_LIST);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
-        List<NotificationDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
+        List<NotificationDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()),
+                NotificationDTO.class);
         Assertions.assertFalse(options.isEmpty());
     }
-
 
 }

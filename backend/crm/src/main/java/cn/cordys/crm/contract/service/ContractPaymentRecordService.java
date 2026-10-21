@@ -56,8 +56,8 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -138,10 +138,12 @@ public class ContractPaymentRecordService extends BaseExportService {
      * @param deptDataPermission 数据权限
      * @return 回款记录列表
      */
-    public PagerWithOption<List<ContractPaymentRecordResponse>> list(ContractPaymentRecordPageRequest request, String currentUser, String currentOrg,
-                                                                     DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<ContractPaymentRecordResponse>> list(ContractPaymentRecordPageRequest request,
+            String currentUser, String currentOrg,
+            DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<ContractPaymentRecordResponse> list = extContractPaymentRecordMapper.list(request, currentUser, currentOrg, deptDataPermission);
+        List<ContractPaymentRecordResponse> list = extContractPaymentRecordMapper.list(request, currentUser, currentOrg,
+                deptDataPermission);
         List<ContractPaymentRecordResponse> buildList = buildListExtra(list, currentOrg);
         // 处理自定义字段选项
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(buildList, currentOrg);
@@ -162,12 +164,15 @@ public class ContractPaymentRecordService extends BaseExportService {
         paymentRecord.setUpdateTime(System.currentTimeMillis());
         paymentRecord.setOrganizationId(currentOrg);
         // 保存自定义字段值&回款记录
-        contractPaymentRecordFieldService.saveModuleField(paymentRecord, currentOrg, currentUser, request.getModuleFields(), false);
+        contractPaymentRecordFieldService.saveModuleField(paymentRecord, currentOrg, currentUser,
+                request.getModuleFields(), false);
         contractPaymentRecordMapper.insert(paymentRecord);
         // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
-        statisticFieldService.refreshDataStatisticFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), paymentRecord.getId(), currentOrg);
+        statisticFieldService.refreshDataStatisticFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                paymentRecord.getId(), currentOrg);
         // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
-        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), paymentRecord.getId(), currentOrg);
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                paymentRecord.getId(), currentOrg);
         // 日志
         baseService.handleAddLogWithSubTable(paymentRecord, request.getModuleFields(), Translator.get("products_info"),
                 moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
@@ -175,7 +180,8 @@ public class ContractPaymentRecordService extends BaseExportService {
     }
 
     @OperationLog(module = LogModule.CONTRACT_PAYMENT_RECORD, type = LogType.UPDATE, operator = "{#currentUser}")
-    public ContractPaymentRecord update(ContractPaymentRecordUpdateRequest request, String currentUser, String currentOrg) {
+    public ContractPaymentRecord update(ContractPaymentRecordUpdateRequest request, String currentUser,
+            String currentOrg) {
         ContractPaymentRecord oldRecord = contractPaymentRecordMapper.selectByPrimaryKey(request.getId());
         if (oldRecord == null) {
             throw new GenericException(Translator.get("record.not.exist"));
@@ -190,7 +196,8 @@ public class ContractPaymentRecordService extends BaseExportService {
         contractPaymentRecord.setUpdateTime(System.currentTimeMillis());
         contractPaymentRecord.setUpdateUser(currentUser);
         contractPaymentRecordMapper.update(contractPaymentRecord);
-        List<BaseModuleFieldValue> oldFvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> oldFvs = contractPaymentRecordFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
         updateModuleField(contractPaymentRecord, request.getModuleFields(), currentOrg, currentUser);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
@@ -212,9 +219,11 @@ public class ContractPaymentRecordService extends BaseExportService {
         }
         BaseField field = contractPaymentRecordFieldService.getAndCheckBatchUpdateField(request, orgId);
         if (BusinessModuleField.CONTRACT_PAYMENT_RECORD_AMOUNT.getBusinessKey().equals(field.getBusinessKey())) {
-            BigDecimal amount = request.getFieldValue() == null ? null : new BigDecimal(request.getFieldValue().toString());
+            BigDecimal amount = request.getFieldValue() == null ? null
+                    : new BigDecimal(request.getFieldValue().toString());
             records.forEach(record -> checkContractPaymentAmount(record.getContractId(), amount, record.getId()));
-        } else if (BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey().equals(field.getBusinessKey())) {
+        } else if (BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey()
+                .equals(field.getBusinessKey())) {
             Contract contract = contractMapper.selectByPrimaryKey((String) request.getFieldValue());
             if (contract == null || !orgId.equals(contract.getOrganizationId())) {
                 throw new GenericException(Translator.get("contract.not.exist"));
@@ -284,34 +293,46 @@ public class ContractPaymentRecordService extends BaseExportService {
         if (paymentRecord == null) {
             throw new GenericException(Translator.get("record.not.exist"));
         }
-        ContractPaymentRecordGetResponse recordDetail = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), paymentRecord);
+        ContractPaymentRecordGetResponse recordDetail = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(),
+                paymentRecord);
         recordDetail = baseService.setCreateUpdateOwnerUserName(recordDetail);
         Contract contract = contractMapper.selectByPrimaryKey(recordDetail.getContractId());
-        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(recordDetail.getPaymentPlanId());
+        ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper
+                .selectByPrimaryKey(recordDetail.getPaymentPlanId());
         // 自定义字段值 & 选项值
         List<BaseModuleFieldValue> fvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(id);
         fvs = contractPaymentRecordFieldService.setBusinessRefFieldValue(List.of(recordDetail),
-                moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), paymentRecord.getOrganizationId()), new HashMap<>(Map.of(id, fvs))).get(id);
-        ModuleFormConfigDTO recordFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), paymentRecord.getOrganizationId());
+                moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                        paymentRecord.getOrganizationId()),
+                new HashMap<>(Map.of(id, fvs))).get(id);
+        ModuleFormConfigDTO recordFormConf = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), paymentRecord.getOrganizationId());
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(recordFormConf, fvs);
-        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_OWNER.getBusinessKey(), moduleFormService.getBusinessFieldOption(List.of(recordDetail),
-                ContractPaymentRecordGetResponse::getOwner, ContractPaymentRecordGetResponse::getOwnerName));
+        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_OWNER.getBusinessKey(),
+                moduleFormService.getBusinessFieldOption(List.of(recordDetail),
+                        ContractPaymentRecordGetResponse::getOwner, ContractPaymentRecordGetResponse::getOwnerName));
         if (contract != null) {
             recordDetail.setContractName(contract.getName());
-            optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey(), moduleFormService.getBusinessFieldOption(List.of(recordDetail),
-                    ContractPaymentRecordGetResponse::getContractId, ContractPaymentRecordGetResponse::getContractName));
+            optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey(),
+                    moduleFormService.getBusinessFieldOption(List.of(recordDetail),
+                            ContractPaymentRecordGetResponse::getContractId,
+                            ContractPaymentRecordGetResponse::getContractName));
         }
         if (contractPaymentPlan != null) {
             recordDetail.setPaymentPlanName(contractPaymentPlan.getName());
-            optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey(), moduleFormService.getBusinessFieldOption(List.of(recordDetail),
-                    ContractPaymentRecordGetResponse::getPaymentPlanId, ContractPaymentRecordGetResponse::getPaymentPlanName));
+            optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey(),
+                    moduleFormService.getBusinessFieldOption(List.of(recordDetail),
+                            ContractPaymentRecordGetResponse::getPaymentPlanId,
+                            ContractPaymentRecordGetResponse::getPaymentPlanName));
         }
         recordDetail.setModuleFields(fvs);
         recordDetail.setOptionMap(optionMap);
-        recordDetail.setAttachmentMap(moduleFormService.getAttachmentMap(recordFormConf, recordDetail.getModuleFields()));
+        recordDetail
+                .setAttachmentMap(moduleFormService.getAttachmentMap(recordFormConf, recordDetail.getModuleFields()));
 
         if (recordDetail.getOwner() != null) {
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(recordDetail.getOwner(), paymentRecord.getOrganizationId());
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(recordDetail.getOwner(),
+                    paymentRecord.getOrganizationId());
             if (userDeptDTO != null) {
                 recordDetail.setDepartmentId(userDeptDTO.getDeptId());
                 recordDetail.setDepartmentName(userDeptDTO.getDeptName());
@@ -331,7 +352,8 @@ public class ContractPaymentRecordService extends BaseExportService {
         if (paymentRecord == null) {
             return null;
         }
-        ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), paymentRecord);
+        ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(),
+                paymentRecord);
         List<BaseModuleFieldValue> fvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fvs);
         return response;
@@ -351,19 +373,21 @@ public class ContractPaymentRecordService extends BaseExportService {
         if (CollectionUtils.isEmpty(records)) {
             return Collections.emptyList();
         }
-        Map<String, List<BaseModuleFieldValue>> fieldValueMap = contractPaymentRecordFieldService.getResourceFieldMap(ids, true);
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = contractPaymentRecordFieldService
+                .getResourceFieldMap(ids, true);
 
         return records.stream().map(record -> {
-            ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), record);
+            ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(),
+                    record);
             response.setModuleFields(fieldValueMap.get(record.getId()));
             return response;
         }).toList();
     }
 
-
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
-        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ, rolePermissions);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ,
+                rolePermissions);
     }
 
     /**
@@ -373,9 +397,12 @@ public class ContractPaymentRecordService extends BaseExportService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-                processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
-                Translator.get("payment.record.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
+                processDuplicateLastLevelHeads(moduleFormService
+                        .getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
+                Translator.get("payment.record.import_tpl.name"), Translator.get(SheetKey.DATA),
+                Translator.get(SheetKey.COMMENT),
+                new CustomTemplateWriteHandler(moduleFormService
+                        .getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
                 new CustomHeadColWidthStyleStrategy());
     }
 
@@ -402,14 +429,14 @@ public class ContractPaymentRecordService extends BaseExportService {
      */
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
-            List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+            List<BaseField> fields = moduleFormService
+                    .getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
 
             boolean supportSubHead = moduleFormService.supportSubHead(fields);
             int headRowNumber = supportSubHead ? 2 : 1;
 
             // 1 先读取合并单元格信息
-            CustomFieldMergeCellEventListener mergeCellEventListener =
-                    new CustomFieldMergeCellEventListener();
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
 
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
@@ -419,16 +446,14 @@ public class ContractPaymentRecordService extends BaseExportService {
                     .doRead();
 
             // 2 校验数据
-            CustomFieldCheckEventListener eventListener =
-                    new CustomFieldCheckEventListener(
-                            fields,
-                            "contract_payment_record",
-                            "contract_payment_record_field",
-                            currentOrg,
-                            mergeCellEventListener.getMergeCellMap(),
-                            mergeCellEventListener.getMergeRowDataMap(),
-                            importType
-                    );
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(
+                    fields,
+                    "contract_payment_record",
+                    "contract_payment_record_field",
+                    currentOrg,
+                    mergeCellEventListener.getMergeCellMap(),
+                    mergeCellEventListener.getMergeRowDataMap(),
+                    importType);
 
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(headRowNumber)
@@ -441,7 +466,6 @@ public class ContractPaymentRecordService extends BaseExportService {
                     .successCount(eventListener.getSuccess())
                     .failCount(eventListener.getErrList().size())
                     .build();
-
         } catch (Exception e) {
             log.error("Payment record import pre-check error", e);
             throw new GenericException(e.getMessage());
@@ -459,12 +483,12 @@ public class ContractPaymentRecordService extends BaseExportService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
-            List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+            List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                    currentOrg);
             boolean supportSubHead = moduleFormService.supportSubHead(fields);
             int headRowNumber = supportSubHead ? 2 : 1;
             // 1 读取合并单元格信息
-            CustomFieldMergeCellEventListener mergeCellEventListener =
-                    new CustomFieldMergeCellEventListener();
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
 
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
@@ -473,120 +497,145 @@ public class ContractPaymentRecordService extends BaseExportService {
                     .sheet()
                     .doRead();
 
-            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService
+                    .getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
 
-            CustomImportAfterDoConsumer<ContractPaymentRecord, BaseResourceSubField> afterDo = (records, recordFields, recordFieldBlobs) -> {
+            CustomImportAfterDoConsumer<ContractPaymentRecord, BaseResourceSubField> afterDo = (records, recordFields,
+                    recordFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
-                        Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_NO.getKey())).findAny();
-                        // 获取当前表单中计算类型字段公式包含serialOptional流水号的所有字段（排除显示字段中的计算类型字段）
-                        List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
+                case ADD -> {
+                    Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI
+                            .equals(field.getInternalKey(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_NO.getKey()))
+                            .findAny();
+                    // 获取当前表单中计算类型字段公式包含serialOptional流水号的所有字段（排除显示字段中的计算类型字段）
+                    List<BaseField> formulaFields = serialOptional
+                            .map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
+                    records.forEach(record -> {
+                        if (serialOptional.isPresent()) {
+                            List<String> serialNumberRules = ((SerialNumberField) serialOptional.get())
+                                    .getSerialNumberRules();
+                            String serialNo = serialNumGenerator.generateByRules(serialNumberRules, currentOrg,
+                                    FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+                            record.setNo(serialNo);
+                            // 根据获取到的计算字段，进行占位符替换，比如serialOptional流水号字段的name是订单编号 如果计算字段包含 ${订单编号} 则获取到的serialNo替换掉占位符，然后set到order的对应计算字段中
+                            fillSerialNumberFormulas(record, serialOptional.get(), formulaFields, recordFields,
+                                    serialNo);
+                        }
+                        logs.add(new LogDTO(currentOrg, record.getId(), currentUser, LogType.ADD,
+                                LogModule.CONTRACT_PAYMENT_RECORD, record.getName()));
+                    });
+                    contractPaymentRecordMapper.batchInsert(records);
+                    contractPaymentRecordFieldMapper.batchInsert(recordFields.stream()
+                            .map(field -> BeanUtils.copyBean(new ContractPaymentRecordField(), field)).toList());
+                    contractPaymentRecordFieldBlobMapper.batchInsert(recordFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new ContractPaymentRecordFieldBlob(), field)).toList());
+                    // record logs
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = records.stream().map(ContractPaymentRecord::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
+                    }
+                    //原数据
+                    List<ContractPaymentRecord> originRecords = contractPaymentRecordMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originRecords)) {
+                        break;
+                    }
+                    Map<String, ContractPaymentRecord> originRecordMaps = originRecords.stream()
+                            .collect(Collectors.toMap(ContractPaymentRecord::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = contractPaymentRecordFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    List<ContractPaymentRecordField> insertField = new ArrayList<>();
+                    List<ContractPaymentRecordFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtContractPaymentRecordMapper batchMapper = sqlSession
+                            .getMapper(ExtContractPaymentRecordMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                    if (CollectionUtils.isNotEmpty(records)) {
                         records.forEach(record -> {
-                            if (serialOptional.isPresent()) {
-                                List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
-                                String serialNo = serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
-                                record.setNo(serialNo);
-                                // 根据获取到的计算字段，进行占位符替换，比如serialOptional流水号字段的name是订单编号 如果计算字段包含 ${订单编号} 则获取到的serialNo替换掉占位符，然后set到order的对应计算字段中
-                                fillSerialNumberFormulas(record, serialOptional.get(), formulaFields, recordFields, serialNo);
-                            }
-                            logs.add(new LogDTO(currentOrg, record.getId(), currentUser, LogType.ADD, LogModule.CONTRACT_PAYMENT_RECORD, record.getName()));
+                            batchMapper.updateRecord(record);
                         });
-                        contractPaymentRecordMapper.batchInsert(records);
-                        contractPaymentRecordFieldMapper.batchInsert(recordFields.stream().map(field -> BeanUtils.copyBean(new ContractPaymentRecordField(), field)).toList());
-                        contractPaymentRecordFieldBlobMapper.batchInsert(recordFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ContractPaymentRecordFieldBlob(), field)).toList());
-                        // record logs
-                        logService.batchAdd(logs);
                     }
-                    case UPDATE -> {
-                        List<String> ids = records.stream().map(ContractPaymentRecord::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        //原数据
-                        List<ContractPaymentRecord> originRecords = contractPaymentRecordMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originRecords)) {
-                            break;
-                        }
-                        Map<String, ContractPaymentRecord> originRecordMaps = originRecords.stream().collect(Collectors.toMap(ContractPaymentRecord::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = contractPaymentRecordFieldService.getResourceFieldMap(ids, true);
 
-                        List<ContractPaymentRecordField> insertField = new ArrayList<>();
-                        List<ContractPaymentRecordFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtContractPaymentRecordMapper batchMapper = sqlSession.getMapper(ExtContractPaymentRecordMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-
-                        if (CollectionUtils.isNotEmpty(records)) {
-                            records.forEach(record -> {
-                                batchMapper.updateRecord(record);
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(recordFields)) {
-                            List<ContractPaymentRecordField> fieldList = contractPaymentRecordFieldMapper.selectByIds(recordFields.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ContractPaymentRecordField> fieldMap = fieldList.stream().collect(Collectors.toMap(ContractPaymentRecordField::getId, Function.identity()));
-                            recordFields.forEach(recordField -> {
-                                if (fieldMap.containsKey(recordField.getId())) {
-                                    commonMapper.updateCustomerField("contract_payment_record_field", recordField);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new ContractPaymentRecordField(), recordField));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(recordFieldBlobs)) {
-                            List<ContractPaymentRecordFieldBlob> blobList = contractPaymentRecordFieldBlobMapper.selectByIds(recordFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ContractPaymentRecordFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ContractPaymentRecordFieldBlob::getId, Function.identity()));
-                            recordFieldBlobs.forEach(recordFieldBlob -> {
-                                if (blobMap.containsKey(recordFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("contract_payment_record_field_blob", recordFieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new ContractPaymentRecordFieldBlob(), recordFieldBlob));
-                                }
-                            });
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (CollectionUtils.isNotEmpty(insertField)) {
-                            contractPaymentRecordFieldMapper.batchInsert(insertField);
-                        }
-                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            contractPaymentRecordFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, ContractPaymentRecord> modifiedRecordMaps = contractPaymentRecordMapper.selectByIds(ids).stream().collect(Collectors.toMap(ContractPaymentRecord::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = contractPaymentRecordFieldService.getResourceFieldMap(ids, true);
-
-                        ids.forEach(id -> {
-                            ContractPaymentRecord originDate = originRecordMaps.get(id);
-                            ContractPaymentRecord modifiedDate = modifiedRecordMaps.get(id);
-                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id),
-                                    id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_PAYMENT_RECORD, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(recordFields)) {
+                        List<ContractPaymentRecordField> fieldList = contractPaymentRecordFieldMapper
+                                .selectByIds(recordFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractPaymentRecordField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(ContractPaymentRecordField::getId, Function.identity()));
+                        recordFields.forEach(recordField -> {
+                            if (fieldMap.containsKey(recordField.getId())) {
+                                commonMapper.updateCustomerField("contract_payment_record_field", recordField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new ContractPaymentRecordField(), recordField));
                             }
                         });
-                        logService.batchAdd(logs);
                     }
+
+                    if (CollectionUtils.isNotEmpty(recordFieldBlobs)) {
+                        List<ContractPaymentRecordFieldBlob> blobList = contractPaymentRecordFieldBlobMapper
+                                .selectByIds(recordFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractPaymentRecordFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(ContractPaymentRecordFieldBlob::getId, Function.identity()));
+                        recordFieldBlobs.forEach(recordFieldBlob -> {
+                            if (blobMap.containsKey(recordFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("contract_payment_record_field_blob", recordFieldBlob);
+                            } else {
+                                insertFieldBlob
+                                        .add(BeanUtils.copyBean(new ContractPaymentRecordFieldBlob(), recordFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        contractPaymentRecordFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        contractPaymentRecordFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, ContractPaymentRecord> modifiedRecordMaps = contractPaymentRecordMapper.selectByIds(ids)
+                            .stream().collect(Collectors.toMap(ContractPaymentRecord::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = contractPaymentRecordFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        ContractPaymentRecord originDate = originRecordMaps.get(id);
+                        ContractPaymentRecord modifiedDate = modifiedRecordMaps.get(id);
+                        baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id),
+                                id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                    LogModule.CONTRACT_PAYMENT_RECORD, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                }
                 }
             };
-            CustomFieldImportEventListener<ContractPaymentRecord> eventListener = new CustomFieldImportEventListener<>(fields, ContractPaymentRecord.class, currentOrg, currentUser,
-                    "contract_payment_record_field", "contract_payment_record_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+            CustomFieldImportEventListener<ContractPaymentRecord> eventListener = new CustomFieldImportEventListener<>(
+                    fields, ContractPaymentRecord.class, currentOrg, currentUser,
+                    "contract_payment_record_field", "contract_payment_record_field_blob", afterDo, 2000,
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
                     request.getImportType(), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -604,8 +653,10 @@ public class ContractPaymentRecordService extends BaseExportService {
      * @param deptDataPermission 数据权限
      * @return 汇总结果
      */
-    public CustomerPaymentRecordStatisticResponse sumCustomerPaymentAmount(String customerId, String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
-        return extContractPaymentRecordMapper.sumCustomerRecordAmount(customerId, userId, organizationId, deptDataPermission);
+    public CustomerPaymentRecordStatisticResponse sumCustomerPaymentAmount(String customerId, String userId,
+            String organizationId, DeptDataPermissionDTO deptDataPermission) {
+        return extContractPaymentRecordMapper.sumCustomerRecordAmount(customerId, userId, organizationId,
+                deptDataPermission);
     }
 
     /**
@@ -616,13 +667,15 @@ public class ContractPaymentRecordService extends BaseExportService {
      * @param currentOrg            当前组织
      * @param currentUser           当前用户
      */
-    private void updateModuleField(ContractPaymentRecord contractPaymentRecord, List<BaseModuleFieldValue> moduleFields, String currentOrg, String currentUser) {
+    private void updateModuleField(ContractPaymentRecord contractPaymentRecord, List<BaseModuleFieldValue> moduleFields,
+            String currentOrg, String currentUser) {
         if (moduleFields == null) {
             return;
         }
         // 删除已有的再保存
         contractPaymentRecordFieldService.deleteByResourceId(contractPaymentRecord.getId());
-        contractPaymentRecordFieldService.saveModuleField(contractPaymentRecord, currentOrg, currentUser, moduleFields, true);
+        contractPaymentRecordFieldService.saveModuleField(contractPaymentRecord, currentOrg, currentUser, moduleFields,
+                true);
     }
 
     /**
@@ -632,21 +685,33 @@ public class ContractPaymentRecordService extends BaseExportService {
      * @param currentOrg 当前组织
      * @return 列表扩展数据
      */
-    public List<ContractPaymentRecordResponse> buildListExtra(List<ContractPaymentRecordResponse> list, String currentOrg) {
+    public List<ContractPaymentRecordResponse> buildListExtra(List<ContractPaymentRecordResponse> list,
+            String currentOrg) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
-        List<String> recordIds = list.stream().map(ContractPaymentRecordResponse::getId).filter(StringUtils::isNotBlank).toList();
-        List<String> refPlanIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getPaymentPlanId).collect(Collectors.toList()));
-        List<ContractPaymentPlan> contractPaymentPlans = CollectionUtils.isEmpty(refPlanIds) ? Collections.emptyList() : contractPaymentPlanMapper.selectByIds(refPlanIds);
-        Map<String, String> paymentPlanMap = contractPaymentPlans.stream().collect(Collectors.toMap(ContractPaymentPlan::getId, ContractPaymentPlan::getName));
-        Map<String, List<BaseModuleFieldValue>> resourceFieldMap = CollectionUtils.isEmpty(recordIds) ? Collections.emptyMap() : contractPaymentRecordFieldService.getResourceFieldMap(recordIds, true);
-        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentRecordFieldService.setBusinessRefFieldValue(list,
-                moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg), resourceFieldMap);
+        List<String> recordIds = list.stream().map(ContractPaymentRecordResponse::getId).filter(StringUtils::isNotBlank)
+                .toList();
+        List<String> refPlanIds = distinctNonBlank(
+                list.stream().map(ContractPaymentRecordResponse::getPaymentPlanId).collect(Collectors.toList()));
+        List<ContractPaymentPlan> contractPaymentPlans = CollectionUtils.isEmpty(refPlanIds) ? Collections.emptyList()
+                : contractPaymentPlanMapper.selectByIds(refPlanIds);
+        Map<String, String> paymentPlanMap = contractPaymentPlans.stream()
+                .collect(Collectors.toMap(ContractPaymentPlan::getId, ContractPaymentPlan::getName));
+        Map<String, List<BaseModuleFieldValue>> resourceFieldMap = CollectionUtils.isEmpty(recordIds)
+                ? Collections.emptyMap()
+                : contractPaymentRecordFieldService.getResourceFieldMap(recordIds, true);
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentRecordFieldService
+                .setBusinessRefFieldValue(list,
+                        moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg),
+                        resourceFieldMap);
 
-        List<String> ownerIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getOwner).collect(Collectors.toList()));
-        List<String> createUserIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getCreateUser).collect(Collectors.toList()));
-        List<String> updateUserIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getUpdateUser).collect(Collectors.toList()));
+        List<String> ownerIds = distinctNonBlank(
+                list.stream().map(ContractPaymentRecordResponse::getOwner).collect(Collectors.toList()));
+        List<String> createUserIds = distinctNonBlank(
+                list.stream().map(ContractPaymentRecordResponse::getCreateUser).collect(Collectors.toList()));
+        List<String> updateUserIds = distinctNonBlank(
+                list.stream().map(ContractPaymentRecordResponse::getUpdateUser).collect(Collectors.toList()));
         List<String> userIds = Stream.of(ownerIds, createUserIds, updateUserIds)
                 .flatMap(Collection::stream).distinct().toList();
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
@@ -675,22 +740,28 @@ public class ContractPaymentRecordService extends BaseExportService {
      */
     private Map<String, List<OptionDTO>> buildOptionMap(List<ContractPaymentRecordResponse> list, String currentOrg) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFormService.getBaseModuleFieldValues(list, ContractPaymentRecordResponse::getModuleFields));
+        ModuleFormConfigDTO formConfig = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig,
+                moduleFormService.getBaseModuleFieldValues(list, ContractPaymentRecordResponse::getModuleFields));
 
         // 补充业务字段选项数据 {负责人, 合同, 回款计划}
-        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_OWNER.getBusinessKey(), moduleFormService.getBusinessFieldOption(list,
-                ContractPaymentRecordResponse::getOwner, ContractPaymentRecordResponse::getOwnerName));
-        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey(), moduleFormService.getBusinessFieldOption(list,
-                ContractPaymentRecordResponse::getContractId, ContractPaymentRecordResponse::getContractName));
-        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey(), moduleFormService.getBusinessFieldOption(list,
-                ContractPaymentRecordResponse::getPaymentPlanId, ContractPaymentRecordResponse::getPaymentPlanName));
+        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_OWNER.getBusinessKey(),
+                moduleFormService.getBusinessFieldOption(list,
+                        ContractPaymentRecordResponse::getOwner, ContractPaymentRecordResponse::getOwnerName));
+        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_CONTRACT.getBusinessKey(),
+                moduleFormService.getBusinessFieldOption(list,
+                        ContractPaymentRecordResponse::getContractId, ContractPaymentRecordResponse::getContractName));
+        optionMap.put(BusinessModuleField.CONTRACT_PAYMENT_RECORD_PLAN.getBusinessKey(),
+                moduleFormService.getBusinessFieldOption(list,
+                        ContractPaymentRecordResponse::getPaymentPlanId,
+                        ContractPaymentRecordResponse::getPaymentPlanName));
 
         return optionMap;
     }
 
     /**
-     * 校验回款金额是否超出 && 大于0
+     * 校验回款金额是否超出 &amp;&amp; 大于0
      *
      * @param contractId 合同ID
      * @param payAmount  回款金额
@@ -764,18 +835,13 @@ public class ContractPaymentRecordService extends BaseExportService {
         return values.stream().filter(StringUtils::isNotBlank).distinct().toList();
     }
 
-
     /**
      * 统计
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param deptDataPermission
-     * @return
      */
-    public ContractPaymentRecordStatisticResponse searchStatistic(ContractPaymentRecordStatisticRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
-        ContractPaymentRecordStatisticResponse response = extContractPaymentRecordMapper.searchStatistic(request, orgId, userId, deptDataPermission);
+    public ContractPaymentRecordStatisticResponse searchStatistic(ContractPaymentRecordStatisticRequest request,
+            String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        ContractPaymentRecordStatisticResponse response = extContractPaymentRecordMapper.searchStatistic(request, orgId,
+                userId, deptDataPermission);
         return Optional.ofNullable(response).orElse(new ContractPaymentRecordStatisticResponse());
     }
 }

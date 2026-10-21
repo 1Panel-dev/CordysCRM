@@ -213,7 +213,7 @@ public class ApprovalCommentService {
             return;
         }
         Map<String, List<ApprovalCommentMentionUserResponse>> mentionUsers = extCommentMapper.selectMentionUsers(
-                        comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId).stream()
+                comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId).stream()
                 .collect(Collectors.groupingBy(ApprovalCommentMentionUserResponse::getCommentId));
         comments.forEach(comment -> {
             comment.setMentionUsers(mentionUsers.getOrDefault(comment.getId(), List.of()));

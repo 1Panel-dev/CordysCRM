@@ -1,6 +1,5 @@
 package cn.cordys.common.uid.utils;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +33,7 @@ public class NamingThreadFactory implements ThreadFactory {
     /**
      * Thread name pre
      * -- GETTER --
-     * Getters & Setters
+     * Getters &amp; Setters
      */
     @Setter
     @Getter
@@ -76,15 +75,14 @@ public class NamingThreadFactory implements ThreadFactory {
         thread.setName(prefix + "-" + getSequence(prefix));
 
         // no specified uncaughtExceptionHandler, just do logging.
-        thread.setUncaughtExceptionHandler(Objects.requireNonNullElseGet(this.uncaughtExceptionHandler, () -> (t, e) -> log.error("unhandled exception in thread: " + t.getName(), e)));
+        thread.setUncaughtExceptionHandler(Objects.requireNonNullElseGet(this.uncaughtExceptionHandler,
+                () -> (t, e) -> log.error("unhandled exception in thread: " + t.getName(), e)));
 
         return thread;
     }
 
     /**
      * Get the method invoker's class name
-     *
-     * @return
      */
     private String getInvoker() {
         Exception e = new Exception();
@@ -97,10 +95,6 @@ public class NamingThreadFactory implements ThreadFactory {
 
     /**
      * Get sequence for different naming prefix
-     *
-     * @param invoker
-     *
-     * @return
      */
     private long getSequence(String invoker) {
         AtomicLong r = this.sequences.get(invoker);

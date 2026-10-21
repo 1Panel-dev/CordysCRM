@@ -4,18 +4,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 加密解密工具，扩展自CodingUtils，提供AES和MD5的加解密方法。
+ * 基于 {@link CodingUtils} 提供 AES 加解密和 MD5 摘要计算。
  */
 public class EncryptUtils extends CodingUtils {
 
-    // 默认的加密密钥和向量
+    // 默认的加密密钥
     private static final String secretKey = "www.fit2cloud.cn";
 
     /**
      * AES加密方法
      *
      * @param o 要加密的对象
-     *
      * @return 加密后的字符串，若传入对象为空则返回null
      */
     public static String aesEncrypt(Object o) {
@@ -29,7 +28,6 @@ public class EncryptUtils extends CodingUtils {
      * AES解密方法
      *
      * @param o 要解密的对象
-     *
      * @return 解密后的字符串，若传入对象为空则返回null
      */
     public static String aesDecrypt(Object o) {
@@ -40,13 +38,12 @@ public class EncryptUtils extends CodingUtils {
     }
 
     /**
-     * 对列表中的对象属性进行AES解密
+     * 对列表中的非空指定属性原地进行 AES 解密，并返回包含这些对象的新列表。
      *
+     * @param <T>      对象类型
      * @param o        要解密的对象列表
      * @param attrName 需要解密的属性名
-     * @param <T>      对象类型
-     *
-     * @return 解密后的对象列表
+     * @return 指定属性非空的对象列表；列表或属性名为 {@code null} 时返回 {@code null}
      */
     public static <T> Object aesDecrypt(List<T> o, String attrName) {
         if (o == null || attrName == null) {
@@ -66,11 +63,10 @@ public class EncryptUtils extends CodingUtils {
     }
 
     /**
-     * MD5加密方法
+     * 计算对象字符串表示的 MD5 摘要。
      *
-     * @param o 要加密的对象
-     *
-     * @return 加密后的MD5字符串，若传入对象为空则返回null
+     * @param o 待计算摘要的对象
+     * @return MD5 摘要字符串，传入 {@code null} 时返回 {@code null}
      */
     public static String md5Encrypt(Object o) {
         if (o == null) {

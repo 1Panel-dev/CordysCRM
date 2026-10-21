@@ -6,8 +6,7 @@ import lombok.Data;
 /**
  * 客户、商机、线索是否显示所有数据和部门数据 tab
  *
- * @Author: jianxing
- * @CreateTime: 2025-05-15  14:54
+ * @author jianxing
  */
 @Data
 public class ResourceTabEnableDTO {
@@ -20,7 +19,6 @@ public class ResourceTabEnableDTO {
      * 合并权限
      *
      * @param other 其余数据权限配置
-     *
      * @return 合并后的数据权限配置
      */
     public ResourceTabEnableDTO or(ResourceTabEnableDTO other) {

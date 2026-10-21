@@ -5,12 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 /**
  * 客户
  *
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Data
 @Table(name = "customer")

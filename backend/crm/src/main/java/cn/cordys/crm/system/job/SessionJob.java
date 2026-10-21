@@ -36,7 +36,6 @@ public class SessionJob {
      * 该方法每晚 0 点 2 分执行，扫描 Redis 中的会话数据，删除没有绑定用户信息的会话。
      * 此外，还会处理一些特殊情况，如 Redisson 设置了过期时间为 -1 时，手动设置过期时间。
      * </p>
-     *
      * <p>
      * 该方法使用 {@link QuartzScheduled} 注解定时执行，并使用 {@link ScanOptions} 扫描 Redis 中的会话。
      * </p>
@@ -64,7 +63,8 @@ public class SessionJob {
                     redisIndexedSessionRepository.deleteById(sessionId);
                 } else {
                     // 获取用户信息并检查会话过期时间
-                    Object user = redisIndexedSessionRepository.getSessionRedisOperations().opsForHash().get(key, "sessionAttr:user");
+                    Object user = redisIndexedSessionRepository.getSessionRedisOperations().opsForHash().get(key,
+                            "sessionAttr:user");
                     Long expire = redisIndexedSessionRepository.getSessionRedisOperations().getExpire(key);
 
                     assert user != null;
@@ -76,7 +76,8 @@ public class SessionJob {
 
                     // 如果过期时间为 -1，则手动设置过期时间为 30 秒
                     if (expire != null && expire == -1) {
-                        redisIndexedSessionRepository.getSessionRedisOperations().expire(key, Duration.of(30, ChronoUnit.SECONDS));
+                        redisIndexedSessionRepository.getSessionRedisOperations().expire(key,
+                                Duration.of(30, ChronoUnit.SECONDS));
                     }
                 }
             }

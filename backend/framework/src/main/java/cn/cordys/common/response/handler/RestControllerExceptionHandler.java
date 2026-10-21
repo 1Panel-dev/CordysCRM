@@ -40,7 +40,6 @@ public class RestControllerExceptionHandler {
      * 处理 NOT_FOUND 异常，拼接资源名称以提供更详细的错误信息。
      *
      * @param message 错误信息模板
-     *
      * @return String 拼接后的错误信息
      */
     private static String getNotFoundMessage(String message) {
@@ -58,7 +57,6 @@ public class RestControllerExceptionHandler {
      * 格式化异常栈信息。
      *
      * @param e Exception 异常
-     *
      * @return String 异常栈的字符串表示
      */
     public static String getStackTraceAsString(Exception e) {
@@ -72,7 +70,6 @@ public class RestControllerExceptionHandler {
      * 处理数据校验异常，返回具体字段的校验信息。
      *
      * @param ex MethodArgumentNotValidException 异常
-     *
      * @return ResultHolder 返回封装的错误信息，HTTP 状态码 400
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -93,11 +90,11 @@ public class RestControllerExceptionHandler {
      *
      * @param response  HttpServletResponse 响应
      * @param exception 异常信息
-     *
      * @return ResultHolder 返回错误信息
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResultHolder handleHttpRequestMethodNotSupportedException(HttpServletResponse response, Exception exception) {
+    public ResultHolder handleHttpRequestMethodNotSupportedException(HttpServletResponse response,
+            Exception exception) {
         response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
         return ResultHolder.error(HttpStatus.METHOD_NOT_ALLOWED.value(), exception.getMessage());
     }
@@ -106,7 +103,6 @@ public class RestControllerExceptionHandler {
      * 处理 MSException 异常，根据 errorCode 设置 HTTP 状态码和业务状态码。
      *
      * @param e MSException 异常
-     *
      * @return ResponseEntity 返回响应实体，包含错误信息
      */
     @ExceptionHandler(GenericException.class)
@@ -141,17 +137,16 @@ public class RestControllerExceptionHandler {
      * 处理所有类型的异常，返回 HTTP 状态码 500 并格式化异常栈信息。
      *
      * @param e Exception 异常
-     *
      * @return ResponseEntity 返回响应实体，包含错误信息
      */
-    @ExceptionHandler({Exception.class})
+    @ExceptionHandler({ Exception.class })
     public ResponseEntity<ResultHolder> handleException(Exception e) {
         return ResponseEntity.internalServerError()
                 .body(ResultHolder.error(CrmHttpResultCode.FAILED.getCode(),
                         e.getMessage(), getStackTraceAsString(e)));
     }
 
-    @ExceptionHandler({NoResourceFoundException.class, UnavailableSecurityManagerException.class})
+    @ExceptionHandler({ NoResourceFoundException.class, UnavailableSecurityManagerException.class })
     public ResponseEntity<ResultHolder> handleNoResourceFoundException(NoResourceFoundException e) {
         log.error("No static resource");
         return null;
@@ -162,10 +157,9 @@ public class RestControllerExceptionHandler {
      *
      * @param request HttpServletRequest 请求
      * @param e       异常信息
-     *
      * @return ResponseEntity 返回响应实体，包含错误信息
      */
-    @ExceptionHandler({EofException.class})
+    @ExceptionHandler({ EofException.class })
     public ResponseEntity<Object> handleEofException(HttpServletRequest request, Exception e) {
         String requestURI = request.getRequestURI();
         if (requestURI != null && (requestURI.startsWith("/assets")
@@ -185,11 +179,11 @@ public class RestControllerExceptionHandler {
      * @param request   HttpServletRequest 请求
      * @param response  HttpServletResponse 响应
      * @param exception 异常信息
-     *
      * @return ResultHolder 返回错误信息
      */
     @ExceptionHandler(ShiroException.class)
-    public ResultHolder exceptionHandler(HttpServletRequest request, HttpServletResponse response, Exception exception) {
+    public ResultHolder exceptionHandler(HttpServletRequest request, HttpServletResponse response,
+            Exception exception) {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         return ResultHolder.error(HttpStatus.UNAUTHORIZED.value(), exception.getMessage());
     }
@@ -200,17 +194,18 @@ public class RestControllerExceptionHandler {
      * @param request   HttpServletRequest 请求
      * @param response  HttpServletResponse 响应
      * @param exception 异常信息
-     *
      * @return ResultHolder 返回错误信息
      */
     @ExceptionHandler(UnauthorizedException.class)
-    public ResultHolder unauthorizedExceptionHandler(HttpServletRequest request, HttpServletResponse response, Exception exception) {
+    public ResultHolder unauthorizedExceptionHandler(HttpServletRequest request, HttpServletResponse response,
+            Exception exception) {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         return ResultHolder.error(HttpStatus.FORBIDDEN.value(), exception.getMessage());
     }
 
     @ExceptionHandler(AsyncRequestNotUsableException.class)
-    public ResultHolder asyncRequestNotUsableExceptionHandler(HttpServletRequest request, HttpServletResponse response, Exception exception) {
+    public ResultHolder asyncRequestNotUsableExceptionHandler(HttpServletRequest request, HttpServletResponse response,
+            Exception exception) {
         return null;
     }
 }

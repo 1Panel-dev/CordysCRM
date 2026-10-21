@@ -41,7 +41,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
 @Service
 public class AnnouncementService {
 
@@ -93,7 +92,8 @@ public class AnnouncementService {
         announcement.setUpdateUser(userId);
         announcement.setNotice(false);
         //根据有效时间判断是否生成notification
-        if (request.getStartTime() <= announcement.getCreateTime() && request.getEndTime() >= announcement.getCreateTime()) {
+        if (request.getStartTime() <= announcement.getCreateTime()
+                && request.getEndTime() >= announcement.getCreateTime()) {
             convertNotification(userId, announcement, userIds);
             announcement.setNotice(true);
         }
@@ -105,11 +105,11 @@ public class AnnouncementService {
                         .resourceId(announcement.getId())
                         .resourceName(announcement.getSubject())
                         .modifiedValue(announcementLogDTO)
-                        .build()
-        );
+                        .build());
     }
 
-    private AnnouncementLogDTO buildNewLogDTO(AnnouncementRequest request, Announcement announcement, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
+    private AnnouncementLogDTO buildNewLogDTO(AnnouncementRequest request, Announcement announcement,
+            AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
         AnnouncementLogDTO announcementLogDTO = new AnnouncementLogDTO();
         BeanUtils.copyBean(announcementLogDTO, announcement);
         List<String> receiverName = getReceiverName(announcementReceiveTypeDTO);
@@ -125,7 +125,8 @@ public class AnnouncementService {
     }
 
     private AnnouncementLogDTO getOldLogDTO(Announcement originalAnnouncement) {
-        AnnouncementReceiveTypeDTO oldReceiveTypeDTO = JSON.parseObject(new String(originalAnnouncement.getReceiveType()), AnnouncementReceiveTypeDTO.class);
+        AnnouncementReceiveTypeDTO oldReceiveTypeDTO = JSON
+                .parseObject(new String(originalAnnouncement.getReceiveType()), AnnouncementReceiveTypeDTO.class);
         AnnouncementLogDTO oldLogDTO = new AnnouncementLogDTO();
         BeanUtils.copyBean(oldLogDTO, originalAnnouncement);
         List<String> receiverName = getReceiverName(oldReceiveTypeDTO);
@@ -135,7 +136,6 @@ public class AnnouncementService {
         oldLogDTO.setEndTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(originalAnnouncement.getEndTime()));
         return oldLogDTO;
     }
-
 
     @Transactional(rollbackFor = Exception.class)
     @OperationLog(module = LogModule.SYSTEM_MESSAGE_ANNOUNCEMENT, type = LogType.UPDATE)
@@ -169,7 +169,8 @@ public class AnnouncementService {
             deleteAnnouncementKeyById(announcementId, organizationId);
             notificationMapper.deleteByResourceId(announcementId);
             //根据有效时间判断是否生成notification
-            if (request.getStartTime() <= System.currentTimeMillis() && request.getEndTime() >= System.currentTimeMillis()) {
+            if (request.getStartTime() <= System.currentTimeMillis()
+                    && request.getEndTime() >= System.currentTimeMillis()) {
                 //如果公告的有效时间在当前时间内，则生成通知
                 convertNotification(userId, announcement, userIds);
             }
@@ -190,11 +191,11 @@ public class AnnouncementService {
                         .resourceId(originalAnnouncement.getId())
                         .resourceName(resourceName)
                         .modifiedValue(announcementLogDTO)
-                        .build()
-        );
+                        .build());
     }
 
-    private void dealReceiverIds(AnnouncementRequest request, Set<String> userSet, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
+    private void dealReceiverIds(AnnouncementRequest request, Set<String> userSet,
+            AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
         if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
             List<String> depIds = extDepartmentMapper.selectChildrenByIds(request.getDeptIds());
             if (CollectionUtils.isNotEmpty(depIds)) {
@@ -221,7 +222,8 @@ public class AnnouncementService {
         List<NotificationDTO> notificationDTOS = notificationMapper.selectByAnyOne(notificationRequest);
         for (NotificationDTO notificationDTO : notificationDTOS) {
             String notificationDTOId = notificationDTO.getId();
-            stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + notificationDTO.getReceiver(), notificationDTOId);
+            stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + notificationDTO.getReceiver(),
+                    notificationDTOId);
             stringRedisTemplate.delete(ANNOUNCE_PREFIX + notificationDTOId);
         }
     }
@@ -261,13 +263,15 @@ public class AnnouncementService {
                 notification.setUpdateTime(System.currentTimeMillis());
                 notifications.add(notification);
                 //根据公告的有效时间判断是否需要发送通知
-                if (announcement.getStartTime() <= System.currentTimeMillis() && announcement.getEndTime() >= System.currentTimeMillis()) {
+                if (announcement.getStartTime() <= System.currentTimeMillis()
+                        && announcement.getEndTime() >= System.currentTimeMillis()) {
                     NotificationDTO notificationDTO = new NotificationDTO();
                     BeanUtils.copyBean(notificationDTO, notification);
                     notificationDTO.setContentText(JSON.toJSONString(announcementContentDTO));
                     String messageText = JSON.toJSONString(notificationDTO);
 
-                    stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + subUserId, id, System.currentTimeMillis());
+                    stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + subUserId, id,
+                            System.currentTimeMillis());
                     stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
                     //更新用户的已读全部消息状态 0 为未读，1为已读
                     stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "False");
@@ -302,7 +306,6 @@ public class AnnouncementService {
      * 公告列表分页查询
      *
      * @param request request
-     *
      * @return 公告列表
      */
     public List<AnnouncementDTO> page(AnnouncementPageRequest request) {
@@ -320,7 +323,6 @@ public class AnnouncementService {
      * 获取公告
      *
      * @param id 公告id
-     *
      * @return AnnouncementDTO
      */
     public AnnouncementDTO detail(String id) {
@@ -334,7 +336,8 @@ public class AnnouncementService {
     }
 
     private void setReceiverNameOption(AnnouncementDTO announcementDTO) {
-        AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
+        AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = JSON
+                .parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
         if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
             List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
             List<OptionScopeDTO> optionScopeDTOList = new ArrayList<>();
@@ -370,8 +373,6 @@ public class AnnouncementService {
             returnNames.addAll(names);
         }
         return returnNames;
-
     }
 
 }
-

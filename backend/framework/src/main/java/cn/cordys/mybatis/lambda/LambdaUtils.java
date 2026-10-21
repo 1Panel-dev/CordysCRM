@@ -1,6 +1,5 @@
 package cn.cordys.mybatis.lambda;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -22,7 +21,6 @@ public final class LambdaUtils {
      * </p>
      *
      * @param func 需要解析的 Lambda 对象。
-     *
      * @return 返回 Lambda 表达式的实现方法名称。
      */
     public static String extract(XFunction<?, ?> func) {
@@ -36,7 +34,8 @@ public final class LambdaUtils {
         try {
             Method method = func.getClass().getDeclaredMethod("writeReplace");
             method.setAccessible(true);
-            ReflectLambdaMeta lambdaMeta = new ReflectLambdaMeta((java.lang.invoke.SerializedLambda) method.invoke(func), func.getClass().getClassLoader());
+            ReflectLambdaMeta lambdaMeta = new ReflectLambdaMeta(
+                    (java.lang.invoke.SerializedLambda) method.invoke(func), func.getClass().getClassLoader());
             return lambdaMeta.getImplMethodName();
         } catch (Throwable e) {
             // 3. 反射失败时，使用序列化方式读取 Lambda 元信息

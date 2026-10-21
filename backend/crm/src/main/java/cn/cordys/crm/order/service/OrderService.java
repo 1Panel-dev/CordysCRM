@@ -88,8 +88,8 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -173,11 +173,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     /**
      * 新建订单
-     *
-     * @param request
-     * @param operatorId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.ADD)
     @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.CREATE, operatorId = "{#operatorId}")
@@ -189,7 +184,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         }
         List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
         Long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
         Order order = new Order();
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
@@ -217,13 +213,13 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         baseService.handleAddLogWithSubTable(order, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
-        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, orderFieldService, order.getId());
+        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields,
+                moduleFormConfigDTO, orderFieldService, order.getId());
         OrderGetResponse response = get(order, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(order, saveModuleFormConfigDTO, response);
 
         return order;
     }
-
 
     private Long getNextPos(String orgId, String stage) {
         Long pos = extOrderMapper.selectNextPos(orgId, stage);
@@ -232,16 +228,15 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     /**
      * 保存订单快照
-     *
-     * @param order
-     * @param moduleFormConfigDTO
-     * @param response
      */
     private void saveSnapshot(Order order, ModuleFormConfigDTO moduleFormConfigDTO, OrderGetResponse response) {
         //移除response中moduleFields 集合里 的 BaseModuleFieldValue 的 fieldId="products"的数据，避免快照数据过大
         if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
             response.setModuleFields(response.getModuleFields().stream()
-                    .filter(field -> (field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
+                    .filter(field -> (field.getFieldValue() != null
+                            && StringUtils.isNotBlank(field.getFieldValue().toString())
+                            && !"[]".equals(field.getFieldValue().toString())))
+                    .toList());
         }
         OrderSnapshot snapshot = new OrderSnapshot();
         snapshot.setId(IDGenerator.nextStr());
@@ -251,7 +246,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         snapshotBaseMapper.insert(snapshot);
     }
 
-    private OrderGetResponse get(Order order, List<BaseModuleFieldValue> orderFields, ModuleFormConfigDTO orderFormConfig) {
+    private OrderGetResponse get(Order order, List<BaseModuleFieldValue> orderFields,
+            ModuleFormConfigDTO orderFormConfig) {
         OrderGetResponse orderGetResponse = BeanUtils.copyBean(new OrderGetResponse(), order);
         orderGetResponse = baseService.setCreateUpdateOwnerUserName(orderGetResponse);
 
@@ -259,7 +255,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         // 获取模块字段
         moduleFormService.processBusinessFieldValues(orderGetResponse, orderFields, orderFormConfig);
         orderFields = orderFieldService.setBusinessRefFieldValue(List.of(orderGetResponse),
-                moduleFormService.getFlattenFormFields(FormKey.ORDER.getKey(), order.getOrganizationId()), new HashMap<>(Map.of(id, orderFields))).get(id);
+                moduleFormService.getFlattenFormFields(FormKey.ORDER.getKey(), order.getOrganizationId()),
+                new HashMap<>(Map.of(id, orderFields))).get(id);
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(orderFormConfig, orderFields);
 
@@ -271,25 +268,29 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         Customer customer = customerMapper.selectByPrimaryKey(order.getCustomerId());
         Contract contract = contractMapper.selectByPrimaryKey(order.getContractId());
 
-        Map<String, String> stageNameMap = extOrderStageConfigMapper.getStageConfigList(order.getOrganizationId()).stream()
+        Map<String, String> stageNameMap = extOrderStageConfigMapper.getStageConfigList(order.getOrganizationId())
+                .stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId,
                         StageConfigResponse::getName));
         orderGetResponse.setStageName(stageNameMap.get(order.getStage()));
 
         if (customer != null) {
             orderGetResponse.setCustomerName(customer.getName());
-            optionMap.put(BusinessModuleField.ORDER_CUSTOMER.getBusinessKey(), Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
+            optionMap.put(BusinessModuleField.ORDER_CUSTOMER.getBusinessKey(),
+                    Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
         }
         if (contract != null) {
             orderGetResponse.setContractName(contract.getName());
-            optionMap.put(BusinessModuleField.ORDER_CONTRACT.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
+            optionMap.put(BusinessModuleField.ORDER_CONTRACT.getBusinessKey(),
+                    Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
         }
 
         orderGetResponse.setOptionMap(optionMap);
         orderGetResponse.setModuleFields(orderFields);
 
         if (orderGetResponse.getOwner() != null) {
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(orderGetResponse.getOwner(), order.getOrganizationId());
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(orderGetResponse.getOwner(),
+                    order.getOrganizationId());
             if (userDeptDTO != null) {
                 orderGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 orderGetResponse.setDepartmentName(userDeptDTO.getDeptName());
@@ -303,9 +304,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     /**
      * 获取订单详情
-     *
-     * @param id
-     * @return
      */
     public OrderGetResponse get(String id, String orgId) {
         Order order = orderMapper.selectByPrimaryKey(id);
@@ -314,7 +312,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(id);
         OrderGetResponse getResponse = get(order, orderFields, orderFormConfig);
         if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+            Map<String, Boolean> firstNodeApproved = baseService
+                    .getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
             getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
             getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
         }
@@ -392,11 +391,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     /**
      * 编辑订单
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
@@ -407,10 +401,11 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("order.form.config.required"));
         }
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
         Optional.ofNullable(oldOrder).ifPresentOrElse(item -> {
-
-            List<BaseModuleFieldValue> originFields = orderFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originFields = orderFieldService
+                    .getModuleFieldValuesByResourceId(request.getId());
             Order order = BeanUtils.copyBean(new Order(), request);
             order.setUpdateTime(System.currentTimeMillis());
             order.setUpdateUser(userId);
@@ -444,13 +439,15 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             }
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
-            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, orderFieldService, order.getId());
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields,
+                    moduleFormConfigDTO, orderFieldService, order.getId());
             // get 方法需要使用orgId
             order.setOrganizationId(orgId);
             OrderGetResponse response = get(order, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(order, saveModuleFormConfigDTO, response);
             // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(oldOrder, order, originFields, moduleFields, request.getId(), order.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+            baseService.handleUpdateLogWithSubTable(oldOrder, order, originFields, moduleFields, request.getId(),
+                    order.getName(), Translator.get("products_info"), moduleFormConfigDTO);
         }, () -> {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         });
@@ -468,14 +465,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         }
     }
 
-
     /**
      * 更新自定义字段
-     *
-     * @param moduleFields
-     * @param order
-     * @param orgId
-     * @param userId
      */
     private void updateFields(List<BaseModuleFieldValue> moduleFields, Order order, String orgId, String userId) {
         if (moduleFields == null) {
@@ -484,7 +475,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         orderFieldService.deleteByResourceId(order.getId());
         orderFieldService.saveModuleField(order, orgId, userId, moduleFields, true);
     }
-
 
     /**
      * 删除订单
@@ -530,8 +520,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 PermissionConstants.ORDER_DELETE,
                 orgId,
                 Order::getId,
-                Order::getApprovalStatus
-        );
+                Order::getApprovalStatus);
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
         }
@@ -573,12 +562,10 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         logService.batchAdd(logs);
     }
 
-
     @Override
     public FormKey getFormKey() {
         return FormKey.ORDER;
     }
-
 
     /**
      * ⚠️反射调用; 勿修改入参, 返回, 方法名!
@@ -605,7 +592,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 }
             }
             if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-                Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
+                Map<String, Boolean> firstNodeApproved = baseService
+                        .getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
                 response.setFirstApproved(firstNodeApproved.get(response.getId()));
                 response.setSubmitterId(baseService.getApprovingResourceSubmitterId(response.getId()));
             }
@@ -636,7 +624,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
      *
      * @param postFieldParam 参数
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         List<BaseField> fields = formConfig.getFields();
@@ -644,7 +632,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         Order order = orderMapper.selectByPrimaryKey(postFieldParam.getResourceId());
         // 保存原始数据用于日志记录
         Order originOrder = BeanUtils.copyBean(new Order(), order);
-        List<BaseModuleFieldValue> originFields = orderFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<BaseModuleFieldValue> originFields = orderFieldService
+                .getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
         List<OrderField> orderFields = new ArrayList<>();
         List<OrderFieldBlob> orderFieldBlobs = new ArrayList<>();
         OrderSnapshot snapshotCriteria = new OrderSnapshot();
@@ -655,25 +644,33 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
         }
 
-        ResourceApprovalFieldUpdateParam stageField = postFieldParam.getFields().stream().filter(param -> Strings.CS.equals(param.getFieldId(), "stage") && param.getFieldValue() != null).findFirst().orElse(null);
+        ResourceApprovalFieldUpdateParam stageField = postFieldParam.getFields().stream()
+                .filter(param -> Strings.CS.equals(param.getFieldId(), "stage") && param.getFieldValue() != null)
+                .findFirst().orElse(null);
         boolean stageFlag = handleStageSetting(stageField, order, postFieldParam);
 
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-            if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null && stageFlag) {
+            if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null
+                    && stageFlag) {
                 orderFieldService.setResourceFieldValue(order, "stage", fieldUpdateParam.getFieldValue());
                 continue;
             }
-            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())
+                    || fieldUpdateParam.getFieldValue() == null) {
                 continue;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                    .getResolver(fieldConfig.getType());
             if (fieldConfig.hasBusinessKey()) {
                 // 业务主表字段
-                orderFieldService.setResourceFieldValue(order, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+                orderFieldService.setResourceFieldValue(order, fieldConfig.getBusinessKey(),
+                        fieldUpdateParam.getFieldValue());
             } else {
                 // 自定义字段
-                Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
+                Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream()
+                        .filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId()))
+                        .findAny();
                 if (findField.isPresent()) {
                     findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
                 } else {
@@ -684,23 +681,28 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 }
                 if (fieldConfig.isBlob()) {
                     // 自定义大表
-                    orderFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<OrderFieldBlob>()
-                            .eq(OrderFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(OrderFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                    orderFieldService.getResourceFieldBlobMapper()
+                            .deleteByLambda(new LambdaQueryWrapper<OrderFieldBlob>()
+                                    .eq(OrderFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
+                                    .eq(OrderFieldBlob::getResourceId, postFieldParam.getResourceId()));
                     OrderFieldBlob field = new OrderFieldBlob();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     orderFieldBlobs.add(field);
                 } else {
                     // 自定义表
                     orderFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<OrderField>()
-                            .eq(OrderField::getFieldId, fieldUpdateParam.getFieldId()).eq(OrderField::getResourceId, postFieldParam.getResourceId()));
+                            .eq(OrderField::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(OrderField::getResourceId, postFieldParam.getResourceId()));
                     OrderField field = new OrderField();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     orderFields.add(field);
                 }
             }
@@ -719,13 +721,15 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             snapshotBaseMapper.update(snapshot);
         }
         // 记录审批后置字段更新日志
-        baseService.handleUpdateLogWithSubTable(originOrder, order, originFields, orderFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+        baseService.handleUpdateLogWithSubTable(originOrder, order, originFields,
+                orderFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
                 postFieldParam.getResourceId(), order.getName(), Translator.get("products_info"), formConfig);
         // 从 OperationLogContext 中获取日志信息并手动记录
         LogContextInfo contextInfo = OperationLogContext.getContext();
         if (contextInfo != null) {
             String orgId = OrganizationContext.getOrganizationId();
-            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.ORDER_INDEX, order.getName());
+            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(),
+                    LogType.UPDATE, LogModule.ORDER_INDEX, order.getName());
             logDTO.setOriginalValue(contextInfo.getOriginalValue());
             logDTO.setModifiedValue(contextInfo.getModifiedValue());
             logService.add(logDTO);
@@ -733,33 +737,33 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         }
     }
 
-
     /**
      * 审批后置操作更新阶段配置
-     *
-     * @param stageField
-     * @param originOrder
-     * @param postFieldParam
      */
-    private boolean handleStageSetting(ResourceApprovalFieldUpdateParam stageField, Order originOrder, ResourceApprovalPostUpdateParam postFieldParam) {
+    private boolean handleStageSetting(ResourceApprovalFieldUpdateParam stageField, Order originOrder,
+            ResourceApprovalPostUpdateParam postFieldParam) {
         if (stageField == null) {
             return true;
         }
         try {
-            if (!stageAdvancedConfigService.checkStage(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.getKey())) {
+            if (!stageAdvancedConfigService.checkStage(originOrder.getStage(), stageField.getFieldValue().toString(),
+                    FormKey.ORDER.getKey())) {
                 return true;
             }
         } catch (Exception e) {
             return false;
         }
-        StageConfigResponse first = extOrderStageConfigMapper.getStageConfigList(originOrder.getOrganizationId()).getFirst();
+        StageConfigResponse first = extOrderStageConfigMapper.getStageConfigList(originOrder.getOrganizationId())
+                .getFirst();
         if (Strings.CI.equals(first.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
-            StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.name());
+            StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originOrder.getStage(),
+                    stageField.getFieldValue().toString(), FormKey.ORDER.name());
             if (config == null || config.getFieldConfig() == null) {
                 return true;
             }
-            List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
-            });
+            List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(),
+                    new TypeReference<List<CirculationFieldValue>>() {
+                    });
             List<ResourceApprovalFieldUpdateParam> fields = new ArrayList<>();
             circulationFieldValues.forEach(field -> {
                 if (Strings.CI.equals(field.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name())) {
@@ -772,28 +776,20 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                     }
                 }
             });
-            List<ResourceApprovalFieldUpdateParam> newFields =
-                    Optional.ofNullable(postFieldParam.getFields())
-                            .map(ArrayList::new)
-                            .orElseGet(ArrayList::new);
+            List<ResourceApprovalFieldUpdateParam> newFields = Optional.ofNullable(postFieldParam.getFields())
+                    .map(ArrayList::new)
+                    .orElseGet(ArrayList::new);
             newFields.addAll(fields);
             postFieldParam.setFields(newFields);
-
         }
         return true;
     }
 
-
     /**
      * 订单列表
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param deptDataPermission
-     * @return
      */
-    public PagerWithOption<List<OrderListResponse>> list(OrderPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
+    public PagerWithOption<List<OrderListResponse>> list(OrderPageRequest request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission, Boolean source) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<OrderListResponse> list = extOrderMapper.list(request, orgId, userId, deptDataPermission, source);
         List<OrderListResponse> results = buildList(list, orgId);
@@ -804,9 +800,10 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(List<OrderListResponse> list, List<OrderListResponse> buildList,
-                                                        ModuleFormConfigDTO formConfig) {
+            ModuleFormConfigDTO formConfig) {
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, OrderListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                OrderListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
         // 补充负责人选项
@@ -828,8 +825,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         List<String> orderIds = list.stream().map(OrderListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> orderFiledMap = orderFieldService.getResourceFieldMap(orderIds, true);
-        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = orderFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.ORDER.getKey(), orgId), orderFiledMap);
-
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = orderFieldService.setBusinessRefFieldValue(list,
+                moduleFormService.getFlattenFormFields(FormKey.ORDER.getKey(), orgId), orderFiledMap);
 
         List<String> ownerIds = list.stream()
                 .map(OrderListResponse::getOwner)
@@ -841,8 +838,11 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 .collect(Collectors.toMap(StageConfigResponse::getId,
                         StageConfigResponse::getName));
 
-        List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(OrderListResponse::getId).toList();
-        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        List<String> approvingResourceIds = list.stream()
+                .filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
+                .map(OrderListResponse::getId).toList();
+        Map<String, Boolean> firstNodeApprovedMap = baseService
+                .getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
         // 提审人仅存在于审批中的订单, 非审批中状态无需查询审批实例, 统一返回空
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
 
@@ -862,13 +862,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         return baseService.setCreateUpdateOwnerUserName(list);
     }
 
-
     /**
      * 获取表单快照
-     *
-     * @param id
-     * @param orgId
-     * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
         Order order = orderMapper.selectByPrimaryKey(id);
@@ -884,7 +879,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             return moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), orgId);
         }
     }
-
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
@@ -911,7 +905,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         return orderMapper.selectByPrimaryKey(id);
     }
 
-
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}", comment = "{#request.comment}")
     public void updateStage(OrderStageRequest request, String userId, String orgId) {
@@ -923,7 +916,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         if (!stageAdvancedConfigService.checkStage(oldOrder.getStage(), request.getStage(), FormKey.ORDER.getKey())) {
             return;
         }
-        List<BaseModuleFieldValue> originCustomerFields = orderFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originCustomerFields = orderFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
 
         Order newOrder = BeanUtils.copyBean(new Order(), oldOrder);
         newOrder.setStage(request.getStage());
@@ -939,20 +933,25 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     private void updateFieldAndSnapshot(Order order, List<BaseModuleFieldValue> requestFields, String userId) {
         if (CollectionUtils.isNotEmpty(requestFields)) {
-            ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), order.getOrganizationId());
+            ModuleFormConfigDTO businessFormConfig = moduleFormCacheService
+                    .getBusinessFormConfig(FormKey.ORDER.getKey(), order.getOrganizationId());
             List<BaseField> fields = businessFormConfig.getFields();
             requestFields.forEach(field -> {
-                BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+                BaseField baseField = fields.stream()
+                        .filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
                 ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
                 updateRequest.setIds(List.of(order.getId()));
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
-                orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId(),false);
+                orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class,
+                        LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId(), false);
 
                 // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
                 Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
-                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(), (v1, v2) -> v2));
-                orderFieldService.processAttachmentFields(order.getOrganizationId(), order.getId(), userId, fields, fieldValueMap);
+                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(),
+                                (v1, v2) -> v2));
+                orderFieldService.processAttachmentFields(order.getOrganizationId(), order.getId(), userId, fields,
+                        fieldValueMap);
             });
         }
         OrderSnapshot snapshotCriteria = new OrderSnapshot();
@@ -980,7 +979,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         moduleFormService.setFieldBusinessParam(field);
         List<Order> originOrders = orderMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originOrders)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages(Translator.get("order_not_exist")).build();
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("order_not_exist")).build();
         }
 
         // 校验状态权限，过滤出有权限操作的订单
@@ -990,14 +990,15 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 PermissionConstants.ORDER_UPDATE,
                 orgId,
                 Order::getId,
-                Order::getApprovalStatus
-        );
+                Order::getApprovalStatus);
 
         if (CollectionUtils.isEmpty(permittedIds)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(originOrders.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
+            return BatchAffectReasonResponse.builder().success(0).fail(originOrders.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
         }
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.ORDER, orgId, userId, field.getName(), request.getFieldValue());
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.ORDER, orgId,
+                userId, field.getName(), request.getFieldValue());
 
         List<Order> permittedOrders = originOrders.stream()
                 .filter(o -> permittedIds.contains(o.getId()))
@@ -1013,12 +1014,14 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.ORDER.getKey(), request.getFieldId(), permittedIds, orgId);
-        orderFieldService.batchUpdate(filteredRequest, field, permittedOrders, Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId,true);
+        orderFieldService.batchUpdate(filteredRequest, field, permittedOrders, Order.class, LogModule.ORDER_INDEX,
+                extOrderMapper::batchUpdate, userId, orgId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 
         ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(orgId);
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
 
         LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
         delWrapper.in(OrderSnapshot::getOrderId, permittedIds);
@@ -1035,7 +1038,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 continue;
             }
             List<BaseModuleFieldValue> orderFields = fieldMap.getOrDefault(id, new ArrayList<>());
-            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(orderFields, moduleFormConfigDTO, orderFieldService, id);
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(orderFields,
+                    moduleFormConfigDTO, orderFieldService, id);
             OrderGetResponse response = get(order, resolveFieldValues, moduleFormConfigDTO);
             if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
                 response.setModuleFields(response.getModuleFields().stream()
@@ -1055,7 +1059,9 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             snapshotBaseMapper.batchInsert(snapshots);
         }
 
-        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(originOrders.size() - permittedIds.size()).skip(0).errorMessages(Translator.get("batch.update.reason")).build();
+        return BatchAffectReasonResponse.builder().success(permittedIds.size())
+                .fail(originOrders.size() - permittedIds.size()).skip(0)
+                .errorMessages(Translator.get("batch.update.reason")).build();
     }
 
     public void download(String id, String userId, String organizationId) {
@@ -1064,26 +1070,20 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             throw new GenericException(Translator.get("order_not_exist"));
         }
 
-        LogDTO logDTO = new LogDTO(organizationId, id, userId, LogType.DOWNLOAD, LogModule.ORDER_INDEX, getResponse.getName());
+        LogDTO logDTO = new LogDTO(organizationId, id, userId, LogType.DOWNLOAD, LogModule.ORDER_INDEX,
+                getResponse.getName());
         logDTO.setOriginalValue(getResponse.getName());
         logService.add(logDTO);
     }
 
-
     /**
      * 统计
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param deptDataPermission
-     * @return
      */
-    public OrderStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public OrderStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission) {
         OrderStatisticResponse response = extOrderMapper.searchStatistic(request, orgId, userId, deptDataPermission);
         return Optional.ofNullable(response).orElse(new OrderStatisticResponse());
     }
-
 
     /**
      * 通过ID集合获取订单名称
@@ -1102,7 +1102,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         }
         return StringUtils.EMPTY;
     }
-
 
     /**
      * 通过名称获取订单集合
@@ -1124,14 +1123,10 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         return null;
     }
 
-
     /**
      * 阶段看板排序
      * <p>
      * 阶段未变化时只是同列排序, 不触发审批; 跨列换阶段属于业务阶段变更, 走编辑审批流。
-     *
-     * @param request
-     * @param userId
      */
     public void sort(StageSortRequest request, String userId) {
         //拖拽节点
@@ -1149,9 +1144,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     /**
      * 跨列换阶段的看板排序: 阶段变更需命中编辑审批流, 排序本身照常写入
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.dragNodeId}")
     @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.dragNodeId}", operatorId = "{#userId}")
@@ -1160,7 +1152,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         if (order == null) {
             throw new GenericException(Translator.get("order_not_exist"));
         }
-        final Map<String, String> stageMap = extOrderStageConfigMapper.getStageConfigList(order.getOrganizationId()).stream()
+        final Map<String, String> stageMap = extOrderStageConfigMapper.getStageConfigList(order.getOrganizationId())
+                .stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
         doSort(request, order, userId);
@@ -1176,8 +1169,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                         .resourceName(order.getName())
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
 
     private void doSort(StageSortRequest request, Order order, String userId) {
@@ -1187,7 +1179,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             Order dropNode = orderMapper.selectByPrimaryKey(request.getDropNodeId());
             pos = dropNode.getPos();
             if (request.getDropPosition() == -1) {
-
                 extOrderMapper.moveUpStageOrder(pos, request.getStage(), DEFAULT_POS);
                 pos = pos + 1;
             } else {
@@ -1203,14 +1194,14 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         order.setStage(request.getStage());
         orderMapper.updateById(order);
         updateFieldAndSnapshot(order, request.getFields(), userId);
-
     }
 
     /**
      * 处理旧版本审批状态 (APPROVING => NONE)
      */
     public void handleOldApprovalData() {
-        List<Order> orders = orderMapper.selectListByLambda(new LambdaQueryWrapper<Order>().eq(Order::getApprovalStatus, ApprovalStatus.APPROVING.name()));
+        List<Order> orders = orderMapper.selectListByLambda(
+                new LambdaQueryWrapper<Order>().eq(Order::getApprovalStatus, ApprovalStatus.APPROVING.name()));
         orders.forEach(order -> {
             ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam
                     .builder()
@@ -1274,29 +1265,23 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         updateFieldAndSnapshot(current, List.of(), userId);
     }
 
-
     /**
      * 下载导入模板
-     *
-     * @param response
-     * @param currentOrg
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.ORDER.getKey(), currentOrg)),
-                        Translator.get("order.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.ORDER.getKey(), currentOrg)),
+                .exportMultiSheetTplWithSharedHandler(response,
+                        processDuplicateLastLevelHeads(
+                                moduleFormService.getCustomImportHeadsNoRef(FormKey.ORDER.getKey(), currentOrg)),
+                        Translator.get("order.import_tpl.name"), Translator.get(SheetKey.DATA),
+                        Translator.get(SheetKey.COMMENT),
+                        new CustomTemplateWriteHandler(
+                                moduleFormService.getAllCustomImportFields(FormKey.ORDER.getKey(), currentOrg)),
                         new CustomHeadColWidthStyleStrategy());
     }
 
-
     /**
      * 导入检查
-     *
-     * @param file
-     * @param importType
-     * @param currentOrg
-     * @return
      */
     public ImportResponse importPreCheck(MultipartFile file, String importType, String currentOrg) {
         if (file == null) {
@@ -1304,7 +1289,6 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         }
         return checkImportExcel(file, importType, currentOrg);
     }
-
 
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
@@ -1321,9 +1305,11 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                     .sheet()
                     .doRead();
             // 2 校验数据
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "sales_order", "sales_order_field", currentOrg,
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "sales_order",
+                    "sales_order_field", currentOrg,
                     mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -1332,15 +1318,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         }
     }
 
-
     /**
      * 订单导入
-     *
-     * @param file
-     * @param request
-     * @param currentOrg
-     * @param currentUser
-     * @return
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
@@ -1350,8 +1329,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             int headRowNumber = supportSubHead ? 2 : 1;
 
             // 1 读取合并单元格信息
-            CustomFieldMergeCellEventListener mergeCellEventListener =
-                    new CustomFieldMergeCellEventListener();
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
 
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
@@ -1360,136 +1338,162 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                     .sheet()
                     .doRead();
 
-            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), currentOrg);
-            ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService
+                    .getBusinessFormConfig(FormKey.ORDER.getKey(), currentOrg);
+            ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                    ModuleFormConfigDTO.class);
             List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(currentOrg);
             long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
-            CustomImportAfterDoConsumer<Order, BaseResourceSubField> afterDo = (orders, orderFields, orderFieldBlobs) -> {
+            CustomImportAfterDoConsumer<Order, BaseResourceSubField> afterDo = (orders, orderFields,
+                    orderFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
-                        Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.ORDER_NO.getKey())).findAny();
-                        // 获取当前表单中计算类型字段公式包含serialOptional流水号的所有字段（排除显示字段中的计算类型字段）
-                        List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
-                        for (int i = 0; i < orders.size(); i++) {
-                            Order order = orders.get(i);
-                            if (serialOptional.isPresent()) {
-                                List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
-                                String serialNo = serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.ORDER.getKey());
-                                order.setNumber(serialNo);
-                                // 根据获取到的计算字段，进行占位符替换，比如serialOptional流水号字段的name是订单编号 如果计算字段包含 ${订单编号} 则获取到的serialNo替换掉占位符，然后set到order的对应计算字段中
-                                fillSerialNumberFormulas(order, serialOptional.get(), formulaFields, orderFields, serialNo);
-                            }
-                            order.setApprovalStatus(ApprovalStatus.NONE.name());
-                            order.setStage(stageConfigList.getFirst().getId());
-                            order.setApprovalStatus(ApprovalStatus.NONE.name());
-                            order.setPos(nextPos + i);
-                            logs.add(new LogDTO(currentOrg, order.getId(), currentUser, LogType.ADD, LogModule.ORDER_INDEX, order.getName()));
+                case ADD -> {
+                    Optional<BaseField> serialOptional = fields.stream().filter(
+                            field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.ORDER_NO.getKey()))
+                            .findAny();
+                    // 获取当前表单中计算类型字段公式包含serialOptional流水号的所有字段（排除显示字段中的计算类型字段）
+                    List<BaseField> formulaFields = serialOptional
+                            .map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
+                    for (int i = 0; i < orders.size(); i++) {
+                        Order order = orders.get(i);
+                        if (serialOptional.isPresent()) {
+                            List<String> serialNumberRules = ((SerialNumberField) serialOptional.get())
+                                    .getSerialNumberRules();
+                            String serialNo = serialNumGenerator.generateByRules(serialNumberRules, currentOrg,
+                                    FormKey.ORDER.getKey());
+                            order.setNumber(serialNo);
+                            // 根据获取到的计算字段，进行占位符替换，比如serialOptional流水号字段的name是订单编号 如果计算字段包含 ${订单编号} 则获取到的serialNo替换掉占位符，然后set到order的对应计算字段中
+                            fillSerialNumberFormulas(order, serialOptional.get(), formulaFields, orderFields, serialNo);
                         }
-                        orderMapper.batchInsert(orders);
-                        orderFieldMapper.batchInsert(orderFields.stream().map(field -> BeanUtils.copyBean(new OrderField(), field)).toList());
-                        orderFieldBlobMapper.batchInsert(orderFieldBlobs.stream().map(field -> BeanUtils.copyBean(new OrderFieldBlob(), field)).toList());
-                        // record logs
-                        logService.batchAdd(logs);
+                        order.setApprovalStatus(ApprovalStatus.NONE.name());
+                        order.setStage(stageConfigList.getFirst().getId());
+                        order.setApprovalStatus(ApprovalStatus.NONE.name());
+                        order.setPos(nextPos + i);
+                        logs.add(new LogDTO(currentOrg, order.getId(), currentUser, LogType.ADD, LogModule.ORDER_INDEX,
+                                order.getName()));
                     }
-                    case UPDATE -> {
-                        List<String> ids = orders.stream().map(Order::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        //原数据
-                        List<Order> originList = orderMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originList)) {
-                            break;
-                        }
-                        Map<String, Order> originMaps = originList.stream().collect(Collectors.toMap(Order::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = orderFieldService.getResourceFieldMap(ids, true);
+                    orderMapper.batchInsert(orders);
+                    orderFieldMapper.batchInsert(
+                            orderFields.stream().map(field -> BeanUtils.copyBean(new OrderField(), field)).toList());
+                    orderFieldBlobMapper.batchInsert(orderFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new OrderFieldBlob(), field)).toList());
+                    // record logs
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = orders.stream().map(Order::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
+                    }
+                    //原数据
+                    List<Order> originList = orderMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originList)) {
+                        break;
+                    }
+                    Map<String, Order> originMaps = originList.stream()
+                            .collect(Collectors.toMap(Order::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = orderFieldService
+                            .getResourceFieldMap(ids, true);
 
-                        List<OrderField> insertField = new ArrayList<>();
-                        List<OrderFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtOrderMapper batchMapper = sqlSession.getMapper(ExtOrderMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                    List<OrderField> insertField = new ArrayList<>();
+                    List<OrderFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtOrderMapper batchMapper = sqlSession.getMapper(ExtOrderMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
 
-                        if (CollectionUtils.isNotEmpty(orders)) {
-                            orders.forEach(order -> {
-                                batchMapper.updateOrder(order);
-                            });
-                        }
+                    if (CollectionUtils.isNotEmpty(orders)) {
+                        orders.forEach(order -> {
+                            batchMapper.updateOrder(order);
+                        });
+                    }
 
-                        if (CollectionUtils.isNotEmpty(orderFields)) {
-                            List<OrderField> fieldList = orderFieldMapper.selectByIds(orderFields.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, OrderField> fieldMap = fieldList.stream().collect(Collectors.toMap(OrderField::getId, Function.identity()));
-                            orderFields.forEach(orderField -> {
-                                if (fieldMap.containsKey(orderField.getId())) {
-                                    commonMapper.updateCustomerField("sales_order_field", orderField);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new OrderField(), orderField));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(orderFieldBlobs)) {
-                            List<OrderFieldBlob> blobList = orderFieldBlobMapper.selectByIds(orderFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, OrderFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(OrderFieldBlob::getId, Function.identity()));
-                            orderFieldBlobs.forEach(orderFieldBlob -> {
-                                if (blobMap.containsKey(orderFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("sales_order_field_blob", orderFieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new OrderFieldBlob(), orderFieldBlob));
-                                }
-                            });
-
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (CollectionUtils.isNotEmpty(insertField)) {
-                            orderFieldMapper.batchInsert(insertField);
-                        }
-                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            orderFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, Order> modifiedMaps = orderMapper.selectByIds(ids).stream().collect(Collectors.toMap(Order::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = orderFieldService.getResourceFieldMap(ids, true);
-
-                        ids.forEach(id -> {
-                            Order originDate = originMaps.get(id);
-                            Order modifiedDate = modifiedMaps.get(id);
-                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.ORDER_INDEX, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(orderFields)) {
+                        List<OrderField> fieldList = orderFieldMapper
+                                .selectByIds(orderFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, OrderField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(OrderField::getId, Function.identity()));
+                        orderFields.forEach(orderField -> {
+                            if (fieldMap.containsKey(orderField.getId())) {
+                                commonMapper.updateCustomerField("sales_order_field", orderField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new OrderField(), orderField));
                             }
                         });
-                        logService.batchAdd(logs);
-                        LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
-                        delWrapper.in(OrderSnapshot::getOrderId, orders.stream().map(Order::getId).toList());
-                        snapshotBaseMapper.deleteByLambda(delWrapper);
                     }
+
+                    if (CollectionUtils.isNotEmpty(orderFieldBlobs)) {
+                        List<OrderFieldBlob> blobList = orderFieldBlobMapper
+                                .selectByIds(orderFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, OrderFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(OrderFieldBlob::getId, Function.identity()));
+                        orderFieldBlobs.forEach(orderFieldBlob -> {
+                            if (blobMap.containsKey(orderFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("sales_order_field_blob", orderFieldBlob);
+                            } else {
+                                insertFieldBlob.add(BeanUtils.copyBean(new OrderFieldBlob(), orderFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        orderFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        orderFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, Order> modifiedMaps = orderMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(Order::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = orderFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        Order originDate = originMaps.get(id);
+                        Order modifiedDate = modifiedMaps.get(id);
+                        baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName(),
+                                Translator.get("products_info"), moduleFormConfigDTO);
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                    LogModule.ORDER_INDEX, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                    LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
+                    delWrapper.in(OrderSnapshot::getOrderId, orders.stream().map(Order::getId).toList());
+                    snapshotBaseMapper.deleteByLambda(delWrapper);
                 }
-                List<OrderGetResponse> orderGetResponses = batchGetSimpleByIds(orders.stream().map(Order::getId).toList());
+                }
+                List<OrderGetResponse> orderGetResponses = batchGetSimpleByIds(
+                        orders.stream().map(Order::getId).toList());
                 orderGetResponses.forEach(response -> {
                     // 保存表单配置快照
-                    List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, orderFieldService, response.getId());
+                    List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(
+                            response.getModuleFields(), moduleFormConfigDTO, orderFieldService, response.getId());
                     OrderGetResponse orderGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
                     saveSnapshot(response, saveModuleFormConfigDTO, orderGetResponse);
                 });
             };
-            CustomFieldImportEventListener<Order> eventListener = new CustomFieldImportEventListener<>(fields, Order.class, currentOrg, currentUser,
-                    "sales_order_field", "sales_order_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
+            CustomFieldImportEventListener<Order> eventListener = new CustomFieldImportEventListener<>(fields,
+                    Order.class, currentOrg, currentUser,
+                    "sales_order_field", "sales_order_field_blob", afterDo, 2000,
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+                    request.getImportType());
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {

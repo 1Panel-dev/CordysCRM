@@ -52,7 +52,8 @@ class BatchDeleteServiceTest {
         Contract contract = new Contract();
         contract.setId("related");
         when(contractMapper.selectByIds(anyList())).thenReturn(List.of(contract));
-        when(approvalFlowService.filterResourcesWithPermission(anyString(), anyList(), anyString(), anyString(), any(), any()))
+        when(approvalFlowService.filterResourcesWithPermission(anyString(), anyList(), anyString(), anyString(), any(),
+                any()))
                 .thenReturn(List.of("related"));
         when(paymentRecordMapper.selectListByLambda(any())).thenReturn(List.of(new ContractPaymentRecord()));
 

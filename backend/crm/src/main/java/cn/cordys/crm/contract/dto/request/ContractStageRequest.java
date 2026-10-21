@@ -16,10 +16,8 @@ public class ContractStageRequest {
     @Size(max = 32)
     private String id;
 
-
     @Schema(description = "阶段: PENDING_SIGNING/SIGNED/CHANGE/IN_PROGRESS/COMPLETED_PERFORMANCE/VOID/ARCHIVED", requiredMode = Schema.RequiredMode.REQUIRED)
     private String stage;
-
 
     @Size(max = 255)
     @Schema(description = "作废原因")

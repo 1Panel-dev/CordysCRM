@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.notice.sender.mail;
 
-
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
 import cn.cordys.crm.system.notice.common.NoticeModel;
@@ -23,7 +22,8 @@ public class MailNoticeSender extends AbstractNoticeSender {
     private MailSender mailSender;
 
     public void sendMail(String context, NoticeModel noticeModel, String organizationId, String subjectText) {
-        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
+        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(),
+                noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;
         }

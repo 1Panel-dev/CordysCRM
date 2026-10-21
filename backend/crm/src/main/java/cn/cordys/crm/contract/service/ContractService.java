@@ -167,21 +167,18 @@ public class ContractService extends BaseExportService implements ApprovalResour
 
     /**
      * 新建合同
-     *
-     * @param request
-     * @param operatorId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.CREATE, operatorId = "{#operatorId}")
     public Contract add(ContractAddRequest request, String operatorId, String orgId) {
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
-        List<BaseModuleFieldValue> moduleFields = request.getModuleFields() == null ? new ArrayList<>() : request.getModuleFields();
+        List<BaseModuleFieldValue> moduleFields = request.getModuleFields() == null ? new ArrayList<>()
+                : request.getModuleFields();
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("contract.form.config.required"));
         }
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
         List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
         Long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
         Contract contract = new Contract();
@@ -220,10 +217,12 @@ public class ContractService extends BaseExportService implements ApprovalResour
         statisticFieldService.refreshDataStatisticFields(FormKey.CONTRACT.getKey(), contract.getId(), orgId);
         // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
         statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT.getKey(), contract.getId(), orgId);
-        baseService.handleAddLogWithSubTable(contract, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
+        baseService.handleAddLogWithSubTable(contract, moduleFields, Translator.get("products_info"),
+                moduleFormConfigDTO);
 
         // 保存表单配置快照
-        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService, contract.getId());
+        List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields,
+                moduleFormConfigDTO, contractFieldService, contract.getId());
         ContractGetResponse response = get(contract, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
@@ -235,19 +234,18 @@ public class ContractService extends BaseExportService implements ApprovalResour
         return pos == null ? 1 : pos + 1;
     }
 
-
     /**
      * 保存合同快照
-     *
-     * @param contract
-     * @param moduleFormConfigDTO
-     * @param response
      */
-    private void saveSnapshot(Contract contract, ModuleFormConfigDTO moduleFormConfigDTO, ContractGetResponse response) {
+    private void saveSnapshot(Contract contract, ModuleFormConfigDTO moduleFormConfigDTO,
+            ContractGetResponse response) {
         //移除response中moduleFields 集合里 的 BaseModuleFieldValue 的 fieldId="products"的数据，避免快照数据过大
         if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
             response.setModuleFields(response.getModuleFields().stream()
-                    .filter(field -> (field.getFieldValue() != null && StringUtils.isNotBlank(field.getFieldValue().toString()) && !"[]".equals(field.getFieldValue().toString()))).toList());
+                    .filter(field -> (field.getFieldValue() != null
+                            && StringUtils.isNotBlank(field.getFieldValue().toString())
+                            && !"[]".equals(field.getFieldValue().toString())))
+                    .toList());
         }
         ContractSnapshot snapshot = new ContractSnapshot();
         snapshot.setId(IDGenerator.nextStr());
@@ -255,10 +253,10 @@ public class ContractService extends BaseExportService implements ApprovalResour
         snapshot.setContractProp(JSON.toJSONString(moduleFormConfigDTO));
         snapshot.setContractValue(JSON.toJSONString(response));
         snapshotBaseMapper.insert(snapshot);
-
     }
 
-    private ContractGetResponse get(Contract contract, List<BaseModuleFieldValue> contractFields, ModuleFormConfigDTO contractFormConfig) {
+    private ContractGetResponse get(Contract contract, List<BaseModuleFieldValue> contractFields,
+            ModuleFormConfigDTO contractFormConfig) {
         ContractGetResponse contractGetResponse = BeanUtils.copyBean(new ContractGetResponse(), contract);
         contractGetResponse = baseService.setCreateUpdateOwnerUserName(contractGetResponse);
 
@@ -266,7 +264,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         // 获取模块字段
         moduleFormService.processBusinessFieldValues(contractGetResponse, contractFields, contractFormConfig);
         contractFields = contractFieldService.setBusinessRefFieldValue(List.of(contractGetResponse),
-                moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), contract.getOrganizationId()), new HashMap<>(Map.of(id, contractFields))).get(id);
+                moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), contract.getOrganizationId()),
+                new HashMap<>(Map.of(id, contractFields))).get(id);
 
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(contractFormConfig, contractFields);
 
@@ -278,14 +277,16 @@ public class ContractService extends BaseExportService implements ApprovalResour
         Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
         if (customer != null) {
             contractGetResponse.setCustomerName(customer.getName());
-            optionMap.put(BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey(), Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
+            optionMap.put(BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey(),
+                    Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
         }
 
         contractGetResponse.setOptionMap(optionMap);
         contractGetResponse.setModuleFields(contractFields);
 
         if (contractGetResponse.getOwner() != null) {
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractGetResponse.getOwner(), contract.getOrganizationId());
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(contractGetResponse.getOwner(),
+                    contract.getOrganizationId());
             if (userDeptDTO != null) {
                 contractGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 contractGetResponse.setDepartmentName(userDeptDTO.getDeptName());
@@ -301,9 +302,6 @@ public class ContractService extends BaseExportService implements ApprovalResour
 
     /**
      * 获取合同详情
-     *
-     * @param id
-     * @return
      */
     public ContractGetResponse get(String id, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(id);
@@ -313,7 +311,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         ContractGetResponse getResponse = get(contract, contractFields, contractFormConfig);
 
         if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+            Map<String, Boolean> firstNodeApproved = baseService
+                    .getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
             getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
             getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
         }
@@ -337,7 +336,6 @@ public class ContractService extends BaseExportService implements ApprovalResour
         moduleFormService.processBusinessFieldValues(response, fvs, contractFormConfig);
         return response;
     }
-
 
     /**
      * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
@@ -389,28 +387,24 @@ public class ContractService extends BaseExportService implements ApprovalResour
         }).toList();
     }
 
-
     /**
      * 编辑合同
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public Contract update(ContractUpdateRequest request, String userId, String orgId) {
         Contract oldContract = contractMapper.selectByPrimaryKey(request.getId());
-        List<BaseModuleFieldValue> moduleFields = request.getModuleFields() == null ? new ArrayList<>() : request.getModuleFields();
+        List<BaseModuleFieldValue> moduleFields = request.getModuleFields() == null ? new ArrayList<>()
+                : request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("contract.form.config.required"));
         }
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
         Optional.ofNullable(oldContract).ifPresentOrElse(item -> {
-
-            List<BaseModuleFieldValue> originFields = contractFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originFields = contractFieldService
+                    .getModuleFieldValuesByResourceId(request.getId());
             Contract contract = BeanUtils.copyBean(new Contract(), request);
             contract.setStartTime(request.getStartTime());
             contract.setEndTime(request.getEndTime());
@@ -441,7 +435,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
             if (CollectionUtils.isNotEmpty(contractSnapshots)) {
                 ContractSnapshot first = contractSnapshots.getFirst();
                 if (first != null) {
-                    ContractGetResponse response = JSON.parseObject(first.getContractValue(), ContractGetResponse.class);
+                    ContractGetResponse response = JSON.parseObject(first.getContractValue(),
+                            ContractGetResponse.class);
                     List<BaseModuleFieldValue> originModuleFields = response.getModuleFields();
                     originModuleFields.add(new BaseModuleFieldValue("products", response.getProducts()));
                     originFields.addAll(originModuleFields);
@@ -449,13 +444,15 @@ public class ContractService extends BaseExportService implements ApprovalResour
             }
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
-            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, contractFieldService, contract.getId());
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields,
+                    moduleFormConfigDTO, contractFieldService, contract.getId());
             // get 方法需要使用orgId
             contract.setOrganizationId(orgId);
             ContractGetResponse response = get(contract, resolveFieldValues, moduleFormConfigDTO);
             saveSnapshot(contract, saveModuleFormConfigDTO, response);
             // 处理日志上下文
-            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(), contract.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+            baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(),
+                    contract.getName(), Translator.get("products_info"), moduleFormConfigDTO);
         }, () -> {
             throw new GenericException(Translator.get("contract.not.exist"));
         });
@@ -473,14 +470,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         }
     }
 
-
     /**
      * 更新自定义字段
-     *
-     * @param moduleFields
-     * @param contract
-     * @param orgId
-     * @param userId
      */
     private void updateFields(List<BaseModuleFieldValue> moduleFields, Contract contract, String orgId, String userId) {
         if (moduleFields == null) {
@@ -505,8 +496,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 PermissionConstants.CONTRACT_DELETE,
                 orgId,
                 Contract::getId,
-                Contract::getApprovalStatus
-        );
+                Contract::getApprovalStatus);
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
         }
@@ -549,7 +539,6 @@ public class ContractService extends BaseExportService implements ApprovalResour
         logService.batchAdd(logs);
     }
 
-
     /**
      * 删除合同
      *
@@ -585,7 +574,6 @@ public class ContractService extends BaseExportService implements ApprovalResour
         return FormKey.CONTRACT;
     }
 
-
     /**
      * ⚠️反射调用; 勿修改入参, 返回, 方法名!
      *
@@ -610,7 +598,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
             }
             response.setAlreadyPayAmount(sumContractRecordAmount(id));
             if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-                Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
+                Map<String, Boolean> firstNodeApproved = baseService
+                        .getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
                 response.setFirstApproved(firstNodeApproved.get(response.getId()));
                 response.setSubmitterId(baseService.getApprovingResourceSubmitterId(response.getId()));
             }
@@ -619,17 +608,11 @@ public class ContractService extends BaseExportService implements ApprovalResour
         return response;
     }
 
-
     /**
      * 合同列表
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param deptDataPermission
-     * @return
      */
-    public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
+    public PagerWithOption<List<ContractListResponse>> list(ContractPageRequest request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission, Boolean source) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ContractListResponse> list = extContractMapper.list(request, orgId, userId, deptDataPermission, source);
         List<ContractListResponse> results = buildList(list, orgId);
@@ -639,10 +622,12 @@ public class ContractService extends BaseExportService implements ApprovalResour
         return PageUtils.setPageInfoWithOption(page, results, optionMap);
     }
 
-    private Map<String, List<OptionDTO>> buildOptionMap(List<ContractListResponse> list, List<ContractListResponse> buildList,
-                                                        ModuleFormConfigDTO formConfig) {
+    private Map<String, List<OptionDTO>> buildOptionMap(List<ContractListResponse> list,
+            List<ContractListResponse> buildList,
+            ModuleFormConfigDTO formConfig) {
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ContractListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                ContractListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
         // 补充负责人选项
@@ -663,9 +648,10 @@ public class ContractService extends BaseExportService implements ApprovalResour
 
         List<String> contractIds = list.stream().map(ContractListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> contractFiledMap = contractFieldService.getResourceFieldMap(contractIds, true);
-        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), orgId), contractFiledMap);
-
+        Map<String, List<BaseModuleFieldValue>> contractFiledMap = contractFieldService.getResourceFieldMap(contractIds,
+                true);
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractFieldService.setBusinessRefFieldValue(
+                list, moduleFormService.getFlattenFormFields(FormKey.CONTRACT.getKey(), orgId), contractFiledMap);
 
         List<String> ownerIds = list.stream()
                 .map(ContractListResponse::getOwner)
@@ -678,8 +664,11 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 .collect(Collectors.toMap(StageConfigResponse::getId,
                         StageConfigResponse::getName));
 
-        List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(ContractListResponse::getId).toList();
-        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        List<String> approvingResourceIds = list.stream()
+                .filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
+                .map(ContractListResponse::getId).toList();
+        Map<String, Boolean> firstNodeApprovedMap = baseService
+                .getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
         // 提审人仅存在于审批中的合同, 非审批中状态无需查询审批实例, 统一返回空
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
 
@@ -700,13 +689,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         return baseService.setCreateAndUpdateUserName(list);
     }
 
-
     /**
      * 获取表单快照
-     *
-     * @param id
-     * @param orgId
-     * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
         ModuleFormConfigDTO moduleFormConfigDTO = new ModuleFormConfigDTO();
@@ -723,21 +707,15 @@ public class ContractService extends BaseExportService implements ApprovalResour
             moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
         }
         return moduleFormConfigDTO;
-
     }
-
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_READ, rolePermissions);
     }
 
-
     /**
      * 更新合同状态
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}", comment = "{#request.comment}")
@@ -747,10 +725,12 @@ public class ContractService extends BaseExportService implements ApprovalResour
             throw new GenericException(Translator.get("contract.not.exist"));
         }
 
-        if (!stageAdvancedConfigService.checkStage(oldContract.getStage(), request.getStage(), FormKey.CONTRACT.getKey())) {
+        if (!stageAdvancedConfigService.checkStage(oldContract.getStage(), request.getStage(),
+                FormKey.CONTRACT.getKey())) {
             return;
         }
-        List<BaseModuleFieldValue> originCustomerFields = contractFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originCustomerFields = contractFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
 
         Contract newContract = BeanUtils.copyBean(new Contract(), oldContract);
         newContract.setStage(request.getStage());
@@ -762,35 +742,41 @@ public class ContractService extends BaseExportService implements ApprovalResour
         updateFieldAndSnapshot(newContract, request.getFields(), userId);
 
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
-        if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
-            String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) ?
-                    NotificationConstants.Event.CONTRACT_VOID : NotificationConstants.Event.CONTRACT_ARCHIVED;
+        if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name())
+                || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
+            String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name())
+                    ? NotificationConstants.Event.CONTRACT_VOID
+                    : NotificationConstants.Event.CONTRACT_ARCHIVED;
             sendNotice(newContract, userId, orgId, event, contract.getName());
         }
 
         baseService.handleUpdateLogWithSubTable(oldContract, contract, originCustomerFields,
                 contractFieldService.getModuleFieldValuesByResourceId(request.getId()),
                 request.getId(), contract.getName(), Translator.get("products_info"), getFormConfig(orgId));
-
-
     }
 
     private void updateFieldAndSnapshot(Contract contract, List<BaseModuleFieldValue> requestFields, String userId) {
         if (CollectionUtils.isNotEmpty(requestFields)) {
-            ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), contract.getOrganizationId());
+            ModuleFormConfigDTO businessFormConfig = moduleFormCacheService
+                    .getBusinessFormConfig(FormKey.CONTRACT.getKey(), contract.getOrganizationId());
             List<BaseField> fields = businessFormConfig.getFields();
             requestFields.forEach(field -> {
-                BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+                BaseField baseField = fields.stream()
+                        .filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
                 ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
                 updateRequest.setIds(List.of(contract.getId()));
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
-                contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId(), false);
+                contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class,
+                        LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId(),
+                        false);
 
                 // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
                 Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
-                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(), (v1, v2) -> v2));
-                contractFieldService.processAttachmentFields(contract.getOrganizationId(), contract.getId(), userId, fields, fieldValueMap);
+                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(),
+                                (v1, v2) -> v2));
+                contractFieldService.processAttachmentFields(contract.getOrganizationId(), contract.getId(), userId,
+                        fields, fieldValueMap);
             });
         }
         ContractSnapshot snapshotCriteria = new ContractSnapshot();
@@ -798,7 +784,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         ContractSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
         if (snapshot != null) {
             ModuleFormConfigDTO orderFormConfig = getFormConfig(contract.getOrganizationId());
-            List<BaseModuleFieldValue> orderFields = contractFieldService.getModuleFieldValuesByResourceId(contract.getId());
+            List<BaseModuleFieldValue> orderFields = contractFieldService
+                    .getModuleFieldValuesByResourceId(contract.getId());
             Contract newContract = contractMapper.selectByPrimaryKey(contract.getId());
             ContractGetResponse snapshotRes = get(newContract, orderFields, orderFormConfig);
             snapshot.setContractValue(JSON.toJSONString(snapshotRes));
@@ -817,14 +804,17 @@ public class ContractService extends BaseExportService implements ApprovalResour
     private void sendNotice(Contract contract, String userId, String orgId, String event, String customerName) {
         //查询通知配置的接收范围
         List<String> receiveUserIds = new ArrayList<>();
-        List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper.selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
-                .eq(MessageTaskConfig::getOrganizationId, orgId)
-                .eq(MessageTaskConfig::getTaskType, NotificationConstants.Module.CONTRACT)
-                .eq(MessageTaskConfig::getEvent, event));
+        List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper
+                .selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
+                        .eq(MessageTaskConfig::getOrganizationId, orgId)
+                        .eq(MessageTaskConfig::getTaskType, NotificationConstants.Module.CONTRACT)
+                        .eq(MessageTaskConfig::getEvent, event));
         if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
             MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
-            MessageTaskConfigDTO messageTaskConfigDTO = JSON.parseObject(messageTaskConfig.getValue(), MessageTaskConfigDTO.class);
-            receiveUserIds = commonNoticeSendService.getNoticeReceiveUserIds(messageTaskConfigDTO, contract.getCreateUser(), contract.getOwner(), orgId);
+            MessageTaskConfigDTO messageTaskConfigDTO = JSON.parseObject(messageTaskConfig.getValue(),
+                    MessageTaskConfigDTO.class);
+            receiveUserIds = commonNoticeSendService.getNoticeReceiveUserIds(messageTaskConfigDTO,
+                    contract.getCreateUser(), contract.getOwner(), orgId);
         } else {
             //默认通知创建人
             receiveUserIds.add(contract.getOwner());
@@ -879,7 +869,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
             return null;
         }
         List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceId(resourceId);
-        ContractApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new ContractApprovalSnapshotRequest(), contract);
+        ContractApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new ContractApprovalSnapshotRequest(),
+                contract);
         snapshotReq.setAmount(contract.getAmount() != null ? contract.getAmount().toString() : null);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         ModuleFormConfigDTO contractFormConfig = getFormConfig(contract.getOrganizationId());
@@ -892,7 +883,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
         try {
-            ContractApprovalSnapshotRequest request = JSON.parseObject(snapshotData, ContractApprovalSnapshotRequest.class);
+            ContractApprovalSnapshotRequest request = JSON.parseObject(snapshotData,
+                    ContractApprovalSnapshotRequest.class);
             if (request == null) {
                 return;
             }
@@ -933,7 +925,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
      *
      * @param postFieldParam 参数
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         List<BaseField> fields = formConfig.getFields();
@@ -941,7 +933,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         Contract contract = contractMapper.selectByPrimaryKey(postFieldParam.getResourceId());
         // 保存原始数据用于日志记录
         Contract originContract = BeanUtils.copyBean(new Contract(), contract);
-        List<BaseModuleFieldValue> originFields = contractFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<BaseModuleFieldValue> originFields = contractFieldService
+                .getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
         List<ContractField> contractFields = new ArrayList<>();
         List<ContractFieldBlob> contractFieldBlobs = new ArrayList<>();
         ContractSnapshot snapshotCriteria = new ContractSnapshot();
@@ -953,25 +946,33 @@ public class ContractService extends BaseExportService implements ApprovalResour
         }
 
         List<ResourceApprovalFieldUpdateParam> postParams = postFieldParam.getFields();
-        ResourceApprovalFieldUpdateParam stageField = postParams.stream().filter(param -> Strings.CS.equals(param.getFieldId(), "stage") && param.getFieldValue() != null).findFirst().orElse(null);
+        ResourceApprovalFieldUpdateParam stageField = postParams.stream()
+                .filter(param -> Strings.CS.equals(param.getFieldId(), "stage") && param.getFieldValue() != null)
+                .findFirst().orElse(null);
         boolean stageFlag = handleStageSetting(stageField, contract, postFieldParam);
 
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postParams) {
-            if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null && stageFlag) {
+            if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null
+                    && stageFlag) {
                 contractFieldService.setResourceFieldValue(contract, "stage", fieldUpdateParam.getFieldValue());
                 continue;
             }
-            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())
+                    || fieldUpdateParam.getFieldValue() == null) {
                 continue;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                    .getResolver(fieldConfig.getType());
             if (fieldConfig.hasBusinessKey()) {
                 // 业务主表字段
-                contractFieldService.setResourceFieldValue(contract, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+                contractFieldService.setResourceFieldValue(contract, fieldConfig.getBusinessKey(),
+                        fieldUpdateParam.getFieldValue());
             } else {
                 // 快照自定义字段
-                Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
+                Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream()
+                        .filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId()))
+                        .findAny();
                 if (findField.isPresent()) {
                     findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
                 } else {
@@ -982,23 +983,28 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 }
                 if (fieldConfig.isBlob()) {
                     // 自定义大表
-                    contractFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<ContractFieldBlob>()
-                            .eq(ContractFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                    contractFieldService.getResourceFieldBlobMapper()
+                            .deleteByLambda(new LambdaQueryWrapper<ContractFieldBlob>()
+                                    .eq(ContractFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
+                                    .eq(ContractFieldBlob::getResourceId, postFieldParam.getResourceId()));
                     ContractFieldBlob field = new ContractFieldBlob();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     contractFieldBlobs.add(field);
                 } else {
                     // 自定义表
                     contractFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<ContractField>()
-                            .eq(ContractField::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractField::getResourceId, postFieldParam.getResourceId()));
+                            .eq(ContractField::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(ContractField::getResourceId, postFieldParam.getResourceId()));
                     ContractField field = new ContractField();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     contractFields.add(field);
                 }
             }
@@ -1017,13 +1023,15 @@ public class ContractService extends BaseExportService implements ApprovalResour
             snapshotBaseMapper.update(snapshot);
         }
         // 记录审批后置字段更新日志
-        baseService.handleUpdateLogWithSubTable(originContract, contract, originFields, contractFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+        baseService.handleUpdateLogWithSubTable(originContract, contract, originFields,
+                contractFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
                 postFieldParam.getResourceId(), contract.getName(), Translator.get("products_info"), formConfig);
         // 从 OperationLogContext 中获取日志信息并手动记录
         LogContextInfo contextInfo = OperationLogContext.getContext();
         if (contextInfo != null) {
             String orgId = OrganizationContext.getOrganizationId();
-            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
+            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(),
+                    LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
             logDTO.setOriginalValue(contextInfo.getOriginalValue());
             logDTO.setModifiedValue(contextInfo.getModifiedValue());
             logService.add(logDTO);
@@ -1031,33 +1039,33 @@ public class ContractService extends BaseExportService implements ApprovalResour
         }
     }
 
-
     /**
      * 审批后置操作更新阶段配置
-     *
-     * @param stageField
-     * @param originContract
-     * @param postFieldParam
      */
-    private boolean handleStageSetting(ResourceApprovalFieldUpdateParam stageField, Contract originContract, ResourceApprovalPostUpdateParam postFieldParam) {
+    private boolean handleStageSetting(ResourceApprovalFieldUpdateParam stageField, Contract originContract,
+            ResourceApprovalPostUpdateParam postFieldParam) {
         if (stageField == null) {
             return true;
         }
         try {
-            if (!stageAdvancedConfigService.checkStage(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.CONTRACT.getKey())) {
+            if (!stageAdvancedConfigService.checkStage(originContract.getStage(), stageField.getFieldValue().toString(),
+                    FormKey.CONTRACT.getKey())) {
                 return true;
             }
         } catch (Exception e) {
             return false;
         }
-        StageConfigResponse first = extContractStageConfigMapper.getStageConfigList(originContract.getOrganizationId()).getFirst();
+        StageConfigResponse first = extContractStageConfigMapper.getStageConfigList(originContract.getOrganizationId())
+                .getFirst();
         if (Strings.CI.equals(first.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
-            StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.CONTRACT.name());
+            StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(
+                    originContract.getStage(), stageField.getFieldValue().toString(), FormKey.CONTRACT.name());
             if (config == null || config.getFieldConfig() == null) {
                 return true;
             }
-            List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
-            });
+            List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(),
+                    new TypeReference<List<CirculationFieldValue>>() {
+                    });
             List<ResourceApprovalFieldUpdateParam> fields = new ArrayList<>();
             circulationFieldValues.forEach(field -> {
                 if (Strings.CI.equals(field.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name())) {
@@ -1070,18 +1078,17 @@ public class ContractService extends BaseExportService implements ApprovalResour
                     }
                 }
             });
-            List<ResourceApprovalFieldUpdateParam> newFields =
-                    Optional.ofNullable(postFieldParam.getFields())
-                            .map(ArrayList::new)
-                            .orElseGet(ArrayList::new);
+            List<ResourceApprovalFieldUpdateParam> newFields = Optional.ofNullable(postFieldParam.getFields())
+                    .map(ArrayList::new)
+                    .orElseGet(ArrayList::new);
             newFields.addAll(fields);
             postFieldParam.setFields(newFields);
         }
         return true;
     }
 
-
-    public CustomerContractStatisticResponse calculateContractStatisticByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public CustomerContractStatisticResponse calculateContractStatisticByCustomerId(String customerId, String userId,
+            String orgId, DeptDataPermissionDTO deptDataPermission) {
         return extContractMapper.calculateContractStatisticByCustomerId(customerId, userId, orgId, deptDataPermission);
     }
 
@@ -1115,7 +1122,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
     private BigDecimal sumContractRecordAmount(String contractId) {
         LambdaQueryWrapper<ContractPaymentRecord> paymentRecordWrapper = new LambdaQueryWrapper<>();
         paymentRecordWrapper.eq(ContractPaymentRecord::getContractId, contractId);
-        List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(paymentRecordWrapper);
+        List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper
+                .selectListByLambda(paymentRecordWrapper);
         if (CollectionUtils.isNotEmpty(contractPaymentRecords)) {
             return contractPaymentRecords.stream()
                     .map(ContractPaymentRecord::getRecordAmount)
@@ -1132,13 +1140,15 @@ public class ContractService extends BaseExportService implements ApprovalResour
      * @param userId         当前用户ID
      * @param organizationId 当前组织ID
      */
-    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId,
+            String organizationId) {
         BaseField field = contractFieldService.getAndCheckField(request.getFieldId(), organizationId);
         // getAndCheckField 走的是 getConfig()，不会设置 businessKey，需要手动补充
         moduleFormService.setFieldBusinessParam(field);
         List<Contract> originContracts = contractMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originContracts)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages(Translator.get("contract.not.exist")).build();
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("contract.not.exist")).build();
         }
 
         // 校验状态权限，过滤出有权限操作的合同
@@ -1148,14 +1158,15 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 PermissionConstants.CONTRACT_UPDATE,
                 organizationId,
                 Contract::getId,
-                Contract::getApprovalStatus
-        );
+                Contract::getApprovalStatus);
 
         if (CollectionUtils.isEmpty(permittedIds)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(originContracts.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
+            return BatchAffectReasonResponse.builder().success(0).fail(originContracts.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
         }
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CONTRACT, organizationId, userId, field.getName(), request.getFieldValue());
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CONTRACT,
+                organizationId, userId, field.getName(), request.getFieldValue());
         List<Contract> permittedContracts = originContracts.stream()
                 .filter(c -> permittedIds.contains(c.getId()))
                 .collect(Collectors.toList());
@@ -1170,13 +1181,15 @@ public class ContractService extends BaseExportService implements ApprovalResour
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTRACT.getKey(), request.getFieldId(), permittedIds, organizationId);
-        contractFieldService.batchUpdate(filteredRequest, field, permittedContracts, Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId, true);
+        contractFieldService.batchUpdate(filteredRequest, field, permittedContracts, Contract.class,
+                LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 
         // 批量更新后重建每条合同的快照
         ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(organizationId);
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
 
         // 批量删除旧快照（1次）
         LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
@@ -1195,14 +1208,18 @@ public class ContractService extends BaseExportService implements ApprovalResour
         List<ContractSnapshot> snapshots = new ArrayList<>();
         for (String id : permittedIds) {
             Contract contract = latestContractMap.get(id);
-            if (contract == null) continue;
+            if (contract == null) {
+                continue;
+            }
             List<BaseModuleFieldValue> contractFields = fieldMap.getOrDefault(id, Collections.emptyList());
-            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(contractFields, moduleFormConfigDTO, contractFieldService, id);
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(contractFields,
+                    moduleFormConfigDTO, contractFieldService, id);
             ContractGetResponse response = get(contract, resolveFieldValues, moduleFormConfigDTO);
             // 过滤空值（与 saveSnapshot 保持一致）
             if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
                 response.setModuleFields(response.getModuleFields().stream()
-                        .filter(f -> f.getFieldValue() != null && StringUtils.isNotBlank(f.getFieldValue().toString()) && !"[]".equals(f.getFieldValue().toString()))
+                        .filter(f -> f.getFieldValue() != null && StringUtils.isNotBlank(f.getFieldValue().toString())
+                                && !"[]".equals(f.getFieldValue().toString()))
                         .toList());
             }
             ContractSnapshot snapshot = new ContractSnapshot();
@@ -1216,7 +1233,9 @@ public class ContractService extends BaseExportService implements ApprovalResour
             snapshotBaseMapper.batchInsert(snapshots);
         }
 
-        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(originContracts.size() - permittedIds.size()).skip(0).errorMessages(Translator.get("batch.update.reason")).build();
+        return BatchAffectReasonResponse.builder().success(permittedIds.size())
+                .fail(originContracts.size() - permittedIds.size()).skip(0)
+                .errorMessages(Translator.get("batch.update.reason")).build();
     }
 
     /**
@@ -1227,7 +1246,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
     private void checkContractRelated(String contractId) {
         LambdaQueryWrapper<ContractPaymentRecord> recordWrapper = new LambdaQueryWrapper<>();
         recordWrapper.eq(ContractPaymentRecord::getContractId, contractId);
-        List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(recordWrapper);
+        List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper
+                .selectListByLambda(recordWrapper);
         if (CollectionUtils.isNotEmpty(contractPaymentRecords)) {
             throw new GenericException(Translator.get("contract.has.payment.record"));
         }
@@ -1236,18 +1256,13 @@ public class ContractService extends BaseExportService implements ApprovalResour
         }
     }
 
-
     /**
      * 统计
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param deptDataPermission
-     * @return
      */
-    public ContractStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
-        ContractStatisticResponse response = extContractMapper.searchStatistic(request, orgId, userId, deptDataPermission);
+    public ContractStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission) {
+        ContractStatisticResponse response = extContractMapper.searchStatistic(request, orgId, userId,
+                deptDataPermission);
         return Optional.ofNullable(response).orElse(new ContractStatisticResponse());
     }
 
@@ -1269,14 +1284,10 @@ public class ContractService extends BaseExportService implements ApprovalResour
         return StringUtils.EMPTY;
     }
 
-
     /**
      * 阶段看板排序
      * <p>
      * 阶段未变化时只是同列排序, 不触发审批; 跨列换阶段属于业务阶段变更, 走编辑审批流。
-     *
-     * @param request
-     * @param userId
      */
     public void sort(StageSortRequest request, String userId) {
         //拖拽节点
@@ -1294,9 +1305,6 @@ public class ContractService extends BaseExportService implements ApprovalResour
 
     /**
      * 跨列换阶段的看板排序: 阶段变更需命中编辑审批流, 排序本身照常写入
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.dragNodeId}")
     @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.dragNodeId}", operatorId = "{#userId}")
@@ -1305,7 +1313,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
-        final Map<String, String> stageMap = extContractStageConfigMapper.getStageConfigList(contract.getOrganizationId()).stream()
+        final Map<String, String> stageMap = extContractStageConfigMapper
+                .getStageConfigList(contract.getOrganizationId()).stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
         doSort(request, contract, userId);
@@ -1321,8 +1330,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
                         .resourceName(contract.getName())
                         .originalValue(originalVal)
                         .modifiedValue(modifiedVal)
-                        .build()
-        );
+                        .build());
     }
 
     private void doSort(StageSortRequest request, Contract contract, String userId) {
@@ -1332,7 +1340,6 @@ public class ContractService extends BaseExportService implements ApprovalResour
             Contract dropNode = contractMapper.selectByPrimaryKey(request.getDropNodeId());
             pos = dropNode.getPos();
             if (request.getDropPosition() == -1) {
-
                 extContractMapper.moveUpStageContract(pos, request.getStage(), DEFAULT_POS);
                 pos = pos + 1;
             } else {
@@ -1340,7 +1347,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
             }
         }
 
-        if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(), FormKey.CONTRACT.getKey())) {
+        if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(),
+                FormKey.CONTRACT.getKey())) {
             return;
         }
 
@@ -1348,38 +1356,35 @@ public class ContractService extends BaseExportService implements ApprovalResour
         contract.setStage(request.getStage());
         contractMapper.updateById(contract);
         updateFieldAndSnapshot(contract, request.getFields(), userId);
-
     }
 
     /**
      * 处理旧版本审批状态 (APPROVING => NONE)
      */
     public void handleOldApprovalData() {
-        List<Contract> contracts = contractMapper.selectListByLambda(new LambdaQueryWrapper<Contract>().eq(Contract::getApprovalStatus, ApprovalStatus.APPROVING.name()));
+        List<Contract> contracts = contractMapper.selectListByLambda(
+                new LambdaQueryWrapper<Contract>().eq(Contract::getApprovalStatus, ApprovalStatus.APPROVING.name()));
         contracts.forEach(contract -> {
-            ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(contract.getId()).approvalStatus(ApprovalStatus.NONE.name()).build();
+            ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(contract.getId())
+                    .approvalStatus(ApprovalStatus.NONE.name()).build();
             updateSnapshotApprovalStatus(param);
         });
         extContractMapper.updateOldApprovalStatusNone();
     }
 
-
     /**
      * 下载导入模板
-     *
-     * @param response
-     * @param currentOrg
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-                processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT.getKey(), currentOrg)),
+                processDuplicateLastLevelHeads(
+                        moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT.getKey(), currentOrg)),
                 Translator.get("contract.import_tpl.name"),
                 Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTRACT.getKey(), currentOrg)),
-                new CustomHeadColWidthStyleStrategy()
-        );
+                new CustomTemplateWriteHandler(
+                        moduleFormService.getAllCustomImportFields(FormKey.CONTRACT.getKey(), currentOrg)),
+                new CustomHeadColWidthStyleStrategy());
     }
-
 
     /**
      * 导入检查
@@ -1395,7 +1400,6 @@ public class ContractService extends BaseExportService implements ApprovalResour
         return checkImportExcel(file, importType, currentOrg);
     }
 
-
     /**
      * 检查导入的文件
      *
@@ -1407,15 +1411,13 @@ public class ContractService extends BaseExportService implements ApprovalResour
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(
                     FormKey.CONTRACT.getKey(),
-                    currentOrg
-            );
+                    currentOrg);
 
             boolean supportSubHead = moduleFormService.supportSubHead(fields);
             int headRowNumber = supportSubHead ? 2 : 1;
 
             // 1 先读取合并单元格信息
-            CustomFieldMergeCellEventListener mergeCellEventListener =
-                    new CustomFieldMergeCellEventListener();
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
 
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
@@ -1425,16 +1427,14 @@ public class ContractService extends BaseExportService implements ApprovalResour
                     .doRead();
 
             // 2 校验数据
-            CustomFieldCheckEventListener eventListener =
-                    new CustomFieldCheckEventListener(
-                            fields,
-                            "contract",
-                            "contract_field",
-                            currentOrg,
-                            mergeCellEventListener.getMergeCellMap(),
-                            mergeCellEventListener.getMergeRowDataMap(),
-                            importType
-                    );
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(
+                    fields,
+                    "contract",
+                    "contract_field",
+                    currentOrg,
+                    mergeCellEventListener.getMergeCellMap(),
+                    mergeCellEventListener.getMergeRowDataMap(),
+                    importType);
 
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(headRowNumber)
@@ -1447,35 +1447,31 @@ public class ContractService extends BaseExportService implements ApprovalResour
                     .successCount(eventListener.getSuccess())
                     .failCount(eventListener.getErrList().size())
                     .build();
-
         } catch (Exception e) {
             log.error("contract import pre-check error: {}", e.getMessage(), e);
             throw new GenericException(e.getMessage());
         }
     }
 
-
     /**
      * 价格表导入
      *
      * @param file        导入文件
-     * @param currentOrg  当前组织
      * @param currentUser 当前用户
+     * @param currentOrg  当前组织
      * @return 导入返回信息
      */
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentUser, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(
                     FormKey.CONTRACT.getKey(),
-                    currentOrg
-            );
+                    currentOrg);
 
             boolean supportSubHead = moduleFormService.supportSubHead(fields);
             int headRowNumber = supportSubHead ? 2 : 1;
 
             // 1 读取合并单元格信息
-            CustomFieldMergeCellEventListener mergeCellEventListener =
-                    new CustomFieldMergeCellEventListener();
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
 
             FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
@@ -1485,15 +1481,13 @@ public class ContractService extends BaseExportService implements ApprovalResour
                     .doRead();
 
             // 2 实际导入
-            CustomFieldImportEventListener<Contract> eventListener =
-                    getContractEventListener(
-                            currentOrg,
-                            currentUser,
-                            fields,
-                            mergeCellEventListener.getMergeCellMap(),
-                            mergeCellEventListener.getMergeRowDataMap(),
-                            request
-                    );
+            CustomFieldImportEventListener<Contract> eventListener = getContractEventListener(
+                    currentOrg,
+                    currentUser,
+                    fields,
+                    mergeCellEventListener.getMergeCellMap(),
+                    mergeCellEventListener.getMergeRowDataMap(),
+                    request);
 
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
@@ -1507,139 +1501,161 @@ public class ContractService extends BaseExportService implements ApprovalResour
                     .successCount(eventListener.getSuccessCount())
                     .failCount(eventListener.getErrList().size())
                     .build();
-
         } catch (Exception e) {
             log.error("contract import error: {}", e.getMessage(), e);
             throw new GenericException("导入异常，请检查文件数据！" + e);
         }
     }
 
-
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public CustomFieldImportEventListener<Contract> getContractEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, ImportRequest request) {
+    public CustomFieldImportEventListener<Contract> getContractEventListener(String currentOrg, String currentUser,
+            List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap,
+            Map<Integer, Map<Integer, String>> mergeRowDataMap, ImportRequest request) {
         List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(currentOrg);
-        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), currentOrg);
-        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.CONTRACT.getKey(), currentOrg);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
+                ModuleFormConfigDTO.class);
         long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
-        CustomImportAfterDoConsumer<Contract, BaseResourceSubField> afterDo = (contracts, contractFields, contractFieldBlobs) -> {
+        CustomImportAfterDoConsumer<Contract, BaseResourceSubField> afterDo = (contracts, contractFields,
+                contractFieldBlobs) -> {
             List<LogDTO> logs = new ArrayList<>();
             ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
             switch (importType) {
-                case ADD -> {
-                    Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_NO.getKey())).findAny();
-                    //获取当前表单中公式类型输入字段公式包含合同编号的所有字段（排除显示字段中的字段）
-                    List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
-                    for (int i = 0; i < contracts.size(); i++) {
-                        Contract contract = contracts.get(i);
-                        if (serialOptional.isPresent()) {
-                            String serialNo = serialNumGenerator.generateByRules(
-                                    serialNumberRules(contract, (SerialNumberField) serialOptional.get()),
-                                    currentOrg, FormKey.CONTRACT.getKey());
-                            contract.setNumber(serialNo);
-                            fillSerialNumberFormulas(contract, serialOptional.get(), formulaFields, contractFields, serialNo);
-                        }
-                        contract.setApprovalStatus(ApprovalStatus.NONE.name());
-                        contract.setStage(stageConfigList.getFirst().getId());
-                        contract.setPos(nextPos + i);
-                        logs.add(new LogDTO(currentOrg, contract.getId(), currentUser, LogType.ADD, LogModule.CONTRACT_INDEX, contract.getName()));
+            case ADD -> {
+                Optional<BaseField> serialOptional = fields.stream().filter(
+                        field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_NO.getKey()))
+                        .findAny();
+                //获取当前表单中公式类型输入字段公式包含合同编号的所有字段（排除显示字段中的字段）
+                List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial))
+                        .orElseGet(List::of);
+                for (int i = 0; i < contracts.size(); i++) {
+                    Contract contract = contracts.get(i);
+                    if (serialOptional.isPresent()) {
+                        String serialNo = serialNumGenerator.generateByRules(
+                                serialNumberRules(contract, (SerialNumberField) serialOptional.get()),
+                                currentOrg, FormKey.CONTRACT.getKey());
+                        contract.setNumber(serialNo);
+                        fillSerialNumberFormulas(contract, serialOptional.get(), formulaFields, contractFields,
+                                serialNo);
                     }
-                    contractMapper.batchInsert(contracts);
-                    contractFieldMapper.batchInsert(contractFields.stream().map(field -> BeanUtils.copyBean(new ContractField(), field)).toList());
-                    contractFieldBlobMapper.batchInsert(contractFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ContractFieldBlob(), field)).toList());
-                    // record logs
-                    logService.batchAdd(logs);
+                    contract.setApprovalStatus(ApprovalStatus.NONE.name());
+                    contract.setStage(stageConfigList.getFirst().getId());
+                    contract.setPos(nextPos + i);
+                    logs.add(new LogDTO(currentOrg, contract.getId(), currentUser, LogType.ADD,
+                            LogModule.CONTRACT_INDEX, contract.getName()));
                 }
-                case UPDATE -> {
-                    List<String> ids = contracts.stream().map(Contract::getId).toList();
-                    if (CollectionUtils.isEmpty(ids)) {
-                        break;
-                    }
-                    //原数据
-                    List<Contract> originList = contractMapper.selectByIds(ids);
-                    if (CollectionUtils.isEmpty(originList)) {
-                        break;
-                    }
-                    Map<String, Contract> originMaps = originList.stream().collect(Collectors.toMap(Contract::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = contractFieldService.getResourceFieldMap(ids, true);
+                contractMapper.batchInsert(contracts);
+                contractFieldMapper.batchInsert(
+                        contractFields.stream().map(field -> BeanUtils.copyBean(new ContractField(), field)).toList());
+                contractFieldBlobMapper.batchInsert(contractFieldBlobs.stream()
+                        .map(field -> BeanUtils.copyBean(new ContractFieldBlob(), field)).toList());
+                // record logs
+                logService.batchAdd(logs);
+            }
+            case UPDATE -> {
+                List<String> ids = contracts.stream().map(Contract::getId).toList();
+                if (CollectionUtils.isEmpty(ids)) {
+                    break;
+                }
+                //原数据
+                List<Contract> originList = contractMapper.selectByIds(ids);
+                if (CollectionUtils.isEmpty(originList)) {
+                    break;
+                }
+                Map<String, Contract> originMaps = originList.stream()
+                        .collect(Collectors.toMap(Contract::getId, Function.identity()));
+                Map<String, List<BaseModuleFieldValue>> originFieldValueMap = contractFieldService
+                        .getResourceFieldMap(ids, true);
 
-                    List<ContractField> insertField = new ArrayList<>();
-                    List<ContractFieldBlob> insertFieldBlob = new ArrayList<>();
-                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                    ExtContractMapper batchMapper = sqlSession.getMapper(ExtContractMapper.class);
-                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                List<ContractField> insertField = new ArrayList<>();
+                List<ContractFieldBlob> insertFieldBlob = new ArrayList<>();
+                SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                ExtContractMapper batchMapper = sqlSession.getMapper(ExtContractMapper.class);
+                CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
 
-                    if (CollectionUtils.isNotEmpty(contracts)) {
-                        contracts.forEach(contract -> {
-                            batchMapper.updateContract(contract);
-                        });
-                    }
+                if (CollectionUtils.isNotEmpty(contracts)) {
+                    contracts.forEach(contract -> {
+                        batchMapper.updateContract(contract);
+                    });
+                }
 
-                    if (CollectionUtils.isNotEmpty(contractFields)) {
-                        List<ContractField> fieldList = contractFieldMapper.selectByIds(contractFields.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, ContractField> fieldMap = fieldList.stream().collect(Collectors.toMap(ContractField::getId, Function.identity()));
-                        contractFields.forEach(contractField -> {
-                            if (fieldMap.containsKey(contractField.getId())) {
-                                commonMapper.updateCustomerField("contract_field", contractField);
-                            } else {
-                                insertField.add(BeanUtils.copyBean(new ContractField(), contractField));
-                            }
-                        });
-                    }
-
-                    if (CollectionUtils.isNotEmpty(contractFieldBlobs)) {
-                        List<ContractFieldBlob> blobList = contractFieldBlobMapper.selectByIds(contractFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, ContractFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ContractFieldBlob::getId, Function.identity()));
-                        contractFieldBlobs.forEach(contractFieldBlob -> {
-                            if (blobMap.containsKey(contractFieldBlob.getId())) {
-                                commonMapper.updateCustomerField("contract_field_blob", contractFieldBlob);
-                            } else {
-                                insertFieldBlob.add(BeanUtils.copyBean(new ContractFieldBlob(), contractFieldBlob));
-                            }
-                        });
-                    }
-
-                    sqlSession.flushStatements();
-                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                    if (CollectionUtils.isNotEmpty(insertField)) {
-                        contractFieldMapper.batchInsert(insertField);
-                    }
-                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                        contractFieldBlobMapper.batchInsert(insertFieldBlob);
-                    }
-
-                    SqlSession currentSession =
-                            SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                    currentSession.clearCache();
-
-                    Map<String, Contract> modifiedMaps = contractMapper.selectByIds(ids).stream().collect(Collectors.toMap(Contract::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = contractFieldService.getResourceFieldMap(ids, true);
-
-                    ids.forEach(id -> {
-                        Contract originDate = originMaps.get(id);
-                        Contract modifiedDate = modifiedMaps.get(id);
-                        baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
-                        LogContextInfo contextInfo = OperationLogContext.getContext();
-                        if (contextInfo != null) {
-                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_INDEX, modifiedDate.getName());
-                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                            logs.add(logDTO);
-                            OperationLogContext.clear();
+                if (CollectionUtils.isNotEmpty(contractFields)) {
+                    List<ContractField> fieldList = contractFieldMapper
+                            .selectByIds(contractFields.stream().map(BaseResourceSubField::getId).toList());
+                    Map<String, ContractField> fieldMap = fieldList.stream()
+                            .collect(Collectors.toMap(ContractField::getId, Function.identity()));
+                    contractFields.forEach(contractField -> {
+                        if (fieldMap.containsKey(contractField.getId())) {
+                            commonMapper.updateCustomerField("contract_field", contractField);
+                        } else {
+                            insertField.add(BeanUtils.copyBean(new ContractField(), contractField));
                         }
                     });
-                    logService.batchAdd(logs);
-                    //删除快照
-                    LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
-                    wrapper.in(ContractSnapshot::getContractId, ids);
-                    snapshotBaseMapper.deleteByLambda(wrapper);
                 }
+
+                if (CollectionUtils.isNotEmpty(contractFieldBlobs)) {
+                    List<ContractFieldBlob> blobList = contractFieldBlobMapper
+                            .selectByIds(contractFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                    Map<String, ContractFieldBlob> blobMap = blobList.stream()
+                            .collect(Collectors.toMap(ContractFieldBlob::getId, Function.identity()));
+                    contractFieldBlobs.forEach(contractFieldBlob -> {
+                        if (blobMap.containsKey(contractFieldBlob.getId())) {
+                            commonMapper.updateCustomerField("contract_field_blob", contractFieldBlob);
+                        } else {
+                            insertFieldBlob.add(BeanUtils.copyBean(new ContractFieldBlob(), contractFieldBlob));
+                        }
+                    });
+                }
+
+                sqlSession.flushStatements();
+                SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                if (CollectionUtils.isNotEmpty(insertField)) {
+                    contractFieldMapper.batchInsert(insertField);
+                }
+                if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                    contractFieldBlobMapper.batchInsert(insertFieldBlob);
+                }
+
+                SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                currentSession.clearCache();
+
+                Map<String, Contract> modifiedMaps = contractMapper.selectByIds(ids).stream()
+                        .collect(Collectors.toMap(Contract::getId, Function.identity()));
+                Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = contractFieldService
+                        .getResourceFieldMap(ids, true);
+
+                ids.forEach(id -> {
+                    Contract originDate = originMaps.get(id);
+                    Contract modifiedDate = modifiedMaps.get(id);
+                    baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id),
+                            modifiedFieldValueMap.get(id), id, modifiedDate.getName(), Translator.get("products_info"),
+                            moduleFormConfigDTO);
+                    LogContextInfo contextInfo = OperationLogContext.getContext();
+                    if (contextInfo != null) {
+                        LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                LogModule.CONTRACT_INDEX, modifiedDate.getName());
+                        logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                        logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                        logs.add(logDTO);
+                        OperationLogContext.clear();
+                    }
+                });
+                logService.batchAdd(logs);
+                //删除快照
+                LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+                wrapper.in(ContractSnapshot::getContractId, ids);
+                snapshotBaseMapper.deleteByLambda(wrapper);
+            }
             }
 
-            List<ContractGetResponse> contractGetResponses = batchGetSimpleByIds(contracts.stream().map(Contract::getId).toList());
+            List<ContractGetResponse> contractGetResponses = batchGetSimpleByIds(
+                    contracts.stream().map(Contract::getId).toList());
             contractGetResponses.forEach(response -> {
                 // 保存表单配置快照
-                List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, contractFieldService, response.getId());
+                List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(
+                        response.getModuleFields(), moduleFormConfigDTO, contractFieldService, response.getId());
                 ContractGetResponse contractGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
                 saveSnapshot(response, saveModuleFormConfigDTO, contractGetResponse);
             });
@@ -1656,11 +1672,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 2000,
                 mergeCellMap,
                 mergeRowDataMap,
-                request.getImportType()
-        );
-
+                request.getImportType());
     }
-
 
     /**
      * 生成流水号的规则: 前缀从合同名称里截取。
@@ -1690,7 +1703,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
      * 占位符替换成真实流水号
      */
     private void fillSerialNumberFormulas(Contract contract, BaseField serialField, List<BaseField> formulaFields,
-                                          List<BaseResourceSubField> contractFields, String serialNo) {
+            List<BaseResourceSubField> contractFields, String serialNo) {
         String placeholder = "${" + serialField.getName() + "}";
         String prefixedPlaceholder = serialNumberPrefix(contract.getName(), placeholder) + placeholder;
         BeanWrapper contractWrapper = new BeanWrapperImpl(contract);
@@ -1715,7 +1728,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         }
     }
 
-    private String replaceSerialPlaceholder(String value, String prefixedPlaceholder, String placeholder, String serialNo) {
+    private String replaceSerialPlaceholder(String value, String prefixedPlaceholder, String placeholder,
+            String serialNo) {
         return value.replace(prefixedPlaceholder, serialNo).replace(placeholder, serialNo);
     }
 }

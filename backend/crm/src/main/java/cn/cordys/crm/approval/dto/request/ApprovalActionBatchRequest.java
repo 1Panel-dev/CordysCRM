@@ -13,9 +13,9 @@ public class ApprovalActionBatchRequest {
     @Schema(description = "ids", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<String> ids;
 
-	@Schema(description = "意见, 评论")
-	private String comment;
+    @Schema(description = "意见, 评论")
+    private String comment;
 
-	@Schema(description = "附件ID集合")
+    @Schema(description = "附件ID集合")
     private List<String> attachmentIds;
 }

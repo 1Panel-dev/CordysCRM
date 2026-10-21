@@ -16,27 +16,28 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class SerialNumberField extends BaseField {
 
-	public static final String FORMULA = "formula";
+    public static final String FORMULA = "formula";
 
     @Schema(description = "流水号规则")
     private List<String> serialNumberRules;
 
-	@Schema(description = "前缀固定字符类型", allowableValues = {"custom", "formula"})
-	private String prefixType;
+    @Schema(description = "前缀固定字符类型", allowableValues = { "custom", "formula" })
+    private String prefixType;
 
-	@Schema(description = "公式, prefixType 为 formula")
-	private String formula;
+    @Schema(description = "公式, prefixType 为 formula")
+    private String formula;
 
-	/**
-	 * 获取流水号规则 (替换可解析的公式前缀)
-	 * @param formulaPrefix 公式前缀
-	 * @return 流水号规则
-	 */
-	public List<String> getSerialNumberRules(String formulaPrefix) {
-		List<String> rules = new ArrayList<>(this.serialNumberRules);
-		if (Strings.CI.equals(this.prefixType, SerialNumberField.FORMULA)) {
-			rules.set(0, StringUtils.defaultString(formulaPrefix));
-		}
-		return rules;
-	}
+    /**
+     * 获取流水号规则 (替换可解析的公式前缀)
+     *
+     * @param formulaPrefix 公式前缀
+     * @return 流水号规则
+     */
+    public List<String> getSerialNumberRules(String formulaPrefix) {
+        List<String> rules = new ArrayList<>(this.serialNumberRules);
+        if (Strings.CI.equals(this.prefixType, SerialNumberField.FORMULA)) {
+            rules.set(0, StringUtils.defaultString(formulaPrefix));
+        }
+        return rules;
+    }
 }

@@ -34,7 +34,6 @@ public class CsrfFilter extends AnonymousFilter {
      * @param request     Servlet 请求
      * @param response    Servlet 响应
      * @param mappedValue 过滤器链中的映射值
-     *
      * @return true 如果请求继续处理，false 如果请求被中断
      */
     @Override
@@ -43,7 +42,8 @@ public class CsrfFilter extends AnonymousFilter {
 
         // 如果用户未认证，返回认证无效状态
         if (!SecurityUtils.getSubject().isAuthenticated()) {
-            ((HttpServletResponse) response).setHeader(SessionConstants.AUTHENTICATION_STATUS, SessionConstants.AUTHENTICATION_INVALID);
+            ((HttpServletResponse) response).setHeader(SessionConstants.AUTHENTICATION_STATUS,
+                    SessionConstants.AUTHENTICATION_INVALID);
             return true;
         }
 

@@ -1,6 +1,5 @@
 package cn.cordys.crm.clue.controller;
 
-
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.uid.IDGenerator;
@@ -84,8 +83,6 @@ public class ClueFollowRecordControllerTests extends BaseTest {
         return customer;
     }
 
-
-
     @Test
     @Order(2)
     void testUpdate() throws Exception {
@@ -121,7 +118,6 @@ public class ClueFollowRecordControllerTests extends BaseTest {
     void testGet() throws Exception {
         this.requestGet(DEFAULT_GET, addFollowUpRecord.getId());
     }
-
 
     @Test
     @Order(3)

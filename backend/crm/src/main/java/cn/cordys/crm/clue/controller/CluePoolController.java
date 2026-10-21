@@ -31,7 +31,7 @@ public class CluePoolController {
 
     @PostMapping("/page")
     @Operation(summary = "分页获取线索池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public Pager<List<CluePoolDTO>> page(@Validated @RequestBody BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, cluePoolService.page(request, OrganizationContext.getOrganizationId()));
@@ -39,14 +39,14 @@ public class CluePoolController {
 
     @PostMapping("/add")
     @Operation(summary = "新增线索池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void add(@Validated @RequestBody CluePoolAddRequest request) {
         cluePoolService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "编辑线索池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void update(@Validated @RequestBody CluePoolUpdateRequest request) {
         cluePoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
@@ -55,27 +55,28 @@ public class CluePoolController {
     @Operation(summary = "快捷保存线索池")
     public void quickUpdate(@Validated @RequestBody CluePoolUpdateRequest request) {
         //校验
-        cluePoolService.checkPermission(request.getId(),SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        cluePoolService.checkPermission(request.getId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         cluePoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/no-pick/{id}")
     @Operation(summary = "线索池是否存在未领取线索")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public boolean checkNoPick(@PathVariable String id) {
         return cluePoolService.checkNoPick(id);
     }
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除线索池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void delete(@PathVariable String id) {
         cluePoolService.delete(id);
     }
 
     @GetMapping("/switch/{id}")
     @Operation(summary = "启用/禁用线索池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void switchStatus(@PathVariable String id) {
         cluePoolService.switchStatus(id, SessionUtils.getUserId());
     }

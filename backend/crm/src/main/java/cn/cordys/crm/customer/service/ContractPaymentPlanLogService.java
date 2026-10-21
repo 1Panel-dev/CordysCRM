@@ -22,9 +22,11 @@ public class ContractPaymentPlanLogService extends BaseModuleLogService {
         differences = super.handleModuleLogField(differences, orgId, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
 
         for (JsonDifferenceDTO differ : differences) {
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_PAYMENT_PLAN_OWNER.getBusinessKey())) {
+            if (Strings.CS.equals(differ.getColumn(),
+                    BusinessModuleField.CONTRACT_PAYMENT_PLAN_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
-            } else if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_PAYMENT_PLAN_CONTRACT.getBusinessKey())) {
+            } else if (Strings.CS.equals(differ.getColumn(),
+                    BusinessModuleField.CONTRACT_PAYMENT_PLAN_CONTRACT.getBusinessKey())) {
                 setContractFieldName(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "planStatus")) {
                 setPlanStatusFieldName(differ);
@@ -37,18 +39,18 @@ public class ContractPaymentPlanLogService extends BaseModuleLogService {
 
     /**
      * 回款计划状态
-     *
-     * @param differ
      */
     protected void setPlanStatusFieldName(JsonDifferenceDTO differ) {
         ContractService contractService = CommonBeanFactory.getBean(ContractService.class);
         assert contractService != null;
         if (differ.getOldValue() != null) {
-            String oldName = Translator.get("contract.payment_plan.status." + differ.getOldValue().toString().toLowerCase());
+            String oldName = Translator
+                    .get("contract.payment_plan.status." + differ.getOldValue().toString().toLowerCase());
             differ.setOldValueName(oldName);
         }
         if (differ.getNewValue() != null) {
-            String newName = Translator.get("contract.payment_plan.status." + differ.getNewValue().toString().toLowerCase());
+            String newName = Translator
+                    .get("contract.payment_plan.status." + differ.getNewValue().toString().toLowerCase());
             differ.setNewValueName(newName);
         }
     }

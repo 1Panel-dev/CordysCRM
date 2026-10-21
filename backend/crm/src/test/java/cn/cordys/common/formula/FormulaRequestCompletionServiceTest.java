@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 class FormulaRequestCompletionServiceTest {
 
     @Test
@@ -208,8 +209,7 @@ class FormulaRequestCompletionServiceTest {
                 "source", "test",
                 "display", "test",
                 "fields", List.of(),
-                "ir", ir
-        ));
+                "ir", ir));
     }
 
     private Map<String, Object> fieldNode(String fieldId) {

@@ -27,8 +27,9 @@ public interface ExtContractPaymentRecordMapper extends StatisticSqlMapper {
      * @param deptDataPermission 数据权限
      * @return 回款记录列表
      */
-    List<ContractPaymentRecordResponse> list(@Param("request") ContractPaymentRecordPageRequest request, @Param("currentUser") String currentUser,
-                                             @Param("currentOrg") String currentOrg, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    List<ContractPaymentRecordResponse> list(@Param("request") ContractPaymentRecordPageRequest request,
+            @Param("currentUser") String currentUser,
+            @Param("currentOrg") String currentOrg, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     /**
      * 通过ID集合获取回款记录
@@ -39,8 +40,9 @@ public interface ExtContractPaymentRecordMapper extends StatisticSqlMapper {
      * @param deptDataPermission 数据权限
      * @return 回款记录列表
      */
-    List<ContractPaymentRecordResponse> getListByIds(@Param("ids") List<String> ids, @Param("currentUser") String currentUser,
-                                                     @Param("currentOrg") String currentOrg, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    List<ContractPaymentRecordResponse> getListByIds(@Param("ids") List<String> ids,
+            @Param("currentUser") String currentUser,
+            @Param("currentOrg") String currentOrg, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     /**
      * 汇总客户回款记录金额
@@ -51,11 +53,15 @@ public interface ExtContractPaymentRecordMapper extends StatisticSqlMapper {
      * @param deptDataPermission 数据权限
      * @return 汇总结果
      */
-    CustomerPaymentRecordStatisticResponse sumCustomerRecordAmount(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    CustomerPaymentRecordStatisticResponse sumCustomerRecordAmount(@Param("customerId") String customerId,
+            @Param("userId") String userId, @Param("orgId") String orgId,
+            @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    ContractPaymentRecordStatisticResponse searchStatistic(@Param("request") ContractPaymentRecordStatisticRequest request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+    ContractPaymentRecordStatisticResponse searchStatistic(
+            @Param("request") ContractPaymentRecordStatisticRequest request, @Param("orgId") String orgId,
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
-    void updateRecord(@Param("contractPaymentRecord")ContractPaymentRecord contractPaymentRecord);
+    void updateRecord(@Param("contractPaymentRecord") ContractPaymentRecord contractPaymentRecord);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }

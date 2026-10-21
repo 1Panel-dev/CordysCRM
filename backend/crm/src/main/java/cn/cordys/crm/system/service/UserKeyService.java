@@ -169,11 +169,9 @@ public class UserKeyService {
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .modifiedValue(userKey)
-                        .build()
-        );
+                        .build());
         logService.add(logDTO);
     }
-
 
     public void updateUserKey(UserKeyUpdateRequest request) {
         UserKey userKey = validateAndGetUserKey(request.getId());

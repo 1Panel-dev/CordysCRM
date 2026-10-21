@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class BusinessTitleExportRequest extends BusinessTitlePageRequest{
+public class BusinessTitleExportRequest extends BusinessTitlePageRequest {
 
     @NotBlank
     @Schema(description = "文件名")

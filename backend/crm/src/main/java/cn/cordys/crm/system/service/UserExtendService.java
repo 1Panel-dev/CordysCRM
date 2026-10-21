@@ -40,22 +40,25 @@ public class UserExtendService {
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
     private BaseMapper<User> userMapper;
-	@Resource
-	private BaseMapper<UserExtend> userExtendMapper;
+    @Resource
+    private BaseMapper<UserExtend> userExtendMapper;
 
     /**
      * 获取范围的所有负责人ID
      *
      * @param scopeIds 范围ID集合
      * @param orgId    组织ID
-     *
      * @return 负责人ID集合
      */
     public List<String> getScopeOwnerIds(List<String> scopeIds, String orgId) {
         List<ScopeNameDTO> scopes = getScope(scopeIds);
-        List<String> ownerIds = scopes.stream().filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.USER.name())).map(ScopeNameDTO::getId).collect(Collectors.toList());
-        List<ScopeNameDTO> roleList = scopes.stream().filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.ROLE.name())).toList();
-        List<ScopeNameDTO> dptList = scopes.stream().filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.DEPARTMENT.name())).toList();
+        List<String> ownerIds = scopes.stream()
+                .filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.USER.name())).map(ScopeNameDTO::getId)
+                .collect(Collectors.toList());
+        List<ScopeNameDTO> roleList = scopes.stream()
+                .filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.ROLE.name())).toList();
+        List<ScopeNameDTO> dptList = scopes.stream()
+                .filter(scope -> Strings.CS.equals(scope.getScope(), ScopeKey.DEPARTMENT.name())).toList();
         if (!CollectionUtils.isEmpty(roleList)) {
             List<String> roleIds = roleList.stream().map(ScopeNameDTO::getId).toList();
             LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
@@ -82,7 +85,6 @@ public class UserExtendService {
      * 获取成员范围集合
      *
      * @param scopeIds 范围ID集合
-     *
      * @return 范围集合
      */
     public List<ScopeNameDTO> getScope(List<String> scopeIds) {
@@ -91,7 +93,8 @@ public class UserExtendService {
         }
         List<ScopeNameDTO> scopeNames = extUserExtendMapper.groupByScopeIds(scopeIds);
         return scopeNames.stream().peek(scope -> {
-            if (Strings.CS.equalsAny(scope.getName(), InternalRole.ORG_ADMIN.getValue(), InternalRole.SALES_MANAGER.getValue(), InternalRole.SALES_STAFF.getValue())) {
+            if (Strings.CS.equalsAny(scope.getName(), InternalRole.ORG_ADMIN.getValue(),
+                    InternalRole.SALES_MANAGER.getValue(), InternalRole.SALES_STAFF.getValue())) {
                 scope.setName(Translator.get("role." + scope.getName()));
             }
         }).toList();
@@ -102,7 +105,6 @@ public class UserExtendService {
      *
      * @param ownerId        负责人ID
      * @param organizationId 组织ID
-     *
      * @return 范围ID集合
      */
     public List<String> getUserScopeIds(String ownerId, String organizationId) {
@@ -120,7 +122,6 @@ public class UserExtendService {
      *
      * @param ownerIds       负责人ID集合
      * @param organizationId 组织ID
-     *
      * @return 范围对象集合
      */
     public Map<String, List<String>> getMultiScopeMap(List<String> ownerIds, String organizationId) {
@@ -153,7 +154,6 @@ public class UserExtendService {
      *
      * @param ownerIds       负责人ID集合
      * @param organizationId 组织ID
-     *
      * @return 负责人ID -> 父部门ID集合映射
      */
     public Map<String, List<String>> getOwnerAncestorMap(List<String> ownerIds, String organizationId) {
@@ -166,7 +166,8 @@ public class UserExtendService {
         if (organizationUsers.isEmpty()) {
             return ancestorMap;
         }
-        Map<String, String> ownerDepIdMap = organizationUsers.stream().collect(Collectors.toMap(OrganizationUser::getUserId, OrganizationUser::getDepartmentId));
+        Map<String, String> ownerDepIdMap = organizationUsers.stream()
+                .collect(Collectors.toMap(OrganizationUser::getUserId, OrganizationUser::getDepartmentId));
         ownerDepIdMap.forEach((k, v) -> ancestorMap.put(k, getDepAllAncestor(v, deptParentMap)));
         return ancestorMap;
     }
@@ -175,7 +176,6 @@ public class UserExtendService {
      * 获取部门的父部门
      *
      * @param deptId 部门ID
-     *
      * @return 父部门ID集合
      */
     public List<String> getDepAllAncestor(String deptId, Map<String, String> deptParentMap) {
@@ -194,7 +194,6 @@ public class UserExtendService {
      *
      * @param userId       用户ID
      * @param currentOrgId 当前组织ID
-     *
      * @return 上级部门ID集合
      */
     public List<String> getParentDepartmentIds(String userId, String currentOrgId) {
@@ -238,7 +237,6 @@ public class UserExtendService {
      *
      * @param node     树节点
      * @param targetId 目标部门ID
-     *
      * @return 子部门节点
      */
     public List<String> getChildDptById(BaseTreeNode node, String targetId) {
@@ -257,7 +255,6 @@ public class UserExtendService {
      *
      * @param node     树节点
      * @param targetId 目标部门ID
-     *
      * @return 树节点
      */
     public BaseTreeNode findTargetById(BaseTreeNode node, String targetId) {
@@ -277,7 +274,6 @@ public class UserExtendService {
      * 递归获取所有子节点部门ID
      *
      * @param currentNode 当前节点
-     *
      * @return 子节点部门ID集合
      */
     public List<String> getAllChildDptIds(BaseTreeNode currentNode) {
@@ -296,7 +292,6 @@ public class UserExtendService {
      * 用户ID集合获取用户选项
      *
      * @param ids 用户ID集合
-     *
      * @return 用户选项
      */
     public List<User> getUserOptionByIds(List<String> ids) {
@@ -319,7 +314,6 @@ public class UserExtendService {
      * @param scopeIds       原始范围ID集合
      * @param targetScopeIds 目标范围ID集合
      * @param currentOrgId   当前组织ID
-     *
      * @return 是否含有重复对象元素
      */
     public boolean hasDuplicateScopeObj(List<String> scopeIds, List<String> targetScopeIds, String currentOrgId) {
@@ -335,7 +329,6 @@ public class UserExtendService {
      * @param scopeIds 范围ID集合
      * @param ownerId  操作人ID
      * @param orgId    组织ID
-     *
      * @return 是否管理员
      */
     public boolean isPoolAdmin(List<String> scopeIds, String ownerId, String orgId) {
@@ -347,7 +340,6 @@ public class UserExtendService {
      * 加载组织部门父节点映射
      *
      * @param orgId 组织ID
-     *
      * @return 部门ID -> 父部门ID 映射
      */
     private Map<String, String> loadDeptParentMap(String orgId) {
@@ -374,16 +366,20 @@ public class UserExtendService {
         }
     }
 
-	/**
-	 * 获取用户头像集合
-	 * @return 用户头像集合
-	 */
-	public Map<String, UserSimple> getAllUserSimpleMap() {
-		List<UserExtend> userExtends = userExtendMapper.selectAll(null);
-		List<User> users = userMapper.selectAll(null);
-		Map<String, String> avatarMap = userExtends.stream().filter(userExtend -> StringUtils.isNotBlank(userExtend.getAvatar())).collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
-		List<UserSimple> simples = users.stream().map(user -> new UserSimple(user.getId(), user.getName(), avatarMap.get(user.getId()))).toList();
-		return simples.stream().collect(Collectors.toMap(UserSimple::getId, u -> u));
-	}
+    /**
+     * 获取用户头像集合
+     *
+     * @return 用户头像集合
+     */
+    public Map<String, UserSimple> getAllUserSimpleMap() {
+        List<UserExtend> userExtends = userExtendMapper.selectAll(null);
+        List<User> users = userMapper.selectAll(null);
+        Map<String, String> avatarMap = userExtends.stream()
+                .filter(userExtend -> StringUtils.isNotBlank(userExtend.getAvatar()))
+                .collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
+        List<UserSimple> simples = users.stream()
+                .map(user -> new UserSimple(user.getId(), user.getName(), avatarMap.get(user.getId()))).toList();
+        return simples.stream().collect(Collectors.toMap(UserSimple::getId, u -> u));
+    }
 
 }

@@ -34,7 +34,6 @@ public class ProductLogService extends BaseModuleLogService {
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
-
         super.handleModuleLogField(differences, orgId, FormKey.PRODUCT.getKey());
 
         ModuleContext context = buildModuleContext(orgId);
@@ -69,12 +68,11 @@ public class ProductLogService extends BaseModuleLogService {
      * 构建模块字段上下文
      */
     private ModuleContext buildModuleContext(String orgId) {
-
         Optional<ModuleForm> formOptional = moduleFormBaseMapper.selectListByLambda(
                 new LambdaQueryWrapper<ModuleForm>()
                         .eq(ModuleForm::getOrganizationId, orgId)
-                        .eq(ModuleForm::getFormKey, FormKey.PRODUCT.getKey())
-        ).stream().findFirst();
+                        .eq(ModuleForm::getFormKey, FormKey.PRODUCT.getKey()))
+                .stream().findFirst();
 
         if (formOptional.isEmpty()) {
             return ModuleContext.EMPTY;
@@ -84,8 +82,7 @@ public class ProductLogService extends BaseModuleLogService {
 
         List<ModuleField> fields = moduleFieldBaseMapper.selectListByLambda(
                 new LambdaQueryWrapper<ModuleField>()
-                        .eq(ModuleField::getFormId, formId)
-        );
+                        .eq(ModuleField::getFormId, formId));
 
         String pictureFieldId = fields.stream()
                 .filter(f -> Strings.CS.equals(f.getInternalKey(), PRODUCT_PICTURE))
@@ -154,9 +151,7 @@ public class ProductLogService extends BaseModuleLogService {
     private record ModuleContext(
             String pictureFieldId,
             String timeFieldId,
-            List<String> attachFieldIds
-    ) {
-        static final ModuleContext EMPTY =
-                new ModuleContext(null, null, Collections.emptyList());
+            List<String> attachFieldIds) {
+        static final ModuleContext EMPTY = new ModuleContext(null, null, Collections.emptyList());
     }
 }

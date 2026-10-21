@@ -27,8 +27,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
-import org.mockito.MockedStatic;
 import org.mockito.MockMakers;
+import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.InputStream;
@@ -127,7 +127,8 @@ class ApprovalResourceServiceTest {
         }
         Map<String, Object> parameters = Map.of(
                 "organizationId", "org-a", "formKey", "opportunity", "resourceId", "resource-a");
-        BoundSql sql = configuration.getMappedStatement(ExtApprovalInstanceMapper.class.getName() + ".existsApprovingInstance")
+        BoundSql sql = configuration
+                .getMappedStatement(ExtApprovalInstanceMapper.class.getName() + ".existsApprovingInstance")
                 .getBoundSql(parameters);
 
         assertEquals("""
@@ -176,7 +177,8 @@ class ApprovalResourceServiceTest {
                     && wrapper.getParams().containsValue(signTask.getApproverId()) ? List.of(signTask) : List.of();
         });
 
-        boolean permitted = ReflectionTestUtils.invokeMethod(service, "hasApprovalTaskPermission", instance, "sign-approver");
+        boolean permitted = ReflectionTestUtils.invokeMethod(service, "hasApprovalTaskPermission", instance,
+                "sign-approver");
 
         assertTrue(permitted);
     }
@@ -217,7 +219,7 @@ class ApprovalResourceServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
+    @ValueSource(booleans = { true, false })
     void instanceBusinessPermissionRequiresReadAndOwnerDataScope(boolean dataPermitted) {
         ApprovalInstance instance = instanceForView();
         ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
@@ -229,14 +231,18 @@ class ApprovalResourceServiceTest {
         when(dataScopeService.hasDataPermission("reader", "org-a", "resource-owner", PermissionConstants.CONTRACT_READ))
                 .thenReturn(dataPermitted);
 
-        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
-             MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class, withSettings().mockMaker(MockMakers.INLINE))) {
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class,
+                withSettings().mockMaker(MockMakers.INLINE));
+                MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                        withSettings().mockMaker(MockMakers.INLINE))) {
             permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CONTRACT_READ)).thenReturn(true);
-            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class)).thenReturn(Map.of("contract", provider));
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("contract", provider));
 
             assertEquals(dataPermitted, service.hasInstanceViewPermission(instance, "reader", "org-a"));
         }
-        verify(dataScopeService).hasDataPermission("reader", "org-a", "resource-owner", PermissionConstants.CONTRACT_READ);
+        verify(dataScopeService).hasDataPermission("reader", "org-a", "resource-owner",
+                PermissionConstants.CONTRACT_READ);
         verifyNoInteractions(extTaskMapper, customFormDataService);
     }
 
@@ -248,7 +254,8 @@ class ApprovalResourceServiceTest {
         latest.setSubmitterId("new-submitter");
         when(extTaskMapper.selectLatestInstanceByResourceId(instance.getResourceId())).thenReturn(latest);
 
-        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE))) {
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class,
+                withSettings().mockMaker(MockMakers.INLINE))) {
             permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CONTRACT_READ)).thenReturn(false);
             assertFalse(service.hasInstanceViewPermission(instance, "new-submitter", "org-a"));
         }
@@ -262,13 +269,17 @@ class ApprovalResourceServiceTest {
         ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
         when(provider.getFormType()).thenReturn("contract");
         when(provider.requiresOwner()).thenReturn(true);
-        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
-             MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class, withSettings().mockMaker(MockMakers.INLINE))) {
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class,
+                withSettings().mockMaker(MockMakers.INLINE));
+                MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                        withSettings().mockMaker(MockMakers.INLINE))) {
             permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CONTRACT_READ)).thenReturn(true);
-            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class)).thenReturn(Map.of());
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of());
             assertFalse(service.hasInstanceViewPermission(instance, "reader", "org-a"));
 
-            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class)).thenReturn(Map.of("contract", provider));
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("contract", provider));
             assertFalse(service.hasInstanceViewPermission(instance, "reader", "org-a"));
 
             when(provider.getAccessContext("resource-a", "org-a")).thenReturn(new ResourceAccessContext());
@@ -278,13 +289,15 @@ class ApprovalResourceServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
+    @ValueSource(booleans = { true, false })
     void customFormInstanceReusesCustomFormDataViewPermission(boolean permitted) {
         ApprovalInstance instance = instanceForView();
         instance.setType("custom-form-a");
         when(customFormDataService.hasViewPermission("resource-a", "reader", "org-a")).thenReturn(permitted);
-        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE))) {
-            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOM_FORM_READ)).thenReturn(true);
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class,
+                withSettings().mockMaker(MockMakers.INLINE))) {
+            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOM_FORM_READ))
+                    .thenReturn(true);
             assertEquals(permitted, service.hasInstanceViewPermission(instance, "reader", "org-a"));
         }
         verify(customFormDataService).hasViewPermission("resource-a", "reader", "org-a");

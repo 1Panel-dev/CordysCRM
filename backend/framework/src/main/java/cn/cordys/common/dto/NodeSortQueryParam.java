@@ -12,4 +12,3 @@ public class NodeSortQueryParam {
     private String operator;
     private long pos;
 }
-

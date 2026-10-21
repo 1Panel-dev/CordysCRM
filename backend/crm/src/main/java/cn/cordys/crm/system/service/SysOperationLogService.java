@@ -126,7 +126,8 @@ public class SysOperationLogService {
 
             if (CollectionUtils.isNotEmpty(differences)) {
                 // 获取模块对应处理服务
-                BaseModuleLogService moduleLogService = ModuleLogServiceFactory.getModuleLogService(operationLog.getModule());
+                BaseModuleLogService moduleLogService = ModuleLogServiceFactory
+                        .getModuleLogService(operationLog.getModule());
 
                 if (moduleLogService != null) {
                     moduleLogService.setOldValue(oldString);
@@ -160,25 +161,23 @@ public class SysOperationLogService {
         // 特殊处理合同业务更新字段
         if (Strings.CI.equals(operationLog.getModule(), LogModule.CONTRACT_BUSINESS_TITLE)
                 && Strings.CI.equals(operationLog.getType(), LogType.UPDATE)) {
-            differences.removeIf(diff -> Strings.CS.equalsAny(diff.getColumn(), "id", "type", "companyNumber", "approvalStatus", "unapprovedReason"));
+            differences.removeIf(diff -> Strings.CS.equalsAny(diff.getColumn(), "id", "type", "companyNumber",
+                    "approvalStatus", "unapprovedReason"));
         }
         // 通用翻译
         differences.forEach(BaseModuleLogService::translatorDifferInfo);
     }
 
-
     /**
      * 过滤掉日志对比无需显示的字段
      * 例如：organizationId
-     *
-     * @param differences
-     * @return
      */
     private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differences) {
         differences = differences
                 .stream()
                 .filter(differ -> !Strings.CS.equalsAny(differ.getColumn(),
-                        "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage", "pos", "approved"))
+                        "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName",
+                        "supervisorName", "lastStage", "pos", "approved"))
                 .collect(Collectors.toList());
         return differences;
     }

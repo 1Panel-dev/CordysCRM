@@ -57,7 +57,6 @@ public final class DefaultRepositoryDir {
      * 获取指定组织的导出目录路径
      *
      * @param orgId 组织ID
-     *
      * @return 导出目录路径
      */
     public static String getExportDir(String orgId) {
@@ -95,7 +94,6 @@ public final class DefaultRepositoryDir {
      * 获取指定组织的完整导出目录路径
      *
      * @param orgId 组织ID
-     *
      * @return 完整的导出目录路径
      */
     public static Path getFullExportPath(String orgId) {
@@ -106,7 +104,6 @@ public final class DefaultRepositoryDir {
      * 获取临时文件目录
      *
      * @param tempFileId 临时文件ID
-     *
      * @return 临时文件目录
      */
     public static String getTempFileDir(String tempFileId) {
@@ -119,7 +116,6 @@ public final class DefaultRepositoryDir {
      * @param organizationId 组织ID
      * @param resourceId     资源ID
      * @param fileId         文件ID
-     *
      * @return 转存文件目录
      */
     public static String getTransferFileDir(String organizationId, String resourceId, String fileId) {

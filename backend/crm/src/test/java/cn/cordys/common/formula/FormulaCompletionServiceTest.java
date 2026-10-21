@@ -31,8 +31,7 @@ class FormulaCompletionServiceTest {
             new FormulaEngine(),
             new FormulaResultNormalizer(),
             Clock.fixed(Instant.parse("2026-09-02T09:09:11Z"), ZoneId.of("Asia/Shanghai")),
-            (field, rawValue) -> "customer".equals(field.getId()) ? "Cordys" : rawValue
-    );
+            (field, rawValue) -> "customer".equals(field.getId()) ? "Cordys" : rawValue);
 
     @Test
     void springSelectsProductionConstructor() {
@@ -57,7 +56,8 @@ class FormulaCompletionServiceTest {
         values.put("quotationName", new BaseModuleFieldValue("quotationName", "模型伪造的值"));
 
         service.complete(List.of(customer, serialNumber, quotationName), values,
-                true, businessKey -> null, (businessKey, value) -> { });
+                true, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals("Cordys-${报价编号}", values.get("quotationName").getFieldValue());
     }
@@ -74,7 +74,8 @@ class FormulaCompletionServiceTest {
         values.put("quotationNo", new BaseModuleFieldValue("quotationNo", "BJ0001"));
 
         service.complete(List.of(serialNumber, quotationName), values,
-                false, businessKey -> null, (businessKey, value) -> { });
+                false, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals("Q-BJ0001", values.get("quotationName").getFieldValue());
     }
@@ -90,7 +91,8 @@ class FormulaCompletionServiceTest {
         values.put("region", new BaseModuleFieldValue("region", "华东"));
 
         Map<String, Object> calculated = service.complete(List.of(region, serialNumber), values,
-                true, businessKey -> null, (businessKey, value) -> { });
+                true, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals("华东-", values.get("quotationNo").getFieldValue());
         assertEquals("华东-", calculated.get("quotationNo"));
@@ -108,7 +110,8 @@ class FormulaCompletionServiceTest {
         values.put("quotationNo", new BaseModuleFieldValue("quotationNo", "华东-0001"));
 
         Map<String, Object> calculated = service.complete(List.of(region, serialNumber), values,
-                false, businessKey -> null, (businessKey, value) -> { });
+                false, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals("华东-0001", values.get("quotationNo").getFieldValue());
         assertTrue(calculated.isEmpty());
@@ -124,7 +127,8 @@ class FormulaCompletionServiceTest {
         values.put("doubled", new BaseModuleFieldValue("doubled", 999));
 
         service.complete(List.of(amount, doubled), values,
-                false, businessKey -> null, (businessKey, value) -> { });
+                false, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals(12D, values.get("doubled").getFieldValue());
     }
@@ -139,7 +143,8 @@ class FormulaCompletionServiceTest {
         values.put("doubled", new BaseModuleFieldValue("doubled", 999));
 
         service.completeMissing(List.of(amount, doubled), values,
-                false, businessKey -> null, (businessKey, value) -> { });
+                false, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals(999, values.get("doubled").getFieldValue());
     }
@@ -153,7 +158,8 @@ class FormulaCompletionServiceTest {
         values.put("doubled", new BaseModuleFieldValue("doubled", 999));
 
         service.completeMissing(List.of(doubled, plusOne), values,
-                false, businessKey -> null, (businessKey, value) -> { });
+                false, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals(999, values.get("doubled").getFieldValue());
         assertEquals(1000D, values.get("plusOne").getFieldValue());
@@ -172,7 +178,8 @@ class FormulaCompletionServiceTest {
         values.put("plusOne", new BaseModuleFieldValue("plusOne", 999));
 
         service.complete(List.of(plusOne, doubled, amount), values,
-                true, businessKey -> null, (businessKey, value) -> { });
+                true, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals(10D, values.get("doubled").getFieldValue());
         assertEquals(11D, values.get("plusOne").getFieldValue());
@@ -190,7 +197,8 @@ class FormulaCompletionServiceTest {
         values.put("customerAmount", new BaseModuleFieldValue("customerAmount", 6));
 
         Map<String, Object> calculated = service.complete(List.of(amount, localFormula, referenceFormula), values,
-                true, businessKey -> null, (businessKey, value) -> { });
+                true, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals(Map.of("customerTotal", 12D), calculated);
         assertEquals(12D, values.get("customerTotal").getFieldValue());
@@ -217,10 +225,10 @@ class FormulaCompletionServiceTest {
         values.put("items", new BaseModuleFieldValue("items", rows));
 
         service.complete(List.of(total, items), values,
-                true, businessKey -> null, (businessKey, value) -> { });
+                true, businessKey -> null, (businessKey, value) -> {
+                });
 
-        List<Map<String, Object>> calculatedRows =
-                (List<Map<String, Object>>) values.get("items").getFieldValue();
+        List<Map<String, Object>> calculatedRows = (List<Map<String, Object>>) values.get("items").getFieldValue();
         assertEquals(6D, calculatedRows.get(0).get("rowAmount"));
         assertEquals(20D, calculatedRows.get(1).get("rowAmount"));
         assertEquals(26D, values.get("total").getFieldValue());
@@ -235,7 +243,8 @@ class FormulaCompletionServiceTest {
 
         FormulaEvaluationException exception = assertThrows(FormulaEvaluationException.class,
                 () -> service.complete(List.of(first, second), new LinkedHashMap<>(),
-                        true, businessKey -> null, (businessKey, value) -> { }));
+                        true, businessKey -> null, (businessKey, value) -> {
+                        }));
 
         assertTrue(exception.getMessage().contains("循环依赖"));
     }
@@ -249,11 +258,13 @@ class FormulaCompletionServiceTest {
         Map<String, BaseModuleFieldValue> values = new LinkedHashMap<>();
         values.put("top", new BaseModuleFieldValue("top", 99));
         assertThrows(FormulaEvaluationException.class, () -> service.complete(List.of(top, table), values,
-                false, key -> null, (key, value) -> { }));
+                false, key -> null, (key, value) -> {
+                }));
         assertEquals(99, values.get("top").getFieldValue());
         top.setFormula(formula(fn("SUM", fieldNode("table.child"))));
         assertThrows(FormulaEvaluationException.class, () -> service.complete(List.of(top, table), values,
-                false, key -> null, (key, value) -> { }));
+                false, key -> null, (key, value) -> {
+                }));
     }
 
     @Test
@@ -263,7 +274,8 @@ class FormulaCompletionServiceTest {
         Map<String, BaseModuleFieldValue> values = new LinkedHashMap<>();
 
         service.complete(List.of(numeric), values,
-                true, businessKey -> null, (businessKey, value) -> { });
+                true, businessKey -> null, (businessKey, value) -> {
+                });
 
         assertEquals("12.349", values.get("numeric").getFieldValue());
     }
@@ -289,8 +301,7 @@ class FormulaCompletionServiceTest {
                 "source", "test",
                 "display", "test",
                 "fields", List.of(),
-                "ir", ir
-        ));
+                "ir", ir));
     }
 
     private Map<String, Object> fieldNode(String fieldId) {

@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AddSignSortInfo {
 
-	/** 根任务ID（同一加签链的根节点） */
-	private String rootTaskId;
+    /** 根任务ID（同一加签链的根节点） */
+    private String rootTaskId;
 
-	/** 排序（越小越靠前） */
-	private Long sort;
+    /** 排序（越小越靠前） */
+    private Long sort;
 }

@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class DepartmentCommanderRequest {
 
-    @NotBlank(message = "{department.id.not_blank}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{department.id.not_blank}", groups = { Created.class, Updated.class })
     @Schema(description = "部门id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String departmentId;
 

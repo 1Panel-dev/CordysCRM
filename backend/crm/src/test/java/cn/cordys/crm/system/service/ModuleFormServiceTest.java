@@ -6,16 +6,16 @@ import cn.cordys.common.response.handler.ResultResponseBodyAdvice;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.controller.ModuleFormController;
+import cn.cordys.crm.system.domain.ModuleField;
+import cn.cordys.crm.system.domain.ModuleFieldBlob;
+import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.domain.ModuleField;
-import cn.cordys.crm.system.domain.ModuleFieldBlob;
-import cn.cordys.crm.system.domain.ModuleForm;
-import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -49,12 +49,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -88,8 +88,9 @@ class ModuleFormServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"yyyy-Q", "MM-dd", "yyMMdd", "yyyy-dd", "yyyy-M-d", "YYYYMMdd", "yyyy-MM-dd'",
-            "yyyy-MM-dd HH:mm:ss", "yyyyMMddHHmmss", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssXXX", "yyyy-MM-dd h:mm:ss a"})
+    @ValueSource(strings = { "yyyy-Q", "MM-dd", "yyMMdd", "yyyy-dd", "yyyy-M-d", "YYYYMMdd", "yyyy-MM-dd'",
+            "yyyy-MM-dd HH:mm:ss", "yyyyMMddHHmmss", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssXXX",
+            "yyyy-MM-dd h:mm:ss a" })
     @SuppressWarnings("unchecked")
     void invalidSerialDateRejectsTheEntireSaveBeforeAnyMapperCall(String pattern) {
         BaseMapper<ModuleForm> formMapper = mock(BaseMapper.class);
@@ -106,8 +107,8 @@ class ModuleFormServiceTest {
         request.setFormProp(new FormProp());
         request.setFields(formFields(serialField("field-1", pattern)));
 
-        GenericException error = assertThrows(GenericException.class, () ->
-                service.saveWithoutLog(request, "user", "org"));
+        GenericException error = assertThrows(GenericException.class,
+                () -> service.saveWithoutLog(request, "user", "org"));
 
         assertEquals("日期规则不合法", error.getMessage());
         verifyNoInteractions(formMapper, formBlobMapper, fieldMapper, extFieldMapper);
@@ -115,8 +116,8 @@ class ModuleFormServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"yyyy", "yyyyMM", "yyyy/MM", "yyyyMMdd", "yyyy-MM-dd", "yyyy/MM/dd",
-            "yyyy-MM"})
+    @ValueSource(strings = { "yyyy", "yyyyMM", "yyyy/MM", "yyyyMMdd", "yyyy-MM-dd", "yyyy/MM/dd",
+            "yyyy-MM" })
     void validPatternsPassTheSharedSaveValidation(String pattern) {
         ModuleFormService service = new ModuleFormService();
         assertDoesNotThrow(() -> service.preCheckForFieldSave("custom-form-id",
@@ -170,8 +171,8 @@ class ModuleFormServiceTest {
         verifyNoInteractions(fixture.generator(), fixture.transactionManager());
         TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
         verify(fixture.generator()).cleanUnusedRules("org", "custom-form-id", current.getSerialNumberRules(), false);
-        verify(fixture.transactionManager()).getTransaction(argThat(definition ->
-                definition.isReadOnly() && definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW));
+        verify(fixture.transactionManager()).getTransaction(argThat(definition -> definition.isReadOnly()
+                && definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW));
     }
 
     @Test
@@ -181,8 +182,8 @@ class ModuleFormServiceTest {
         fixture.service().saveWithoutLog(fixture.request(), "user", "org");
 
         assertEquals(1, TransactionSynchronizationManager.getSynchronizations().size());
-        TransactionSynchronizationManager.getSynchronizations().forEach(synchronization ->
-                synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+        TransactionSynchronizationManager.getSynchronizations().forEach(
+                synchronization -> synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
         verifyNoInteractions(fixture.generator(), fixture.transactionManager());
         TransactionSynchronizationManager.clearSynchronization();
 
@@ -191,11 +192,12 @@ class ModuleFormServiceTest {
         formula.setFormula("客户名称");
         var formulaFixture = serialSaveFixture(serialField("field-1", "yyyyMM"), formula);
         formulaFixture.service().saveWithoutLog(formulaFixture.request(), "user", "org");
-        verify(formulaFixture.generator()).cleanUnusedRules("org", "custom-form-id", formula.getSerialNumberRules(), true);
+        verify(formulaFixture.generator()).cleanUnusedRules("org", "custom-form-id", formula.getSerialNumberRules(),
+                true);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"yyyy/MM/dd", "yyyy-MM-dd"})
+    @ValueSource(strings = { "yyyy/MM/dd", "yyyy-MM-dd" })
     void unchangedPrefixAndPeriodDoNotCleanWhenDisplayPropertiesChange(String pattern) {
         SerialNumberField previous = serialField("field-1", "yyyy/MM/dd");
         SerialNumberField current = serialField("field-1", pattern);
@@ -254,12 +256,13 @@ class ModuleFormServiceTest {
         fixture.request().setFields(formFields(serialField("field-1", "yyyyMMdd")));
         doThrow(new IllegalStateException("配置读取失败"))
                 .when(fixture.service()).getConfig("custom-form-id", "org");
-        assertThrows(IllegalStateException.class, () -> fixture.service().saveWithoutLog(fixture.request(), "user", "org"));
+        assertThrows(IllegalStateException.class,
+                () -> fixture.service().saveWithoutLog(fixture.request(), "user", "org"));
         verifyNoInteractions(fixture.generator(), fixture.transactionManager());
     }
 
     private record SerialSaveFixture(ModuleFormService service, ModuleFormSaveRequest request,
-                                     SerialNumGenerator generator, PlatformTransactionManager transactionManager) {
+            SerialNumGenerator generator, PlatformTransactionManager transactionManager) {
     }
 
     @SuppressWarnings("unchecked")
@@ -305,21 +308,24 @@ class ModuleFormServiceTest {
                 .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith("application/json"))
                 .andExpect(jsonPath("$.data").isString());
         mvc.perform(get("/module/form/serial-number/date-preview").param("datePattern", "YYYYMM"))
-                .andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("\"data\":null")));
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"data\":null")));
         mvc.perform(get("/module/form/serial-number/date-preview").param("datePattern", "yyyyMMddHHmmss"))
-                .andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("\"data\":null")));
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"data\":null")));
     }
 
     @Test
     void multipleCountersAndMissingRulesAreRejected() {
         ModuleFormService service = new ModuleFormService();
-        GenericException multiple = assertThrows(GenericException.class, () ->
-                service.preCheckForFieldSave("custom-form-id", List.of(serialField("field-1", "yyyyMMdd"),
+        GenericException multiple = assertThrows(GenericException.class,
+                () -> service.preCheckForFieldSave("custom-form-id", List.of(serialField("field-1", "yyyyMMdd"),
                         serialField("field-2", "yyyy-MM-dd")), "org"));
         assertTrue(multiple.getMessage().contains("只能配置一个"));
         SerialNumberField missingRules = serialField("field-1", "yyyyMM");
         missingRules.setSerialNumberRules(null);
-        assertThrows(GenericException.class, () -> service.preCheckForFieldSave("custom-form-id", List.of(missingRules), "org"));
+        assertThrows(GenericException.class,
+                () -> service.preCheckForFieldSave("custom-form-id", List.of(missingRules), "org"));
     }
 
     private static List<BaseField> formFields(SerialNumberField serial) {
@@ -342,7 +348,6 @@ class ModuleFormServiceTest {
         field.setSerialNumberRules(List.of("Opp", "-", pattern, "-", "6"));
         return field;
     }
-
 
     @Test
     @SuppressWarnings("unchecked")

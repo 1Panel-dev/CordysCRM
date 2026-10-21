@@ -58,9 +58,9 @@ public class ProductPriceExportService extends BaseExportService {
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(List<ProductPriceResponse> dataList,
-                                                        ExportFieldParam exportFieldParam) {
-        List<BaseModuleFieldValue> moduleFieldValues =
-                moduleFormService.getBaseModuleFieldValues(dataList, ProductPriceResponse::getModuleFields);
+            ExportFieldParam exportFieldParam) {
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(dataList,
+                ProductPriceResponse::getModuleFields);
         return moduleFormService.getOptionMap(exportFieldParam.getFormConfig(), moduleFieldValues);
     }
 }

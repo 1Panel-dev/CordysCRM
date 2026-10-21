@@ -29,14 +29,13 @@ public class ContractInvoiceUserViewController {
     @Resource
     private UserViewService userViewService;
 
-
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "添加发票视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CONTRACT_INVOICE.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                UserViewResourceType.CONTRACT_INVOICE.name());
     }
-
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
@@ -44,7 +43,6 @@ public class ContractInvoiceUserViewController {
     public UserView update(@Validated @RequestBody UserViewUpdateRequest request) {
         return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
@@ -57,17 +55,17 @@ public class ContractInvoiceUserViewController {
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "发票视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
-        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.INVOICE.getKey());
+        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                FormKey.INVOICE.getKey());
     }
-
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "发票视图列表")
     public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.CONTRACT_INVOICE.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.list(UserViewResourceType.CONTRACT_INVOICE.name(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/fixed/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
@@ -82,7 +80,6 @@ public class ContractInvoiceUserViewController {
     public void editPos(@Validated @RequestBody PosRequest request) {
         userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CONTRACT_INVOICE.name());
     }
-
 
     @GetMapping("/enable/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)

@@ -57,7 +57,7 @@ public class ModuleFieldService {
      */
     private static final Map<String, String> FORM_TABLE = new HashMap<>(8);
 
-	private static final Map<String, Class<?>> SOURCE_REF_CLASS = new HashMap<>();
+    private static final Map<String, Class<?>> SOURCE_REF_CLASS = new HashMap<>();
 
     static {
         FORM_TABLE.put(FormKey.CLUE.getKey(), "clue");
@@ -75,9 +75,9 @@ public class ModuleFieldService {
         FORM_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
         FORM_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
 
-		SOURCE_REF_CLASS.put(FieldSourceType.PRODUCT.name(), ProductService.class);
-		SOURCE_REF_CLASS.put(FieldSourceType.PRICE.name(), ProductPriceService.class);
-		SOURCE_REF_CLASS.put(FieldSourceType.BUSINESS_TITLE.name(), BusinessTitleService.class);
+        SOURCE_REF_CLASS.put(FieldSourceType.PRODUCT.name(), ProductService.class);
+        SOURCE_REF_CLASS.put(FieldSourceType.PRICE.name(), ProductPriceService.class);
+        SOURCE_REF_CLASS.put(FieldSourceType.BUSINESS_TITLE.name(), BusinessTitleService.class);
     }
 
     @Resource
@@ -86,8 +86,8 @@ public class ModuleFieldService {
     private DepartmentService departmentService;
     @Resource
     private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
-	@Resource
-	private ExtModuleFieldMapper extModuleFieldMapper;
+    @Resource
+    private ExtModuleFieldMapper extModuleFieldMapper;
     @Resource
     private CommonMapper commonMapper;
 
@@ -147,9 +147,11 @@ public class ModuleFieldService {
         String repeatName;
         if (businessField != null) {
             // 业务字段
-            repeatName = commonMapper.checkInternalRepeatName(tableName, businessField.getBusinessKey(), value, currentOrg);
+            repeatName = commonMapper.checkInternalRepeatName(tableName, businessField.getBusinessKey(), value,
+                    currentOrg);
         } else {
-            repeatName = commonMapper.checkFieldRepeatName(tableName, tableName + "_field", request.getId(), value, currentOrg);
+            repeatName = commonMapper.checkFieldRepeatName(tableName, tableName + "_field", request.getId(), value,
+                    currentOrg);
         }
         boolean repeat = false;
         if (StringUtils.isNotBlank(repeatName)) {
@@ -158,48 +160,48 @@ public class ModuleFieldService {
         return FieldRepeatCheckResponse.builder().name(repeatName).repeat(repeat).build();
     }
 
-	@SuppressWarnings("unchecked")
-	public List<DatasourceRefDTO> getSourceRefDetail(DatasourceRefQueryRequest request) {
-		List<String> sourceIds = request.getSourceIds().stream().distinct().toList();
-		Class<?> sourceClass = SOURCE_REF_CLASS.get(request.getDataSourceType());
-		if (sourceClass == null) {
-			return new ArrayList<>();
-		}
+    @SuppressWarnings("unchecked")
+    public List<DatasourceRefDTO> getSourceRefDetail(DatasourceRefQueryRequest request) {
+        List<String> sourceIds = request.getSourceIds().stream().distinct().toList();
+        Class<?> sourceClass = SOURCE_REF_CLASS.get(request.getDataSourceType());
+        if (sourceClass == null) {
+            return new ArrayList<>();
+        }
 
-		Object service = CommonBeanFactory.getBean(sourceClass);
-		List<DatasourceRefDTO> result = new ArrayList<>();
-		try {
-			Method executeMethod = sourceClass.getMethod("get", String.class);
-			for (String id : sourceIds) {
-				Object res = executeMethod.invoke(service, id);
-				if (res == null) {
-					continue;
-				}
-				DatasourceRefDTO dto = new DatasourceRefDTO();
-				if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
-					BeanUtils.copyBean(dto, res);
-				} else {
-					dto.setId(id);
-					dto.setName(getField(res, "name", String.class));
-					dto.setModuleFields((List<BaseModuleFieldValue>) getField(res, "moduleFields", List.class));
-					dto.setProducts((List<Map<String, Object>>) getField(res, "products", List.class));
-					dto.setOptionMap((Map<String, List<OptionDTO>>) getField(res, "optionMap", Map.class));
-					dto.setStatus(getField(res, "status", String.class));
+        Object service = CommonBeanFactory.getBean(sourceClass);
+        List<DatasourceRefDTO> result = new ArrayList<>();
+        try {
+            Method executeMethod = sourceClass.getMethod("get", String.class);
+            for (String id : sourceIds) {
+                Object res = executeMethod.invoke(service, id);
+                if (res == null) {
+                    continue;
+                }
+                DatasourceRefDTO dto = new DatasourceRefDTO();
+                if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
+                    BeanUtils.copyBean(dto, res);
+                } else {
+                    dto.setId(id);
+                    dto.setName(getField(res, "name", String.class));
+                    dto.setModuleFields((List<BaseModuleFieldValue>) getField(res, "moduleFields", List.class));
+                    dto.setProducts((List<Map<String, Object>>) getField(res, "products", List.class));
+                    dto.setOptionMap((Map<String, List<OptionDTO>>) getField(res, "optionMap", Map.class));
+                    dto.setStatus(getField(res, "status", String.class));
 
-					if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
-						// 产品需要获取系统价格字段
-						dto.setPrice(getField(res, "price", BigDecimal.class));
-					}
-				}
-				result.add(dto);
-			}
-		} catch (Exception e) {
-			log.error("获取数据源引用详细失败, {}", e.getMessage());
-			return new ArrayList<>();
-		}
+                    if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
+                        // 产品需要获取系统价格字段
+                        dto.setPrice(getField(res, "price", BigDecimal.class));
+                    }
+                }
+                result.add(dto);
+            }
+        } catch (Exception e) {
+            log.error("获取数据源引用详细失败, {}", e.getMessage());
+            return new ArrayList<>();
+        }
 
-		return result;
-	}
+        return result;
+    }
 
     public void modifyInvoiceShowFields() {
         LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
@@ -218,7 +220,8 @@ public class ModuleFieldService {
                     if (Strings.CI.equalsAny(showFields.get(i),
                             "contractProductSumAmount",
                             BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
-                        ModuleField contractNameField = selectFieldByInternalKey(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
+                        ModuleField contractNameField = selectFieldByInternalKey(
+                                BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
                         if (contractNameField != null) {
                             showFields.set(i, contractNameField.getId());
                             contractFieldBlob.setProp(JSON.toJSONString(datasourceField));
@@ -242,30 +245,30 @@ public class ModuleFieldService {
         return moduleFieldMapper.selectOne(field);
     }
 
-	@SuppressWarnings("unchecked")
-	private <T> T getField(Object obj, String fieldName, Class<T> type) {
-		Class<?> clazz = obj.getClass();
+    @SuppressWarnings("unchecked")
+    private <T> T getField(Object obj, String fieldName, Class<T> type) {
+        Class<?> clazz = obj.getClass();
 
-		while (clazz != null) {
-			try {
-				Field field = clazz.getDeclaredField(fieldName);
-				field.setAccessible(true);
+        while (clazz != null) {
+            try {
+                Field field = clazz.getDeclaredField(fieldName);
+                field.setAccessible(true);
 
-				Object value = field.get(obj);
-				if (type.isInstance(value)) {
-					return (T) value;
-				}
+                Object value = field.get(obj);
+                if (type.isInstance(value)) {
+                    return (T) value;
+                }
 
-				return null;
-			} catch (NoSuchFieldException e) {
-				clazz = clazz.getSuperclass();
-			} catch (IllegalAccessException e) {
-				return null;
-			}
-		}
+                return null;
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass();
+            } catch (IllegalAccessException e) {
+                return null;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
     /**
      * 订单模块字段初始化
@@ -278,7 +281,7 @@ public class ModuleFieldService {
     /**
      * 订单产品字段增加金额计算公式，订单增加订单金额计算公式
      */
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     private void initOrderProducts() {
         ModuleField orderProducts = selectFieldByInternalKey("orderProducts");
         ModuleFieldBlob orderProductsFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(orderProducts.getId());
@@ -306,7 +309,8 @@ public class ModuleFieldService {
         moduleFieldBlobMapper.updateById(orderProductsFieldBlob);
 
         ModuleField orderAmount = selectFieldByInternalKey("orderAmount");
-        String orderAmountFormulaId = orderProductsField.get("id").toString() + "." + orderProductAmount.get("id").toString();
+        String orderAmountFormulaId = orderProductsField.get("id").toString() + "."
+                + orderProductAmount.get("id").toString();
         ModuleFieldBlob orderAmountFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(orderAmount.getId());
         Map<String, Object> orderAmountField = JSON.parseMap(orderAmountFieldBlob.getProp());
         orderAmountField.put("formula", getOrderAmountFormula(orderAmountFormulaId));
@@ -383,7 +387,8 @@ public class ModuleFieldService {
                              "endTokenIndex": 2
                          }
                      }
-                 }""", orderProductPriceId, orderProductNumberId, orderProductPriceId, orderProductNumberId, orderProductPriceId, orderProductNumberId);
+                 }""", orderProductPriceId, orderProductNumberId, orderProductPriceId, orderProductNumberId,
+                orderProductPriceId, orderProductNumberId);
     }
 
     /**
@@ -414,26 +419,26 @@ public class ModuleFieldService {
         moduleFieldBlobMapper.updateById(orderContractFieldBlob);
     }
 
-	/**
-	 * 获取指定数据源的子表字段集合 (目前只有价格表类型的子表字段支持引用)
-	 *
-	 * @param sourceType 数据源类型
-	 * @return 子表字段集合
-	 */
-	@Cacheable(value = "sub_fields_cache", key = "#sourceType", unless = "#result == null")
-	public List<BaseField> getSubFieldsBySourceType(String sourceType) {
-		List<ModuleFieldBlob> subFields = new ArrayList<>();
-		if (Strings.CS.equals(sourceType, FieldSourceType.PRICE.name())) {
-			subFields = extModuleFieldMapper.getFormSubFields(FormKey.PRICE.getKey());
-		}
-		if (CollectionUtils.isEmpty(subFields)) {
-			return new ArrayList<>();
-		}
-		List<BaseField> subFieldList = new ArrayList<>(subFields.size());
-		for (ModuleFieldBlob fieldBlob : subFields) {
-			SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
-			subFieldList.addAll(subField.getSubFields());
-		}
-		return subFieldList;
-	}
+    /**
+     * 获取指定数据源的子表字段集合 (目前只有价格表类型的子表字段支持引用)
+     *
+     * @param sourceType 数据源类型
+     * @return 子表字段集合
+     */
+    @Cacheable(value = "sub_fields_cache", key = "#sourceType", unless = "#result == null")
+    public List<BaseField> getSubFieldsBySourceType(String sourceType) {
+        List<ModuleFieldBlob> subFields = new ArrayList<>();
+        if (Strings.CS.equals(sourceType, FieldSourceType.PRICE.name())) {
+            subFields = extModuleFieldMapper.getFormSubFields(FormKey.PRICE.getKey());
+        }
+        if (CollectionUtils.isEmpty(subFields)) {
+            return new ArrayList<>();
+        }
+        List<BaseField> subFieldList = new ArrayList<>(subFields.size());
+        for (ModuleFieldBlob fieldBlob : subFields) {
+            SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
+            subFieldList.addAll(subField.getSubFields());
+        }
+        return subFieldList;
+    }
 }

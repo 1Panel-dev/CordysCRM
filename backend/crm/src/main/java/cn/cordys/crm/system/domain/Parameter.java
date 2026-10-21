@@ -9,7 +9,7 @@ import lombok.Data;
 @Table(name = "sys_parameter")
 public class Parameter {
 
-	@Id
+    @Id
     @Schema(description = "key")
     private String paramKey;
 

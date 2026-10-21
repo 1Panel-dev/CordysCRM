@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Data
 public class CombineSearch {
 
-    @Schema(description = "匹配模式，支持“所有”或“任一”", allowableValues = {"AND", "OR"})
+    @Schema(description = "匹配模式，支持“所有”或“任一”", allowableValues = { "AND", "OR" })
     @EnumValue(enumClass = SearchMode.class)
     private String searchMode = SearchMode.AND.name();
 
@@ -60,7 +60,8 @@ public class CombineSearch {
             }
 
             Object value = condition.getCombineValue();
-            boolean isBetween = Strings.CS.equals(condition.getCombineOperator(), FilterCondition.CombineConditionOperator.BETWEEN.name());
+            boolean isBetween = Strings.CS.equals(condition.getCombineOperator(),
+                    FilterCondition.CombineConditionOperator.BETWEEN.name());
 
             if (value instanceof List<?> valueList) {
                 if (CollectionUtils.isEmpty(valueList)) {

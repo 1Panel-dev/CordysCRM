@@ -52,7 +52,8 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
     }
 
     private void sendDingTalk(String context, NoticeModel noticeModel, String organizationId) {
-        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
+        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(),
+                noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;
         }
@@ -74,22 +75,20 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
             return;
         }
         //获取企业微信通知的配置数据
-        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.DINGTALK_SYNC.name());
+        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper
+                .getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.DINGTALK_SYNC.name());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
             log.warn("没有配置钉钉通知信息，无法发送消息");
             return;
         }
         var thirdConfigurationDTO = JSON.parseObject(
-                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
-        );
+                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class);
 
-        DingTalkThirdConfigRequest dingTalkThirdConfigRequest =
-                Optional.ofNullable(thirdConfigurationDTO.getConfig())
-                        .map(config -> JSON.MAPPER.convertValue(config, DingTalkThirdConfigRequest.class))
-                        .orElseGet(() -> JSON.parseObject(
-                                new String(orgConfigDetailByIdAndType.getContent()),
-                                DingTalkThirdConfigRequest.class
-                        ));
+        DingTalkThirdConfigRequest dingTalkThirdConfigRequest = Optional.ofNullable(thirdConfigurationDTO.getConfig())
+                .map(config -> JSON.MAPPER.convertValue(config, DingTalkThirdConfigRequest.class))
+                .orElseGet(() -> JSON.parseObject(
+                        new String(orgConfigDetailByIdAndType.getContent()),
+                        DingTalkThirdConfigRequest.class));
 
         //构建钉钉消息
         DingTalkSendDTO dingTalkSendDTO = new DingTalkSendDTO();
@@ -101,6 +100,7 @@ public class DingTalkNoticeSender extends AbstractNoticeSender {
         dingTalkSendDTO.getMsg().setText(new DingTalkTextDTO(context));
         dingTalkSendDTO.getMsg().setMsgtype("text");
 
-        tokenService.sendDingNoticeByToken(dingTalkSendDTO, dingTalkThirdConfigRequest.getAgentId(), dingTalkThirdConfigRequest.getAppSecret());
+        tokenService.sendDingNoticeByToken(dingTalkSendDTO, dingTalkThirdConfigRequest.getAgentId(),
+                dingTalkThirdConfigRequest.getAppSecret());
     }
 }

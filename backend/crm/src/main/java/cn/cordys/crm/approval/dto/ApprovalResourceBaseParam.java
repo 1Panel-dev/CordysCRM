@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class ApprovalResourceBaseParam {
 
-	@NotBlank
-	@Schema(description = "资源ID")
-	private String resourceId;
+    @NotBlank
+    @Schema(description = "资源ID")
+    private String resourceId;
 
-	@NotBlank
-	@Schema(description = "资源表单")
-	private String formKey;
+    @NotBlank
+    @Schema(description = "资源表单")
+    private String formKey;
 }

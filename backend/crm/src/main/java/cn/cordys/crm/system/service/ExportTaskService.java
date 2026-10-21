@@ -47,7 +47,8 @@ public class ExportTaskService {
 
     public void checkUserTaskLimit(String userId, String resourceType) {
         // 先检查用户是否有10个或以上的待处理任务
-        int userTaskCount = extExportTaskMapper.getExportTaskCount(userId, ExportConstants.ExportStatus.PREPARED.name());
+        int userTaskCount = extExportTaskMapper.getExportTaskCount(userId,
+                ExportConstants.ExportStatus.PREPARED.name());
         if (userTaskCount >= 10) {
             throw new GenericException(Translator.get("user_export_task_limit"));
         }

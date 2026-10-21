@@ -16,19 +16,21 @@ import java.util.List;
 
 public interface ExtOrderMapper extends StatisticSqlMapper {
 
-
     List<OrderListResponse> list(@Param("request") OrderPageRequest request, @Param("orgId") String orgId,
-                                 @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
+            @Param("source") boolean source);
 
     OrderGetResponse getDetail(@Param("id") String id);
 
-    List<OrderListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    List<OrderListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     int countByStage(@Param("stage") String stage);
 
-    OrderStatisticResponse searchStatistic(@Param("request") BaseCondition request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+    OrderStatisticResponse searchStatistic(@Param("request") BaseCondition request, @Param("orgId") String orgId,
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     void moveUpStageOrder(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
@@ -49,7 +51,7 @@ public interface ExtOrderMapper extends StatisticSqlMapper {
      * @param updateTime 更新时间
      */
     void revertStageByApproval(@Param("id") String id, @Param("stage") String stage, @Param("userId") String userId,
-                               @Param("updateTime") long updateTime);
+            @Param("updateTime") long updateTime);
 
     /**
      * 批量合并客户订单
@@ -58,7 +60,8 @@ public interface ExtOrderMapper extends StatisticSqlMapper {
      * @param userId  用户ID
      * @param orgId   组织ID
      */
-    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+    void batchMerge(@Param("request") CustomerMergeRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId);
 
     /**
      * 获取待合并的客户订单列表

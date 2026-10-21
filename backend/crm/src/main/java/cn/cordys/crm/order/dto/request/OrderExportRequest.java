@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class OrderExportRequest extends OrderPageRequest{
+public class OrderExportRequest extends OrderPageRequest {
     @NotBlank
     @Schema(description = "文件名", requiredMode = Schema.RequiredMode.REQUIRED)
     private String fileName;

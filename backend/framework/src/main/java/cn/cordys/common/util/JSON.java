@@ -31,28 +31,28 @@ public class JSON {
     public static final int DEFAULT_MAX_STRING_LEN = Integer.MAX_VALUE;
     // ObjectMapper 实例，用于 JSON 操作
     private static final ObjectMapper objectMapper = JsonMapper.builder()
-            .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)  // 允许 JSON 中未转义的控制字符
+            .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS) // 允许 JSON 中未转义的控制字符
             .build();
     private static final TypeFactory typeFactory = objectMapper.getTypeFactory();
 
     // 静态初始化块，配置 ObjectMapper
     static {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);  // 忽略未知属性
-        objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);  // 使用 BigDecimal 处理浮点数
-        objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);  // 允许 JSON 中的注释
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);  // 自动检测所有类的字段属性
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);  // 允许序列化空对象
-        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);  // 接受单个值作为数组处理
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 忽略未知属性
+        objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true); // 使用 BigDecimal 处理浮点数
+        objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true); // 允许 JSON 中的注释
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY); // 自动检测所有类的字段属性
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS); // 允许序列化空对象
+        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true); // 接受单个值作为数组处理
         objectMapper.getFactory()
-                .setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(DEFAULT_MAX_STRING_LEN).build());  // 设置读取字符流时的长度限制
-        objectMapper.registerModule(new JavaTimeModule());  // 注册 Java 8 时间模块
+                .setStreamReadConstraints(
+                        StreamReadConstraints.builder().maxStringLength(DEFAULT_MAX_STRING_LEN).build()); // 设置读取字符流时的长度限制
+        objectMapper.registerModule(new JavaTimeModule()); // 注册 Java 8 时间模块
     }
 
     /**
      * 将对象序列化为 JSON 字符串。
      *
      * @param value 需要序列化的对象
-     *
      * @return JSON 字符串
      */
     public static String toJSONString(Object value) {
@@ -67,7 +67,6 @@ public class JSON {
      * 将对象序列化为格式化的 JSON 字符串（带缩进）。
      *
      * @param value 需要序列化的对象
-     *
      * @return 格式化的 JSON 字符串
      */
     public static String toFormatJSONString(Object value) {
@@ -82,7 +81,6 @@ public class JSON {
      * 将对象序列化为字节数组。
      *
      * @param value 需要序列化的对象
-     *
      * @return JSON 字节数组
      */
     public static byte[] toJSONBytes(Object value) {
@@ -97,7 +95,6 @@ public class JSON {
      * 将 JSON 字符串反序列化为 Java 对象。
      *
      * @param content JSON 字符串
-     *
      * @return 反序列化后的 Java 对象
      */
     public static Object parseObject(String content) {
@@ -107,10 +104,9 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象。
      *
+     * @param <T>       Java 类的类型
      * @param content   JSON 字符串
      * @param valueType 目标 Java 类
-     * @param <T>       Java 类的类型
-     *
      * @return 反序列化后的 Java 对象
      */
     public static <T> T parseObject(String content, Class<T> valueType) {
@@ -124,10 +120,9 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象。
      *
+     * @param <T>       Java 类的类型
      * @param content   JSON 字符串
      * @param valueType 目标 Java 类型引用
-     * @param <T>       Java 类的类型
-     *
      * @return 反序列化后的 Java 对象
      */
     public static <T> T parseObject(String content, TypeReference<T> valueType) {
@@ -141,10 +136,9 @@ public class JSON {
     /**
      * 将输入流中的 JSON 数据反序列化为 Java 对象。
      *
+     * @param <T>       Java 类的类型
      * @param src       输入流
      * @param valueType 目标 Java 类
-     * @param <T>       Java 类的类型
-     *
      * @return 反序列化后的 Java 对象
      */
     public static <T> T parseObject(InputStream src, Class<T> valueType) {
@@ -159,7 +153,6 @@ public class JSON {
      * 将 JSON 字符串反序列化为 Java 对象的集合。
      *
      * @param content JSON 字符串
-     *
      * @return 反序列化后的集合对象
      */
     public static List parseArray(String content) {
@@ -169,10 +162,9 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象的集合。
      *
+     * @param <T>       集合元素类型
      * @param content   JSON 字符串
      * @param valueType 集合元素类型
-     * @param <T>       集合元素类型
-     *
      * @return 反序列化后的集合对象
      */
     public static <T> List<T> parseArray(String content, Class<T> valueType) {
@@ -187,10 +179,9 @@ public class JSON {
     /**
      * 将 JSON 字符串反序列化为指定类型的 Java 对象的集合。
      *
+     * @param <T>       集合元素类型
      * @param content   JSON 字符串
      * @param valueType 集合元素类型引用
-     * @param <T>       集合元素类型
-     *
      * @return 反序列化后的集合对象
      */
     public static <T> List<T> parseArray(String content, TypeReference<T> valueType) {
@@ -207,7 +198,6 @@ public class JSON {
      * 将 JSON 字符串反序列化为 Map 对象。
      *
      * @param jsonObject JSON 字符串
-     *
      * @return 反序列化后的 Map 对象
      */
     public static Map parseMap(String jsonObject) {

@@ -8,7 +8,8 @@ import java.util.List;
 
 public interface ExtDashboardCollectionMapper {
 
-    List<DashboardPageResponse> collectList(@Param("request") BasePageRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+    List<DashboardPageResponse> collectList(@Param("request") BasePageRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId);
 
     void deleteByDashboardId(@Param("dashboardId") String dashboardId);
 

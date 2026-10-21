@@ -52,7 +52,6 @@ public class OpportunityRuleService {
      * 分页获取商机规则
      *
      * @param request 分页参数
-     *
      * @return 商机规则列表
      */
     public List<OpportunityRuleDTO> page(BasePageRequest request, String organizationId) {
@@ -60,9 +59,11 @@ public class OpportunityRuleService {
         if (CollectionUtils.isEmpty(rules)) {
             return new ArrayList<>();
         }
-        List<String> userIds = rules.stream().flatMap(rule -> Stream.of(rule.getCreateUser(), rule.getUpdateUser())).toList();
+        List<String> userIds = rules.stream().flatMap(rule -> Stream.of(rule.getCreateUser(), rule.getUpdateUser()))
+                .toList();
         List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
-        Map<String, String> userMap = createOrUpdateUsers.stream().collect(Collectors.toMap(User::getId, User::getName));
+        Map<String, String> userMap = createOrUpdateUsers.stream()
+                .collect(Collectors.toMap(User::getId, User::getName));
         rules.forEach(rule -> {
             delOldTime(rule);
             rule.setMembers(userExtendService.getScope(JSON.parseArray(rule.getScopeId(), String.class)));
@@ -84,10 +85,10 @@ public class OpportunityRuleService {
                         String dateValue = split[0];
                         String dateUnit = split[1];
                         dateUnit = switch (dateUnit) {
-                            case "day" -> "BEFORE_DAY";
-                            case "month" -> "BEFORE_MONTH";
-                            case "week" -> "BEFORE_WEEK";
-                            default -> dateUnit;
+                        case "day" -> "BEFORE_DAY";
+                        case "month" -> "BEFORE_MONTH";
+                        case "week" -> "BEFORE_WEEK";
+                        default -> dateUnit;
                         };
                         condition.setValue("CUSTOM," + dateValue + "," + dateUnit);
                     }
@@ -153,8 +154,7 @@ public class OpportunityRuleService {
                         .resourceName(Translator.get("module.opportunity.rule.setting") + ": " + oldRule.getName())
                         .originalValue(oldRule)
                         .modifiedValue(opportunityRuleMapper.selectByPrimaryKey(request.getId()))
-                        .build()
-        );
+                        .build());
     }
 
     /**
@@ -189,8 +189,7 @@ public class OpportunityRuleService {
                         .resourceName(Translator.get("module.opportunity.rule.setting") + ": " + rule.getName())
                         .originalValue(rule)
                         .modifiedValue(opportunityRuleMapper.selectByPrimaryKey(id))
-                        .build()
-        );
+                        .build());
     }
 
     /**
@@ -198,7 +197,6 @@ public class OpportunityRuleService {
      *
      * @param ownerIds       负责人ID集合
      * @param organizationId 组织ID
-     *
      * @return 默认规则
      */
     public Map<String, OpportunityRule> getOwnersDefaultRuleMap(List<String> ownerIds, String organizationId) {
@@ -221,7 +219,6 @@ public class OpportunityRuleService {
      *
      * @param scopeIds 范围ID集合
      * @param rules    规则列表
-     *
      * @return 命中范围的规则列表
      */
     public List<OpportunityRule> matchMultiScope(List<String> scopeIds, List<OpportunityRule> rules) {
@@ -245,7 +242,6 @@ public class OpportunityRuleService {
      *
      * @param rule       商机规则
      * @param createTime 商机创建时间
-     *
      * @return 剩余归属天数
      */
     public Integer calcReservedDay(OpportunityRule rule, Long createTime) {
@@ -262,7 +258,6 @@ public class OpportunityRuleService {
      * 获取负责人最佳匹配规则
      *
      * @param rules 规则列表
-     *
      * @return 匹配集合
      */
     public Map<List<String>, OpportunityRule> getOwnersBestMatchRuleMap(List<OpportunityRule> rules) {
@@ -272,7 +267,8 @@ public class OpportunityRuleService {
             List<String> exitOwnerIds = ruleMap.keySet().stream().flatMap(List::stream).toList();
             List<String> scopeIds = JSON.parseArray(rule.getScopeId(), String.class);
             List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, rule.getOrganizationId());
-            List<String> defaultOwnerIds = ownerIds.stream().distinct().filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
+            List<String> defaultOwnerIds = ownerIds.stream().distinct()
+                    .filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
             if (CollectionUtils.isEmpty(defaultOwnerIds)) {
                 continue;
             }
@@ -301,7 +297,6 @@ public class OpportunityRuleService {
      *
      * @param condition   条件
      * @param opportunity 商机
-     *
      * @return 是否匹配
      */
     private boolean isConditionMatched(RuleConditionDTO condition, Opportunity opportunity) {
@@ -323,7 +318,6 @@ public class OpportunityRuleService {
      * 校验商机规则是否存在
      *
      * @param id 规则ID
-     *
      * @return 商机规则
      */
     private OpportunityRule checkRuleExit(String id) {

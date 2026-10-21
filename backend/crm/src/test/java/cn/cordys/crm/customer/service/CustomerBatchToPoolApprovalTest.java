@@ -105,7 +105,8 @@ class CustomerBatchToPoolApprovalTest {
         // 无权回收的客户不能跟着一起被移入公海, 负责人也不该被清空
         verify(extCustomerMapper).moveToPool(argThat(customer -> "customer-1".equals(customer.getId())));
         verify(extCustomerMapper, never()).moveToPool(argThat(customer -> "customer-2".equals(customer.getId())));
-        verify(customerContactService, never()).updateContactOwner(eq("customer-2"), anyString(), anyString(), anyString());
+        verify(customerContactService, never()).updateContactOwner(eq("customer-2"), anyString(), anyString(),
+                anyString());
         // 没权限的那些既不算成功也不跳过, 与查不到的 id 一样落在 fail 里
         assertEquals(1, response.getSuccess());
         assertEquals(1, response.getFail());

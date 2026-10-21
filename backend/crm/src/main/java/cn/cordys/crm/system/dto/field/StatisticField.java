@@ -18,9 +18,10 @@ import java.util.Map;
 
 /**
  * 统计字段
- *
- * <p>统计目标表单中通过数据源单选字段关联到当前记录的 N 条数据,
- * 聚合出总和/计数/平均值并持久化到当前记录, 只读不可直接编辑。</p>
+ * <p>
+ * 统计目标表单中通过数据源单选字段关联到当前记录的 N 条数据,
+ * 聚合出总和/计数/平均值并持久化到当前记录, 只读不可直接编辑。
+ * </p>
  *
  * @author song-cc-rock
  */
@@ -36,22 +37,22 @@ public class StatisticField extends BaseField {
     private String relatedFieldId;
 
     @EnumValue(enumClass = StatisticType.class)
-    @Schema(description = "统计类型", allowableValues = {"SUM", "COUNT", "AVG"})
+    @Schema(description = "统计类型", allowableValues = { "SUM", "COUNT", "AVG" })
     private String statisticType;
 
     @Schema(description = "统计字段ID, 取自目标表单的数值/计算/统计字段; COUNT 时为空")
     private String statisticFieldId;
 
     @EnumValue(enumClass = StatisticEmptyValueMode.class)
-    @Schema(description = "平均值统计时字段为空值的处理方式", allowableValues = {"DEFAULT_ZERO", "SKIP"})
+    @Schema(description = "平均值统计时字段为空值的处理方式", allowableValues = { "DEFAULT_ZERO", "SKIP" })
     private String avgEmptyValueMode;
 
     @EnumValue(enumClass = StatisticEmptyResultMode.class)
-    @Schema(description = "统计结果为空时的处理方式", allowableValues = {"EMPTY", "ZERO"})
+    @Schema(description = "统计结果为空时的处理方式", allowableValues = { "EMPTY", "ZERO" })
     private String emptyResultMode;
 
     @EnumValue(enumClass = StatisticDataScope.class)
-    @Schema(description = "统计数据范围", allowableValues = {"ALL", "CONDITION"})
+    @Schema(description = "统计数据范围", allowableValues = { "ALL", "CONDITION" })
     private String dataScope;
 
     /**
@@ -59,35 +60,39 @@ public class StatisticField extends BaseField {
      * ({@code filterModal.vue}) 产出的「字段对字段」结构:
      * {@code {searchMode, conditions[{leftFieldId, leftFieldType, operator, matchType, rightFieldId,
      * rightFieldCustom, rightFieldCustomValue, rightFieldType}]}}。
-     *
-     * <p><b>为什么这里不是 {@code CombineSearch}</b>: 两套结构的键名对不上, 而筛选弹窗的
+     * <p>
+     * <b>为什么这里不是 {@code CombineSearch}</b>: 两套结构的键名对不上, 而筛选弹窗的
      * {@code MATCH_FIELD}(匹配字段)需要把「右侧字段ID」翻成取值引用对象, 那不是绑定能做的事。
      * 若直接声明成 {@code CombineSearch}, Jackson 在绑定期就把 {@code leftFieldId} 丢掉,
      * 转换器再没有原料可读, 条件会整条消失。所以这里按原样收下, 由
-     * {@code StatisticConditionConverter#toCombineSearch} 在拼 SQL 之前转一次。</p>
-     *
-     * <p><b>右值取自宿主记录时</b>(设计器里的「匹配字段」), 转换后的 {@code value} 里存的不是字面量而是一个
+     * {@code StatisticConditionConverter#toCombineSearch} 在拼 SQL 之前转一次。
+     * </p>
+     * <p>
+     * <b>右值取自宿主记录时</b>(设计器里的「匹配字段」), 转换后的 {@code value} 里存的不是字面量而是一个
      * 引用对象 {@code {"refFieldId": 宿主字段ID, "refFieldType": 宿主字段类型}} ——
      * 保存配置时宿主记录还不存在, 拿不到值, 只能先记下「去哪个字段取」, 刷新时按每条数据现取。
-     * 详见 {@code StatisticFieldService#scopeCondition}。</p>
+     * 详见 {@code StatisticFieldService#scopeCondition}。
+     * </p>
      */
     @Schema(description = "符合条件时的过滤条件, 同数据源字段 combineSearch")
     private Map<String, Object> combineSearch;
 
     @EnumValue(enumClass = StatisticUpdateScope.class)
-    @Schema(description = "更新范围", allowableValues = {"NONE", "ALL", "CONDITION"})
+    @Schema(description = "更新范围", allowableValues = { "NONE", "ALL", "CONDITION" })
     private String updateScope;
 
     /**
      * 过滤的是「当前表单」自身的存量数据。
-     *
-     * <p>存储结构与 {@link #combineSearch} 相同(同一个筛选弹窗产出、同一个 {@code DataSourceFilterCombine}
+     * <p>
+     * 存储结构与 {@link #combineSearch} 相同(同一个筛选弹窗产出、同一个 {@code DataSourceFilterCombine}
      * 类型), 转换也是同一个 {@code StatisticConditionConverter}, 区别只在作用对象: 这个筛的是宿主表单
-     * 自己有哪些数据要算, 那个筛的是每条宿主记录关联过来的哪些数据参与计算。</p>
-     *
-     * <p><b>但两者的能力并不对称</b>: 更新范围是在一条 SQL 里对整个宿主表判定的, 没有「逐条数据现取右值」
+     * 自己有哪些数据要算, 那个筛的是每条宿主记录关联过来的哪些数据参与计算。
+     * </p>
+     * <p>
+     * <b>但两者的能力并不对称</b>: 更新范围是在一条 SQL 里对整个宿主表判定的, 没有「逐条数据现取右值」
      * 这一步, 所以弹窗的「匹配字段」(右值取自本表单另一个字段)在这里用不了, 会在解析时被丢掉并记日志
-     * (见 {@code StatisticFieldService#parseHostCondition})。</p>
+     * (见 {@code StatisticFieldService#parseHostCondition})。
+     * </p>
      */
     @Schema(description = "符合数据范围计算时的过滤条件, 同该表单高级搜索筛选条件")
     private Map<String, Object> updateScopeCondition;

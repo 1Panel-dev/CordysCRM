@@ -62,38 +62,41 @@ public class PoolCustomerController {
 
     @GetMapping("/options")
     @Operation(summary = "获取当前用户公海选项")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ })
     public List<CustomerPoolDTO> getPoolOptions() {
         return poolCustomerService.getPoolOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
     @Operation(summary = "客户列表")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ })
     public PagerWithOption<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
         if (StringUtils.isEmpty(request.getPoolId())) {
             throw new GenericException(Translator.get("miss.customer_pool_id"));
         }
-        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
     }
 
     @PostMapping("/pick")
     @Operation(summary = "领取客户")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK })
     public void pick(@Validated @RequestBody PoolCustomerPickRequest request) {
-        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         poolCustomerService.pick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/assign")
     @Operation(summary = "分配客户")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN })
     public void assign(@Validated @RequestBody PoolCustomerAssignRequest request) {
         String poolId = poolCustomerService.getPoolIdByCustomerId(request.getCustomerId());
         poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolCustomerService.assign(request.getCustomerId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        poolCustomerService.assign(request.getCustomerId(), request.getAssignUserId(),
+                OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/freeze")
@@ -116,11 +119,12 @@ public class PoolCustomerController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除客户")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE })
     public void delete(@PathVariable String id) {
         String poolId = poolCustomerService.getPoolIdByCustomerId(id);
         poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolCustomerService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolCustomerService.deleteWithApprovalCheck(id, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
@@ -132,40 +136,46 @@ public class PoolCustomerController {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
             String poolId = poolCustomerService.getPoolIdByCustomerId(id);
-            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(),
+                    OrganizationContext.getOrganizationId());
         }
         return customerService.get(id);
     }
 
     @PostMapping("/batch-pick")
     @Operation(summary = "批量领取客户")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK })
     public void batchPick(@Validated @RequestBody PoolBatchPickRequest request) {
-        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         poolCustomerService.batchPick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch-assign")
     @Operation(summary = "批量分配客户")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN })
     public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
         // 先校验全部记录，避免首条合法记录授权整批操作。
         for (String id : request.getBatchIds()) {
             String poolId = poolCustomerService.getPoolIdByCustomerId(id);
-            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(),
+                    OrganizationContext.getOrganizationId());
         }
-        poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/batch-delete")
     @Operation(summary = "批量删除客户")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE })
     public BatchAffectReasonResponse batchDelete(@Validated @RequestBody PoolBatchRequest request) {
         for (String id : request.getBatchIds()) {
             String poolId = poolCustomerService.getPoolIdByCustomerId(id);
-            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(),
+                    OrganizationContext.getOrganizationId());
         }
-        return poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch-update")
@@ -174,16 +184,19 @@ public class PoolCustomerController {
     public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         for (String id : request.getIds()) {
             String poolId = poolCustomerService.getPoolIdByCustomerId(id);
-            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+            poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(),
+                    OrganizationContext.getOrganizationId());
         }
-        return poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolCustomerService.batchUpdate(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/export-all")
     @Operation(summary = "客户导出全部")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
     public String customerPoolExportAll(@Validated @RequestBody CustomerExportRequest request) {
-        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CUSTOMER_POOL.name())
@@ -224,10 +237,11 @@ public class PoolCustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户图表生成")
     public List<ChartResult> chart(@Validated @RequestBody PoolCustomerChartAnalysisRequest request) {
-        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        return poolCustomerService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
+        return poolCustomerService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                null);
     }
-
 
     @GetMapping("/template/download")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_IMPORT)
@@ -239,16 +253,21 @@ public class PoolCustomerController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") CustomerPoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") CustomerPoolImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
         return poolCustomerService.importPreCheck(file, request, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") CustomerPoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        return poolCustomerService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") CustomerPoolImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
+        return poolCustomerService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 }

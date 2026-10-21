@@ -51,7 +51,6 @@ import static cn.cordys.crm.system.constants.SystemResultCode.ROLE_EXIST;
 
 /**
  * @author jianxing
- * @date 2025-01-03 12:01:54
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -80,7 +79,6 @@ public class RoleService {
     }
 
     public List<RoleListResponse> getRoleListResponses(String orgId) {
-
         List<Role> roles = extRoleMapper.selectList(orgId);
         List<RoleListResponse> roleListResponseList = JSON.parseArray(JSON.toJSONString(roles), RoleListResponse.class);
         // 翻译内置角色名称
@@ -92,9 +90,6 @@ public class RoleService {
 
     /**
      * 翻译内置角色名
-     *
-     * @param role
-     * @return
      */
     public Role translateInternalRole(Role role) {
         if (BooleanUtils.isTrue(role.getInternal())) {
@@ -105,9 +100,6 @@ public class RoleService {
 
     /**
      * 翻译内置角色名
-     *
-     * @param roleKey
-     * @return
      */
     public String translateInternalRole(String roleKey) {
         return Translator.get("role." + roleKey, roleKey);
@@ -173,7 +165,8 @@ public class RoleService {
         roleMapper.insert(role);
 
         // 配置指定部门权限
-        if (Strings.CS.equals(request.getDataScope(), RoleDataScope.DEPT_CUSTOM.name()) && CollectionUtils.isNotEmpty(request.getDeptIds())) {
+        if (Strings.CS.equals(request.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())
+                && CollectionUtils.isNotEmpty(request.getDeptIds())) {
             roleScopeDeptMapper.batchInsert(getRoleScopeDept(role.getId(), request.getDeptIds()));
         }
 
@@ -184,8 +177,7 @@ public class RoleService {
                 LogContextInfo.builder()
                         .resourceId(role.getId())
                         .modifiedValue(role)
-                        .build()
-        );
+                        .build());
 
         return role;
     }
@@ -260,7 +252,8 @@ public class RoleService {
         clearPermissionCacheByRoleId(role.getId(), orgId);
 
         RoleLogDTO originRoleLogDTO = BeanUtils.copyBean(new RoleLogDTO(), originRole);
-        RoleLogDTO modifiedRoleLogDTO = BeanUtils.copyBean(new RoleLogDTO(), roleMapper.selectByPrimaryKey(request.getId()));
+        RoleLogDTO modifiedRoleLogDTO = BeanUtils.copyBean(new RoleLogDTO(),
+                roleMapper.selectByPrimaryKey(request.getId()));
         if (request.getDeptIds() != null) {
             modifiedRoleLogDTO.setDeptIds(request.getDeptIds());
             originRoleLogDTO.setDeptIds(originDeptIds);
@@ -288,8 +281,7 @@ public class RoleService {
                         .resourceName(roleGetResponse.getName())
                         .originalValue(originRoleLogDTO)
                         .modifiedValue(modifiedRoleLogDTO)
-                        .build()
-        );
+                        .build());
 
         return roleGetResponse;
     }
@@ -373,8 +365,6 @@ public class RoleService {
 
     /**
      * 获取空的权限配置
-     *
-     * @return
      */
     public List<PermissionDefinitionItem> getPermissionSetting() {
         return getPermissionDefinitionItems(Set.of());
@@ -446,9 +436,6 @@ public class RoleService {
 
     /**
      * 翻译默认的权限名称
-     *
-     * @param permissionId
-     * @return
      */
     public String translateDefaultPermissionName(String permissionId) {
         String[] idSplit = permissionId.split(":");
@@ -459,9 +446,6 @@ public class RoleService {
 
     /**
      * 查询用户组对应的权限ID
-     *
-     * @param roleId
-     * @return
      */
     public Set<String> getPermissionIdSetByRoleId(String roleId) {
         return getRolePermissionByRoleId(roleId).stream()
@@ -471,9 +455,6 @@ public class RoleService {
 
     /**
      * 查询用户组对应的权限列表
-     *
-     * @param roleId
-     * @return
      */
     public List<RolePermission> getRolePermissionByRoleId(String roleId) {
         RolePermission example = new RolePermission();
@@ -497,7 +478,6 @@ public class RoleService {
         return rolePermissionMapper.selectListByLambda(userLambdaQueryWrapper);
     }
 
-
     public List<String> getRoleIdsByUserId(String userId) {
         List<UserRole> userRoles = getUserRolesByUserId(userId);
         if (CollectionUtils.isEmpty(userRoles)) {
@@ -516,8 +496,6 @@ public class RoleService {
 
     /**
      * 更新单个用户组的配置项
-     *
-     * @param permissions
      */
     public void updatePermissionSetting(List<PermissionUpdateRequest> permissions, String roleId) {
         if (permissions == null) {
@@ -586,12 +564,8 @@ public class RoleService {
         return rolePermissionMapper.selectListByLambda(wrapper);
     }
 
-
     /**
      * 角色权限排序
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.UPDATE, operator = "{#currentUser}")
     public void sort(ModuleSortRequest request, String userId) {
@@ -629,7 +603,6 @@ public class RoleService {
                 .modifiedValue(modifiedVal)
                 .resourceId(role.getId())
                 .build());
-
     }
 
     private List<String> getRoleSortKeys(String orgId) {

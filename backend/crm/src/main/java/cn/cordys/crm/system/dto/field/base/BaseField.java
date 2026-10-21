@@ -98,27 +98,28 @@ public abstract class BaseField {
     @Schema(description = "禁止修改的参数")
     private Set<String> disabledProps;
 
-	/**
-	 * 引用字段特有属性
-	 */
-	@Schema(description = "引用字段关联的数据源ID")
-	private String resourceFieldId;
+    /**
+     * 引用字段特有属性
+     */
+    @Schema(description = "引用字段关联的数据源ID")
+    private String resourceFieldId;
 
-	/**
-	 * 子表格字段特有属性
-	 */
-	@Schema(description = "该字段所属子表格ID, 仅子表格字段使用, 用来区分该字段是外层字段还是子表格字段")
-	private String subTableFieldId;
+    /**
+     * 子表格字段特有属性
+     */
+    @Schema(description = "该字段所属子表格ID, 仅子表格字段使用, 用来区分该字段是外层字段还是子表格字段")
+    private String subTableFieldId;
 
-	/**
-	 * 是否系统字段 (后端)
-	 */
-	private boolean isSys;
+    /**
+     * 是否系统字段 (后端)
+     */
+    private boolean isSys;
 
     @JsonIgnore
     public static boolean isBlob(String type) {
         return Strings.CS.equalsAny(type, FieldType.TEXTAREA.name(), FieldType.INPUT_MULTIPLE.name(),
-                FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(), FieldType.SELECT_MULTIPLE.name(), FieldType.CHECKBOX.name(),
+                FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(),
+                FieldType.SELECT_MULTIPLE.name(), FieldType.CHECKBOX.name(),
                 FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.ATTACHMENT.name(), FieldType.LINK.name());
     }
 
@@ -147,10 +148,10 @@ public abstract class BaseField {
                 && StringUtils.isNotEmpty(formulaField.getFormula());
     }
 
-	@JsonIgnore
-	public boolean isSubField() {
-		return Strings.CS.equalsAny(type, FieldType.SUB_PRICE.name(), FieldType.SUB_PRODUCT.name());
-	}
+    @JsonIgnore
+    public boolean isSubField() {
+        return Strings.CS.equalsAny(type, FieldType.SUB_PRICE.name(), FieldType.SUB_PRODUCT.name());
+    }
 
     @JsonIgnore
     public boolean needRepeatCheck() {
@@ -160,7 +161,8 @@ public abstract class BaseField {
 
     @JsonIgnore
     public boolean needInitialOptions() {
-        return Strings.CS.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name());
+        return Strings.CS.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(),
+                FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name());
     }
 
     @JsonIgnore
@@ -178,27 +180,32 @@ public abstract class BaseField {
 
     @JsonIgnore
     public static boolean canImport(BaseField field) {
-		// 序列号、附件、图片、分割线、公式字段（计算/文本+公式）、不可见字段, 不支持导入.
-        return !Strings.CS.equalsAny(field.getType(), FieldType.SERIAL_NUMBER.name()) && !Strings.CS.equalsAny(field.getType(), FieldType.ATTACHMENT.name())
-                && !Strings.CS.equalsAny(field.getType(), FieldType.PICTURE.name()) && !Strings.CS.equalsAny(field.getType(), FieldType.DIVIDER.name())
+        // 序列号、附件、图片、分割线、公式字段（计算/文本+公式）、不可见字段, 不支持导入.
+        return !Strings.CS.equalsAny(field.getType(), FieldType.SERIAL_NUMBER.name())
+                && !Strings.CS.equalsAny(field.getType(), FieldType.ATTACHMENT.name())
+                && !Strings.CS.equalsAny(field.getType(), FieldType.PICTURE.name())
+                && !Strings.CS.equalsAny(field.getType(), FieldType.DIVIDER.name())
                 && field.getReadable();
     }
 
+    @JsonIgnore
+    public boolean canExport() {
+        // 序列号、附件、图片、分割线, 不支持导出.
+        return !Strings.CS.equalsAny(type, FieldType.SERIAL_NUMBER.name())
+                && !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
+                && !Strings.CS.equalsAny(type, FieldType.PICTURE.name())
+                && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
+    }
 
-	@JsonIgnore
-	public boolean canExport() {
-		// 序列号、附件、图片、分割线, 不支持导出.
-		return !Strings.CS.equalsAny(type, FieldType.SERIAL_NUMBER.name()) && !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
-				&& !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
-	}
-
-	@JsonIgnore
-	public boolean canDisplay() {
-		// 附件、图片、分割线、子表格、不可见字段等这些, 不支持在子列表等场景展示.
-		return !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name()) && !Strings.CS.equalsAny(type, FieldType.PICTURE.name())
-				&& !Strings.CS.equalsAny(type, FieldType.SUB_PRICE.name()) && !Strings.CS.equalsAny(type, FieldType.SUB_PRODUCT.name())
-				&& !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
-	}
+    @JsonIgnore
+    public boolean canDisplay() {
+        // 附件、图片、分割线、子表格、不可见字段等这些, 不支持在子列表等场景展示.
+        return !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
+                && !Strings.CS.equalsAny(type, FieldType.PICTURE.name())
+                && !Strings.CS.equalsAny(type, FieldType.SUB_PRICE.name())
+                && !Strings.CS.equalsAny(type, FieldType.SUB_PRODUCT.name())
+                && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name()) && readable;
+    }
 
     @JsonIgnore
     public boolean needRequireCheck() {
@@ -208,13 +215,16 @@ public abstract class BaseField {
     @JsonIgnore
     public boolean multiple() {
         return Strings.CS.equalsAny(type, FieldType.CHECKBOX.name(), FieldType.SELECT_MULTIPLE.name(),
-                FieldType.INPUT_MULTIPLE.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(), FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.ATTACHMENT.name());
+                FieldType.INPUT_MULTIPLE.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(),
+                FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.ATTACHMENT.name());
     }
 
     @JsonIgnore
     public boolean needComment() {
-        return Strings.CS.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name(),
-                FieldType.LOCATION.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(), FieldType.INDUSTRY.name());
+        return Strings.CS.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(),
+                FieldType.SELECT_MULTIPLE.name(),
+                FieldType.LOCATION.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
+                FieldType.INDUSTRY.name());
     }
 
     @JsonIgnore
@@ -227,12 +237,12 @@ public abstract class BaseField {
         return Strings.CS.equals(type, FieldType.INDUSTRY.name());
     }
 
-	@JsonIgnore
-	public String idOrBusinessKey() {
-		return hasBusinessKey() ? this.getBusinessKey() : this.getId();
-	}
+    @JsonIgnore
+    public String idOrBusinessKey() {
+        return hasBusinessKey() ? this.getBusinessKey() : this.getId();
+    }
 
-	@JsonIgnore
+    @JsonIgnore
     public boolean hasBusinessKey() {
         return StringUtils.isNotBlank(this.getBusinessKey());
     }

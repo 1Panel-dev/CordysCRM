@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *  切面后置操作: 当命中表单配置的审批流和执行时机时
+ * 切面后置操作: 当命中表单配置的审批流和执行时机时
  */
 @Aspect
 @Component
@@ -52,331 +52,339 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE + 5)
 public class HitApprovalAspect {
 
-	private final ExpressionParser parser = new SpelExpressionParser();
-	private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
+    private final ExpressionParser parser = new SpelExpressionParser();
+    private final StandardReflectionParameterNameDiscoverer discoverer =
+            new StandardReflectionParameterNameDiscoverer();
 
-	/**
-	 * 跳过审批检查的标记，用于审批通过后调用实际删除逻辑时避免再次触发审批
-	 */
-	private static final ThreadLocal<Boolean> SKIP_APPROVAL = new ThreadLocal<>();
+    /**
+     * 跳过审批检查的标记，用于审批通过后调用实际删除逻辑时避免再次触发审批
+     */
+    private static final ThreadLocal<Boolean> SKIP_APPROVAL = new ThreadLocal<>();
 
-	@Resource
-	private ApprovalFlowService approvalFlowService;
-	@Resource
-	private ApprovalResourceService approvalResourceService;
-	@Resource
-	private SysOperationLogService sysOperationLogService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalResourceService approvalResourceService;
+    @Resource
+    private SysOperationLogService sysOperationLogService;
 
+    @Pointcut("@annotation(cn.cordys.crm.approval.annotation.HitApproval)")
+    public void pointcut() {
+    }
 
-	@Pointcut("@annotation(cn.cordys.crm.approval.annotation.HitApproval)")
-	public void pointcut() {
-	}
+    @Around(value = "pointcut()")
+    public Object handleHitApproval(ProceedingJoinPoint joinPoint) throws Throwable {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        HitApproval annotation = method.getAnnotation(HitApproval.class);
 
-	@Around(value = "pointcut()")
-	public Object handleHitApproval(ProceedingJoinPoint joinPoint) throws Throwable {
-		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-		Method method = signature.getMethod();
-		HitApproval annotation = method.getAnnotation(HitApproval.class);
+        if (annotation == null || Boolean.TRUE.equals(SKIP_APPROVAL.get())) {
+            return joinPoint.proceed();
+        }
 
-		if (annotation == null || Boolean.TRUE.equals(SKIP_APPROVAL.get())) {
-			return joinPoint.proceed();
-		}
+        // DELETE 时机：先检查是否命中审批流，命中则不执行删除逻辑
+        if (annotation.executeType() == ExecuteTimingEnum.DELETE) {
+            return handleDeleteApproval(joinPoint, annotation, method);
+        }
 
-		// DELETE 时机：先检查是否命中审批流，命中则不执行删除逻辑
-		if (annotation.executeType() == ExecuteTimingEnum.DELETE) {
-			return handleDeleteApproval(joinPoint, annotation, method);
-		}
+        // 解析动态表单类型 formKey 字符串（自定义表单等运行时确定），并解析为枚举
+        String formKeyStr = resolveFormKeyStr(method, joinPoint.getArgs(), annotation);
+        FormKey enumKey = ApprovalResourceService.resolveApprovalFormKey(formKeyStr);
 
-		// 解析动态表单类型 formKey 字符串（自定义表单等运行时确定），并解析为枚举
-		String formKeyStr = resolveFormKeyStr(method, joinPoint.getArgs(), annotation);
-		FormKey enumKey = ApprovalResourceService.resolveApprovalFormKey(formKeyStr);
+        // 提前解析通用参数
+        String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
+        if (StringUtils.isBlank(operator)) {
+            operator = SessionUtils.getUserId();
+        }
+        String organizationId = OrganizationContext.getOrganizationId();
 
-		// 提前解析通用参数
-		String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
-		if (StringUtils.isBlank(operator)) {
-			operator = SessionUtils.getUserId();
-		}
-		String organizationId = OrganizationContext.getOrganizationId();
+        // UPDATE 时提前解析更新类型，approval回退直接放行
+        String updateType = null;
+        if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
+            updateType = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.updateType());
+        }
+        if (Strings.CI.equals(updateType, ApprovalResourceUpdateType.APPROVAL.getValue())
+                || StringUtils.isBlank(organizationId)) {
+            return joinPoint.proceed();
+        }
 
-		// UPDATE 时提前解析更新类型，approval回退直接放行
-		String updateType = null;
-		if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
-			updateType = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.updateType());
-		}
-		if (Strings.CI.equals(updateType, ApprovalResourceUpdateType.APPROVAL.getValue()) || StringUtils.isBlank(organizationId)) {
-			return joinPoint.proceed();
-		}
+        String resourceId = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.resourceId());
+        ExecuteTimingEnum executeTiming = getExecuteTimingEnum(enumKey, annotation.executeType(), resourceId);
+        // 检查是否命中审批流
+        boolean hit = checkHitApprovalFlow(formKeyStr, executeTiming, organizationId);
 
-		String resourceId = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.resourceId());
-		ExecuteTimingEnum executeTiming = getExecuteTimingEnum(enumKey, annotation.executeType(), resourceId);
-		// 检查是否命中审批流
-		boolean hit = checkHitApprovalFlow(formKeyStr, executeTiming, organizationId);
+        // UPDATE 前置处理：保存编辑前快照（用于审批驳回/撤回时回退）
+        if (executeTiming == ExecuteTimingEnum.UPDATE && hit) {
+            ApprovalResourceHandler handler = ApprovalResourceService.resolveApprovalHandler(enumKey);
+            if (handler != null) {
+                String snapshotData = handler.getPreUpdateSnapshotData(resourceId, operator, organizationId);
+                if (StringUtils.isNotBlank(snapshotData)) {
+                    approvalResourceService.savePreUpdateSnapshot(enumKey, resourceId, operator, snapshotData);
+                }
+            }
+        }
 
-		// UPDATE 前置处理：保存编辑前快照（用于审批驳回/撤回时回退）
-		if (executeTiming == ExecuteTimingEnum.UPDATE && hit) {
-			ApprovalResourceHandler handler = ApprovalResourceService.resolveApprovalHandler(enumKey);
-			if (handler != null) {
-				String snapshotData = handler.getPreUpdateSnapshotData(resourceId, operator, organizationId);
-				if (StringUtils.isNotBlank(snapshotData)) {
-					approvalResourceService.savePreUpdateSnapshot(enumKey, resourceId, operator, snapshotData);
-				}
-			}
-		}
+        Object retValue = joinPoint.proceed();
 
-		Object retValue = joinPoint.proceed();
+        try {
+            if (StringUtils.isBlank(resourceId)) {
+                resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue,
+                        annotation.executeType());
+            }
+            if (StringUtils.isBlank(resourceId)) {
+                return retValue;
+            }
+            String comment = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.comment());
 
-		try {
-			if (StringUtils.isBlank(resourceId)) {
-				resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
-			}
-			if (StringUtils.isBlank(resourceId)) {
-				return retValue;
-			}
-			String comment = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.comment());
+            if (hit) {
+                if (executeTiming == ExecuteTimingEnum.CREATE) {
+                    approvalResourceService.updateResourceApprovalStatus(enumKey, resourceId,
+                            ApprovalStatus.PENDING.name(), operator, organizationId);
+                } else {
+                    // 命中审批流，直接提审（跳过待提审状态）
+                    String updateFields = resolveUpdateFields();
+                    ApprovalPushParam pushParam = ApprovalPushParam.builder()
+                            .orgId(organizationId)
+                            .userId(operator)
+                            .resourceId(resourceId)
+                            .formKey(formKeyStr)
+                            .executeTimingEnum(ExecuteTimingEnum.UPDATE)
+                            .updateFields(updateFields)
+                            .comment(comment)
+                            .build();
+                    approvalResourceService.push(pushParam);
+                }
+            }
+        } catch (Exception e) {
+            log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
+        }
 
-			if (hit) {
-				if (executeTiming == ExecuteTimingEnum.CREATE) {
-					approvalResourceService.updateResourceApprovalStatus(enumKey, resourceId, ApprovalStatus.PENDING.name(), operator, organizationId);
-				} else {
-					// 命中审批流，直接提审（跳过待提审状态）
-					String updateFields = resolveUpdateFields();
-					ApprovalPushParam pushParam = ApprovalPushParam.builder()
-							.orgId(organizationId)
-							.userId(operator)
-							.resourceId(resourceId)
-							.formKey(formKeyStr)
-							.executeTimingEnum(ExecuteTimingEnum.UPDATE)
-							.updateFields(updateFields)
-							.comment(comment)
-							.build();
-					approvalResourceService.push(pushParam);
-				}
-			}
-		} catch (Exception e) {
-			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
-		}
+        return retValue;
+    }
 
-		return retValue;
-	}
+    /**
+     * 解析动态表单类型 formKey 字符串。
+     * 优先使用 formKeyExpr（SpEL，用于自定义表单 customFormId），为空时回退到 formKey 枚举的 key。
+     */
+    private String resolveFormKeyStr(Method method, Object[] args, HitApproval annotation) {
+        if (StringUtils.isNotBlank(annotation.formKeyExpr())) {
+            String resolved = resolveParamFromArgs(method, args, annotation.formKeyExpr());
+            if (StringUtils.isNotBlank(resolved)) {
+                return resolved;
+            }
+        }
+        return annotation.formKey().getKey();
+    }
 
-	/**
-	 * 解析动态表单类型 formKey 字符串。
-	 * 优先使用 formKeyExpr（SpEL，用于自定义表单 customFormId），为空时回退到 formKey 枚举的 key。
-	 */
-	private String resolveFormKeyStr(Method method, Object[] args, HitApproval annotation) {
-		if (StringUtils.isNotBlank(annotation.formKeyExpr())) {
-			String resolved = resolveParamFromArgs(method, args, annotation.formKeyExpr());
-			if (StringUtils.isNotBlank(resolved)) {
-				return resolved;
-			}
-		}
-		return annotation.formKey().getKey();
-	}
+    private ExecuteTimingEnum getExecuteTimingEnum(FormKey enumKey, ExecuteTimingEnum annotationExecuteType,
+            String resourceId) {
+        if (StringUtils.isBlank(resourceId)) {
+            return annotationExecuteType;
+        }
+        ExecuteTimingEnum executeTiming = annotationExecuteType;
+        if (annotationExecuteType == ExecuteTimingEnum.UPDATE) {
+            // UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
+            boolean isCreateExecuteTime = !approvalResourceService.isResourceApproved(enumKey, resourceId);
+            if (isCreateExecuteTime) {
+                executeTiming = ExecuteTimingEnum.CREATE;
+            }
+        }
+        return executeTiming;
+    }
 
-	private ExecuteTimingEnum getExecuteTimingEnum(FormKey enumKey, ExecuteTimingEnum annotationExecuteType, String resourceId) {
-		if (StringUtils.isBlank(resourceId)) {
-			return annotationExecuteType;
-		}
-		ExecuteTimingEnum executeTiming = annotationExecuteType;
-		if (annotationExecuteType == ExecuteTimingEnum.UPDATE) {
-			// UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
-			boolean isCreateExecuteTime = !approvalResourceService.isResourceApproved(enumKey, resourceId);
-			if (isCreateExecuteTime) {
-				executeTiming = ExecuteTimingEnum.CREATE;
-			}
-		}
-		return executeTiming;
-	}
+    /**
+     * 处理删除时机的审批逻辑：先检查审批，命中则不执行删除，未命中则正常删除
+     */
+    private Object handleDeleteApproval(ProceedingJoinPoint joinPoint, HitApproval annotation, Method method)
+            throws Throwable {
+        // 从参数中解析资源ID（DELETE时资源ID从参数获取）
+        String resourceId = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.resourceId());
+        String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
 
-	/**
-	 * 处理删除时机的审批逻辑：先检查审批，命中则不执行删除，未命中则正常删除
-	 */
-	private Object handleDeleteApproval(ProceedingJoinPoint joinPoint, HitApproval annotation, Method method) throws Throwable {
-		// 从参数中解析资源ID（DELETE时资源ID从参数获取）
-		String resourceId = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.resourceId());
-		String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
+        if (StringUtils.isBlank(resourceId)) {
+            return joinPoint.proceed();
+        }
 
-		if (StringUtils.isBlank(resourceId)) {
-			return joinPoint.proceed();
-		}
+        if (StringUtils.isBlank(operator)) {
+            operator = SessionUtils.getUserId();
+        }
 
-		if (StringUtils.isBlank(operator)) {
-			operator = SessionUtils.getUserId();
-		}
+        // 获取组织ID
+        String organizationId = OrganizationContext.getOrganizationId();
+        if (StringUtils.isBlank(organizationId)) {
+            return joinPoint.proceed();
+        }
 
-		// 获取组织ID
-		String organizationId = OrganizationContext.getOrganizationId();
-		if (StringUtils.isBlank(organizationId)) {
-			return joinPoint.proceed();
-		}
+        // 解析动态表单类型：自定义表单 DELETE 时注解无 formKeyExpr（无法从参数取 customFormId），
+        // formKey 为默认占位符，故统一从资源反查 customFormId；标准表单资源在 custom_form_data 中
+        // 不存在，反查返回 null，不影响。
+        String formKeyStr = resolveFormKeyStr(method, joinPoint.getArgs(), annotation);
+        String customFormId = approvalResourceService.resolveCustomFormIdByResourceId(resourceId);
+        if (StringUtils.isNotBlank(customFormId)) {
+            formKeyStr = customFormId;
+        }
+        FormKey enumKey = ApprovalResourceService.resolveApprovalFormKey(formKeyStr);
 
-		// 解析动态表单类型：自定义表单 DELETE 时注解无 formKeyExpr（无法从参数取 customFormId），
-		// formKey 为默认占位符，故统一从资源反查 customFormId；标准表单资源在 custom_form_data 中
-		// 不存在，反查返回 null，不影响。
-		String formKeyStr = resolveFormKeyStr(method, joinPoint.getArgs(), annotation);
-		String customFormId = approvalResourceService.resolveCustomFormIdByResourceId(resourceId);
-		if (StringUtils.isNotBlank(customFormId)) {
-			formKeyStr = customFormId;
-		}
-		FormKey enumKey = ApprovalResourceService.resolveApprovalFormKey(formKeyStr);
+        // 检查是否命中审批流
+        boolean hit = checkHitApprovalFlow(formKeyStr, annotation.executeType(), organizationId);
 
-		// 检查是否命中审批流
-		boolean hit = checkHitApprovalFlow(formKeyStr, annotation.executeType(), organizationId);
+        if (!hit) {
+            // 未命中审批流，直接执行删除
+            return joinPoint.proceed();
+        }
 
-		if (!hit) {
-			// 未命中审批流，直接执行删除
-			return joinPoint.proceed();
-		}
+        ApprovalPushParam pushParam = ApprovalPushParam.builder()
+                .orgId(organizationId)
+                .userId(operator)
+                .resourceId(resourceId)
+                .formKey(formKeyStr)
+                .executeTimingEnum(ExecuteTimingEnum.DELETE)
+                .comment(Translator.getWithArgs("approval.delete.resource",
+                        approvalResourceService.getFormKeyDisplayName(enumKey),
+                        approvalResourceService.getInstanceResourceName(enumKey, resourceId)))
+                .build();
+        approvalResourceService.push(pushParam);
+        return null;
+    }
 
-		ApprovalPushParam pushParam = ApprovalPushParam.builder()
-				.orgId(organizationId)
-				.userId(operator)
-				.resourceId(resourceId)
-				.formKey(formKeyStr)
-				.executeTimingEnum(ExecuteTimingEnum.DELETE)
-				.comment(Translator.getWithArgs("approval.delete.resource", approvalResourceService.getFormKeyDisplayName(enumKey),
-						approvalResourceService.getInstanceResourceName(enumKey, resourceId)))
-				.build();
-		approvalResourceService.push(pushParam);
-		return null;
-	}
+    /**
+     * 解析修改的字段列表
+     */
+    private String resolveUpdateFields() {
+        try {
+            LogContextInfo logContext = OperationLogContext.getContext();
+            Object originalValue = logContext.getOriginalValue();
+            Object modifiedValue = logContext.getModifiedValue();
+            if (originalValue != null && modifiedValue != null) {
+                List<JsonDifferenceDTO> jsonDifferences = sysOperationLogService
+                        .getJsonDifferences(JSON.toJSONString(originalValue), JSON.toJSONString(modifiedValue));
+                List<String> fieldIds = jsonDifferences.stream()
+                        .map(JsonDifferenceDTO::getColumn)
+                        .map(col -> {
+                            if (col.contains("-")) {
+                                String[] split = col.split("-");
+                                return split[split.length - 1];
+                            }
+                            return col;
+                        })
+                        .collect(Collectors.toList());
+                return JSON.toJSONString(fieldIds);
+            }
+        } catch (Exception e) {
+            log.error("解析修改字段列表失败，error:{}", e.getMessage(), e);
+        }
+        return null;
+    }
 
-	/**
-	 * 解析修改的字段列表
-	 */
-	private String resolveUpdateFields() {
-		try {
-			LogContextInfo logContext = OperationLogContext.getContext();
-			Object originalValue = logContext.getOriginalValue();
-			Object modifiedValue = logContext.getModifiedValue();
-			if (originalValue != null && modifiedValue != null) {
-				List<JsonDifferenceDTO> jsonDifferences = sysOperationLogService.getJsonDifferences(JSON.toJSONString(originalValue), JSON.toJSONString(modifiedValue));
-				List<String> fieldIds = jsonDifferences.stream()
-						.map(JsonDifferenceDTO::getColumn)
-						.map(col -> {
-							if (col.contains("-")) {
-								String[] split = col.split("-");
-								return split[split.length - 1];
-							}
-							return col;
-						})
-						.collect(Collectors.toList());
-				return JSON.toJSONString(fieldIds);
-			}
-		} catch (Exception e) {
-			log.error("解析修改字段列表失败，error:{}", e.getMessage(), e);
-		}
-		return null;
-	}
+    /**
+     * 解析资源ID
+     * <p>
+     * 新增时从返回值获取，编辑时从参数获取
+     *
+     * @param method      方法
+     * @param args        方法参数
+     * @param expression  资源ID表达式
+     * @param retValue    方法返回值
+     * @param executeType 执行时机
+     * @return 资源ID
+     */
+    private String resolveResourceId(Method method, Object[] args, String expression, Object retValue,
+            ExecuteTimingEnum executeType) {
+        if (executeType == ExecuteTimingEnum.CREATE) {
+            // 新增从返回结果中获取资源ID
+            return extractIdFromResult(retValue);
+        }
 
-	/**
-	 * 解析资源ID
-	 * <p>
-	 * 新增时从返回值获取，编辑时从参数获取
-	 *
-	 * @param method      方法
-	 * @param args        方法参数
-	 * @param expression  资源ID表达式
-	 * @param retValue    方法返回值
-	 * @param executeType 执行时机
-	 * @return 资源ID
-	 */
-	private String resolveResourceId(Method method, Object[] args, String expression, Object retValue, ExecuteTimingEnum executeType) {
-		if (executeType == ExecuteTimingEnum.CREATE) {
-			// 新增从返回结果中获取资源ID
-			return extractIdFromResult(retValue);
-		}
+        // 编辑从参数中解析
+        return resolveParamFromArgs(method, args, expression);
+    }
 
-		// 编辑从参数中解析
-		return resolveParamFromArgs(method, args, expression);
-	}
+    /**
+     * 从返回值中提取ID
+     */
+    private String extractIdFromResult(Object retValue) {
+        if (retValue == null) {
+            return null;
+        }
+        // 如果返回值是字符串，直接返回
+        if (retValue instanceof String) {
+            return (String) retValue;
+        }
+        try {
+            Method method = retValue.getClass().getMethod("getId");
+            Object id = method.invoke(retValue);
+            return id != null ? id.toString() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-	/**
-	 * 从返回值中提取ID
-	 */
-	private String extractIdFromResult(Object retValue) {
-		if (retValue == null) {
-			return null;
-		}
-		// 如果返回值是字符串，直接返回
-		if (retValue instanceof String) {
-			return (String) retValue;
-		}
-		try {
-			Method method = retValue.getClass().getMethod("getId");
-			Object id = method.invoke(retValue);
-			return id != null ? id.toString() : null;
-		} catch (Exception e) {
-			return null;
-		}
-	}
+    /**
+     * 从方法参数中解析资源ID（支持SpEL表达式）
+     */
+    private String resolveParamFromArgs(Method method, Object[] args, String expression) {
+        String[] params = discoverer.getParameterNames(method);
+        if (params == null || args == null) {
+            return null;
+        }
 
-	/**
-	 * 从方法参数中解析资源ID（支持SpEL表达式）
-	 */
-	private String resolveParamFromArgs(Method method, Object[] args, String expression) {
-		String[] params = discoverer.getParameterNames(method);
-		if (params == null || args == null) {
-			return null;
-		}
+        EvaluationContext context = new StandardEvaluationContext();
+        for (int i = 0; i < params.length; i++) {
+            context.setVariable(params[i], args[i]);
+        }
 
-		EvaluationContext context = new StandardEvaluationContext();
-		for (int i = 0; i < params.length; i++) {
-			context.setVariable(params[i], args[i]);
-		}
+        try {
+            Expression exp = parser.parseExpression(expression);
+            Object value = exp.getValue(context, Object.class);
+            if (value == null) {
+                return null;
+            }
+            return value instanceof List ? ((List<?>) value).getFirst().toString() : value.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-		try {
-			Expression exp = parser.parseExpression(expression);
-			Object value = exp.getValue(context, Object.class);
-			if (value == null) {
-				return null;
-			}
-			return value instanceof List ? ((List<?>) value).getFirst().toString() : value.toString();
-		} catch (Exception e) {
-			return null;
-		}
-	}
+    /**
+     * 检查是否命中审批流
+     *
+     * @param formKey        表单类型（formKey 字符串，可为 customFormId）
+     * @param executeTiming  执行时机
+     * @param organizationId 组织ID
+     * @return 是否命中审批流
+     */
+    private boolean checkHitApprovalFlow(String formKey, ExecuteTimingEnum executeTiming, String organizationId) {
+        try {
+            // 查询当前组织表单审批流配置
+            ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey, organizationId);
 
-	/**
-	 * 检查是否命中审批流
-	 *
-	 * @param formKey         表单类型（formKey 字符串，可为 customFormId）
-	 * @param executeTiming   执行时机
-	 * @param organizationId  组织ID
-	 * @return 是否命中审批流
-	 */
-	private boolean checkHitApprovalFlow(String formKey, ExecuteTimingEnum executeTiming, String organizationId) {
-		try {
-			// 查询当前组织表单审批流配置
-			ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey, organizationId);
+            if (flow == null) {
+                return false;
+            }
 
-			if (flow == null) {
-				return false;
-			}
+            // 判断是否匹配执行时机
+            return switch (executeTiming) {
+            case CREATE -> Boolean.TRUE.equals(flow.getCreateExecute());
+            case UPDATE -> Boolean.TRUE.equals(flow.getUpdateExecute());
+            case DELETE -> Boolean.TRUE.equals(flow.getDeleteExecute());
+            };
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-			// 判断是否匹配执行时机
-			return switch (executeTiming) {
-				case CREATE -> Boolean.TRUE.equals(flow.getCreateExecute());
-				case UPDATE -> Boolean.TRUE.equals(flow.getUpdateExecute());
-				case DELETE -> Boolean.TRUE.equals(flow.getDeleteExecute());
-			};
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	/**
-	 * 在跳过审批检查的情况下执行删除操作
-	 * 用于DELETE审批通过后，执行实际的删除逻辑
-	 *
-	 * @param deleteAction 删除操作
-	 */
-	public static void executeDeleteSkipApproval(Runnable deleteAction) {
-		SKIP_APPROVAL.set(true);
-		try {
-			deleteAction.run();
-		} finally {
-			SKIP_APPROVAL.remove();
-		}
-	}
+    /**
+     * 在跳过审批检查的情况下执行删除操作
+     * 用于DELETE审批通过后，执行实际的删除逻辑
+     *
+     * @param deleteAction 删除操作
+     */
+    public static void executeDeleteSkipApproval(Runnable deleteAction) {
+        SKIP_APPROVAL.set(true);
+        try {
+            deleteAction.run();
+        } finally {
+            SKIP_APPROVAL.remove();
+        }
+    }
 }

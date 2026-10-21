@@ -41,9 +41,11 @@ public class CustomFormDataController {
     @PostMapping("/page")
     @Operation(summary = "表单数据列表")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public PagerWithOption<List<CustomFormDataListResponse>> page(@Validated @RequestBody CustomFormDataPageRequest request) {
+    public PagerWithOption<List<CustomFormDataListResponse>> page(
+            @Validated @RequestBody CustomFormDataPageRequest request) {
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
-        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), false);
+        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                false);
     }
 
     @GetMapping("/get/{id}")
@@ -56,7 +58,8 @@ public class CustomFormDataController {
     @GetMapping("/create-permission/{customFormId}")
     @Operation(summary = "查询当前用户是否有创建表单数据的权限")
     public boolean hasCreatePermission(@PathVariable String customFormId) {
-        return customFormDataService.hasCreatePermission(customFormId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customFormDataService.hasCreatePermission(customFormId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
@@ -70,21 +73,24 @@ public class CustomFormDataController {
     @Operation(summary = "更新表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public CustomFormData update(@Validated @RequestBody CustomFormDataUpdateRequest request) {
-        return customFormDataService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
+        return customFormDataService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                true);
     }
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void delete(@PathVariable String id) {
-        customFormDataService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        customFormDataService.deleteWithApprovalCheck(id, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @Operation(summary = "批量更新表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody CustomFormDataBatchUpdateRequest request) {
-        return customFormDataService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customFormDataService.batchUpdate(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/delete")
@@ -141,14 +147,14 @@ public class CustomFormDataController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入预检查")
     public ImportResponse importPreCheck(@Validated @RequestPart("request") CustomerFormImportRequest request,
-                                         @RequestPart(value = "file") MultipartFile file) {
+            @RequestPart(value = "file") MultipartFile file) {
         return customFormDataService.importPreCheck(file, request, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入表单数据")
     public ImportResponse realImport(@Validated @RequestPart("request") CustomerFormImportRequest request,
-                                     @RequestPart(value = "file") MultipartFile file) {
+            @RequestPart(value = "file") MultipartFile file) {
         return customFormDataService.realImport(file, request,
                 OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }

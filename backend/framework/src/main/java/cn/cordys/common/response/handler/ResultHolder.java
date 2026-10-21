@@ -87,7 +87,6 @@ public class ResultHolder {
      * 成功响应，返回带有数据的 ResultHolder。
      *
      * @param obj 返回的数据
-     *
      * @return ResultHolder 返回封装的成功响应
      */
     public static ResultHolder success(Object obj) {
@@ -99,7 +98,6 @@ public class ResultHolder {
      *
      * @param code    状态码
      * @param message 错误消息
-     *
      * @return ResultHolder 返回封装的错误响应
      */
     public static ResultHolder error(int code, String message) {
@@ -111,7 +109,6 @@ public class ResultHolder {
      *
      * @param message       错误消息
      * @param messageDetail 错误的详细信息
-     *
      * @return ResultHolder 返回封装的错误响应
      */
     public static ResultHolder error(String message, String messageDetail) {
@@ -124,7 +121,6 @@ public class ResultHolder {
      * @param code          状态码
      * @param message       错误消息
      * @param messageDetail 错误的详细信息
-     *
      * @return ResultHolder 返回封装的错误响应
      */
     public static ResultHolder error(int code, String message, Object messageDetail) {
@@ -136,7 +132,6 @@ public class ResultHolder {
      *
      * @param code    自定义状态码
      * @param message 返回给前端的消息
-     *
      * @return ResultHolder 返回封装的响应
      */
     public static ResultHolder successCodeErrorInfo(int code, String message) {

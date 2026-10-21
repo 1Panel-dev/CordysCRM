@@ -12,7 +12,6 @@ public class EnterpriseInfo {
     @JsonProperty("VerifyResult")
     private Integer verifyResult;
 
-
     /**
      * 数据信息
      */

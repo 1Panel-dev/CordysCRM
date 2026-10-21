@@ -1,8 +1,7 @@
 package cn.cordys.crm.system.constants;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2026-03-31  14:00
+ * @author jianxing
  */
 public enum LocationScope {
     /**

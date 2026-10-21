@@ -9,6 +9,7 @@ import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.security.SessionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,41 +27,49 @@ public class FormulaReferenceValueService {
     }
 
     public Object resolve(DatasourceField field, Object value) {
-        if (value == null || "".equals(value)) return "";
+        if (value == null || "".equals(value)) {
+            return "";
+        }
         List<?> ids;
         if ("DATA_SOURCE_MULTIPLE".equals(field.getType())) {
-            if (!(value instanceof List<?> values)) throw new FormulaEvaluationException("INVALID_SOURCE_VALUE");
+            if (!(value instanceof List<?> values)) {
+                throw new FormulaEvaluationException("INVALID_SOURCE_VALUE");
+            }
             ids = values;
         } else {
             ids = List.of(value);
         }
         List<String> names = new ArrayList<>();
         for (Object id : ids) {
-            if (!(id instanceof String text) || text.isBlank()) throw new FormulaEvaluationException("INVALID_SOURCE_ID");
+            if (!(id instanceof String text) || text.isBlank()) {
+                throw new FormulaEvaluationException("INVALID_SOURCE_ID");
+            }
             names.add(resolveName(field.getDataSourceType(), text));
         }
         return String.join(",", names);
     }
 
     private String resolveName(String source, String id) {
-        if (source == null || source.isBlank()) throw new FormulaEvaluationException("INVALID_SOURCE_TYPE");
+        if (source == null || source.isBlank()) {
+            throw new FormulaEvaluationException("INVALID_SOURCE_TYPE");
+        }
         String org = OrganizationContext.getOrganizationId();
         String user = SessionUtils.getUserId();
         Source binding = switch (source) {
-            case "CUSTOMER" -> new Source("customer", "CUSTOMER_MANAGEMENT:READ");
-            case "CLUE" -> new Source("clue", "CLUE_MANAGEMENT:READ");
-            case "CONTACT" -> new Source("contact", "CUSTOMER_MANAGEMENT_CONTACT:READ");
-            case "OPPORTUNITY" -> new Source("opportunity", "OPPORTUNITY_MANAGEMENT:READ");
-            case "PRODUCT" -> new Source("product", "PRODUCT_MANAGEMENT:READ");
-            case "PRICE" -> new Source("price", "PRICE:READ");
-            case "QUOTATION" -> new Source("quotation", "OPPORTUNITY_QUOTATION:READ");
-            case "CONTRACT" -> new Source("contract", "CONTRACT:READ");
-            case "PAYMENT_PLAN" -> new Source("contractPaymentPlan", "CONTRACT_PAYMENT_PLAN:READ");
-            case "CONTRACT_PAYMENT_RECORD" -> new Source("contractPaymentRecord", "CONTRACT_PAYMENT_RECORD:READ");
-            case "INVOICE" -> new Source("invoice", "CONTRACT_INVOICE:READ");
-            case "ORDER" -> new Source("order", "ORDER:READ");
-            case "BUSINESS_TITLE" -> new Source("businessTitle", "CONTRACT_BUSINESS_TITLE:READ");
-            default -> null;
+        case "CUSTOMER" -> new Source("customer", "CUSTOMER_MANAGEMENT:READ");
+        case "CLUE" -> new Source("clue", "CLUE_MANAGEMENT:READ");
+        case "CONTACT" -> new Source("contact", "CUSTOMER_MANAGEMENT_CONTACT:READ");
+        case "OPPORTUNITY" -> new Source("opportunity", "OPPORTUNITY_MANAGEMENT:READ");
+        case "PRODUCT" -> new Source("product", "PRODUCT_MANAGEMENT:READ");
+        case "PRICE" -> new Source("price", "PRICE:READ");
+        case "QUOTATION" -> new Source("quotation", "OPPORTUNITY_QUOTATION:READ");
+        case "CONTRACT" -> new Source("contract", "CONTRACT:READ");
+        case "PAYMENT_PLAN" -> new Source("contractPaymentPlan", "CONTRACT_PAYMENT_PLAN:READ");
+        case "CONTRACT_PAYMENT_RECORD" -> new Source("contractPaymentRecord", "CONTRACT_PAYMENT_RECORD:READ");
+        case "INVOICE" -> new Source("invoice", "CONTRACT_INVOICE:READ");
+        case "ORDER" -> new Source("order", "ORDER:READ");
+        case "BUSINESS_TITLE" -> new Source("businessTitle", "CONTRACT_BUSINESS_TITLE:READ");
+        default -> null;
         };
         if (binding == null) {
             var record = beans.getBean(CustomFormDataService.class).get(id, user, org);
@@ -70,7 +79,9 @@ public class FormulaReferenceValueService {
             return record.getName();
         }
         Object entity = snapshots.readEntity(binding.formKey(), id);
-        if (entity == null) throw new FormulaEvaluationException("SOURCE_NOT_FOUND");
+        if (entity == null) {
+            throw new FormulaEvaluationException("SOURCE_NOT_FOUND");
+        }
         Map<String, Object> record = JSON.parseToMap(JSON.toJSONString(entity));
         if (org == null || !Objects.equals(org, record.get("organizationId"))) {
             throw new FormulaEvaluationException("SOURCE_ORGANIZATION_MISMATCH");
@@ -81,9 +92,12 @@ public class FormulaReferenceValueService {
                 && !beans.getBean(DataScopeService.class).hasDataPermission(user, org, owner, binding.permission())) {
             throw new FormulaEvaluationException("SOURCE_FORBIDDEN");
         }
-        if (!(record.get("name") instanceof String name)) throw new FormulaEvaluationException("SOURCE_NAME_MISSING");
+        if (!(record.get("name") instanceof String name)) {
+            throw new FormulaEvaluationException("SOURCE_NAME_MISSING");
+        }
         return name;
     }
 
-    private record Source(String formKey, String permission) {}
+    private record Source(String formKey, String permission) {
+    }
 }

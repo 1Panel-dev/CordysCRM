@@ -43,7 +43,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-
 @Tag(name = "订单")
 @RestController
 @RequestMapping("/order")
@@ -60,7 +59,8 @@ public class OrderController {
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
@@ -90,7 +90,6 @@ public class OrderController {
     public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         return orderService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @CsPermission(value = PermissionConstants.ORDER_DELETE, resourceId = "{#id}", formType = FormKeyConstants.ORDER)
@@ -134,7 +133,8 @@ public class OrderController {
         ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
-        return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
+        return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, false);
     }
 
     @GetMapping("/tab")
@@ -151,7 +151,6 @@ public class OrderController {
         orderService.download(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/statistic")
     @CsPermission(PermissionConstants.ORDER_READ)
     @Operation(summary = "订单统计")
@@ -159,9 +158,9 @@ public class OrderController {
         ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
-        return orderService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return orderService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
-
 
     @PostMapping("/sort")
     @Operation(summary = "订单看板拖拽排序")
@@ -169,7 +168,6 @@ public class OrderController {
     public void sortModule(@Validated @RequestBody StageSortRequest request) {
         orderService.sort(request, SessionUtils.getUserId());
     }
-
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中订单")
@@ -215,7 +213,6 @@ public class OrderController {
         return orderExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
-
     @GetMapping("/template/download")
     @CsPermission(PermissionConstants.ORDER_IMPORT)
     @Operation(summary = "下载导入模板")
@@ -226,14 +223,17 @@ public class OrderController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.ORDER_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
         return orderService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.ORDER_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return orderService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return orderService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 }

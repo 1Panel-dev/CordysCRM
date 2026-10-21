@@ -68,7 +68,6 @@ public class BaseFollowUpService {
             return customerDataDTO;
         }
 
-
         // 查询协作人信息
         List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(sourceId);
 
@@ -86,13 +85,12 @@ public class BaseFollowUpService {
             customerDataDTO.setOwner(true);
         }
 
-
         // 获取协作类型的协作的联系人
         Set<String> collaborationUserIds = collaborations.stream()
-                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name()))
+                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(),
+                        CustomerCollaborationType.COLLABORATION.name()))
                 .map(CustomerCollaboration::getUserId)
                 .collect(Collectors.toSet());
-
 
         // 部门数据权限
         if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
@@ -120,7 +118,6 @@ public class BaseFollowUpService {
                 userIds.addAll(ids);
                 customerDataDTO.setUserIds(userIds);
             }
-
         }
 
         if (deptDataPermission.getSelf()) {
@@ -151,15 +148,16 @@ public class BaseFollowUpService {
         return customerDataDTO;
     }
 
-
     public void checkPermission(String orgId, String userId, String permission, String owner) {
-        if (!PermissionUtils.hasPermission(permission) || !dataScopeService.hasDataPermission(userId, orgId, owner, permission)) {
+        if (!PermissionUtils.hasPermission(permission)
+                || !dataScopeService.hasDataPermission(userId, orgId, owner, permission)) {
             throw new GenericException(Translator.get("no.operation.permission"));
         }
     }
 
     public boolean hasPermission(String orgId, String userId, String permission, String owner) {
-        if (PermissionUtils.hasPermission(permission) && dataScopeService.hasDataPermission(userId, orgId, owner, permission)) {
+        if (PermissionUtils.hasPermission(permission)
+                && dataScopeService.hasDataPermission(userId, orgId, owner, permission)) {
             return true;
         }
         return false;
@@ -178,9 +176,10 @@ public class BaseFollowUpService {
                 // 如果是查看权限，只要是协作人就有权限
                 return true;
             } else {
-                 // 如果是编辑权限，需要判断协作类型是否为协作
+                // 如果是编辑权限，需要判断协作类型是否为协作
                 for (CustomerCollaboration customerCollaboration : userList) {
-                    if (Strings.CS.equals(customerCollaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name())) {
+                    if (Strings.CS.equals(customerCollaboration.getCollaborationType(),
+                            CustomerCollaborationType.COLLABORATION.name())) {
                         return true;
                     }
                 }
@@ -192,8 +191,8 @@ public class BaseFollowUpService {
     /**
      * 拦截跟进记录的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
      *
-     * @param record    记录
-     * @param orgId 组织ID
+     * @param record 记录
+     * @param orgId  组织ID
      */
     public void checkRecordPermission(FollowUpRecord record, String orgId, String userId, boolean isRead) {
         if (record == null) {
@@ -217,7 +216,8 @@ public class BaseFollowUpService {
                 throw new GenericException(Translator.get("no.operation.permission"));
             }
         } else {
-            permission = isRead ? PermissionConstants.CUSTOMER_MANAGEMENT_READ : PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE;
+            permission = isRead ? PermissionConstants.CUSTOMER_MANAGEMENT_READ
+                    : PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE;
             Customer customer = customerMapper.selectByPrimaryKey(record.getCustomerId());
             if (customer != null) {
                 if (BooleanUtils.isTrue(customer.getInSharedPool())) {
@@ -234,7 +234,8 @@ public class BaseFollowUpService {
 
             if (StringUtils.isNotEmpty(record.getOpportunityId())) {
                 // 如果有商机，则判断商机权限
-                permission = isRead ? PermissionConstants.OPPORTUNITY_MANAGEMENT_READ : PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE;
+                permission = isRead ? PermissionConstants.OPPORTUNITY_MANAGEMENT_READ
+                        : PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE;
                 Opportunity opportunity = opportunityMapper.selectByPrimaryKey(record.getOpportunityId());
                 if (opportunity != null) {
                     if (StringUtils.isNotBlank(opportunity.getCustomerId())) {

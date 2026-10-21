@@ -35,14 +35,14 @@ class SerialNumGeneratorTest {
         redis = mock(StringRedisTemplate.class);
         ValueOperations<String, String> values = mock(ValueOperations.class);
         when(redis.opsForValue()).thenReturn(values);
-        when(values.increment(anyString())).thenAnswer(invocation ->
-                counters.merge(invocation.getArgument(0), 1L, Long::sum));
+        when(values.increment(anyString()))
+                .thenAnswer(invocation -> counters.merge(invocation.getArgument(0), 1L, Long::sum));
         generator = new SerialNumGenerator(redis);
         now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2026-10-12 14:30:20");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"yyyyMMdd", "yyyy-MM-dd", "yyyy/MM/dd", "yyyy.MM.dd", "yyyy年MM月dd日"})
+    @ValueSource(strings = { "yyyyMMdd", "yyyy-MM-dd", "yyyy/MM/dd", "yyyy.MM.dd", "yyyy年MM月dd日" })
     void dailyFormatsUseTheSameCanonicalCounterDate(String pattern) {
         String serial = generator.generateByRules(rules(pattern), "org", "form", now);
         assertEquals("Opp-" + new SimpleDateFormat(pattern).format(now) + "-000001", serial);
@@ -71,14 +71,14 @@ class SerialNumGeneratorTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "yyyy-Q", "MM-dd", "yyMMdd", "yyyy-dd", "yyyy-M-d", "YYYYMMdd",
+    @ValueSource(strings = { "", "yyyy-Q", "MM-dd", "yyMMdd", "yyyy-dd", "yyyy-M-d", "YYYYMMdd",
             "yyyy-MM-dd'", "'yyyyMMdd'", "yyyy-DDD", "yyyyMMdd\nYYYY",
             "yyyyMMddH", "yyyyMMddh", "yyyyMMddk", "yyyyMMddK", "yyyyMMddm", "yyyyMMdds", "yyyyMMddS",
             "yyyyMMdda", "yyyyMMddz", "yyyyMMddZ", "yyyyMMddX", "yyyyMMddG", "yyyyMMddE",
-            "yyyyMMddHHmmss", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssXXX"})
+            "yyyyMMddHHmmss", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssXXX" })
     void invalidPatternsAreRejectedBeforeIncrementingRedis(String pattern) {
-        assertThrows(IllegalArgumentException.class, () ->
-                generator.generateByRules(rules(pattern), "org", "form", now));
+        assertThrows(IllegalArgumentException.class,
+                () -> generator.generateByRules(rules(pattern), "org", "form", now));
         verify(redis, never()).opsForValue();
     }
 
@@ -159,7 +159,7 @@ class SerialNumGeneratorTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "X:branch", "X*?[]"})
+    @ValueSource(strings = { "", "X:branch", "X*?[]" })
     void ruleCleanupMatchesTheCompleteLiteralPrefix(String prefix) {
         String retained = "serial:org:form:20261012:" + prefix;
         String removed = retained + ":other";

@@ -32,7 +32,8 @@ public class OperationLogController {
     @RequiresPermissions(PermissionConstants.OPERATION_LOG_READ)
     public Pager<List<OperationLogResponse>> list(@Validated @RequestBody OperationLogRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, sysOperationLogService.list(request, OrganizationContext.getOrganizationId()));
+        return PageUtils.setPageInfo(page,
+                sysOperationLogService.list(request, OrganizationContext.getOrganizationId()));
     }
 
     @GetMapping("/detail/{id}")

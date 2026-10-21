@@ -62,38 +62,46 @@ public class ContractPaymentRecordController {
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
     @Operation(summary = "回款记录列表")
-    public PagerWithOption<List<ContractPaymentRecordResponse>> list(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
+    public PagerWithOption<List<ContractPaymentRecordResponse>> list(
+            @Validated @RequestBody ContractPaymentRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.list(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @PostMapping("/add")
-    @RequiresPermissions(value = {PermissionConstants.CONTRACT_PAYMENT_RECORD_ADD, PermissionConstants.CONTRACT_PAYMENT}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CONTRACT_PAYMENT_RECORD_ADD,
+            PermissionConstants.CONTRACT_PAYMENT }, logical = Logical.OR)
     @Operation(summary = "添加回款记录")
     public ContractPaymentRecord add(@Validated @RequestBody ContractPaymentRecordAddRequest request) {
-        return contractPaymentRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractPaymentRecordService.add(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
     @Operation(summary = "修改回款记录")
     public ContractPaymentRecord update(@Validated @RequestBody ContractPaymentRecordUpdateRequest request) {
-        return contractPaymentRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractPaymentRecordService.update(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
     @Operation(summary = "批量更新合同回款记录")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        contractPaymentRecordService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        contractPaymentRecordService.batchUpdate(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
@@ -107,7 +115,8 @@ public class ContractPaymentRecordController {
     @CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
     @Operation(summary = "批量删除回款记录")
     public void batchDelete(@RequestBody @NotNull List<String> ids) {
-        contractPaymentRecordService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        contractPaymentRecordService.batchDelete(ids, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
@@ -121,7 +130,8 @@ public class ContractPaymentRecordController {
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
     @Operation(summary = "视图TAB显示配置")
     public ResourceTabEnableDTO getTabEnableConfig() {
-        return contractPaymentRecordService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractPaymentRecordService.getTabEnableConfig(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/template/download")
@@ -134,15 +144,19 @@ public class ContractPaymentRecordController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return contractPaymentRecordService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return contractPaymentRecordService.importPreCheck(file, request.getImportType(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return contractPaymentRecordService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return contractPaymentRecordService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/export-select")
@@ -167,7 +181,8 @@ public class ContractPaymentRecordController {
     public String exportAll(@Validated @RequestBody ContractPaymentRecordExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
         ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
                 .fileName(request.getFileName()).headList(request.getHeadList())
                 .logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
@@ -178,14 +193,16 @@ public class ContractPaymentRecordController {
         return contractPaymentRecordExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
-
     @PostMapping("/statistic")
     @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
     @Operation(summary = "回款统计")
-    public ContractPaymentRecordStatisticResponse searchStatistic(@Validated @RequestBody ContractPaymentRecordStatisticRequest request) {
+    public ContractPaymentRecordStatisticResponse searchStatistic(
+            @Validated @RequestBody ContractPaymentRecordStatisticRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        return contractPaymentRecordService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.searchStatistic(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }

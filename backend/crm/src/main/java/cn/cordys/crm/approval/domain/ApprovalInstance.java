@@ -41,8 +41,8 @@ public class ApprovalInstance extends BaseModel {
     @Schema(description = "提审时间")
     private Long submitTime;
 
-	@Schema(description = "审批完成时间")
-	private Long approvalTime;
+    @Schema(description = "审批完成时间")
+    private Long approvalTime;
 
     @Schema(description = "变更说明")
     private String comment;

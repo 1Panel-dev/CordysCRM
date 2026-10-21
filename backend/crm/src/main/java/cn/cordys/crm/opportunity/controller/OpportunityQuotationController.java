@@ -3,11 +3,11 @@ package cn.cordys.crm.opportunity.controller;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.permission.CsBatchPermission;
-import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -42,21 +42,24 @@ public class OpportunityQuotationController {
     @Resource
     private DataScopeService dataScopeService;
 
-
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
     @CsPermission(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "报价单列表")
-    public PagerWithOption<List<OpportunityQuotationListResponse>> list(@Validated @RequestBody OpportunityQuotationPageRequest request) {
+    public PagerWithOption<List<OpportunityQuotationListResponse>> list(
+            @Validated @RequestBody OpportunityQuotationPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.QUOTATION.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_QUOTATION_READ);
-        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission, false);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.OPPORTUNITY_QUOTATION_READ);
+        return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), deptDataPermission, false);
     }
 
     //新增
@@ -64,7 +67,8 @@ public class OpportunityQuotationController {
     @CsPermission(PermissionConstants.OPPORTUNITY_QUOTATION_ADD)
     @Operation(summary = "新增报价单")
     public OpportunityQuotation add(@Validated @RequestBody OpportunityQuotationAddRequest request) {
-        return opportunityQuotationService.add(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        return opportunityQuotationService.add(request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     //编辑
@@ -72,7 +76,8 @@ public class OpportunityQuotationController {
     @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "更新报价单")
     public OpportunityQuotation update(@Validated @RequestBody OpportunityQuotationEditRequest request) {
-        return opportunityQuotationService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return opportunityQuotationService.update(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     //查询详情
@@ -102,7 +107,8 @@ public class OpportunityQuotationController {
     @GetMapping("/revoke/{id}")
     @Operation(summary = "撤销报价单审批")
     public String revoke(@PathVariable("id") String id) {
-        return opportunityQuotationService.revoke(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return opportunityQuotationService.revoke(id, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     //作废
@@ -110,24 +116,27 @@ public class OpportunityQuotationController {
     @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "作废报价单")
     public void voidQuotation(@PathVariable("id") String id) {
-        opportunityQuotationService.voidQuotation(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        opportunityQuotationService.voidQuotation(id, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     //批量作废报价单
     @PostMapping("/batch/voided")
     @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED, resourceId = "{#request.ids}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "批量作废报价单")
-    public BatchAffectReasonResponse batchVoidQuotation(@Validated @RequestBody OpportunityQuotationBatchVoidedRequest request) {
-        return opportunityQuotationService.batchVoidQuotation(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchVoidQuotation(
+            @Validated @RequestBody OpportunityQuotationBatchVoidedRequest request) {
+        return opportunityQuotationService.batchVoidQuotation(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     //审批
     @PostMapping("/approve")
     @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL, resourceId = "{#request.id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "审批报价单")
     public String approve(@RequestBody OpportunityQuotationEditRequest request) {
-        return opportunityQuotationService.approve(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return opportunityQuotationService.approve(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     //批量审批
@@ -135,14 +144,16 @@ public class OpportunityQuotationController {
     @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL, resourceId = "{#request.ids}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "批量审批报价单")
     public BatchAffectSkipResponse batchApprove(@Validated @RequestBody OpportunityQuotationBatchRequest request) {
-        return opportunityQuotationService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return opportunityQuotationService.batchApprove(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "批量更新报价单")
     public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        return opportunityQuotationService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return opportunityQuotationService.batchUpdate(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     //删除报价单
@@ -150,14 +161,16 @@ public class OpportunityQuotationController {
     @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_DELETE, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "删除报价单")
     public void delete(@PathVariable("id") String id) {
-        opportunityQuotationService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        opportunityQuotationService.deleteWithApprovalCheck(id, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")
     @CsPermission(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "所有商机报价单和部门商机报价单tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
-        return opportunityQuotationService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return opportunityQuotationService.getTabEnableConfig(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/download/{id}")
@@ -166,6 +179,5 @@ public class OpportunityQuotationController {
     public void download(@PathVariable("id") String id) {
         opportunityQuotationService.download(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
 }

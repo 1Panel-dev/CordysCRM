@@ -30,37 +30,38 @@ public class DictController {
 
     @GetMapping("/get/{module}")
     @Operation(summary = "获取字典列表")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_READ })
     public List<Dict> getDictListByType(
-            @Schema(description = "类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS", "CLUE_POOL_RS"})
-            @PathVariable("module") String module) {
+            @Schema(description = "类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {
+                    "OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS",
+                    "CLUE_POOL_RS" }) @PathVariable("module") String module) {
         return dictService.getDictListByType(module, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
     @Operation(summary = "添加字典值")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void addDict(@RequestBody DictAddRequest request) {
         dictService.addDict(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "修改字典值")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void updateDict(@RequestBody DictUpdateRequest request) {
         dictService.updateDict(request, SessionUtils.getUserId());
     }
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除字典值")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void deleteDict(@PathVariable("id") String id) {
         dictService.deleteDict(id);
     }
 
     @PostMapping("/switch")
     @Operation(summary = "字典开启关闭")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void switchDict(@RequestBody DictSwitchRequest request) {
         dictService.switchDict(request, OrganizationContext.getOrganizationId());
     }
@@ -75,8 +76,9 @@ public class DictController {
     @GetMapping("/config/{module}")
     @Operation(summary = "获取字典配置")
     public DictConfigDTO getDictConf(
-            @Schema(description = "字典类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS", "CLUE_POOL_RS"})
-            @PathVariable("module") String module) {
+            @Schema(description = "字典类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {
+                    "OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS",
+                    "CLUE_POOL_RS" }) @PathVariable("module") String module) {
         return dictService.getDictConf(module, OrganizationContext.getOrganizationId());
     }
 

@@ -34,15 +34,13 @@ public class MailSender {
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
 
     public void send(String subject,
-                     String context,
-                     String[] users,
-                     String[] cc,
-                     String organizationId) {
-
+            String context,
+            String[] users,
+            String[] cc,
+            String organizationId) {
         OrganizationConfig config = extOrganizationConfigMapper.getOrganizationConfig(
                 organizationId,
-                OrganizationConfigConstants.ConfigType.EMAIL.name()
-        );
+                OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (config == null) {
             log.error("邮件配置不存在");
             return;
@@ -56,8 +54,7 @@ public class MailSender {
 
         EmailDTO emailDTO = JSON.parseObject(
                 new String(detail.getContent(), StandardCharsets.UTF_8),
-                EmailDTO.class
-        );
+                EmailDTO.class);
 
         JavaMailSenderImpl mailSender = buildMailSender(emailDTO);
         MimeMessage message = mailSender.createMimeMessage();
@@ -124,7 +121,8 @@ public class MailSender {
         String username = sender.getUsername();
         String email = Strings.CS.contains(username, "@")
                 ? username
-                : username + "@" + Objects.requireNonNull(sender.getHost()).substring(sender.getHost().indexOf('.') + 1);
+                : username + "@"
+                        + Objects.requireNonNull(sender.getHost()).substring(sender.getHost().indexOf('.') + 1);
 
         InternetAddress from = new InternetAddress();
         String smtpFrom = emailDTO.getFrom();

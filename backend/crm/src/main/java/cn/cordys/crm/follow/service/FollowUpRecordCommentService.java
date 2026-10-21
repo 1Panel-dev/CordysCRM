@@ -18,13 +18,12 @@ import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRecordComment> {
@@ -120,6 +119,7 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
         if (record == null || !Objects.equals(record.getOrganizationId(), orgId)) {
             throw new GenericException(Translator.get("follow.comment.target_not_found"));
         }
-        return buildTargetInfo(record.getType(), record.getOwner(), record.getClueId(), record.getCustomerId(), record.getOpportunityId());
+        return buildTargetInfo(record.getType(), record.getOwner(), record.getClueId(), record.getCustomerId(),
+                record.getOpportunityId());
     }
 }

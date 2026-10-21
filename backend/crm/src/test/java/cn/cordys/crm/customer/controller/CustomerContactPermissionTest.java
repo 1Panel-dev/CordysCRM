@@ -156,40 +156,42 @@ class CustomerContactPermissionTest {
     void clearPermissionContext() {
         OrganizationContext.clear();
         ThreadContext.unbindSubject();
-        if (previousSubject != null) ThreadContext.bind(previousSubject);
+        if (previousSubject != null) {
+            ThreadContext.bind(previousSubject);
+        }
         new CommonBeanFactory().setApplicationContext(previousContext);
     }
 
     @ParameterizedTest
-    @CsvSource({"COLLABORATION,mine", "READ_ONLY,mine|owner|collaboration|read-only"})
+    @CsvSource({ "COLLABORATION,mine", "READ_ONLY,mine|owner|collaboration|read-only" })
     void 协作客户通过权限切面且保留原联系人过滤(String type, String expected) {
         configureCollaboration(type);
         assertContacts(expected);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"OWNER", "ALL", "DEPARTMENT", "DEPARTMENT_COLLABORATOR", "ADMIN"})
+    @ValueSource(strings = { "OWNER", "ALL", "DEPARTMENT", "DEPARTMENT_COLLABORATOR", "ADMIN" })
     void 原有负责人全部与部门范围返回结果不变(String access) {
         String expected = "mine|owner|read-only";
         switch (access) {
-            case "OWNER" -> customer.setOwner(USER);
-            case "ALL" -> {
-                scope.setAll(true);
-                expected = "mine|owner|collaboration|read-only";
+        case "OWNER" -> customer.setOwner(USER);
+        case "ALL" -> {
+            scope.setAll(true);
+            expected = "mine|owner|collaboration|read-only";
+        }
+        case "ADMIN" -> {
+            user.setId(InternalUser.ADMIN.getValue());
+            expected = "mine|owner|collaboration|read-only";
+        }
+        default -> {
+            scope.setSelf(false);
+            scope.setDeptIds(Set.of("dept-a"));
+            if ("DEPARTMENT_COLLABORATOR".equals(access)) {
+                configureCollaboration("COLLABORATION");
+                ownerDepartment.setDeptId("dept-b");
+                expected = "mine";
             }
-            case "ADMIN" -> {
-                user.setId(InternalUser.ADMIN.getValue());
-                expected = "mine|owner|collaboration|read-only";
-            }
-            default -> {
-                scope.setSelf(false);
-                scope.setDeptIds(Set.of("dept-a"));
-                if ("DEPARTMENT_COLLABORATOR".equals(access)) {
-                    configureCollaboration("COLLABORATION");
-                    ownerDepartment.setDeptId("dept-b");
-                    expected = "mine";
-                }
-            }
+        }
         }
         assertContacts(expected);
     }
@@ -204,39 +206,43 @@ class CustomerContactPermissionTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
+    @ValueSource(booleans = { true, false })
     void 无协作且客户不在数据范围时拒绝(boolean self) {
         scope.setSelf(self);
         assertForbidden(() -> controller.list(CUSTOMER));
     }
 
     @ParameterizedTest
-    @CsvSource({"ALL,FOREIGN", "ALL,MISSING", "ADMIN,FOREIGN", "ADMIN,MISSING",
-            "ALL,NULL_ORG", "ADMIN,NULL_ORG", "ALL,BLANK_ORG", "ADMIN,BLANK_ORG"})
+    @CsvSource({ "ALL,FOREIGN", "ALL,MISSING", "ADMIN,FOREIGN", "ADMIN,MISSING",
+            "ALL,NULL_ORG", "ADMIN,NULL_ORG", "ALL,BLANK_ORG", "ADMIN,BLANK_ORG" })
     void 全部范围与管理员也不能读取跨组织不存在或无组织客户(String access, String invalid) {
         scope.setAll("ALL".equals(access));
-        if ("ADMIN".equals(access)) user.setId(InternalUser.ADMIN.getValue());
+        if ("ADMIN".equals(access)) {
+            user.setId(InternalUser.ADMIN.getValue());
+        }
         configureCollaboration("COLLABORATION");
         switch (invalid) {
-            case "FOREIGN" -> customer.setOrganizationId("foreign-org");
-            case "MISSING" -> when(customers.selectByPrimaryKey(CUSTOMER)).thenReturn(null);
-            case "NULL_ORG" -> {
-                assertForbidden(() -> service.listByCustomerId(CUSTOMER, user.getId(), null, scope));
-                return;
-            }
-            case "BLANK_ORG" -> {
-                assertForbidden(() -> service.listByCustomerId(CUSTOMER, user.getId(), " ", scope));
-                return;
-            }
+        case "FOREIGN" -> customer.setOrganizationId("foreign-org");
+        case "MISSING" -> when(customers.selectByPrimaryKey(CUSTOMER)).thenReturn(null);
+        case "NULL_ORG" -> {
+            assertForbidden(() -> service.listByCustomerId(CUSTOMER, user.getId(), null, scope));
+            return;
+        }
+        case "BLANK_ORG" -> {
+            assertForbidden(() -> service.listByCustomerId(CUSTOMER, user.getId(), " ", scope));
+            return;
+        }
         }
         assertForbidden(() -> controller.list(CUSTOMER));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"NONE", "COLLABORATION", "READ_ONLY"})
+    @ValueSource(strings = { "NONE", "COLLABORATION", "READ_ONLY" })
     void 普通及协作用户均保留审批状态禁止查看的校验(String type) {
         configureCollaboration(type);
-        if ("NONE".equals(type)) customer.setOwner(USER);
+        if ("NONE".equals(type)) {
+            customer.setOwner(USER);
+        }
         denyApprovalStatusRead();
         assertForbidden(() -> controller.list(CUSTOMER));
         verify(approvals).getStatusPermissionsByFormType(FormKeyConstants.CUSTOMER, ORG);
@@ -253,11 +259,11 @@ class CustomerContactPermissionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"false,CUSTOMER_MANAGEMENT:UPDATE", "false,CUSTOMER_MANAGEMENT:DELETE",
+    @CsvSource({ "false,CUSTOMER_MANAGEMENT:UPDATE", "false,CUSTOMER_MANAGEMENT:DELETE",
             "false,CUSTOMER_MANAGEMENT:EXPORT", "false,CUSTOMER_MANAGEMENT:TRANSFER",
             "true,CUSTOMER_MANAGEMENT:READ", "true,CUSTOMER_MANAGEMENT:UPDATE",
             "true,CUSTOMER_MANAGEMENT:DELETE", "true,CUSTOMER_MANAGEMENT:EXPORT",
-            "true,CUSTOMER_MANAGEMENT:TRANSFER"})
+            "true,CUSTOMER_MANAGEMENT:TRANSFER" })
     void 协作读取不能扩大客户写操作或批量权限(boolean batch, String permission) {
         configureCollaboration("COLLABORATION");
         when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(permission));
@@ -273,7 +279,7 @@ class CustomerContactPermissionTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
+    @ValueSource(strings = { READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ })
     @SuppressWarnings("unchecked")
     void 客户协作不能扩大其他表单的数据范围(String permission) {
         configureCollaboration("COLLABORATION");
@@ -348,7 +354,8 @@ class CustomerContactPermissionTest {
             return "NONE".equals(type) ? 0L : 1L;
         }).when(collaborationMapper).countByExample(any(CustomerCollaboration.class));
         when(collaborations.selectByCustomerId(CUSTOMER)).thenReturn("NONE".equals(type)
-                ? List.of(other, readOnly) : List.of(other, readOnly, collaboration(USER, type)));
+                ? List.of(other, readOnly)
+                : List.of(other, readOnly, collaboration(USER, type)));
     }
 
     private void assertContacts(String expected) {

@@ -67,7 +67,6 @@ public class OpportunityRuleControllerTests extends BaseTest {
         editRule = result.getList().getFirst();
     }
 
-
     @Test
     @Order(4)
     void update() throws Exception {
@@ -85,7 +84,8 @@ public class OpportunityRuleControllerTests extends BaseTest {
     @Test
     @Order(5)
     void switchStatus() throws Exception {
-        MvcResult mvcResult = this.requestGet("/opportunity-rule/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestGet("/opportunity-rule/switch/default-pool")
+                .andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.rule.not_exist"));
         this.requestGetWithOk("/opportunity-rule/switch/" + editRule.getId());
     }
@@ -93,7 +93,8 @@ public class OpportunityRuleControllerTests extends BaseTest {
     @Test
     @Order(6)
     void delete() throws Exception {
-        MvcResult mvcResult = this.requestGet("/opportunity-rule/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestGet("/opportunity-rule/delete/default-pool")
+                .andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.rule.not_exist"));
         this.requestGetWithOk("/opportunity-rule/delete/" + editRule.getId());
     }

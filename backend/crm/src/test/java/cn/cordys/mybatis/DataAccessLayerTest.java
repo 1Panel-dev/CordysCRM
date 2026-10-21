@@ -45,8 +45,8 @@ class DataAccessLayerTest {
         mapper.selectAll("name ASC");
         mapper.selectAll("name DESC");
         mapper.selectAll("name ASC");
-        mapper.selectByColumn("id", new String[]{"first"});
-        mapper.selectByColumn("name", new String[]{"second"});
+        mapper.selectByColumn("id", new String[] { "first" });
+        mapper.selectByColumn("name", new String[] { "second" });
 
         assertTrue(queries.get(0).endsWith("ORDER BY name ASC"));
         assertTrue(queries.get(1).endsWith("ORDER BY name DESC"));

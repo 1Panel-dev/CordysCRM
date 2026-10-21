@@ -42,9 +42,8 @@ public class AgentControllerTests extends BaseTest {
         return BASE_PATH;
     }
 
-    @Sql(scripts = {"/dml/init_agent_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_agent_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     void testAdd() throws Exception {
@@ -58,7 +57,6 @@ public class AgentControllerTests extends BaseTest {
         Opportunity resultData = getResultData(mvcResult, Opportunity.class);
         addAgent = agentMapper.selectByPrimaryKey(resultData.getId());
     }
-
 
     @Test
     @Order(2)
@@ -85,7 +83,6 @@ public class AgentControllerTests extends BaseTest {
         this.requestPost(RENAME, request);
     }
 
-
     @Test
     @Order(5)
     void testList() throws Exception {
@@ -95,7 +92,6 @@ public class AgentControllerTests extends BaseTest {
         request.setPageSize(30);
         this.requestPost(DEFAULT_PAGE, request);
     }
-
 
     @Test
     @Order(6)
@@ -117,7 +113,6 @@ public class AgentControllerTests extends BaseTest {
         request.setPageSize(30);
         this.requestPost(COLLECT_PAGE, addAgent.getId());
     }
-
 
     @Test
     @Order(12)

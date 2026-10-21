@@ -51,20 +51,24 @@ public class OpportunityFollowRecordController {
     @PostMapping("/page")
     @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进记录列表")
-    public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(
+            @Validated @RequestBody FollowUpRecordPageRequest request) {
         FollowUpRecord followUpRecord = new FollowUpRecord();
         followUpRecord.setOpportunityId(request.getSourceId());
         // 这里类型就是客户，没有商机类型
         followUpRecord.setType(ModuleKey.CUSTOMER.name());
-        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
-        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER");
+        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                "OPPORTUNITY", "CUSTOMER");
     }
 
     @GetMapping("/get/{id}")
     @Operation(summary = "商机跟进记录详情")
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
-        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
 

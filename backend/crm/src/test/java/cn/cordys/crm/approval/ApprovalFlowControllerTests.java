@@ -249,12 +249,14 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 添加另一条数据，不同表单类型
         ApprovalFlowAddRequest anotherRequest = buildAddRequest("合同审批流", ApprovalFormTypeEnum.CONTRACT, true);
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, anotherRequest);
-        anotherApprovalFlow = approvalFlowMapper.selectByPrimaryKey(getResultData(mvcResult, ApprovalFlowDetailResponse.class).getId());
+        anotherApprovalFlow = approvalFlowMapper
+                .selectByPrimaryKey(getResultData(mvcResult, ApprovalFlowDetailResponse.class).getId());
 
         // 校验创建禁用的审批流
         ApprovalFlowAddRequest disabledRequest = buildAddRequest("禁用的发票审批流", ApprovalFormTypeEnum.INVOICE, false);
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, disabledRequest);
-        ApprovalFlow disabledFlow = approvalFlowMapper.selectByPrimaryKey(getResultData(mvcResult, ApprovalFlowDetailResponse.class).getId());
+        ApprovalFlow disabledFlow = approvalFlowMapper
+                .selectByPrimaryKey(getResultData(mvcResult, ApprovalFlowDetailResponse.class).getId());
         Assertions.assertFalse(disabledFlow.getEnable());
 
         // 校验权限
@@ -363,7 +365,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         nameFilterRequest.setPageSize(10);
         nameFilterRequest.setName("更新后的报价审批流");
         MvcResult nameMvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, nameFilterRequest);
-        List<ApprovalFlowListResponse> namePageResult = getPageResult(nameMvcResult, ApprovalFlowListResponse.class).getList();
+        List<ApprovalFlowListResponse> namePageResult = getPageResult(nameMvcResult, ApprovalFlowListResponse.class)
+                .getList();
 
         // 校验筛选结果
         Assertions.assertEquals(1, namePageResult.size());
@@ -375,11 +378,13 @@ class ApprovalFlowControllerTests extends BaseTest {
         formTypeFilterRequest.setPageSize(10);
         formTypeFilterRequest.setFormType(ApprovalFormTypeEnum.QUOTATION.getValue());
         MvcResult formTypeMvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, formTypeFilterRequest);
-        List<ApprovalFlowListResponse> formTypePageResult = getPageResult(formTypeMvcResult, ApprovalFlowListResponse.class).getList();
+        List<ApprovalFlowListResponse> formTypePageResult = getPageResult(formTypeMvcResult,
+                ApprovalFlowListResponse.class).getList();
 
         // 校验筛选结果
         Assertions.assertFalse(formTypePageResult.isEmpty());
-        formTypePageResult.forEach(flow -> Assertions.assertEquals(ApprovalFormTypeEnum.QUOTATION.getValue(), flow.getFormType()));
+        formTypePageResult.forEach(
+                flow -> Assertions.assertEquals(ApprovalFormTypeEnum.QUOTATION.getValue(), flow.getFormType()));
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PROCESS_SETTING_READ, DEFAULT_PAGE, request);
@@ -467,7 +472,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         disabledRequest.setEnable(false);
 
         MvcResult disabledMvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, disabledRequest);
-        List<ApprovalFlowListResponse> disabledPageResult = getPageResult(disabledMvcResult, ApprovalFlowListResponse.class).getList();
+        List<ApprovalFlowListResponse> disabledPageResult = getPageResult(disabledMvcResult,
+                ApprovalFlowListResponse.class).getList();
 
         // 校验结果都是禁用的
         disabledPageResult.forEach(flow -> Assertions.assertFalse(flow.getEnable()));
@@ -537,7 +543,8 @@ class ApprovalFlowControllerTests extends BaseTest {
     @Order(9)
     void testGetStatusPermissionSetting() throws Exception {
         // 请求成功 - 获取报价审批流的状态权限配置
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSION_SETTING, ApprovalFormTypeEnum.QUOTATION.getValue());
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSION_SETTING,
+                ApprovalFormTypeEnum.QUOTATION.getValue());
         StatusPermissionSettingResponse response = getResultData(mvcResult, StatusPermissionSettingResponse.class);
 
         // 校验返回数据不为空
@@ -566,7 +573,8 @@ class ApprovalFlowControllerTests extends BaseTest {
     @Order(10)
     void testGetByFormType() throws Exception {
         // 请求成功 - 根据表单类型获取审批流信息
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(GET_BY_FORM_TYPE, ApprovalFormTypeEnum.QUOTATION.getValue());
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(GET_BY_FORM_TYPE,
+                ApprovalFormTypeEnum.QUOTATION.getValue());
         ApprovalFlowByFormTypeResponse response = getResultData(mvcResult, ApprovalFlowByFormTypeResponse.class);
 
         // 校验基本信息
@@ -618,8 +626,7 @@ class ApprovalFlowControllerTests extends BaseTest {
                 DEFAULT_ORGANIZATION_ID,
                 ApproverTypeEnum.MULTIPLE_DEPT_HEAD,
                 List.of("2"),
-                ApproverDirectionEnum.BOTTOM_UP
-        );
+                ApproverDirectionEnum.BOTTOM_UP);
         Assertions.assertEquals(List.of("amd_child_head", "amd_parent_head"),
                 bottomUpApprovers.stream().map(User::getId).toList());
 
@@ -628,8 +635,7 @@ class ApprovalFlowControllerTests extends BaseTest {
                 DEFAULT_ORGANIZATION_ID,
                 ApproverTypeEnum.MULTIPLE_DEPT_HEAD,
                 List.of("2"),
-                ApproverDirectionEnum.TOP_DOWN
-        );
+                ApproverDirectionEnum.TOP_DOWN);
         Assertions.assertEquals(List.of("amd_child_head", "amd_parent_head"),
                 topDownApprovers.stream().map(User::getId).toList());
     }
@@ -644,8 +650,7 @@ class ApprovalFlowControllerTests extends BaseTest {
                 DEFAULT_ORGANIZATION_ID,
                 ApproverTypeEnum.MULTIPLE_DEPT_HEAD,
                 List.of("2"),
-                ApproverDirectionEnum.BOTTOM_UP
-        );
+                ApproverDirectionEnum.BOTTOM_UP);
 
         Assertions.assertEquals(List.of("amd2_parent_head"), approvers.stream().map(User::getId).toList());
     }
@@ -660,8 +665,7 @@ class ApprovalFlowControllerTests extends BaseTest {
                 DEFAULT_ORGANIZATION_ID,
                 ApproverTypeEnum.MULTIPLE_SUPERIOR,
                 List.of("2"),
-                ApproverDirectionEnum.TOP_DOWN
-        );
+                ApproverDirectionEnum.TOP_DOWN);
 
         Assertions.assertEquals(List.of("ams_direct_superior", "ams_upper_superior"),
                 approvers.stream().map(User::getId).toList());

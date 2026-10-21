@@ -8,9 +8,9 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.request.*;
+import cn.cordys.crm.system.dto.response.EnableOptionDTO;
 import cn.cordys.crm.system.dto.response.RoleListResponse;
 import cn.cordys.crm.system.dto.response.UserImportResponse;
-import cn.cordys.crm.system.dto.response.EnableOptionDTO;
 import cn.cordys.crm.system.dto.response.UserPageResponse;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.service.OrganizationConfigService;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/user")
@@ -53,14 +52,12 @@ public class OrganizationUserController {
         return PageUtils.setPageInfo(page, organizationUserService.list(request));
     }
 
-
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_ADD)
     @Operation(summary = "用户(员工)-添加员工")
     public void addUser(@Validated @RequestBody UserAddRequest request) {
         organizationUserService.addUser(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
-
 
     @GetMapping("/detail/{id}")
     @Operation(summary = "用户(员工)-员工详情")
@@ -76,14 +73,13 @@ public class OrganizationUserController {
         organizationUserService.updateUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/reset-password/{userId}")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_USER_RESET_PASSWORD)
     @Operation(summary = "用户(员工)-重置密码")
     public void resetPassword(@PathVariable String userId) {
-        organizationUserService.resetPassword(userId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        organizationUserService.resetPassword(userId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/batch-enable")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_UPDATE)
@@ -96,7 +92,8 @@ public class OrganizationUserController {
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_USER_RESET_PASSWORD)
     @Operation(summary = "用户(员工)-批量重置密码")
     public void batchResetPassword(@Validated @RequestBody UserBatchRequest request) {
-        organizationUserService.batchResetPassword(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        organizationUserService.batchResetPassword(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update/name")
@@ -106,14 +103,13 @@ public class OrganizationUserController {
         organizationUserService.updateUserName(request, SessionUtils.getUserId());
     }
 
-
     @PostMapping("/batch/edit")
     @Operation(summary = "用户(员工)-批量编辑")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_UPDATE)
     public void batchEditUser(@Validated @RequestBody UserBatchEditRequest request) {
-        organizationUserService.batchEditUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        organizationUserService.batchEditUser(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/download/template")
     @Operation(summary = "用户(员工)-excel导入-下载模板")
@@ -122,7 +118,6 @@ public class OrganizationUserController {
         organizationUserService.downloadExcelTemplate(response);
     }
 
-
     @PostMapping("/import/pre-check")
     @Operation(summary = "用户(员工)-excel导入检查")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_IMPORT)
@@ -130,36 +125,37 @@ public class OrganizationUserController {
         return organizationUserService.preCheck(file, OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping(value = "/import")
     @Operation(summary = "用户(员工)-excel导入")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_IMPORT)
     public UserImportResponse importUser(@RequestPart(value = "file", required = false) MultipartFile file) {
-        return organizationUserService.importByExcel(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return organizationUserService.importByExcel(file, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping(value = "/option")
     @Operation(summary = "获取用户下拉option")
-    public List<EnableOptionDTO> getUserList(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+    public List<EnableOptionDTO> getUserList(
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return organizationUserService.getUserOptions(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @GetMapping(value = "/admin/option")
     @Operation(summary = "获取管理员用户下拉option")
     @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
-    public List<EnableOptionDTO> getAdminUserList(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+    public List<EnableOptionDTO> getAdminUserList(
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return organizationUserService.getAdminUserOptions(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @GetMapping(value = "/role/option")
     @Operation(summary = "获取用户角色下拉option")
-    @RequiresPermissions(value = {PermissionConstants.SYS_ORGANIZATION_READ, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.SYS_ORGANIZATION_READ,
+            PermissionConstants.PROCESS_SETTING_READ }, logical = Logical.OR)
     public List<OptionDTO> getUserRoleList() {
         List<RoleListResponse> list = roleService.list(OrganizationContext.getOrganizationId());
         return list.stream().map(role -> new OptionDTO(role.getId(), role.getName())).toList();
     }
-
 
     @GetMapping("/sync-check")
     @Operation(summary = "用户(员工)-是否为第三方同步数据")
@@ -168,7 +164,6 @@ public class OrganizationUserController {
         return organizationConfigService.syncCheck(OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_DELETE)
     @Operation(summary = "用户(员工)-删除")
@@ -176,14 +171,12 @@ public class OrganizationUserController {
         organizationUserService.deleteUserById(id, OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/delete/check/{id}")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_DELETE)
     @Operation(summary = "用户(员工)-删除校验")
     public boolean deleteCheck(@PathVariable String id) {
         return organizationUserService.deleteCheck(id);
     }
-
 
     @GetMapping("/get/{departmentId}")
     @Operation(summary = "获取指定部门下用户")

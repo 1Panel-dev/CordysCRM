@@ -88,7 +88,7 @@ public class RequestParamTrimConfig {
         // 逗号分隔的 Ant 路径列表，任一匹配即需要转义
         return Arrays.stream(xssFilterUrlList.split(","))
                 .map(String::trim)
-                .filter(StringUtils::isNotBlank)   // 过滤掉空白配置项
+                .filter(StringUtils::isNotBlank) // 过滤掉空白配置项
                 .anyMatch(pattern -> pathMatcher.match(pattern, requestURI));
     }
 

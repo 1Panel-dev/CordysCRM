@@ -108,7 +108,6 @@ public class ClueFollowPlanControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, request);
     }
 
-
     @Test
     @Order(3)
     void testList() throws Exception {

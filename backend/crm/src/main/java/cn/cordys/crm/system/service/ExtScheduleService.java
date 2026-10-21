@@ -20,8 +20,7 @@ import java.util.List;
 public class ExtScheduleService {
 
     // TODO: Add RESOURCE_TYPES
-    private static final List<String> RESOURCE_TYPES = List.of(
-    );
+    private static final List<String> RESOURCE_TYPES = List.of();
     @Resource
     private BaseMapper<Schedule> scheduleMapper;
     @Resource
@@ -53,8 +52,8 @@ public class ExtScheduleService {
                             new TriggerKey(schedule.getKey(), schedule.getJob()),
                             Class.forName(schedule.getJob()),
                             schedule.getValue(),
-                            scheduleManager.getDefaultJobDataMap(schedule, schedule.getValue(), schedule.getCreateUser())
-                    );
+                            scheduleManager.getDefaultJobDataMap(schedule, schedule.getValue(),
+                                    schedule.getCreateUser()));
                 } else {
                     removeJob(schedule); // 删除关闭的job
                 }
@@ -69,7 +68,6 @@ public class ExtScheduleService {
     private void removeJob(Schedule schedule) {
         scheduleManager.removeJob(
                 new JobKey(schedule.getKey(), schedule.getJob()),
-                new TriggerKey(schedule.getKey(), schedule.getJob())
-        );
+                new TriggerKey(schedule.getKey(), schedule.getJob()));
     }
 }

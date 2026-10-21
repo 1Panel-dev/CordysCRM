@@ -30,26 +30,23 @@ public class FormulaDefinitionParser {
         }
         String type = stringValue(source.get("type")).toLowerCase(Locale.ROOT);
         return switch (type) {
-            case "literal" -> new FormulaNode.Literal(source.get("value"), stringValue(source.get("valueType")));
-            // 兼容前端 hydrateIRNumberType 处理的历史 IR。
-            case "number", "string", "boolean" -> new FormulaNode.Literal(source.get("value"), type);
-            case "field" -> new FormulaNode.Field(stringValue(source.get("fieldId")));
-            case "binary" -> new FormulaNode.Binary(
-                    stringValue(source.get("operator")),
-                    parseNode(asMap(source.get("left"))),
-                    parseNode(asMap(source.get("right")))
-            );
-            case "compare" -> new FormulaNode.Compare(
-                    stringValue(source.get("operator")),
-                    parseNode(asMap(source.get("left"))),
-                    parseNode(asMap(source.get("right")))
-            );
-            case "function" -> new FormulaNode.Function(
-                    stringValue(source.get("name")).toUpperCase(Locale.ROOT),
-                    parseArgs(source.get("args"))
-            );
-            case "invalid" -> new FormulaNode.Invalid(stringValue(source.get("reason")));
-            default -> new FormulaNode.Invalid("unknown formula node type: " + type);
+        case "literal" -> new FormulaNode.Literal(source.get("value"), stringValue(source.get("valueType")));
+        // 兼容前端 hydrateIRNumberType 处理的历史 IR。
+        case "number", "string", "boolean" -> new FormulaNode.Literal(source.get("value"), type);
+        case "field" -> new FormulaNode.Field(stringValue(source.get("fieldId")));
+        case "binary" -> new FormulaNode.Binary(
+                stringValue(source.get("operator")),
+                parseNode(asMap(source.get("left"))),
+                parseNode(asMap(source.get("right"))));
+        case "compare" -> new FormulaNode.Compare(
+                stringValue(source.get("operator")),
+                parseNode(asMap(source.get("left"))),
+                parseNode(asMap(source.get("right"))));
+        case "function" -> new FormulaNode.Function(
+                stringValue(source.get("name")).toUpperCase(Locale.ROOT),
+                parseArgs(source.get("args")));
+        case "invalid" -> new FormulaNode.Invalid(stringValue(source.get("reason")));
+        default -> new FormulaNode.Invalid("unknown formula node type: " + type);
         };
     }
 

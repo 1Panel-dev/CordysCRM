@@ -1,6 +1,5 @@
 package cn.cordys.crm.customer.controller;
 
-
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.uid.IDGenerator;
@@ -102,7 +101,6 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, request);
     }
 
-
     @Test
     @Order(3)
     void testList() throws Exception {
@@ -118,7 +116,6 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
     void testGet() throws Exception {
         this.requestGet(DEFAULT_GET, addFollowUpRecord.getId());
     }
-
 
     @Test
     @Order(3)

@@ -54,23 +54,26 @@ public class OpportunityExportService extends BaseExportService {
         // 构建自定义字段数据
         var dataList = opportunityService.buildListData(exportList, exportParam.getOrgId());
         // 构建选项数据
-        Map<String, BaseField> fieldConfigMap =
-                getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), exportParam.getOrgId());
-        Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(exportParam.getOrgId(), exportList, dataList);
+        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), exportParam.getOrgId());
+        Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(exportParam.getOrgId(), exportList,
+                dataList);
         // 从缓存获取阶段配置，避免重复查询
         Map<String, String> stageConfigMap = getOrLoadStageConfigMap(exportParam);
         return buildExportMergeResult(taskId, exportParam, dataList,
                 OpportunityListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        OpportunityFieldUtils.getSystemFieldMap(detail, optionMap, stageConfigMap, fieldConfigMap, exportParam.getLocale()), cache));
+                        OpportunityFieldUtils.getSystemFieldMap(detail, optionMap, stageConfigMap, fieldConfigMap,
+                                exportParam.getLocale()),
+                        cache));
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, String> getOrLoadStageConfigMap(ExportDTO exportParam) {
         return (Map<String, String>) exportParam.getExtraParams()
-                .computeIfAbsent(STAGE_CONFIG_MAP_KEY, key ->
-                        extOpportunityStageConfigMapper.getStageConfigList(exportParam.getOrgId())
-                                .stream().collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName)));
+                .computeIfAbsent(STAGE_CONFIG_MAP_KEY, key -> extOpportunityStageConfigMapper
+                        .getStageConfigList(exportParam.getOrgId())
+                        .stream()
+                        .collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName)));
     }
 
     private List<OpportunityListResponse> collectExportList(ExportDTO exportParam) {
@@ -91,9 +94,9 @@ public class OpportunityExportService extends BaseExportService {
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(List<OpportunityListResponse> dataList,
-                                                        ExportFieldParam exportFieldParam) {
-        List<BaseModuleFieldValue> moduleFieldValues =
-                moduleFormService.getBaseModuleFieldValues(dataList, OpportunityListResponse::getModuleFields);
+            ExportFieldParam exportFieldParam) {
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(dataList,
+                OpportunityListResponse::getModuleFields);
         return moduleFormService.getOptionMap(exportFieldParam.getFormConfig(), moduleFieldValues);
     }
 }

@@ -41,7 +41,6 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
 
-
     public List<OptionCountDTO> startSearchModuleCount(String keyword, String orgId, String userId) {
         List<OptionCountDTO> list = new ArrayList<>();
         if (StringUtils.isBlank(keyword)) {
@@ -68,19 +67,22 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId);
         List<FilterCondition> conditions;
         if (enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
-            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+                    || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 //查客户
                 conditions = new ArrayList<>();
                 long customerCount = getCustomerCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, (int) customerCount));
             }
-            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+                    || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 //查客户联系人
                 conditions = new ArrayList<>();
                 long contactCount = getContactCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CONTACT, (int) contactCount));
             }
-            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            if (permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
+                    || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 //查公海
                 conditions = new ArrayList<>();
                 long publicCount = getPublicCount(keyword, orgId, userSearchConfigs, list, conditions, request);
@@ -88,13 +90,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             }
         }
         if (enabledModules.contains(ModuleKey.CLUE.getKey())) {
-            if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ)
+                    || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long clueCount = getClueCount(keyword, orgId, userSearchConfigs, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE, (int) clueCount));
-
             }
-            if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            if (permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
+                    || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
                 long cluePoolCount = getCluePoolCount(keyword, orgId, userSearchConfigs, list, conditions, request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL, (int) cluePoolCount));
@@ -102,9 +105,11 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
 
         if (enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
-            if (permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            if (permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+                    || Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
                 conditions = new ArrayList<>();
-                long opportunityCount = getOpportunityCount(keyword, orgId, userSearchConfigs, list, conditions, request);
+                long opportunityCount = getOpportunityCount(keyword, orgId, userSearchConfigs, list, conditions,
+                        request);
                 list.add(new OptionCountDTO(SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY, (int) opportunityCount));
             }
         }
@@ -120,13 +125,15 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      * @param list              返回结果集
      * @param conditions        查询条件
      * @param request           分页参数
-     *
      * @return 数量
      */
-    private long getOpportunityCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
+    private long getOpportunityCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs,
+            List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         List<String> customerIds = getCustomerIds(keyword, orgId);
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY)).toList();
+            List<UserSearchConfig> opportunitySearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY))
+                    .toList();
             if (CollectionUtils.isEmpty(opportunitySearchConfigs)) {
                 return 0L;
             } else {
@@ -138,10 +145,12 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         } else {
             //设置商机默认查询属性
             //查询客户源数据
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
             if (CollectionUtils.isNotEmpty(list)) {
-                FilterCondition customerCondition = getFilterCondition("customerId", customerIds, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+                FilterCondition customerCondition = getFilterCondition("customerId", customerIds,
+                        FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
                 conditions.add(customerCondition);
             }
         }
@@ -163,12 +172,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      * @param list              返回结果集
      * @param conditions        查询条件
      * @param request           分页参数
-     *
      * @return 数量
      */
-    private long getCluePoolCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
+    private long getCluePoolCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs,
+            List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> cluePoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL)).toList();
+            List<UserSearchConfig> cluePoolSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL))
+                    .toList();
             if (CollectionUtils.isEmpty(cluePoolSearchConfigs)) {
                 return 0L;
             } else {
@@ -178,7 +189,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             }
         } else {
             //设置默认查询属性
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
             StringUtils.deleteWhitespace(keyword);
             List<String> phoneList = new ArrayList<>();
@@ -186,7 +198,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
             }
-            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList,
+                    FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -206,12 +219,13 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      * @param userSearchConfigs 用户搜索配置
      * @param conditions        查询条件
      * @param request           分页参数
-     *
      * @return 数量
      */
-    private long getClueCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<FilterCondition> conditions, BasePageRequest request) {
+    private long getClueCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs,
+            List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> clueSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE)).toList();
+            List<UserSearchConfig> clueSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE)).toList();
             if (CollectionUtils.isEmpty(clueSearchConfigs)) {
                 return 0L;
             } else {
@@ -221,7 +235,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             }
         } else {
             //设置默认查询属性
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
             StringUtils.deleteWhitespace(keyword);
             List<String> phoneList = new ArrayList<>();
@@ -229,7 +244,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
             }
-            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList,
+                    FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -250,12 +266,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      * @param list              返回结果集
      * @param conditions        查询条件
      * @param request           分页参数
-     *
      * @return 数量
      */
-    private long getPublicCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
+    private long getPublicCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs,
+            List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> customerPoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_PUBLIC)).toList();
+            List<UserSearchConfig> customerPoolSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_PUBLIC))
+                    .toList();
             if (CollectionUtils.isEmpty(customerPoolSearchConfigs)) {
                 return 0L;
             } else {
@@ -265,7 +283,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             }
         } else {
             //设置默认查询属性
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -286,13 +305,15 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      * @param list              返回结果集
      * @param conditions        查询条件
      * @param request           分页参数
-     *
      * @return 数量
      */
-    private long getContactCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
+    private long getContactCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs,
+            List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         List<String> customerIds = getCustomerIds(keyword, orgId);
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT)).toList();
+            List<UserSearchConfig> contactSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CONTACT))
+                    .toList();
             if (CollectionUtils.isEmpty(contactSearchConfigs)) {
                 return 0L;
             } else {
@@ -303,7 +324,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         } else {
             //设置默认查询属性
             if (CollectionUtils.isNotEmpty(customerIds)) {
-                FilterCondition customerCondition = getFilterCondition("customerId", list, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+                FilterCondition customerCondition = getFilterCondition("customerId", list,
+                        FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
                 conditions.add(customerCondition);
             }
             StringUtils.deleteWhitespace(keyword);
@@ -312,7 +334,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
             }
-            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList,
+                    FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -333,12 +356,14 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
      * @param list              返回结果集
      * @param conditions        查询条件
      * @param request           分页参数
-     *
      * @return 数量
      */
-    private long getCustomerCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs, List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
+    private long getCustomerCount(String keyword, String orgId, List<UserSearchConfig> userSearchConfigs,
+            List<OptionCountDTO> list, List<FilterCondition> conditions, BasePageRequest request) {
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> customerSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER)).toList();
+            List<UserSearchConfig> customerSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER))
+                    .toList();
             if (CollectionUtils.isEmpty(customerSearchConfigs)) {
                 return 0L;
             } else {
@@ -348,7 +373,8 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
             }
         } else {
             //设置默认查询属性
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -359,6 +385,5 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return extCustomerMapper.globalSearchListCount(request, orgId);
     }
-
 
 }

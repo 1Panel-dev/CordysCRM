@@ -34,7 +34,8 @@ public class BaseChartService {
     @Resource
     private ModuleFormService moduleFormService;
 
-    public List<ChartResult> translateAxisName(ModuleFormConfigDTO formConfig, ChartAnalysisDbRequest chartAnalysisDbRequest, List<ChartResult> chartResults) {
+    public List<ChartResult> translateAxisName(ModuleFormConfigDTO formConfig,
+            ChartAnalysisDbRequest chartAnalysisDbRequest, List<ChartResult> chartResults) {
         ChartCategoryAxisDbParam categoryAxisParam = chartAnalysisDbRequest.getCategoryAxisParam();
         ChartCategoryAxisDbParam subCategoryAxisParam = chartAnalysisDbRequest.getSubCategoryAxisParam();
         chartResults = chartResults.stream()
@@ -80,15 +81,19 @@ public class BaseChartService {
                 chartResult.setValueAxis(0);
             }
 
-            if (categoryAxisField.isLocation() && chartResult.getCategoryAxis()!=null){
-                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(categoryAxisField.getType());
-                chartResult.setCategoryAxisName(String.valueOf(customFieldResolver.transformToValue(categoryAxisField, chartResult.getCategoryAxis())));
+            if (categoryAxisField.isLocation() && chartResult.getCategoryAxis() != null) {
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                        .getResolver(categoryAxisField.getType());
+                chartResult.setCategoryAxisName(String.valueOf(
+                        customFieldResolver.transformToValue(categoryAxisField, chartResult.getCategoryAxis())));
                 chartResult.setCategoryAxis(RegionUtils.getCode(chartResult.getCategoryAxis()));
             }
 
             if (subCategoryAxisField != null && subCategoryAxisField.isLocation()) {
-                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(subCategoryAxisField.getType());
-                chartResult.setSubCategoryAxisName(String.valueOf(customFieldResolver.transformToValue(categoryAxisField, chartResult.getSubCategoryAxis())));
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                        .getResolver(subCategoryAxisField.getType());
+                chartResult.setSubCategoryAxisName(String.valueOf(
+                        customFieldResolver.transformToValue(categoryAxisField, chartResult.getSubCategoryAxis())));
                 chartResult.setSubCategoryAxis(RegionUtils.getCode(chartResult.getSubCategoryAxis()));
             }
 
@@ -124,17 +129,21 @@ public class BaseChartService {
                 .findFirst().orElse(null);
     }
 
-    private static List<ChartResult> mergeResult(List<ChartResult> chartResults, Function<ChartResult, String> getKeyFunc) {
+    private static List<ChartResult> mergeResult(List<ChartResult> chartResults,
+            Function<ChartResult, String> getKeyFunc) {
         Map<String, ChartResult> mergedResults = new HashMap<>(chartResults.size());
         for (ChartResult chartResult : chartResults) {
             String categoryAxis = getKeyFunc.apply(chartResult);
             if (mergedResults.containsKey(categoryAxis)) {
                 ChartResult existingResult = mergedResults.get(categoryAxis);
-                if (existingResult.getValueAxis() instanceof Double existingValue && chartResult.getValueAxis() instanceof Double value) {
+                if (existingResult.getValueAxis() instanceof Double existingValue
+                        && chartResult.getValueAxis() instanceof Double value) {
                     existingResult.setValueAxis(existingValue + value);
-                } else if (existingResult.getValueAxis() instanceof Long existingValue && chartResult.getValueAxis() instanceof Long value) {
+                } else if (existingResult.getValueAxis() instanceof Long existingValue
+                        && chartResult.getValueAxis() instanceof Long value) {
                     existingResult.setValueAxis(existingValue + value);
-                } else if (existingResult.getValueAxis() instanceof Integer existingValue && chartResult.getValueAxis() instanceof Integer value) {
+                } else if (existingResult.getValueAxis() instanceof Integer existingValue
+                        && chartResult.getValueAxis() instanceof Integer value) {
                     existingResult.setValueAxis(existingValue + value);
                 }
             } else {
@@ -149,7 +158,6 @@ public class BaseChartService {
             List<ChartResult> chartResults,
             ChartCategoryAxisDbParam categoryAxisParam,
             ChartCategoryAxisDbParam subCategoryAxisParam) {
-
         var categoryAxisField = getBaseField(formConfig.getFields(), categoryAxisParam.getFieldId());
         var subCategoryAxisField = subCategoryAxisParam != null
                 ? getBaseField(formConfig.getFields(), subCategoryAxisParam.getFieldId())

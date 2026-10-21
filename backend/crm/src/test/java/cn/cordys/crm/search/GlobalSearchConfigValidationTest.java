@@ -28,7 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class GlobalSearchConfigValidationTest {
-    private final BaseSearchService<BasePageRequest, Object> service = new BaseSearchService<>() {};
+    private final BaseSearchService<BasePageRequest, Object> service = new BaseSearchService<>() {
+    };
     private final ModuleFormCacheService forms = mock(ModuleFormCacheService.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<UserSearchConfig> configs = mock(BaseMapper.class);
@@ -50,7 +51,7 @@ class GlobalSearchConfigValidationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"searchAdvancedOpportunity", "searchAdvancedClue", "searchAdvancedCluePool"})
+    @ValueSource(strings = { "searchAdvancedOpportunity", "searchAdvancedClue", "searchAdvancedCluePool" })
     void historicalSqlBusinessKeyIsRejectedForEveryAffectedModule(String moduleType) {
         InputField field = field("field", "name");
         UserSearchConfig config = config(field, moduleType);
@@ -61,13 +62,14 @@ class GlobalSearchConfigValidationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"name,(1+1)", "(1+1)", "name from opportunity", "name;select 1"})
+    @ValueSource(strings = { "name,(1+1)", "(1+1)", "name from opportunity", "name;select 1" })
     void sqlTextIsRejectedEvenIfOldFormMetadataContainsTheSameValue(String businessKey) {
         InputField field = field("field", businessKey);
         UserSearchConfig config = config(field, "searchAdvancedOpportunity");
         configure(field, config);
 
-        assertThrows(GenericException.class, () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
+        assertThrows(GenericException.class,
+                () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
     }
 
     @Test
@@ -76,7 +78,8 @@ class GlobalSearchConfigValidationTest {
         UserSearchConfig config = config(field("other-field", "name"), "searchAdvancedOpportunity");
         configure(field, config);
 
-        assertThrows(GenericException.class, () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
+        assertThrows(GenericException.class,
+                () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
     }
 
     @Test
@@ -86,7 +89,8 @@ class GlobalSearchConfigValidationTest {
         config.setType("DATA_SOURCE");
         configure(field, config);
 
-        assertThrows(GenericException.class, () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
+        assertThrows(GenericException.class,
+                () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
     }
 
     @Test
@@ -100,7 +104,8 @@ class GlobalSearchConfigValidationTest {
         config.setDataSourceType("CONTACT");
         configure(field, config);
 
-        assertThrows(GenericException.class, () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
+        assertThrows(GenericException.class,
+                () -> service.getUserSearchConfigs("user", "org", "form", config.getModuleType()));
     }
 
     @Test
@@ -130,15 +135,17 @@ class GlobalSearchConfigValidationTest {
     void invalidConditionsCannotBecomeAnUnfilteredQuery() {
         var condition = service.getFilterCondition("if(1=1,sleep(2),0)", "keyword", "CONTAINS", "INPUT");
 
-        assertThrows(GenericException.class, () -> service.buildCombineSearch(new ArrayList<>(List.of(condition)), new BasePageRequest()));
+        assertThrows(GenericException.class,
+                () -> service.buildCombineSearch(new ArrayList<>(List.of(condition)), new BasePageRequest()));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"(1+1)", "name,(1+1)", "if(1=1,sleep(2),0)", "name from opportunity"})
+    @ValueSource(strings = { "(1+1)", "name,(1+1)", "if(1=1,sleep(2),0)", "name from opportunity" })
     void sharedConditionBuilderAlsoRejectsSqlBusinessKeysForCountQueries(String businessKey) {
         UserSearchConfig config = config(field("field", businessKey), "searchAdvancedOpportunity");
 
-        assertThrows(GenericException.class, () -> service.buildOtherFilterCondition("org", config, "keyword", new ArrayList<>()));
+        assertThrows(GenericException.class,
+                () -> service.buildOtherFilterCondition("org", config, "keyword", new ArrayList<>()));
     }
 
     @Test

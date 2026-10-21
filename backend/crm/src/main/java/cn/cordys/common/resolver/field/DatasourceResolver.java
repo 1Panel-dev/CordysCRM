@@ -66,9 +66,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 
     @Override
     public void validate(DatasourceField customField, Object value) {
-
     }
-
 
     @Override
     public Object transformToValue(DatasourceField datasourceField, String value) {
@@ -143,11 +141,11 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
                     .map(Customer::getId)
                     .findFirst()
                     .orElse(StringUtils.EMPTY);
-
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.OPPORTUNITY.name())) {
-            List<Opportunity> opportunityList = Objects.requireNonNull(opportunityService).getOpportunityListByNames(List.of(text));
+            List<Opportunity> opportunityList = Objects.requireNonNull(opportunityService)
+                    .getOpportunityListByNames(List.of(text));
             if (CollectionUtils.isEmpty(opportunityList)) {
                 return StringUtils.EMPTY;
             }
@@ -171,7 +169,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTACT.name())) {
-            List<CustomerContact> contactList = Objects.requireNonNull(contactService).getContactListByNames(List.of(text));
+            List<CustomerContact> contactList = Objects.requireNonNull(contactService)
+                    .getContactListByNames(List.of(text));
             if (CollectionUtils.isEmpty(contactList)) {
                 return StringUtils.EMPTY;
             }
@@ -195,7 +194,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRICE.name())) {
-            List<ProductPrice> productPrices = Objects.requireNonNull(productPriceService).getProductPriceListByNames(List.of(text));
+            List<ProductPrice> productPrices = Objects.requireNonNull(productPriceService)
+                    .getProductPriceListByNames(List.of(text));
             if (CollectionUtils.isEmpty(productPrices)) {
                 return StringUtils.EMPTY;
             }
@@ -207,7 +207,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
-            List<OpportunityQuotation> quotations = Objects.requireNonNull(opportunityQuotationService).getQuotationListByNames(List.of(text));
+            List<OpportunityQuotation> quotations = Objects.requireNonNull(opportunityQuotationService)
+                    .getQuotationListByNames(List.of(text));
             if (CollectionUtils.isEmpty(quotations)) {
                 return StringUtils.EMPTY;
             }
@@ -231,7 +232,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
-            List<ContractPaymentPlan> plans = Objects.requireNonNull(contractPaymentPlanService).getPlanListByNames(List.of(text));
+            List<ContractPaymentPlan> plans = Objects.requireNonNull(contractPaymentPlanService)
+                    .getPlanListByNames(List.of(text));
             if (CollectionUtils.isEmpty(plans)) {
                 return StringUtils.EMPTY;
             }
@@ -243,7 +245,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
-            List<ContractPaymentRecord> records = Objects.requireNonNull(contractPaymentRecordService).getRecordListByNames(List.of(text));
+            List<ContractPaymentRecord> records = Objects.requireNonNull(contractPaymentRecordService)
+                    .getRecordListByNames(List.of(text));
             if (CollectionUtils.isEmpty(records)) {
                 return StringUtils.EMPTY;
             }
@@ -255,7 +258,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
-            List<BusinessTitle> businessTitles = Objects.requireNonNull(businessTitleService).getBusinessTitleListByNames(List.of(text));
+            List<BusinessTitle> businessTitles = Objects.requireNonNull(businessTitleService)
+                    .getBusinessTitleListByNames(List.of(text));
             if (CollectionUtils.isEmpty(businessTitles)) {
                 return StringUtils.EMPTY;
             }
@@ -279,7 +283,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.INVOICE.name())) {
-            List<ContractInvoice> invoices = Objects.requireNonNull(invoiceService).getContractInvoiceListByNames(List.of(text));
+            List<ContractInvoice> invoices = Objects.requireNonNull(invoiceService)
+                    .getContractInvoiceListByNames(List.of(text));
             if (CollectionUtils.isEmpty(invoices)) {
                 return StringUtils.EMPTY;
             }
@@ -290,7 +295,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
                     .orElse(StringUtils.EMPTY);
         }
 
-        List<CustomFormData> customFormDataList = Objects.requireNonNull(customFormDataService).selectByNames(List.of(text));
+        List<CustomFormData> customFormDataList = Objects.requireNonNull(customFormDataService)
+                .selectByNames(List.of(text));
         if (CollectionUtils.isEmpty(customFormDataList)) {
             return StringUtils.EMPTY;
         }

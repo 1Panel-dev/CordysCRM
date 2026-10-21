@@ -131,7 +131,7 @@ public class BaseMapperTest {
     @Test
     @Order(11)
     public void testSelectByColumn() {
-        Serializable[] ids = {1L};
+        Serializable[] ids = { 1L };
         when(baseMapper.selectByColumn("id", ids)).thenReturn(Collections.singletonList(user));
         List<User> result = baseMapper.selectByColumn("id", ids);
         assertNotNull(result);

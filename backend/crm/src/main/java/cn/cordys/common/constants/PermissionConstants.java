@@ -2,7 +2,6 @@ package cn.cordys.common.constants;
 
 /**
  * @author jianxing
- * @date 2025-01-03 11:31:40
  */
 public class PermissionConstants {
 
@@ -14,7 +13,6 @@ public class PermissionConstants {
     public static final String SYSTEM_ROLE_ADD_USER = "SYSTEM_ROLE:ADD_USER";
     public static final String SYSTEM_ROLE_REMOVE_USER = "SYSTEM_ROLE:REMOVE_USER";
     /*------ end: SYSTEM_ROLE------*/
-
 
     /*------ start: OPERATION_LOG ------*/
     public static final String OPERATION_LOG_READ = "OPERATION_LOG:READ";
@@ -51,7 +49,6 @@ public class PermissionConstants {
     public static final String MODULE_SETTING_READ = "MODULE_SETTING:READ";
     public static final String MODULE_SETTING_UPDATE = "MODULE_SETTING:UPDATE";
 
-
     /*------ start: CUSTOMER_MANAGEMENT------*/
     public static final String CUSTOMER_MANAGEMENT_READ = "CUSTOMER_MANAGEMENT:READ";
     public static final String CUSTOMER_MANAGEMENT_ADD = "CUSTOMER_MANAGEMENT:ADD";
@@ -64,7 +61,6 @@ public class PermissionConstants {
     public static final String CUSTOMER_MANAGEMENT_MERGE = "CUSTOMER_MANAGEMENT:MERGE";
     /*------ end: CUSTOMER_MANAGEMENT ------*/
 
-
     /*------ start: CUSTOMER_MANAGEMENT_POOL ------*/
     public static final String CUSTOMER_MANAGEMENT_POOL_READ = "CUSTOMER_MANAGEMENT_POOL:READ";
     public static final String CUSTOMER_MANAGEMENT_POOL_UPDATE = "CUSTOMER_MANAGEMENT_POOL:UPDATE";
@@ -75,7 +71,6 @@ public class PermissionConstants {
     public static final String CUSTOMER_MANAGEMENT_POOL_EXPORT = "CUSTOMER_MANAGEMENT_POOL:EXPORT";
     public static final String CUSTOMER_MANAGEMENT_POOL_IMPORT = "CUSTOMER_MANAGEMENT_POOL:IMPORT";
     /*------ end: CUSTOMER_MANAGEMENT_POOL ------*/
-
 
     /*------ start: CUSTOMER_MANAGEMENT_CONTACT ------*/
     public static final String CUSTOMER_MANAGEMENT_CONTACT_READ = "CUSTOMER_MANAGEMENT_CONTACT:READ";
@@ -106,7 +101,6 @@ public class PermissionConstants {
     public static final String OPPORTUNITY_MANAGEMENT_IMPORT = "OPPORTUNITY_MANAGEMENT:IMPORT";
     /*------ end: OPPORTUNITY_MANAGEMENT ------*/
 
-
     /**
      * clue permission
      */
@@ -120,7 +114,6 @@ public class PermissionConstants {
     public static final String CLUE_MANAGEMENT_EXPORT = "CLUE_MANAGEMENT:EXPORT";
     public static final String CLUE_MANAGEMENT_IMPORT = "CLUE_MANAGEMENT:IMPORT";
     /*------ end: CLUE_MANAGEMENT ------*/
-
 
     /*------ start: CLUE_MANAGEMENT_POOL ------*/
     public static final String CLUE_MANAGEMENT_POOL_READ = "CLUE_MANAGEMENT_POOL:READ";
@@ -146,14 +139,12 @@ public class PermissionConstants {
     public static final String LICENSE_EDIT = "LICENSE:EDIT";
     /*------ end: LICENSE ------*/
 
-
     /*------ start: PERSON INFO ------*/
     public static final String PERSONAL_API_KEY_READ = "PERSONAL_API_KEY:READ";
     public static final String PERSONAL_API_KEY_ADD = "PERSONAL_API_KEY:ADD";
     public static final String PERSONAL_API_KEY_UPDATE = "PERSONAL_API_KEY:UPDATE";
     public static final String PERSONAL_API_KEY_DELETE = "PERSONAL_API_KEY:DELETE";
     /*------ end: PERSON INFO ------*/
-
 
     /*------ start: AGENT ------*/
     public static final String AGENT_READ = "AGENT:READ";
@@ -171,7 +162,6 @@ public class PermissionConstants {
     public static final String PRICE_DELETE = "PRICE:DELETE";
     public static final String PRICE_IMPORT = "PRICE:IMPORT";
     public static final String PRICE_EXPORT = "PRICE:EXPORT";
-
 
     /*------ start: OPPORTUNITY_QUOTATION ------*/
 
@@ -206,11 +196,9 @@ public class PermissionConstants {
     public static final String CONTRACT_PAYMENT_PLAN_EXPORT = "CONTRACT_PAYMENT_PLAN:EXPORT";
     /*------ end: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
 
-
     /*------ start: TENDER ------*/
     public static final String TENDER_READ = "TENDER:READ";
     /*------ end: TENDER ------*/
-
 
     /*------ start: CONTRACT_INVOICE_ROLE ------*/
     public static final String CONTRACT_INVOICE_READ = "CONTRACT_INVOICE:READ";
@@ -233,15 +221,15 @@ public class PermissionConstants {
 
     /*------ end: BUSINESS_TITLE ------*/
 
-	/**
-	 * Contract payment record permission
-	 */
-	public static final String CONTRACT_PAYMENT_RECORD_READ = "CONTRACT_PAYMENT_RECORD:READ";
-	public static final String CONTRACT_PAYMENT_RECORD_ADD = "CONTRACT_PAYMENT_RECORD:ADD";
-	public static final String CONTRACT_PAYMENT_RECORD_UPDATE = "CONTRACT_PAYMENT_RECORD:UPDATE";
-	public static final String CONTRACT_PAYMENT_RECORD_DELETE = "CONTRACT_PAYMENT_RECORD:DELETE";
-	public static final String CONTRACT_PAYMENT_RECORD_IMPORT = "CONTRACT_PAYMENT_RECORD:IMPORT";
-	public static final String CONTRACT_PAYMENT_RECORD_EXPORT = "CONTRACT_PAYMENT_RECORD:EXPORT";
+    /**
+     * Contract payment record permission
+     */
+    public static final String CONTRACT_PAYMENT_RECORD_READ = "CONTRACT_PAYMENT_RECORD:READ";
+    public static final String CONTRACT_PAYMENT_RECORD_ADD = "CONTRACT_PAYMENT_RECORD:ADD";
+    public static final String CONTRACT_PAYMENT_RECORD_UPDATE = "CONTRACT_PAYMENT_RECORD:UPDATE";
+    public static final String CONTRACT_PAYMENT_RECORD_DELETE = "CONTRACT_PAYMENT_RECORD:DELETE";
+    public static final String CONTRACT_PAYMENT_RECORD_IMPORT = "CONTRACT_PAYMENT_RECORD:IMPORT";
+    public static final String CONTRACT_PAYMENT_RECORD_EXPORT = "CONTRACT_PAYMENT_RECORD:EXPORT";
 
     /*------ start: ORDER_ROLE ------*/
     public static final String ORDER_READ = "ORDER:READ";

@@ -3,8 +3,8 @@ package cn.cordys.crm.contract.excel.listener;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.contract.excel.constants.BusinessTitleImportFiled;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.excel.domain.ExcelErrData;
 import cn.idev.excel.context.AnalysisContext;
 import lombok.Getter;
@@ -40,7 +40,8 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
      */
     private final Class<T> entityClass;
 
-    public BusinessTitleImportEventListener(Class<?> clazz, Class<T> entityClass, Map<String, Boolean> requiredFieldMap, String orgId, String userId, Consumer<List<T>> consumer, List<List<String>> heads, ImportRequest request) {
+    public BusinessTitleImportEventListener(Class<?> clazz, Class<T> entityClass, Map<String, Boolean> requiredFieldMap,
+            String orgId, String userId, Consumer<List<T>> consumer, List<List<String>> heads, ImportRequest request) {
         super(clazz, requiredFieldMap, orgId, heads, request);
         this.entityClass = entityClass;
         this.userId = userId;
@@ -49,7 +50,6 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
         // 缓存方法, 频繁反射有开销
         cacheSetterMethods();
     }
-
 
     @Override
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
@@ -82,13 +82,13 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
             dataList.add(t);
         } catch (Exception e) {
             log.error("导入错误, 原因: {}", e.getMessage());
-            throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
+            throw new GenericException(
+                    Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
         }
 
         if (dataList.size() >= BATCH_SIZE) {
             batchProcessData();
         }
-
     }
 
     private void setPropertyValue(T instance, Object value, String fieldName) throws Exception {
@@ -97,7 +97,6 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
             setter.invoke(instance, value);
         }
     }
-
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
@@ -125,7 +124,6 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
         }
     }
 
-
     /**
      * 缓存entity setter
      */
@@ -140,7 +138,6 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
             }
         }
     }
-
 
     /**
      * 设置entity内部字段

@@ -50,9 +50,9 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
-
     @Override
-    public Pager<List<GlobalCluePoolResponse>> startSearchNoOption(BasePageRequest request, String orgId, String userId) {
+    public Pager<List<GlobalCluePoolResponse>> startSearchNoOption(BasePageRequest request, String orgId,
+            String userId) {
         //获取查询关键字
         String keyword = request.getKeyword();
         if (StringUtils.isBlank(keyword)) {
@@ -66,8 +66,11 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //查询当前用户搜索配置
-        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.CLUE.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
-        List<String> phoneTypeFieldIds = userSearchConfigs.stream().filter(config -> Strings.CI.equals(config.getType(), FieldType.PHONE.name())).map(UserSearchConfig::getFieldId).toList();
+        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.CLUE.getKey(),
+                SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
+        List<String> phoneTypeFieldIds = userSearchConfigs.stream()
+                .filter(config -> Strings.CI.equals(config.getType(), FieldType.PHONE.name()))
+                .map(UserSearchConfig::getFieldId).toList();
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
         //记住选择的内置列,除自定义字段外，用户还会选择一些内置字段
@@ -78,7 +81,9 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> cluePoolSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL)).toList();
+            List<UserSearchConfig> cluePoolSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL))
+                    .toList();
             if (CollectionUtils.isEmpty(cluePoolSearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
                 return PageUtils.setPageInfo(page, List.of());
@@ -87,21 +92,32 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
                 //如果和固定展示列名重复不加入fieldIdSet
                 if (StringUtils.isBlank(userSearchConfig.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
-                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
+                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                        BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
                 }
-                if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey()) && !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
+                if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey())
+                        && !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_NAME.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
                     internalKeyMap.put(userSearchConfig.getFieldId(), userSearchConfig.getBusinessKey());
                 }
                 buildOtherFilterCondition(orgId, userSearchConfig, keyword, conditions);
             }
         } else {
             //设置默认查询属性
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
             StringUtils.deleteWhitespace(keyword);
             List<String> phoneList = new ArrayList<>();
@@ -109,7 +125,8 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
             }
-            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList,
+                    FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -126,13 +143,16 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             return PageUtils.setPageInfo(page, List.of());
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
-        List<GlobalCluePoolResponse> buildList = buildListData(globalCluePoolResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet, internalKeyMap, phoneTypeFieldIds);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId,
+                SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL);
+        List<GlobalCluePoolResponse> buildList = buildListData(globalCluePoolResponses, orgId, userId,
+                searchFieldMaskConfigs, fieldIdSet, internalKeyMap, phoneTypeFieldIds);
         return PageUtils.setPageInfo(page, buildList);
     }
 
-
-    public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet, Map<String, String> internalKeyMap, List<String> phoneTypeFieldIds) {
+    public List<GlobalCluePoolResponse> buildListData(List<GlobalCluePoolResponse> list, String orgId, String userId,
+            List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet,
+            Map<String, String> internalKeyMap, List<String> phoneTypeFieldIds) {
         List<String> clueIds = list.stream().map(GlobalCluePoolResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> clueFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
@@ -150,19 +170,23 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         Map<String, Clue> internalKeyValueMap = clues.stream().collect(Collectors.toMap(Clue::getId, t -> t));
         // 处理自定义字段选项数据
         ModuleFormConfigDTO clueFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
-        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
+        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream()
+                .collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
         list.forEach(globalClueResponse -> {
             // 判断该数据是否有权限
             boolean hasPermission = getHasPermission(userId, orgId, globalClueResponse, userPoolMap);
             // 处理自定义字段数据
             if (CollectionUtils.isNotEmpty(fieldIdSet)) {
-                List<BaseModuleFieldValue> returnCluePoolFields = getBaseModuleFieldValues(fieldIdSet, globalClueResponse.getId(), clueFiledMap, clueFormConfig, searchFieldMaskConfigMap, hasPermission);
+                List<BaseModuleFieldValue> returnCluePoolFields = getBaseModuleFieldValues(fieldIdSet,
+                        globalClueResponse.getId(), clueFiledMap, clueFormConfig, searchFieldMaskConfigMap,
+                        hasPermission);
 
                 globalClueResponse.setModuleFields(returnCluePoolFields);
             }
             //处理内置字段
             Clue clue = internalKeyValueMap.get(globalClueResponse.getId());
-            List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, clue, Clue.class);
+            List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap,
+                    searchFieldMaskConfigMap, hasPermission, clue, Clue.class);
             List<BaseModuleFieldValue> moduleFields = globalClueResponse.getModuleFields();
             if (CollectionUtils.isEmpty(moduleFields)) {
                 globalClueResponse.setModuleFields(baseModuleFieldValues);
@@ -176,32 +200,37 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
 
             if (CollectionUtils.isNotEmpty(globalClueResponse.getModuleFields())) {
                 globalClueResponse.getModuleFields().stream().forEach(moduleField -> {
-                    if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
-                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                    if (phoneTypeFieldIds.contains(moduleField.getFieldId())
+                            && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(),
+                                moduleField.getFieldValue().toString().length())));
                     }
                 });
             }
             if (StringUtils.isNotBlank(globalClueResponse.getPhone())) {
-                globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(), globalClueResponse.getPhone().length()));
+                globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(),
+                        globalClueResponse.getPhone().length()));
             }
 
             searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                 if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name") && !hasPermission) {
-                    globalClueResponse.setName((String) getInputFieldValue(globalClueResponse.getName(), globalClueResponse.getName().length()));
+                    globalClueResponse.setName((String) getInputFieldValue(globalClueResponse.getName(),
+                            globalClueResponse.getName().length()));
                 }
                 if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products") && !hasPermission) {
-                    List<String> maskProductNames = productNames.stream().map(t -> (String) getInputFieldValue(t, t.length())).toList();
+                    List<String> maskProductNames = productNames.stream()
+                            .map(t -> (String) getInputFieldValue(t, t.length())).toList();
                     globalClueResponse.setProducts(maskProductNames);
                 }
             });
-
 
             globalClueResponse.setHasPermission(hasPermission);
         });
         return list;
     }
 
-    private boolean getHasPermission(String userId, String orgId, GlobalCluePoolResponse clueListResponse, Map<String, String> userPoolMap) {
+    private boolean getHasPermission(String userId, String orgId, GlobalCluePoolResponse clueListResponse,
+            Map<String, String> userPoolMap) {
         if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
         }
@@ -209,10 +238,10 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
             return false;
         }
         boolean hasPool = userPoolMap.containsKey(clueListResponse.getPoolId());
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
+        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(),
+                PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
 
         return hasPool && hasPermission;
     }
-
 
 }

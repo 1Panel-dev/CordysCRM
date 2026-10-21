@@ -36,7 +36,6 @@ public class ThirdDepartment {
      */
     private Long order;
 
-
     /**
      * 子节点
      */
@@ -44,8 +43,8 @@ public class ThirdDepartment {
     private String crmId;
     private String crmParentId;
 
-    public static List<ThirdDepartment> buildDepartmentTree(Department internalDepartment, List<ThirdDepartment> departments, String type) {
-
+    public static List<ThirdDepartment> buildDepartmentTree(Department internalDepartment,
+            List<ThirdDepartment> departments, String type) {
         Map<String, ThirdDepartment> departmentMap = new HashMap<>();
         List<ThirdDepartment> rootDepartments = new ArrayList<>();
 
@@ -125,24 +124,21 @@ public class ThirdDepartment {
         return rootDepartments;
     }
 
-
-    public static List<ThirdDepartment> buildDepartmentTreeMultiple(String internalId, List<Department> currentDepartmentList, List<ThirdDepartment> departments) {
+    public static List<ThirdDepartment> buildDepartmentTreeMultiple(String internalId,
+            List<Department> currentDepartmentList, List<ThirdDepartment> departments) {
         // 当前部门集合
         Map<String, Department> currentDepartmentMap = currentDepartmentList.stream()
                 .filter(dept -> dept.getResourceId() != null)
                 .collect(Collectors.toMap(
                         Department::getResourceId,
                         Function.identity(),
-                        (a, b) -> a
-                ));
+                        (a, b) -> a));
         // 企业微信部门集合
         Map<String, ThirdDepartment> wechatDepartmentMap = departments.stream()
                 .collect(Collectors.toMap(
                         ThirdDepartment::getId,
                         Function.identity(),
-                        (a, b) -> a
-                ));
-
+                        (a, b) -> a));
 
         Map<String, ThirdDepartment> finalDepartmentMap = new LinkedHashMap<>();
         // currentDepartmentList 转成 ThirdDepartment
@@ -160,7 +156,6 @@ public class ThirdDepartment {
             department.setChildren(new ArrayList<>());
             finalDepartmentMap.put(current.getResourceId(), department);
         }
-
 
         // 设置crmId
         for (ThirdDepartment department : departments) {
@@ -218,13 +213,11 @@ public class ThirdDepartment {
         // CRM ID -> ThirdDepartment
         Map<String, ThirdDepartment> crmDepartmentMap = finalDepartmentMap.values()
                 .stream()
-                .filter(department ->
-                        department.getCrmId() != null)
+                .filter(department -> department.getCrmId() != null)
                 .collect(Collectors.toMap(
                         ThirdDepartment::getCrmId,
                         Function.identity(),
-                        (a, b) -> a
-                ));
+                        (a, b) -> a));
 
         // 找根部门
         ThirdDepartment rootDepartment = crmDepartmentMap.get(internalId);
@@ -251,7 +244,6 @@ public class ThirdDepartment {
         return Collections.singletonList(rootDepartment);
     }
 
-
     public static List<ThirdDepartment> buildThirdDepartmentTree(List<ThirdDepartment> departments) {
         if (departments == null || departments.isEmpty()) {
             return new ArrayList<>();
@@ -260,8 +252,7 @@ public class ThirdDepartment {
                 .collect(Collectors.toMap(
                         ThirdDepartment::getId,
                         Function.identity(),
-                        (a, b) -> a
-                ));
+                        (a, b) -> a));
 
         List<ThirdDepartment> roots = new ArrayList<>();
         for (ThirdDepartment department : departments) {
@@ -289,7 +280,8 @@ public class ThirdDepartment {
             return;
         }
 
-        departments.sort(Comparator.comparing(ThirdDepartment::getOrder, Comparator.nullsLast(Comparator.reverseOrder())));
+        departments
+                .sort(Comparator.comparing(ThirdDepartment::getOrder, Comparator.nullsLast(Comparator.reverseOrder())));
 
         for (ThirdDepartment department : departments) {
             sortDepartmentTree(department.getChildren());

@@ -6,9 +6,10 @@ import lombok.Data;
 
 /**
  * 表单详情页关联数据标签配置。
- *
- * <p>关联表单和关联字段使用 {@link OptionDTO} 同时承载 ID 与名称：保存时以后端校验后的 ID 为准，
- * 查询时重新填充名称，避免表单或字段重命名后回显旧值。</p>
+ * <p>
+ * 关联表单和关联字段使用 {@link OptionDTO} 同时承载 ID 与名称：保存时以后端校验后的 ID 为准，
+ * 查询时重新填充名称，避免表单或字段重命名后回显旧值。
+ * </p>
  */
 @Data
 public class FormDetailTab {

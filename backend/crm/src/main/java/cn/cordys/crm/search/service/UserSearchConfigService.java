@@ -40,10 +40,6 @@ public class UserSearchConfigService {
 
     /**
      * 保存配置
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     public void save(UserSearchConfigAddRequest request, String userId, String orgId) {
         boolean allEmpty = request.getSearchFields().values().stream()
@@ -57,30 +53,26 @@ public class UserSearchConfigService {
                 throw new GenericException(Translator.get("search.config.limit"));
             }
             switch (key) {
-                case SearchModuleEnum.SEARCH_ADVANCED_CLUE, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
-                    saveSearchFields(value, userId, orgId, FormKey.CLUE.getKey(), key, request);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
-                    saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key, request);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
-                    saveSearchFields(value, userId, orgId, FormKey.CONTACT.getKey(), key, request);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
-                    saveSearchFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key, request);
-                    break;
-                default:
-                    break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE, SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
+                saveSearchFields(value, userId, orgId, FormKey.CLUE.getKey(), key, request);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
+                saveSearchFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key, request);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
+                saveSearchFields(value, userId, orgId, FormKey.CONTACT.getKey(), key, request);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
+                saveSearchFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key, request);
+                break;
+            default:
+                break;
             }
         });
     }
 
-
     /**
      * 清空用户配置
-     *
-     * @param userId
-     * @param orgId
      */
     private void deleteUserSearchConfig(String userId, String orgId) {
         LambdaQueryWrapper<UserSearchConfig> queryWrapper = new LambdaQueryWrapper<>();
@@ -88,14 +80,15 @@ public class UserSearchConfigService {
         userSearchConfigMapper.deleteByLambda(queryWrapper);
     }
 
-
-    private void saveSearchFields(List<String> fieldIds, String userId, String orgId, String formKey, String moduleType, UserSearchConfigAddRequest request) {
+    private void saveSearchFields(List<String> fieldIds, String userId, String orgId, String formKey, String moduleType,
+            UserSearchConfigAddRequest request) {
         if (CollectionUtils.isNotEmpty(fieldIds)) {
             ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
             List<BaseField> fields = businessFormConfig.getFields();
             List<UserSearchConfig> searchConfigs = new ArrayList<>();
             for (String fieldId : fieldIds) {
-                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().orElse(null);
+                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId))
+                        .findFirst().orElse(null);
                 if (baseField == null) {
                     continue;
                 }
@@ -126,12 +119,8 @@ public class UserSearchConfigService {
         }
     }
 
-
     /**
      * 重置配置
-     *
-     * @param userId
-     * @param orgId
      */
     public void reset(String userId, String orgId) {
         deleteUserSearchConfig(userId, orgId);
@@ -146,18 +135,13 @@ public class UserSearchConfigService {
         buildContactFields(FormKey.CONTACT.name(), userId, orgId, defaultSearchConfigs);
 
         userSearchConfigMapper.batchInsert(defaultSearchConfigs);
-
     }
 
     /**
      * 联系人默认字段
-     *
-     * @param formKey
-     * @param userId
-     * @param orgId
-     * @param defaultSearchConfigs
      */
-    private void buildContactFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+    private void buildContactFields(String formKey, String userId, String orgId,
+            List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
         businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CONTACT_CUSTOMER)) {
@@ -169,16 +153,11 @@ public class UserSearchConfigService {
         });
     }
 
-
     /**
      * 线索/线索池默认字段
-     *
-     * @param formKey
-     * @param userId
-     * @param orgId
-     * @param defaultSearchConfigs
      */
-    private void buildClueFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+    private void buildClueFields(String formKey, String userId, String orgId,
+            List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
         businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CLUE_NAME)) {
@@ -192,36 +171,25 @@ public class UserSearchConfigService {
         });
     }
 
-
     /**
      * 客户/公海默认字段
-     *
-     * @param formKey
-     * @param userId
-     * @param orgId
-     * @param defaultSearchConfigs
      */
-    private void buildCustomerFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+    private void buildCustomerFields(String formKey, String userId, String orgId,
+            List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
         businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.CUSTOMER_NAME)) {
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER, defaultSearchConfigs);
                 buildDto(field, userId, orgId, SearchModuleEnum.SEARCH_ADVANCED_PUBLIC, defaultSearchConfigs);
-
             }
         });
     }
 
-
     /**
      * 商机默认字段
-     *
-     * @param formKey
-     * @param userId
-     * @param orgId
-     * @param defaultSearchConfigs
      */
-    private void buildOpportunityFields(String formKey, String userId, String orgId, List<UserSearchConfig> defaultSearchConfigs) {
+    private void buildOpportunityFields(String formKey, String userId, String orgId,
+            List<UserSearchConfig> defaultSearchConfigs) {
         ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
         businessFormConfig.getFields().forEach(field -> {
             if (Strings.CI.equals(field.getInternalKey(), DefaultSearchFieldEnum.OPPORTUNITY_NAME)) {
@@ -233,8 +201,8 @@ public class UserSearchConfigService {
         });
     }
 
-
-    private void buildDto(BaseField field, String userId, String orgId, String moduleType, List<UserSearchConfig> defaultSearchConfigs) {
+    private void buildDto(BaseField field, String userId, String orgId, String moduleType,
+            List<UserSearchConfig> defaultSearchConfigs) {
         UserSearchConfig userSearchConfig = new UserSearchConfig();
         userSearchConfig.setId(IDGenerator.nextStr());
         userSearchConfig.setFieldId(field.getId());
@@ -259,14 +227,8 @@ public class UserSearchConfigService {
         defaultSearchConfigs.add(userSearchConfig);
     }
 
-
     /**
      * 获取搜索字段配置
-     *
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public SearchFieldResponse get(String userId, String orgId) {
         if (!configCount(userId, orgId)) {
@@ -279,15 +241,13 @@ public class UserSearchConfigService {
                 .collect(Collectors.groupingBy(
                         UserSearchConfig::getModuleType,
                         Collectors.mapping(UserSearchConfig::getFieldId,
-                                Collectors.toList())
-                ));
+                                Collectors.toList())));
 
         response.setSearchFields(searchFields);
         response.setResultDisplay(searchConfigs.getFirst().getResultDisplay());
         response.setSortSetting(JSON.parseArray(searchConfigs.getFirst().getSortSetting()));
 
         return response;
-
     }
 
     private boolean configCount(String userId, String orgId) {
@@ -297,14 +257,8 @@ public class UserSearchConfigService {
         return userSearchConfigMapper.countByExample(example) > 0;
     }
 
-
     /**
      * 获取用户搜索配置字段数据
-     *
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     private List<UserSearchConfig> getConfigList(String userId, String orgId) {
         LambdaQueryWrapper<UserSearchConfig> queryWrapper = new LambdaQueryWrapper<>();

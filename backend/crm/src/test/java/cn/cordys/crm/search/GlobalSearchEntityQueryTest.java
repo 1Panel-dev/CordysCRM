@@ -46,7 +46,8 @@ class GlobalSearchEntityQueryTest {
     void opportunityQueriesCurrentOrganizationAndPreservesContactName() {
         GlobalOpportunitySearchService service = new GlobalOpportunitySearchService();
         DataScopeService dataScopeService = prepare(service);
-        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, "owner-id", PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)).thenReturn(true);
+        when(dataScopeService.hasDataPermission(USER_ID, ORG_ID, "owner-id",
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)).thenReturn(true);
         ReflectionTestUtils.setField(service, "baseService", mock(BaseService.class));
         ReflectionTestUtils.setField(service, "opportunityFieldService", mock(OpportunityFieldService.class));
         @SuppressWarnings("unchecked")
@@ -61,7 +62,8 @@ class GlobalSearchEntityQueryTest {
         response.setOwner("owner-id");
         response.setContactName("测试联系人");
 
-        service.buildListData(List.of(response), ORG_ID, USER_ID, List.of(), Set.of(), Map.of("contact-field", "contactId"));
+        service.buildListData(List.of(response), ORG_ID, USER_ID, List.of(), Set.of(),
+                Map.of("contact-field", "contactId"));
 
         assertScopedQuery(mapper);
         assertEquals("测试联系人", response.getModuleFields().getFirst().getFieldValue());
@@ -89,7 +91,8 @@ class GlobalSearchEntityQueryTest {
         mask.setBusinessKey("contact");
         mask.setType("INPUT");
 
-        service.buildListData(List.of(response), ORG_ID, USER_ID, List.of(mask), Set.of(), Map.of("contact-field", "contact"));
+        service.buildListData(List.of(response), ORG_ID, USER_ID, List.of(mask), Set.of(),
+                Map.of("contact-field", "contact"));
 
         assertScopedQuery(mapper);
         assertEquals("测****", response.getModuleFields().getFirst().getFieldValue());
@@ -112,7 +115,8 @@ class GlobalSearchEntityQueryTest {
         response.setId(RECORD_ID);
         response.setPhone("13800001111");
 
-        service.buildListData(List.of(response), ORG_ID, USER_ID, List.of(), Set.of(), Map.of("phone-field", "contact"), List.of("phone-field"));
+        service.buildListData(List.of(response), ORG_ID, USER_ID, List.of(), Set.of(), Map.of("phone-field", "contact"),
+                List.of("phone-field"));
 
         assertScopedQuery(mapper);
         assertEquals("13800******", response.getModuleFields().getFirst().getFieldValue());

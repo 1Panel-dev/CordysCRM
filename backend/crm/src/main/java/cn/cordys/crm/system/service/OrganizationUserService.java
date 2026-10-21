@@ -58,7 +58,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
 @Service("organizationUserService")
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
@@ -117,16 +116,13 @@ public class OrganizationUserService {
     @Resource
     private ApprovalActionService approvalActionService;
 
-
     /**
      * 员工列表查询
-     *
-     * @param request
-     * @return
      */
     public List<UserPageResponse> list(UserPageRequest request) {
         String orderByClause = buildOrderByFieldClause(request.getDepartmentIds());
-        request.setDepartmentIds(request.getDepartmentIds().stream().filter(id -> id.chars().allMatch(Character::isDigit)).toList());
+        request.setDepartmentIds(
+                request.getDepartmentIds().stream().filter(id -> id.chars().allMatch(Character::isDigit)).toList());
         List<UserPageResponse> list = extOrganizationUserMapper.list(request, orderByClause);
         handleData(list, request.getDepartmentIds().getFirst());
         return list;
@@ -144,11 +140,9 @@ public class OrganizationUserService {
         return sj.toString();
     }
 
-
     private void handleData(List<UserPageResponse> list, String departmentId) {
         if (CollectionUtils.isNotEmpty(list)) {
-            String orgId = list.stream().
-                    map(UserPageResponse::getOrganizationId)
+            String orgId = list.stream().map(UserPageResponse::getOrganizationId)
                     .toList()
                     .getFirst();
             List<String> userIds = list.stream()
@@ -184,7 +178,8 @@ public class OrganizationUserService {
             Map<String, String> departmentMap = departmentList.stream()
                     .collect(Collectors.toMap(Department::getId, Department::getName));
             //部门负责人
-            List<String> commanderIds = extDepartmentCommanderMapper.selectCommander(departmentId, list.getFirst().getOrganizationId());
+            List<String> commanderIds = extDepartmentCommanderMapper.selectCommander(departmentId,
+                    list.getFirst().getOrganizationId());
 
             //todo 暂无用户组 后续需求再处理
             list.forEach(user -> {
@@ -207,17 +202,11 @@ public class OrganizationUserService {
                     user.setCommander(true);
                 }
             });
-
         }
     }
 
-
     /**
      * 添加员工
-     *
-     * @param request
-     * @param organizationId
-     * @param operatorId
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.ADD, operator = "{#operatorId}")
     public void addUser(UserAddRequest request, String organizationId, String operatorId) {
@@ -241,13 +230,8 @@ public class OrganizationUserService {
                 .build());
     }
 
-
     /**
      * 添加用户角色关系
-     *
-     * @param roleIds
-     * @param userId
-     * @param operatorId
      */
     private void addUserRole(List<String> roleIds, String userId, String operatorId) {
         if (CollectionUtils.isNotEmpty(roleIds)) {
@@ -267,13 +251,8 @@ public class OrganizationUserService {
         }
     }
 
-
     /**
      * 添加用戶信息
-     *
-     * @param request
-     * @param organizationId
-     * @param userId
      */
     private void addUserInfo(UserAddRequest request, String organizationId, String operatorId, String userId) {
         OrganizationUser orgUser = new OrganizationUser();
@@ -291,9 +270,6 @@ public class OrganizationUserService {
 
     /**
      * 邮箱和手机号唯一性校验
-     *
-     * @param email
-     * @param phone
      */
     private void checkEmailAndPhone(String email, String phone, String id) {
         if (extUserMapper.countByEmail(email, id) > 0) {
@@ -302,15 +278,10 @@ public class OrganizationUserService {
         if (extUserMapper.countByPhone(phone, id) > 0) {
             throw new GenericException(Translator.get("phone.exist"));
         }
-
     }
 
     /**
      * 添加用户基本数据
-     *
-     * @param request
-     * @param operatorId
-     * @return
      */
     private User addUserBaseData(UserAddRequest request, String operatorId, String id) {
         User user = new User();
@@ -326,12 +297,8 @@ public class OrganizationUserService {
         return user;
     }
 
-
     /**
      * 获取用户详情
-     *
-     * @param id
-     * @return
      */
     public UserResponse getUserDetail(String id) {
         UserResponse userDetail = extUserMapper.getUserDetail(id);
@@ -343,7 +310,8 @@ public class OrganizationUserService {
             userDetail.setSupervisorName(Optional.ofNullable(user).map(User::getName).orElse(null));
         }
         //获取用户角色
-        List<UserRoleConvert> userRoles = extUserMapper.getUserRole(List.of(userDetail.getUserId()), userDetail.getOrganizationId());
+        List<UserRoleConvert> userRoles = extUserMapper.getUserRole(List.of(userDetail.getUserId()),
+                userDetail.getOrganizationId());
         userRoles.forEach(role -> role.setName(roleService.translateInternalRole(role.getName())));
         userDetail.setRoles(userRoles);
         return userDetail;
@@ -351,9 +319,6 @@ public class OrganizationUserService {
 
     /**
      * 更新用户
-     *
-     * @param request
-     * @param operatorId
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#operatorId}")
     public void updateUser(UserUpdateRequest request, String operatorId, String orgId) {
@@ -382,10 +347,6 @@ public class OrganizationUserService {
 
     /**
      * 更新用户角色
-     *
-     * @param roleIds
-     * @param oldUser
-     * @param operatorId
      */
     private void updateUserRole(List<String> roleIds, UserResponse oldUser, String operatorId, String orgId) {
         Optional.ofNullable(roleIds).ifPresent(ids -> extUserRoleMapper.deleteUserRoleByUserId(oldUser.getUserId()));
@@ -397,9 +358,6 @@ public class OrganizationUserService {
 
     /**
      * 更新用户信息
-     *
-     * @param request
-     * @param operatorId
      */
     private void updateUserInfo(UserUpdateRequest request, String operatorId, UserResponse user) {
         OrganizationUser organizationUser = BeanUtils.copyBean(new OrganizationUser(), user);
@@ -410,13 +368,8 @@ public class OrganizationUserService {
         extOrganizationUserMapper.updateById(organizationUser);
     }
 
-
     /**
      * 更新用户基本数据
-     *
-     * @param request
-     * @param operatorId
-     * @param userId
      */
     private void updateUserBaseData(UserUpdateRequest request, String operatorId, String userId) {
         User updateUser = BeanUtils.copyBean(new User(), request);
@@ -428,9 +381,6 @@ public class OrganizationUserService {
 
     /**
      * 重置密码
-     *
-     * @param userId
-     * @param operatorId
      */
     public void resetPassword(String userId, String operatorId, String orgId) {
         if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
@@ -449,7 +399,8 @@ public class OrganizationUserService {
             // 踢出该用户
             SessionUtils.kickOutUser(operatorId, userId);
 
-            LogDTO logDTO = new LogDTO(orgId, userId, operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, user.getName());
+            LogDTO logDTO = new LogDTO(orgId, userId, operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION,
+                    user.getName());
             Map<String, String> oldMap = new HashMap<>();
             oldMap.put("userPassword", "############");
             Map<String, String> newMap = new HashMap<>();
@@ -462,9 +413,6 @@ public class OrganizationUserService {
 
     /**
      * 批量启用/禁用
-     *
-     * @param request
-     * @param operatorId
      */
     public void enable(UserBatchEnableRequest request, String operatorId, String orgId) {
         extOrganizationUserMapper.enable(request, operatorId, System.currentTimeMillis());
@@ -486,7 +434,8 @@ public class OrganizationUserService {
                 // 踢出该用户
                 SessionUtils.kickOutUser(operatorId, orgUser.getIdAsString());
 
-                LogDTO logDTO = new LogDTO(orgId, orgUser.getIdAsString(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
+                LogDTO logDTO = new LogDTO(orgId, orgUser.getIdAsString(), operatorId, LogType.UPDATE,
+                        LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
                 logDTO.setOriginalValue(originUser);
                 logDTO.setModifiedValue(newUser);
                 logs.add(logDTO);
@@ -496,13 +445,8 @@ public class OrganizationUserService {
         });
     }
 
-
     /**
      * 批量重置密码
-     *
-     * @param request
-     * @param operatorId
-     * @param orgId
      */
     public void batchResetPassword(UserBatchRequest request, String operatorId, String orgId) {
         List<User> userList = extOrganizationUserMapper.getUserList(request);
@@ -521,7 +465,8 @@ public class OrganizationUserService {
             }
             user.setUpdateTime(System.currentTimeMillis());
             user.setUpdateUser(operatorId);
-            LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, user.getName());
+            LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION,
+                    user.getName());
             logDTO.setOriginalValue(oldMap);
             logDTO.setModifiedValue(newMap);
             logs.add(logDTO);
@@ -530,14 +475,10 @@ public class OrganizationUserService {
         });
         extUserMapper.batchUpdatePassword(userList);
         logService.batchAdd(logs);
-
     }
-
 
     /**
      * 删除用户
-     *
-     * @param orgId
      */
     public void deleteUser(String orgId) {
         List<String> departmentIds = extDepartmentMapper.selectAllDepartmentIds(orgId);
@@ -560,18 +501,13 @@ public class OrganizationUserService {
         // 踢出用户
         userList.forEach(user -> SessionUtils.kickOutUser(user.getName()));
         extOrganizationUserMapper.deleteUserByOrgId(orgId);
-
     }
 
     /**
      * 保存同步信息
-     *
-     * @param users
-     * @param userExtends
-     * @param organizationUsers
-     * @param departmentCommanders
      */
-    public void save(List<User> users, List<UserExtend> userExtends, List<OrganizationUser> organizationUsers, List<DepartmentCommander> departmentCommanders) {
+    public void save(List<User> users, List<UserExtend> userExtends, List<OrganizationUser> organizationUsers,
+            List<DepartmentCommander> departmentCommanders) {
         userMapper.batchInsert(users);
         userExtendMapper.batchInsert(userExtends);
         organizationUserMapper.batchInsert(organizationUsers);
@@ -593,12 +529,8 @@ public class OrganizationUserService {
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
     }
 
-
     /**
      * 更新同步信息
-     *
-     * @param updateUsers
-     * @param updateOrganizationUsers
      */
     public void update(List<User> updateUsers, List<OrganizationUser> updateOrganizationUsers) {
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
@@ -610,37 +542,29 @@ public class OrganizationUserService {
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
     }
 
-
     /**
      * 批量编辑用户
-     *
-     * @param request
-     * @param operatorId
-     * @param organizationId
      */
     public void batchEditUser(UserBatchEditRequest request, String operatorId, String organizationId) {
         List<UserResponse> originUser = extOrganizationUserMapper.selectByIds(request.getIds());
         extOrganizationUserMapper.updateUserByIds(request, operatorId, organizationId);
         List<UserResponse> modifiedUser = extOrganizationUserMapper.selectByIds(request.getIds());
-        Map<String, UserResponse> userMap = modifiedUser.stream().collect(Collectors.toMap(UserResponse::getUserId, Function.identity()));
-
+        Map<String, UserResponse> userMap = modifiedUser.stream()
+                .collect(Collectors.toMap(UserResponse::getUserId, Function.identity()));
 
         List<LogDTO> logs = originUser.stream()
                 .map(origUser -> {
-                    LogDTO logDTO = new LogDTO(organizationId, origUser.getUserId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, origUser.getUserName());
+                    LogDTO logDTO = new LogDTO(organizationId, origUser.getUserId(), operatorId, LogType.UPDATE,
+                            LogModule.SYSTEM_ORGANIZATION, origUser.getUserName());
                     logDTO.setOriginalValue(origUser);
                     logDTO.setModifiedValue(userMap.get(origUser.getUserId()));
                     return logDTO;
                 }).toList();
         logService.batchAdd(logs);
-
     }
-
 
     /**
      * excel导入-下载模板
-     *
-     * @param response
      */
     public void downloadExcelTemplate(HttpServletResponse response) {
         //获取表头字段
@@ -654,22 +578,15 @@ public class OrganizationUserService {
                         Translator.get("user_import_template_sheet"), handler);
     }
 
-
     /**
      * 获取表头字段
-     *
-     * @return
      */
     private List<List<String>> getTemplateHead() {
         return new UserExcelDataFactory().getUserExcelDataLocal().getHead();
     }
 
-
     /**
      * 导入excel检查
-     *
-     * @param file
-     * @return
      */
     public UserImportResponse preCheck(MultipartFile file, String orgId) {
         if (file == null) {
@@ -680,7 +597,6 @@ public class OrganizationUserService {
         checkImportExcel(response, file, orgId);
         return response;
     }
-
 
     private void checkImportExcel(UserImportResponse response, MultipartFile file, String orgId) {
         try {
@@ -697,14 +613,8 @@ public class OrganizationUserService {
         }
     }
 
-
     /**
      * 用户导入
-     *
-     * @param file
-     * @param operatorId
-     * @param orgId
-     * @return
      */
     public UserImportResponse importByExcel(MultipartFile file, String operatorId, String orgId) {
         if (file == null) {
@@ -726,25 +636,21 @@ public class OrganizationUserService {
         }
     }
 
-
     /**
      * 保存导入数据
-     *
-     * @param list
-     * @param departmentTree
-     * @param departmentMap
-     * @param operatorId
-     * @param orgId
      */
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
-    public void saveImportData(List<UserExcelData> list, List<BaseTreeNode> departmentTree, Map<String, String> departmentMap, String operatorId, String orgId) {
+    public void saveImportData(List<UserExcelData> list, List<BaseTreeNode> departmentTree,
+            Map<String, String> departmentMap, String operatorId, String orgId) {
         //部门
         List<String> departmentPath = list.stream().map(UserExcelData::getDepartment).toList();
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
         //构建部门树
-        Map<String, String> departmentPathMap = departmentService.createDepartment(departmentPath, orgId, departmentTree, operatorId, departmentMap, logs);
-        List<String> nameList = list.stream().map(UserExcelData::getSupervisor).filter(StringUtils::isNotBlank).toList();
+        Map<String, String> departmentPathMap = departmentService.createDepartment(departmentPath, orgId,
+                departmentTree, operatorId, departmentMap, logs);
+        List<String> nameList = list.stream().map(UserExcelData::getSupervisor).filter(StringUtils::isNotBlank)
+                .toList();
         List<UserImportDTO> supervisorList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(nameList)) {
             supervisorList = extOrganizationUserMapper.selectSupervisor(nameList, orgId);
@@ -754,7 +660,8 @@ public class OrganizationUserService {
         List<OrganizationUser> organizationUsers = new ArrayList<>();
         List<UserImportDTO> finalSupervisorList = supervisorList;
         list.forEach(userData -> {
-            buildUser(userData, operatorId, userList, departmentPathMap, orgId, organizationUsers, finalSupervisorList, logs);
+            buildUser(userData, operatorId, userList, departmentPathMap, orgId, organizationUsers, finalSupervisorList,
+                    logs);
         });
 
         userMapper.batchInsert(userList);
@@ -763,7 +670,9 @@ public class OrganizationUserService {
         logService.batchAdd(logs);
     }
 
-    private void buildUser(UserExcelData userData, String operatorId, List<User> userList, Map<String, String> departmentPathMap, String orgId, List<OrganizationUser> organizationUsers, List<UserImportDTO> supervisorList, List<LogDTO> logs) {
+    private void buildUser(UserExcelData userData, String operatorId, List<User> userList,
+            Map<String, String> departmentPathMap, String orgId, List<OrganizationUser> organizationUsers,
+            List<UserImportDTO> supervisorList, List<LogDTO> logs) {
         User user = new User();
         user.setId(IDGenerator.nextStr());
         user.setLastOrganizationId(orgId);
@@ -788,7 +697,8 @@ public class OrganizationUserService {
         organizationUser.setEmployeeId(userData.getEmployeeId());
         organizationUser.setPosition(userData.getPosition());
         organizationUser.setEmployeeType(userData.getEmployeeType());
-        organizationUser.setSupervisorId(handleSupervisor(supervisorList, organizationUser.getDepartmentId(), userData.getSupervisor()));
+        organizationUser.setSupervisorId(
+                handleSupervisor(supervisorList, organizationUser.getDepartmentId(), userData.getSupervisor()));
         organizationUser.setWorkCity(userData.getWorkCity());
         organizationUser.setCreateTime(System.currentTimeMillis());
         organizationUser.setCreateUser(operatorId);
@@ -796,49 +706,43 @@ public class OrganizationUserService {
         organizationUser.setUpdateUser(operatorId);
         organizationUsers.add(organizationUser);
 
-
-        LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.ADD, LogModule.SYSTEM_ORGANIZATION, userData.getName());
+        LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.ADD, LogModule.SYSTEM_ORGANIZATION,
+                userData.getName());
         logDTO.setModifiedValue(user);
         logs.add(logDTO);
-
     }
-
 
     /**
      * 所属上级
-     *
-     * @param supervisorList
-     * @param departmentId
-     * @param name
-     * @return
      */
     private String handleSupervisor(List<UserImportDTO> supervisorList, String departmentId, String name) {
         if (StringUtils.isBlank(name)) {
             return null;
         }
-        List<UserImportDTO> departmentUsers = supervisorList.stream().filter(supervisor -> Strings.CI.equals(supervisor.getName(), name) && Strings.CI.equals(supervisor.getDepartmentId(), departmentId)).toList();
+        List<UserImportDTO> departmentUsers = supervisorList.stream()
+                .filter(supervisor -> Strings.CI.equals(supervisor.getName(), name)
+                        && Strings.CI.equals(supervisor.getDepartmentId(), departmentId))
+                .toList();
         if (CollectionUtils.isNotEmpty(departmentUsers)) {
             List<String> userIds = departmentUsers.stream().map(UserImportDTO::getUserId).toList();
-            List<DepartmentCommander> commanders = extDepartmentCommanderMapper.selectCommanderByUsers(departmentId, userIds);
+            List<DepartmentCommander> commanders = extDepartmentCommanderMapper.selectCommanderByUsers(departmentId,
+                    userIds);
             if (CollectionUtils.isNotEmpty(commanders)) {
                 return commanders.getFirst().getUserId();
             }
             return departmentUsers.getFirst().getUserId();
         }
 
-        List<UserImportDTO> unDepartmentUsers = supervisorList.stream().filter(supervisor -> Strings.CI.equals(supervisor.getName(), name)).toList();
+        List<UserImportDTO> unDepartmentUsers = supervisorList.stream()
+                .filter(supervisor -> Strings.CI.equals(supervisor.getName(), name)).toList();
         if (CollectionUtils.isNotEmpty(unDepartmentUsers)) {
             return unDepartmentUsers.getFirst().getUserId();
         }
         return null;
     }
 
-
     /**
      * 导入校验电话号码唯一
-     *
-     * @param phone
-     * @return
      */
     public boolean checkPhone(String phone) {
         return extUserMapper.countByPhone(phone, null) > 0;
@@ -846,9 +750,6 @@ public class OrganizationUserService {
 
     /**
      * 导入校验邮箱唯一
-     *
-     * @param email
-     * @return
      */
     public boolean checkEmail(String email) {
         return extUserMapper.countByEmail(email, null) > 0;
@@ -866,12 +767,8 @@ public class OrganizationUserService {
         return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder, includeDisabled);
     }
 
-
     /**
      * 删除用户（单个）
-     *
-     * @param id
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.DELETE, resourceId = "{#id}")
     public void deleteUserById(String id, String orgId) {
@@ -894,11 +791,8 @@ public class OrganizationUserService {
         permissionCache.clearCache(user.getUserId(), orgId);
     }
 
-
     /**
      * 删除用户全部数据
-     *
-     * @param userId
      */
     private void deleteUserAllData(String userId, String id, String orgId) {
         OrganizationUser organizationUser = new OrganizationUser();
@@ -914,7 +808,6 @@ public class OrganizationUserService {
         if (CollectionUtils.isNotEmpty(userRoleIds)) {
             extUserRoleMapper.deleteByIds(userRoleIds);
         }
-
     }
 
     public boolean checkUserResource(String id) {
@@ -940,7 +833,6 @@ public class OrganizationUserService {
         return Optional.ofNullable(user).map(User::getName).orElse(null);
     }
 
-
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#operatorId}")
     public void updateUserName(UserUpdateName request, String operatorId) {
         User originUser = userMapper.selectByPrimaryKey(request.getUserId());
@@ -964,15 +856,10 @@ public class OrganizationUserService {
                 .modifiedValue(modifiedVal)
                 .resourceId(request.getUserId())
                 .build());
-
     }
 
     /**
      * 获取单个部门下的用户
-     *
-     * @param departmentId
-     * @param orgId
-     * @return
      */
     public List<DeptUserTreeNode> getUserTreeByDepId(String departmentId, String orgId) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
@@ -1010,11 +897,13 @@ public class OrganizationUserService {
     }
 
     public List<EnableOptionDTO> getAdminUserOptions(String organizationId, Boolean includeDisabled) {
-        return extUserRoleMapper.selectUserOptionByRoleId(organizationId, InternalRole.ORG_ADMIN.getValue(), includeDisabled);
+        return extUserRoleMapper.selectUserOptionByRoleId(organizationId, InternalRole.ORG_ADMIN.getValue(),
+                includeDisabled);
     }
 
     public Map<String, List<DepartmentSourceUserDTO>> getuserBySourceId(String orgId, Set<String> departmentSourceId) {
-        List<DepartmentSourceUserDTO> list = extOrganizationUserMapper.getUserBySourceId(orgId, departmentSourceId.stream().toList());
+        List<DepartmentSourceUserDTO> list = extOrganizationUserMapper.getUserBySourceId(orgId,
+                departmentSourceId.stream().toList());
         return list.stream().collect(Collectors.groupingBy(DepartmentSourceUserDTO::getResourceId));
     }
 }

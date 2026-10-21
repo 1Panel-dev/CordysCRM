@@ -22,22 +22,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * 各表单统计聚合语句的「执行」冒烟测试: 在真实数据库上把 28 条语句各跑一遍。
- *
- * <p>与 {@code StatisticSqlRenderTests} 的分工: 那边只把 SQL 拼出来看形状(不需要库, 快);
+ * <p>
+ * 与 {@code StatisticSqlRenderTests} 的分工: 那边只把 SQL 拼出来看形状(不需要库, 快);
  * 这边证明拼出来的列名、表名、别名在库里真实存在 —— 条件片段引用了没 join 的 {@code combine_0}、
- * 没建的 {@code stat}、写死别名的 {@code sou}, 都只有真正执行才会报错。</p>
- *
- * <p>遍历用的是 {@link StatisticSqlMapperRegistry#all()}, 跑的就是生产的分发路径, 不是另抄一份表单清单。</p>
- *
- * <p>全部用不存在的组织ID与数据ID, 每条语句都命中空集: 断言的是「能执行出结果」而不是具体数值,
- * 既不依赖也不产生任何测试数据。</p>
+ * 没建的 {@code stat}、写死别名的 {@code sou}, 都只有真正执行才会报错。
+ * </p>
+ * <p>
+ * 遍历用的是 {@link StatisticSqlMapperRegistry#all()}, 跑的就是生产的分发路径, 不是另抄一份表单清单。
+ * </p>
+ * <p>
+ * 全部用不存在的组织ID与数据ID, 每条语句都命中空集: 断言的是「能执行出结果」而不是具体数值,
+ * 既不依赖也不产生任何测试数据。
+ * </p>
  */
 class StatisticSqlMapperTests extends BaseTest {
 
     /**
      * 不存在的组织ID。
-     *
-     * <p>组织隔离是每条语句的第一道谓词, 用它把结果集钉死成空, 断言就与库里有没有数据无关了。</p>
+     * <p>
+     * 组织隔离是每条语句的第一道谓词, 用它把结果集钉死成空, 断言就与库里有没有数据无关了。
+     * </p>
      */
     private static final String NO_SUCH_ORG = "no-such-org";
 
@@ -48,9 +52,10 @@ class StatisticSqlMapperTests extends BaseTest {
 
     /**
      * 14 张表单都有的业务列, 用它验证「业务字段走主表列」这一支在每张表上都能执行。
-     *
-     * <p>刻意不用 {@code owner} 之类: 产品与价格没有负责人列, 挑一个「大多数表有」的列会让这两张表
-     * 的失败看起来像语句写错了。</p>
+     * <p>
+     * 刻意不用 {@code owner} 之类: 产品与价格没有负责人列, 挑一个「大多数表有」的列会让这两张表
+     * 的失败看起来像语句写错了。
+     * </p>
      */
     private static final String UNIVERSAL_BUSINESS_KEY = "id";
 
@@ -64,9 +69,10 @@ class StatisticSqlMapperTests extends BaseTest {
 
     /**
      * 关联字段与被统计字段都是业务字段: 两个谓词都落在主表自己的列上。
-     *
-     * <p>空集下 SUM 返回 null —— 不是 0。这个区别是上层「空结果」判定的依据
-     * (见 {@code StatisticFieldService#writeStatisticValue}), 顺手在这里钉住。</p>
+     * <p>
+     * 空集下 SUM 返回 null —— 不是 0。这个区别是上层「空结果」判定的依据
+     * (见 {@code StatisticFieldService#writeStatisticValue}), 顺手在这里钉住。
+     * </p>
      */
     @Test
     void aggregateWithBusinessRelationAndBusinessValue() {
@@ -122,13 +128,15 @@ class StatisticSqlMapperTests extends BaseTest {
 
     /**
      * 统计范围带部门条件。
-     *
-     * <p>这是本次改造的关键用例: 改造前统计走一套通用渲染, 这条语句会拼出 {@code t.department_id}
+     * <p>
+     * 这是本次改造的关键用例: 改造前统计走一套通用渲染, 这条语句会拼出 {@code t.department_id}
      * 而语句里根本没有 {@code t} 这个别名, 直接 {@code Unknown column} 失败;
-     * 现在部门条件与列表页共用 {@code fieldConditionJoin}, 由各表单自己的片段建 join。</p>
-     *
-     * <p>跟进记录 / 跟进计划把部门表别名写死成 {@code sou}, 产品 / 价格没有部门这一维
-     * (会落到字段值表分支), 这三种形态都要能执行。</p>
+     * 现在部门条件与列表页共用 {@code fieldConditionJoin}, 由各表单自己的片段建 join。
+     * </p>
+     * <p>
+     * 跟进记录 / 跟进计划把部门表别名写死成 {@code sou}, 产品 / 价格没有部门这一维
+     * (会落到字段值表分支), 这三种形态都要能执行。
+     * </p>
      */
     @Test
     void aggregateWithDepartmentCondition() {
@@ -208,10 +216,11 @@ class StatisticSqlMapperTests extends BaseTest {
 
     /**
      * 宿主侧游标语句不带条件: 更新范围 = 「全部计算」, 条件片段整段短路。
-     *
-     * <p>这里用真实组织跑, 因为「无条件」正是唯一可能返回数据的形态; 断言不管数据多少都成立 ——
+     * <p>
+     * 这里用真实组织跑, 因为「无条件」正是唯一可能返回数据的形态; 断言不管数据多少都成立 ——
      * 重点是这条语句在没有任何条件时也能执行, 且页大小生效、游标指向的结果按主键递增
-     * (翻页靠 {@code id > lastId}, 顺序错了会漏数据或死循环)。</p>
+     * (翻页靠 {@code id > lastId}, 顺序错了会漏数据或死循环)。
+     * </p>
      */
     @Test
     void hostDataIdsWithoutCondition() {

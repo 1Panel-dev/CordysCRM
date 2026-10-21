@@ -8,10 +8,7 @@ import static cn.cordys.file.engine.StorageType.LOCAL;
 import static cn.cordys.file.engine.StorageType.S3;
 
 /**
- * FileCenter 类提供了根据存储类型获取对应文件仓库的静态方法。
- * <p>
- * 该类封装了不同存储类型（如 MINIO、LOCAL）的文件仓库获取逻辑，并允许根据存储类型返回相应的 {@link FileRepository} 实现。
- * </p>
+ * 按存储类型获取 S3 或本地文件仓库。
  */
 @Slf4j
 public class FileCenter {
@@ -25,9 +22,8 @@ public class FileCenter {
     /**
      * 根据给定的存储类型返回对应的 {@link FileRepository} 实现。
      *
-     * @param storage 存储类型枚举值，指示所需的存储实现（如 S3、LOCAL）。
-     *
-     * @return 返回对应的 {@link FileRepository} 实现，如果存储类型未知，则返回默认的仓库。
+     * @param storage 存储类型名称，仅 {@code S3} 匹配 S3 仓库（区分大小写）。
+     * @return S3 仓库，或在其他输入（包括 {@code null}）下返回本地仓库。
      */
     public static FileRepository getRepository(String storage) {
         if (Strings.CS.equals(S3.name(), storage)) {
@@ -40,7 +36,7 @@ public class FileCenter {
     /**
      * 返回默认的 {@link FileRepository} 实现。
      * <p>
-     * 当前默认实现为 {@link LocalRepository}，可以根据实际需求修改此方法以支持其他默认仓库。
+     * 默认存储类型为 {@link StorageType#LOCAL}。
      * </p>
      *
      * @return 默认的 {@link FileRepository} 实现。

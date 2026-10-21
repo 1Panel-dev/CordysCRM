@@ -119,7 +119,6 @@ public class PersonalCenterControllerTests extends BaseTest {
 
         UserResponse userDetail = extUserMapper.getUserDetail(first.getId());
         Assertions.assertNotNull(userDetail);
-
     }
 
     @Test
@@ -140,9 +139,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         emailDTO.setTsl("true");
         this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
 
-
         this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().isOk());
-
     }
 
     @Test
@@ -153,10 +150,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         personalInfoRequest.setEmail("3Gyq356@Cordys.com");
 
         this.requestPost("/personal/center/update", personalInfoRequest).andExpect(status().isOk());
-
-
     }
-
 
     @Test
     @Order(4)
@@ -208,7 +202,6 @@ public class PersonalCenterControllerTests extends BaseTest {
         customerContact.setEnable(true);
         customerContactBaseMapper.insert(customerContact);
 
-
         RepeatCustomerPageRequest request = new RepeatCustomerPageRequest();
         request.setCurrent(1);
         request.setPageSize(10);
@@ -234,7 +227,6 @@ public class PersonalCenterControllerTests extends BaseTest {
         Pager<List<FollowUpPlanListResponse>> result = getPageResult(mvcResult, FollowUpPlanListResponse.class);
         Assertions.assertNotNull(result.getList());
     }
-
 
     @Test
     @Order(6)
@@ -274,7 +266,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         personalInfoRequest.setEmail("admin@cordys-crm.io");
 
         this.requestPost("/personal/center/update", personalInfoRequest).andExpect(status().isOk());
-        String PREFIX = "personal_email_code:";  // Redis 存储前缀
+        String PREFIX = "personal_email_code:"; // Redis 存储前缀
         stringRedisTemplate.opsForValue().set(PREFIX + "3Gyq3@Cordys.com", "253574", 10, TimeUnit.MINUTES);
         PersonalPasswordRequest personalPasswordRequest = new PersonalPasswordRequest();
         personalPasswordRequest.setPassword("Gyq124");
@@ -286,7 +278,5 @@ public class PersonalCenterControllerTests extends BaseTest {
         permissionAuthInfo = null;
         //DEFAULT_USER_PASSWORD=CodingUtils.md5("Gyq124");
         login();
-
-
     }
 }

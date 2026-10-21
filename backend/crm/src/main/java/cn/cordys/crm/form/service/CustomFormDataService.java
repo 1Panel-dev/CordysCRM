@@ -19,9 +19,9 @@ import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.ResourcePermissionService;
-import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.BaseService;
@@ -52,9 +52,9 @@ import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
@@ -141,7 +141,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
     @Resource
     private ApprovalFlowService approvalFlowService;
 
-    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean catchPermissionException) {
+    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId,
+            String orgId, boolean catchPermissionException) {
         String formId = request.getCustomFormId();
         CustomFormRoleKey dataScope;
         if (catchPermissionException) {
@@ -158,12 +159,14 @@ public class CustomFormDataService extends BaseExportService implements Approval
         }
         boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
 
-
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
         CustomFormDataFieldService.setFormKey(formId);
-        List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(CustomFormDataListResponse::getId).toList();
-        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        List<String> approvingResourceIds = list.stream()
+                .filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
+                .map(CustomFormDataListResponse::getId).toList();
+        Map<String, Boolean> firstNodeApprovedMap = baseService
+                .getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
         // 提审人仅存在于审批中的表单数据, 非审批中状态无需查询审批实例, 统一返回空
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
         try {
@@ -188,15 +191,18 @@ public class CustomFormDataService extends BaseExportService implements Approval
                 (dataScope == CustomFormRoleKey.MANAGE_OWN && StringUtils.equals(owner, userId));
     }
 
-    public List<CustomFormDataListResponse> buildList(List<CustomFormDataListResponse> list, String formId, String orgId) {
+    public List<CustomFormDataListResponse> buildList(List<CustomFormDataListResponse> list, String formId,
+            String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
 
         List<String> dataIds = list.stream().map(CustomFormDataListResponse::getId).toList();
 
-        Map<String, List<BaseModuleFieldValue>> fieldMap = customFormDataFieldService.getResourceFieldMap(dataIds, true);
-        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = customFormDataFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(formId, orgId), fieldMap);
+        Map<String, List<BaseModuleFieldValue>> fieldMap = customFormDataFieldService.getResourceFieldMap(dataIds,
+                true);
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = customFormDataFieldService
+                .setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(formId, orgId), fieldMap);
 
         // 归属部门取自负责人所在部门, 与客户/线索/商机保持一致
         List<String> ownerIds = list.stream().map(CustomFormDataListResponse::getOwner)
@@ -216,15 +222,16 @@ public class CustomFormDataService extends BaseExportService implements Approval
         return baseService.setCreateUpdateOwnerUserName(list);
     }
 
-
-    private Map<String, List<OptionDTO>> buildOptionMap(String formId, String orgId, List<CustomFormDataListResponse> list) {
+    private Map<String, List<OptionDTO>> buildOptionMap(String formId, String orgId,
+            List<CustomFormDataListResponse> list) {
         ModuleForm moduleForm = moduleFormMapper.selectByPrimaryKey(formId);
         if (moduleForm == null || CollectionUtils.isEmpty(list)) {
             return Collections.emptyMap();
         }
 
         ModuleFormConfigDTO formConfig = moduleFormService.getBusinessFormConfig(moduleForm.getFormKey(), orgId);
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomFormDataListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                CustomFormDataListResponse::getModuleFields);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
 
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(list,
@@ -277,8 +284,7 @@ public class CustomFormDataService extends BaseExportService implements Approval
         resp.setIsAdmin(isAdminUser(dataScope, userId, data.getOwner()));
 
         Map<String, String> userNameMap = baseService.getUserNameMap(
-                List.of(data.getOwner(), data.getCreateUser(), data.getUpdateUser())
-        );
+                List.of(data.getOwner(), data.getCreateUser(), data.getUpdateUser()));
         resp.setOwnerName(userNameMap.get(data.getOwner()));
         resp.setCreateUserName(userNameMap.get(data.getCreateUser()));
         resp.setUpdateUserName(userNameMap.get(data.getUpdateUser()));
@@ -292,7 +298,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
 
         CustomFormDataFieldService.setFormKey(data.getCustomFormId());
         try {
-            ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(data.getCustomFormId(), orgId);
+            ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(data.getCustomFormId(),
+                    orgId);
             List<BaseModuleFieldValue> moduleFields = customFormDataFieldService.getModuleFieldValuesByResourceId(id);
             Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFields);
             optionMap.put(BusinessModuleField.CUSTOM_FORM_DATA_OWNER.getBusinessKey(),
@@ -307,7 +314,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
         }
 
         if (Strings.CI.equals(resp.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(resp.getId()), orgId);
+            Map<String, Boolean> firstNodeApproved = baseService
+                    .getApprovingResourceFirstNodeApproved(List.of(resp.getId()), orgId);
             resp.setFirstApproved(firstNodeApproved.get(resp.getId()));
             resp.setSubmitterId(baseService.getApprovingResourceSubmitterId(resp.getId()));
         }
@@ -326,10 +334,12 @@ public class CustomFormDataService extends BaseExportService implements Approval
         if (customFormData == null) {
             return null;
         }
-        CustomFormDataGetResponse customFormDataGetResponse = BeanUtils.copyBean(new CustomFormDataGetResponse(), customFormData);
+        CustomFormDataGetResponse customFormDataGetResponse = BeanUtils.copyBean(new CustomFormDataGetResponse(),
+                customFormData);
         CustomFormDataFieldService.setFormKey(customFormData.getCustomFormId());
         // 获取模块字段
-        List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService.getModuleFieldValuesByResourceId(id);
+        List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService
+                .getModuleFieldValuesByResourceId(id);
         customFormDataGetResponse.setModuleFields(customFormDataFields);
         return customFormDataGetResponse;
     }
@@ -350,7 +360,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
             return Collections.emptyList();
         }
         // 批量查询自定义字段值
-        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customFormDataFieldService.getResourceFieldMap(ids, true);
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customFormDataFieldService.getResourceFieldMap(ids,
+                true);
 
         // 组装结果
         return customFormData.stream().map(clue -> {
@@ -387,7 +398,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
         customFormDataMapper.insert(data);
 
         ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(request.getCustomFormId(), orgId);
-        baseService.handleAddLogWithSubTable(data, request.getModuleFields(), Translator.get("products_info"), formConfig);
+        baseService.handleAddLogWithSubTable(data, request.getModuleFields(), Translator.get("products_info"),
+                formConfig);
 
         return data;
     }
@@ -403,7 +415,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKeyExpr = "{#request.customFormId}", executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
-    public CustomFormData update(CustomFormDataUpdateRequest request, String userId, String orgId, boolean checkPermission) {
+    public CustomFormData update(CustomFormDataUpdateRequest request, String userId, String orgId,
+            boolean checkPermission) {
         CustomFormData originData = customFormDataMapper.selectByPrimaryKey(request.getId());
         if (originData == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
@@ -413,8 +426,12 @@ public class CustomFormDataService extends BaseExportService implements Approval
             checkUpdatePermission(request, userId, orgId, originData);
         }
 
-        if (request.getName() == null) request.setName(originData.getName());
-        if (request.getOwner() == null) request.setOwner(originData.getOwner());
+        if (request.getName() == null) {
+            request.setName(originData.getName());
+        }
+        if (request.getOwner() == null) {
+            request.setOwner(originData.getOwner());
+        }
 
         CustomFormData updateData = new CustomFormData();
         updateData.setId(request.getId());
@@ -428,12 +445,13 @@ public class CustomFormDataService extends BaseExportService implements Approval
         updateData.setApprovalStatus(originData.getApprovalStatus());
         customFormDataMapper.update(updateData);
 
-
         CustomFormDataFieldService.setFormKey(originData.getCustomFormId());
         try {
-            ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(originData.getCustomFormId(), orgId);
+            ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(originData.getCustomFormId(),
+                    orgId);
             if (request.getModuleFields() != null) {
-                List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(request.getId());
+                List<BaseModuleFieldValue> originFields = customFormDataFieldService
+                        .getModuleFieldValuesByResourceId(request.getId());
                 // 过滤掉引用字段（显示字段），这些字段不需要参与日志对比
                 List<BaseModuleFieldValue> logOriginFields = filterRefFields(originFields);
                 List<BaseModuleFieldValue> logModifiedFields = filterRefFields(request.getModuleFields());
@@ -452,7 +470,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
         return customFormDataMapper.selectByPrimaryKey(request.getId());
     }
 
-    private void checkUpdatePermission(CustomFormDataUpdateRequest request, String userId, String orgId, CustomFormData originData) {
+    private void checkUpdatePermission(CustomFormDataUpdateRequest request, String userId, String orgId,
+            CustomFormData originData) {
         checkWritePermission(userId, orgId, originData);
 
         if (StringUtils.isNotBlank(request.getCustomFormId())
@@ -518,7 +537,7 @@ public class CustomFormDataService extends BaseExportService implements Approval
      * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改。
      * 将审批通过的字段值回写到业务主表及自定义字段表。
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         String orgId = OrganizationContext.getOrganizationId();
@@ -533,38 +552,46 @@ public class CustomFormDataService extends BaseExportService implements Approval
         // 保存原始数据用于日志记录
         CustomFormData originData = BeanUtils.copyBean(new CustomFormData(), customFormData);
         CustomFormDataFieldService.setFormKey(customFormData.getCustomFormId());
-        List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<BaseModuleFieldValue> originFields = customFormDataFieldService
+                .getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
         List<CustomFormDataField> customFormDataFields = new ArrayList<>();
         List<CustomFormDataFieldBlob> customFormDataFieldBlobs = new ArrayList<>();
 
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())
+                    || fieldUpdateParam.getFieldValue() == null) {
                 continue;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                    .getResolver(fieldConfig.getType());
             if (fieldConfig.hasBusinessKey()) {
                 // 业务主表字段
-                customFormDataFieldService.setResourceFieldValue(customFormData, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+                customFormDataFieldService.setResourceFieldValue(customFormData, fieldConfig.getBusinessKey(),
+                        fieldUpdateParam.getFieldValue());
             } else {
                 // 自定义字段
                 if (fieldConfig.isBlob()) {
                     customFormDataFieldBlobMapper.deleteByLambda(new LambdaQueryWrapper<CustomFormDataFieldBlob>()
-                            .eq(CustomFormDataFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(CustomFormDataFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                            .eq(CustomFormDataFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(CustomFormDataFieldBlob::getResourceId, postFieldParam.getResourceId()));
                     CustomFormDataFieldBlob field = new CustomFormDataFieldBlob();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     customFormDataFieldBlobs.add(field);
                 } else {
                     customFormDataFieldMapper.deleteByLambda(new LambdaQueryWrapper<CustomFormDataField>()
-                            .eq(CustomFormDataField::getFieldId, fieldUpdateParam.getFieldId()).eq(CustomFormDataField::getResourceId, postFieldParam.getResourceId()));
+                            .eq(CustomFormDataField::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(CustomFormDataField::getResourceId, postFieldParam.getResourceId()));
                     CustomFormDataField field = new CustomFormDataField();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     customFormDataFields.add(field);
                 }
             }
@@ -581,11 +608,13 @@ public class CustomFormDataService extends BaseExportService implements Approval
         try {
             baseService.handleUpdateLogWithSubTable(originData, customFormData, originFields,
                     customFormDataFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
-                    postFieldParam.getResourceId(), customFormData.getName(), Translator.get("products_info"), formConfig);
+                    postFieldParam.getResourceId(), customFormData.getName(), Translator.get("products_info"),
+                    formConfig);
             // 从 OperationLogContext 中获取日志信息并手动记录
             LogContextInfo contextInfo = OperationLogContext.getContext();
             if (contextInfo != null) {
-                LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.CUSTOM_FORM_DATA, customFormData.getName());
+                LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(),
+                        LogType.UPDATE, LogModule.CUSTOM_FORM_DATA, customFormData.getName());
                 logDTO.setOriginalValue(contextInfo.getOriginalValue());
                 logDTO.setModifiedValue(contextInfo.getModifiedValue());
                 logService.add(logDTO);
@@ -607,7 +636,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
             return null;
         }
         CustomFormDataFieldService.setFormKey(customFormData.getCustomFormId());
-        List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService.getModuleFieldValuesByResourceId(resourceId);
+        List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService
+                .getModuleFieldValuesByResourceId(resourceId);
         CustomFormDataUpdateRequest snapshotReq = BeanUtils.copyBean(new CustomFormDataUpdateRequest(), customFormData);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         snapshotReq.setCustomFormId(customFormData.getCustomFormId());
@@ -642,7 +672,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
         return getSimple(id);
     }
 
-    public BatchAffectReasonResponse batchUpdate(CustomFormDataBatchUpdateRequest request, String userId, String orgId) {
+    public BatchAffectReasonResponse batchUpdate(CustomFormDataBatchUpdateRequest request, String userId,
+            String orgId) {
         List<CustomFormData> dataList = customFormDataMapper.selectByIds(request.getIds());
         checkBatchPermission(userId, dataList, request.getCustomFormId(), orgId);
 
@@ -654,8 +685,7 @@ public class CustomFormDataService extends BaseExportService implements Approval
                 orgId,
                 CustomFormData::getId,
                 CustomFormData::getApprovalStatus,
-                PermissionConstants.CUSTOM_FORM_READ
-        );
+                PermissionConstants.CUSTOM_FORM_READ);
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder()
                     .success(0).fail(dataList.size()).skip(0)
@@ -669,7 +699,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
             // 批量编辑触发审批流：历史上审批通过过的资源进入审批（UPDATE），未通过过的设为待提审（CREATE）
             ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
             approvalResourceService.batchEditTriggerApprovalForCustomForm(
-                    permittedIds, request.getFieldId(), request.getCustomFormId(), orgId, userId, field.getName(), request.getFieldValue());
+                    permittedIds, request.getFieldId(), request.getCustomFormId(), orgId, userId, field.getName(),
+                    request.getFieldValue());
 
             List<CustomFormData> permittedDataList = dataList.stream()
                     .filter(data -> permittedIds.contains(data.getId()))
@@ -725,8 +756,7 @@ public class CustomFormDataService extends BaseExportService implements Approval
                 orgId,
                 CustomFormData::getId,
                 CustomFormData::getApprovalStatus,
-                PermissionConstants.CUSTOM_FORM_READ
-        );
+                PermissionConstants.CUSTOM_FORM_READ);
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
         }
@@ -753,9 +783,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
 
         List<LogDTO> logs = permittedDataList.stream()
                 .filter(data -> deleteIds.contains(data.getId()))
-                .map(data ->
-                        new LogDTO(orgId, data.getId(), userId, LogType.DELETE, LogModule.CUSTOM_FORM_DATA, data.getName())
-                )
+                .map(data -> new LogDTO(orgId, data.getId(), userId, LogType.DELETE, LogModule.CUSTOM_FORM_DATA,
+                        data.getName()))
                 .toList();
         logService.batchAdd(logs);
     }
@@ -789,7 +818,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
         return getDataScope(formId, userId, orgId, true, true);
     }
 
-    CustomFormRoleKey getDataScope(String formId, String userId, String orgId, boolean checkEnable, boolean checkManage) {
+    CustomFormRoleKey getDataScope(String formId, String userId, String orgId, boolean checkEnable,
+            boolean checkManage) {
         CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
         if (customForm == null || !StringUtils.equals(customForm.getOrganizationId(), orgId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
@@ -893,8 +923,10 @@ public class CustomFormDataService extends BaseExportService implements Approval
         CustomForm customForm = customFormMapper.selectByPrimaryKey(customFormId);
         String formName = customForm != null ? customForm.getName() : StringUtils.EMPTY;
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(customFormId, orgId),
-                        Translator.getWithArgs("custom_form_data.import_tpl.name", formName), Translator.get("sheet.data"), Translator.get("sheet.comment"),
+                .exportMultiSheetTplWithSharedHandler(response,
+                        moduleFormService.getCustomImportHeadsNoRef(customFormId, orgId),
+                        Translator.getWithArgs("custom_form_data.import_tpl.name", formName),
+                        Translator.get("sheet.data"), Translator.get("sheet.comment"),
                         new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(customFormId, orgId)),
                         new CustomHeadColWidthStyleStrategy());
     }
@@ -902,9 +934,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
     /**
      * 导入预检查
      *
-     * @param file    导入文件
-     * @param request
-     * @param orgId   组织ID
+     * @param file  导入文件
+     * @param orgId 组织ID
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, CustomerFormImportRequest request, String orgId) {
@@ -917,14 +948,14 @@ public class CustomFormDataService extends BaseExportService implements Approval
     /**
      * 自定义表单数据导入
      *
-     * @param file    导入文件
-     * @param request
-     * @param orgId   组织ID
-     * @param userId  用户ID
+     * @param file   导入文件
+     * @param orgId  组织ID
+     * @param userId 用户ID
      * @return 导入结果
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public ImportResponse realImport(MultipartFile file, CustomerFormImportRequest request, String orgId, String userId) {
+    public ImportResponse realImport(MultipartFile file, CustomerFormImportRequest request, String orgId,
+            String userId) {
         try {
             CustomFormDataFieldService.setFormKey(request.getCustomFormId());
             List<BaseField> fields = moduleFormService.getAllFields(request.getCustomFormId(), orgId);
@@ -937,128 +968,141 @@ public class CustomFormDataService extends BaseExportService implements Approval
                     .ignoreEmptyRow(true)
                     .sheet()
                     .doRead();
-            CustomImportAfterDoConsumer<CustomFormData, BaseResourceSubField> afterDo = (dataList, fieldList, fieldBlobList) -> {
+            CustomImportAfterDoConsumer<CustomFormData, BaseResourceSubField> afterDo = (dataList, fieldList,
+                    fieldBlobList) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
-                        // 自定义表单的流水号是用户自己加的字段(不是系统字段)
-                        Optional<BaseField> serialOptional = fields.stream().filter(BaseField::isSerialNumber).findAny();
-                        List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
+                case ADD -> {
+                    // 自定义表单的流水号是用户自己加的字段(不是系统字段)
+                    Optional<BaseField> serialOptional = fields.stream().filter(BaseField::isSerialNumber).findAny();
+                    List<BaseField> formulaFields = serialOptional
+                            .map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
+                    dataList.forEach(data -> {
+                        data.setCustomFormId(request.getCustomFormId());
+                        data.setOrganizationId(orgId);
+                        data.setApprovalStatus(ApprovalStatus.NONE.name());
+                        if (StringUtils.isBlank(data.getOwner())) {
+                            data.setOwner(userId);
+                        }
+                        serialOptional.ifPresent(serialField -> {
+                            String serialNo = serialNumberValue(fieldList, data.getId(), serialField);
+                            if (serialNo != null) {
+                                fillSerialNumberFormulas(data, serialField, formulaFields, fieldList, serialNo);
+                            }
+                        });
+                        logs.add(new LogDTO(orgId, data.getId(), userId, LogType.ADD, LogModule.CUSTOM_FORM_DATA,
+                                data.getName()));
+                    });
+                    customFormDataMapper.batchInsert(dataList);
+                    customFormDataFieldMapper.batchInsert(fieldList.stream()
+                            .map(field -> BeanUtils.copyBean(new CustomFormDataField(), field)).toList());
+                    customFormDataFieldBlobMapper.batchInsert(fieldBlobList.stream()
+                            .map(field -> BeanUtils.copyBean(new CustomFormDataFieldBlob(), field)).toList());
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = dataList.stream().map(CustomFormData::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
+                    }
+                    //原数据
+                    List<CustomFormData> originList = customFormDataMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originList)) {
+                        break;
+                    }
+                    Map<String, CustomFormData> originMaps = originList.stream()
+                            .collect(Collectors.toMap(CustomFormData::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customFormDataFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    List<CustomFormDataField> insertField = new ArrayList<>();
+                    List<CustomFormDataFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtCustomFormDataMapper batchMapper = sqlSession.getMapper(ExtCustomFormDataMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                    //更新
+                    if (CollectionUtils.isNotEmpty(dataList)) {
                         dataList.forEach(data -> {
                             data.setCustomFormId(request.getCustomFormId());
                             data.setOrganizationId(orgId);
-                            data.setApprovalStatus(ApprovalStatus.NONE.name());
                             if (StringUtils.isBlank(data.getOwner())) {
                                 data.setOwner(userId);
                             }
-                            serialOptional.ifPresent(serialField -> {
-                                String serialNo = serialNumberValue(fieldList, data.getId(), serialField);
-                                if (serialNo != null) {
-                                    fillSerialNumberFormulas(data, serialField, formulaFields, fieldList, serialNo);
-                                }
-                            });
-                            logs.add(new LogDTO(orgId, data.getId(), userId, LogType.ADD, LogModule.CUSTOM_FORM_DATA, data.getName()));
+                            batchMapper.updateData(data);
                         });
-                        customFormDataMapper.batchInsert(dataList);
-                        customFormDataFieldMapper.batchInsert(fieldList.stream()
-                                .map(field -> BeanUtils.copyBean(new CustomFormDataField(), field)).toList());
-                        customFormDataFieldBlobMapper.batchInsert(fieldBlobList.stream()
-                                .map(field -> BeanUtils.copyBean(new CustomFormDataFieldBlob(), field)).toList());
-                        logService.batchAdd(logs);
-
                     }
-                    case UPDATE -> {
-                        List<String> ids = dataList.stream().map(CustomFormData::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        //原数据
-                        List<CustomFormData> originList = customFormDataMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originList)) {
-                            break;
-                        }
-                        Map<String, CustomFormData> originMaps = originList.stream().collect(Collectors.toMap(CustomFormData::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customFormDataFieldService.getResourceFieldMap(ids, true);
 
-                        List<CustomFormDataField> insertField = new ArrayList<>();
-                        List<CustomFormDataFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtCustomFormDataMapper batchMapper = sqlSession.getMapper(ExtCustomFormDataMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-                        //更新
-                        if (CollectionUtils.isNotEmpty(dataList)) {
-                            dataList.forEach(data -> {
-                                data.setCustomFormId(request.getCustomFormId());
-                                data.setOrganizationId(orgId);
-                                if (StringUtils.isBlank(data.getOwner())) {
-                                    data.setOwner(userId);
-                                }
-                                batchMapper.updateData(data);
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(fieldList)) {
-                            List<CustomFormDataField> formFieldList = customFormDataFieldMapper.selectByIds(fieldList.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, CustomFormDataField> fieldMap = formFieldList.stream().collect(Collectors.toMap(CustomFormDataField::getId, Function.identity()));
-                            fieldList.forEach(field -> {
-                                if (fieldMap.containsKey(field.getId())) {
-                                    commonMapper.updateCustomerField("custom_form_data_field", field);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new CustomFormDataField(), field));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(fieldBlobList)) {
-                            List<CustomFormDataFieldBlob> blobList = customFormDataFieldBlobMapper.selectByIds(fieldBlobList.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, CustomFormDataFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(CustomFormDataFieldBlob::getId, Function.identity()));
-                            fieldBlobList.forEach(fieldBlob -> {
-                                if (blobMap.containsKey(fieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("custom_form_data_field_blob", fieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new CustomFormDataFieldBlob(), fieldBlob));
-                                }
-                            });
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(insertField)) {
-                            customFormDataFieldMapper.batchInsert(insertField);
-                        }
-                        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            customFormDataFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, CustomFormData> modifiedMaps = customFormDataMapper.selectByIds(ids).stream().collect(Collectors.toMap(CustomFormData::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customFormDataFieldService.getResourceFieldMap(ids, true);
-
-                        //日志
-                        ids.forEach(id -> {
-                            CustomFormData originDate = originMaps.get(id);
-                            CustomFormData modifiedDate = modifiedMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.UPDATE, LogModule.CUSTOM_FORM_DATA, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(fieldList)) {
+                        List<CustomFormDataField> formFieldList = customFormDataFieldMapper
+                                .selectByIds(fieldList.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, CustomFormDataField> fieldMap = formFieldList.stream()
+                                .collect(Collectors.toMap(CustomFormDataField::getId, Function.identity()));
+                        fieldList.forEach(field -> {
+                            if (fieldMap.containsKey(field.getId())) {
+                                commonMapper.updateCustomerField("custom_form_data_field", field);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new CustomFormDataField(), field));
                             }
                         });
-                        logService.batchAdd(logs);
                     }
+
+                    if (CollectionUtils.isNotEmpty(fieldBlobList)) {
+                        List<CustomFormDataFieldBlob> blobList = customFormDataFieldBlobMapper
+                                .selectByIds(fieldBlobList.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, CustomFormDataFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(CustomFormDataFieldBlob::getId, Function.identity()));
+                        fieldBlobList.forEach(fieldBlob -> {
+                            if (blobMap.containsKey(fieldBlob.getId())) {
+                                commonMapper.updateCustomerField("custom_form_data_field_blob", fieldBlob);
+                            } else {
+                                insertFieldBlob.add(BeanUtils.copyBean(new CustomFormDataFieldBlob(), fieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(insertField)) {
+                        customFormDataFieldMapper.batchInsert(insertField);
+                    }
+                    if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        customFormDataFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, CustomFormData> modifiedMaps = customFormDataMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(CustomFormData::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customFormDataFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    //日志
+                    ids.forEach(id -> {
+                        CustomFormData originDate = originMaps.get(id);
+                        CustomFormData modifiedDate = modifiedMaps.get(id);
+                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.UPDATE, LogModule.CUSTOM_FORM_DATA,
+                                    modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                }
                 }
             };
-            CustomFieldImportEventListener<CustomFormData> eventListener = new CustomFieldImportEventListener<>(fields, CustomFormData.class, orgId, userId,
-                    "custom_form_data_field", "custom_form_data_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+            CustomFieldImportEventListener<CustomFormData> eventListener = new CustomFieldImportEventListener<>(fields,
+                    CustomFormData.class, orgId, userId,
+                    "custom_form_data_field", "custom_form_data_field_blob", afterDo, 2000,
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
                     request.getImportType(), request.getCustomFormId());
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
@@ -1075,9 +1119,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
     /**
      * 检查导入文件
      *
-     * @param file    文件
-     * @param request
-     * @param orgId   组织ID
+     * @param file  文件
+     * @param orgId 组织ID
      * @return 检查结果
      */
     private ImportResponse checkImportExcel(MultipartFile file, CustomerFormImportRequest request, String orgId) {
@@ -1094,8 +1137,10 @@ public class CustomFormDataService extends BaseExportService implements Approval
                     .sheet()
                     .doRead();
 
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "custom_form_data", "custom_form_data_field", orgId,
-                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "custom_form_data",
+                    "custom_form_data_field", orgId,
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+                    request.getImportType());
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())

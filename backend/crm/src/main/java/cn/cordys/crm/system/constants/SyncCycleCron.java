@@ -39,8 +39,7 @@ public enum SyncCycleCron {
         return Arrays.stream(values())
                 .filter(item -> item.cron.equals(cron))
                 .findFirst()
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "不支持的 Cron 表达式：" + cron));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "不支持的 Cron 表达式：" + cron));
     }
 }

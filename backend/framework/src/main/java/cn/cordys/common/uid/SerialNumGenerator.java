@@ -54,7 +54,6 @@ public class SerialNumGenerator {
             // 构造最终流水号
             return ("%s%s%s%s%0" + r.width() + "d")
                     .formatted(r.p1(), r.p2(), date, r.mid(), seq);
-
         } catch (Exception e) {
             log.error("生成流水号失败", e);
             return null;
@@ -71,8 +70,7 @@ public class SerialNumGenerator {
                     rules.get(1),
                     rules.get(2),
                     rules.get(3),
-                    Integer.parseInt(rules.get(4))
-            );
+                    Integer.parseInt(rules.get(4)));
         }
     }
 
@@ -93,7 +91,8 @@ public class SerialNumGenerator {
         String fields = datePattern.replaceAll("'(?:[^']|'')*'", "");
         boolean month = fields.indexOf('M') >= 0;
         boolean day = fields.indexOf('d') >= 0;
-        if (!fields.contains("yyyy") || fields.chars().anyMatch(ch -> ch < 128 && Character.isLetter(ch) && "yMd".indexOf(ch) < 0)
+        if (!fields.contains("yyyy")
+                || fields.chars().anyMatch(ch -> ch < 128 && Character.isLetter(ch) && "yMd".indexOf(ch) < 0)
                 || (month && !fields.contains("MM")) || (day && (!month || !fields.contains("dd")))) {
             throw new IllegalArgumentException("流水号日期格式仅支持完整的 yyyy、yyyyMM 或 yyyyMMdd，可添加分隔符");
         }
@@ -148,9 +147,9 @@ public class SerialNumGenerator {
                 }
                 String counterDate = ks[DATE_KEY_IDX];
                 String pattern = switch (counterDate.length()) {
-                    case 4 -> "yyyy";
-                    case 6 -> "yyyyMM";
-                    default -> "yyyyMMdd";
+                case 4 -> "yyyy";
+                case 6 -> "yyyyMM";
+                default -> "yyyyMMdd";
                 };
                 SimpleDateFormat formatter = new SimpleDateFormat(pattern, Locale.ROOT);
                 formatter.setLenient(false);

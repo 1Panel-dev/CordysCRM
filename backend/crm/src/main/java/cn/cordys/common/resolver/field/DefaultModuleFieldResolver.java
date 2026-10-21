@@ -5,8 +5,7 @@ import cn.cordys.crm.system.dto.field.base.BaseField;
 import java.util.List;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-03-06  16:07
+ * @author jianxing
  */
 public class DefaultModuleFieldResolver extends AbstractModuleFieldResolver {
     @Override

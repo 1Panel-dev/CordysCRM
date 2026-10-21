@@ -87,8 +87,9 @@ public class SSOService {
         Map<String, Object> resultObj = getGitHubUserInfo(code, config);
 
         // 解析用户信息映射
-        Map<String, String> mapping = JSON.parseObject(config.get("mapping"), new TypeReference<HashMap<String, String>>() {
-        });
+        Map<String, String> mapping = JSON.parseObject(config.get("mapping"),
+                new TypeReference<HashMap<String, String>>() {
+                });
         String userId = (String) resultObj.get(mapping.get("id"));
         String name = (String) resultObj.get(mapping.get("name"));
         String email = (String) resultObj.get(mapping.get("email"));
@@ -102,8 +103,7 @@ public class SSOService {
         LoginRequest loginRequest = createLoginRequest(
                 enableUser.getId(),
                 enableUser.getPassword(),
-                ThirdConfigTypeConstants.WECOM.name()
-        );
+                ThirdConfigTypeConstants.WECOM.name());
         loginRequest.setLoginAddress(ip);
         return userLoginService.loginVerified(loginRequest);
     }
@@ -131,7 +131,8 @@ public class SSOService {
         validateCode(code);
 
         ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.WECOM.name());
-        WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(config.getConfig(), WecomThirdConfigRequest.class);
+        WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(config.getConfig(),
+                WecomThirdConfigRequest.class);
         validateQrCodeEnabled(weComConfig.getStartEnable());
 
         return getWeComSessionUser(code, weComConfig, UserSource.QR_CODE.toString(), ip);
@@ -141,13 +142,15 @@ public class SSOService {
         validateCode(code);
 
         ThirdConfigBaseDTO<?> config = getThirdPartyConfig(ThirdConfigTypeConstants.DINGTALK.name());
-        DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
+        DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(config.getConfig(),
+                DingTalkThirdConfigRequest.class);
         validateQrCodeEnabled(dingTalkConfig.getStartEnable());
 
         return getDingTalkSessionUser(code, dingTalkConfig, UserSource.QR_CODE.toString(), ip);
     }
 
-    private SessionUser getWeComSessionUser(String code, WecomThirdConfigRequest weComConfig, String authenticateType, String ip) {
+    private SessionUser getWeComSessionUser(String code, WecomThirdConfigRequest weComConfig, String authenticateType,
+            String ip) {
         // 获取assess_token
         String assessToken = tokenService.getAssessToken(weComConfig.getCorpId(), weComConfig.getAppSecret());
         if (StringUtils.isBlank(assessToken)) {
@@ -170,15 +173,16 @@ public class SSOService {
         LoginRequest loginRequest = createThirdPartyLoginRequest(
                 enableUser,
                 ThirdConfigTypeConstants.WECOM.name(),
-                authenticateType
-        );
+                authenticateType);
         loginRequest.setLoginAddress(ip);
         return userLoginService.loginVerified(loginRequest);
     }
 
-    private SessionUser getDingTalkSessionUser(String code, DingTalkThirdConfigRequest dingTalkConfig, String authenticateType, String ip) {
+    private SessionUser getDingTalkSessionUser(String code, DingTalkThirdConfigRequest dingTalkConfig,
+            String authenticateType, String ip) {
         // 获取用户assess_token
-        String assessToken = tokenService.getDingTalkUserToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret(), code);
+        String assessToken = tokenService.getDingTalkUserToken(dingTalkConfig.getAgentId(),
+                dingTalkConfig.getAppSecret(), code);
         if (StringUtils.isBlank(assessToken)) {
             throw new GenericException(Translator.get(ERROR_AUTH_GET_USER_ERROR));
         }
@@ -186,7 +190,8 @@ public class SSOService {
         // 读取用户信息
         DingTalkUserResponse dingTalkUserResponse = oauthUserService.getDingTalkUser(assessToken);
 
-        String dingTalkToken = tokenService.getDingTalkToken(dingTalkConfig.getAgentId(), dingTalkConfig.getAppSecret());
+        String dingTalkToken = tokenService.getDingTalkToken(dingTalkConfig.getAgentId(),
+                dingTalkConfig.getAppSecret());
         //根据unionid查询用户信息
         String userIdByUnionId = oauthUserService.getUserIdByUnionId(dingTalkToken, dingTalkUserResponse.getUnionId());
 
@@ -202,8 +207,7 @@ public class SSOService {
         LoginRequest loginRequest = createThirdPartyLoginRequest(
                 enableUser,
                 ThirdConfigTypeConstants.DINGTALK.name(),
-                authenticateType
-        );
+                authenticateType);
 
         loginRequest.setLoginAddress(ip);
         return userLoginService.loginVerified(loginRequest);
@@ -220,18 +224,16 @@ public class SSOService {
         // 获取组织配置
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(
                 DEFAULT_ORGANIZATION_ID,
-                OrganizationConfigConstants.ConfigType.THIRD.name()
-        );
+                OrganizationConfigConstants.ConfigType.THIRD.name());
         if (organizationConfig == null) {
             throw new GenericException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
 
         // 获取指定认证源的配置明细
-        List<OrganizationConfigDetail> enableOrganizationConfigDetails =
-                extOrganizationConfigDetailMapper.getEnableOrganizationConfigDetails(
+        List<OrganizationConfigDetail> enableOrganizationConfigDetails = extOrganizationConfigDetailMapper
+                .getEnableOrganizationConfigDetails(
                         organizationConfig.getId(),
-                        List.of(source)
-                );
+                        List.of(source));
         if (CollectionUtils.isEmpty(enableOrganizationConfigDetails)) {
             throw new GenericException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
@@ -378,7 +380,8 @@ public class SSOService {
     private ThirdConfigBaseDTO<?> getThirdPartyConfig(String type) {
         IntegrationConfigService integrationConfigService = CommonBeanFactory.getBean(IntegrationConfigService.class);
         assert integrationConfigService != null;
-        List<ThirdConfigBaseDTO<?>> synOrganizationConfigs = integrationConfigService.getThirdConfig(DEFAULT_ORGANIZATION_ID);
+        List<ThirdConfigBaseDTO<?>> synOrganizationConfigs = integrationConfigService
+                .getThirdConfig(DEFAULT_ORGANIZATION_ID);
 
         if (CollectionUtils.isEmpty(synOrganizationConfigs)) {
             throw new GenericException(Translator.get(ERROR_THIRD_CONFIG_NOT_EXIST));
@@ -431,13 +434,15 @@ public class SSOService {
         return getLarkSessionUser(code, larkConfig, UserSource.QR_CODE.toString(), false, ip);
     }
 
-    private SessionUser getLarkSessionUser(String code, LarkThirdConfigRequest larkConfig, String loginType, Boolean isMobile, String ip) {
+    private SessionUser getLarkSessionUser(String code, LarkThirdConfigRequest larkConfig, String loginType,
+            Boolean isMobile, String ip) {
         if (isMobile) {
             // 移动端需要变更域名
             larkConfig.setRedirectUrl(larkConfig.getRedirectUrl() + "/mobile");
         }
         // 获取用户assess_token
-        String assessToken = tokenService.getLarkUserAccessToken(larkConfig.getAgentId(), larkConfig.getAppSecret(), larkConfig.getRedirectUrl(), code);
+        String assessToken = tokenService.getLarkUserAccessToken(larkConfig.getAgentId(), larkConfig.getAppSecret(),
+                larkConfig.getRedirectUrl(), code);
         if (StringUtils.isBlank(assessToken)) {
             throw new GenericException(Translator.get(ERROR_AUTH_GET_USER_ERROR));
         }
@@ -455,8 +460,7 @@ public class SSOService {
         LoginRequest loginRequest = createThirdPartyLoginRequest(
                 enableUser,
                 ThirdConfigTypeConstants.LARK.name(),
-                loginType
-        );
+                loginType);
 
         loginRequest.setLoginAddress(ip);
         return userLoginService.loginVerified(loginRequest);

@@ -20,7 +20,6 @@ public class JsonDifferenceDTO implements Serializable {
     @Schema(description = "新值")
     private Object newValue;
 
-
     @Schema(description = "字段名称")
     private String columnName;
 
@@ -30,7 +29,7 @@ public class JsonDifferenceDTO implements Serializable {
     @Schema(description = "新值结果")
     private Object newValueName;
 
-    @Schema(description = "类型", examples = {"add/新增", "removed/删除", "modified/修改"})
+    @Schema(description = "类型", examples = { "add/新增", "removed/删除", "modified/修改" })
     private String type;
 
 }

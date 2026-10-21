@@ -127,18 +127,16 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
      * 处理线索回收
      */
     private void processCluesRecycle(List<Clue> clues, Map<List<String>, CluePool> ownersPoolMap,
-                                     Map<String, CluePoolRecycleRule> recycleRuleMap) {
-        clues.forEach(clue ->
-                ownersPoolMap.forEach((ownerIds, pool) -> {
-                    if (ownerIds.contains(clue.getOwner()) && StringUtils.isBlank(clue.getTransitionId())) {
-                        // 满足负责人配置自动回收&&未转客户的线索
-                        CluePoolRecycleRule rule = recycleRuleMap.get(pool.getId());
-                        if (rule != null && cluePoolService.checkRecycled(clue, rule)) {
-                            recycleClueToPool(clue, pool);
-                        }
-                    }
-                })
-        );
+            Map<String, CluePoolRecycleRule> recycleRuleMap) {
+        clues.forEach(clue -> ownersPoolMap.forEach((ownerIds, pool) -> {
+            if (ownerIds.contains(clue.getOwner()) && StringUtils.isBlank(clue.getTransitionId())) {
+                // 满足负责人配置自动回收&&未转客户的线索
+                CluePoolRecycleRule rule = recycleRuleMap.get(pool.getId());
+                if (rule != null && cluePoolService.checkRecycled(clue, rule)) {
+                    recycleClueToPool(clue, pool);
+                }
+            }
+        }));
     }
 
     /**
@@ -153,8 +151,7 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
                 InternalUser.ADMIN.getValue(),
                 clue.getOrganizationId(),
                 List.of(clue.getOwner()),
-                true
-        );
+                true);
 
         // 记录责任人历史
         clueOwnerHistoryService.add(clue, InternalUser.ADMIN.getValue(), false);

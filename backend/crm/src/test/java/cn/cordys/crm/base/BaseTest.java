@@ -114,12 +114,13 @@ public abstract class BaseTest {
 
     private AuthInfo initAuthInfo(String username, String password) throws Exception {
         RsaKey rsaKey = RsaUtils.getRsaKey();
-        password =  RsaUtils.publicEncrypt(password, rsaKey.getPublicKey());
+        password = RsaUtils.publicEncrypt(password, rsaKey.getPublicKey());
         username = RsaUtils.publicEncrypt(username, rsaKey.getPublicKey());
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/login")
-                        .content(String.format("{\"username\":\"%s\",\"password\":\"%s\",\"platform\":\"%s\"}", username, password, DEFAULT_PLATFORM))
-                        .contentType(MediaType.APPLICATION_JSON))
+                .content(String.format("{\"username\":\"%s\",\"password\":\"%s\",\"platform\":\"%s\"}", username,
+                        password, DEFAULT_PLATFORM))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -135,7 +136,8 @@ public abstract class BaseTest {
                 .contentType(MediaType.APPLICATION_JSON);
     }
 
-    private MockHttpServletRequestBuilder setRequestBuilderHeader(MockHttpServletRequestBuilder requestBuilder, AuthInfo authInfo) {
+    private MockHttpServletRequestBuilder setRequestBuilderHeader(MockHttpServletRequestBuilder requestBuilder,
+            AuthInfo authInfo) {
         return requestBuilder
                 .header(SessionConstants.HEADER_TOKEN, authInfo.getSessionId())
                 .header(SessionConstants.CSRF_TOKEN, authInfo.getCsrfToken())
@@ -160,7 +162,8 @@ public abstract class BaseTest {
 
     protected MockHttpServletRequestBuilder getRequestBuilder(String url, Object... uriVariables) {
         try {
-            MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(getBasePath() + url, uriVariables);
+            MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(getBasePath() + url,
+                    uriVariables);
             return setRequestBuilderHeader(requestBuilder, adminAuthInfo);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -215,7 +218,8 @@ public abstract class BaseTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-    protected void requestPostPermissionTest(String permissionId, String url, Object param, Object... uriVariables) throws Exception {
+    protected void requestPostPermissionTest(String permissionId, String url, Object param, Object... uriVariables)
+            throws Exception {
         requestPermissionTest(permissionId, url, () -> getPermissionPostRequestBuilder(url, param, uriVariables));
     }
 
@@ -223,11 +227,14 @@ public abstract class BaseTest {
         requestPermissionTest(permissionId, url, () -> getPermissionRequestBuilder(url, uriVariables));
     }
 
-    protected void requestPostPermissionsTest(List<String> permissionIds, String url, Object param, Object... uriVariables) throws Exception {
-        requestPermissionsTest(permissionIds, url, () -> getPermissionPostRequestBuilder(url, param, uriVariables), mockMvc);
+    protected void requestPostPermissionsTest(List<String> permissionIds, String url, Object param,
+            Object... uriVariables) throws Exception {
+        requestPermissionsTest(permissionIds, url, () -> getPermissionPostRequestBuilder(url, param, uriVariables),
+                mockMvc);
     }
 
-    protected void requestGetPermissionsTest(List<String> permissionIds, String url, Object... uriVariables) throws Exception {
+    protected void requestGetPermissionsTest(List<String> permissionIds, String url, Object... uriVariables)
+            throws Exception {
         requestPermissionsTest(permissionIds, url, () -> getPermissionRequestBuilder(url, uriVariables), mockMvc);
     }
 
@@ -236,8 +243,10 @@ public abstract class BaseTest {
         return setRequestBuilderHeader(requestBuilder, permissionAuthInfo);
     }
 
-    protected MockHttpServletRequestBuilder getPermissionPostRequestBuilder(String url, Object param, Object... uriVariables) {
-        return setRequestBuilderHeader(MockMvcRequestBuilders.post(getBasePath() + url, uriVariables), permissionAuthInfo)
+    protected MockHttpServletRequestBuilder getPermissionPostRequestBuilder(String url, Object param,
+            Object... uriVariables) {
+        return setRequestBuilderHeader(MockMvcRequestBuilders.post(getBasePath() + url, uriVariables),
+                permissionAuthInfo)
                 .content(JSON.toJSONString(param))
                 .contentType(MediaType.APPLICATION_JSON);
     }
@@ -248,10 +257,10 @@ public abstract class BaseTest {
      * @param permissionIds         多个权限
      * @param url                   请求url
      * @param requestBuilderGetFunc 请求构造器
-     *
      * @throws Exception 请求抛出异常
      */
-    public void requestPermissionsTest(List<String> permissionIds, String url, Supplier<MockHttpServletRequestBuilder> requestBuilderGetFunc, MockMvc mockMvc) throws Exception {
+    public void requestPermissionsTest(List<String> permissionIds, String url,
+            Supplier<MockHttpServletRequestBuilder> requestBuilderGetFunc, MockMvc mockMvc) throws Exception {
         for (String permissionId : permissionIds) {
             initUserRolePermission(permissionId);
         }
@@ -297,13 +306,10 @@ public abstract class BaseTest {
      * 2. 在 init_permission_test.sql 中配置权限，
      * 3. 向该用户组中添加权限测试是否生效，删除权限测试是否可以访问
      *
-     * @param permissionId
-     * @param url
      * @param requestBuilderGetFunc 请求构造器，一个 builder 只能使用一次，需要重新生成
-     *
-     * @throws Exception
      */
-    public void requestPermissionTest(String permissionId, String url, Supplier<MockHttpServletRequestBuilder> requestBuilderGetFunc) throws Exception {
+    public void requestPermissionTest(String permissionId, String url,
+            Supplier<MockHttpServletRequestBuilder> requestBuilderGetFunc) throws Exception {
         // 先给初始化的用户组添加权限
         RolePermission userRolePermission = initUserRolePermission(permissionId);
 
@@ -343,16 +349,11 @@ public abstract class BaseTest {
         resultActions
                 .andExpect(
                         jsonPath("$.code")
-                                .value(resultCode.getCode())
-                );
+                                .value(resultCode.getCode()));
     }
 
     /**
      * 给用户组绑定对应权限
-     *
-     * @param permissionId
-     *
-     * @return
      */
     private RolePermission initUserRolePermission(String permissionId) {
         RolePermission rolePermission = new RolePermission();
@@ -365,24 +366,23 @@ public abstract class BaseTest {
 
     /**
      * 调用 is-login 接口刷新权限
-     *
-     * @throws Exception
      */
     private void refreshUserPermission() {
         permissionCache.clearCache(PERMISSION_USER_NAME, DEFAULT_ORGANIZATION_ID);
     }
 
-    protected ResultActions requestMultipart(String url, MultiValueMap<String, Object> paramMap, Object... uriVariables) throws Exception {
+    protected ResultActions requestMultipart(String url, MultiValueMap<String, Object> paramMap, Object... uriVariables)
+            throws Exception {
         MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(url, paramMap, uriVariables);
         return mockMvc.perform(requestBuilder)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-
     private MockHttpServletRequestBuilder getMultipartRequestBuilder(String url,
-                                                                     MultiValueMap<String, Object> paramMap,
-                                                                     Object[] uriVariables) {
-        MockMultipartHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilderWithParam(url, paramMap, uriVariables);
+            MultiValueMap<String, Object> paramMap,
+            Object[] uriVariables) {
+        MockMultipartHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilderWithParam(url, paramMap,
+                uriVariables);
         return setRequestBuilderHeader(requestBuilder, adminAuthInfo)
                 .header(SessionConstants.HEADER_TOKEN, adminAuthInfo.getSessionId())
                 .header(SessionConstants.CSRF_TOKEN, adminAuthInfo.getCsrfToken());
@@ -390,16 +390,11 @@ public abstract class BaseTest {
 
     /**
      * 构建 multipart 带参数的请求
-     *
-     * @param url
-     * @param paramMap
-     * @param uriVariables
-     *
-     * @return
      */
-    private MockMultipartHttpServletRequestBuilder getMultipartRequestBuilderWithParam(String url, MultiValueMap<String, Object> paramMap, Object[] uriVariables) {
-        MockMultipartHttpServletRequestBuilder requestBuilder =
-                MockMvcRequestBuilders.multipart(getBasePath() + url, uriVariables);
+    private MockMultipartHttpServletRequestBuilder getMultipartRequestBuilderWithParam(String url,
+            MultiValueMap<String, Object> paramMap, Object[] uriVariables) {
+        MockMultipartHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.multipart(getBasePath() + url,
+                uriVariables);
         paramMap.forEach((key, value) -> {
             List list = value;
             for (Object o : list) {
@@ -412,7 +407,8 @@ public abstract class BaseTest {
                         if (CollectionUtils.isEmpty(listObject)) {
                             continue;
                         }
-                        if (listObject.getFirst() instanceof File || listObject.getFirst() instanceof MockMultipartFile) {
+                        if (listObject.getFirst() instanceof File
+                                || listObject.getFirst() instanceof MockMultipartFile) {
                             // 参数是多个文件时,设置多个文件
                             for (Object subObject : listObject) {
                                 multipartFile = getMockMultipartFile(key, subObject);
@@ -429,7 +425,6 @@ public abstract class BaseTest {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
             }
         });
         return requestBuilder;

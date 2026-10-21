@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class BusinessTitleTemplateWriteHandler implements RowWriteHandler, SheetWriteHandler {
 
     private final Map<String, Integer> fieldMap = new HashMap<>();
@@ -57,12 +56,11 @@ public class BusinessTitleTemplateWriteHandler implements RowWriteHandler, Sheet
 
             for (Map.Entry<String, Integer> entry : fieldMap.entrySet()) {
                 String key = BusinessTitleImportFiled.fromHeader(entry.getKey()).name().toLowerCase();
-                if (requiredMap.containsKey(key)&&requiredMap.get(key)) {
+                if (requiredMap.containsKey(key) && requiredMap.get(key)) {
                     setComment(fieldMap.get(entry.getKey()), Translator.get("required"));
                 }
             }
         }
-
     }
 
     private void setComment(Integer index, String text) {

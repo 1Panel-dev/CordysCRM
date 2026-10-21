@@ -7,7 +7,6 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-
 @Data
 @Schema(description = "操作日志Blob")
 @Table(name = "sys_operation_log_blob")

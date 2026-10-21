@@ -56,6 +56,7 @@ public class TokenService {
     private QrCodeClient qrCodeClient;
     @Resource
     private SSRFValidator ssrfValidator;
+
     /**
      * 获取assess_Token
      *
@@ -86,7 +87,6 @@ public class TokenService {
         return weComToken.getAccessToken();
     }
 
-
     /**
      * 获取DingTalk assess_Token
      *
@@ -95,15 +95,14 @@ public class TokenService {
      * @return String token
      */
     public String getDingTalkToken(String appKey, String appSecret) {
-
         DingTalkBaseParamDTO dingTalkTokenParamDTO = new DingTalkBaseParamDTO();
         dingTalkTokenParamDTO.setAppKey(appKey);
         dingTalkTokenParamDTO.setAppSecret(appSecret);
         DingTalkToken dingTalkToken = null;
         try {
             String response = qrCodeClient.postExchange(
-                    DingTalkApiPaths.DING_TALK_GET_TOKEN, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON
-            );
+                    DingTalkApiPaths.DING_TALK_GET_TOKEN, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON,
+                    MediaType.APPLICATION_JSON);
             dingTalkToken = JSON.parseObject(response, DingTalkToken.class);
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
@@ -111,7 +110,6 @@ public class TokenService {
 
         return dingTalkToken != null ? dingTalkToken.getAccessToken() : null;
     }
-
 
     /**
      * 获取DingTalk用户 assess_Token
@@ -122,7 +120,6 @@ public class TokenService {
      * @return String token
      */
     public String getDingTalkUserToken(String appKey, String appSecret, String code) {
-
         DingTalkTokenParamDTO dingTalkTokenParamDTO = new DingTalkTokenParamDTO();
         dingTalkTokenParamDTO.setClientId(appKey);
         dingTalkTokenParamDTO.setClientSecret(appSecret);
@@ -130,7 +127,8 @@ public class TokenService {
         dingTalkTokenParamDTO.setGrantType("authorization_code");
         DingTalkToken dingTalkToken = null;
         try {
-            String response = qrCodeClient.postExchange(DING_USER_TOKEN_URL, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+            String response = qrCodeClient.postExchange(DING_USER_TOKEN_URL, null, null, dingTalkTokenParamDTO,
+                    MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
             dingTalkToken = JSON.parseObject(response, DingTalkToken.class);
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
@@ -138,7 +136,6 @@ public class TokenService {
 
         return dingTalkToken != null ? dingTalkToken.getAccessToken() : null;
     }
-
 
     /**
      * 获取Lark token
@@ -148,7 +145,6 @@ public class TokenService {
      * @return tenantAccessToken
      */
     public String getLarkToken(String agentId, String appSecret) {
-
         LarkBaseParamDTO larkBaseParamDTO = new LarkBaseParamDTO();
         larkBaseParamDTO.setApp_id(agentId);
         larkBaseParamDTO.setApp_secret(appSecret);
@@ -156,8 +152,8 @@ public class TokenService {
         LarkToken larkToken = null;
         try {
             String response = qrCodeClient.postExchange(
-                    LarkApiPaths.LARK_APP_TOKEN_URL, null, null, larkBaseParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON
-            );
+                    LarkApiPaths.LARK_APP_TOKEN_URL, null, null, larkBaseParamDTO, MediaType.APPLICATION_JSON,
+                    MediaType.APPLICATION_JSON);
             larkToken = JSON.parseObject(response, LarkToken.class);
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
@@ -215,7 +211,8 @@ public class TokenService {
         Map<String, String> resultObj = null;
         try {
             String credentials = CodingUtils.base64Encoding(config.get("clientId") + ":" + config.get("secret"));
-            String content = qrCodeClient.postExchange(url, "Basic " + credentials, HttpHeaders.AUTHORIZATION, HttpEntity.EMPTY, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+            String content = qrCodeClient.postExchange(url, "Basic " + credentials, HttpHeaders.AUTHORIZATION,
+                    HttpEntity.EMPTY, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
             resultObj = JSON.parseObject(content, new TypeReference<HashMap<String, String>>() {
             });
         } catch (Exception e) {
@@ -237,28 +234,30 @@ public class TokenService {
     public void sendNoticeByToken(WeComSendDTO weComSendDTO, String corpId, String appSecret) {
         String assessToken = getAssessToken(corpId, appSecret);
         String detailUrl = HttpClientUtils.urlTransfer(WeComApiPaths.SEND_INFO, assessToken);
-        qrCodeClient.postExchange(detailUrl, null, null, weComSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+        qrCodeClient.postExchange(detailUrl, null, null, weComSendDTO, MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON);
     }
 
     public void sendDingNoticeByToken(DingTalkSendDTO dingTalkSendDTO, String agentId, String appSecret) {
         String assessToken = getDingTalkToken(agentId, appSecret);
         String detailUrl = HttpClientUtils.urlTransfer(DingTalkApiPaths.DING_NOTICE_URL, assessToken);
-        qrCodeClient.postExchange(detailUrl, null, null, dingTalkSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+        qrCodeClient.postExchange(detailUrl, null, null, dingTalkSendDTO, MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_JSON);
     }
 
     /**
      * 发送Lark通知通过token
      *
+     * @param larkSendMessageDTO 消息体
      * @param agentId            appId 飞书自建应用凭证
      * @param appSecret          appSecret 飞书自建应用密钥
-     * @param larkSendMessageDTO 消息体
      */
     public void sendLarkNoticeByToken(LarkSendMessageDTO larkSendMessageDTO, String agentId, String appSecret) {
         String assessToken = getLarkToken(agentId, appSecret);
-        qrCodeClient.postExchange(LarkApiPaths.LARK_SEND_MESSAGE_URL + "?receive_id_type=open_id", "Bearer " + assessToken,
+        qrCodeClient.postExchange(LarkApiPaths.LARK_SEND_MESSAGE_URL + "?receive_id_type=open_id",
+                "Bearer " + assessToken,
                 "Authorization", larkSendMessageDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
     }
-
 
     public String getLarkUserAccessToken(String agentId, String appSecret, String redirectUrl, String code) {
         LarkTokenParamDTO larkTokenParamDTO = new LarkTokenParamDTO();
@@ -270,8 +269,8 @@ public class TokenService {
         LarkToken larkToken = null;
         try {
             String response = qrCodeClient.postExchange(
-                    LarkApiPaths.LARK_USER_TOKEN_URL, null, null, larkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON
-            );
+                    LarkApiPaths.LARK_USER_TOKEN_URL, null, null, larkTokenParamDTO, MediaType.APPLICATION_JSON,
+                    MediaType.APPLICATION_JSON);
             larkToken = JSON.parseObject(response, LarkToken.class);
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
@@ -284,13 +283,8 @@ public class TokenService {
         return larkToken != null ? larkToken.getAccessToken() : null;
     }
 
-
     /**
      * 测试连接maxkb
-     *
-     * @param mkAddress
-     * @param apiKey
-     * @return
      */
     public Boolean getMaxKBToken(String mkAddress, String apiKey) {
         String urlTransfer = HttpClientUtils.urlTransfer(mkAddress.concat(MaxKBApiPaths.APPLICATION), "default");
@@ -301,12 +295,10 @@ public class TokenService {
                 "Bearer " + apiKey,
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON
-        );
+                MediaType.APPLICATION_JSON);
         MaxKBResponseEntity entity = JSON.parseObject(body, MaxKBResponseEntity.class);
         return entity != null && entity.getCode() == 200;
     }
-
 
     public Boolean getTender() {
         try {
@@ -321,11 +313,9 @@ public class TokenService {
             log.error(e.getMessage(), e);
             return false;
         }
-
     }
 
     public boolean getQcc(String qccAddress, String qccAccessKey, String qccSecretKey) {
-
         long time = System.currentTimeMillis() / 1000;
         String token = CodingUtils.md5(qccAccessKey + time + qccSecretKey).toUpperCase();
 
@@ -333,7 +323,8 @@ public class TokenService {
         headers.put("Token", token);
         headers.put("Timespan", String.valueOf(time));
 
-        String url = HttpClientUtils.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey, qccSecretKey);
+        String url = HttpClientUtils.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey,
+                qccSecretKey);
         String body;
         try {
             body = HttpClientUtils.sendGetRequest(url, headers);
@@ -350,8 +341,7 @@ public class TokenService {
 
     public boolean checkWeComAgentAvailable(String accessToken, String agentId) {
         String url = HttpClientUtils.urlTransfer(
-                WeComApiPaths.GET_AGENT, accessToken, agentId
-        );
+                WeComApiPaths.GET_AGENT, accessToken, agentId);
 
         try {
             String response = HttpClientUtils.sendGetRequest(url, null);
@@ -360,8 +350,7 @@ public class TokenService {
             log.info(
                     "企业微信 Agent 连接测试结果：errCode={}, errMsg={}",
                     weComDetail.getErrCode(),
-                    weComDetail.getErrMsg()
-            );
+                    weComDetail.getErrMsg());
 
             return weComDetail.getErrCode() != null && weComDetail.getErrCode() == 0;
         } catch (Exception e) {

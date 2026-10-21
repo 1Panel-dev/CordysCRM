@@ -97,7 +97,8 @@ public class CluePoolControllerTests extends BaseTest {
     @Test
     @Order(5)
     void switchStatus() throws Exception {
-        MvcResult mvcResult = this.requestGet("/lead-pool/switch/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestGet("/lead-pool/switch/default-pool").andExpect(status().is5xxServerError())
+                .andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue_pool_not_exist"));
         this.requestGetWithOk("/lead-pool/switch/" + testCluePool.getId());
     }
@@ -105,7 +106,8 @@ public class CluePoolControllerTests extends BaseTest {
     @Test
     @Order(6)
     void delete() throws Exception {
-        MvcResult mvcResult = this.requestGet("/lead-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
+        MvcResult mvcResult = this.requestGet("/lead-pool/delete/default-pool").andExpect(status().is5xxServerError())
+                .andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue_pool_not_exist"));
         this.requestGetWithOk("/lead-pool/delete/" + testCluePool.getId());
     }

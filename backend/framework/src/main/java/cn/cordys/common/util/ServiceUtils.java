@@ -41,7 +41,8 @@ public class ServiceUtils {
             QuadFunction<String, Long, String, String, Long> getPrePosFunc,
             QuadFunction<String, Long, String, String, Long> getLastPosFunc,
             Consumer<T> updateByPrimaryKeySelectiveFuc) {
-        updatePosField(request, clazz, userId, resourceType, selectByPrimaryKeyFunc, getPrePosFunc, getLastPosFunc, updateByPrimaryKeySelectiveFuc, true);
+        updatePosField(request, clazz, userId, resourceType, selectByPrimaryKeyFunc, getPrePosFunc, getLastPosFunc,
+                updateByPrimaryKeySelectiveFuc, true);
     }
 
     public static <T> void updatePosFieldByDesc(
@@ -53,7 +54,8 @@ public class ServiceUtils {
             QuadFunction<String, Long, String, String, Long> getPrePosFunc,
             QuadFunction<String, Long, String, String, Long> getLastPosFunc,
             Consumer<T> updateByPrimaryKeySelectiveFuc) {
-        updatePosField(request, clazz, userId, resourceType, selectByPrimaryKeyFunc, getPrePosFunc, getLastPosFunc, updateByPrimaryKeySelectiveFuc, false);
+        updatePosField(request, clazz, userId, resourceType, selectByPrimaryKeyFunc, getPrePosFunc, getLastPosFunc,
+                updateByPrimaryKeySelectiveFuc, false);
     }
 
     private static <T> void updatePosField(

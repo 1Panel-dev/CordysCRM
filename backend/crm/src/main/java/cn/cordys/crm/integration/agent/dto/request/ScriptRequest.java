@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class ScriptRequest {
 
-
     @Schema(description = "工作空间id")
     @NotBlank
     private String workspaceId;

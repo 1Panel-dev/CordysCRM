@@ -5,7 +5,6 @@ package cn.cordys.aspectj.constants;
  */
 public class GlobalSearchModule {
 
-
     /**
      * 客户
      */
@@ -29,7 +28,6 @@ public class GlobalSearchModule {
      * 商机
      */
     public static final String OPPORTUNITY = "OPPORTUNITY";
-
 
     /**
      * 客户公海

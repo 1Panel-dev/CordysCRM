@@ -47,7 +47,6 @@ public class ExportTaskCenterControllerTest extends BaseTest {
     @Resource
     private BaseMapper<ModuleForm> moduleFormMapper;
 
-
     @Order(1)
     @Test
     void testList() throws Exception {
@@ -103,9 +102,6 @@ public class ExportTaskCenterControllerTest extends BaseTest {
         Thread.sleep(1500);
         // 等待导出任务完成
         this.requestGetStreamWithOk(DOWN_LOAD + resultData);
-
-
     }
-
 
 }

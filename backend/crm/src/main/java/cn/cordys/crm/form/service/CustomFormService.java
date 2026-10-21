@@ -66,8 +66,8 @@ public class CustomFormService {
     private BaseMapper<ModuleForm> moduleFormMapper;
     @Resource
     private BaseMapper<ModuleFormBlob> moduleFormBlobMapper;
-	@Resource
-	private ModuleFormService moduleFormService;
+    @Resource
+    private ModuleFormService moduleFormService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
@@ -151,7 +151,8 @@ public class CustomFormService {
                 }).toList();
     }
 
-    private Set<String> getCreatePermissionFormIds(List<CustomForm> customForms, Map<String, List<CustomFormRole>> roleMap) {
+    private Set<String> getCreatePermissionFormIds(List<CustomForm> customForms,
+            Map<String, List<CustomFormRole>> roleMap) {
         Set<String> hasCreatePermissionFormIds = new HashSet<>();
         for (CustomForm form : customForms) {
             // 如果角色中有 CustomFormRoleKey 中的 MANAGE_ALL 或者 MANAGE_OWN，则有创建权限
@@ -179,7 +180,8 @@ public class CustomFormService {
         resp.setCreator(getUserOption(form.getCreateUser()));
 
         if (moduleForm != null) {
-            ModuleFormConfigDTO businessFormConfig = moduleFormService.getBusinessFormConfig(moduleForm.getFormKey(), orgId);
+            ModuleFormConfigDTO businessFormConfig = moduleFormService.getBusinessFormConfig(moduleForm.getFormKey(),
+                    orgId);
             resp.setFields(businessFormConfig.getFields());
             resp.setFormProp(businessFormConfig.getFormProp());
         }
@@ -244,8 +246,7 @@ public class CustomFormService {
                 LogContextInfo.builder()
                         .resourceId(formId)
                         .modifiedValue(form)
-                        .build()
-        );
+                        .build());
 
         // 保存 sys_module_form 使用相同的 ID, formKey 也使用 formId
         ModuleForm moduleForm = new ModuleForm();
@@ -325,8 +326,9 @@ public class CustomFormService {
         moduleFormRequest.setFields(request.getFields());
 
         // 获取表单日志信息
-        LogContextInfo formChangeLogContext = moduleFormService.getModuleFormChangeLogContext(originModuleForm.getFormKey(), orgId, moduleFormRequest);
-		formChangeLogContext.setResourceName(request.getName());
+        LogContextInfo formChangeLogContext = moduleFormService
+                .getModuleFormChangeLogContext(originModuleForm.getFormKey(), orgId, moduleFormRequest);
+        formChangeLogContext.setResourceName(request.getName());
         // 追加自定义表单名称
         if (formChangeLogContext.getOriginalValue() instanceof ModuleFormConfigLogDTO originalLog) {
             originalLog.setName(originForm.getName());
@@ -338,7 +340,7 @@ public class CustomFormService {
         // 保存表单配置
         moduleFormCacheService.saveWithoutLog(moduleFormRequest, userId, orgId);
 
-		// 设置日志上下文
+        // 设置日志上下文
         OperationLogContext.setContext(formChangeLogContext);
     }
 
@@ -355,15 +357,14 @@ public class CustomFormService {
         updateForm.setId(id);
         updateForm.setEnable(enable);
         customFormMapper.update(updateForm);
-		updateForm.setName(form.getName());
+        updateForm.setName(form.getName());
 
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(form.getName())
                         .originalValue(form)
                         .modifiedValue(updateForm)
-                        .build()
-        );
+                        .build());
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.DELETE, resourceId = "{#id}")
@@ -420,7 +421,8 @@ public class CustomFormService {
     public void setAdmins(CustomFormAdminBatchRequest request, String userId, String orgId) {
         checkFormAdmin(request.getCustomFormId(), userId, orgId);
 
-        List<String> originUserIds = getAdminOptions(request.getCustomFormId()).stream().map(OptionDTO::getIdAsString).toList();
+        List<String> originUserIds = getAdminOptions(request.getCustomFormId()).stream().map(OptionDTO::getIdAsString)
+                .toList();
 
         String formId = request.getCustomFormId();
         deleteCustomFormAdminByFormId(formId);
@@ -432,8 +434,7 @@ public class CustomFormService {
                         .resourceName(customForm.getName())
                         .originalValue(Map.of("adminUserIds", originUserIds))
                         .modifiedValue(Map.of("adminUserIds", request.getUserIds()))
-                        .build()
-        );
+                        .build());
     }
 
     private void insertAdmins(String formId, List<String> userIds) {

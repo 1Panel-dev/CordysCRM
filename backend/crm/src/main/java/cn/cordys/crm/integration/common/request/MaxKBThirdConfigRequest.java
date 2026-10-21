@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class MaxKBThirdConfigRequest {
 
-
     @Schema(description = "api key", requiredMode = Schema.RequiredMode.REQUIRED)
     private String appSecret;
 

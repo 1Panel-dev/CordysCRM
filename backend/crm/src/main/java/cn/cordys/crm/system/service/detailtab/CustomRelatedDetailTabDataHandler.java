@@ -22,9 +22,10 @@ import java.util.List;
 
 /**
  * 客户、商机详情下自定义关联表单的数据查询。
- *
- * <p>关联条件由已保存的标签配置生成并追加到用户搜索条件中。即使客户端伪造或删除筛选条件，
- * 查询仍然只能返回指向当前详情资源的数据。</p>
+ * <p>
+ * 关联条件由已保存的标签配置生成并追加到用户搜索条件中。即使客户端伪造或删除筛选条件，
+ * 查询仍然只能返回指向当前详情资源的数据。
+ * </p>
  */
 @Component
 @RequiredArgsConstructor
@@ -39,8 +40,6 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
 
     /**
      * 处理自定义表单的查询
-     * @param context
-     * @return
      */
     @Override
     public boolean supports(DetailTabQueryContext context) {

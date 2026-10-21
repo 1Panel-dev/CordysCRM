@@ -47,16 +47,15 @@ public class OrganizationLogService extends BaseModuleLogService {
 
     private static String resolveRoleName(String roleKey) {
         return switch (roleKey) {
-            case "org_admin" -> Translator.get("role.org_admin");
-            case "sales_manager" -> Translator.get("role.sales_staff");
-            case "role.sales_manager" -> Translator.get("role.sales_manager");
-            default -> roleKey;
+        case "org_admin" -> Translator.get("role.org_admin");
+        case "sales_manager" -> Translator.get("role.sales_staff");
+        case "role.sales_manager" -> Translator.get("role.sales_manager");
+        default -> roleKey;
         };
     }
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
-
         differences.forEach(differ -> {
             if (Strings.CS.equals(differ.getColumnName(), "roles")) {
                 handRoleValueName(differ);
@@ -75,13 +74,19 @@ public class OrganizationLogService extends BaseModuleLogService {
             }
 
             if (Strings.CS.equals(differ.getColumn(), "enable")) {
-                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+                differ.setOldValueName(
+                        Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true")
+                                : Translator.get("log.enable.false"));
+                differ.setNewValueName(
+                        Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true")
+                                : Translator.get("log.enable.false"));
             }
 
             if (Strings.CS.equals(differ.getColumn(), "gender")) {
-                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
-                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
+                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman")
+                        : Translator.get("man"));
+                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman")
+                        : Translator.get("man"));
             }
 
             if (Strings.CS.equals(differ.getColumn(), "employeeType")) {
@@ -122,7 +127,6 @@ public class OrganizationLogService extends BaseModuleLogService {
                 }
                 differ.setNewValueName(differ.getNewValue().toString());
             }
-
         });
 
         return differences;

@@ -6,10 +6,8 @@ import lombok.Data;
 
 import java.util.List;
 
-
 /**
  * @author jianxing
- * @date 2025-01-13 17:33:23
  */
 @Data
 public class RoleUserListResponse {

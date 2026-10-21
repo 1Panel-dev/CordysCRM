@@ -12,21 +12,21 @@ import lombok.Data;
 @Table(name = "approval_record")
 public class ApprovalRecord extends BaseModel {
 
-	@Schema(description = "审批实例ID")
-	private String instanceId;
+    @Schema(description = "审批实例ID")
+    private String instanceId;
 
-	@Schema(description = "任务ID")
-	private String taskId;
+    @Schema(description = "任务ID")
+    private String taskId;
 
-	@Schema(description = "节点轮次")
-	private Integer nodeRound;
+    @Schema(description = "节点轮次")
+    private Integer nodeRound;
 
-	@Schema(description = "节点ID")
-	private String nodeId;
+    @Schema(description = "节点ID")
+    private String nodeId;
 
-	@Schema(description = "审批结果")
-	private String result;
+    @Schema(description = "审批结果")
+    private String result;
 
-	@Schema(description = "审批意见")
-	private String comment;
+    @Schema(description = "审批意见")
+    private String comment;
 }

@@ -31,7 +31,7 @@ public class CustomerPoolController {
 
     @PostMapping("/page")
     @Operation(summary = "分页获取公海池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public Pager<List<CustomerPoolDTO>> page(@Validated @RequestBody BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, customerPoolService.page(request, OrganizationContext.getOrganizationId()));
@@ -39,42 +39,42 @@ public class CustomerPoolController {
 
     @PostMapping("/add")
     @Operation(summary = "保存公海池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void add(@Validated @RequestBody CustomerPoolAddRequest request) {
         customerPoolService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "编辑公海池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void update(@Validated @RequestBody CustomerPoolUpdateRequest request) {
         customerPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/quick-update")
     @Operation(summary = "快捷保存公海池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void quickUpdate(@Validated @RequestBody CustomerPoolUpdateRequest request) {
         customerPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/no-pick/{id}")
     @Operation(summary = "公海池是否存在未领取线索")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public boolean checkNoPick(@PathVariable String id) {
         return customerPoolService.checkNoPick(id);
     }
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除公海池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void delete(@PathVariable String id) {
         customerPoolService.delete(id);
     }
 
     @GetMapping("/switch/{id}")
     @Operation(summary = "启用/禁用公海池")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void switchStatus(@PathVariable String id) {
         customerPoolService.switchStatus(id, SessionUtils.getUserId());
     }

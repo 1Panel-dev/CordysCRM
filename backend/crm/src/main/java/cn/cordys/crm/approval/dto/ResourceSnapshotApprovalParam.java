@@ -7,6 +7,6 @@ import lombok.Data;
 @Builder
 public class ResourceSnapshotApprovalParam {
 
-	private String resourceId;
-	private String approvalStatus;
+    private String resourceId;
+    private String approvalStatus;
 }

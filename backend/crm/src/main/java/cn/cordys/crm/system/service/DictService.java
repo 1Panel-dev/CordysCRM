@@ -74,7 +74,8 @@ public class DictService {
         OperationLogContext.setContext(LogContextInfo.builder()
                 .modifiedValue(dict)
                 .resourceId(dict.getId())
-                .resourceName(Translator.get("module." + request.getModule().toLowerCase()) + Translator.get("module.reason.setting"))
+                .resourceName(Translator.get("module." + request.getModule().toLowerCase())
+                        + Translator.get("module.reason.setting"))
                 .build());
     }
 
@@ -99,11 +100,11 @@ public class DictService {
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(request.getId())
-                        .resourceName(Translator.get("module." + oldDict.getModule().toLowerCase()) + Translator.get("module.reason.setting"))
+                        .resourceName(Translator.get("module." + oldDict.getModule().toLowerCase())
+                                + Translator.get("module.reason.setting"))
                         .originalValue(oldDict)
                         .modifiedValue(dict)
-                        .build()
-        );
+                        .build());
     }
 
     /**
@@ -118,7 +119,8 @@ public class DictService {
             throw new GenericException(Translator.get("dict.not_exist"));
         }
         dictMapper.deleteByPrimaryKey(id);
-        OperationLogContext.setResourceName(Translator.get("module." + dict.getModule().toLowerCase()) + Translator.get("module.reason.setting") + "/" + dict.getName());
+        OperationLogContext.setResourceName(Translator.get("module." + dict.getModule().toLowerCase())
+                + Translator.get("module.reason.setting") + "/" + dict.getName());
     }
 
     /**
@@ -130,7 +132,8 @@ public class DictService {
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
     public void switchDict(DictSwitchRequest request, String orgId) {
         LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        configLambdaQueryWrapper.eq(DictConfig::getModule, request.getModule()).eq(DictConfig::getOrganizationId, orgId);
+        configLambdaQueryWrapper.eq(DictConfig::getModule, request.getModule()).eq(DictConfig::getOrganizationId,
+                orgId);
         List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);
         if (CollectionUtils.isNotEmpty(configs)) {
             DictConfig config = configs.getFirst();
@@ -146,11 +149,14 @@ public class DictService {
 
         //添加日志上下文
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("module.switch", !request.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        originalVal.put("module.switch",
+                !request.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
         Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("module.switch", request.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        modifiedVal.put("module.switch",
+                request.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
         String resourceName = Translator.get("module." + request.getModule().toLowerCase());
-        if (Strings.CI.equalsAny(request.getModule(), DictModule.CLUE_POOL_RS.name(), DictModule.CUSTOMER_POOL_RS.name(), DictModule.OPPORTUNITY_FAIL_RS.name())) {
+        if (Strings.CI.equalsAny(request.getModule(), DictModule.CLUE_POOL_RS.name(),
+                DictModule.CUSTOMER_POOL_RS.name(), DictModule.OPPORTUNITY_FAIL_RS.name())) {
             resourceName += Translator.get("module.reason.setting");
         }
         OperationLogContext.setContext(LogContextInfo.builder()
@@ -174,17 +180,21 @@ public class DictService {
             throw new GenericException(Translator.get("dict.not_exist"));
         }
         // sort-before
-        List<String> beforeKeys = getDictListByType(oldDict.getModule(), oldDict.getOrganizationId()).stream().map(Dict::getName).toList();
+        List<String> beforeKeys = getDictListByType(oldDict.getModule(), oldDict.getOrganizationId()).stream()
+                .map(Dict::getName).toList();
         if (request.getStart() < request.getEnd()) {
             // start < end, 区间模块上移, pos - 1
-            extDictMapper.moveUpDict(request.getStart(), request.getEnd(), oldDict.getModule(), oldDict.getOrganizationId());
+            extDictMapper.moveUpDict(request.getStart(), request.getEnd(), oldDict.getModule(),
+                    oldDict.getOrganizationId());
         } else {
             // start > end, 区间模块下移, pos + 1
-            extDictMapper.moveDownDict(request.getEnd(), request.getStart(), oldDict.getModule(), oldDict.getOrganizationId());
+            extDictMapper.moveDownDict(request.getEnd(), request.getStart(), oldDict.getModule(),
+                    oldDict.getOrganizationId());
         }
         extDictMapper.updateDictPos(request.getDragDictId(), request.getEnd(), currentUser);
         // sort-after
-        List<String> afterKeys = getDictListByType(oldDict.getModule(), oldDict.getOrganizationId()).stream().map(Dict::getName).toList();
+        List<String> afterKeys = getDictListByType(oldDict.getModule(), oldDict.getOrganizationId()).stream()
+                .map(Dict::getName).toList();
 
         //添加日志上下文
         Map<String, List<String>> originalVal = new HashMap<>(1);
@@ -193,7 +203,8 @@ public class DictService {
         modifiedVal.put("sort", afterKeys);
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(originalVal)
-                .resourceName(Translator.get("module." + oldDict.getModule().toLowerCase()) + Translator.get("module.reason.setting"))
+                .resourceName(Translator.get("module." + oldDict.getModule().toLowerCase())
+                        + Translator.get("module.reason.setting"))
                 .modifiedValue(modifiedVal)
                 .resourceId(request.getDragDictId())
                 .build());
@@ -204,7 +215,6 @@ public class DictService {
      *
      * @param module 模块
      * @param orgId  组织ID
-     *
      * @return 字典配置
      */
     public DictConfigDTO getDictConf(String module, String orgId) {
@@ -220,11 +230,12 @@ public class DictService {
         LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
         configLambdaQueryWrapper.eq(DictConfig::getModule, module).eq(DictConfig::getOrganizationId, orgId);
         List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);
-        return DictConfigDTO.builder().dictList(dictList).enable(CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled()).build();
+        return DictConfigDTO.builder().dictList(dictList)
+                .enable(CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled()).build();
     }
 
     public boolean isDictConfigEnable(String module, String orgId) {
         DictConfigDTO dictConf = getDictConf(module, orgId);
-        return  dictConf != null && BooleanUtils.isTrue(dictConf.getEnable());
+        return dictConf != null && BooleanUtils.isTrue(dictConf.getEnable());
     }
 }

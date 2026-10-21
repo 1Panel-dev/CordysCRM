@@ -1,6 +1,5 @@
 package cn.cordys.crm.search.service.advanced;
 
-
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.ModuleKey;
@@ -51,7 +50,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class AdvancedOpportunitySearchService extends BaseSearchService<OpportunityPageRequest, AdvancedOpportunityResponse> {
+public class AdvancedOpportunitySearchService
+        extends BaseSearchService<OpportunityPageRequest, AdvancedOpportunityResponse> {
 
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
@@ -76,15 +76,10 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
 
     /**
      * 全局搜索商机
-     *
-     * @param request
-     * @param orgId
-     * @param userId
-     *
-     * @return
      */
     @Override
-    public PagerWithOption<List<AdvancedOpportunityResponse>> startSearch(OpportunityPageRequest request, String orgId, String userId) {
+    public PagerWithOption<List<AdvancedOpportunityResponse>> startSearch(OpportunityPageRequest request, String orgId,
+            String userId) {
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
         // 检查：如果有商机读取权限但商机模块未启用，抛出异常
@@ -104,13 +99,15 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    public List<AdvancedOpportunityResponse> buildListData(List<AdvancedOpportunityResponse> list, String orgId, String userId) {
+    public List<AdvancedOpportunityResponse> buildListData(List<AdvancedOpportunityResponse> list, String orgId,
+            String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds, true);
+        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService
+                .getResourceFieldMap(opportunityIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(OpportunityListResponse::getOwner)
@@ -141,13 +138,14 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
                 .toList();
         Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
-        Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
+        Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds,
+                orgId);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        Map<String, OpportunityStageResponse> endConfigMaps = stageConfigList.stream().filter(config ->
-                Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
-        ).collect(Collectors.toMap(OpportunityStageResponse::getId, Function.identity()));
+        Map<String, OpportunityStageResponse> endConfigMaps = stageConfigList.stream()
+                .filter(config -> Strings.CI.equals(config.getType(), OpportunityStageType.END.name()))
+                .collect(Collectors.toMap(OpportunityStageResponse::getId, Function.identity()));
 
         // 失败原因
         DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
@@ -156,11 +154,14 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
 
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId,
+                    opportunityListResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
-            opportunityListResponse.setReservedDays(endConfigMaps.containsKey(opportunityListResponse.getStage()) ?
-                    null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse.getCreateTime()));
+            opportunityListResponse.setReservedDays(endConfigMaps.containsKey(opportunityListResponse.getStage()) ? null
+                    : opportunityRuleService.calcReservedDay(
+                            ownersDefaultRuleMap.get(opportunityListResponse.getOwner()),
+                            opportunityListResponse.getCreateTime()));
             if (!hasPermission) {
                 opportunityListResponse.setModuleFields(new ArrayList<>());
                 opportunityListResponse.setFailureReason(dictMap.get(null));
@@ -187,12 +188,14 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
         return baseService.setCreateAndUpdateUserName(list);
     }
 
-
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedOpportunityResponse> list, List<AdvancedOpportunityResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedOpportunityResponse> list,
+            List<AdvancedOpportunityResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, OpportunityListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                OpportunityListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -210,6 +213,5 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
         optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
 
         return optionMap;
-
     }
 }

@@ -1,6 +1,7 @@
 package cn.cordys.common.formula;
 
 import cn.cordys.common.formula.FormulaFieldMetadata.ValueType;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -19,12 +20,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.springframework.stereotype.Component;
 
 /**
  * 与前端 formula-runtime 等效的封闭 IR 求值器。
- *
- * <p>不执行 source 文本、不使用 SpEL/脚本引擎，只接受前端保存的白名单 IR 节点与函数。</p>
+ * <p>
+ * 不执行 source 文本、不使用 SpEL/脚本引擎，只接受前端保存的白名单 IR 节点与函数。
+ * </p>
  */
 @Component
 public class FormulaEngine {
@@ -54,62 +55,66 @@ public class FormulaEngine {
 
     private void validateNode(FormulaNode node, Set<String> fieldIds) {
         switch (node) {
-            case FormulaNode.Invalid ignored -> throw new FormulaEvaluationException("INVALID_IR");
-            case FormulaNode.Field field -> {
-                if (!fieldIds.contains(field.fieldId())) throw new FormulaEvaluationException("UNKNOWN_FIELD");
+        case FormulaNode.Invalid ignored -> throw new FormulaEvaluationException("INVALID_IR");
+        case FormulaNode.Field field -> {
+            if (!fieldIds.contains(field.fieldId())) {
+                throw new FormulaEvaluationException("UNKNOWN_FIELD");
             }
-            case FormulaNode.Binary binary -> {
-                if (!Set.of("+", "-", "*", "/").contains(binary.operator())) {
-                    throw new FormulaEvaluationException("UNKNOWN_OPERATOR");
-                }
-                validateNode(binary.left(), fieldIds);
-                validateNode(binary.right(), fieldIds);
+        }
+        case FormulaNode.Binary binary -> {
+            if (!Set.of("+", "-", "*", "/").contains(binary.operator())) {
+                throw new FormulaEvaluationException("UNKNOWN_OPERATOR");
             }
-            case FormulaNode.Compare compare -> {
-                if (!Set.of("=", "<>", ">", ">=", "<", "<=").contains(compare.operator())) {
-                    throw new FormulaEvaluationException("UNKNOWN_OPERATOR");
-                }
-                validateNode(compare.left(), fieldIds);
-                validateNode(compare.right(), fieldIds);
+            validateNode(binary.left(), fieldIds);
+            validateNode(binary.right(), fieldIds);
+        }
+        case FormulaNode.Compare compare -> {
+            if (!Set.of("=", "<>", ">", ">=", "<", "<=").contains(compare.operator())) {
+                throw new FormulaEvaluationException("UNKNOWN_OPERATOR");
             }
-            case FormulaNode.Function function -> {
-                int count = function.args().size();
-                boolean valid = switch (function.name()) {
-                    case "SUM", "CONCATENATE", "AND" -> count > 0;
-                    case "DAYS", "TEXT" -> count == 2;
-                    case "IF" -> count == 2 || count == 3;
-                    case "IFS" -> count >= 2 && count % 2 == 0;
-                    case "TODAY", "NOW" -> count == 0;
-                    default -> false;
-                };
-                if (!valid) throw new FormulaEvaluationException("INVALID_FUNCTION");
-                function.args().forEach(arg -> validateNode(arg, fieldIds));
+            validateNode(compare.left(), fieldIds);
+            validateNode(compare.right(), fieldIds);
+        }
+        case FormulaNode.Function function -> {
+            int count = function.args().size();
+            boolean valid = switch (function.name()) {
+            case "SUM", "CONCATENATE", "AND" -> count > 0;
+            case "DAYS", "TEXT" -> count == 2;
+            case "IF" -> count == 2 || count == 3;
+            case "IFS" -> count >= 2 && count % 2 == 0;
+            case "TODAY", "NOW" -> count == 0;
+            default -> false;
+            };
+            if (!valid) {
+                throw new FormulaEvaluationException("INVALID_FUNCTION");
             }
-            case FormulaNode.Literal literal -> {
-                boolean valid = switch (literal.valueType()) {
-                    case "number" -> literal.value() instanceof Number number && Double.isFinite(number.doubleValue());
-                    case "string" -> literal.value() instanceof String;
-                    case "boolean" -> literal.value() instanceof Boolean;
-                    default -> false;
-                };
-                if (!valid) {
-                    throw new FormulaEvaluationException("INVALID_LITERAL");
-                }
+            function.args().forEach(arg -> validateNode(arg, fieldIds));
+        }
+        case FormulaNode.Literal literal -> {
+            boolean valid = switch (literal.valueType()) {
+            case "number" -> literal.value() instanceof Number number && Double.isFinite(number.doubleValue());
+            case "string" -> literal.value() instanceof String;
+            case "boolean" -> literal.value() instanceof Boolean;
+            default -> false;
+            };
+            if (!valid) {
+                throw new FormulaEvaluationException("INVALID_LITERAL");
             }
+        }
         }
     }
 
     public Object evaluate(FormulaNode node, FormulaEvaluationContext context) {
         return switch (node) {
-            case FormulaNode.Literal literal -> evaluateLiteral(literal);
-            case FormulaNode.Field field -> evaluateField(field, context);
-            case FormulaNode.Binary binary -> evaluateBinary(binary, context);
-            case FormulaNode.Compare compare -> evaluateCompare(compare, context);
-            case FormulaNode.Function function -> evaluateFunction(function, context);
-            case FormulaNode.Invalid invalid -> {
-                context.warn("INVALID_IR", invalid.reason());
-                yield null;
-            }
+        case FormulaNode.Literal literal -> evaluateLiteral(literal);
+        case FormulaNode.Field field -> evaluateField(field, context);
+        case FormulaNode.Binary binary -> evaluateBinary(binary, context);
+        case FormulaNode.Compare compare -> evaluateCompare(compare, context);
+        case FormulaNode.Function function -> evaluateFunction(function, context);
+        case FormulaNode.Invalid invalid -> {
+            context.warn("INVALID_IR", invalid.reason());
+            yield null;
+        }
         };
     }
 
@@ -121,30 +126,31 @@ public class FormulaEngine {
 
     private void collectReferencedFields(FormulaNode node, Set<String> result) {
         switch (node) {
-            case FormulaNode.Field field -> result.add(field.fieldId());
-            case FormulaNode.Binary binary -> {
-                collectReferencedFields(binary.left(), result);
-                collectReferencedFields(binary.right(), result);
-            }
-            case FormulaNode.Compare compare -> {
-                collectReferencedFields(compare.left(), result);
-                collectReferencedFields(compare.right(), result);
-            }
-            case FormulaNode.Function function -> function.args()
-                    .forEach(arg -> collectReferencedFields(arg, result));
-            default -> {
-                // 字面量和无效节点不引用字段。
-            }
+        case FormulaNode.Field field -> result.add(field.fieldId());
+        case FormulaNode.Binary binary -> {
+            collectReferencedFields(binary.left(), result);
+            collectReferencedFields(binary.right(), result);
+        }
+        case FormulaNode.Compare compare -> {
+            collectReferencedFields(compare.left(), result);
+            collectReferencedFields(compare.right(), result);
+        }
+        case FormulaNode.Function function -> function.args()
+                .forEach(arg -> collectReferencedFields(arg, result));
+        default -> {
+            // 字面量和无效节点不引用字段。
+        }
         }
     }
 
     private Object evaluateLiteral(FormulaNode.Literal literal) {
         return switch (literal.valueType().toLowerCase(Locale.ROOT)) {
-            case "number" -> finiteNumberOrZero(literal.value());
-            case "string" -> literal.value() == null ? "" : literal.value().toString();
-            case "boolean" -> literal.value() instanceof Boolean value
-                    ? value : Boolean.parseBoolean(String.valueOf(literal.value()));
-            default -> literal.value();
+        case "number" -> finiteNumberOrZero(literal.value());
+        case "string" -> literal.value() == null ? "" : literal.value().toString();
+        case "boolean" -> literal.value() instanceof Boolean value
+                ? value
+                : Boolean.parseBoolean(String.valueOf(literal.value()));
+        default -> literal.value();
         };
     }
 
@@ -174,8 +180,7 @@ public class FormulaEngine {
             Object rawValue,
             String metadataKey,
             String fallbackMetadataKey,
-            FormulaEvaluationContext context
-    ) {
+            FormulaEvaluationContext context) {
         FormulaFieldMetadata metadata = context.metadata(metadataKey);
         if (metadata == null) {
             metadata = context.metadata(fallbackMetadataKey);
@@ -223,20 +228,20 @@ public class FormulaEngine {
         Object left = evaluate(binary.left(), context);
         Object right = evaluate(binary.right(), context);
         return switch (binary.operator()) {
-            case "+" -> javaScriptAdd(left, right);
-            case "-" -> numericBinary(left, right, context, "SUBTRACT", (l, r) -> l - r);
-            case "*" -> numericBinary(left, right, context, "MULTIPLY", (l, r) -> l * r);
-            case "/" -> {
-                double divisor = toNumber(right);
-                if (divisor == 0D) {
-                    yield 0D;
-                }
-                yield numericBinary(left, right, context, "DIVIDE", (l, r) -> l / r);
+        case "+" -> javaScriptAdd(left, right);
+        case "-" -> numericBinary(left, right, context, "SUBTRACT", (l, r) -> l - r);
+        case "*" -> numericBinary(left, right, context, "MULTIPLY", (l, r) -> l * r);
+        case "/" -> {
+            double divisor = toNumber(right);
+            if (divisor == 0D) {
+                yield 0D;
             }
-            default -> {
-                context.warn("UNKNOWN_OPERATOR", binary.operator());
-                yield null;
-            }
+            yield numericBinary(left, right, context, "DIVIDE", (l, r) -> l / r);
+        }
+        default -> {
+            context.warn("UNKNOWN_OPERATOR", binary.operator());
+            yield null;
+        }
         };
     }
 
@@ -271,19 +276,19 @@ public class FormulaEngine {
                 .map(arg -> (Supplier<Object>) () -> evaluate(arg, context))
                 .toList();
         return switch (function.name()) {
-            case "SUM" -> sum(evaluateAll(lazyArgs));
-            case "DAYS" -> days(evaluateAll(lazyArgs));
-            case "CONCATENATE" -> concatenate(evaluateAll(lazyArgs));
-            case "TEXT" -> text(evaluateAll(lazyArgs));
-            case "IF" -> ifFunction(lazyArgs);
-            case "IFS" -> ifs(lazyArgs);
-            case "AND" -> and(lazyArgs);
-            case "TODAY" -> today(context.evaluationNow());
-            case "NOW" -> localDateTimeToExcelSerial(context.evaluationNow());
-            default -> {
-                context.warn("UNKNOWN_FUNCTION", function.name());
-                yield null;
-            }
+        case "SUM" -> sum(evaluateAll(lazyArgs));
+        case "DAYS" -> days(evaluateAll(lazyArgs));
+        case "CONCATENATE" -> concatenate(evaluateAll(lazyArgs));
+        case "TEXT" -> text(evaluateAll(lazyArgs));
+        case "IF" -> ifFunction(lazyArgs);
+        case "IFS" -> ifs(lazyArgs);
+        case "AND" -> and(lazyArgs);
+        case "TODAY" -> today(context.evaluationNow());
+        case "NOW" -> localDateTimeToExcelSerial(context.evaluationNow());
+        default -> {
+            context.warn("UNKNOWN_FUNCTION", function.name());
+            yield null;
+        }
         };
     }
 
@@ -500,8 +505,7 @@ public class FormulaEngine {
             Object right,
             FormulaEvaluationContext context,
             String operation,
-            DoubleBinaryOperator operator
-    ) {
+            DoubleBinaryOperator operator) {
         double leftNumber = toNumber(left);
         double rightNumber = toNumber(right);
         if (Double.isNaN(leftNumber) || Double.isNaN(rightNumber)) {
@@ -513,13 +517,13 @@ public class FormulaEngine {
 
     private boolean excelCompare(Object left, Object right, String operator) {
         return switch (operator) {
-            case "=" -> compareEqual(left, right);
-            case "<>" -> !compareEqual(left, right);
-            case ">" -> compareNumber(left, right, value -> value > 0);
-            case ">=" -> compareNumber(left, right, value -> value >= 0);
-            case "<" -> compareNumber(left, right, value -> value < 0);
-            case "<=" -> compareNumber(left, right, value -> value <= 0);
-            default -> false;
+        case "=" -> compareEqual(left, right);
+        case "<>" -> !compareEqual(left, right);
+        case ">" -> compareNumber(left, right, value -> value > 0);
+        case ">=" -> compareNumber(left, right, value -> value >= 0);
+        case "<" -> compareNumber(left, right, value -> value < 0);
+        case "<=" -> compareNumber(left, right, value -> value <= 0);
+        default -> false;
         };
     }
 

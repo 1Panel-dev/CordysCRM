@@ -13,7 +13,6 @@ public class DefaultSearchFieldEnum {
     public static final String CONTACT_CUSTOMER = "contactCustomer";
     public static final String CONTACT_PHONE = "contactPhone";
 
-
     // 商机
     public static final String OPPORTUNITY_NAME = "opportunityName";
     public static final String OPPORTUNITY_CUSTOMER = "opportunityCustomer";

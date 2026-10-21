@@ -42,5 +42,4 @@ public class GlobalClueResponse {
     @Schema(description = "最新跟进日期")
     private Long followTime;
 
-
 }

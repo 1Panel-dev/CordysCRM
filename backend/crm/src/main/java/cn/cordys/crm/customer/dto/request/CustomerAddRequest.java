@@ -8,10 +8,8 @@ import lombok.Data;
 
 import java.util.List;
 
-
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Data
 public class CustomerAddRequest {

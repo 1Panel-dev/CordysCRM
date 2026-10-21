@@ -44,7 +44,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     @Getter
     private final List<T> dataList;
     /**
-     * 自定义字段集合&Blob字段集合
+     * 自定义字段集合&amp;Blob字段集合
      */
     private final List<BaseResourceSubField> fields;
     private final List<BaseResourceSubField> blobFields;
@@ -92,9 +92,11 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     private static final String REF_SYMBOL = "🔗";
     private static final String REF_UNDERLINE = "_ref_";
 
-    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable, String fieldTableBlob,
-                                          CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
-                                          Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, String importType) {
+    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
+            String fieldTable, String fieldTableBlob,
+            CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
+            Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap,
+            String importType) {
         this(fields, clazz, currentOrg, operator, fieldTable, fieldTableBlob, consumer, batchSize,
                 mergeCellMap, mergeRowDataMap, importType, clazz.getSimpleName().toLowerCase());
     }
@@ -102,11 +104,13 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     /**
      * 使用指定表单的流水号计数器，供导入与新建共用序列。
      */
-    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable, String fieldTableBlob,
-                                          CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
-                                          Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap,
-                                          String importType, String serialFormKey) {
-        super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap, importType);
+    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
+            String fieldTable, String fieldTableBlob,
+            CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
+            Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap,
+            String importType, String serialFormKey) {
+        super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap,
+                importType);
         this.entityClass = clazz;
         this.serialFormKey = serialFormKey;
         this.operator = operator;
@@ -169,7 +173,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-        if (CollectionUtils.isNotEmpty(this.dataList) || CollectionUtils.isNotEmpty(this.fields) || CollectionUtils.isNotEmpty(this.blobFields)) {
+        if (CollectionUtils.isNotEmpty(this.dataList) || CollectionUtils.isNotEmpty(this.fields)
+                || CollectionUtils.isNotEmpty(this.blobFields)) {
             batchProcessData();
         }
         log.info("数据导入完成, 总行数: {}", successCount);
@@ -223,7 +228,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (field == null || field.isSerialNumber()) {
                     return;
                 }
-                if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !field.getEditable() && !Strings.CI.equalsAny(field.getType(), FieldType.FORMULA.name(), FieldType.STATISTIC.name())) {
+                if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !field.getEditable() && !Strings.CI
+                        .equalsAny(field.getType(), FieldType.FORMULA.name(), FieldType.STATISTIC.name())) {
                     return;
                 }
                 Object val = convertValue(rowData.get(k), field);
@@ -242,7 +248,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                                 .findFirst()
                                 .orElse(null);
                         BaseResourceSubField baseResourceSubField = new BaseResourceSubField();
-                        baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), "price_sub", (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, refSubId);
+                        baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(),
+                                "price_sub", (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, refSubId);
                         if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
                             resourceField.setId(baseResourceSubField.getId());
                         } else {
@@ -268,7 +275,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 }
                 if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(v)) {
                     try {
-                        setPropertyValue(mergedTmpEntity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
+                        setPropertyValue(mergedTmpEntity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(),
+                                val);
                     } catch (Exception e) {
                         log.error("导入错误, 无法设置字段值. {}", e.getMessage());
                         throw new GenericException(e);
@@ -278,9 +286,13 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
                         BaseResourceSubField baseResourceSubField = new BaseResourceSubField();
                         if (field.isBlob()) {
-                            baseResourceSubField = commonMapper.getResourceField(fieldTableBlob, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, null);
+                            baseResourceSubField = commonMapper.getResourceField(fieldTableBlob, id.get().toString(),
+                                    field.idOrBusinessKey(),
+                                    (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, null);
                         } else {
-                            baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, null);
+                            baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(),
+                                    field.idOrBusinessKey(),
+                                    (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, null);
                         }
                         if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
                             resourceField.setId(baseResourceSubField.getId());
@@ -314,7 +326,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     serialResource.setId(IDGenerator.nextStr());
                     serialResource.setResourceId(id.get().toString());
                     serialResource.setFieldId(serialField.idOrBusinessKey());
-                    String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
+                    String serialNo = serialNumGenerator.generateByRules(
+                            ((SerialNumberField) serialField).getSerialNumberRules(),
                             currentOrg, serialFormKey);
                     serialResource.setFieldValue(serialNo);
                     if (refSubMap.containsKey(serialField.getName())) {
@@ -330,26 +343,28 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             }
         } catch (Exception e) {
             log.error("导入错误, 原因: {}", e.getMessage());
-            throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
+            throw new GenericException(
+                    Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
         }
     }
-
 
     /**
      * 处理价格表，子表格显示字段导入
      *
-     * @param field
      * @param resourceId 价格表id
      */
-    private Set<String> buildPriceShowField(BaseField field, Object resourceId, String v, Map<Integer, String> rowData) {
+    private Set<String> buildPriceShowField(BaseField field, Object resourceId, String v,
+            Map<Integer, String> rowData) {
         Set<String> commonBizIds = null;
         if (field instanceof DatasourceField datasourceField) {
-            if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PRICE.name()) && refSubMap.containsKey(v)) {
+            if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PRICE.name())
+                    && refSubMap.containsKey(v)) {
                 //获取到价格表的子表格所有显示字段的key
                 String subName = v.split("_")[0];
                 List<Integer> keys = headMap.entrySet().stream()
                         .filter(entry -> priceSubRefFieldMap.keySet().stream()
-                                .anyMatch(name -> Objects.equals(entry.getValue().replaceAll("\u00A0", "").trim(), name + REF_SYMBOL) && (entry.getValue().contains(subName))))
+                                .anyMatch(name -> Objects.equals(entry.getValue().replaceAll("\u00A0", "").trim(),
+                                        name + REF_SYMBOL) && (entry.getValue().contains(subName))))
                         .map(Map.Entry::getKey).toList();
                 for (Integer key : keys) {
                     if (rowData.containsKey(key)) {
@@ -358,9 +373,12 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                             //没数据 匹配下一个字段
                             continue;
                         }
-                        BaseField baseField = priceSubRefFieldMap.get(headMap.get(key).replace(REF_SYMBOL, "").replaceAll("\u00A0", ""));
+                        BaseField baseField = priceSubRefFieldMap
+                                .get(headMap.get(key).replace(REF_SYMBOL, "").replaceAll("\u00A0", ""));
                         Set<String> bizIds = new HashSet<>();
-                        if (baseField instanceof DatasourceField sourceField && Strings.CI.equals(sourceField.getDataSourceType(), "PRODUCT") && Strings.CI.equals(sourceField.getInternalKey(), "priceProduct")) {
+                        if (baseField instanceof DatasourceField sourceField
+                                && Strings.CI.equals(sourceField.getDataSourceType(), "PRODUCT")
+                                && Strings.CI.equals(sourceField.getInternalKey(), "priceProduct")) {
                             bizIds = productPriceService.getBizIdsByResource(resourceId, data);
                         } else {
                             Object val = convertValue(data, baseField);
@@ -369,8 +387,10 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                                 continue;
                             }
                             if (baseField.isBlob()) {
-                                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-                                bizIds = productPriceService.getPriceBlobData(resourceId, baseField.getBusinessKey(), customFieldResolver.convertToString(baseField, val));
+                                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                                        .getResolver(field.getType());
+                                bizIds = productPriceService.getPriceBlobData(resourceId, baseField.getBusinessKey(),
+                                        customFieldResolver.convertToString(baseField, val));
                             } else {
                                 bizIds = productPriceService.getPriceData(resourceId, baseField.getBusinessKey(), val);
                             }
@@ -398,7 +418,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         return commonBizIds;
     }
 
-
     private void createEntity(Map<Integer, String> rowData) throws Exception {
         String rowKey = IDGenerator.nextStr();
         if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
@@ -424,7 +443,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * @param field 字段
      * @return 值
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private Object convertValue(String text, BaseField field) {
         if (StringUtils.isEmpty(text)) {
             return null;
@@ -464,7 +483,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             return false;
         }
         List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
-        return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getFirstRowIndex() && extra.getLastRowIndex() > rowIndex);
+        return cellExtras != null && cellExtras.stream()
+                .anyMatch(extra -> rowIndex == extra.getFirstRowIndex() && extra.getLastRowIndex() > rowIndex);
     }
 
     /**
@@ -478,7 +498,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             return false;
         }
         List<CellExtra> cellExtras = mergeCellMap.get(rowIndex);
-        return cellExtras != null && cellExtras.stream().anyMatch(extra -> rowIndex == extra.getLastRowIndex() && extra.getLastRowIndex() > extra.getFirstRowIndex());
+        return cellExtras != null && cellExtras.stream().anyMatch(
+                extra -> rowIndex == extra.getLastRowIndex() && extra.getLastRowIndex() > extra.getFirstRowIndex());
     }
 
     /**

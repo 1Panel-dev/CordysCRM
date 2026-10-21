@@ -36,14 +36,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * 各表单统计聚合语句的「渲染」冒烟测试: 只把 SQL 拼出来看形状, 不连数据库。
- *
- * <p>聚合语句由「本表单的条件片段 + CommonMapper 的公用片段」拼成, 拼错(片段名写错、属性没传、
+ * <p>
+ * 聚合语句由「本表单的条件片段 + CommonMapper 的公用片段」拼成, 拼错(片段名写错、属性没传、
  * 别名对不上、引用了没 join 的表)在编译期和启动期都不报错 —— MyBatis 只在真正执行时才炸。
  * 这里把 14 张表单的两条语句都渲染一遍, 抓的就是这一类错误, 顺带验证
- * 「语句挂在具体 Mapper 的命名空间下」这个继承绑定前提(MyBatis 先按具体接口的全限定名找语句)。</p>
- *
- * <p>不需要 Docker: 比 {@code StatisticSqlMapperTests} 快得多, 但没有数据库, 证明不了列名真实存在,
- * 两者互补。</p>
+ * 「语句挂在具体 Mapper 的命名空间下」这个继承绑定前提(MyBatis 先按具体接口的全限定名找语句)。
+ * </p>
+ * <p>
+ * 不需要 Docker: 比 {@code StatisticSqlMapperTests} 快得多, 但没有数据库, 证明不了列名真实存在,
+ * 两者互补。
+ * </p>
  */
 class StatisticSqlRenderTests {
 
@@ -51,9 +53,10 @@ class StatisticSqlRenderTests {
 
     /**
      * 可作为统计目标的表单, 按表单Key排列。
-     *
-     * <p>这是本测试唯一需要手工维护的清单, 与 {@code StatisticSqlMapperRegistry} 的键集合一一对应:
-     * 漏一个就少测一张表单, 而少测的那张正是最可能配错的一张。</p>
+     * <p>
+     * 这是本测试唯一需要手工维护的清单, 与 {@code StatisticSqlMapperRegistry} 的键集合一一对应:
+     * 漏一个就少测一张表单, 而少测的那张正是最可能配错的一张。
+     * </p>
      */
     private static final List<Class<?>> MAPPERS = List.of(
             ExtClueMapper.class,
@@ -74,18 +77,21 @@ class StatisticSqlRenderTests {
     /**
      * 部门条件在各表单上 join 出来的部门表别名, 用来核对条件片段引用的别名与 join 用的是同一个。
      */
-    private static final Pattern DEPARTMENT_JOIN = Pattern.compile("join\\s+sys_organization_user\\s+(\\w+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DEPARTMENT_JOIN = Pattern.compile("join\\s+sys_organization_user\\s+(\\w+)",
+            Pattern.CASE_INSENSITIVE);
 
     private static Configuration configuration;
 
     /**
      * 解析各 Mapper 的 XML。
-     *
-     * <p>先解析 CommonMapper, 再解析各资源 Mapper: {@code <include>} 是解析期展开的,
-     * 被引用的片段必须先存在于配置里。</p>
-     *
-     * <p>{@code XMLMapperBuilder} 遇到 {@code namespace} 会顺手把接口注册进 MapperRegistry,
-     * 与生产环境 {@code @MapperScan} 的效果一致, 所以这里不需要再手工注册一次。</p>
+     * <p>
+     * 先解析 CommonMapper, 再解析各资源 Mapper: {@code <include>} 是解析期展开的,
+     * 被引用的片段必须先存在于配置里。
+     * </p>
+     * <p>
+     * {@code XMLMapperBuilder} 遇到 {@code namespace} 会顺手把接口注册进 MapperRegistry,
+     * 与生产环境 {@code @MapperScan} 的效果一致, 所以这里不需要再手工注册一次。
+     * </p>
      */
     @BeforeAll
     static void loadMapperXml() throws Exception {
@@ -111,10 +117,11 @@ class StatisticSqlRenderTests {
 
     /**
      * 两个语句都必须挂在具体 Mapper 自己的命名空间下。
-     *
-     * <p>接口继承是「声明共用」, 语句仍然各写各的。MyBatis 解析方法绑定时先按具体接口的全限定名找语句,
+     * <p>
+     * 接口继承是「声明共用」, 语句仍然各写各的。MyBatis 解析方法绑定时先按具体接口的全限定名找语句,
      * 找不到才回溯父接口 —— 所以只要这条断言成立, 调用就一定绑得上; 反过来, 漏写一条语句会在
-     * 第一次刷新时抛 {@code Invalid bound statement}。</p>
+     * 第一次刷新时抛 {@code Invalid bound statement}。
+     * </p>
      */
     @ParameterizedTest
     @MethodSource("mapperClasses")
@@ -127,9 +134,10 @@ class StatisticSqlRenderTests {
 
     /**
      * 聚合语句: 业务关联 + 业务取值时不该碰字段值表, 自定义关联 + 自定义取值时两个 join 都要有。
-     *
-     * <p>同时卡住「模板 ${} 没被替换掉」这一整类错误: 只要有一个属性没传对, 渲染结果里就会留下
-     * 字面量 {@code ${...}}, 数据库执行时必然报错。</p>
+     * <p>
+     * 同时卡住「模板 ${} 没被替换掉」这一整类错误: 只要有一个属性没传对, 渲染结果里就会留下
+     * 字面量 {@code ${...}}, 数据库执行时必然报错。
+     * </p>
      */
     @ParameterizedTest
     @MethodSource("mapperClasses")
@@ -169,16 +177,19 @@ class StatisticSqlRenderTests {
 
     /**
      * 部门条件: 条件片段引用的别名必须与 {@code fieldConditionJoin} join 出来的别名一致。
-     *
-     * <p>这是本次改造的核心证明项。改造前统计走一套通用渲染, 部门条件只能直接抛异常拒绝
+     * <p>
+     * 这是本次改造的核心证明项。改造前统计走一套通用渲染, 部门条件只能直接抛异常拒绝
      * (拼出来会是 {@code t.department_id}, 而语句里根本没有 t 这个别名); 现在复用各表单列表页的
-     * 条件片段, 部门条件与列表页走同一条路径。</p>
-     *
-     * <p>跟进记录 / 跟进计划的条件片段把部门表的别名写死成 {@code sou}, 这条断言同时守着它 ——
-     * 别名只在 join 与引用两处保持一致才成立。</p>
-     *
-     * <p>产品 / 价格没有负责人, 表上根本没有部门这一维(条件片段里也没有这条分支), 渲染结果里
-     * 不会出现部门表 —— 靠这一点自动区分, 不给这两张表硬套一个它们没有的概念。</p>
+     * 条件片段, 部门条件与列表页走同一条路径。
+     * </p>
+     * <p>
+     * 跟进记录 / 跟进计划的条件片段把部门表的别名写死成 {@code sou}, 这条断言同时守着它 ——
+     * 别名只在 join 与引用两处保持一致才成立。
+     * </p>
+     * <p>
+     * 产品 / 价格没有负责人, 表上根本没有部门这一维(条件片段里也没有这条分支), 渲染结果里
+     * 不会出现部门表 —— 靠这一点自动区分, 不给这两张表硬套一个它们没有的概念。
+     * </p>
      */
     @ParameterizedTest
     @MethodSource("mapperClasses")
@@ -212,15 +223,17 @@ class StatisticSqlRenderTests {
 
     /**
      * 业务字段条件的名字必须以驼峰原样送进条件片段。
-     *
-     * <p>各表单的条件片段是按驼峰名匹配的({@code <when test="condition.name == 'createUser'">}),
+     * <p>
+     * 各表单的条件片段是按驼峰名匹配的({@code <when test="condition.name == 'createUser'">}),
      * 而它们的物理列名是下划线。改造前这里还有一道「驼峰转下划线」, 转了之后所有 {@code <when>} 都命中不了,
      * 条件会静默落到按字段值表查的 {@code <otherwise>} 分支上 —— 拼出来的 SQL 照样能跑, 只是结果全错。
-     * 这条断言就是那道转换的墓碑。</p>
-     *
-     * <p>{@code createUser} 是 14 张表单上都有的业务字段, 且都映射到本表单主表的 {@code create_user} 列,
+     * 这条断言就是那道转换的墓碑。
+     * </p>
+     * <p>
+     * {@code createUser} 是 14 张表单上都有的业务字段, 且都映射到本表单主表的 {@code create_user} 列,
      * 所以「渲染结果里有 {@code create_user}」等价于「驼峰名命中了 when 分支」—— 落到 otherwise 时
-     * 条件片段拼的是字段值表上的 {@code field_value}, 不会出现这个列名。</p>
+     * 条件片段拼的是字段值表上的 {@code field_value}, 不会出现这个列名。
+     * </p>
      */
     @ParameterizedTest
     @MethodSource("mapperClasses")
@@ -262,8 +275,9 @@ class StatisticSqlRenderTests {
 
     /**
      * 宿主侧游标语句: 条件谓词在前, {@code order by} / {@code limit} 收在最后。
-     *
-     * <p>顺序错了就是语法错; 而且游标分页靠 {@code id > lastId}, 首页没有 lastId 时那一句要整段消失。</p>
+     * <p>
+     * 顺序错了就是语法错; 而且游标分页靠 {@code id > lastId}, 首页没有 lastId 时那一句要整段消失。
+     * </p>
      */
     @ParameterizedTest
     @MethodSource("mapperClasses")
@@ -331,7 +345,8 @@ class StatisticSqlRenderTests {
         assertFalse(sql.contains("${"), "SQL 里残留了没被替换的属性: " + sql);
     }
 
-    private static StatisticAggregateRequest request(String statisticType, String statisticFieldId, String statisticBusinessKey) {
+    private static StatisticAggregateRequest request(String statisticType, String statisticFieldId,
+            String statisticBusinessKey) {
         StatisticAggregateRequest request = new StatisticAggregateRequest();
         request.setOrgId("100001");
         request.setDataId("data-id");
@@ -349,7 +364,8 @@ class StatisticSqlRenderTests {
         return combineSearch;
     }
 
-    private static FilterDBCondition condition(String name, String operator, Object value, boolean customField, boolean blob) {
+    private static FilterDBCondition condition(String name, String operator, Object value, boolean customField,
+            boolean blob) {
         FilterDBCondition condition = new FilterDBCondition();
         condition.setName(name);
         condition.setOperator(operator);

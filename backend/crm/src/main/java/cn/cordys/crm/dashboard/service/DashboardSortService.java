@@ -35,7 +35,6 @@ public abstract class DashboardSortService {
         return request;
     }
 
-
     /**
      * 构建节点排序的参数
      *
@@ -44,7 +43,8 @@ public abstract class DashboardSortService {
      * @param selectIdNodeFunc  通过id查询节点的函数
      * @param selectPosNodeFunc 通过parentId和pos运算符查询节点的函数
      */
-    public MoveNodeSortDTO getNodeSortDTO(String sortRangeId, NodeMoveRequest request, Function<String, DropNode> selectIdNodeFunc, Function<NodeSortQueryParam, DropNode> selectPosNodeFunc) {
+    public MoveNodeSortDTO getNodeSortDTO(String sortRangeId, NodeMoveRequest request,
+            Function<String, DropNode> selectIdNodeFunc, Function<NodeSortQueryParam, DropNode> selectPosNodeFunc) {
         if (Strings.CS.equals(request.getDragNodeId(), request.getDropNodeId())) {
             //两种节点不能一样
             throw new GenericException(Translator.get("invalid_parameter") + ": drag node  and drop node");
@@ -85,7 +85,6 @@ public abstract class DashboardSortService {
 
         return new MoveNodeSortDTO(sortRangeId, dragNode, previousNode, nextNode);
     }
-
 
     //排序
     public void sort(MoveNodeSortDTO sortDTO) {

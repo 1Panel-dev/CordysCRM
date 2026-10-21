@@ -44,11 +44,8 @@ class ApprovalTodoControllerTests extends BaseTest {
         return "/approval-todo";
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_list_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_list_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 
     @Test
     @Order(1)
@@ -63,15 +60,14 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertNotNull(pager);
         Assertions.assertEquals(2, pager.getTotal());
         Assertions.assertEquals(2, pager.getList().size());
-        Assertions.assertTrue(pager.getList().stream().allMatch(item -> StringUtils.equals("APPROVING", item.getApprovalOperation())));
-        Assertions.assertTrue(pager.getList().stream().noneMatch(item -> StringUtils.equals("node_contract_old", item.getApprovalNodeId())));
+        Assertions.assertTrue(pager.getList().stream()
+                .allMatch(item -> StringUtils.equals("APPROVING", item.getApprovalOperation())));
+        Assertions.assertTrue(pager.getList().stream()
+                .noneMatch(item -> StringUtils.equals("node_contract_old", item.getApprovalNodeId())));
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_list_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_list_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(2)
     void testTodoListPageWithContractType() throws Exception {
@@ -89,11 +85,8 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertEquals("CONTRACT", pager.getList().getFirst().getResourceType());
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_processed_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_processed_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(3)
     void testProcessedPage() throws Exception {
@@ -107,14 +100,12 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertNotNull(pager);
         Assertions.assertEquals(4, pager.getTotal());
         Assertions.assertEquals(4, pager.getList().size());
-        Assertions.assertTrue(pager.getList().stream().anyMatch(item -> StringUtils.equals("todo_processed_resource_001", item.getResourceId())));
+        Assertions.assertTrue(pager.getList().stream()
+                .anyMatch(item -> StringUtils.equals("todo_processed_resource_001", item.getResourceId())));
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_cc_initiated_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_cc_initiated_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(4)
     void testInitiatedPage() throws Exception {
@@ -128,11 +119,8 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertNotNull(pager);
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_cc_initiated_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_cc_initiated_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(5)
     void testCcPage() throws Exception {
@@ -146,25 +134,20 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertNotNull(pager);
         Assertions.assertEquals(2, pager.getTotal());
         Assertions.assertEquals(2, pager.getList().size());
-        Assertions.assertTrue(pager.getList().stream().allMatch(item -> StringUtils.equals("READ", item.getApprovalOperation())));
+        Assertions.assertTrue(
+                pager.getList().stream().allMatch(item -> StringUtils.equals("READ", item.getApprovalOperation())));
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_list_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_list_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(6)
     void testPendingCount() throws Exception {
         MvcResult mvcResult = requestGetWithOkAndReturn(PENDING_COUNT);
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_list_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_list_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(7)
     void testDeleteApprovalTaskByInstanceId() {
@@ -175,11 +158,8 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertTrue(remain.isEmpty());
     }
 
-    @Sql(
-            scripts = {"/dml/init_approval_todo_list_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
+    @Sql(scripts = {
+            "/dml/init_approval_todo_list_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(8)
     void testDeleteApprovalTaskByInstanceIds() {

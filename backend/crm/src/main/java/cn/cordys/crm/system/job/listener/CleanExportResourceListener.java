@@ -14,7 +14,6 @@ public class CleanExportResourceListener implements ApplicationListener<ExecuteE
     @Resource
     private ExportTaskCenterService exportResourceService;
 
-
     @Override
     public void onApplicationEvent(ExecuteEvent event) {
         exportResourceService.clean();

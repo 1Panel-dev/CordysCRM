@@ -1,6 +1,5 @@
 package cn.cordys.common.resolver.field;
 
-
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -15,7 +14,6 @@ import java.util.List;
 import static cn.cordys.common.constants.CommonResultCode.FIELD_OPTION_VALUE_ERROR;
 import static cn.cordys.common.constants.CommonResultCode.FIELD_VALIDATE_ERROR;
 
-
 /**
  * @author jainxing
  */
@@ -23,17 +21,11 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     /**
      * 校验参数是否合法
-     *
-     * @param customField
-     * @param value
      */
     abstract public void validate(T customField, Object value);
 
     /**
      * 将数据库的字符串值转换为对应的参数值
-     *
-     * @param value
-     * @return
      */
     public Object convertToValue(T selectField, String value) {
         return value;
@@ -41,9 +33,6 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     /**
      * 将数据库的字符串值转换为对应的参数值
-     *
-     * @param value
-     * @return
      */
     public Object transformToValue(T selectField, String value) {
         return value;
@@ -60,24 +49,22 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         return text;
     }
 
-
     /**
      * 将对应的参数值转换成字符串
-     *
-     * @param value
-     * @return
      */
     public String convertToString(T selectField, Object value) {
         return value == null ? null : value.toString();
     }
 
     protected void throwValidateException(String name) {
-        throw new GenericException(FIELD_VALIDATE_ERROR, Translator.getWithArgs(FIELD_VALIDATE_ERROR.getMessage(), name));
+        throw new GenericException(FIELD_VALIDATE_ERROR,
+                Translator.getWithArgs(FIELD_VALIDATE_ERROR.getMessage(), name));
     }
 
-	protected void throwOptionException(String name) {
-		throw new GenericException(FIELD_OPTION_VALUE_ERROR, Translator.getWithArgs(FIELD_OPTION_VALUE_ERROR.getMessage(), name));
-	}
+    protected void throwOptionException(String name) {
+        throw new GenericException(FIELD_OPTION_VALUE_ERROR,
+                Translator.getWithArgs(FIELD_OPTION_VALUE_ERROR.getMessage(), name));
+    }
 
     protected void validateRequired(T customField, Object value) {
         // 移动端，不一定需要校验必填，暂时不校验
@@ -111,7 +98,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         boolean match = options.stream()
                 .anyMatch(option -> option.getValue() != null && option.getValue().toString().equals(value.toString()));
         if (!match) {
-			throwOptionException(name);
+            throwOptionException(name);
         }
     }
 

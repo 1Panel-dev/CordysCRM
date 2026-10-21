@@ -12,17 +12,15 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- *
  * @author jianxing
- * @date 2025-11-21 15:11:29
  */
 @Data
 public class ContractPaymentPlanAddRequest {
 
-	@NotBlank
-	@Size(max = 255)
-	@Schema(description = "回款计划名称", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String name;
+    @NotBlank
+    @Size(max = 255)
+    @Schema(description = "回款计划名称", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String name;
 
     @Size(max = 32)
     @NotBlank

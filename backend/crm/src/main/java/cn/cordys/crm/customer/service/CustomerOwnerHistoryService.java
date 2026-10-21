@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -41,7 +40,6 @@ public class CustomerOwnerHistoryService {
     private BaseMapper<DictConfig> dictConfigMapper;
     @Resource
     private BaseMapper<Dict> dictMapper;
-
 
     public List<CustomerOwnerListResponse> list(String customerId, String orgId) {
         var wrapper = new LambdaQueryWrapper<CustomerOwner>();
@@ -74,15 +72,15 @@ public class CustomerOwnerHistoryService {
         var dictNameMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
         var configLambdaQueryWrapper = new LambdaQueryWrapper<DictConfig>();
-        configLambdaQueryWrapper.eq(DictConfig::getModule, DictModule.CUSTOMER_POOL_RS.name()).eq(DictConfig::getOrganizationId, orgId);
+        configLambdaQueryWrapper.eq(DictConfig::getModule, DictModule.CUSTOMER_POOL_RS.name())
+                .eq(DictConfig::getOrganizationId, orgId);
         List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);
 
         var showReason = CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled();
         return owners
                 .stream()
                 .map(item -> {
-                    CustomerOwnerListResponse customerOwner =
-                            BeanUtils.copyBean(new CustomerOwnerListResponse(), item);
+                    CustomerOwnerListResponse customerOwner = BeanUtils.copyBean(new CustomerOwnerListResponse(), item);
                     UserDeptDTO userDeptDTO = userDeptMap.get(customerOwner.getOwner());
                     if (userDeptDTO != null) {
                         customerOwner.setDepartmentId(userDeptDTO.getDeptId());
@@ -107,7 +105,8 @@ public class CustomerOwnerHistoryService {
         customerOwner.setCustomerId(customer.getId());
         customerOwner.setCollectionTime(customer.getCollectionTime());
         customerOwner.setEndTime(System.currentTimeMillis());
-        if (addReason && StringUtils.isNotBlank(customer.getReasonId()) && !Strings.CS.equals(customer.getReasonId(), "system")) {
+        if (addReason && StringUtils.isNotBlank(customer.getReasonId())
+                && !Strings.CS.equals(customer.getReasonId(), "system")) {
             customerOwner.setReasonId(customer.getReasonId());
         }
         customerOwner.setId(IDGenerator.nextStr());

@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ApprovalCcNode {
 
-	@Schema(description = "抄送人ID")
-	private String ccUserId;
-	@Schema(description = "抄送人名称")
-	private String ccUserName;
-	@Schema(description = "抄送人头像")
-	private String ccUserAvatar;
+    @Schema(description = "抄送人ID")
+    private String ccUserId;
+    @Schema(description = "抄送人名称")
+    private String ccUserName;
+    @Schema(description = "抄送人头像")
+    private String ccUserAvatar;
 }

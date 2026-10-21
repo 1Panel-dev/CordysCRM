@@ -11,7 +11,6 @@ public enum SystemResultCode implements IResultCode {
     INTERNAL_ROLE_PERMISSION(101002, "internal.role.permission.error"),
     MODULE_ENABLE(101003, "module.has.closed");
 
-
     private final int code;
     private final String message;
 

@@ -89,10 +89,10 @@ class ClueControllerTests extends BaseTest {
 
         ModuleField example = new ModuleField();
         example.setFormId(moduleForm.getId());
-//        ModuleField moduleField = moduleFieldMapper.select(example)
-//                .stream()
-//                .filter(field -> Strings.CS.equals(field.getInternalKey(), "clueSource"))
-//                .findFirst().orElse(null);
+        //        ModuleField moduleField = moduleFieldMapper.select(example)
+        //                .stream()
+        //                .filter(field -> Strings.CS.equals(field.getInternalKey(), "clueSource"))
+        //                .findFirst().orElse(null);
 
         // 请求成功
         ClueAddRequest request = new ClueAddRequest();
@@ -101,7 +101,7 @@ class ClueControllerTests extends BaseTest {
         request.setContact("test111");
         request.setPhone("18750920048");
         request.setProducts(List.of("cc"));
-//        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
+        //        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Clue resultData = getResultData(mvcResult, Clue.class);
@@ -110,15 +110,14 @@ class ClueControllerTests extends BaseTest {
         Assertions.assertEquals(request.getOwner(), clue.getOwner());
 
         // 校验字段
-//        List<BaseModuleFieldValue> fieldValues = getClueFields(clue.getId())
-//                .stream().map(clueField -> {
-//                    BaseModuleFieldValue baseModuleFieldValue = BeanUtils.copyBean(new BaseModuleFieldValue(), clueField);
-//                    baseModuleFieldValue.setFieldValue(clueField.getFieldValue());
-//                    return baseModuleFieldValue;
-//                })
-//                .toList();
-//        Assertions.assertEquals(request.getModuleFields(), fieldValues);
-
+        //        List<BaseModuleFieldValue> fieldValues = getClueFields(clue.getId())
+        //                .stream().map(clueField -> {
+        //                    BaseModuleFieldValue baseModuleFieldValue = BeanUtils.copyBean(new BaseModuleFieldValue(), clueField);
+        //                    baseModuleFieldValue.setFieldValue(clueField.getFieldValue());
+        //                    return baseModuleFieldValue;
+        //                })
+        //                .toList();
+        //        Assertions.assertEquals(request.getModuleFields(), fieldValues);
 
         // 创建另一个客户
         request.setName("another");
@@ -203,7 +202,6 @@ class ClueControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, DEFAULT_GET, addClue.getId());
     }
 
-
     @Test
     @Order(3)
     void testPage() throws Exception {
@@ -242,7 +240,6 @@ class ClueControllerTests extends BaseTest {
 
         request.setViewId(InternalUserView.DEPARTMENT.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
-
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, DEFAULT_PAGE, request);
@@ -318,7 +315,8 @@ class ClueControllerTests extends BaseTest {
     @Test
     @Order(11)
     void testBatchDelete() throws Exception {
-        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherClue.getId()));
+        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE,
+                List.of(anotherClue.getId()));
         Assertions.assertNull(clueMapper.selectByPrimaryKey(anotherClue.getId()));
 
         List<ClueField> fields = getClueFields(anotherClue.getId());
@@ -327,12 +325,10 @@ class ClueControllerTests extends BaseTest {
 
     @Test
     @Order(12)
-    @Sql(scripts = {"/dml/init_clue_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/dml/cleanup_clue_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_clue_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/cleanup_clue_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testPageReservedDay() throws Exception {
         ClueAddRequest addRequest = new ClueAddRequest();
         addRequest.setName("aa");
@@ -358,12 +354,10 @@ class ClueControllerTests extends BaseTest {
 
     @Test
     @Order(13)
-    @Sql(scripts = {"/dml/init_clue_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/dml/cleanup_clue_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_clue_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/cleanup_clue_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testBatchToPool() throws Exception {
         ClueAddRequest addRequest = new ClueAddRequest();
         addRequest.setName("pool-permission-test");

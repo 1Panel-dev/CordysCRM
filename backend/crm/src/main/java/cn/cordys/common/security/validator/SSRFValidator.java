@@ -27,12 +27,12 @@ public class SSRFValidator {
     /**
      * <strong>Security notice</strong>
      * <ul>
-     *   <li>This validation only verifies the target URL <em>once</em>.
-     *       To prevent DNS rebinding, callers MUST use the IP addresses
-     *       returned by {@link #resolveHost(String)} and connect directly
-     *       to those IPs (using a custom Host header if necessary).</li>
-     *   <li>Callers MUST disable automatic HTTP redirect following and
-     *       re‑validate every redirect target through this service.</li>
+     * <li>This validation only verifies the target URL <em>once</em>.
+     * To prevent DNS rebinding, callers MUST use the IP addresses
+     * returned by {@link #resolveHost(String)} and connect directly
+     * to those IPs (using a custom Host header if necessary).</li>
+     * <li>Callers MUST disable automatic HTTP redirect following and
+     * re‑validate every redirect target through this service.</li>
      * </ul>
      */
     public void validate(String url) {
@@ -159,7 +159,6 @@ public class SSRFValidator {
                 return;
             }
 
-
             // IPv6 ULA (fc00::/7)
             if (isIPv6ULA((Inet6Address) addr)) {
                 throw new IllegalArgumentException("禁止访问 IPv6 唯一本地地址 (ULA)");
@@ -185,7 +184,9 @@ public class SSRFValidator {
         // IPv4-mapped: 前10字节为0，第11、12字节为0xFF，后4字节为IPv4
         if (bytes.length == 16) {
             for (int i = 0; i < 10; i++) {
-                if (bytes[i] != 0) return null;
+                if (bytes[i] != 0) {
+                    return null;
+                }
             }
             if (bytes[10] == (byte) 0xFF && bytes[11] == (byte) 0xFF) {
                 try {
@@ -200,20 +201,20 @@ public class SSRFValidator {
         return null;
     }
 
-
     /**
      * NAT64 提取 (64:ff9b::/96)
-     *
-     * @param addr
-     * @return
      */
     private InetAddress extractIPv4FromNAT64(Inet6Address addr) {
         byte[] bytes = addr.getAddress();
-        if (bytes.length != 16) return null;
+        if (bytes.length != 16) {
+            return null;
+        }
         // 前缀: 64 ff 9b，后面9个字节（从索引3到11）必须为0
         if (bytes[0] == 0x64 && bytes[1] == (byte) 0xff && bytes[2] == (byte) 0x9b) {
             for (int i = 3; i < 12; i++) {
-                if (bytes[i] != 0) return null;
+                if (bytes[i] != 0) {
+                    return null;
+                }
             }
             try {
                 return InetAddress.getByAddress(Arrays.copyOfRange(bytes, 12, 16));
@@ -226,13 +227,12 @@ public class SSRFValidator {
 
     /**
      * 6to4 提取 (2002::/16)
-     *
-     * @param addr
-     * @return
      */
     private InetAddress extractIPv4From6to4(Inet6Address addr) {
         byte[] bytes = addr.getAddress();
-        if (bytes.length != 16) return null;
+        if (bytes.length != 16) {
+            return null;
+        }
         // 前缀: 20 02
         if (bytes[0] == 0x20 && bytes[1] == 0x02) {
             // IPv4 位于索引 2~5
@@ -247,13 +247,12 @@ public class SSRFValidator {
 
     /**
      * Teredo 提取 (2001::/32)
-     *
-     * @param addr
-     * @return
      */
     private InetAddress extractIPv4FromTeredo(Inet6Address addr) {
         byte[] bytes = addr.getAddress();
-        if (bytes.length != 16) return null;
+        if (bytes.length != 16) {
+            return null;
+        }
         // 前缀: 20 01 00 00 (2001::/32)
         if (bytes[0] == 0x20 && bytes[1] == 0x01 && bytes[2] == 0x00 && bytes[3] == 0x00) {
             // Teredo 客户端 IPv4 位于最后 4 个字节，需要按位取反
@@ -269,7 +268,6 @@ public class SSRFValidator {
         }
         return null;
     }
-
 
     /**
      * 检查是否为 IPv6 唯一本地地址 (fc00::/7)
@@ -363,12 +361,12 @@ public class SSRFValidator {
      * 0.0.0.0/8、D 类、E 类等。
      */
     private static final List<String> BLOCKED_IPV4_PREFIXES = List.of(
-            "0.",          // 当前网络 (0.0.0.0/8)
+            "0.", // 当前网络 (0.0.0.0/8)
             "224.", "225.", "226.", "227.", "228.", "229.",
             "230.", "231.", "232.", "233.", "234.", "235.",
-            "236.", "237.", "238.", "239.",             // D 类多播 224.0.0.0/4
+            "236.", "237.", "238.", "239.", // D 类多播 224.0.0.0/4
             "240.", "241.", "242.", "243.", "244.", "245.",
             "246.", "247.", "248.", "249.", "250.", "251.",
-            "252.", "253.", "254.", "255."               // E 类保留 240.0.0.0/4
+            "252.", "253.", "254.", "255." // E 类保留 240.0.0.0/4
     );
 }

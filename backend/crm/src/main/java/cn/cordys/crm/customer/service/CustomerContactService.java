@@ -56,8 +56,8 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -86,7 +86,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-02-24 11:06:10
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -135,9 +134,11 @@ public class CustomerContactService {
     @Resource
     private SqlSessionFactory sqlSessionFactory;
 
-    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId,
+            String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
+        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId,
+                deptDataPermission);
         list = buildListData(list, orgId);
 
         Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
@@ -148,7 +149,8 @@ public class CustomerContactService {
     public Map<String, List<OptionDTO>> getListOptionMap(String orgId, List<CustomerContactListResponse> list) {
         ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerContactListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                CustomerContactListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -181,8 +183,10 @@ public class CustomerContactService {
                 .distinct()
                 .toList();
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds, true);
-        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), orgId), caseCustomFiledMap);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService
+                .getResourceFieldMap(customerContactIds, true);
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.setBusinessRefFieldValue(
+                list, moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), orgId), caseCustomFiledMap);
 
         Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
                 .stream()
@@ -221,14 +225,16 @@ public class CustomerContactService {
         if (customerContact == null) {
             return null;
         }
-        CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
+        CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(),
+                customerContact);
 
         Customer customer = customerMapper.selectByPrimaryKey(customerContact.getCustomerId());
         if (customer != null) {
             customerContactGetResponse.setCustomerName(customer.getName());
         }
 
-        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerContact.getOwner(), customerContact.getOrganizationId());
+        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerContact.getOwner(),
+                customerContact.getOrganizationId());
         if (userDeptDTO != null) {
             customerContactGetResponse.setDepartmentId(userDeptDTO.getDeptId());
             customerContactGetResponse.setDepartmentName(userDeptDTO.getDeptName());
@@ -237,12 +243,18 @@ public class CustomerContactService {
         customerContactGetResponse = baseService.setCreateUpdateOwnerUserName(customerContactGetResponse);
 
         // 获取模块字段
-        List<BaseModuleFieldValue> customerContactFields = customerContactFieldService.getModuleFieldValuesByResourceId(id);
-        customerContactFields = customerContactFieldService.setBusinessRefFieldValue(List.of(customerContactGetResponse),
-                moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), customerContact.getOrganizationId()), new HashMap<>(Map.of(id, customerContactFields))).get(id);
+        List<BaseModuleFieldValue> customerContactFields = customerContactFieldService
+                .getModuleFieldValuesByResourceId(id);
+        customerContactFields = customerContactFieldService
+                .setBusinessRefFieldValue(List.of(customerContactGetResponse),
+                        moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(),
+                                customerContact.getOrganizationId()),
+                        new HashMap<>(Map.of(id, customerContactFields)))
+                .get(id);
         ModuleFormConfigDTO customerContactFormConfig = getFormConfig(customerContact.getOrganizationId());
 
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerContactFormConfig, customerContactFields);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerContactFormConfig,
+                customerContactFields);
 
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(customerContactGetResponse,
@@ -258,7 +270,8 @@ public class CustomerContactService {
         customerContactGetResponse.setModuleFields(customerContactFields);
 
         // 附件信息
-        customerContactGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(customerContactFormConfig, customerContactFields));
+        customerContactGetResponse
+                .setAttachmentMap(moduleFormService.getAttachmentMap(customerContactFormConfig, customerContactFields));
         return customerContactGetResponse;
     }
 
@@ -278,7 +291,8 @@ public class CustomerContactService {
         response.setModuleFields(fvs);
         // 部门信息
         if (response.getOwner() != null) {
-            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), customerContact.getOrganizationId()));
+            response.setDepartmentId(
+                    baseService.getDeptIdByUserId(response.getOwner(), customerContact.getOrganizationId()));
         }
         return response;
     }
@@ -297,7 +311,8 @@ public class CustomerContactService {
         if (CollectionUtils.isEmpty(contacts)) {
             return List.of();
         }
-        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.getResourceFieldMap(ids, true);
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.getResourceFieldMap(ids,
+                true);
 
         return contacts.stream().map(contact -> {
             CustomerContactGetResponse response = BeanUtils.copyBean(new CustomerContactGetResponse(), contact);
@@ -341,7 +356,8 @@ public class CustomerContactService {
             paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
             paramMap.put("cName", customerContact.getName());
             paramMap.put("name", customer.getName());
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_CONCAT_ADD,
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_CONCAT_ADD,
                     paramMap, userId, orgId, List.of(customer.getOwner()), true);
         }
         return customerContact;
@@ -355,7 +371,8 @@ public class CustomerContactService {
 
         CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
         // 获取模块字段
-        List<BaseModuleFieldValue> originCustomerFields = customerContactFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originCustomerFields = customerContactFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
 
         // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
         // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
@@ -363,7 +380,8 @@ public class CustomerContactService {
                 FormKey.CONTACT.getKey(), List.of(request.getId()), orgId);
 
         if (BooleanUtils.isTrue(request.getAgentInvoke())) {
-            customerContactFieldService.updateModuleFieldByAgent(customerContact, originCustomerFields, request.getModuleFields(), orgId, userId);
+            customerContactFieldService.updateModuleFieldByAgent(customerContact, originCustomerFields,
+                    request.getModuleFields(), orgId, userId);
         } else {
             // 更新模块字段
             updateModuleField(customerContact, request.getModuleFields(), orgId, userId);
@@ -374,11 +392,13 @@ public class CustomerContactService {
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
 
         customerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
-        baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields, request.getModuleFields(), originCustomerContact.getId(), originCustomerContact.getName());
+        baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields,
+                request.getModuleFields(), originCustomerContact.getId(), originCustomerContact.getName());
         return customerContact;
     }
 
-    private void updateModuleField(CustomerContact customerContact, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(CustomerContact customerContact, List<BaseModuleFieldValue> moduleFields,
+            String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -476,8 +496,7 @@ public class CustomerContactService {
                             .resourceName(originCustomerContact.getName())
                             .originalValue(originResourceLog)
                             .modifiedValue(modifiedResourceLog)
-                            .build()
-            );
+                            .build());
         }
     }
 
@@ -486,7 +505,8 @@ public class CustomerContactService {
         changeEnable(id, false, request.getReason());
     }
 
-    public CustomerContactListAllResponse listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public CustomerContactListAllResponse listByCustomerId(String customerId, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission) {
         Customer customer = customerMapper.selectByPrimaryKey(customerId);
         if (customer == null || StringUtils.isBlank(orgId) || !orgId.equals(customer.getOrganizationId())) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -510,7 +530,8 @@ public class CustomerContactService {
 
         // 获取协作类型的协作的联系人
         Set<String> collaborationUserIds = collaborations.stream()
-                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name()))
+                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(),
+                        CustomerCollaborationType.COLLABORATION.name()))
                 .map(CustomerCollaboration::getUserId)
                 .collect(Collectors.toSet());
 
@@ -521,11 +542,13 @@ public class CustomerContactService {
         if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
             UserDeptDTO customerOwnerDept = baseService.getUserDeptMapByUserId(customer.getOwner(), orgId);
             // 部门权限是否有该客户的权限
-            boolean hasDeptCustomerPermission = customerOwnerDept != null && deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId());
+            boolean hasDeptCustomerPermission = customerOwnerDept != null
+                    && deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId());
 
             list = extCustomerContactMapper.listByCustomerId(customerId);
             if (hasDeptCustomerPermission) {
-                Map<String, UserDeptDTO> userDeptMapByUserIds = baseService.getUserDeptMapByUserIds(collaborationUserIds, orgId);
+                Map<String, UserDeptDTO> userDeptMapByUserIds = baseService
+                        .getUserDeptMapByUserIds(collaborationUserIds, orgId);
                 list = list.stream()
                         .filter(item -> {
                             if (!collaborationUserIds.contains(item.getOwner())) {
@@ -534,7 +557,8 @@ public class CustomerContactService {
                             }
                             UserDeptDTO userDeptDTO = userDeptMapByUserIds.get(item.getOwner());
                             // 部门数据权限，则过滤掉非本部门的协作人的联系人
-                            return userDeptDTO != null && deptDataPermission.getDeptIds().contains(userDeptDTO.getDeptId());
+                            return userDeptDTO != null
+                                    && deptDataPermission.getDeptIds().contains(userDeptDTO.getDeptId());
                         })
                         .toList();
             } else if (isCollaborationUser) {
@@ -550,7 +574,8 @@ public class CustomerContactService {
             if (isCustomerOwner) {
                 // 本人数据权限，则过滤协作人的联系人
                 list = list.stream()
-                        .filter(item -> !collaborationUserIds.contains(item.getOwner()) || Strings.CS.equals(item.getOwner(), userId))
+                        .filter(item -> !collaborationUserIds.contains(item.getOwner())
+                                || Strings.CS.equals(item.getOwner(), userId))
                         .toList();
             } else if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
@@ -590,7 +615,8 @@ public class CustomerContactService {
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
-        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, rolePermissions);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ,
+                rolePermissions);
     }
 
     /**
@@ -611,14 +637,16 @@ public class CustomerContactService {
         var queryWrapper = new LambdaQueryWrapper<ModuleField>();
         queryWrapper.in(ModuleField::getInternalKey, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey(),
                 BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())).in(ModuleField::getFormId, formIds);
-        List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId).toList();
+        List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId)
+                .toList();
         List<ModuleFieldBlob> blobs = moduleFieldBlobMapper.selectByIds(fieldIds);
 
         boolean nameUnique = false, phoneUnique = false;
         for (ModuleFieldBlob blob : blobs) {
             BaseField baseField = JSON.parseObject(blob.getProp(), BaseField.class);
             String internalKey = baseField.getInternalKey();
-            boolean hasUnique = baseField.getRules().stream().anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
+            boolean hasUnique = baseField.getRules().stream()
+                    .anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
             if (Strings.CI.equals(internalKey, BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey())) {
                 nameUnique = hasUnique;
             }
@@ -629,10 +657,10 @@ public class CustomerContactService {
         if (!nameUnique && !phoneUnique) {
             return true;
         }
-        ContactUniqueRequest request = ContactUniqueRequest.builder().name(contact).phone(phone).nameUnique(nameUnique).phoneUnique(phoneUnique).build();
+        ContactUniqueRequest request = ContactUniqueRequest.builder().name(contact).phone(phone).nameUnique(nameUnique)
+                .phoneUnique(phoneUnique).build();
         return extCustomerContactMapper.getUniqueContactCount(request, customerId, orgId) == 0;
     }
-
 
     /**
      * 更新责任人
@@ -697,9 +725,13 @@ public class CustomerContactService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTACT.getKey(), currentOrg),
-                        Translator.get("contact.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTACT.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
+                .exportMultiSheetTplWithSharedHandler(response,
+                        moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTACT.getKey(), currentOrg),
+                        Translator.get("contact.import_tpl.name"), Translator.get(SheetKey.DATA),
+                        Translator.get(SheetKey.COMMENT),
+                        new CustomTemplateWriteHandler(
+                                moduleFormService.getAllCustomImportFields(FormKey.CONTACT.getKey(), currentOrg)),
+                        new CustomHeadColWidthStyleStrategy());
     }
 
     /**
@@ -728,107 +760,122 @@ public class CustomerContactService {
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTACT.getKey(), currentOrg);
-            CustomImportAfterDoConsumer<CustomerContact, BaseResourceSubField> afterDo = (contacts, contactFields, contactFieldBlobs) -> {
+            CustomImportAfterDoConsumer<CustomerContact, BaseResourceSubField> afterDo = (contacts, contactFields,
+                    contactFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
+                case ADD -> {
+                    contacts.forEach(contact -> {
+                        contact.setEnable(true);
+                        logs.add(new LogDTO(currentOrg, contact.getId(), currentUser, LogType.ADD,
+                                LogModule.CUSTOMER_CONTACT, contact.getName()));
+                    });
+                    customerContactMapper.batchInsert(contacts);
+                    customerContactFieldMapper.batchInsert(contactFields.stream()
+                            .map(field -> BeanUtils.copyBean(new CustomerContactField(), field)).toList());
+                    customerContactFieldBlobMapper.batchInsert(contactFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new CustomerContactFieldBlob(), field)).toList());
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = contacts.stream().map(CustomerContact::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
+                    }
+                    List<CustomerContact> originCustomerContacts = customerContactMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originCustomerContacts)) {
+                        break;
+                    }
+                    Map<String, CustomerContact> originCustomerContractMaps = originCustomerContacts.stream()
+                            .collect(Collectors.toMap(CustomerContact::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customerContactFieldService
+                            .getResourceFieldMap(ids, true);
+                    List<CustomerContactField> insertField = new ArrayList<>();
+                    List<CustomerContactFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtCustomerContactMapper batchMapper = sqlSession.getMapper(ExtCustomerContactMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                    if (CollectionUtils.isNotEmpty(contacts)) {
                         contacts.forEach(contact -> {
                             contact.setEnable(true);
-                            logs.add(new LogDTO(currentOrg, contact.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_CONTACT, contact.getName()));
+                            batchMapper.updateCustomerContact(contact);
                         });
-                        customerContactMapper.batchInsert(contacts);
-                        customerContactFieldMapper.batchInsert(contactFields.stream().map(field -> BeanUtils.copyBean(new CustomerContactField(), field)).toList());
-                        customerContactFieldBlobMapper.batchInsert(contactFieldBlobs.stream().map(field -> BeanUtils.copyBean(new CustomerContactFieldBlob(), field)).toList());
-                        logService.batchAdd(logs);
                     }
-                    case UPDATE -> {
-                        List<String> ids = contacts.stream().map(CustomerContact::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        List<CustomerContact> originCustomerContacts = customerContactMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originCustomerContacts)) {
-                            break;
-                        }
-                        Map<String, CustomerContact> originCustomerContractMaps = originCustomerContacts.stream().collect(Collectors.toMap(CustomerContact::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customerContactFieldService.getResourceFieldMap(ids, true);
-                        List<CustomerContactField> insertField = new ArrayList<>();
-                        List<CustomerContactFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtCustomerContactMapper batchMapper = sqlSession.getMapper(ExtCustomerContactMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
 
-                        if (CollectionUtils.isNotEmpty(contacts)) {
-                            contacts.forEach(contact -> {
-                                contact.setEnable(true);
-                                batchMapper.updateCustomerContact(contact);
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(contactFields)) {
-                            List<CustomerContactField> fieldList = customerContactFieldMapper.selectByIds(contactFields.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, CustomerContactField> fieldMap = fieldList.stream().collect(Collectors.toMap(CustomerContactField::getId, Function.identity()));
-                            contactFields.forEach(contactField -> {
-                                if (fieldMap.containsKey(contactField.getId())) {
-                                    commonMapper.updateCustomerField("customer_contact_field", contactField);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new CustomerContactField(), contactField));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(contactFieldBlobs)) {
-                            List<CustomerContactFieldBlob> blobList = customerContactFieldBlobMapper.selectByIds(contactFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, CustomerContactFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(CustomerContactFieldBlob::getId, Function.identity()));
-                            contactFieldBlobs.forEach(contactFieldBlob -> {
-                                if (blobMap.containsKey(contactFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("customer_contact_field_blob", contactFieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new CustomerContactFieldBlob(), contactFieldBlob));
-                                }
-                            });
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (CollectionUtils.isNotEmpty(insertField)) {
-                            customerContactFieldMapper.batchInsert(insertField);
-                        }
-                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            customerContactFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, CustomerContact> modifiedCustomerMaps = customerContactMapper.selectByIds(ids).stream().collect(Collectors.toMap(CustomerContact::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerContactFieldService.getResourceFieldMap(ids, true);
-
-                        ids.forEach(id -> {
-                            CustomerContact originDate = originCustomerContractMaps.get(id);
-                            CustomerContact modifiedDate = modifiedCustomerMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CUSTOMER_CONTACT, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(contactFields)) {
+                        List<CustomerContactField> fieldList = customerContactFieldMapper
+                                .selectByIds(contactFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, CustomerContactField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(CustomerContactField::getId, Function.identity()));
+                        contactFields.forEach(contactField -> {
+                            if (fieldMap.containsKey(contactField.getId())) {
+                                commonMapper.updateCustomerField("customer_contact_field", contactField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new CustomerContactField(), contactField));
                             }
                         });
-                        logService.batchAdd(logs);
-
                     }
+
+                    if (CollectionUtils.isNotEmpty(contactFieldBlobs)) {
+                        List<CustomerContactFieldBlob> blobList = customerContactFieldBlobMapper
+                                .selectByIds(contactFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, CustomerContactFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(CustomerContactFieldBlob::getId, Function.identity()));
+                        contactFieldBlobs.forEach(contactFieldBlob -> {
+                            if (blobMap.containsKey(contactFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("customer_contact_field_blob", contactFieldBlob);
+                            } else {
+                                insertFieldBlob
+                                        .add(BeanUtils.copyBean(new CustomerContactFieldBlob(), contactFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        customerContactFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        customerContactFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, CustomerContact> modifiedCustomerMaps = customerContactMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(CustomerContact::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerContactFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        CustomerContact originDate = originCustomerContractMaps.get(id);
+                        CustomerContact modifiedDate = modifiedCustomerMaps.get(id);
+                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                    LogModule.CUSTOMER_CONTACT, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                }
                 }
             };
-            CustomFieldImportEventListener<CustomerContact> eventListener = new CustomFieldImportEventListener<>(fields, CustomerContact.class, currentOrg, currentUser,
+            CustomFieldImportEventListener<CustomerContact> eventListener = new CustomFieldImportEventListener<>(fields,
+                    CustomerContact.class, currentOrg, currentUser,
                     "customer_contact_field", "customer_contact_field_blob", afterDo, 2000, null, null,
                     request.getImportType(), FormKey.CONTACT.getKey());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -847,8 +894,10 @@ public class CustomerContactService {
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CONTACT.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer_contact", "customer_contact_field", currentOrg, importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer_contact",
+                    "customer_contact_field", currentOrg, importType);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -876,16 +925,20 @@ public class CustomerContactService {
         // 这一步在服务内部直接短路, 只多一次反查
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTACT.getKey(), request.getFieldId(), request.getIds(), organizationId);
-        customerContactFieldService.batchUpdate(request, field, originCustomerContacts, CustomerContact.class, LogModule.CUSTOMER_CONTACT, extCustomerContactMapper::batchUpdate, userId, organizationId, true);
+        customerContactFieldService.batchUpdate(request, field, originCustomerContacts, CustomerContact.class,
+                LogModule.CUSTOMER_CONTACT, extCustomerContactMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }
 
-    public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         formConfig.getFields().addAll(BaseChartService.getChartBaseFields());
-        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
-        List<ChartResult> chartResults = extCustomerContactMapper.chart(chartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request,
+                formConfig);
+        List<ChartResult> chartResults = extCustomerContactMapper.chart(chartAnalysisDbRequest, userId, orgId,
+                deptDataPermission);
         return baseChartService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 
@@ -905,13 +958,15 @@ public class CustomerContactService {
         var queryWrapper = new LambdaQueryWrapper<ModuleField>();
         queryWrapper.in(ModuleField::getInternalKey, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey(),
                 BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())).in(ModuleField::getFormId, formIds);
-        List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId).toList();
+        List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId)
+                .toList();
         List<ModuleFieldBlob> blobs = moduleFieldBlobMapper.selectByIds(fieldIds);
 
         for (ModuleFieldBlob blob : blobs) {
             BaseField baseField = JSON.parseObject(blob.getProp(), BaseField.class);
             String internalKey = baseField.getInternalKey();
-            boolean hasUnique = baseField.getRules().stream().anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
+            boolean hasUnique = baseField.getRules().stream()
+                    .anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
             uniqueMap.put(internalKey, hasUnique);
         }
         return uniqueMap;

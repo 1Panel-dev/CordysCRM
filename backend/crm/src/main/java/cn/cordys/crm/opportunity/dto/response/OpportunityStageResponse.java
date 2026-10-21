@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class OpportunityStageResponse extends StageConfigResponse {
 
-
     @Schema(description = "赢率")
     private String rate;
 }

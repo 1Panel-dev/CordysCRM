@@ -23,14 +23,14 @@ public class BitsAllocator {
     private final int sequenceBits;
 
     /**
-     * Max value for workId & sequence
+     * Max value for workId &amp; sequence
      */
     private final long maxDeltaSeconds;
     private final long maxWorkerId;
     private final long maxSequence;
 
     /**
-     * Shift for timestamp & workerId
+     * Shift for timestamp &amp; workerId
      */
     private final int timestampShift;
     private final int workerIdShift;
@@ -60,7 +60,7 @@ public class BitsAllocator {
     }
 
     /**
-     * Allocate bits for UID according to delta seconds & workerId & sequence<br>
+     * Allocate bits for UID according to delta seconds &amp; workerId &amp; sequence<br>
      * <b>Note that: </b>The highest bit will always be 0 for sign
      */
     public long allocate(long deltaSeconds, long workerId, long sequence) {

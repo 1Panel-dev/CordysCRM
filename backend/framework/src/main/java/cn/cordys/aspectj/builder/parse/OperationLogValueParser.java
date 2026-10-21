@@ -25,7 +25,8 @@ public class OperationLogValueParser implements BeanFactoryAware {
 
     public Map<String, String> processTemplate(Collection<String> templates, MethodExecuteResult methodExecuteResult) {
         Map<String, String> expressionValues = new HashMap<>();
-        EvaluationContext evaluationContext = expressionEvaluator.createEvaluationContext(methodExecuteResult.getMethod(),
+        EvaluationContext evaluationContext = expressionEvaluator.createEvaluationContext(
+                methodExecuteResult.getMethod(),
                 methodExecuteResult.getArgs(), methodExecuteResult.getTargetClass(), methodExecuteResult.getResult(),
                 methodExecuteResult.getErrorMsg(), beanFactory);
 
@@ -33,18 +34,20 @@ public class OperationLogValueParser implements BeanFactoryAware {
             if (expressionTemplate.contains("{")) {
                 Matcher matcher = pattern.matcher(expressionTemplate);
                 StringBuilder parsedStr = new StringBuilder();
-                AnnotatedElementKey annotatedElementKey = new AnnotatedElementKey(methodExecuteResult.getMethod(), methodExecuteResult.getTargetClass());
+                AnnotatedElementKey annotatedElementKey = new AnnotatedElementKey(methodExecuteResult.getMethod(),
+                        methodExecuteResult.getTargetClass());
                 while (matcher.find()) {
                     String expression = matcher.group(1);
-                    Object value = expressionEvaluator.parseExpression(expression, annotatedElementKey, evaluationContext);
-                    matcher.appendReplacement(parsedStr, Matcher.quoteReplacement(value == null ? StringUtils.EMPTY : value.toString()));
+                    Object value = expressionEvaluator.parseExpression(expression, annotatedElementKey,
+                            evaluationContext);
+                    matcher.appendReplacement(parsedStr,
+                            Matcher.quoteReplacement(value == null ? StringUtils.EMPTY : value.toString()));
                 }
                 matcher.appendTail(parsedStr);
                 expressionValues.put(expressionTemplate, parsedStr.toString());
             } else {
                 expressionValues.put(expressionTemplate, expressionTemplate);
             }
-
         }
         return expressionValues;
     }

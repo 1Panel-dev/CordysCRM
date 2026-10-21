@@ -16,5 +16,4 @@ public class OpportunityQuotationPageRequest extends BasePageRequest {
     @Schema(description = "商机id")
     private String opportunityId;
 
-
 }

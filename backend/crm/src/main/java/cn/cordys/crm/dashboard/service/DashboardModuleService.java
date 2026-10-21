@@ -67,12 +67,6 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 添加文件夹
-     *
-     * @param request
-     * @param orgId
-     * @param userId
-     *
-     * @return
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.ADD)
     public DashboardModule addFileModule(DashboardModuleAddRequest request, String orgId, String userId) {
@@ -107,11 +101,6 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 文件名重复校验
-     *
-     * @param name
-     * @param parentId
-     * @param orgId
-     * @param id
      */
     private void checkFileName(String name, String parentId, String orgId, String id) {
         if (extDashboardModuleMapper.countByName(name, parentId, orgId, id) > 0) {
@@ -121,14 +110,12 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 重命名文件夹
-     *
-     * @param request
-     * @param userId
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.UPDATE)
     public void rename(DashboardModuleRenameRequest request, String userId) {
         DashboardModule originalDashboardModule = checkDashboardModule(request.getId());
-        checkFileName(request.getName(), originalDashboardModule.getParentId(), originalDashboardModule.getOrganizationId(), originalDashboardModule.getId());
+        checkFileName(request.getName(), originalDashboardModule.getParentId(),
+                originalDashboardModule.getOrganizationId(), originalDashboardModule.getId());
 
         DashboardModule dashboardModule = BeanUtils.copyBean(new DashboardModule(), request);
         dashboardModule.setUpdateTime(System.currentTimeMillis());
@@ -144,8 +131,7 @@ public class DashboardModuleService extends MoveNodeService {
                         .modifiedValue(checkDashboardModule(request.getId()))
                         .resourceId(request.getId())
                         .resourceName(resourceName)
-                        .build()
-        );
+                        .build());
     }
 
     public DashboardModule checkDashboardModule(String id) {
@@ -158,10 +144,6 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 删除文件夹
-     *
-     * @param ids
-     * @param userId
-     * @param orgId
      */
     public void delete(List<String> ids, String userId, String orgId) {
         deleteCheck(ids, orgId);
@@ -171,7 +153,8 @@ public class DashboardModuleService extends MoveNodeService {
         List<LogDTO> logs = new ArrayList<>();
         // 添加日志上下文
         dashboardModules.forEach(dashboardModule -> {
-            LogDTO logDTO = new LogDTO(dashboardModule.getOrganizationId(), dashboardModule.getId(), userId, LogType.DELETE, LogModule.DASHBOARD, dashboardModule.getName());
+            LogDTO logDTO = new LogDTO(dashboardModule.getOrganizationId(), dashboardModule.getId(), userId,
+                    LogType.DELETE, LogModule.DASHBOARD, dashboardModule.getName());
             logDTO.setOriginalValue(dashboardModule);
             logs.add(logDTO);
         });
@@ -180,9 +163,6 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 删除校验
-     *
-     * @param ids
-     * @param orgId
      */
     private void deleteCheck(List<String> ids, String orgId) {
         if (extDashboardModuleMapper.countDashboardByIds(ids, orgId) > 0) {
@@ -192,11 +172,6 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 仪表板树结构
-     *
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public List<DashboardTreeNode> getTree(String userId, String orgId) {
         List<DashboardTreeNode> moduleNode = extDashboardModuleMapper.selectTreeNode(orgId);
@@ -249,11 +224,6 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 数量
-     *
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public Map<String, Long> moduleCount(String userId, String orgId) {
         List<DashboardTreeNode> moduleNode = extDashboardModuleMapper.selectTreeNode(orgId);
@@ -266,8 +236,7 @@ public class DashboardModuleService extends MoveNodeService {
         Map<String, Integer> moduleCountMap = dashboardNode.stream()
                 .collect(Collectors.groupingBy(
                         BaseTreeNode::getParentId,
-                        Collectors.summingInt(node -> 1)
-                ));
+                        Collectors.summingInt(node -> 1)));
 
         Map<String, Long> countMap = new HashMap<>();
         for (DashboardTreeNode root : dashboardTreeNodes) {
@@ -281,8 +250,8 @@ public class DashboardModuleService extends MoveNodeService {
         return countMap;
     }
 
-
-    private int calculateDashboardCount(BaseTreeNode node, Map<String, Long> countMap, Map<String, Integer> moduleCountMap) {
+    private int calculateDashboardCount(BaseTreeNode node, Map<String, Long> countMap,
+            Map<String, Integer> moduleCountMap) {
         int count = 0;
 
         if (moduleCountMap.containsKey(node.getId())) {
@@ -300,19 +269,14 @@ public class DashboardModuleService extends MoveNodeService {
         return count;
     }
 
-
     /**
      * 仪表板文件夹移动
-     *
-     * @param request
-     * @param userId
      */
     public void moveNode(NodeMoveRequest request, String userId) {
         NodeSortDTO nodeSortDTO = super.getNodeSortDTO(request,
                 extDashboardModuleMapper::selectBaseModuleById,
                 extDashboardModuleMapper::selectModuleByParentIdAndPosOperator,
                 false);
-
 
         DashboardModule dashboardModule = new DashboardModule();
         dashboardModule.setParentId(nodeSortDTO.getParent().getId());
@@ -354,10 +318,6 @@ public class DashboardModuleService extends MoveNodeService {
 
     /**
      * 获取文件夹名称
-     *
-     * @param id
-     *
-     * @return
      */
     public String getDashboardModuleName(String id) {
         DashboardModule dashboardModule = checkDashboardModule(id);

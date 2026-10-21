@@ -51,7 +51,8 @@ public class LarkNoticeSender extends AbstractNoticeSender {
     }
 
     private void sendLark(String context, NoticeModel noticeModel, String organizationId) {
-        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
+        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(),
+                noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;
         }
@@ -73,22 +74,20 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             return;
         }
         //获取通知的配置数据
-        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.LARK_SYNC.name());
+        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper
+                .getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.LARK_SYNC.name());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
             log.warn("没有配置飞书通知信息，无法发送消息");
             return;
         }
         ThirdConfigBaseDTO<?> thirdConfigurationDTO = JSON.parseObject(
-                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
-        );
+                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class);
 
-        LarkThirdConfigRequest larkThirdConfigRequest =
-                Optional.ofNullable(thirdConfigurationDTO.getConfig())
-                        .map(cfg -> JSON.MAPPER.convertValue(cfg, LarkThirdConfigRequest.class))
-                        .orElseGet(() -> JSON.parseObject(
-                                new String(orgConfigDetailByIdAndType.getContent()),
-                                LarkThirdConfigRequest.class
-                        ));
+        LarkThirdConfigRequest larkThirdConfigRequest = Optional.ofNullable(thirdConfigurationDTO.getConfig())
+                .map(cfg -> JSON.MAPPER.convertValue(cfg, LarkThirdConfigRequest.class))
+                .orElseGet(() -> JSON.parseObject(
+                        new String(orgConfigDetailByIdAndType.getContent()),
+                        LarkThirdConfigRequest.class));
 
         for (String resourceUserId : resourceUserIds) {
             log.info("发送飞书消息，飞书用户ID：{}", resourceUserId);
@@ -98,8 +97,8 @@ public class LarkNoticeSender extends AbstractNoticeSender {
             LarkTextDTO larkTextDTO = new LarkTextDTO();
             larkTextDTO.setText(context);
             larkSendMessageDTO.setContent(JSON.toJSONString(larkTextDTO));
-            tokenService.sendLarkNoticeByToken(larkSendMessageDTO, larkThirdConfigRequest.getAgentId(), larkThirdConfigRequest.getAppSecret());
+            tokenService.sendLarkNoticeByToken(larkSendMessageDTO, larkThirdConfigRequest.getAgentId(),
+                    larkThirdConfigRequest.getAppSecret());
         }
-
     }
 }

@@ -20,7 +20,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * <p>表示会话中的用户信息，继承自 {@link UserDTO}，并包含用于防止 CSRF 攻击的 token 和会话 ID。</p>
+ * <p>
+ * 表示会话中的用户信息，继承自 {@link UserDTO}，并包含用于防止 CSRF 攻击的 token 和会话 ID。
+ * </p>
  */
 @Getter
 @Setter
@@ -50,7 +52,6 @@ public class SessionUser extends UserDTO implements Serializable {
      *
      * @param user      用户数据对象
      * @param sessionId 会话 ID
-     *
      * @return {@link SessionUser} 对象
      */
     public static SessionUser fromUser(UserDTO user, String sessionId) {
@@ -62,7 +63,7 @@ public class SessionUser extends UserDTO implements Serializable {
         // 构建用于生成 CSRF Token 的信息
         List<String> infos = Arrays.asList(
                 user.getId(),
-                RandomStringUtils.secure().nextAlphabetic(6),  // 随机字符串增加多样性
+                RandomStringUtils.secure().nextAlphabetic(6), // 随机字符串增加多样性
                 sessionId,
                 String.valueOf(System.currentTimeMillis()) // 当前时间戳
         );
@@ -86,7 +87,6 @@ public class SessionUser extends UserDTO implements Serializable {
             byte[] hashedKey = MessageDigest.getInstance("SHA-256")
                     .digest(Objects.requireNonNull(userId).getBytes(StandardCharsets.UTF_8));
             return Base64.encodeBase64String(Arrays.copyOf(hashedKey, 16)); // 取 16 字节作 AES-128
-
         } catch (Exception e) {
             throw new RuntimeException("Error generating random alphabetic string", e);
         }

@@ -1,11 +1,9 @@
 package cn.cordys.crm.contract.constants;
 
-
 /**
  * 工商抬头类型
  */
 public enum BusinessTitleType {
-
 
     /**
      * 自定义
@@ -16,6 +14,5 @@ public enum BusinessTitleType {
      * 第三方
      */
     THIRD_PARTY,
-
 
 }

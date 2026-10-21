@@ -29,14 +29,13 @@ public class ContractUserViewController {
     @Resource
     private UserViewService userViewService;
 
-
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "添加合同视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CONTRACT.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                UserViewResourceType.CONTRACT.name());
     }
-
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
@@ -44,7 +43,6 @@ public class ContractUserViewController {
     public UserView update(@Validated @RequestBody UserViewUpdateRequest request) {
         return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
@@ -57,17 +55,17 @@ public class ContractUserViewController {
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "合同视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
-        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.CONTRACT.getKey());
+        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                FormKey.CONTRACT.getKey());
     }
-
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "合同视图列表")
     public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.CONTRACT.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.list(UserViewResourceType.CONTRACT.name(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/fixed/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
@@ -82,7 +80,6 @@ public class ContractUserViewController {
     public void editPos(@Validated @RequestBody PosRequest request) {
         userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CONTRACT.name());
     }
-
 
     @GetMapping("/enable/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)

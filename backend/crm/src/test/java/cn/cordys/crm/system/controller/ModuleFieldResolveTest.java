@@ -34,11 +34,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,7 +79,9 @@ class ModuleFieldResolveTest {
     void clearContext() {
         OrganizationContext.clear();
         ThreadContext.unbindSubject();
-        if (previousSubject != null) ThreadContext.bind(previousSubject);
+        if (previousSubject != null) {
+            ThreadContext.bind(previousSubject);
+        }
         new CommonBeanFactory().setApplicationContext(previousContext);
     }
 
@@ -107,7 +109,8 @@ class ModuleFieldResolveTest {
         var result = controller.resolveBusinessId(request("CUSTOMER", "同名客户"));
         assertEquals(List.of("customer-a", "customer-b"), result.stream().map(v -> v.getIdAsString()).toList());
         ArgumentCaptor<CustomerPageRequest> requests = ArgumentCaptor.forClass(CustomerPageRequest.class);
-        verify(customers, times(2)).sourceList(requests.capture(), eq("user-current"), eq("org-current"), same(permission));
+        verify(customers, times(2)).sourceList(requests.capture(), eq("user-current"), eq("org-current"),
+                same(permission));
         assertEquals(List.of("id", "name"), requests.getAllValues().stream()
                 .map(v -> v.getFilters().getFirst().getName()).toList());
     }

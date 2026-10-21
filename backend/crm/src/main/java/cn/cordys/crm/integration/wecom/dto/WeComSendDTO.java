@@ -42,7 +42,6 @@ public class WeComSendDTO {
      */
     private boolean safe;
 
-
     /**
      * 表示是否开启id转译，0表示不转译，1表示转译，默认为0
      */
@@ -57,6 +56,5 @@ public class WeComSendDTO {
      * 表示是否重复消息检查的时间间隔，默认1800s，最大不超过4小时
      */
     private Integer duplicate_check_interval;
-
 
 }

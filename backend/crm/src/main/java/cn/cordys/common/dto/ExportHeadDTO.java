@@ -14,6 +14,6 @@ public class ExportHeadDTO {
     private String key;
     @Schema(description = "表头名称")
     private String title;
-	@Schema(description = "字段类型")
-	private String columnType;
+    @Schema(description = "字段类型")
+    private String columnType;
 }

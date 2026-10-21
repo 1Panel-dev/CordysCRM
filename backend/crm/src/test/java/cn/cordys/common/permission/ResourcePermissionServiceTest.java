@@ -1,11 +1,13 @@
 package cn.cordys.common.permission;
 
-import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
@@ -20,31 +22,29 @@ import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.clue.service.ClueResourceAccessContextProvider;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.customer.controller.CustomerContactController;
-import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactResourceAccessContextProvider;
 import cn.cordys.crm.customer.service.CustomerResourceAccessContextProvider;
+import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
+import cn.cordys.crm.opportunity.service.OpportunityQuotationResourceAccessContextProvider;
+import cn.cordys.crm.opportunity.service.OpportunityResourceAccessContextProvider;
 import cn.cordys.crm.product.controller.ProductController;
 import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.product.service.ProductResourceAccessContextProvider;
-import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.service.DataScopeService;
-import cn.cordys.crm.opportunity.domain.Opportunity;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
-import cn.cordys.crm.opportunity.service.OpportunityResourceAccessContextProvider;
-import cn.cordys.crm.opportunity.service.OpportunityQuotationResourceAccessContextProvider;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
-import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.MockedStatic;
-import org.mockito.MockMakers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockMakers;
+import org.mockito.MockedStatic;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -66,8 +66,10 @@ import static org.mockito.Mockito.*;
 class ResourcePermissionServiceTest {
     private final ResourcePermissionService service = new ResourcePermissionService();
     private final DataScopeService dataScope = spy(new DataScopeService());
-    private final OpportunityResourceAccessContextProvider opportunities = new OpportunityResourceAccessContextProvider();
-    private final OpportunityQuotationResourceAccessContextProvider quotations = new OpportunityQuotationResourceAccessContextProvider();
+    private final OpportunityResourceAccessContextProvider opportunities =
+            new OpportunityResourceAccessContextProvider();
+    private final OpportunityQuotationResourceAccessContextProvider quotations =
+            new OpportunityQuotationResourceAccessContextProvider();
     @SuppressWarnings("unchecked")
     private final BaseMapper<Opportunity> opportunityMapper = mock(BaseMapper.class);
     @SuppressWarnings("unchecked")
@@ -109,7 +111,8 @@ class ResourcePermissionServiceTest {
         DeptDataPermissionDTO self = new DeptDataPermissionDTO();
         self.setSelf(true);
         doReturn(self).when(dataScope).getDeptDataPermission("sales", "org", "permission");
-        doReturn(self).when(dataScope).getDeptDataPermission("sales", "org", PermissionConstants.CLUE_MANAGEMENT_UPDATE);
+        doReturn(self).when(dataScope).getDeptDataPermission("sales", "org",
+                PermissionConstants.CLUE_MANAGEMENT_UPDATE);
         clue.setId("clue-id");
         clue.setOrganizationId("org");
         clue.setOwner("sales");
@@ -167,7 +170,8 @@ class ResourcePermissionServiceTest {
     private void withRolePermission(Runnable action) {
         try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
             roles.when(() -> PermissionUtils.hasPermission("permission")).thenReturn(true);
-            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.PRODUCT_MANAGEMENT_EXPORT)).thenReturn(true);
+            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.PRODUCT_MANAGEMENT_EXPORT))
+                    .thenReturn(true);
             action.run();
         }
     }
@@ -181,7 +185,7 @@ class ResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"opportunity", "quotation"})
+    @ValueSource(strings = { "opportunity", "quotation" })
     void selfScopeChecksSingleResourcesAndOpportunityBatches(String form) {
         withRolePermission(() -> {
             assertDoesNotThrow(() -> single(form));
@@ -198,7 +202,7 @@ class ResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"opportunity", "quotation"})
+    @ValueSource(strings = { "opportunity", "quotation" })
     void singleResourcesAndOpportunityBatchesRequireOrganizationAndOwner(String form) {
         withRolePermission(() -> {
             opportunity.setOrganizationId("other-org");
@@ -271,7 +275,8 @@ class ResourcePermissionServiceTest {
     @Test
     void allProductionProvidersHaveUniqueFormTypes() throws Exception {
         var scanner = new org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new org.springframework.core.type.filter.AssignableTypeFilter(ResourceAccessContextProvider.class));
+        scanner.addIncludeFilter(
+                new org.springframework.core.type.filter.AssignableTypeFilter(ResourceAccessContextProvider.class));
         List<ResourceAccessContextProvider> providers = new ArrayList<>();
         for (var definition : scanner.findCandidateComponents("cn.cordys.crm")) {
             providers.add((ResourceAccessContextProvider) Class.forName(definition.getBeanClassName())
@@ -331,12 +336,13 @@ class ResourcePermissionServiceTest {
     void explicitRoleOnlyChecksRemainSupported() {
         withRolePermission(() -> {
             assertDoesNotThrow(() -> service.checkResourcePermission("permission", "id", "", "sales", "org"));
-            assertDoesNotThrow(() -> service.checkBatchResourcePermission("permission", List.of("id"), "", "sales", "org"));
+            assertDoesNotThrow(
+                    () -> service.checkBatchResourcePermission("permission", List.of("id"), "", "sales", "org"));
         });
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"customerContactExportSelect", "batchUpdate"})
+    @ValueSource(strings = { "customerContactExportSelect", "batchUpdate" })
     void contactBatchEndpointsUseContactOwnership(String methodName) {
         CustomerContactResourceAccessContextProvider contacts = new CustomerContactResourceAccessContextProvider();
         CustomerResourceAccessContextProvider customers = new CustomerResourceAccessContextProvider();
@@ -439,18 +445,20 @@ class ResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"customer-role", "clue-role", "other-owner", "other-org", "missing", "no-owner", "blank-id"})
+    @ValueSource(strings = { "customer-role", "clue-role", "other-owner", "other-org", "missing", "no-owner",
+            "blank-id" })
     void clueConversionRejectsUnauthorizedSourcesBeforeWriting(String deniedReason) {
         // 客户新增的全部范围不能扩大线索编辑的本人范围。
         DeptDataPermissionDTO all = new DeptDataPermissionDTO();
         all.setAll(true);
-        doReturn(all).when(dataScope).getDeptDataPermission("sales", "org", PermissionConstants.CUSTOMER_MANAGEMENT_ADD);
+        doReturn(all).when(dataScope).getDeptDataPermission("sales", "org",
+                PermissionConstants.CUSTOMER_MANAGEMENT_ADD);
         switch (deniedReason) {
-            case "other-owner" -> clue.setOwner("other-sales");
-            case "other-org" -> clue.setOrganizationId("other-org");
-            case "missing" -> when(clueMapper.selectByPrimaryKey(clue.getId())).thenReturn(null);
-            case "no-owner" -> clue.setOwner(null);
-            case "blank-id" -> conversionRequest.setClueId(" ");
+        case "other-owner" -> clue.setOwner("other-sales");
+        case "other-org" -> clue.setOrganizationId("other-org");
+        case "missing" -> when(clueMapper.selectByPrimaryKey(clue.getId())).thenReturn(null);
+        case "no-owner" -> clue.setOwner(null);
+        case "blank-id" -> conversionRequest.setClueId(" ");
         }
         try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
             roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD))
@@ -462,17 +470,20 @@ class ResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"sales", "other-sales"})
+    @ValueSource(strings = { "sales", "other-sales" })
     void authorizedClueConversionChecksSourceBeforeCreatingCustomer(String owner) {
         clue.setOwner(owner);
         if (!"sales".equals(owner)) {
             DeptDataPermissionDTO all = new DeptDataPermissionDTO();
             all.setAll(true);
-            doReturn(all).when(dataScope).getDeptDataPermission("sales", "org", PermissionConstants.CLUE_MANAGEMENT_UPDATE);
+            doReturn(all).when(dataScope).getDeptDataPermission("sales", "org",
+                    PermissionConstants.CLUE_MANAGEMENT_UPDATE);
         }
         try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
-            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)).thenReturn(true);
-            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE)).thenReturn(true);
+            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD))
+                    .thenReturn(true);
+            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE))
+                    .thenReturn(true);
             assertDoesNotThrow(() -> conversion.transitionCustomer(conversionRequest, "sales", "org"));
         }
         var order = inOrder(dataScope, customers, extClueMapper);
@@ -513,7 +524,7 @@ class ResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"role", "scope", "status"})
+    @ValueSource(strings = { "role", "scope", "status" })
     void approvalTaskCannotReplaceClueConversionPermission(String deniedReason) {
         @SuppressWarnings("unchecked")
         BaseMapper<ApprovalTask> taskMapper = mock(BaseMapper.class);
@@ -551,7 +562,8 @@ class ResourcePermissionServiceTest {
         request.addHeader("Approval-Task-Id", "task-id");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
         try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
-            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)).thenReturn(true);
+            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD))
+                    .thenReturn(true);
             roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE))
                     .thenReturn(!"role".equals(deniedReason));
             // 审批接口保留待办授权，转换接口必须继续检查普通业务权限。
@@ -604,8 +616,8 @@ class ResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {PermissionConstants.CLUE_MANAGEMENT_DELETE, PermissionConstants.CLUE_MANAGEMENT_TRANSFER,
-            PermissionConstants.CLUE_MANAGEMENT_RECYCLE})
+    @ValueSource(strings = { PermissionConstants.CLUE_MANAGEMENT_DELETE, PermissionConstants.CLUE_MANAGEMENT_TRANSFER,
+            PermissionConstants.CLUE_MANAGEMENT_RECYCLE })
     void approvalTaskCannotAuthorizeDestructiveOperations(String permission) {
         ApprovalTask task = pendingTask("task-id");
         ApprovalInstance instance = pendingInstance(task);

@@ -16,7 +16,8 @@ public interface ExtAgentCollectionMapper {
 
     void unCollect(@Param("agentId") String agentId, @Param("userId") String userId);
 
-    List<AgentPageResponse> collectList(@Param("request") BasePageRequest request, @Param("userId") String userId, @Param("orgId") String orgId);
+    List<AgentPageResponse> collectList(@Param("request") BasePageRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId);
 
     int countMyCollect(@Param("userId") String userId);
 }

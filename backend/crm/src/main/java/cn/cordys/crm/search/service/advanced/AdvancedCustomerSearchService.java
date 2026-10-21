@@ -79,8 +79,8 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
     private ExtProductMapper extProductMapper;
 
     @Override
-    public PagerWithOption<List<AdvancedCustomerResponse>> startSearch(CustomerPageRequest request, String orgId, String userId) {
-
+    public PagerWithOption<List<AdvancedCustomerResponse>> startSearch(CustomerPageRequest request, String orgId,
+            String userId) {
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
         // 检查：如果客户模块未启用，抛出异常
@@ -103,7 +103,8 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    private List<AdvancedCustomerResponse> buildCustomerList(String organizationId, String userId, boolean isAdmin, List<AdvancedCustomerResponse> customers, List<String> enabledModules) {
+    private List<AdvancedCustomerResponse> buildCustomerList(String organizationId, String userId, boolean isAdmin,
+            List<AdvancedCustomerResponse> customers, List<String> enabledModules) {
         // 查询用户权限
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
         // 获取商机和线索的重复数量映射
@@ -117,7 +118,8 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         List<String> customerIds = customers.stream().map(AdvancedCustomerResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService
+                .getResourceFieldMap(customerIds, true);
 
         List<String> ownerIds = customers.stream()
                 .map(AdvancedCustomerResponse::getOwner)
@@ -145,7 +147,8 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, organizationId);
 
         // 获取负责人默认公海信息
-        Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, organizationId);
+        Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds,
+                organizationId);
         List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).distinct().toList();
         Map<String, CustomerPoolRecycleRule> recycleRuleMap;
         if (CollectionUtils.isEmpty(poolIds)) {
@@ -153,8 +156,10 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         } else {
             LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
             recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
-            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
-            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
+            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper
+                    .selectListByLambda(recycleRuleWrapper);
+            recycleRuleMap = recycleRules.stream()
+                    .collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
         }
 
         // 公海原因
@@ -165,7 +170,8 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         // 处理每个客户返回结果
         return customers.stream()
                 .peek(customer -> {
-                    boolean hasPermission = dataScopeService.hasDataPermission(userId, organizationId, customer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+                    boolean hasPermission = dataScopeService.hasDataPermission(userId, organizationId,
+                            customer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
                     // 设置商机数量
                     CustomerPool reservePool = ownersDefaultPoolMap.get(customer.getOwner());
                     if (!hasPermission) {
@@ -200,9 +206,11 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
 
                     String followerName = baseService.getAndCheckOptionName(userNameMap.get(customer.getFollower()));
                     customer.setFollowerName(followerName);
-                    String createUserName = baseService.getAndCheckOptionName(userNameMap.get(customer.getCreateUser()));
+                    String createUserName = baseService
+                            .getAndCheckOptionName(userNameMap.get(customer.getCreateUser()));
                     customer.setCreateUserName(createUserName);
-                    String updateUserName = baseService.getAndCheckOptionName(userNameMap.get(customer.getUpdateUser()));
+                    String updateUserName = baseService
+                            .getAndCheckOptionName(userNameMap.get(customer.getUpdateUser()));
                     customer.setUpdateUserName(updateUserName);
                     customer.setOwnerName(userNameMap.get(customer.getOwner()));
                     String reasonName = baseService.getAndCheckOptionName(dictMap.get(customer.getReasonId()));
@@ -211,11 +219,14 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
                 .toList();
     }
 
-    public Map<String, List<OptionDTO>> buildCustomerOptionMap(String orgId, List<AdvancedCustomerResponse> list, List<AdvancedCustomerResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildCustomerOptionMap(String orgId, List<AdvancedCustomerResponse> list,
+            List<AdvancedCustomerResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(),
+                orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, AdvancedCustomerResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                AdvancedCustomerResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -234,13 +245,12 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * @param isAdmin        是否是管理员
      * @param customers      客户列表
      * @param enabledModules 已启用模块列表
-     *
      * @return 商机数量映射(客户ID - > 数量)
      */
     private Map<String, String> getOpportunityCounts(List<String> permissions,
-                                                     boolean isAdmin,
-                                                     List<AdvancedCustomerResponse> customers,
-                                                     List<String> enabledModules) {
+            boolean isAdmin,
+            List<AdvancedCustomerResponse> customers,
+            List<String> enabledModules) {
         // 没有商机读取权限且不是管理员返回空map
         if (!permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) && !isAdmin) {
             return Collections.emptyMap();
@@ -266,15 +276,15 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * @param isAdmin        是否是管理员
      * @param customers      客户列表
      * @param enabledModules 已启用模块列表
-     *
      * @return 线索数量映射(客户名称 - > 数量)
      */
     private Map<String, String> getClueCounts(List<String> permissions,
-                                              boolean isAdmin,
-                                              List<AdvancedCustomerResponse> customers,
-                                              List<String> enabledModules) {
+            boolean isAdmin,
+            List<AdvancedCustomerResponse> customers,
+            List<String> enabledModules) {
         // 没有线索读取权限且不是管理员返回空map
-        if (!permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) && !permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) && !isAdmin) {
+        if (!permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ)
+                && !permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) && !isAdmin) {
             return Collections.emptyMap();
         }
         // 线索模块未启用返回空map
@@ -295,7 +305,6 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * 安全解析数量字符串
      *
      * @param count 数量字符串
-     *
      * @return 解析后的整型数量(空字符串返回0)
      */
     private int parseCount(String count) {
@@ -304,7 +313,8 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
 
     private void getProductNames(List<OptionDTO> productOption, List<AdvancedClueResponse> list) {
         // 设置产品名称
-        Map<String, String> productMap = productOption.stream().collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
+        Map<String, String> productMap = productOption.stream()
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
         list.forEach(clue -> {
             // 设置产品名称
             List<String> productNames = new ArrayList<>();
@@ -319,7 +329,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
     }
 
     public List<AdvancedClueResponse> getRepeatClueDetail(RepeatCustomerDetailPageRequest request,
-                                                          String organizationId) {
+            String organizationId) {
         List<AdvancedClueResponse> repeatClueList = extClueMapper.getRepeatClueList(request.getName(), organizationId);
         if (CollectionUtils.isEmpty(repeatClueList)) {
             return repeatClueList;
@@ -335,12 +345,10 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
      * 获取重复商机详情列表
      *
      * @param request 包含商机ID的查询请求
-     *
      * @return 重复商机响应列表(包含产品名称信息)
      */
     public List<OpportunityRepeatResponse> getRepeatOpportunityDetail(
             RepeatCustomerDetailPageRequest request) {
-
         // 1. 获取基础重复商机列表
         List<OpportunityRepeatResponse> responses = extOpportunityMapper.getRepeatList(request.getId());
 
@@ -358,10 +366,10 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
         Map<String, String> productNameMap = productIds.isEmpty()
                 ? Collections.emptyMap()
                 : extProductMapper.listIdNameByIds(productIds).stream()
-                .collect(Collectors.toMap(
-                        Product::getId,
-                        Product::getName,
-                        (existing, replacement) -> existing)); // 处理可能的重复键
+                        .collect(Collectors.toMap(
+                                Product::getId,
+                                Product::getName,
+                                (existing, replacement) -> existing)); // 处理可能的重复键
 
         // 4. 填充每个商机的产品名称
         responses.forEach(response -> {

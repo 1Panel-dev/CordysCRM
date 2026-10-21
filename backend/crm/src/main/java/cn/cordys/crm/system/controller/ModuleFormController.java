@@ -40,7 +40,8 @@ public class ModuleFormController {
 
     @GetMapping("/config/{formKey}")
     @Operation(summary = "获取表单配置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE,
+            PermissionConstants.PROCESS_SETTING_READ }, logical = Logical.OR)
     public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
         return moduleFormService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
     }
@@ -54,7 +55,8 @@ public class ModuleFormController {
 
     @GetMapping("/related/{formKey}")
     @Operation(summary = "获取详情页内置标签及包含当前表单数据源的关联表单")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE,
+            PermissionConstants.PROCESS_SETTING_READ }, logical = Logical.OR)
     public List<RelatedFormDTO> getRelatedForms(@PathVariable String formKey) {
         return moduleFormService.getRelatedForms(formKey, OrganizationContext.getOrganizationId());
     }

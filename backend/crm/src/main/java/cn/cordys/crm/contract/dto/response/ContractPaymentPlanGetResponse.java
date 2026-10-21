@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author jianxing
- * @date 2025-11-21 15:11:29
  */
 @Data
 public class ContractPaymentPlanGetResponse extends ContractPaymentPlan {

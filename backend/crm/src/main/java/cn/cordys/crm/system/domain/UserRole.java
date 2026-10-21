@@ -5,12 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 /**
  * 用户关联角色
  *
  * @author jianxing
- * @date 2025-01-06 14:31:33
  */
 @Data
 @Table(name = "sys_user_role")

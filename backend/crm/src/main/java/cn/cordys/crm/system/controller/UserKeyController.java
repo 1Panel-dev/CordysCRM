@@ -22,14 +22,12 @@ public class UserKeyController {
     @Resource
     private UserKeyService userKeyService;
 
-
     @GetMapping("/add")
     @RequiresPermissions(PermissionConstants.PERSONAL_API_KEY_ADD)
     @Operation(summary = "个人中心-APIKEY-新增")
     public void add() {
         userKeyService.addUserKey(SessionUtils.getUserId());
     }
-
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.PERSONAL_API_KEY_READ)
@@ -38,14 +36,12 @@ public class UserKeyController {
         return userKeyService.getUserKeysInfo(SessionUtils.getUserId());
     }
 
-
     @PostMapping("/update")
     @Operation(summary = "个人中心-APIKEY-更新")
     @RequiresPermissions(PermissionConstants.PERSONAL_API_KEY_UPDATE)
     public void update(@Validated @RequestBody UserKeyUpdateRequest request) {
         userKeyService.updateUserKey(request);
     }
-
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.PERSONAL_API_KEY_DELETE)
@@ -69,4 +65,3 @@ public class UserKeyController {
     }
 
 }
-

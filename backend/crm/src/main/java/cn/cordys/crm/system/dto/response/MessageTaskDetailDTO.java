@@ -35,5 +35,4 @@ public class MessageTaskDetailDTO implements Serializable {
     @Schema(description = "飞书启用")
     private Boolean larkEnable;
 
-
 }

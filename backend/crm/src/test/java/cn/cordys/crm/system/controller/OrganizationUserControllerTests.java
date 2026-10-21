@@ -55,10 +55,8 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_UPDATE_NAME = "/user/update/name";
     public static final String USER_GET = "/user/get/";
 
-
-    @Sql(scripts = {"/dml/init_user_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_user_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     public void userList() throws Exception {
@@ -67,7 +65,6 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setPageSize(10);
         request.setDepartmentIds(List.of("8"));
         this.requestPost(USER_LIST, request).andExpect(status().isOk());
-
     }
 
     @Test
@@ -93,7 +90,6 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setEmail("2@Cordys.com");
         this.requestPost(USER_ADD, request).andExpect(status().is5xxServerError());
     }
-
 
     @Test
     @Order(3)
@@ -124,7 +120,6 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setUserId("5");
         this.requestPost(USER_UPDATE_NAME, request).andExpect(status().isOk());
     }
-
 
     @Test
     @Order(5)
@@ -163,7 +158,6 @@ public class OrganizationUserControllerTests extends BaseTest {
         //   this.requestPost(USER_BATCH_EDIT, request).andExpect(status().isOk());
     }
 
-
     @Test
     @Order(10)
     public void downloadTemplate() throws Exception {
@@ -178,23 +172,25 @@ public class OrganizationUserControllerTests extends BaseTest {
     @Test
     @Order(11)
     public void testImportCheckExcel() throws Exception {
-        String filePath = Objects.requireNonNull(this.getClass().getClassLoader().getResource("file/user.xlsx")).getPath();
-        MockMultipartFile file = new MockMultipartFile("file", "11.xlsx", MediaType.APPLICATION_OCTET_STREAM_VALUE, FileBaseUtils.getFileBytes(filePath));
+        String filePath = Objects.requireNonNull(this.getClass().getClassLoader().getResource("file/user.xlsx"))
+                .getPath();
+        MockMultipartFile file = new MockMultipartFile("file", "11.xlsx", MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                FileBaseUtils.getFileBytes(filePath));
         LinkedMultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
         paramMap.add("file", file);
         this.requestMultipart(USER_IMPORT_PRE_CHECK, paramMap);
-
     }
 
     @Test
     @Order(12)
     public void testImportExcel() throws Exception {
-        String filePath = Objects.requireNonNull(this.getClass().getClassLoader().getResource("file/user1.xlsx")).getPath();
-        MockMultipartFile file = new MockMultipartFile("file", "1111.xlsx", MediaType.APPLICATION_OCTET_STREAM_VALUE, FileBaseUtils.getFileBytes(filePath));
+        String filePath = Objects.requireNonNull(this.getClass().getClassLoader().getResource("file/user1.xlsx"))
+                .getPath();
+        MockMultipartFile file = new MockMultipartFile("file", "1111.xlsx", MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                FileBaseUtils.getFileBytes(filePath));
         LinkedMultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
         paramMap.add("file", file);
         this.requestMultipart(USER_IMPORT, paramMap);
-
     }
 
     @Test
@@ -236,7 +232,6 @@ public class OrganizationUserControllerTests extends BaseTest {
     //测试高级搜索
     @Order(16)
     public void testUserListForCombineSearch() throws Exception {
-
         List<String> allDeptIdList = new ArrayList<>();
         String superiorDeptId;
         AtomicReference<String> deptId1 = new AtomicReference<>(), deptId2 = new AtomicReference<>();
@@ -262,8 +257,7 @@ public class OrganizationUserControllerTests extends BaseTest {
                     JSON.toJSONString(
                             JSON.parseObject(
                                     orgTreeResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
-                                    ResultHolder.class
-                            ).getData()),
+                                    ResultHolder.class).getData()),
                     BaseTreeNode.class);
 
             departmentTree.forEach(node -> {
@@ -275,12 +269,13 @@ public class OrganizationUserControllerTests extends BaseTest {
                 }
             });
 
-
-            MvcResult userPageResult = this.requestPostWithOkAndReturn(USER_LIST, new UserPageRequest() {{
-                setCurrent(1);
-                setPageSize(10);
-                setDepartmentIds(allDeptIdList);
-            }});
+            MvcResult userPageResult = this.requestPostWithOkAndReturn(USER_LIST, new UserPageRequest() {
+                {
+                    setCurrent(1);
+                    setPageSize(10);
+                    setDepartmentIds(allDeptIdList);
+                }
+            });
 
             Pager<List<UserPageResponse>> userResponse = JSON.parseObject(
                     JSON.toJSONString(
@@ -357,7 +352,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         MvcResult pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         Pager<List<UserPageResponse>> result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() > 20);
 
@@ -373,7 +369,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(20, result.getTotal());
 
@@ -388,7 +385,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
 
@@ -403,7 +401,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(4, result.getTotal());
 
@@ -418,7 +417,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
         //      邮箱  email
@@ -432,7 +432,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(20, result.getTotal());
 
@@ -447,7 +448,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
 
@@ -462,7 +464,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(20, result.getTotal());
 
@@ -476,7 +479,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
 
@@ -491,7 +495,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(20, result.getTotal());
 
@@ -506,7 +511,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(20, result.getTotal());
 
@@ -521,7 +527,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
 
@@ -536,7 +543,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() > 20);
 
@@ -551,7 +559,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() > 20);
 
@@ -566,7 +575,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
 
@@ -581,7 +591,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() >= 20);
 
@@ -596,7 +607,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() >= 20);
 
@@ -611,7 +623,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
 
@@ -630,7 +643,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
 
@@ -645,7 +659,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() >= 20);
 
@@ -660,7 +675,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() > 20);
 
@@ -675,7 +691,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() >= 20);
 
@@ -690,7 +707,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertTrue(result.getTotal() > 20);
 
@@ -705,10 +723,10 @@ public class OrganizationUserControllerTests extends BaseTest {
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
         result = JSON.parseObject(
                 JSON.toJSONString(
-                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                                ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
-
     }
 
 }

@@ -31,16 +31,13 @@ public class DepartmentControllerTests extends BaseTest {
     public static final String DEPARTMENT_DELETE = "/department/delete";
     public static final String DEPARTMENT_SORT = "/department/sort";
 
-
-    @Sql(scripts = {"/dml/init_department_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_department_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     public void departmentTree() throws Exception {
         // this.requestGet(DEPARTMENT_TREE).andExpect(status().isOk());
     }
-
 
     @Test
     @Order(2)
@@ -50,7 +47,6 @@ public class DepartmentControllerTests extends BaseTest {
         request.setParentId("NONE");
         this.requestPost(ADD_DEPARTMENT, request).andExpect(status().isOk());
     }
-
 
     @Test
     @Order(3)
@@ -71,9 +67,7 @@ public class DepartmentControllerTests extends BaseTest {
         request.setCommanderId("admin");
         request.setDepartmentId("1");
         this.requestPost(DEPARTMENT_SET_COMMANDER, request).andExpect(status().isOk());
-
     }
-
 
     @Test
     @Order(5)
@@ -87,7 +81,6 @@ public class DepartmentControllerTests extends BaseTest {
         this.requestPost(DEPARTMENT_DELETE, List.of("7"));
         this.requestPost(DEPARTMENT_DELETE, List.of("8"));
     }
-
 
     @Test
     @Order(4)

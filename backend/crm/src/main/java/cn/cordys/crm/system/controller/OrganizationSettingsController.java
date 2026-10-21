@@ -49,7 +49,8 @@ public class OrganizationSettingsController {
     @Operation(summary = "编辑邮件设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
     public void editEmail(@Validated @RequestBody EmailDTO emailDTO) {
-        organizationConfigService.editEmail(emailDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        organizationConfigService.editEmail(emailDTO, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/email/test")
@@ -67,7 +68,6 @@ public class OrganizationSettingsController {
         return integrationConfigService.getThirdConfig(OrganizationContext.getOrganizationId());
     }
 
-
     @GetMapping("/switch-third-party")
     @Operation(summary = "切换三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
@@ -79,7 +79,8 @@ public class OrganizationSettingsController {
     @GetMapping("/third-party/sync/resource")
     @Operation(summary = "获取最新的三方同步来源")
     public OrganizationConfig getLatestSyncResource() {
-        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
+        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId())
+                .orElse(DEFAULT_ORGANIZATION_ID);
         return integrationConfigService.getLatestSyncResource(organizationId);
     }
 
@@ -87,21 +88,24 @@ public class OrganizationSettingsController {
     @Operation(summary = "编辑三方设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
     public void editThirdConfig(@Validated @RequestBody ThirdConfigBaseDTO<Object> baseDTO) {
-        integrationConfigService.editThirdConfig(baseDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        integrationConfigService.editThirdConfig(baseDTO, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping(value = "/third-party/test")
     @Operation(summary = "校验配置是否链接成功")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public boolean validate(@RequestBody ThirdConfigBaseDTO<Object> baseDTO) {
-        return integrationConfigService.testConnection(baseDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        return integrationConfigService.testConnection(baseDTO, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @GetMapping(value = "/de-token")
     @Operation(summary = "生成DE-Token")
     @RequiresPermissions(PermissionConstants.DASHBOARD_READ)
     public DeAuthDTO generateToken(@RequestParam(required = false) boolean isModule) {
-        return dataEaseService.getEmbeddedDeToken(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), isModule);
+        return dataEaseService.getEmbeddedDeToken(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(),
+                isModule);
     }
 
     @GetMapping(value = "/de/sync")
@@ -121,8 +125,9 @@ public class OrganizationSettingsController {
     @GetMapping("/third-party/get/{type}")
     @Operation(summary = "根据类型获取开启的三方扫码设置")
     public ThirdConfigBaseDTO<?> getThirdConfigByType(@PathVariable String type) {
-        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
-        ThirdConfigBaseDTO<?> thirdConfig= integrationConfigService.getThirdConfigForPublic(type, organizationId);
+        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId())
+                .orElse(DEFAULT_ORGANIZATION_ID);
+        ThirdConfigBaseDTO<?> thirdConfig = integrationConfigService.getThirdConfigForPublic(type, organizationId);
         integrationConfigService.handleData(thirdConfig);
         return thirdConfig;
     }
@@ -130,9 +135,9 @@ public class OrganizationSettingsController {
     @GetMapping("/third-party/types")
     @Operation(summary = "获取三方应用扫码类型集合")
     public List<OptionDTO> getThirdTypeList() {
-        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId()).orElse(DEFAULT_ORGANIZATION_ID);
+        String organizationId = Optional.ofNullable(OrganizationContext.getOrganizationId())
+                .orElse(DEFAULT_ORGANIZATION_ID);
         return integrationConfigService.getThirdTypeList(organizationId);
     }
-
 
 }

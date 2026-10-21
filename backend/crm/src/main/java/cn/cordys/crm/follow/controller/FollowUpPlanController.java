@@ -42,30 +42,35 @@ public class FollowUpPlanController {
     @Resource
     private DataScopeService dataScopeService;
 
-
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
     @Operation(summary = "数据权限TAB")
     public ResourceTabEnableDTO getTabEnableConfig() {
-        return followUpPlanService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return followUpPlanService.getTabEnableConfig(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
     @Operation(summary = "跟进记录列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody PlanHomePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
         DeptDataPermissionDTO clueDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                clueDataPermission, customerDataPermission);
     }
 
     @GetMapping("/delete/{id}")
@@ -85,7 +90,8 @@ public class FollowUpPlanController {
     @GetMapping("/get/{id}")
     @Operation(summary = "跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
-        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(),
+                true);
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
 
@@ -96,11 +102,11 @@ public class FollowUpPlanController {
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-	@PostMapping("/add")
-	@Operation(summary = "添加跟进计划")
-	public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
+    @PostMapping("/add")
+    @Operation(summary = "添加跟进计划")
+    public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
         followUpPlanService.checkPlanPermission(BeanUtils.copyBean(new FollowUpPlan(), request),
                 OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), false);
         return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    }
 }

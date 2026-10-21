@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * 资源权限校验服务
  * <p>
- * 校验逻辑：(角色权限位 && 角色数据权限 && 审批状态权限)
+ * 校验逻辑：(角色权限位 &amp;&amp; 角色数据权限 &amp;&amp; 审批状态权限)
  */
 @Service
 public class ResourcePermissionService {
@@ -65,7 +65,7 @@ public class ResourcePermissionService {
     }
 
     /**
-     * 完整权限校验：(角色权限位 && 角色数据权限 && 审批状态权限)
+     * 完整权限校验：(角色权限位 &amp;&amp; 角色数据权限 &amp;&amp; 审批状态权限)
      *
      * @param permission 权限码
      * @param resourceId 资源ID
@@ -73,7 +73,8 @@ public class ResourcePermissionService {
      * @param userId     当前用户ID
      * @param orgId      组织ID
      */
-    public void checkResourcePermission(String permission, String resourceId, String formType, String userId, String orgId) {
+    public void checkResourcePermission(String permission, String resourceId, String formType, String userId,
+            String orgId) {
         if (StringUtils.isBlank(resourceId)) {
             checkPermission(permission);
             return;
@@ -105,20 +106,21 @@ public class ResourcePermissionService {
      * @param userId     当前用户ID
      * @param orgId      组织ID
      */
-    public void checkResourcePermissionWithoutApprovalTask(String permission, String resourceId, String formType, String userId, String orgId) {
+    public void checkResourcePermissionWithoutApprovalTask(String permission, String resourceId, String formType,
+            String userId, String orgId) {
         if (StringUtils.isBlank(resourceId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
         ResourceAccessContextProvider provider = getProvider(formType);
         ResourceAccessContext context = provider != null ? provider.getAccessContext(resourceId, orgId) : null;
-        boolean permitted = checkRoleAndDataAndStatusPermission(permission, resourceId, formType, userId, orgId, context, provider);
+        boolean permitted = checkRoleAndDataAndStatusPermission(permission, resourceId, formType, userId, orgId,
+                context, provider);
 
         if (!permitted) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
     }
-
 
     public boolean hasApprovalTaskPermission(String resourceId, String userId) {
         // 从HTTP请求中获取待办任务ID
@@ -195,7 +197,8 @@ public class ResourcePermissionService {
     /**
      * 批量权限校验：仅校验角色权限位 + 数据权限（跳过审批状态权限）
      */
-    public void checkBatchResourcePermission(String permission, List<String> resourceIds, String formType, String userId, String orgId) {
+    public void checkBatchResourcePermission(String permission, List<String> resourceIds, String formType,
+            String userId, String orgId) {
         if (!PermissionUtils.hasPermission(permission)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
@@ -225,12 +228,11 @@ public class ResourcePermissionService {
     }
 
     /**
-     * 校验角色权限位 + 数据权限 + 审批状态权限：(1 && 2 && 3)
+     * 校验角色权限位 + 数据权限 + 审批状态权限：(1 &amp;&amp; 2 &amp;&amp; 3)
      */
     private boolean checkRoleAndDataAndStatusPermission(String permission, String resourceId, String formType,
-                                                        String userId, String orgId, ResourceAccessContext context,
-                                                        ResourceAccessContextProvider provider) {
-
+            String userId, String orgId, ResourceAccessContext context,
+            ResourceAccessContextProvider provider) {
         boolean requiresOwner = provider == null || provider.requiresOwner();
         // 资源必须存在；只有明确声明为组织共享的资源才允许没有负责人。
         if (StringUtils.isNotBlank(formType)

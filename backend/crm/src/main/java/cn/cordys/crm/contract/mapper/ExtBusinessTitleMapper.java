@@ -9,14 +9,15 @@ import java.util.List;
 
 public interface ExtBusinessTitleMapper {
 
+    List<BusinessTitleListResponse> list(@Param("request") BusinessTitlePageRequest request,
+            @Param("orgId") String orgId, @Param("userId") String userId);
 
-    List<BusinessTitleListResponse> list(@Param("request") BusinessTitlePageRequest request, @Param("orgId") String orgId, @Param("userId") String userId);
-
-    List<BusinessTitleListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId);
+    List<BusinessTitleListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId,
+            @Param("orgId") String orgId);
 
     int countByName(@Param("businessName") String businessName, @Param("orgId") String orgId, @Param("id") String id);
 
-    List<BusinessTitle> selectByNames(@Param("names")List<String> names);
+    List<BusinessTitle> selectByNames(@Param("names") List<String> names);
 
     void updateById(@Param("title") BusinessTitle title);
 }

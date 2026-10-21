@@ -1,6 +1,5 @@
 package cn.cordys.common.resolver.field;
 
-
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.dto.field.InputMultipleField;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,7 +29,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
     }
 
     @Override
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public Object transformToValue(InputMultipleField inputMultipleField, String value) {
         if (StringUtils.isEmpty(value)) {
             return StringUtils.EMPTY;
@@ -50,6 +49,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
 
     /**
      * 要求标签最多10个, 且每个标签长度不超过64个字符
+     *
      * @param textList 标签列表
      * @return 符合要求的标签集合
      */

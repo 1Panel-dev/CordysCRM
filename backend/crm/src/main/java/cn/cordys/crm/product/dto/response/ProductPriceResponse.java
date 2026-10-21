@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * @author song-cc-rock
  */
@@ -44,6 +43,6 @@ public class ProductPriceResponse {
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 
-	@Schema(description = "产品子列表")
-	private List<Map<String, Object>> products = new ArrayList<>();
+    @Schema(description = "产品子列表")
+    private List<Map<String, Object>> products = new ArrayList<>();
 }

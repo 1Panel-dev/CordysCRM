@@ -6,8 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-15  14:52
+ * @author jianxing
  */
 @Data
 public class UserCreateRequest {

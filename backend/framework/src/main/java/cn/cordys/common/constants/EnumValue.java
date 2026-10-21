@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author jianxing
  */
-@Target({ElementType.FIELD})
+@Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Constraint(validatedBy = EnumValue.EnumValueValidator.class)
@@ -81,7 +81,6 @@ public @interface EnumValue {
          *
          * @param value   待校验的值
          * @param context 校验上下文
-         *
          * @return 校验结果，若值有效返回 true，否则返回 false
          */
         @Override
@@ -112,7 +111,8 @@ public @interface EnumValue {
             if (!valid) {
                 context.disableDefaultConstraintViolation();
                 String errorValues = CollectionUtils.subtract(values, Arrays.asList(excludeValues)).toString();
-                context.buildConstraintViolationWithTemplate(Translator.get("enum_value_valid_message") + errorValues).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(Translator.get("enum_value_valid_message") + errorValues)
+                        .addConstraintViolation();
             }
 
             return valid;

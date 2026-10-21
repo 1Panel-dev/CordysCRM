@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.dto.request;
 
-
 import cn.cordys.common.groups.Created;
 import cn.cordys.common.groups.Updated;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
@@ -15,11 +14,11 @@ public class MessageTaskRequest {
     public String id;
 
     @Schema(description = "消息配置模块: CUSTOMER/CLUE/BUSINESS", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{message_task.module.not_blank}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{message_task.module.not_blank}", groups = { Created.class, Updated.class })
     public String module;
 
     @Schema(description = "消息配置事件", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "{message_task.event.not_blank}", groups = {Created.class, Updated.class})
+    @NotBlank(message = "{message_task.event.not_blank}", groups = { Created.class, Updated.class })
     public String event;
 
     @Schema(description = "邮件启用")

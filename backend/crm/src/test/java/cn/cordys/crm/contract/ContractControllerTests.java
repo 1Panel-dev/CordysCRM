@@ -59,15 +59,13 @@ public class ContractControllerTests extends BaseTest {
         moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
     }
 
-    @Sql(scripts = {"/dml/init_contract_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
+            "/dml/init_contract_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     void testAdd() throws Exception {
-
         ContractAddRequest request = new ContractAddRequest();
-        request.setName("SomebodyJIAN-测试合同1"+System.currentTimeMillis());
+        request.setName("SomebodyJIAN-测试合同1" + System.currentTimeMillis());
         request.setCustomerId("contract_test_customer");
         request.setOwner(InternalUser.ADMIN.getValue());
         request.setStartTime(System.currentTimeMillis());
@@ -77,12 +75,12 @@ public class ContractControllerTests extends BaseTest {
         List<BaseModuleFieldValue> moduleFields = new ArrayList<>();
         for (BaseField field : moduleFormConfig.getFields()) {
             Object value = switch (field.getInternalKey()) {
-                case "contractName" -> request.getName();
-                case "contractOwner" -> request.getOwner();
-                case "contractCustomer" -> request.getCustomerId();
-                case "contractStartTime" -> request.getStartTime();
-                case "contractEndTime" -> request.getEndTime();
-                default -> null;
+            case "contractName" -> request.getName();
+            case "contractOwner" -> request.getOwner();
+            case "contractCustomer" -> request.getCustomerId();
+            case "contractStartTime" -> request.getStartTime();
+            case "contractEndTime" -> request.getEndTime();
+            default -> null;
             };
             if (value != null) {
                 moduleFields.add(new BaseModuleFieldValue(field.getId(), value));
@@ -144,7 +142,6 @@ public class ContractControllerTests extends BaseTest {
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
                 Assertions.assertEquals(newName, updated.getName(), "批量更新合同名称后，DB 中的 name 应等于请求值");
-
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_OWNER.getKey())) {
                 // 更新负责人：改成 permission_test，断言值确实发生变化
                 String newOwner = PERMISSION_USER_NAME;
@@ -155,7 +152,6 @@ public class ContractControllerTests extends BaseTest {
                 Assertions.assertNotNull(updated);
                 Assertions.assertNotEquals(InternalUser.ADMIN.getValue(), updated.getOwner(), "负责人应已从 admin 更新为其他用户");
                 Assertions.assertEquals(newOwner, updated.getOwner(), "批量更新负责人后，DB 中的 owner 应等于请求值");
-
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_CUSTOMER_NAME.getKey())) {
                 // 更新关联客户
                 request.setFieldValue("contract_test_customer");
@@ -163,8 +159,8 @@ public class ContractControllerTests extends BaseTest {
 
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
-                Assertions.assertEquals("contract_test_customer", updated.getCustomerId(), "批量更新客户后，DB 中的 customer_id 应等于请求值");
-
+                Assertions.assertEquals("contract_test_customer", updated.getCustomerId(),
+                        "批量更新客户后，DB 中的 customer_id 应等于请求值");
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
                 // 更新金额
                 request.setFieldValue("9999.99");
@@ -172,8 +168,8 @@ public class ContractControllerTests extends BaseTest {
 
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
-                Assertions.assertEquals(0, new java.math.BigDecimal("9999.99").compareTo(updated.getAmount()), "批量更新金额后，DB 中的 amount 应等于请求值");
-
+                Assertions.assertEquals(0, new java.math.BigDecimal("9999.99").compareTo(updated.getAmount()),
+                        "批量更新金额后，DB 中的 amount 应等于请求值");
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_NO.getKey())) {
                 // 更新编号
                 String newNumber = "HT-" + UUID.randomUUID().toString().substring(0, 8);
@@ -183,7 +179,6 @@ public class ContractControllerTests extends BaseTest {
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
                 Assertions.assertEquals(newNumber, updated.getNumber(), "批量更新编号后，DB 中的 number 应等于请求值");
-
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_START_TIME.getKey())) {
                 // 更新开始时间
                 Long newStartTime = System.currentTimeMillis() + 100000L;
@@ -193,7 +188,6 @@ public class ContractControllerTests extends BaseTest {
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
                 Assertions.assertEquals(newStartTime, updated.getStartTime(), "批量更新开始时间后，DB 中的 start_time 应等于请求值");
-
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_END_TIME.getKey())) {
                 // 更新结束时间
                 Long newEndTime = System.currentTimeMillis() + 200000L;
@@ -203,7 +197,6 @@ public class ContractControllerTests extends BaseTest {
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
                 Assertions.assertEquals(newEndTime, updated.getEndTime(), "批量更新结束时间后，DB 中的 end_time 应等于请求值");
-
             }
         }
 
@@ -228,6 +221,5 @@ public class ContractControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.CONTRACT_DELETE, DEFAULT_DELETE, addContract.getId());
         Contract contract = contractMapper.selectByPrimaryKey(addContract.getId());
         Assertions.assertNull(contract);
-
     }
 }

@@ -40,10 +40,6 @@ public class SearchFieldMaskConfigService {
 
     /**
      * 保存脱敏字段配置
-     *
-     * @param request
-     * @param userId
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void save(FieldMaskConfigDTO request, String userId, String orgId) {
@@ -51,26 +47,26 @@ public class SearchFieldMaskConfigService {
         deleteFieldMaskConfig(orgId);
         request.getSearchFields().forEach((key, value) -> {
             switch (key) {
-                case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
-                    saveMaskFields(value, userId, orgId, FormKey.CLUE.getKey(), key);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER:
-                    saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
-                    saveMaskFields(value, userId, orgId, FormKey.CONTACT.getKey(), key);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
-                    saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
-                    saveMaskFields(value, userId, orgId, FormKey.CLUE.getKey(), key);
-                    break;
-                case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
-                    saveMaskFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key);
-                    break;
-                default:
-                    break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
+                saveMaskFields(value, userId, orgId, FormKey.CLUE.getKey(), key);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER:
+                saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
+                saveMaskFields(value, userId, orgId, FormKey.CONTACT.getKey(), key);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
+                saveMaskFields(value, userId, orgId, FormKey.CUSTOMER.getKey(), key);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
+                saveMaskFields(value, userId, orgId, FormKey.CLUE.getKey(), key);
+                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
+                saveMaskFields(value, userId, orgId, FormKey.OPPORTUNITY.getKey(), key);
+                break;
+            default:
+                break;
             }
         });
         OperationLogContext.setContext(
@@ -79,19 +75,11 @@ public class SearchFieldMaskConfigService {
                         .resourceName(Translator.get("module.desensitization_set"))
                         .originalValue(fieldMaskConfigDTO.getSearchFields())
                         .modifiedValue(request.getSearchFields())
-                        .build()
-        );
+                        .build());
     }
-
 
     /**
      * 保存脱敏字段
-     *
-     * @param fieldIds
-     * @param userId
-     * @param orgId
-     * @param formKey
-     * @param moduleType
      */
     private void saveMaskFields(List<String> fieldIds, String userId, String orgId, String formKey, String moduleType) {
         if (CollectionUtils.isNotEmpty(fieldIds)) {
@@ -100,7 +88,8 @@ public class SearchFieldMaskConfigService {
             List<SearchFieldMaskConfig> searchConfigs = new ArrayList<>();
 
             for (String fieldId : fieldIds) {
-                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId)).findFirst().orElse(null);
+                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldId))
+                        .findFirst().orElse(null);
                 if (baseField == null) {
                     continue;
                 }
@@ -126,9 +115,7 @@ public class SearchFieldMaskConfigService {
 
             searchFieldMaskConfigMapper.batchInsert(searchConfigs);
         }
-
     }
-
 
     private void deleteFieldMaskConfig(String orgId) {
         LambdaQueryWrapper<SearchFieldMaskConfig> queryWrapper = new LambdaQueryWrapper<>();
@@ -136,26 +123,21 @@ public class SearchFieldMaskConfigService {
         searchFieldMaskConfigMapper.deleteByLambda(queryWrapper);
     }
 
-
     /**
      * 获取脱敏字段配置
-     *
-     * @param orgId
-     *
-     * @return
      */
     public FieldMaskConfigDTO get(String orgId) {
         LambdaQueryWrapper<SearchFieldMaskConfig> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SearchFieldMaskConfig::getOrganizationId, orgId);
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = searchFieldMaskConfigMapper.selectListByLambda(queryWrapper);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = searchFieldMaskConfigMapper
+                .selectListByLambda(queryWrapper);
 
         FieldMaskConfigDTO response = new FieldMaskConfigDTO();
         Map<String, List<String>> searchFields = searchFieldMaskConfigs.stream()
                 .collect(Collectors.groupingBy(
                         SearchFieldMaskConfig::getModuleType,
                         Collectors.mapping(SearchFieldMaskConfig::getFieldId,
-                                Collectors.toList())
-                ));
+                                Collectors.toList())));
         response.setSearchFields(searchFields);
         return response;
     }

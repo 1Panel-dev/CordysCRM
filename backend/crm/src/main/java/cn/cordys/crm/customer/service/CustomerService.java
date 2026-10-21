@@ -117,7 +117,6 @@ import java.util.stream.Stream;
 
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -201,7 +200,8 @@ public class CustomerService implements ApprovalResourceHandler {
     @Resource
     private ResourcePermissionService resourcePermissionService;
 
-    public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         List<CustomerListResponse> buildList = buildListData(list, orgId);
@@ -209,7 +209,8 @@ public class CustomerService implements ApprovalResourceHandler {
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    public PagerWithOption<List<CustomerListResponse>> transitionList(CustomerPageRequest request, String userId, String orgId) {
+    public PagerWithOption<List<CustomerListResponse>> transitionList(CustomerPageRequest request, String userId,
+            String orgId) {
         /*
          * 数据范围: 当前用户所在公海&私海客户(协作客户&&数据权限客户)
          */
@@ -217,15 +218,18 @@ public class CustomerService implements ApprovalResourceHandler {
         List<CustomerPool> pools = extCustomerPoolMapper.getPoolByScopeIds(scopeIds, orgId);
         request.setTransitionPoolIds(pools.stream().map(CustomerPool::getId).toList());
         request.setTransition(true);
-        request.setTransitionDataPermission(dataScopeService.getDeptDataPermission(userId, orgId, null, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
+        request.setTransitionDataPermission(dataScopeService.getDeptDataPermission(userId, orgId, null,
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ));
         return list(request, userId, orgId, null);
     }
 
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<CustomerListResponse> list, List<CustomerListResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<CustomerListResponse> list,
+            List<CustomerListResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = getFormConfig(orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                CustomerListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -241,7 +245,8 @@ public class CustomerService implements ApprovalResourceHandler {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
     }
 
-    public PagerWithOption<List<CustomerListResponse>> sourceList(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<CustomerListResponse>> sourceList(CustomerPageRequest request, String userId,
+            String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerListResponse> list = extCustomerMapper.sourceList(request, orgId, userId, deptDataPermission);
         List<CustomerListResponse> buildList = buildListData(list, orgId);
@@ -256,7 +261,8 @@ public class CustomerService implements ApprovalResourceHandler {
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .toList();
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService
+                .getResourceFieldMap(customerIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(CustomerListResponse::getOwner)
@@ -292,8 +298,10 @@ public class CustomerService implements ApprovalResourceHandler {
         } else {
             var recycleRuleWrapper = new LambdaQueryWrapper<CustomerPoolRecycleRule>();
             recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
-            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
-            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
+            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper
+                    .selectListByLambda(recycleRuleWrapper);
+            recycleRuleMap = recycleRules.stream()
+                    .collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
         }
 
         // 公海原因
@@ -305,7 +313,8 @@ public class CustomerService implements ApprovalResourceHandler {
         List<String> approvingResourceIds = list.stream()
                 .filter(item -> Strings.CI.equals(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
                 .map(CustomerListResponse::getId).toList();
-        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        Map<String, Boolean> firstNodeApprovedMap = baseService
+                .getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
 
         list.forEach(customerListResponse -> {
@@ -327,12 +336,15 @@ public class CustomerService implements ApprovalResourceHandler {
             }
 
             if (StringUtils.isNotEmpty(customerListResponse.getFollower())) {
-                String followerName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
+                String followerName = baseService
+                        .getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
                 customerListResponse.setFollowerName(followerName);
             }
-            String createUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getCreateUser()));
+            String createUserName = baseService
+                    .getAndCheckOptionName(userNameMap.get(customerListResponse.getCreateUser()));
             customerListResponse.setCreateUserName(createUserName);
-            String updateUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
+            String updateUserName = baseService
+                    .getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
             customerListResponse.setUpdateUserName(updateUserName);
             customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
             if (StringUtils.isNotBlank(customerListResponse.getReasonId())) {
@@ -356,9 +368,11 @@ public class CustomerService implements ApprovalResourceHandler {
         if (resourcePermissionService.hasApprovalTaskPermission(id, userId)) {
             return getResponse;
         }
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         if (!hasPermission) {
-            List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(getResponse.getId(), userId);
+            List<CustomerCollaboration> collaborations = customerCollaborationService
+                    .selectByCustomerIdAndUserId(getResponse.getId(), userId);
             if (CollectionUtils.isEmpty(collaborations)) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             } else {
@@ -395,13 +409,15 @@ public class CustomerService implements ApprovalResourceHandler {
         customerGetResponse.setModuleFields(customerFields);
 
         // 公海原因
-        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(), customer.getOrganizationId());
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(),
+                customer.getOrganizationId());
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
         if (customerGetResponse.getOwner() != null) {
             // 获取负责人默认公海信息
-            Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(List.of(customerGetResponse.getOwner()), customer.getOrganizationId());
+            Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService
+                    .getOwnersDefaultPoolMap(List.of(customerGetResponse.getOwner()), customer.getOrganizationId());
             List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).distinct().toList();
             Map<String, CustomerPoolRecycleRule> recycleRuleMap;
             if (CollectionUtils.isEmpty(poolIds)) {
@@ -409,8 +425,10 @@ public class CustomerService implements ApprovalResourceHandler {
             } else {
                 var recycleRuleWrapper = new LambdaQueryWrapper<CustomerPoolRecycleRule>();
                 recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
-                List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
-                recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
+                List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper
+                        .selectListByLambda(recycleRuleWrapper);
+                recycleRuleMap = recycleRules.stream()
+                        .collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
             }
 
             // 设置回收公海
@@ -421,8 +439,8 @@ public class CustomerService implements ApprovalResourceHandler {
                     reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
                     customerGetResponse.getCollectionTime(), customerGetResponse.getCreateTime()));
 
-
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), customer.getOrganizationId());
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(),
+                    customer.getOrganizationId());
             if (userDeptDTO != null) {
                 customerGetResponse.setDepartmentId(userDeptDTO.getDeptId());
                 customerGetResponse.setDepartmentName(userDeptDTO.getDeptName());
@@ -445,7 +463,8 @@ public class CustomerService implements ApprovalResourceHandler {
 
         // 审批中才需要提审人与首节点是否已通过, 其余状态不查审批实例
         if (Strings.CI.equals(customerGetResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(List.of(id), customer.getOrganizationId());
+            Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(List.of(id),
+                    customer.getOrganizationId());
             customerGetResponse.setFirstApproved(firstNodeApprovedMap.get(id));
             customerGetResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(id));
         }
@@ -560,7 +579,6 @@ public class CustomerService implements ApprovalResourceHandler {
                 //客户负责人变更，联系人同步更新
                 syncContactOwnerOnOwnerChange(request, originCustomer, orgId);
 
-
                 // 如果责任人有修改，则添加责任人历史
                 // 审批回退的负责人变更是回退动作本身, 不再记一条, 否则历史里会残留一次并未真正发生的负责人变更
                 if (!isApprovalRevert(request.getUpdateType())) {
@@ -573,7 +591,8 @@ public class CustomerService implements ApprovalResourceHandler {
         }
 
         // 获取模块字段
-        List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originCustomerFields = customerFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
 
         // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
         // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
@@ -581,7 +600,8 @@ public class CustomerService implements ApprovalResourceHandler {
                 FormKey.CUSTOMER.getKey(), List.of(request.getId()), orgId);
 
         if (BooleanUtils.isTrue(request.getAgentInvoke())) {
-            customerFieldService.updateModuleFieldByAgent(customer, originCustomerFields, request.getModuleFields(), orgId, userId);
+            customerFieldService.updateModuleFieldByAgent(customer, originCustomerFields, request.getModuleFields(),
+                    orgId, userId);
         } else {
             // 更新模块字段
             updateModuleField(customer, request.getModuleFields(), orgId, userId);
@@ -592,11 +612,14 @@ public class CustomerService implements ApprovalResourceHandler {
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
 
         customer = customerMapper.selectByPrimaryKey(request.getId());
-        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields() == null ? originCustomerFields : request.getModuleFields(), originCustomer.getId(), originCustomer.getName());
+        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields,
+                request.getModuleFields() == null ? originCustomerFields : request.getModuleFields(),
+                originCustomer.getId(), originCustomer.getName());
         return customer;
     }
 
-    private void updateModuleField(Customer customer, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(Customer customer, List<BaseModuleFieldValue> moduleFields, String orgId,
+            String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -646,7 +669,8 @@ public class CustomerService implements ApprovalResourceHandler {
         OperationLogContext.setResourceName(originCustomer.getName());
 
         // 公海客户没有负责人, List.of(null) 会直接抛 NPE; 审批通过后执行的删除也会走到这里
-        List<String> receivers = StringUtils.isBlank(originCustomer.getOwner()) ? List.of() : List.of(originCustomer.getOwner());
+        List<String> receivers = StringUtils.isBlank(originCustomer.getOwner()) ? List.of()
+                : List.of(originCustomer.getOwner());
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
                 NotificationConstants.Event.CUSTOMER_DELETED, originCustomer.getName(), userId,
                 orgId, receivers, true);
@@ -680,7 +704,8 @@ public class CustomerService implements ApprovalResourceHandler {
     /**
      * @param comment 提交人填写的审批说明, 追加在系统生成的变更说明之后; 批量入口不接收, 传 null
      */
-    public BatchAffectReasonResponse batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId, String comment) {
+    public BatchAffectReasonResponse batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId,
+            String comment) {
         int requestCount = CollectionUtils.size(request.getIds());
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originCustomers)) {
@@ -695,8 +720,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER,
                 orgId,
                 Customer::getId,
-                Customer::getApprovalStatus
-        );
+                Customer::getApprovalStatus);
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(originCustomers.size()).skip(0)
                     .errorMessages(Translator.get("no.operation.permission")).build();
@@ -707,7 +731,8 @@ public class CustomerService implements ApprovalResourceHandler {
         // 转移 SQL 与负责人历史都按 request.ids 整批写, 得把无权的那批从入参里摘掉, 否则它们会跟着一起被改
         request.setIds(permittedIds);
 
-        long processCount = transferableCustomers.stream().filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner())).count();
+        long processCount = transferableCustomers.stream()
+                .filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner())).count();
         poolCustomerService.validateCapacity((int) processCount, request.getOwner(), orgId);
 
         // 转移 SQL 只写负责人真正发生变化的客户, 审批同样只对这些客户触发, 避免给原本就是这个负责人的客户凭空建一条审批
@@ -717,7 +742,8 @@ public class CustomerService implements ApprovalResourceHandler {
                 .toList();
         // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
         CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
-                changedIds, BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, orgId, userId, request.getOwner(), comment);
+                changedIds, BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, orgId, userId, request.getOwner(),
+                comment);
 
         // 客户负责人变更, 联系人负责人要跟着走, 与单个编辑(CustomerService#update)保持一致;
         // 在这里取值, 此时客户行还没被转移 SQL 改写, 拿到的仍是原负责人
@@ -737,7 +763,8 @@ public class CustomerService implements ApprovalResourceHandler {
                     originCustomer.setOwner(customer.getOwner());
                     Customer modifieCustomer = new Customer();
                     modifieCustomer.setOwner(request.getOwner());
-                    LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER_INDEX, customer.getName());
+                    LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE,
+                            LogModule.CUSTOMER_INDEX, customer.getName());
                     logDTO.setOriginalValue(originCustomer);
                     logDTO.setModifiedValue(modifieCustomer);
                     return logDTO;
@@ -785,11 +812,13 @@ public class CustomerService implements ApprovalResourceHandler {
                 && snapshot.getContactIds() != null) {
             // 快照已经记下这次改派了谁(空集合表示一个都没有), 只按 id 还原; 空集合不生成 in () 这种非法 SQL
             if (CollectionUtils.isNotEmpty(snapshot.getContactIds())) {
-                customerContactService.updateContactOwnerByIds(request.getId(), snapshot.getContactIds(), request.getOwner(), orgId);
+                customerContactService.updateContactOwnerByIds(request.getId(), snapshot.getContactIds(),
+                        request.getOwner(), orgId);
             }
             return;
         }
-        customerContactService.updateContactOwner(request.getId(), request.getOwner(), originCustomer.getOwner(), orgId);
+        customerContactService.updateContactOwner(request.getId(), request.getOwner(), originCustomer.getOwner(),
+                orgId);
     }
 
     private void sendTransferNotice(List<Customer> originCustomers, String toUser, String userId, String orgId) {
@@ -800,8 +829,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 userId,
                 orgId,
                 List.of(toUser),
-                true
-        ));
+                true));
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
@@ -813,8 +841,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 PermissionConstants.CUSTOMER_MANAGEMENT_DELETE,
                 orgId,
                 Customer::getId,
-                Customer::getApprovalStatus
-        );
+                Customer::getApprovalStatus);
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
         }
@@ -847,18 +874,15 @@ public class CustomerService implements ApprovalResourceHandler {
                 .filter(customer -> deleteIds.contains(customer.getId()))
                 .toList();
         List<LogDTO> logs = deletedCustomers.stream()
-                .map(customer ->
-                        new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_INDEX, customer.getName())
-                )
+                .map(customer -> new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_INDEX,
+                        customer.getName()))
                 .toList();
         logService.batchAdd(logs);
 
         // 消息通知
-        deletedCustomers.forEach(customer ->
-                commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                        NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
-                        orgId, List.of(customer.getOwner()), true)
-        );
+        deletedCustomers.forEach(customer -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
+                orgId, List.of(customer.getOwner()), true));
     }
 
     public void deleteCustomerResource(List<String> ids) {
@@ -900,8 +924,8 @@ public class CustomerService implements ApprovalResourceHandler {
      * 批量移入公海
      *
      * @param request     请求参数
-     * @param orgId       组织ID
      * @param currentUser 当前用户
+     * @param orgId       组织ID
      */
     public BatchAffectResponse batchToPool(BatchPoolReasonRequest request, String currentUser, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(request.getIds());
@@ -913,11 +937,11 @@ public class CustomerService implements ApprovalResourceHandler {
                 PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE,
                 orgId,
                 Customer::getId,
-                Customer::getApprovalStatus
-        );
+                Customer::getApprovalStatus);
         // 已在公海中的客户本来就不需要移入, 与无权移入的一并计入 fail
         customers = customers.stream()
-                .filter(customer -> permittedIds.contains(customer.getId()) && !BooleanUtils.isTrue(customer.getInSharedPool()))
+                .filter(customer -> permittedIds.contains(customer.getId())
+                        && !BooleanUtils.isTrue(customer.getInSharedPool()))
                 .toList();
         if (CollectionUtils.isEmpty(customers)) {
             return BatchAffectResponse.builder().success(0).fail(request.getIds().size()).build();
@@ -942,9 +966,9 @@ public class CustomerService implements ApprovalResourceHandler {
             //更新责任人
             customerContactService.updateContactOwner(customer.getId(), "-", customer.getOwner(), orgId);
 
-
             // 日志
-            LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER_INDEX, customer.getName());
+            LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL,
+                    LogModule.CUSTOMER_INDEX, customer.getName());
             String detail = Translator.getWithArgs("customer.to.pool", customer.getName(),
                     customerPool.getName());
             logDTO.setDetail(detail);
@@ -989,7 +1013,8 @@ public class CustomerService implements ApprovalResourceHandler {
 
     private CustomerPool getTargetCustomerPool(String poolId, String orgId) {
         CustomerPool customerPool = customerPoolMapper.selectByPrimaryKey(poolId);
-        if (customerPool == null || !Strings.CS.equals(customerPool.getOrganizationId(), orgId) || !BooleanUtils.isTrue(customerPool.getEnable())) {
+        if (customerPool == null || !Strings.CS.equals(customerPool.getOrganizationId(), orgId)
+                || !BooleanUtils.isTrue(customerPool.getEnable())) {
             throw new GenericException(Translator.get("customer_pool_not_exist"));
         }
         return customerPool;
@@ -1012,9 +1037,9 @@ public class CustomerService implements ApprovalResourceHandler {
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
-        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+                rolePermissions);
     }
-
 
     public String getCustomerNameByIds(List<String> ids) {
         List<Customer> customerList = customerMapper.selectByIds(ids);
@@ -1032,9 +1057,12 @@ public class CustomerService implements ApprovalResourceHandler {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.CUSTOMER.getKey(), currentOrg),
-                        Translator.get("customer.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CUSTOMER.getKey(), currentOrg)),
+                .exportMultiSheetTplWithSharedHandler(response,
+                        moduleFormService.getCustomImportHeadsNoRef(FormKey.CUSTOMER.getKey(), currentOrg),
+                        Translator.get("customer.import_tpl.name"), Translator.get(SheetKey.DATA),
+                        Translator.get(SheetKey.COMMENT),
+                        new CustomTemplateWriteHandler(
+                                moduleFormService.getAllCustomImportFields(FormKey.CUSTOMER.getKey(), currentOrg)),
                         new CustomHeadColWidthStyleStrategy());
     }
 
@@ -1064,113 +1092,126 @@ public class CustomerService implements ApprovalResourceHandler {
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CUSTOMER.getKey(), currentOrg);
-            CustomImportAfterDoConsumer<Customer, BaseResourceSubField> afterDo = (customers, customerFields, customerFieldBlobs) -> {
+            CustomImportAfterDoConsumer<Customer, BaseResourceSubField> afterDo = (customers, customerFields,
+                    customerFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
-                        customers.forEach(customer -> {
-                            customer.setCollectionTime(customer.getCreateTime());
-                            customer.setInSharedPool(false);
-                            customer.setFrozen(false);
-                            customer.setApprovalStatus(ApprovalStatus.NONE.name());
-                            logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_INDEX, customer.getName()));
-                        });
-                        customerMapper.batchInsert(customers);
-                        customerFieldMapper.batchInsert(customerFields.stream().map(field -> BeanUtils.copyBean(new CustomerField(), field)).toList());
-                        customerFieldBlobMapper.batchInsert(customerFieldBlobs.stream().map(field -> BeanUtils.copyBean(new CustomerFieldBlob(), field)).toList());
-                        // record logs
-                        logService.batchAdd(logs);
+                case ADD -> {
+                    customers.forEach(customer -> {
+                        customer.setCollectionTime(customer.getCreateTime());
+                        customer.setInSharedPool(false);
+                        customer.setFrozen(false);
+                        customer.setApprovalStatus(ApprovalStatus.NONE.name());
+                        logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD,
+                                LogModule.CUSTOMER_INDEX, customer.getName()));
+                    });
+                    customerMapper.batchInsert(customers);
+                    customerFieldMapper.batchInsert(customerFields.stream()
+                            .map(field -> BeanUtils.copyBean(new CustomerField(), field)).toList());
+                    customerFieldBlobMapper.batchInsert(customerFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new CustomerFieldBlob(), field)).toList());
+                    // record logs
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = customers.stream().map(Customer::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
                     }
-                    case UPDATE -> {
-                        List<String> ids = customers.stream().map(Customer::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        //原数据
-                        List<Customer> originCustomerList = customerMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originCustomerList)) {
-                            break;
-                        }
-                        Map<String, Customer> originCustomerMaps = originCustomerList.stream().collect(Collectors.toMap(Customer::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customerFieldService.getResourceFieldMap(ids, true);
+                    //原数据
+                    List<Customer> originCustomerList = customerMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originCustomerList)) {
+                        break;
+                    }
+                    Map<String, Customer> originCustomerMaps = originCustomerList.stream()
+                            .collect(Collectors.toMap(Customer::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customerFieldService
+                            .getResourceFieldMap(ids, true);
 
-                        List<CustomerField> insertField = new ArrayList<>();
-                        List<CustomerFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtCustomerMapper customerBatchMapper = sqlSession.getMapper(ExtCustomerMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                    List<CustomerField> insertField = new ArrayList<>();
+                    List<CustomerFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtCustomerMapper customerBatchMapper = sqlSession.getMapper(ExtCustomerMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
 
-                        if (CollectionUtils.isNotEmpty(customers)) {
-                            customers.forEach(customer -> {
-                                customer.setInSharedPool(false);
-                                customerBatchMapper.updateCustomer(customer);
-                            });
-                        }
+                    if (CollectionUtils.isNotEmpty(customers)) {
+                        customers.forEach(customer -> {
+                            customer.setInSharedPool(false);
+                            customerBatchMapper.updateCustomer(customer);
+                        });
+                    }
 
-                        if (CollectionUtils.isNotEmpty(customerFields)) {
-                            List<CustomerField> fieldList = customerFieldMapper.selectByIds(customerFields.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, CustomerField> fieldMap = fieldList.stream().collect(Collectors.toMap(CustomerField::getId, Function.identity()));
-                            customerFields.forEach(customerField -> {
-                                if (fieldMap.containsKey(customerField.getId())) {
-                                    commonMapper.updateCustomerField("customer_field", customerField);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new CustomerField(), customerField));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
-                            List<CustomerFieldBlob> blobList = customerFieldBlobMapper.selectByIds(customerFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, CustomerFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(CustomerFieldBlob::getId, Function.identity()));
-                            customerFieldBlobs.forEach(customerFieldBlob -> {
-                                if (blobMap.containsKey(customerFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("customer_field_blob", customerFieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new CustomerFieldBlob(), customerFieldBlob));
-                                }
-                            });
-
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (CollectionUtils.isNotEmpty(insertField)) {
-                            customerFieldMapper.batchInsert(insertField);
-                        }
-                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            customerFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, Customer> modifiedCustomerMaps = customerMapper.selectByIds(ids).stream().collect(Collectors.toMap(Customer::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerFieldService.getResourceFieldMap(ids, true);
-
-                        ids.forEach(id -> {
-                            Customer originDate = originCustomerMaps.get(id);
-                            Customer modifiedDate = modifiedCustomerMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CUSTOMER_INDEX, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(customerFields)) {
+                        List<CustomerField> fieldList = customerFieldMapper
+                                .selectByIds(customerFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, CustomerField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(CustomerField::getId, Function.identity()));
+                        customerFields.forEach(customerField -> {
+                            if (fieldMap.containsKey(customerField.getId())) {
+                                commonMapper.updateCustomerField("customer_field", customerField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new CustomerField(), customerField));
                             }
                         });
-                        logService.batchAdd(logs);
-
                     }
+
+                    if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
+                        List<CustomerFieldBlob> blobList = customerFieldBlobMapper
+                                .selectByIds(customerFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, CustomerFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(CustomerFieldBlob::getId, Function.identity()));
+                        customerFieldBlobs.forEach(customerFieldBlob -> {
+                            if (blobMap.containsKey(customerFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("customer_field_blob", customerFieldBlob);
+                            } else {
+                                insertFieldBlob.add(BeanUtils.copyBean(new CustomerFieldBlob(), customerFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        customerFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        customerFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, Customer> modifiedCustomerMaps = customerMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(Customer::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        Customer originDate = originCustomerMaps.get(id);
+                        Customer modifiedDate = modifiedCustomerMaps.get(id);
+                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                    LogModule.CUSTOMER_INDEX, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                }
                 }
             };
-            CustomFieldImportEventListener<Customer> eventListener = new CustomFieldImportEventListener<>(fields, Customer.class, currentOrg, currentUser,
+            CustomFieldImportEventListener<Customer> eventListener = new CustomFieldImportEventListener<>(fields,
+                    Customer.class, currentOrg, currentUser,
                     "customer_field", "customer_field_blob", afterDo, 2000, null, null, request.getImportType());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -1189,8 +1230,10 @@ public class CustomerService implements ApprovalResourceHandler {
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CUSTOMER.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer", "customer_field", currentOrg, importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "customer",
+                    "customer_field", currentOrg, importType);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -1199,7 +1242,8 @@ public class CustomerService implements ApprovalResourceHandler {
         }
     }
 
-    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId,
+            String organizationId) {
         BaseField field = customerFieldService.getAndCheckField(request.getFieldId(), organizationId);
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originCustomers)) {
@@ -1214,8 +1258,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
                 organizationId,
                 Customer::getId,
-                Customer::getApprovalStatus
-        );
+                Customer::getApprovalStatus);
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(originCustomers.size()).skip(0)
                     .errorMessages(Translator.get("no.operation.permission")).build();
@@ -1230,7 +1273,8 @@ public class CustomerService implements ApprovalResourceHandler {
         }
 
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CUSTOMER, organizationId, userId, field.getName(), request.getFieldValue());
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CUSTOMER,
+                organizationId, userId, field.getName(), request.getFieldValue());
         List<Customer> permittedCustomers = originCustomers.stream()
                 .filter(customer -> permittedIds.contains(customer.getId()))
                 .toList();
@@ -1245,7 +1289,8 @@ public class CustomerService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CUSTOMER.getKey(), request.getFieldId(), permittedIds, organizationId);
-        customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class, LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId, true);
+        customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class,
+                LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 
@@ -1288,8 +1333,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 PermissionConstants.CUSTOMER_MANAGEMENT_MERGE,
                 currentOrgId,
                 Customer::getId,
-                Customer::getApprovalStatus
-        );
+                Customer::getApprovalStatus);
         // 与批量操作"只处理有权的那些"不同: 合并的结果只有一个, 少并几个客户是无声无息的,
         // 所以只要有一个客户无权合并就整个拒绝, 由用户重新挑选参与合并的客户
         if (permittedIds.size() < involvedCustomers.size()) {
@@ -1324,15 +1368,18 @@ public class CustomerService implements ApprovalResourceHandler {
         customerMapper.deleteByIds(request.getMergeIds());
         for (Customer mergeCustomer : mergeCustomers) {
             // 被合并客户的删除日志
-            mergeLogs.add(new LogDTO(currentOrgId, mergeCustomer.getId(), currentUser, LogType.DELETE, LogModule.CUSTOMER_INDEX, mergeCustomer.getName()));
+            mergeLogs.add(new LogDTO(currentOrgId, mergeCustomer.getId(), currentUser, LogType.DELETE,
+                    LogModule.CUSTOMER_INDEX, mergeCustomer.getName()));
         }
 
         // 变更合并客户的负责人
         if (!Strings.CS.equals(oldCustomer.getOwner(), request.getOwnerId())) {
-            LogDTO logDTO = new LogDTO(currentOrgId, request.getToMergeId(), currentUser, LogType.UPDATE, LogModule.CUSTOMER_INDEX, oldCustomer.getName());
+            LogDTO logDTO = new LogDTO(currentOrgId, request.getToMergeId(), currentUser, LogType.UPDATE,
+                    LogModule.CUSTOMER_INDEX, oldCustomer.getName());
             logDTO.setOriginalValue(oldCustomer);
             // 客户负责人变更，联系人同步更新
-            customerContactService.updateContactOwner(request.getToMergeId(), request.getOwnerId(), oldCustomer.getOwner(), currentOrgId);
+            customerContactService.updateContactOwner(request.getToMergeId(), request.getOwnerId(),
+                    oldCustomer.getOwner(), currentOrgId);
             // 如果责任人有修改，则添加责任人历史
             customerOwnerHistoryService.add(oldCustomer, currentUser, false);
             sendTransferNotice(List.of(oldCustomer), request.getOwnerId(), currentUser, currentOrgId);
@@ -1347,21 +1394,26 @@ public class CustomerService implements ApprovalResourceHandler {
         }
 
         // 批量插入合并日志&&其他操作日志
-        OperationLogContext.setContext(LogContextInfo.builder().resourceId(request.getToMergeId()).resourceName(oldCustomer.getName())
-                .originalValue(Map.of("merge", mergeCustomers.stream().map(Customer::getName).toList()))
-                .modifiedValue(Map.of("merge", List.of(oldCustomer.getName())))
-                .build());
+        OperationLogContext.setContext(
+                LogContextInfo.builder().resourceId(request.getToMergeId()).resourceName(oldCustomer.getName())
+                        .originalValue(Map.of("merge", mergeCustomers.stream().map(Customer::getName).toList()))
+                        .modifiedValue(Map.of("merge", List.of(oldCustomer.getName())))
+                        .build());
         if (!CollectionUtils.isEmpty(mergeLogs)) {
             logService.batchAdd(mergeLogs);
         }
     }
 
-    public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission) {
         ModuleFormConfigDTO formConfig = getFormConfig(orgId);
         formConfig.getFields().addAll(BaseChartService.getChartBaseFields());
-        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request, formConfig);
-        CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils.copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
-        List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId, deptDataPermission);
+        ChartAnalysisDbRequest chartAnalysisDbRequest = ConditionFilterUtils.parseChartAnalysisRequest(request,
+                formConfig);
+        CustomerChartAnalysisDbRequest customerChartAnalysisDbRequest = BeanUtils
+                .copyBean(new CustomerChartAnalysisDbRequest(), chartAnalysisDbRequest);
+        List<ChartResult> chartResults = extCustomerMapper.chart(customerChartAnalysisDbRequest, userId, orgId,
+                deptDataPermission);
         return baseChartService.translateAxisName(formConfig, chartAnalysisDbRequest, chartResults);
     }
 
@@ -1376,9 +1428,12 @@ public class CustomerService implements ApprovalResourceHandler {
         // 被合并客户的协作人
         var mergeCollaborationWrapper = new LambdaQueryWrapper<CustomerCollaboration>();
         mergeCollaborationWrapper.in(CustomerCollaboration::getCustomerId, request.getMergeIds());
-        List<CustomerCollaboration> mergeCollaborations = customerCollaborationMapper.selectListByLambda(mergeCollaborationWrapper);
-        List<String> toCollaborationUserIds = mergeCollaborations.stream().map(CustomerCollaboration::getUserId).distinct().toList();
-        Map<String, String> toCollaborationMap = mergeCollaborations.stream().collect(Collectors.toMap(CustomerCollaboration::getUserId, CustomerCollaboration::getCollaborationType));
+        List<CustomerCollaboration> mergeCollaborations = customerCollaborationMapper
+                .selectListByLambda(mergeCollaborationWrapper);
+        List<String> toCollaborationUserIds = mergeCollaborations.stream().map(CustomerCollaboration::getUserId)
+                .distinct().toList();
+        Map<String, String> toCollaborationMap = mergeCollaborations.stream().collect(
+                Collectors.toMap(CustomerCollaboration::getUserId, CustomerCollaboration::getCollaborationType));
         // 被合并的客户负责人
         List<Customer> mergeCustomers = customerMapper.selectByIds(request.getMergeIds());
         List<String> toCollaborationOwnerIds = mergeCustomers.stream().map(Customer::getOwner).toList();
@@ -1390,8 +1445,10 @@ public class CustomerService implements ApprovalResourceHandler {
         // 合并客户已存在的协作人
         var collaborationWrapper = new LambdaQueryWrapper<CustomerCollaboration>();
         collaborationWrapper.eq(CustomerCollaboration::getCustomerId, request.getToMergeId());
-        List<CustomerCollaboration> customerCollaborations = customerCollaborationMapper.selectListByLambda(collaborationWrapper);
-        List<String> collaborationUserIds = customerCollaborations.stream().map(CustomerCollaboration::getUserId).toList();
+        List<CustomerCollaboration> customerCollaborations = customerCollaborationMapper
+                .selectListByLambda(collaborationWrapper);
+        List<String> collaborationUserIds = customerCollaborations.stream().map(CustomerCollaboration::getUserId)
+                .toList();
         for (String mergeId : mergeIds) {
             if (collaborationUserIds.contains(mergeId) || Strings.CS.equals(mergeId, request.getOwnerId())) {
                 // 已经是协作人或者是合并客户的负责人，跳过
@@ -1419,16 +1476,19 @@ public class CustomerService implements ApprovalResourceHandler {
      * @param currentOrgId 当前组织ID
      * @return 日志列表
      */
-    private List<LogDTO> getMergeRelateLogs(CustomerMergeRequest mergeRequest, String currentUser, String currentOrgId) {
+    private List<LogDTO> getMergeRelateLogs(CustomerMergeRequest mergeRequest, String currentUser,
+            String currentOrgId) {
         var logs = new ArrayList<LogDTO>();
 
         List<Customer> mergeCustomers = customerMapper.selectByIds(mergeRequest.getMergeIds());
-        Map<String, String> customerMap = mergeCustomers.stream().collect(Collectors.toMap(Customer::getId, Customer::getName));
+        Map<String, String> customerMap = mergeCustomers.stream()
+                .collect(Collectors.toMap(Customer::getId, Customer::getName));
         // 联系人日志
         List<CustomerContact> mergeContacts = extCustomerContactMapper.getMergeContactList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeContacts)) {
             for (CustomerContact contact : mergeContacts) {
-                LogDTO logDTO = new LogDTO(currentOrgId, contact.getId(), currentUser, LogType.UPDATE, LogModule.CUSTOMER_CONTACT, contact.getName());
+                LogDTO logDTO = new LogDTO(currentOrgId, contact.getId(), currentUser, LogType.UPDATE,
+                        LogModule.CUSTOMER_CONTACT, contact.getName());
                 contact.setCustomerId(customerMap.get(contact.getCustomerId()));
                 logDTO.setOriginalValue(contact);
                 CustomerContact newContact = BeanUtils.copyBean(new CustomerContact(), contact);
@@ -1442,7 +1502,8 @@ public class CustomerService implements ApprovalResourceHandler {
         List<Opportunity> mergeOpportunities = extOpportunityMapper.getMergeOpportunityList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeOpportunities)) {
             for (Opportunity opportunity : mergeOpportunities) {
-                LogDTO logDTO = new LogDTO(currentOrgId, opportunity.getId(), currentUser, LogType.UPDATE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
+                LogDTO logDTO = new LogDTO(currentOrgId, opportunity.getId(), currentUser, LogType.UPDATE,
+                        LogModule.OPPORTUNITY_INDEX, opportunity.getName());
                 opportunity.setCustomerId(customerMap.get(opportunity.getCustomerId()));
                 logDTO.setOriginalValue(opportunity);
                 Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), opportunity);
@@ -1456,7 +1517,8 @@ public class CustomerService implements ApprovalResourceHandler {
         List<Contract> mergeContracts = extContractMapper.getMergeContractList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeContracts)) {
             for (Contract contract : mergeContracts) {
-                LogDTO logDTO = new LogDTO(currentOrgId, contract.getId(), currentUser, LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
+                LogDTO logDTO = new LogDTO(currentOrgId, contract.getId(), currentUser, LogType.UPDATE,
+                        LogModule.CONTRACT_INDEX, contract.getName());
                 contract.setCustomerId(customerMap.get(contract.getCustomerId()));
                 logDTO.setOriginalValue(contract);
                 Contract newContract = BeanUtils.copyBean(new Contract(), contract);
@@ -1470,7 +1532,8 @@ public class CustomerService implements ApprovalResourceHandler {
         List<Order> mergeOrders = extOrderMapper.getMergeOrderList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeOrders)) {
             for (Order order : mergeOrders) {
-                LogDTO logDTO = new LogDTO(currentOrgId, order.getId(), currentUser, LogType.UPDATE, LogModule.ORDER_INDEX, order.getName());
+                LogDTO logDTO = new LogDTO(currentOrgId, order.getId(), currentUser, LogType.UPDATE,
+                        LogModule.ORDER_INDEX, order.getName());
                 order.setCustomerId(customerMap.get(order.getCustomerId()));
                 logDTO.setOriginalValue(order);
                 Order newOrder = BeanUtils.copyBean(new Order(), order);
@@ -1487,7 +1550,8 @@ public class CustomerService implements ApprovalResourceHandler {
         List<String> planCustomerIds = mergePlans.stream().map(FollowUpPlan::getCustomerId).toList();
         for (String mergeId : mergeRequest.getMergeIds()) {
             if (recordCustomerIds.contains(mergeId)) {
-                LogDTO logDTO = new LogDTO(currentOrgId, mergeId, currentUser, LogType.UPDATE, LogModule.FOLLOW_UP_RECORD, customerMap.get(mergeId));
+                LogDTO logDTO = new LogDTO(currentOrgId, mergeId, currentUser, LogType.UPDATE,
+                        LogModule.FOLLOW_UP_RECORD, customerMap.get(mergeId));
                 FollowUpRecord oldRecord = new FollowUpRecord();
                 oldRecord.setCustomerId(customerMap.get(mergeId));
                 logDTO.setOriginalValue(oldRecord);
@@ -1497,7 +1561,8 @@ public class CustomerService implements ApprovalResourceHandler {
                 logs.add(logDTO);
             }
             if (planCustomerIds.contains(mergeId)) {
-                LogDTO logDTO = new LogDTO(currentOrgId, mergeId, currentUser, LogType.UPDATE, LogModule.FOLLOW_UP_PLAN, customerMap.get(mergeId));
+                LogDTO logDTO = new LogDTO(currentOrgId, mergeId, currentUser, LogType.UPDATE, LogModule.FOLLOW_UP_PLAN,
+                        customerMap.get(mergeId));
                 FollowUpPlan oldPlan = new FollowUpPlan();
                 oldPlan.setCustomerId(customerMap.get(mergeId));
                 logDTO.setOriginalValue(oldPlan);
@@ -1510,7 +1575,6 @@ public class CustomerService implements ApprovalResourceHandler {
 
         return logs;
     }
-
 
     public boolean checkOwner(String customerId, String userId) {
         Customer customer = customerMapper.selectByPrimaryKey(customerId);
@@ -1541,7 +1605,8 @@ public class CustomerService implements ApprovalResourceHandler {
             return null;
         }
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(resourceId);
-        CustomerApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new CustomerApprovalSnapshotRequest(), customer);
+        CustomerApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new CustomerApprovalSnapshotRequest(),
+                customer);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         // 负责人变更会把这批联系人整批改派, 回退要按 id 精确还原, 先记下当前挂在负责人名下的联系人
         snapshotReq.setContactIds(customerContactService.listOwnedContactIds(
@@ -1555,7 +1620,8 @@ public class CustomerService implements ApprovalResourceHandler {
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
         try {
-            CustomerApprovalSnapshotRequest request = JSON.parseObject(snapshotData, CustomerApprovalSnapshotRequest.class);
+            CustomerApprovalSnapshotRequest request = JSON.parseObject(snapshotData,
+                    CustomerApprovalSnapshotRequest.class);
             if (request == null) {
                 return;
             }
@@ -1564,7 +1630,8 @@ public class CustomerService implements ApprovalResourceHandler {
             revertTransfer(request);
             // 转移时 batchAdd 按转移前的负责人+领取时间写了一条变更记录, 回退要把它删掉,
             // 否则历史里会残留一次并未真正生效的负责人变更
-            customerOwnerHistoryService.deleteTransferHistory(request.getId(), request.getOwner(), request.getCollectionTime());
+            customerOwnerHistoryService.deleteTransferHistory(request.getId(), request.getOwner(),
+                    request.getCollectionTime());
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }
@@ -1595,7 +1662,7 @@ public class CustomerService implements ApprovalResourceHandler {
      * @param postFieldParam 参数
      */
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         Map<String, BaseField> fieldConfigMap = formConfig.getFields().stream()
@@ -1606,30 +1673,36 @@ public class CustomerService implements ApprovalResourceHandler {
         }
         // 保存原始数据用于日志记录
         Customer originCustomer = BeanUtils.copyBean(new Customer(), customer);
-        List<BaseModuleFieldValue> originFields = customerFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<BaseModuleFieldValue> originFields = customerFieldService
+                .getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
         List<CustomerField> customerFields = new ArrayList<>();
         List<CustomerFieldBlob> customerFieldBlobs = new ArrayList<>();
 
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())
+                    || fieldUpdateParam.getFieldValue() == null) {
                 continue;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                    .getResolver(fieldConfig.getType());
             if (fieldConfig.hasBusinessKey()) {
                 // 业务主表字段
-                customerFieldService.setResourceFieldValue(customer, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+                customerFieldService.setResourceFieldValue(customer, fieldConfig.getBusinessKey(),
+                        fieldUpdateParam.getFieldValue());
             } else {
                 // 自定义字段
                 if (fieldConfig.isBlob()) {
-                    customerFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<CustomerFieldBlob>()
-                            .eq(CustomerFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
-                            .eq(CustomerFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                    customerFieldService.getResourceFieldBlobMapper()
+                            .deleteByLambda(new LambdaQueryWrapper<CustomerFieldBlob>()
+                                    .eq(CustomerFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
+                                    .eq(CustomerFieldBlob::getResourceId, postFieldParam.getResourceId()));
                     CustomerFieldBlob field = new CustomerFieldBlob();
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     customerFieldBlobs.add(field);
                 } else {
                     customerFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<CustomerField>()
@@ -1639,7 +1712,8 @@ public class CustomerService implements ApprovalResourceHandler {
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(
+                            customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     customerFields.add(field);
                 }
             }
@@ -1659,7 +1733,8 @@ public class CustomerService implements ApprovalResourceHandler {
         LogContextInfo contextInfo = OperationLogContext.getContext();
         if (contextInfo != null) {
             String orgId = OrganizationContext.getOrganizationId();
-            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.CUSTOMER_INDEX, customer.getName());
+            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(),
+                    LogType.UPDATE, LogModule.CUSTOMER_INDEX, customer.getName());
             logDTO.setOriginalValue(contextInfo.getOriginalValue());
             logDTO.setModifiedValue(contextInfo.getModifiedValue());
             logService.add(logDTO);

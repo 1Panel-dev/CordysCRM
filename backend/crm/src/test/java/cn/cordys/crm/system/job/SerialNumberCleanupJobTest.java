@@ -27,8 +27,10 @@ class SerialNumberCleanupJobTest {
         BaseMapper<ModuleForm> mapper = mock(BaseMapper.class);
         when(mapper.selectOne(any(ModuleForm.class))).thenAnswer(invocation -> {
             ModuleForm example = invocation.getArgument(0);
-            return "org".equals(example.getOrganizationId()) && List.of("contract", "custom-form").contains(example.getFormKey())
-                    ? new ModuleForm() : null;
+            return "org".equals(example.getOrganizationId())
+                    && List.of("contract", "custom-form").contains(example.getFormKey())
+                            ? new ModuleForm()
+                            : null;
         });
         SerialNumberCleanupJob job = new SerialNumberCleanupJob();
         ReflectionTestUtils.setField(job, "serialNumGenerator", generator);

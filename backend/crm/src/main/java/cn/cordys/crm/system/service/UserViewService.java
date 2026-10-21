@@ -58,7 +58,6 @@ public class UserViewService {
      * @param userId       用户ID
      * @param orgId        组织ID
      * @param resourceType 视图类型
-     *
      * @return 新增的用户视图
      */
     public UserView add(UserViewAddRequest request, String userId, String orgId, String resourceType) {
@@ -85,19 +84,13 @@ public class UserViewService {
         return userView;
     }
 
-
     private Long getNextPos(String orgId, String userId, String resourceType) {
         Long pos = extUserViewMapper.getNextPos(orgId, userId, resourceType);
         return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
     }
 
-
     /**
      * 解析自定义字段
-     *
-     * @param conditions
-     * @param viewId
-     * @param userId
      */
     private void addUserViewConditions(List<FilterCondition> conditions, String viewId, String userId) {
         if (CollectionUtils.isEmpty(conditions)) {
@@ -134,7 +127,6 @@ public class UserViewService {
         userViewConditionMapper.batchInsert(insertConditions);
     }
 
-
     private String getConditionValueType(Object value) {
         if (value instanceof List<?>) {
             return UserViewConditionValueType.ARRAY.name();
@@ -149,15 +141,8 @@ public class UserViewService {
         }
     }
 
-
     /**
      * 编辑用户视图
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public UserView update(UserViewUpdateRequest request, String userId, String orgId) {
         checkView(userId, request.getId(), orgId);
@@ -187,13 +172,8 @@ public class UserViewService {
         }
     }
 
-
     /**
      * 删除视图
-     *
-     * @param id
-     * @param userId
-     * @param orgId
      */
     public void delete(String id, String userId, String orgId) {
         checkView(userId, id, orgId);
@@ -201,15 +181,8 @@ public class UserViewService {
         deleteConditionsByViewId(id);
     }
 
-
     /**
      * 获取视图详情
-     *
-     * @param id
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public UserViewResponse getViewDetail(String id, String userId, String orgId, String formKey) {
         checkView(userId, id, orgId);
@@ -242,7 +215,8 @@ public class UserViewService {
                             subField.getSubFields().forEach(sub -> {
                                 fieldIdTypeMap.put(baseField.getId() + "." + sub.getId(), sub.getType());
                                 if (StringUtils.isNotBlank(baseField.getBusinessKey())) {
-                                    fieldIdTypeMap.put(baseField.getId() + "." + baseField.getBusinessKey(), sub.getType());
+                                    fieldIdTypeMap.put(baseField.getId() + "." + baseField.getBusinessKey(),
+                                            sub.getType());
                                 }
                             });
                         }
@@ -257,13 +231,12 @@ public class UserViewService {
         List<BaseModuleFieldValue> moduleFieldValues = conditions.stream()
                 .filter(condition -> StringUtils.isNotBlank(fieldIdTypeMap.get(condition.getName()))
                         && Strings.CS.equalsAny(fieldIdTypeMap.get(condition.getName()),
-                        FieldType.DATA_SOURCE.name(),
-                        FieldType.DATA_SOURCE_MULTIPLE.name(),
-                        FieldType.MEMBER.name(),
-                        FieldType.MEMBER_MULTIPLE.name(),
-                        FieldType.DEPARTMENT.name(),
-                        FieldType.DEPARTMENT_MULTIPLE.name())
-                )
+                                FieldType.DATA_SOURCE.name(),
+                                FieldType.DATA_SOURCE_MULTIPLE.name(),
+                                FieldType.MEMBER.name(),
+                                FieldType.MEMBER_MULTIPLE.name(),
+                                FieldType.DEPARTMENT.name(),
+                                FieldType.DEPARTMENT_MULTIPLE.name()))
                 .map(condition -> {
                     BaseModuleFieldValue moduleFieldValue = new BaseModuleFieldValue();
                     moduleFieldValue.setFieldId(condition.getName());
@@ -295,42 +268,29 @@ public class UserViewService {
         }).toList();
     }
 
-
     private Object getConditionValueByType(String valueType, String value) {
         UserViewConditionValueType conditionValueType = EnumUtils.valueOf(UserViewConditionValueType.class, valueType);
         if (StringUtils.isBlank(value)) {
             return null;
         }
         return switch (conditionValueType) {
-            case ARRAY -> JSON.parseObject(value);
-            case INT -> Long.valueOf(value);
-            case FLOAT -> Double.valueOf(value);
-            case BOOLEAN -> Boolean.valueOf(value);
-            default -> value;
+        case ARRAY -> JSON.parseObject(value);
+        case INT -> Long.valueOf(value);
+        case FLOAT -> Double.valueOf(value);
+        case BOOLEAN -> Boolean.valueOf(value);
+        default -> value;
         };
     }
 
-
     /**
      * 视图列表
-     *
-     * @param resourceType
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public List<UserViewListResponse> list(String resourceType, String userId, String orgId) {
         return extUserViewMapper.selectViewList(resourceType, userId, orgId);
     }
 
-
     /**
      * 固定/取消固定
-     *
-     * @param id
-     * @param userId
-     * @param orgId
      */
     public void fixed(String id, String userId, String orgId) {
         checkView(userId, id, orgId);
@@ -352,19 +312,13 @@ public class UserViewService {
                 userViewMapper::update);
     }
 
-
     /**
      * 启用视图
-     *
-     * @param id
-     * @param userId
-     * @param orgId
      */
     public void enable(String id, String userId, String orgId) {
         checkView(userId, id, orgId);
         UserView userView = userViewMapper.selectByPrimaryKey(id);
         changeEnable(id, !userView.getEnable());
-
     }
 
     private void changeEnable(String id, boolean enable) {

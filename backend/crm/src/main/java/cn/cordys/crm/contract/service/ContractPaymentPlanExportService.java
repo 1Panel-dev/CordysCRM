@@ -60,15 +60,16 @@ public class ContractPaymentPlanExportService extends BaseExportService {
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            return extContractPaymentPlanMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
+            return extContractPaymentPlanMapper.getListByIds(exportParam.getSelectIds(), userId, orgId,
+                    deptDataPermission);
         }
         var request = (ContractPaymentPlanPageRequest) exportParam.getPageRequest();
         PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
         return extContractPaymentPlanMapper.list(request, userId, orgId, deptDataPermission);
     }
 
-
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data, List<FieldExportMeta> exportMetas, Locale locale) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data,
+            List<FieldExportMeta> exportMetas, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -79,12 +80,18 @@ public class ContractPaymentPlanExportService extends BaseExportService {
                 .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
         resolveAndPutTimeField(systemFieldMap, metaMap, "planAmount", data.getPlanAmount());
 
-        FieldExportMeta planEndTime = metaMap.values().stream().filter(meta -> Strings.CI.equals(meta.getBusinessKey(), BusinessModuleField.CONTRACT_PAYMENT_PLAN_PLAN_END_TIME.getBusinessKey())).findFirst().orElse(null);
+        FieldExportMeta planEndTime = metaMap.values().stream()
+                .filter(meta -> Strings.CI.equals(meta.getBusinessKey(),
+                        BusinessModuleField.CONTRACT_PAYMENT_PLAN_PLAN_END_TIME.getBusinessKey()))
+                .findFirst().orElse(null);
         if (planEndTime != null) {
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(planEndTime.getField().getType());
-            systemFieldMap.put("planEndTime", customFieldResolver.transformToValue(planEndTime.getField(), String.valueOf(data.getPlanEndTime())));
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                    .getResolver(planEndTime.getField().getType());
+            systemFieldMap.put("planEndTime", customFieldResolver.transformToValue(planEndTime.getField(),
+                    String.valueOf(data.getPlanEndTime())));
         }
-        systemFieldMap.put("planStatus", Translator.get("contract.payment_plan.status." + data.getPlanStatus().toLowerCase(), locale));
+        systemFieldMap.put("planStatus",
+                Translator.get("contract.payment_plan.status." + data.getPlanStatus().toLowerCase(), locale));
 
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));

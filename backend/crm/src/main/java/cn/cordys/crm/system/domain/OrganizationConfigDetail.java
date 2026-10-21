@@ -29,4 +29,3 @@ public class OrganizationConfigDetail extends BaseModel {
     @Schema(description = "描述")
     private String description;
 }
-

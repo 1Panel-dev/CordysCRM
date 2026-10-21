@@ -43,7 +43,8 @@ class LogRequestSourceTest {
             "NULL,NULL,secret,WEB",
             "NULL,NULL,NULL,WEB"
     }, nullValues = "NULL")
-    void manualAndAnnotatedLogsUseTheSameRequestSource(String source, String accessKey, String secretKey, String expected) {
+    void manualAndAnnotatedLogsUseTheSameRequestSource(String source, String accessKey, String secretKey,
+            String expected) {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/customer/batch-transfer");
         if (source != null) {
             request.addHeader(OperationLogService.REQUEST_SOURCE_HEADER, source);

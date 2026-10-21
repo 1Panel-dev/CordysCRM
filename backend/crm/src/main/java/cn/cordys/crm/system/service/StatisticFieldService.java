@@ -63,32 +63,38 @@ import java.util.stream.Collectors;
 
 /**
  * 统计字段刷新服务。
- *
- * <p>统计字段的值来源于「目标表单中通过数据源单选字段关联到当前记录的 N 条数据」, 与公式字段由前端
- * 计算提交不同, 统计值只能由后端聚合后写回, 因此需要六个触发入口:</p>
+ * <p>
+ * 统计字段的值来源于「目标表单中通过数据源单选字段关联到当前记录的 N 条数据」, 与公式字段由前端
+ * 计算提交不同, 统计值只能由后端聚合后写回, 因此需要六个触发入口:
+ * </p>
  * <ol>
- *   <li>保存表单配置时, 先对比新旧统计字段配置, 有变化才异步刷新该表单的存量数据
- *       ({@link #refreshOnConfigSave});</li>
- *   <li>目标表单<b>新增</b>关联数据时刷新被关联记录 ({@link #refreshByRelatedDataChange}) ——
- *       新数据没有「变更前」的关联关系, 读到当前的关联值刷一条就够了;</li>
- *   <li>目标表单<b>变更</b>关联数据时刷新被关联记录, 关联关系变更<b>前后</b>的两条宿主记录都要算
- *       ({@link #captureRelatedHosts} / {@link #captureRelatedHostsForFieldChange} +
- *       {@link #refreshAfterRelatedChange}, 成对使用, 覆盖单条编辑与批量编辑);</li>
- *   <li>目标表单<b>删除</b>关联数据时刷新被关联记录 ({@link #captureRelatedHosts} +
- *       {@link #refreshAfterRelatedDelete}, 成对使用, 见其 javadoc);</li>
- *   <li>各模块新增资源后, 刷新该条记录上的全部统计字段 ({@link #refreshDataStatisticFields});</li>
- *   <li>用户在详情页/编辑页手动刷新某条数据上的某个统计字段 ({@link #refreshField})。</li>
+ * <li>保存表单配置时, 先对比新旧统计字段配置, 有变化才异步刷新该表单的存量数据
+ * ({@link #refreshOnConfigSave});</li>
+ * <li>目标表单<b>新增</b>关联数据时刷新被关联记录 ({@link #refreshByRelatedDataChange}) ——
+ * 新数据没有「变更前」的关联关系, 读到当前的关联值刷一条就够了;</li>
+ * <li>目标表单<b>变更</b>关联数据时刷新被关联记录, 关联关系变更<b>前后</b>的两条宿主记录都要算
+ * ({@link #captureRelatedHosts} / {@link #captureRelatedHostsForFieldChange} +
+ * {@link #refreshAfterRelatedChange}, 成对使用, 覆盖单条编辑与批量编辑);</li>
+ * <li>目标表单<b>删除</b>关联数据时刷新被关联记录 ({@link #captureRelatedHosts} +
+ * {@link #refreshAfterRelatedDelete}, 成对使用, 见其 javadoc);</li>
+ * <li>各模块新增资源后, 刷新该条记录上的全部统计字段 ({@link #refreshDataStatisticFields});</li>
+ * <li>用户在详情页/编辑页手动刷新某条数据上的某个统计字段 ({@link #refreshField})。</li>
  * </ol>
- *
- * <p>第 3、4 两个入口的形状一样, 都是「写入前捕获、写入后重算」: 关联值本身就是被写入毁掉的东西,
- * 而重算又必须在写入之后做, 两个时间点无法合并, 只能拿写入前的快照补上「变更前被关联的是谁」。</p>
- *
- * <p>统计值写回宿主的字段值表({@code <table>_field}), 与普通自定义字段同表同格式,
- * 读取时由 {@code StatisticResolver} 格式化展示。</p>
- *
- * <p><b>已知边界</b>: 变更与删除两条路径都只能覆盖捕获那一刻还存在的宿主记录, 捕获与重算之间的
+ * <p>
+ * 第 3、4 两个入口的形状一样, 都是「写入前捕获、写入后重算」: 关联值本身就是被写入毁掉的东西,
+ * 而重算又必须在写入之后做, 两个时间点无法合并, 只能拿写入前的快照补上「变更前被关联的是谁」。
+ * </p>
+ * <p>
+ * 统计值写回宿主的字段值表({@code
+ * <table>
+ * _field}), 与普通自定义字段同表同格式,
+ * 读取时由 {@code StatisticResolver} 格式化展示。
+ * </p>
+ * <p>
+ * <b>已知边界</b>: 变更与删除两条路径都只能覆盖捕获那一刻还存在的宿主记录, 捕获与重算之间的
  * 时间窗见 {@link #captureRelatedHosts}; 「统计范围」为「符合条件」时右值取不到的条件会被整条丢掉,
- * 口径见 {@link #resolveScopeConditions}。</p>
+ * 口径见 {@link #resolveScopeConditions}。
+ * </p>
  */
 @Slf4j
 @Service
@@ -101,8 +107,9 @@ public class StatisticFieldService {
 
     /**
      * 单个统计字段最多同时处理几页。
-     *
-     * <p>并行度不是越高越好: 每页都要做一批聚合查询加写回, 并行度过高会打满数据库连接池。</p>
+     * <p>
+     * 并行度不是越高越好: 每页都要做一批聚合查询加写回, 并行度过高会打满数据库连接池。
+     * </p>
      */
     private static final int MAX_PARALLEL_PAGE = 4;
 
@@ -118,26 +125,29 @@ public class StatisticFieldService {
 
     /**
      * 主表列名的合法形式, 用于把 {@link BusinessModuleField} 的列名拼进 SQL 之前再卡一道。
-     *
-     * <p>不允许大写: 枚举里写的是驼峰, 必须经 {@link CaseFormatUtils#camelToUnderscore} 转成下划线,
-     * 带上大写说明有人绕过了那一步, 拼出来的列名数据库里不存在。</p>
+     * <p>
+     * 不允许大写: 枚举里写的是驼峰, 必须经 {@link CaseFormatUtils#camelToUnderscore} 转成下划线,
+     * 带上大写说明有人绕过了那一步, 拼出来的列名数据库里不存在。
+     * </p>
      */
     private static final Pattern COLUMN_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9_]*$");
 
     /**
      * 统计范围条件的右值取自宿主记录时, {@code value} 里用来记引用字段ID的键名。
-     *
-     * <p>{@link FilterCondition} 没有地方放「值来自哪个字段」, 而宿主记录的值在保存配置时还不存在,
-     * 配置里只能先存一个引用对象, 刷新时再按每条数据把值换进去。详见 {@link #scopeCondition}。</p>
+     * <p>
+     * {@link FilterCondition} 没有地方放「值来自哪个字段」, 而宿主记录的值在保存配置时还不存在,
+     * 配置里只能先存一个引用对象, 刷新时再按每条数据把值换进去。详见 {@link #scopeCondition}。
+     * </p>
      */
     private static final String REF_FIELD_ID = "refFieldId";
 
     /**
      * 统计范围条件里记「拿目标表单的哪个字段比」的键名, 设计器筛选弹窗产出的结构。
-     *
-     * <p>与 {@link #CONDITION_NAME} 是同一件事的两种存法: 这个键名给的是弹窗结构
+     * <p>
+     * 与 {@link #CONDITION_NAME} 是同一件事的两种存法: 这个键名给的是弹窗结构
      * ({@code {searchMode, conditions[{leftFieldId, ...}]}}), {@code name} 给的是高级搜索结构。
-     * 两种配置都可能出现在库里(详见 {@code StatisticConditionConverter#toCondition}), 所以两个都认。</p>
+     * 两种配置都可能出现在库里(详见 {@code StatisticConditionConverter#toCondition}), 所以两个都认。
+     * </p>
      */
     private static final String CONDITION_LEFT_FIELD_ID = "leftFieldId";
 
@@ -149,10 +159,11 @@ public class StatisticFieldService {
 
     /**
      * 标准模块表单的物理表名, 取自各模块主实体的 {@code @Table} 注解。
-     *
-     * <p>没有直接复用 {@code FieldSourceType}: 那是「数据源」维度的枚举, 既缺跟进计划/跟进记录,
+     * <p>
+     * 没有直接复用 {@code FieldSourceType}: 那是「数据源」维度的枚举, 既缺跟进计划/跟进记录,
      * 也不能用 {@code safeValueOf(formKey)} 反查 —— 那个方法认得的是枚举名(大写),
-     * 传表单Key进去会一律落到自定义表单上。表里没有的表单Key即视为自定义表单。</p>
+     * 传表单Key进去会一律落到自定义表单上。表里没有的表单Key即视为自定义表单。
+     * </p>
      */
     private static final Map<String, String> FORM_KEY_TABLE = Map.ofEntries(
             Map.entry(FormKey.CLUE.getKey(), "clue"),
@@ -168,17 +179,18 @@ public class StatisticFieldService {
             Map.entry(FormKey.INVOICE.getKey(), "contract_invoice"),
             Map.entry(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "contract_payment_plan"),
             Map.entry(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), "contract_payment_record"),
-            Map.entry(FormKey.ORDER.getKey(), "sales_order")
-    );
+            Map.entry(FormKey.ORDER.getKey(), "sales_order"));
 
     /**
      * 手动刷新统计字段时, 各表单要求的读权限(与 {@code ModuleFieldController} 里各模块的读接口一致)。
-     *
-     * <p>刷新接口只收一个字段ID, 参数越少越容易被构造, 所以必须在这里把「有没有资格看这个表单的字段」
-     * 补回来, 否则知道字段ID就能拿到别人的数据。</p>
-     *
-     * <p>值是列表而不是单个权限: 跟进计划/跟进记录同时挂在线索、客户(记录还包括商机)下,
-     * 有其中任意一个读权限即可, 与 {@code FollowUpPlanController} 的 {@code Logical.OR} 一致。</p>
+     * <p>
+     * 刷新接口只收一个字段ID, 参数越少越容易被构造, 所以必须在这里把「有没有资格看这个表单的字段」
+     * 补回来, 否则知道字段ID就能拿到别人的数据。
+     * </p>
+     * <p>
+     * 值是列表而不是单个权限: 跟进计划/跟进记录同时挂在线索、客户(记录还包括商机)下,
+     * 有其中任意一个读权限即可, 与 {@code FollowUpPlanController} 的 {@code Logical.OR} 一致。
+     * </p>
      */
     private static final Map<String, List<String>> FORM_KEY_PERMISSIONS = Map.ofEntries(
             Map.entry(FormKey.CLUE.getKey(), List.of(PermissionConstants.CLUE_MANAGEMENT_READ)),
@@ -195,9 +207,9 @@ public class StatisticFieldService {
             Map.entry(FormKey.CONTRACT.getKey(), List.of(PermissionConstants.CONTRACT_READ)),
             Map.entry(FormKey.INVOICE.getKey(), List.of(PermissionConstants.CONTRACT_INVOICE_READ)),
             Map.entry(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), List.of(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)),
-            Map.entry(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), List.of(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)),
-            Map.entry(FormKey.ORDER.getKey(), List.of(PermissionConstants.ORDER_READ))
-    );
+            Map.entry(FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                    List.of(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)),
+            Map.entry(FormKey.ORDER.getKey(), List.of(PermissionConstants.ORDER_READ)));
 
     @Resource
     private ExtStatisticMapper extStatisticMapper;
@@ -220,7 +232,6 @@ public class StatisticFieldService {
     @Resource(name = "statisticRefreshExecutor")
     private Executor statisticRefreshExecutor;
 
-
     /**
      * 自注入代理: 刷新任务跑在线程池里, 需要走代理才能让 {@link #writeStatisticValue} 上的
      * {@code @Transactional} 生效(直接 this 调用不走代理)。
@@ -231,9 +242,10 @@ public class StatisticFieldService {
 
     /**
      * 保存表单配置后, 刷新该表单存量数据上的统计字段 (异步)。
-     *
-     * <p>由 {@code ModuleFormService} 在配置保存事务的 afterCommit 回调中触发,
-     * 保证这里读到的是已经提交的新配置。</p>
+     * <p>
+     * 由 {@code ModuleFormService} 在配置保存事务的 afterCommit 回调中触发,
+     * 保证这里读到的是已经提交的新配置。
+     * </p>
      *
      * @param formKey       表单Key
      * @param originFields  保存前的字段配置 (必须在删除旧字段之前取)
@@ -241,7 +253,8 @@ public class StatisticFieldService {
      * @param orgId         组织ID
      */
     @Async("threadPoolTaskExecutor")
-    public void refreshOnConfigSave(String formKey, List<BaseField> originFields, List<BaseField> currentFields, String orgId) {
+    public void refreshOnConfigSave(String formKey, List<BaseField> originFields, List<BaseField> currentFields,
+            String orgId) {
         try {
             // 1) 只处理标准模块表单: 自定义表单暂不支持统计字段, 直接返回。
             String hostDataTable = FORM_KEY_TABLE.get(formKey);
@@ -310,13 +323,15 @@ public class StatisticFieldService {
 
     /**
      * 刷新单个统计字段在该表单存量数据上的全部取值 (保存配置时用)。
-     *
-     * <p>按页并行: 分页游标必须串行推进(下一页的起点依赖上一页的最后一条), 但「读一页ID」很便宜,
+     * <p>
+     * 按页并行: 分页游标必须串行推进(下一页的起点依赖上一页的最后一条), 但「读一页ID」很便宜,
      * 「逐条聚合 + 写回」才是耗时大头, 所以游标在调用线程里顺序推进, 每读出一页就交给线程池,
-     * 并保持最多 {@link #MAX_PARALLEL_PAGE} 页在跑。</p>
-     *
-     * <p>只用来算存量: 用户手动刷新走的是 {@link #refreshField}, 一次只算一条, 不从这里过,
-     * 所以这里不再需要「手动刷新不受更新范围限制」那个开关。</p>
+     * 并保持最多 {@link #MAX_PARALLEL_PAGE} 页在跑。
+     * </p>
+     * <p>
+     * 只用来算存量: 用户手动刷新走的是 {@link #refreshField}, 一次只算一条, 不从这里过,
+     * 所以这里不再需要「手动刷新不受更新范围限制」那个开关。
+     * </p>
      */
     private void refreshFieldData(StatisticField field, String hostFormKey, String hostDataTable, String orgId) {
         String fieldId = field.getId();
@@ -399,9 +414,10 @@ public class StatisticFieldService {
 
     /**
      * 刷新一页数据: 逐条重算并写回。
-     *
-     * <p>统计字段是派生数据, 单条算不出来不应该影响这一页的其它数据, 所以逐条 try/catch;
-     * 写回走 {@link #writeStatisticValue}, 每条一个事务, 失败的那条不会把整页拖回滚。</p>
+     * <p>
+     * 统计字段是派生数据, 单条算不出来不应该影响这一页的其它数据, 所以逐条 try/catch;
+     * 写回走 {@link #writeStatisticValue}, 每条一个事务, 失败的那条不会把整页拖回滚。
+     * </p>
      */
     private RefreshResult refreshPage(StatisticRefreshContext context, List<String> dataIds, String orgId) {
         // 线程池线程没有请求上下文, 每条任务自己设置并恢复组织, 避免线程复用时串组织
@@ -427,11 +443,13 @@ public class StatisticFieldService {
 
     /**
      * 对单条宿主数据重算并写回。
-     *
-     * <p>五个入口里「算一条」的动作都是它, 口径只此一份 —— 分别实现迟早会出现
-     * 「同一个字段在不同入口下算出不同的值」。</p>
-     *
-     * <p>组织上下文与异常处理由调用方负责: 批量刷新要按条容错, 单条入口要抛出去让用户看到失败。</p>
+     * <p>
+     * 五个入口里「算一条」的动作都是它, 口径只此一份 —— 分别实现迟早会出现
+     * 「同一个字段在不同入口下算出不同的值」。
+     * </p>
+     * <p>
+     * 组织上下文与异常处理由调用方负责: 批量刷新要按条容错, 单条入口要抛出去让用户看到失败。
+     * </p>
      *
      * @return 实际落库的值, 返回 null 表示按空值处理(值行被清掉, 前端显示「-」)
      */
@@ -459,14 +477,14 @@ public class StatisticFieldService {
 
     /**
      * 把聚合结果落到宿主的字段值表。
-     *
-     * <p>先删后插而不是 update: 字段值表没有 (resource_id, field_id) 唯一索引,
-     * 直接 update 在历史脏数据下会更新不全, 先清再插天然幂等。</p>
+     * <p>
+     * 先删后插而不是 update: 字段值表没有 (resource_id, field_id) 唯一索引,
+     * 直接 update 在历史脏数据下会更新不全, 先清再插天然幂等。
+     * </p>
      *
      * @param context 刷新上下文
      * @param dataId  宿主数据ID
      * @param value   聚合结果, null 表示没有命中数据
-     *
      * @return 实际落库的值, 返回 null 表示按空值处理。返回值给手动刷新接口用:
      *         用户点一次刷新, 前端要立刻显示新值, 否则只能再查一遍详情, 白跑一趟。
      */
@@ -502,11 +520,12 @@ public class StatisticFieldService {
 
     /**
      * 目标表单的关联数据<b>新增</b>后, 自动刷新被关联记录的统计字段。
-     *
-     * <p><b>只用于新增</b>: 这条路径拿不到、也不需要「变更前」的关联值 —— 记录是刚建的, 之前谁都没关联过。
+     * <p>
+     * <b>只用于新增</b>: 这条路径拿不到、也不需要「变更前」的关联值 —— 记录是刚建的, 之前谁都没关联过。
      * 数据被<b>编辑</b>(含批量编辑)时改走 {@link #captureRelatedHosts} +
      * {@link #refreshAfterRelatedChange}: 关联字段从 A 改成 B 时, 只按写入后的值刷新会漏掉 A,
-     * A 上那条统计值会一直停在旧值上。</p>
+     * A 上那条统计值会一直停在旧值上。
+     * </p>
      *
      * @param targetFormKey 发生变更的数据所属表单Key
      * @param targetDataId  发生变更的数据ID
@@ -558,69 +577,78 @@ public class StatisticFieldService {
 
     /**
      * 捕获「删掉这些数据会影响到哪些宿主记录」, <b>必须在删除之前调用</b>。
-     *
-     * <p><b>为什么要分成两步</b>: 关联值本身就是被删掉的东西 —— 关联字段是业务字段时它落在主表列上,
-     * 随主行一起没了; 是自定义字段时它落在 {@code <table>_field} 里, 被各模块的
+     * <p>
+     * <b>为什么要分成两步</b>: 关联值本身就是被删掉的东西 —— 关联字段是业务字段时它落在主表列上,
+     * 随主行一起没了; 是自定义字段时它落在 {@code
+     * <table>
+     * _field} 里, 被各模块的
      * {@code xxxFieldService.deleteByResourceIds} 清掉。所以「这条数据关联了谁」删完就再也查不到。
      * 而重算又必须发生在删除<b>之后</b>, 否则被删的那条还会被算进去。两个时间点无法合并,
-     * 只能在删除前把宿主ID捕出来、删除后拿这份快照去重算。</p>
+     * 只能在删除前把宿主ID捕出来、删除后拿这份快照去重算。
+     * </p>
+     * <p>
+     * 单条编辑与删除走这里; 批量编辑走 {@link #captureRelatedHostsForFieldChange}
+     * (多一个字段过滤, 见其 javadoc), 两者共用一个方法体。
+     * </p>
+     * <p>
+     * <b>调用方式</b>是两条语句夹住写入本身:
+     * </p>
      *
-     * <p>单条编辑与删除走这里; 批量编辑走 {@link #captureRelatedHostsForFieldChange}
-     * (多一个字段过滤, 见其 javadoc), 两者共用一个方法体。</p>
-     *
-     * <p><b>调用方式</b>是两条语句夹住写入本身:</p>
      * <pre>
      * StatisticHostScope scope = service.captureRelatedHosts(formKey, reallyWrittenIds, orgId);
      * // ...原有删除/更新语句...
-     * service.refreshAfterRelatedDelete(scope);          // 删除
-     * service.refreshAfterRelatedChange(scope, ids);     // 编辑
+     * service.refreshAfterRelatedDelete(scope); // 删除
+     * service.refreshAfterRelatedChange(scope, ids); // 编辑
      * </pre>
-     *
-     * <p><b>已知边界</b>: 只捕得到调用这一刻还存在的关联关系。捕获与重算之间的时间窗里,
+     * <p>
+     * <b>已知边界</b>: 只捕得到调用这一刻还存在的关联关系。捕获与重算之间的时间窗里,
      * 若有人改动了这些目标数据的关联字段, 重算用的是改动前的关系(改动本身会触发变更入口
-     * 覆盖掉新宿主, 两边的差异最终会收敛)。</p>
-     *
-     * <p><b>为什么整个方法体都是 fail-safe 的</b>: 捕获阶段排在调用方的写入<b>之前</b>,
+     * 覆盖掉新宿主, 两边的差异最终会收敛)。
+     * </p>
+     * <p>
+     * <b>为什么整个方法体都是 fail-safe 的</b>: 捕获阶段排在调用方的写入<b>之前</b>,
      * 它抛出去就等于把这次编辑/删除整条带下去 —— 而它做的只是派生数据的准备工作。
      * 所以反查、读表单配置、解析字段全部包在 try 里, 出任何问题都退化成「本次不重算」:
-     * 统计值偏大还能靠详情页的刷新按钮或重存一次表单配置补回来, 写入失败没有补的机会。</p>
+     * 统计值偏大还能靠详情页的刷新按钮或重存一次表单配置补回来, 写入失败没有补的机会。
+     * </p>
      *
      * @param targetFormKey 被删数据所属表单Key
      * @param targetDataIds 实际会被删掉的数据ID(不是请求里的ID —— 批量删往往先按阶段/权限过滤掉一部分)
      * @param orgId         组织ID
-     *
      * @return 重算范围, 交给 {@link #refreshAfterRelatedDelete}; 没有统计字段引用这个表单时是空的
      */
     public StatisticHostScope captureRelatedHosts(String targetFormKey, Collection<String> targetDataIds,
-                                                  String orgId) {
+            String orgId) {
         return capture(targetFormKey, null, targetDataIds, orgId);
     }
 
     /**
      * 捕获「这批数据被改之前, 它们关联着哪些宿主记录」, <b>必须在写入之前调用</b>。
-     *
-     * <p>与 {@link #captureRelatedHosts} 只差一个 {@code changedFieldId}: 批量编辑一次只改一个字段,
+     * <p>
+     * 与 {@link #captureRelatedHosts} 只差一个 {@code changedFieldId}: 批量编辑一次只改一个字段,
      * 改的如果与统计值无关(既不是关联字段, 也不是被统计字段、统计范围里用到的字段, 见
      * {@link #affectsStatisticValue}), 统计值<b>不可能</b>变化, 变更前后的宿主是同一批 ——
      * 那就没必要按行数把关联值逐条读出来。这个判断放在这里而不是让调用方自己判, 是为了让「改的是哪个字段」
-     * 只可能有一个来源: 捕获时用它过滤, 重算时从 scope 里读同一个值再过滤一遍。</p>
-     *
-     * <p><b>为什么这个短路非有不可</b>: 不短路的话, 每一次批量编辑(哪怕改的只是备注)都要为选中的每一行
+     * 只可能有一个来源: 捕获时用它过滤, 重算时从 scope 里读同一个值再过滤一遍。
+     * </p>
+     * <p>
+     * <b>为什么这个短路非有不可</b>: 不短路的话, 每一次批量编辑(哪怕改的只是备注)都要为选中的每一行
      * 做一遍关联值点查, 而且变更路径要做两轮(变更前、变更后各一轮)。短路之后, 最常见的
-     * 「改一个跟统计无关的字段」退化成一次反查, 与「这张表单根本没有统计字段」一样便宜。</p>
-     *
-     * <p><b>已知边界</b>: 捕获是逐条读关联值(N 条 × M 个统计字段次查询)。真去改关联字段时躲不掉 ——
-     * 旧宿主只能一条条读出来。批量编辑是低频人工操作, 不为此新增批量取值语句。</p>
+     * 「改一个跟统计无关的字段」退化成一次反查, 与「这张表单根本没有统计字段」一样便宜。
+     * </p>
+     * <p>
+     * <b>已知边界</b>: 捕获是逐条读关联值(N 条 × M 个统计字段次查询)。真去改关联字段时躲不掉 ——
+     * 旧宿主只能一条条读出来。批量编辑是低频人工操作, 不为此新增批量取值语句。
+     * </p>
      *
      * @param targetFormKey  被改数据所属表单Key
      * @param changedFieldId 本次批量编辑改的那个字段ID; 为空时退化成不做字段过滤(与删除同口径)
      * @param targetDataIds  实际会被改动的数据ID(合同/订单等先按权限过滤, 要用过滤后的那份)
      * @param orgId          组织ID
-     *
      * @return 重算范围, 交给 {@link #refreshAfterRelatedChange}
      */
     public StatisticHostScope captureRelatedHostsForFieldChange(String targetFormKey, String changedFieldId,
-                                                                Collection<String> targetDataIds, String orgId) {
+            Collection<String> targetDataIds, String orgId) {
         return capture(targetFormKey, changedFieldId, targetDataIds, orgId);
     }
 
@@ -630,7 +658,7 @@ public class StatisticFieldService {
      * @param changedFieldId 为空表示不按字段过滤(删除、单条编辑)
      */
     private StatisticHostScope capture(String targetFormKey, String changedFieldId,
-                                       Collection<String> targetDataIds, String orgId) {
+            Collection<String> targetDataIds, String orgId) {
         String originOrgId = OrganizationContext.getOrganizationId();
         OrganizationContext.setOrganizationId(orgId);
         try {
@@ -701,18 +729,20 @@ public class StatisticFieldService {
 
     /**
      * 改目标表单上的 {@code changedFieldId}, 会不会改变这个统计字段算出来的值。
-     *
-     * <p>统计值由「哪些数据算在内」与「算进去的每条各是多少」两部分决定, 对应到配置上是三类字段:</p>
+     * <p>
+     * 统计值由「哪些数据算在内」与「算进去的每条各是多少」两部分决定, 对应到配置上是三类字段:
+     * </p>
      * <ul>
-     *   <li><b>关联字段</b>({@code relatedFieldId}): 改它等于把这条数据从一条宿主挪到另一条宿主,
-     *       新旧两边都要重算;</li>
-     *   <li><b>被统计字段</b>({@code statisticFieldId}): 关联关系没动, 但聚合进去的那个数变了 ——
-     *       宿主照旧要重算。COUNT 没有这个字段, 比较恒不成立;</li>
-     *   <li><b>统计范围条件里用到的字段</b>({@code combineSearch}): 条件比的就是目标表单上的列,
-     *       列值一改, 这条数据还算不算在内也跟着变。</li>
+     * <li><b>关联字段</b>({@code relatedFieldId}): 改它等于把这条数据从一条宿主挪到另一条宿主,
+     * 新旧两边都要重算;</li>
+     * <li><b>被统计字段</b>({@code statisticFieldId}): 关联关系没动, 但聚合进去的那个数变了 ——
+     * 宿主照旧要重算。COUNT 没有这个字段, 比较恒不成立;</li>
+     * <li><b>统计范围条件里用到的字段</b>({@code combineSearch}): 条件比的就是目标表单上的列,
+     * 列值一改, 这条数据还算不算在内也跟着变。</li>
      * </ul>
-     *
-     * <p>不属于这三类时返回 false。这是批量编辑的绝大多数场景(改备注、改标签), 一次都不该多查。</p>
+     * <p>
+     * 不属于这三类时返回 false。这是批量编辑的绝大多数场景(改备注、改标签), 一次都不该多查。
+     * </p>
      *
      * @param field          统计字段配置(来自宿主表单)
      * @param changedFieldId 本次批量编辑改的字段ID
@@ -729,11 +759,12 @@ public class StatisticFieldService {
 
     /**
      * 统计范围的条件里出现过的目标表单字段ID。
-     *
-     * <p>不按结构解析这份配置, 只按 key 递归地捞: 设计器筛选弹窗产出的结构里叫 {@code leftFieldId},
+     * <p>
+     * 不按结构解析这份配置, 只按 key 递归地捞: 设计器筛选弹窗产出的结构里叫 {@code leftFieldId},
      * 历史上按高级搜索结构存过的老配置里叫 {@code name}, 两种都收。多收只会让本该重算的宿主多算一次
      * (重算是先删后插的, 同样的结果再算一遍还是一样), 漏收才会让统计值停在旧值上 ——
-     * 所以这里刻意宽松, 顺带也就不必跟着条件结构的演进去改。</p>
+     * 所以这里刻意宽松, 顺带也就不必跟着条件结构的演进去改。
+     * </p>
      */
     private static Set<String> conditionFieldIds(Map<String, Object> combineSearch) {
         Set<String> fieldIds = new HashSet<>();
@@ -759,18 +790,20 @@ public class StatisticFieldService {
 
     /**
      * 重算 {@link #captureRelatedHosts} 捕获到的宿主记录, <b>必须在删除之后调用</b>。
-     *
-     * <p>与 {@link #refreshAfterRelatedChange} 的差别只在重算范围怎么来: 删除之后那些记录已经不存在了,
+     * <p>
+     * 与 {@link #refreshAfterRelatedChange} 的差别只在重算范围怎么来: 删除之后那些记录已经不存在了,
      * 用写入前的快照就够了; 编辑之后关联关系可能换了人, 所以还要再捕一次取并集。
-     * 拿到范围之后算与写的动作完全一样, 都落在 {@link #refreshHosts} 上。</p>
-     *
-     * <p><b>为什么刷新前要判宿主还在不在</b>: 删除会级联, 宿主记录本身很可能正躺在同一次删除里。
+     * 拿到范围之后算与写的动作完全一样, 都落在 {@link #refreshHosts} 上。
+     * </p>
+     * <p>
+     * <b>为什么刷新前要判宿主还在不在</b>: 删除会级联, 宿主记录本身很可能正躺在同一次删除里。
      * 以 {@code CustomerService#deleteCustomerResource} 为例 —— 它先删客户主行与 {@code customer_field},
      * 再级联删跟进记录, 而跟进记录的关联字段有可能正好指回这个客户。这时候重算会给一条已经不存在的
      * 记录调 {@link #writeStatisticValue}, 而它是无存在性判断的「先删后插」, 于是留下一行孤儿值;
      * 更糟的是清 {@code customer_field} 的那一步已经跑过去了, 孤儿行不会再被清掉。
      * 现有各 delete 方法的语句顺序恰好是安全的(先删主行再级联), 但那是巧合,
-     * 把这条判断放在这里, 安全性就由代码本身保证。</p>
+     * 把这条判断放在这里, 安全性就由代码本身保证。
+     * </p>
      *
      * @param scope {@link #captureRelatedHosts} 的返回值; 传 null 或空范围时什么都不做
      */
@@ -781,27 +814,32 @@ public class StatisticFieldService {
 
     /**
      * 重算「关联关系被改动」影响到的宿主记录, <b>必须在写入之后调用</b>。
-     *
-     * <p><b>与删除路径的差别</b>: 删除只需要重算写入前捕到的那一批; 而把关联字段从 A 改成 B 之后,
+     * <p>
+     * <b>与删除路径的差别</b>: 删除只需要重算写入前捕到的那一批; 而把关联字段从 A 改成 B 之后,
      * A 那边少了一条、B 那边多了一条, <b>两条宿主记录都变了</b>, 只按写入后的值刷新会把 A 永久漏掉。
-     * 所以这里在写入后再捕一次, 与写入前那份取<b>并集</b>一起重算。</p>
+     * 所以这里在写入后再捕一次, 与写入前那份取<b>并集</b>一起重算。
+     * </p>
+     * <p>
+     * <b>调用方式</b>是两条语句夹住写入本身:
+     * </p>
      *
-     * <p><b>调用方式</b>是两条语句夹住写入本身:</p>
      * <pre>
      * StatisticHostScope scope = service.captureRelatedHosts(formKey, ids, orgId);
      * // ...原有 UPDATE 语句...
      * service.refreshAfterRelatedChange(scope, ids);
      * </pre>
-     *
-     * <p>顺带兜住了两个原本会漏掉的场景: 关联字段被<b>清空</b>时, 写入后读不到宿主
+     * <p>
+     * 顺带兜住了两个原本会漏掉的场景: 关联字段被<b>清空</b>时, 写入后读不到宿主
      * (新增入口遇到空值直接跳过), 只有写入前捕到的那份能把它算回 0; 关联关系压根没动时,
      * 并集里的两份是同一批 record, 去重后与只刷一次等价。批量编辑走
      * {@link #captureRelatedHostsForFieldChange} 时, 两次捕获都带同一个字段过滤条件 ——
-     * 改的字段与统计值无关时两边都直接返回空范围, 整体塌缩成一次反查。</p>
-     *
-     * <p><b>写入后那次捕获失败不用在这里兜</b>: {@link #captureRelatedHosts} 整段是 fail-safe 的,
+     * 改的字段与统计值无关时两边都直接返回空范围, 整体塌缩成一次反查。
+     * </p>
+     * <p>
+     * <b>写入后那次捕获失败不用在这里兜</b>: {@link #captureRelatedHosts} 整段是 fail-safe 的,
      * 失败时给回一个空范围, 并集里只剩写入前那份, 退化成「旧宿主照刷, 新宿主这次漏掉」——
-     * 再包一层 try/catch 只会把这条口径写在两个地方。</p>
+     * 再包一层 try/catch 只会把这条口径写在两个地方。
+     * </p>
      *
      * @param scope         {@link #captureRelatedHosts} /
      *                      {@link #captureRelatedHostsForFieldChange} 的返回值; 传 null 时什么都不做
@@ -823,12 +861,14 @@ public class StatisticFieldService {
 
     /**
      * 写入前、写入后两份捕获的并集, <b>新捕到的排在前面</b>。
-     *
-     * <p>HostRecord 是 record, 两条记录值相等即同一个宿主, 所以「关联关系没变」时并集收敛成一条,
-     * 不会把同一条宿主记录重算两遍。</p>
-     *
-     * <p>顺序不是随意的: {@link #refreshHosts} 按统计字段分组后拿 {@code group.getFirst()} 去建刷新上下文,
-     * 把新捕获的放前面, 万一两次捕获之间这张表单的配置刚被保存过, 用的也是新的那份字段定义。</p>
+     * <p>
+     * HostRecord 是 record, 两条记录值相等即同一个宿主, 所以「关联关系没变」时并集收敛成一条,
+     * 不会把同一条宿主记录重算两遍。
+     * </p>
+     * <p>
+     * 顺序不是随意的: {@link #refreshHosts} 按统计字段分组后拿 {@code group.getFirst()} 去建刷新上下文,
+     * 把新捕获的放前面, 万一两次捕获之间这张表单的配置刚被保存过, 用的也是新的那份字段定义。
+     * </p>
      */
     private static List<HostRecord> unionHosts(StatisticHostScope current, StatisticHostScope previous) {
         Set<HostRecord> hosts = new LinkedHashSet<>(current.hosts());
@@ -838,9 +878,10 @@ public class StatisticFieldService {
 
     /**
      * 重算一批宿主记录, 变更与删除两个入口共用这一份。
-     *
-     * <p>拿到宿主ID之后算与写的动作完全一样, 差别只在宿主ID是「写入前捕的快照」还是
-     * 「写入后重读的当前值 + 快照」—— 那是调用方的事, 到这里已经合并成一张表了。</p>
+     * <p>
+     * 拿到宿主ID之后算与写的动作完全一样, 差别只在宿主ID是「写入前捕的快照」还是
+     * 「写入后重读的当前值 + 快照」—— 那是调用方的事, 到这里已经合并成一张表了。
+     * </p>
      *
      * @param scope 重算范围; 传 null 或空范围时什么都不做
      */
@@ -905,9 +946,10 @@ public class StatisticFieldService {
 
     /**
      * 重算一条已经定位到宿主记录ID的统计字段, 失败由调用方各自记日志。
-     *
-     * <p>新增入口是单条的, 所以在这里建上下文; 变更/删除入口是成批的, 按字段建一次就够了,
-     * 直接调 {@link #refreshOneRecord}(见 {@link #refreshHosts})。</p>
+     * <p>
+     * 新增入口是单条的, 所以在这里建上下文; 变更/删除入口是成批的, 按字段建一次就够了,
+     * 直接调 {@link #refreshOneRecord}(见 {@link #refreshHosts})。
+     * </p>
      */
     private void refreshHostRecord(StatisticField hostField, String hostDataTable, String hostDataId, String orgId) {
         // 构建不出来会抛, 由调用方的 catch 兜住
@@ -929,20 +971,24 @@ public class StatisticFieldService {
 
     /**
      * 刷新单条数据上的全部统计字段。
-     *
-     * <p>各模块新增资源后调用, 与 {@link #refreshField} 的区别是这里一次性刷新该记录上的多个统计字段,
-     * 而不是由用户指定某一个。</p>
-     *
-     * <p><b>调用方</b>(均为各模块 Service 的 {@code add} 方法, 在自身字段值与主记录落库之后):</p>
+     * <p>
+     * 各模块新增资源后调用, 与 {@link #refreshField} 的区别是这里一次性刷新该记录上的多个统计字段,
+     * 而不是由用户指定某一个。
+     * </p>
+     * <p>
+     * <b>调用方</b>(均为各模块 Service 的 {@code add} 方法, 在自身字段值与主记录落库之后):
+     * </p>
      * <ul>
-     *   <li>{@code ClueService#add} / {@code CustomerService#add} / {@code CustomerContactService#add}</li>
-     *   <li>{@code OpportunityService#add} / {@code OpportunityQuotationService#add}</li>
-     *   <li>{@code ContractService#add} / {@code ContractInvoiceService#add}
-     *       / {@code ContractPaymentPlanService#add} / {@code ContractPaymentRecordService#add}</li>
-     *   <li>{@code OrderService#add} / {@code ProductService#add} / {@code ProductPriceService#add}</li>
-     *   <li>{@code FollowUpPlanService#add} / {@code FollowUpRecordService#add}</li>
+     * <li>{@code ClueService#add} / {@code CustomerService#add} / {@code CustomerContactService#add}</li>
+     * <li>{@code OpportunityService#add} / {@code OpportunityQuotationService#add}</li>
+     * <li>{@code ContractService#add} / {@code ContractInvoiceService#add}
+     * / {@code ContractPaymentPlanService#add} / {@code ContractPaymentRecordService#add}</li>
+     * <li>{@code OrderService#add} / {@code ProductService#add} / {@code ProductPriceService#add}</li>
+     * <li>{@code FollowUpPlanService#add} / {@code FollowUpRecordService#add}</li>
      * </ul>
-     * <p>自定义表单的 {@code CustomFormDataService#add} 不在其中: 自定义表单暂不支持统计字段。</p>
+     * <p>
+     * 自定义表单的 {@code CustomFormDataService#add} 不在其中: 自定义表单暂不支持统计字段。
+     * </p>
      *
      * @param formKey 表单Key
      * @param dataId  新增数据的ID
@@ -990,19 +1036,20 @@ public class StatisticFieldService {
 
     /**
      * 手动刷新某条数据上的某个统计字段 (详情页/编辑页的刷新按钮)。
-     *
-     * <p>接口为 {@code POST /field/statistic/refresh/{resourceId}/{fieldId}}。刷新的是「一条数据的一个统计值」:
+     * <p>
+     * 接口为 {@code POST /field/statistic/refresh/{resourceId}/{fieldId}}。刷新的是「一条数据的一个统计值」:
      * 统计字段按宿主记录各算各的, 用户点刷新时看的就是当前这一条, 没有理由连带把整列重算一遍 ——
-     * 存量数据的整体重算是保存配置时的事({@link #refreshOnConfigSave}), 两者不要混在一起。</p>
-     *
-     * <p>也因此这里不受「更新范围」的限制: 更新范围描述的是保存配置时存量数据算哪些,
-     * 而用户在这一条记录上点刷新, 就是明确要求算这一条。</p>
+     * 存量数据的整体重算是保存配置时的事({@link #refreshOnConfigSave}), 两者不要混在一起。
+     * </p>
+     * <p>
+     * 也因此这里不受「更新范围」的限制: 更新范围描述的是保存配置时存量数据算哪些,
+     * 而用户在这一条记录上点刷新, 就是明确要求算这一条。
+     * </p>
      *
      * @param fieldId    统计字段ID, 即 {@code sys_module_field.id}
      * @param resourceId 宿主表单的资源ID, 即要重算的那条记录
      * @param userId     用户ID
      * @param orgId      组织ID
-     *
      * @return 重算后落库的值, 返回 null 表示按空值处理(值行被清掉, 前端显示「-」)。
      *         回值给前端是为了免掉「刷新完再查一遍详情」, 不是让调用方拿它做判断。
      */
@@ -1082,9 +1129,10 @@ public class StatisticFieldService {
 
     /**
      * 取某个表单上配置的全部统计字段。
-     *
-     * <p>走 {@code ModuleFormCacheService} 的缓存配置, 不直连库: 这个调用在「新增数据」这条高频路径上,
-     * 而且它同时是「有没有统计字段」的唯一判据。</p>
+     * <p>
+     * 走 {@code ModuleFormCacheService} 的缓存配置, 不直连库: 这个调用在「新增数据」这条高频路径上,
+     * 而且它同时是「有没有统计字段」的唯一判据。
+     * </p>
      *
      * @return 统计字段列表, 没有时返回空集合
      */
@@ -1101,17 +1149,20 @@ public class StatisticFieldService {
 
     /**
      * 找出所有「统计目标就是 targetFormKey」的统计字段, 连同它们的宿主表单。
-     *
-     * <p>统计字段只在宿主表单侧单向记录了「我统计谁」, 目标表单侧没有任何反向索引, 所以只能反过来找。</p>
-     *
-     * <p><b>为什么直接查字段表</b>: 反过来找的候选集合是「该组织的全部统计字段」, 这个集合很小
+     * <p>
+     * 统计字段只在宿主表单侧单向记录了「我统计谁」, 目标表单侧没有任何反向索引, 所以只能反过来找。
+     * </p>
+     * <p>
+     * <b>为什么直接查字段表</b>: 反过来找的候选集合是「该组织的全部统计字段」, 这个集合很小
      * (每个都是设计器里手工配的), 一条按类型过滤的索引查询就能拿全, 而且拿到的一定是当前配置 ——
-     * 表单配置保存时会把该表单的 {@code sys_module_field} 整表删掉重建, 字段表就是配置的镜像。</p>
-     *
-     * <p><b>为什么不用表单配置缓存</b>: 那条路要遍历十几个表单, 每个表单读一整份配置(Redis 往返 +
+     * 表单配置保存时会把该表单的 {@code sys_module_field} 整表删掉重建, 字段表就是配置的镜像。
+     * </p>
+     * <p>
+     * <b>为什么不用表单配置缓存</b>: 那条路要遍历十几个表单, 每个表单读一整份配置(Redis 往返 +
      * 反序列化全部字段), 而 {@link #refreshByRelatedDataChange} 挂在每条数据的新增/编辑路径上,
      * 这份开销会原样加到用户每次保存的延迟上。而它只是想问一句「有没有人统计我」,
-     * 绝大多数时候答案是「没有」。</p>
+     * 绝大多数时候答案是「没有」。
+     * </p>
      */
     private List<StatisticFieldRef> findStatisticFieldsByTargetForm(String targetFormKey, String orgId) {
         List<StatisticFieldSourceDTO> sources = extStatisticMapper.selectStatisticFields(
@@ -1143,9 +1194,10 @@ public class StatisticFieldService {
 
     /**
      * 读目标表单某条数据上关联字段的值, 即被它关联上的宿主记录ID。
-     *
-     * <p>关联字段可能是业务字段(例如订单上的「合同」), 也可能是用户自建的数据源字段,
-     * 前者读数据表自己的列, 后者读字段值表。</p>
+     * <p>
+     * 关联字段可能是业务字段(例如订单上的「合同」), 也可能是用户自建的数据源字段,
+     * 前者读数据表自己的列, 后者读字段值表。
+     * </p>
      *
      * @return 关联的宿主记录ID, 没有关联或读不到时返回 null
      */
@@ -1184,18 +1236,21 @@ public class StatisticFieldService {
 
     /**
      * 校验用户能不能刷新「这一条数据」上的统计字段。
-     *
-     * <p>为什么不能只校验表单级读权限: 手动刷新是要落库的 —— 它会在宿主的字段值表里删掉旧值再插一条新值。
+     * <p>
+     * 为什么不能只校验表单级读权限: 手动刷新是要落库的 —— 它会在宿主的字段值表里删掉旧值再插一条新值。
      * 只验表单权限的话, 一个只有「本人数据」数据范围的销售, 拿到别人的记录ID就能刷别人的统计值,
-     * 顺带从返回结果里把那个值读出来。所以这里必须落到记录级。</p>
-     *
-     * <p>用 {@link ResourcePermissionService#checkResourcePermission} 而不是自己拼权限位与数据范围:
+     * 顺带从返回结果里把那个值读出来。所以这里必须落到记录级。
+     * </p>
+     * <p>
+     * 用 {@link ResourcePermissionService#checkResourcePermission} 而不是自己拼权限位与数据范围:
      * 那个方法一次性覆盖了「角色权限位 + 数据范围 + 审批状态 + 资源存在且属于本组织」四件事,
      * 各模块的资源读取接口走的都是它, 手动刷新跟着走才能保证「列表里看得到就能刷新」。
-     * 自己拼一份的话, 漏掉审批状态这类规则时不会有任何编译期报错。</p>
-     *
-     * <p>一件事只能传一个权限码, 而有的表单登记了多个可读权限(比如跟进记录就分了全部/本人等),
-     * 用户只要拿到其中任意一个就算通过, 所以这里逐个试。</p>
+     * 自己拼一份的话, 漏掉审批状态这类规则时不会有任何编译期报错。
+     * </p>
+     * <p>
+     * 一件事只能传一个权限码, 而有的表单登记了多个可读权限(比如跟进记录就分了全部/本人等),
+     * 用户只要拿到其中任意一个就算通过, 所以这里逐个试。
+     * </p>
      *
      * @param formKey    宿主表单Key
      * @param resourceId 宿主资源ID
@@ -1229,12 +1284,14 @@ public class StatisticFieldService {
 
     /**
      * 配置指纹: 只包含「会影响统计结果」的属性。
-     *
-     * <p>字段标题、描述、字段权限、移动端、字段宽度这些纯展示属性不参与比较,
-     * 改个标题不应该触发全表重算。</p>
-     *
-     * <p>{@code updateScope / updateScopeCondition} 必须参与: 用户把更新范围从「不计算」改成「全部计算」,
-     * 这个动作本身就是在要求刷新, 排除掉会出现「改了更新范围却什么都没发生」。</p>
+     * <p>
+     * 字段标题、描述、字段权限、移动端、字段宽度这些纯展示属性不参与比较,
+     * 改个标题不应该触发全表重算。
+     * </p>
+     * <p>
+     * {@code updateScope / updateScopeCondition} 必须参与: 用户把更新范围从「不计算」改成「全部计算」,
+     * 这个动作本身就是在要求刷新, 排除掉会出现「改了更新范围却什么都没发生」。
+     * </p>
      */
     private String configFingerprint(StatisticField field) {
         return String.join("|",
@@ -1252,10 +1309,11 @@ public class StatisticFieldService {
 
     /**
      * 构建一个统计字段的刷新上下文。
-     *
-     * <p>字段配置本身有毛病(目标表单不支持、关联字段被删之类)时直接抛:
+     * <p>
+     * 字段配置本身有毛病(目标表单不支持、关联字段被删之类)时直接抛:
      * 批量刷新的四个入口都在按字段的 try/catch 里, 会把这一个字段记下来继续跑别的;
-     * 手动刷新不吞, 让用户看到原因。</p>
+     * 手动刷新不吞, 让用户看到原因。
+     * </p>
      *
      * @return 刷新上下文, 不为 null
      */
@@ -1281,8 +1339,8 @@ public class StatisticFieldService {
         context.statisticFieldId = field.isCount() ? null : field.getStatisticFieldId();
         context.statisticType = StringUtils.defaultIfBlank(field.getStatisticType(), StatisticType.SUM.name());
         // AVG 遇到空值: SKIP 不计入分母(等于 SQL 的 avg 默认行为), DEFAULT_ZERO 则当 0 计入
-        context.avgSkipEmpty = enumValue(StatisticEmptyValueMode.class, field.getAvgEmptyValueMode())
-                == StatisticEmptyValueMode.SKIP;
+        context.avgSkipEmpty = enumValue(StatisticEmptyValueMode.class,
+                field.getAvgEmptyValueMode()) == StatisticEmptyValueMode.SKIP;
         context.emptyResultMode = field.getEmptyResultMode();
         if (!field.isCount()) {
             // 被统计字段的值也有两种存法, 取值的 SQL 也不一样:
@@ -1309,35 +1367,38 @@ public class StatisticFieldService {
 
     /**
      * 预处理统计范围条件(统计范围 = 「符合条件」)。
-     *
-     * <p>入参是已经转好的 {@link CombineSearch}, 与列表页高级搜索、与「更新范围条件」完全同构,
+     * <p>
+     * 入参是已经转好的 {@link CombineSearch}, 与列表页高级搜索、与「更新范围条件」完全同构,
      * 区别只在 {@code name} 指的是「目标表单」上的字段 —— 过滤的是目标表单里关联过来的哪些数据,
      * 而不是宿主的哪些数据要算(那是更新范围的事)。所以除了右值的来源, 这里不做任何结构转换;
      * 配置里那份「字段对字段」结构的转换在调用点, 由
-     * {@link StatisticConditionConverter#toCombineSearch} 完成。</p>
-     *
-     * <p><b>右值取自宿主记录时</b>: 保存配置的时候宿主记录还不存在, 拿不到值, 配置里只能存一个引用
+     * {@link StatisticConditionConverter#toCombineSearch} 完成。
+     * </p>
+     * <p>
+     * <b>右值取自宿主记录时</b>: 保存配置的时候宿主记录还不存在, 拿不到值, 配置里只能存一个引用
      * ({@code value} 是 {@code {"refFieldId": 宿主字段ID}} 这样的对象)。这里把引用解析成
      * 「去宿主表单的哪一列取值」, 路子与 {@link #resolveBusinessKey(String)} 一致:
      * 业务字段的值在宿主主表列上, 自定义字段的值在字段值表里, 还要再分是不是大字段。
-     * 认错一种就会恒取不到值, 条件被丢掉, 统计值静默偏大。</p>
-     *
-     * <p>引用字段不存在(被删了)时整条条件丢掉: 与前端数据源候选项的口径一致, 取不到值就筛掉,
-     * 不拼 {@code col = null} 这种恒不成立的条件。</p>
-     *
-     * <p><b>为什么不在这里一并解析成 SQL 条件</b>: 右值随数据变, 而
+     * 认错一种就会恒取不到值, 条件被丢掉, 统计值静默偏大。
+     * </p>
+     * <p>
+     * 引用字段不存在(被删了)时整条条件丢掉: 与前端数据源候选项的口径一致, 取不到值就筛掉,
+     * 不拼 {@code col = null} 这种恒不成立的条件。
+     * </p>
+     * <p>
+     * <b>为什么不在这里一并解析成 SQL 条件</b>: 右值随数据变, 而
      * {@link ConditionFilterUtils#parseCondition} 是把值一起解析进去的。按当前数据的值逐条重新解析,
      * 代价是每条数据都要重建一次目标表单配置; 所以这里只把「右值从哪来」定下来,
-     * 真正的解析留到 {@link #resolveScopeConditions}。</p>
+     * 真正的解析留到 {@link #resolveScopeConditions}。
+     * </p>
      *
      * @param combineSearch 统计范围条件, 已由 {@link StatisticConditionConverter} 从配置的弹窗结构转好
      * @param fieldId       统计字段ID, 仅用于日志
      * @param refSources    出参: 引用字段ID -> 它在宿主表单上的取值方式
-     *
      * @return 引用字段仍存在的条件; 配置为空时返回空条件(等同于不过滤)
      */
     private CombineSearch scopeCondition(CombineSearch combineSearch, String fieldId,
-                                         Map<String, HostValueSource> refSources) {
+            Map<String, HostValueSource> refSources) {
         if (combineSearch == null || CollectionUtils.isEmpty(combineSearch.getConditions())) {
             // 保存时校验过「符合条件」必须带条件, 但历史数据或直接改库可能破坏这个前提
             log.warn("统计范围声明为「符合条件」却没有任何条件, 按不过滤处理: fieldId={}", fieldId);
@@ -1369,12 +1430,14 @@ public class StatisticFieldService {
 
     /**
      * 取条件右值里的引用字段ID。
-     *
-     * <p>右值取自宿主记录时存的是一个对象, 其余情况是普通字面量, 靠这一点区分。</p>
-     *
-     * <p>之所以塞在 {@code value} 里而不是给 {@link FilterCondition} 加字段:
+     * <p>
+     * 右值取自宿主记录时存的是一个对象, 其余情况是普通字面量, 靠这一点区分。
+     * </p>
+     * <p>
+     * 之所以塞在 {@code value} 里而不是给 {@link FilterCondition} 加字段:
      * 那个类是列表页高级搜索共用的, 加一个只在统计字段里有意义的字段会污染其它场景;
-     * 而条件里的值本来就是 {@code Object}, 存一个引用对象不破坏任何既有解析。</p>
+     * 而条件里的值本来就是 {@code Object}, 存一个引用对象不破坏任何既有解析。
+     * </p>
      *
      * @return 引用字段ID; 右值是字面量时返回 null
      */
@@ -1399,20 +1462,23 @@ public class StatisticFieldService {
 
     /**
      * 把统计范围条件解析成可以直接拼 SQL 的形式, 右值按当前这条数据现取。
-     *
-     * <p><b>为什么要逐条数据做一次</b>: 条件右值可能取自宿主记录(字段对字段比较), 每条数据的值都不同,
+     * <p>
+     * <b>为什么要逐条数据做一次</b>: 条件右值可能取自宿主记录(字段对字段比较), 每条数据的值都不同,
      * 而 {@link ConditionFilterUtils#parseCondition} 是把值一起解析进去的。
      * 复用同一份解析而不是另写一套, 是为了让「统计范围」与列表页、与数据源字段的候选项过滤
-     * 永远对同一个字面量得出同一个结果。</p>
-     *
-     * <p><b>右值取不到时整条条件丢掉</b>: 与前端数据源候选项的口径一致 ——
+     * 永远对同一个字面量得出同一个结果。
+     * </p>
+     * <p>
+     * <b>右值取不到时整条条件丢掉</b>: 与前端数据源候选项的口径一致 ——
      * 那边也是取不到值就把这条条件筛掉({@code dataSource.vue} 的 {@code getParams})。
      * 不丢的话会拼出 {@code col = null} 这种恒不成立的条件, 统计值偏小, 而且看不出是配置问题。
-     * 这是一个刻意的取舍: 它和列表页一致, 但「匹配字段」为空时确实等价于「不过滤」。</p>
-     *
-     * <p><b>注意</b>: 成员字段条件里的 {@code CURRENT_USER} 由 {@code ConditionFilterUtils} 换成当前登录用户,
+     * 这是一个刻意的取舍: 它和列表页一致, 但「匹配字段」为空时确实等价于「不过滤」。
+     * </p>
+     * <p>
+     * <b>注意</b>: 成员字段条件里的 {@code CURRENT_USER} 由 {@code ConditionFilterUtils} 换成当前登录用户,
      * 而批量刷新跑在线程池里拿不到会话, 会被换成 null(条件失效)。更新范围条件走的是同一个方法,
-     * 两边行为一致。</p>
+     * 两边行为一致。
+     * </p>
      *
      * @return 解析后的条件; 没有条件时返回一个空的 CombineSearch(等同于不过滤), 不为 null ——
      *         各表单的条件片段里都写着 {@code ${conditions}.size() > 0}, 传 null 会直接抛。
@@ -1429,7 +1495,8 @@ public class StatisticFieldService {
             if (refFieldId != null) {
                 // 引用宿主字段的条件: 值换成这条数据自己的值。其余字段(name/operator/type/multipleValue)
                 // 描述的是「拿目标表单的哪一列怎么比」, 对同一条统计字段的所有数据都一样, 原样带过去。
-                resolved.setValue(readHostFieldValue(context.hostDataTable, context.scopeRefSources.get(refFieldId), dataId));
+                resolved.setValue(
+                        readHostFieldValue(context.hostDataTable, context.scopeRefSources.get(refFieldId), dataId));
             }
             conditions.add(resolved);
         }
@@ -1451,9 +1518,10 @@ public class StatisticFieldService {
 
     /**
      * 复制一份条件对象。
-     *
-     * <p>逐条数据都要换右值, 而上下文里那份模板是一页数据并行共用的 ——
-     * 就地改会把上一条数据的条件带到下一条上, 值会串。</p>
+     * <p>
+     * 逐条数据都要换右值, 而上下文里那份模板是一页数据并行共用的 ——
+     * 就地改会把上一条数据的条件带到下一条上, 值会串。
+     * </p>
      */
     private static FilterCondition copyOf(FilterCondition condition) {
         FilterCondition copy = new FilterCondition();
@@ -1468,8 +1536,9 @@ public class StatisticFieldService {
 
     /**
      * 读宿主记录上某个字段的值, 作为统计范围条件的右值。
-     *
-     * <p>与 {@link #readRelatedValue} 是同一个路子: 业务字段读主表列, 自定义字段读字段值表。</p>
+     * <p>
+     * 与 {@link #readRelatedValue} 是同一个路子: 业务字段读主表列, 自定义字段读字段值表。
+     * </p>
      *
      * @return 字段值; 字段没有值或行不存在时返回 null
      */
@@ -1489,11 +1558,12 @@ public class StatisticFieldService {
 
     /**
      * 查一个字段ID对应的业务字段主表列名。
-     *
-     * <p>直接查字段表的 {@code internal_key} 再走 {@link BusinessModuleField} 的闭集映射,
+     * <p>
+     * 直接查字段表的 {@code internal_key} 再走 {@link BusinessModuleField} 的闭集映射,
      * 而不是读目标表单的配置: 配置里没带这个信息(下发配置时才由
      * {@code ModuleFormService#setFieldBusinessParam} 补上), 而且这里每次刷新只问一次,
-     * 用主键定位一行比重建整份配置便宜得多。</p>
+     * 用主键定位一行比重建整份配置便宜得多。
+     * </p>
      *
      * @return 主表列名; 字段不存在、没有 internalKey 或不是业务字段时返回 null(按自定义字段处理)
      */
@@ -1512,9 +1582,10 @@ public class StatisticFieldService {
 
     /**
      * 从字段配置里直接取业务字段的主表列名。
-     *
-     * <p>字段配置已经带着 {@code internalKey}(由 {@code ModuleFormService#getAllFields} 从字段表补齐),
-     * 所以这条路径不用再查一次库。</p>
+     * <p>
+     * 字段配置已经带着 {@code internalKey}(由 {@code ModuleFormService#getAllFields} 从字段表补齐),
+     * 所以这条路径不用再查一次库。
+     * </p>
      */
     private String resolveBusinessKey(BaseField field) {
         return businessKeyOf(field.getInternalKey(), field.getId());
@@ -1522,18 +1593,19 @@ public class StatisticFieldService {
 
     /**
      * 把字段的 {@code internalKey} 映射成业务字段的主表列名。
-     *
-     * <p>枚举里写的是驼峰({@code planAmount}), 主表列是下划线({@code plan_amount}), 必须过一次
+     * <p>
+     * 枚举里写的是驼峰({@code planAmount}), 主表列是下划线({@code plan_amount}), 必须过一次
      * {@link CaseFormatUtils#camelToUnderscore} —— 直接用枚举值会拼出 {@code t.`planAmount`} 这样的语句,
      * 单测拿 {@code amount} 这种单单词列名跑是发现不了的, 要到「计划回款金额」「回款金额」上才会报
-     * Unknown column。{@code ConditionFilterUtils} 解析筛选条件时走的也是同一个转换。</p>
-     *
-     * <p>列名会被拼进 SQL 的列名位置, 虽然 {@link BusinessModuleField} 是闭集, 这里仍然卡一道字符集,
-     * 避免以后有人把外部输入接到这个参数上。</p>
+     * Unknown column。{@code ConditionFilterUtils} 解析筛选条件时走的也是同一个转换。
+     * </p>
+     * <p>
+     * 列名会被拼进 SQL 的列名位置, 虽然 {@link BusinessModuleField} 是闭集, 这里仍然卡一道字符集,
+     * 避免以后有人把外部输入接到这个参数上。
+     * </p>
      *
      * @param internalKey 字段表的 internal_key
      * @param fieldId     字段ID, 仅用于日志
-     *
      * @return 主表列名; 不是业务字段或列名不合法时返回 null(按自定义字段处理)
      */
     private String businessKeyOf(String internalKey, String fieldId) {
@@ -1551,15 +1623,17 @@ public class StatisticFieldService {
 
     /**
      * 解析宿主表单的更新范围条件。
-     *
-     * <p>配置里存的是设计器筛选弹窗的「字段对字段」结构, 与统计范围条件同一套
+     * <p>
+     * 配置里存的是设计器筛选弹窗的「字段对字段」结构, 与统计范围条件同一套
      * (见 {@link StatisticConditionConverter}), 所以先转成高级搜索的 {@link CombineSearch},
-     * 再复用列表页同一套解析。</p>
-     *
-     * <p><b>弹窗的「匹配字段」在这里只能丢掉</b>: 更新范围是在一条 SQL 里对整个宿主表判定的
+     * 再复用列表页同一套解析。
+     * </p>
+     * <p>
+     * <b>弹窗的「匹配字段」在这里只能丢掉</b>: 更新范围是在一条 SQL 里对整个宿主表判定的
      * (右值不随数据变, 所以条件只解析一次), 没有统计范围那种「逐条数据现取右值」的机会,
      * 右值引用变不成谓词。丢的时候必须留痕 —— 不丢的话右值会以 Map 的形式进到绑定参数里,
-     * 刷新直接报错, 而配置和日志里都看不出是哪条条件的问题。</p>
+     * 刷新直接报错, 而配置和日志里都看不出是哪条条件的问题。
+     * </p>
      *
      * @return 解析并补全后的 CombineSearch; 条件为空时返回一个空的 CombineSearch (等同于不过滤)
      */
@@ -1631,9 +1705,10 @@ public class StatisticFieldService {
 
     /**
      * 统计范围条件里「右值取自宿主记录的某个字段」时, 去宿主表单的哪儿取值。
-     *
-     * <p>按字段ID查一次字段表得到, 而不是读宿主表单配置: 一个统计字段每次刷新只解析一次引用,
-     * 用主键定位一行比重建整份表单配置便宜得多。</p>
+     * <p>
+     * 按字段ID查一次字段表得到, 而不是读宿主表单配置: 一个统计字段每次刷新只解析一次引用,
+     * 用主键定位一行比重建整份表单配置便宜得多。
+     * </p>
      *
      * @param column  引用字段是业务字段时它在宿主主表上的列名, 否则为 null
      * @param fieldId 引用字段ID, 仅 {@code column} 为 null 时有意义
@@ -1651,9 +1726,10 @@ public class StatisticFieldService {
 
     /**
      * 一个统计字段 + 它所在的宿主表单。
-     *
-     * <p>「统计目标是谁」写在统计字段自己的配置里, 但刷新时要算的列在宿主表单上,
-     * 所以反查出来时必须把宿主表单一起带上, 否则拿到字段也不知道该刷哪张表。</p>
+     * <p>
+     * 「统计目标是谁」写在统计字段自己的配置里, 但刷新时要算的列在宿主表单上,
+     * 所以反查出来时必须把宿主表单一起带上, 否则拿到字段也不知道该刷哪张表。
+     * </p>
      *
      * @param hostFormKey   宿主表单Key
      * @param hostDataTable 宿主表单数据表名
@@ -1664,15 +1740,18 @@ public class StatisticFieldService {
 
     /**
      * 目标数据被变更/删除之前预先捕获下来的重算范围。
-     *
-     * <p>这是个只有 {@link StatisticFieldService} 能解读的不透明句柄: 调用方拿到之后原样传回来即可,
+     * <p>
+     * 这是个只有 {@link StatisticFieldService} 能解读的不透明句柄: 调用方拿到之后原样传回来即可,
      * 不需要(也不该)去读里面的内容。之所以要有个类型而不是分散的那几个参数, 是因为捕获与重算
-     * 两个阶段之间隔着写入语句, 中间还可能有级联删除改动数据库 —— 参数越少越不容易传错。</p>
-     *
-     * <p>orgId 存在句柄里而不是重算时再传一遍: 两个阶段必须同组织, 多一个入参就多一次传错的机会。</p>
-     *
-     * <p>字段名刻意避开 target: 这个类里 {@code target*} 一律指「被改/被删的那一方」
-     * ({@code targetFormKey} / {@code targetDataId}), 而这里是反过来要重算的宿主侧。</p>
+     * 两个阶段之间隔着写入语句, 中间还可能有级联删除改动数据库 —— 参数越少越不容易传错。
+     * </p>
+     * <p>
+     * orgId 存在句柄里而不是重算时再传一遍: 两个阶段必须同组织, 多一个入参就多一次传错的机会。
+     * </p>
+     * <p>
+     * 字段名刻意避开 target: 这个类里 {@code target*} 一律指「被改/被删的那一方」
+     * ({@code targetFormKey} / {@code targetDataId}), 而这里是反过来要重算的宿主侧。
+     * </p>
      *
      * @param targetFormKey  被改/被删数据所属表单Key, 仅用于日志
      * @param orgId          组织ID
@@ -1682,12 +1761,13 @@ public class StatisticFieldService {
      * @param hosts          待重算的宿主记录, 已按 (统计字段, 宿主记录) 去重
      */
     public record StatisticHostScope(String targetFormKey, String orgId, String changedFieldId,
-                                     List<HostRecord> hosts) {
+            List<HostRecord> hosts) {
 
         /**
          * 删除与单条编辑用的构造。
-         *
-         * <p>这两条路径说不出「改的是哪个字段」(删除没有字段, 单条编辑一次写一整组), 也就没有字段过滤。</p>
+         * <p>
+         * 这两条路径说不出「改的是哪个字段」(删除没有字段, 单条编辑一次写一整组), 也就没有字段过滤。
+         * </p>
          */
         public StatisticHostScope(String targetFormKey, String orgId, List<HostRecord> hosts) {
             this(targetFormKey, orgId, null, hosts);
@@ -1696,12 +1776,14 @@ public class StatisticFieldService {
 
     /**
      * 一条待重算的宿主记录。
-     *
-     * <p>把统计字段与宿主记录ID绑在一起: 同一次变更/删除会影响多个统计字段, 也可能影响多条宿主记录,
-     * 刷新阶段要的是这两个的组合, 而不是两张独立的表。</p>
-     *
-     * <p>之所以是 record: 捕获阶段按它去重(值相等即同一个宿主), 变更路径还要拿变更前、变更后的两份
-     * 求并集, 靠的就是这里没写 {@code equals} 而是用编译期生成的按值比较。</p>
+     * <p>
+     * 把统计字段与宿主记录ID绑在一起: 同一次变更/删除会影响多个统计字段, 也可能影响多条宿主记录,
+     * 刷新阶段要的是这两个的组合, 而不是两张独立的表。
+     * </p>
+     * <p>
+     * 之所以是 record: 捕获阶段按它去重(值相等即同一个宿主), 变更路径还要拿变更前、变更后的两份
+     * 求并集, 靠的就是这里没写 {@code equals} 而是用编译期生成的按值比较。
+     * </p>
      *
      * @param hostFormKey   宿主表单Key, 用于日志
      * @param hostDataTable 宿主表单数据表名, 同时用于判断宿主是否已被级联删除
@@ -1709,7 +1791,7 @@ public class StatisticFieldService {
      * @param hostDataId    宿主记录ID
      */
     public record HostRecord(String hostFormKey, String hostDataTable, StatisticField hostField,
-                             String hostDataId) {
+            String hostDataId) {
     }
 
     /**
@@ -1721,9 +1803,10 @@ public class StatisticFieldService {
         private String hostDataTable;
         /**
          * 目标表单Key。
-         *
-         * <p>解析统计范围条件时要用: 左字段是目标表单上的字段, 物理列名、显示字段要 join 哪张主表,
-         * 都得按目标表单的表单配置来。</p>
+         * <p>
+         * 解析统计范围条件时要用: 左字段是目标表单上的字段, 物理列名、显示字段要 join 哪张主表,
+         * 都得按目标表单的表单配置来。
+         * </p>
          */
         private String targetFormKey;
         private String relatedFieldId;
@@ -1731,15 +1814,17 @@ public class StatisticFieldService {
         private String relatedBusinessKey;
         /**
          * 被统计字段ID(数值/计算/统计字段), COUNT 时为 null。
-         *
-         * <p>只用于 join 字段值表, 取不取值由 {@link #statisticBusinessKey} 决定。</p>
+         * <p>
+         * 只用于 join 字段值表, 取不取值由 {@link #statisticBusinessKey} 决定。
+         * </p>
          */
         private String statisticFieldId;
         /**
          * 被统计字段是业务字段时, 它在目标表单主表上的列名; 不是业务字段时为 null。
-         *
-         * <p>业务字段的值在主表的列上, 字段值表里没有它的行, 所以有列名时就不能再去 join 字段值表 ——
-         * 两个字段在 SQL 里是互斥的两条分支。</p>
+         * <p>
+         * 业务字段的值在主表的列上, 字段值表里没有它的行, 所以有列名时就不能再去 join 字段值表 ——
+         * 两个字段在 SQL 里是互斥的两条分支。
+         * </p>
          */
         private String statisticBusinessKey;
         private String statisticType;
@@ -1747,10 +1832,11 @@ public class StatisticFieldService {
         private String emptyResultMode;
         /**
          * 统计范围条件(统计范围 = 「符合条件」); 「全部」时是空条件。
-         *
-         * <p>存的是配置里的原始形态而不是解析后的 SQL 形态, 因为右值可能取自宿主记录、要按每条宿主数据现取,
+         * <p>
+         * 存的是配置里的原始形态而不是解析后的 SQL 形态, 因为右值可能取自宿主记录、要按每条宿主数据现取,
          * 见 {@link #resolveScopeConditions}。这里只把「引用字段去哪儿取值」提前解析好放在
-         * {@link #scopeRefSources} 里。这份条件是只读的, 每条数据各复制一份再换右值。</p>
+         * {@link #scopeRefSources} 里。这份条件是只读的, 每条数据各复制一份再换右值。
+         * </p>
          */
         private CombineSearch scopeCondition;
         /**

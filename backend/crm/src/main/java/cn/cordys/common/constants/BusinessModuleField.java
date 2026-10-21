@@ -12,8 +12,7 @@ import java.util.stream.Collectors;
 /**
  * 业务模块字段（定义在主表中，有特定业务含义）(标准字段)
  *
- * @Author: jianxing
- * @CreateTime: 2025-02-18  17:27
+ * @author jianxing
  */
 @Getter
 public enum BusinessModuleField {
@@ -60,23 +59,25 @@ public enum BusinessModuleField {
     /**
      * 联系人责任人
      */
-    CUSTOMER_CONTACT_OWNER("contactOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_OWNER("contactOwner", "owner", Set.of("rules.required", "mobile", "readable"),
+            FormKey.CONTACT.getKey()),
     /**
      * 联系人名称
      */
-    CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules.required", "mobile", "readable"),
+            FormKey.CONTACT.getKey()),
     /**
      * 联系人电话
      */
     CUSTOMER_CONTACT_PHONE("contactPhone", "phone", Set.of(), FormKey.CONTACT.getKey()),
     /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
 
-
     /*------ start: OPPORTUNITY ------*/
     /**
      * 商机名称
      */
-    OPPORTUNITY_NAME("opportunityName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_NAME("opportunityName", "name", Set.of("rules.required", "mobile", "readable"),
+            FormKey.OPPORTUNITY.getKey()),
     /**
      * 客户名称
      */
@@ -105,20 +106,21 @@ public enum BusinessModuleField {
     /**
      * 负责人
      */
-    OPPORTUNITY_OWNER("opportunityOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_OWNER("opportunityOwner", "owner", Set.of("rules.required", "mobile", "readable"),
+            FormKey.OPPORTUNITY.getKey()),
     /*------ end: OPPORTUNITY ------*/
-
-
 
     /*------ start: FOLLOW_UP_RECORD ------*/
     /**
      * 跟进类型
      */
-    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options", "rules.required", "mobile", "readable"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options", "rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 客户id
      */
-    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", Set.of("rules.required", "mobile", "readable"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", Set.of("rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 商机id
      */
@@ -126,11 +128,13 @@ public enum BusinessModuleField {
     /**
      * 线索id
      */
-    FOLLOW_RECORD_CLUE("recordClue", "clueId", Set.of("rules.required", "mobile", "readable"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CLUE("recordClue", "clueId", Set.of("rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 责任人id
      */
-    FOLLOW_RECORD_OWNER("recordOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_OWNER("recordOwner", "owner", Set.of("rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 联系人id
      */
@@ -149,16 +153,17 @@ public enum BusinessModuleField {
     FOLLOW_METHOD("recordMethod", "followMethod", Set.of(), FormKey.FOLLOW_RECORD.getKey()),
     /*------ end: FOLLOW_UP_RECORD ------*/
 
-
     /*------ start: FOLLOW_UP_PLAN ------*/
     /**
      * 跟进类型
      */
-    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options", "rules.required", "mobile", "readable"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options", "rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 客户id
      */
-    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", Set.of("rules.required", "mobile", "readable"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", Set.of("rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 商机id
      */
@@ -166,11 +171,13 @@ public enum BusinessModuleField {
     /**
      * 线索id
      */
-    FOLLOW_PLAN_CLUE("planClue", "clueId", Set.of("rules.required", "mobile", "readable"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CLUE("planClue", "clueId", Set.of("rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 责任人id
      */
-    FOLLOW_PLAN_OWNER("planOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_OWNER("planOwner", "owner", Set.of("rules.required", "mobile", "readable"),
+            FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 联系人id
      */
@@ -188,7 +195,6 @@ public enum BusinessModuleField {
      */
     FOLLOW_PLAN_METHOD("planMethod", "method", Set.of(), FormKey.FOLLOW_PLAN.getKey()),
 
-
     /*------ end: FOLLOW_UP_PLAN ------*/
 
     /*------ start: PRODUCT ------*/
@@ -203,41 +209,49 @@ public enum BusinessModuleField {
     PRICE_NAME("priceName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
     PRICE_STATUS("priceStatus", "status", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
     PRICE_PRODUCT_TABLE("priceProducts", "products", Set.of("mobile", "readable"), FormKey.PRICE.getKey()),
-    PRICE_PRODUCT("priceProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.PRICE.getKey()),
-    PRICE_PRODUCT_AMOUNT("priceProductAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
+    PRICE_PRODUCT("priceProduct", "product", Set.of("rules.required", "mobile", "dataSourceType", "readable"),
+            FormKey.PRICE.getKey()),
+    PRICE_PRODUCT_AMOUNT("priceProductAmount", "amount", Set.of("rules.required", "mobile", "readable"),
+            FormKey.PRICE.getKey()),
 
     /**
      * 报价单表单
      */
     QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
-	QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-	QUOTATION_TOTAL_AMOUNT("quotationTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-
+    QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId",
+            Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
+    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"),
+            FormKey.QUOTATION.getKey()),
+    QUOTATION_TOTAL_AMOUNT("quotationTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"),
+            FormKey.QUOTATION.getKey()),
 
     /*------ start: CONTRACT_PAYMENT_PLAN ------*/
     /**
      * 负责人
      */
-    CONTRACT_PAYMENT_PLAN_OWNER("contractPaymentPlanOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    CONTRACT_PAYMENT_PLAN_OWNER("contractPaymentPlanOwner", "owner", Set.of("rules.required", "mobile", "readable"),
+            FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /**
      * 合同
      */
-    CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId",
+            Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /**
      * 计划回款金额
      */
-    CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "planAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "planAmount",
+            Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /**
      * 计划回款时间
      */
-    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime",
+            Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /**
      * 回款计划名称
      */
-    CONTRACT_PAYMENT_PLAN_NAME("contractPaymentPlanName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
+    CONTRACT_PAYMENT_PLAN_NAME("contractPaymentPlanName", "name", Set.of("rules.required", "mobile", "readable"),
+            FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /*------ end: CONTRACT_PAYMENT_PLAN ------*/
-
 
     /*------ start: CONTRACT ------*/
     /**
@@ -245,12 +259,14 @@ public enum BusinessModuleField {
      */
     CONTRACT_NAME("contractName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
 
-    CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.CONTRACT.getKey()),
+    CONTRACT_CUSTOMER_NAME("contractCustomer", "customerId",
+            Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.CONTRACT.getKey()),
     CONTRACT_OWNER("contractOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_NO("contractNo", "number", Set.of("rules.required"), FormKey.CONTRACT.getKey()),
     CONTRACT_START_TIME("contractStartTime", "startTime", Set.of("mobile", "readable"), FormKey.CONTRACT.getKey()),
     CONTRACT_END_TIME("contractEndTime", "endTime", Set.of("mobile", "readable"), FormKey.CONTRACT.getKey()),
-    CONTRACT_TOTAL_AMOUNT("contractTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT.getKey()),
+    CONTRACT_TOTAL_AMOUNT("contractTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"),
+            FormKey.CONTRACT.getKey()),
 
     /*------ end: CONTRACT ------*/
 
@@ -261,21 +277,30 @@ public enum BusinessModuleField {
     INVOICE_NAME("invoiceName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.INVOICE.getKey()),
     INVOICE_OWNER("invoiceOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.INVOICE.getKey()),
     INVOICE_AMOUNT("invoiceAmount", "amount", Set.of(), FormKey.INVOICE.getKey()),
-    INVOICE_CONTRACT_ID("invoiceContract", "contractId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.INVOICE.getKey()),
-    INVOICE_INVOICE_TYPE("invoiceType", "invoiceType", Set.of("rules.required", "readable", "mobile"), FormKey.INVOICE.getKey()),
+    INVOICE_CONTRACT_ID("invoiceContract", "contractId",
+            Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.INVOICE.getKey()),
+    INVOICE_INVOICE_TYPE("invoiceType", "invoiceType", Set.of("rules.required", "readable", "mobile"),
+            FormKey.INVOICE.getKey()),
     INVOICE_TAX_RATE("invoiceTaxRate", "taxRate", Set.of(), FormKey.INVOICE.getKey()),
-    INVOICE_BUSINESS_TITLE_ID("invoiceBusinessTitle", "businessTitleId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.INVOICE.getKey()),
+    INVOICE_BUSINESS_TITLE_ID("invoiceBusinessTitle", "businessTitleId",
+            Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.INVOICE.getKey()),
     /*------ end: CONTRACT_INVOICE ------*/
 
-
     /*------ start: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
-    CONTRACT_PAYMENT_RECORD_NO("contractPaymentRecordNo", "no", Set.of("rules.required"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_NAME("contractPaymentRecordName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_OWNER("contractPaymentRecordOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_CONTRACT("contractPaymentRecordContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_PLAN("contractPaymentRecordPlan", "paymentPlanId", Set.of("dataSourceType", "mobile"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_AMOUNT("contractPaymentRecordAmount", "recordAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_NO("contractPaymentRecordNo", "no", Set.of("rules.required"),
+            FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_NAME("contractPaymentRecordName", "name", Set.of("rules.required", "mobile", "readable"),
+            FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_OWNER("contractPaymentRecordOwner", "owner", Set.of("rules.required", "mobile", "readable"),
+            FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_CONTRACT("contractPaymentRecordContract", "contractId",
+            Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_PLAN("contractPaymentRecordPlan", "paymentPlanId", Set.of("dataSourceType", "mobile"),
+            FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_AMOUNT("contractPaymentRecordAmount", "recordAmount",
+            Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime",
+            Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     /*------ end: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
 
     /*------ start: ORDER ------*/
@@ -286,7 +311,6 @@ public enum BusinessModuleField {
     ORDER_NO("orderNo", "number", Set.of("rules.required"), FormKey.ORDER.getKey()),
     ORDER_TOTAL_AMOUNT("orderAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
     /*------ end: ORDER ------*/
-
 
     /*------ start: ORDER ------*/
     CUSTOM_FORM_DATA_NAME("customFormDataName", "name", Set.of("rules.required", "mobile", "readable"), null),
@@ -342,19 +366,20 @@ public enum BusinessModuleField {
         List<BusinessModuleField> formBusinessFields;
         if (FormKey.ofKey(formKey) == null) {
             // 如果不是内置表单，则校验自定义表单字段必须要名字和负责人
-            formBusinessFields = List.of(BusinessModuleField.CUSTOM_FORM_DATA_NAME, BusinessModuleField.CUSTOM_FORM_DATA_OWNER);
+            formBusinessFields = List.of(BusinessModuleField.CUSTOM_FORM_DATA_NAME,
+                    BusinessModuleField.CUSTOM_FORM_DATA_OWNER);
         } else {
-            formBusinessFields = Arrays.stream(BusinessModuleField.values()).filter(field -> Strings.CS.equals(formKey, field.getFormKey())).toList();
+            formBusinessFields = Arrays.stream(BusinessModuleField.values())
+                    .filter(field -> Strings.CS.equals(formKey, field.getFormKey())).toList();
         }
 
         if (CollectionUtils.isEmpty(formBusinessFields)) {
             return false;
         }
         return formBusinessFields.stream()
-                .anyMatch(businessField ->
-                        fields.stream().noneMatch(field -> Strings.CS.equals(businessField.getKey(), field.getInternalKey()))
-                                && businessField.noneMatchOfSubFields(fields)
-                );
+                .anyMatch(businessField -> fields.stream()
+                        .noneMatch(field -> Strings.CS.equals(businessField.getKey(), field.getInternalKey()))
+                        && businessField.noneMatchOfSubFields(fields));
     }
 
     /**
@@ -367,7 +392,8 @@ public enum BusinessModuleField {
         boolean noneMatch = true;
         for (BaseField field : fields) {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
-                noneMatch = subField.getSubFields().stream().noneMatch(sub -> Strings.CS.equals(this.getKey(), sub.getInternalKey()));
+                noneMatch = subField.getSubFields().stream()
+                        .noneMatch(sub -> Strings.CS.equals(this.getKey(), sub.getInternalKey()));
                 if (!noneMatch) {
                     break;
                 }

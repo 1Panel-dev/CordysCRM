@@ -18,13 +18,11 @@ public class InfoData {
     @JsonProperty("TaxNo")
     private String taxNo;
 
-
     /**
      * 开票信息
      */
     @JsonProperty("BankInfo")
     private BankInfo bankInfo;
-
 
     /**
      * 注册地址
@@ -38,20 +36,17 @@ public class InfoData {
     @JsonProperty("ContactInfo")
     private ContactInfo contactInfo;
 
-
     /**
      * 注册资本
      */
     @JsonProperty("RegistCapi")
     private String registerCapi;
 
-
     /**
      * 公司规模
      */
     @JsonProperty("PersonScope")
     private String personScope;
-
 
     /**
      * 工商注册号
@@ -77,4 +72,3 @@ public class InfoData {
     @JsonProperty("Industry")
     private Industry industry;
 }
-

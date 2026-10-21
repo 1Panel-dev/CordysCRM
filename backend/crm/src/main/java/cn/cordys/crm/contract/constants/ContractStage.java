@@ -1,11 +1,9 @@
 package cn.cordys.crm.contract.constants;
 
-
 /**
  * 合同状态
  */
 public enum ContractStage {
-
 
     /**
      * 待签署

@@ -5,13 +5,15 @@ import lombok.Data;
 
 /**
  * 统计字段聚合的请求参数。
- *
- * <p>由 {@code StatisticFieldService} 按「一条宿主数据」构造, 交给宿主表单所对应资源 Mapper 的
+ * <p>
+ * 由 {@code StatisticFieldService} 按「一条宿主数据」构造, 交给宿主表单所对应资源 Mapper 的
  * {@code selectStatisticAggregate} 执行 —— 同一条语句里的条件片段与该表单列表页是同一套,
- * 保证「统计时算的行」与「列表页看到的行」口径一致。</p>
- *
- * <p>绑定名固定为 {@code request}: {@code CommonMapper} 里的统计片段直接引用
- * {@code request.statisticBusinessKey} 这类属性, 改名要同步改片段。</p>
+ * 保证「统计时算的行」与「列表页看到的行」口径一致。
+ * </p>
+ * <p>
+ * 绑定名固定为 {@code request}: {@code CommonMapper} 里的统计片段直接引用
+ * {@code request.statisticBusinessKey} 这类属性, 改名要同步改片段。
+ * </p>
  */
 @Data
 public class StatisticAggregateRequest {

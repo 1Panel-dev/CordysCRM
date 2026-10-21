@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -89,7 +88,8 @@ public class CustomerRelationService {
         deleteByCustomerId(customerId);
         // 再创建
         List<CustomerRelation> relations = requests.stream()
-                .filter(request -> StringUtils.isNotBlank(request.getCustomerId()) && StringUtils.isNotBlank(request.getRelationType()))
+                .filter(request -> StringUtils.isNotBlank(request.getCustomerId())
+                        && StringUtils.isNotBlank(request.getRelationType()))
                 .map(item -> getCustomerRelation(item, customerId)).toList();
 
         checkTargetCustomer(customerId, relations);
@@ -102,9 +102,6 @@ public class CustomerRelationService {
     /**
      * 校验添加的子公司是否已经有所属的集团了
      * 一个公司只能有一个集团
-     *
-     * @param customerId
-     * @param relations
      */
     private void checkTargetCustomer(String customerId, List<CustomerRelation> relations) {
         List<String> targetCustomerIds = relations.stream()

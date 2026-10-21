@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-02-08 16:24:22
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -61,7 +60,8 @@ public class CustomerCollaborationService {
         return customerCollaborationMapper.select(example);
     }
 
-    private List<CustomerCollaborationListResponse> buildListData(String orgId, List<CustomerCollaboration> collaborations) {
+    private List<CustomerCollaborationListResponse> buildListData(String orgId,
+            List<CustomerCollaboration> collaborations) {
         if (CollectionUtils.isEmpty(collaborations)) {
             return List.of();
         }
@@ -82,8 +82,8 @@ public class CustomerCollaborationService {
         return collaborations
                 .stream()
                 .map(item -> {
-                    CustomerCollaborationListResponse customerCollaboration =
-                            BeanUtils.copyBean(new CustomerCollaborationListResponse(), item);
+                    CustomerCollaborationListResponse customerCollaboration = BeanUtils
+                            .copyBean(new CustomerCollaborationListResponse(), item);
                     UserDeptDTO userDeptDTO = userDeptMap.get(customerCollaboration.getUserId());
                     if (userDeptDTO != null) {
                         customerCollaboration.setDepartmentId(userDeptDTO.getDeptId());
@@ -116,7 +116,8 @@ public class CustomerCollaborationService {
             paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
             paramMap.put("uName", userNameMap.getOrDefault(request.getUserId(), request.getUserId()));
             paramMap.put("name", customer.getName());
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD,
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD,
                     paramMap, userId, orgId, List.of(customer.getOwner()), true);
         }
         return customerCollaborationMapper.selectByPrimaryKey(customerCollaboration.getId());
@@ -152,7 +153,6 @@ public class CustomerCollaborationService {
      *
      * @param userId     协作人
      * @param customerId 客户ID
-     *
      * @return bool
      */
     public boolean hasCollaboration(String userId, String customerId) {
@@ -162,10 +162,8 @@ public class CustomerCollaborationService {
         return customerCollaborationMapper.countByExample(example) > 0;
     }
 
-
     /**
      * 获取客户所有协作人id
-     * @param customerId
      */
     public Set<String> getCollaborations(String customerId) {
         CustomerCollaboration example = new CustomerCollaboration();

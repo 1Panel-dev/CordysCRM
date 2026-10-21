@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface ExtContractStageConfigMapper {
 
-
     List<StageConfigResponse> getStageConfigList(@Param("orgId") String orgId);
 
     int countStageConfig(@Param("orgId") String orgId);

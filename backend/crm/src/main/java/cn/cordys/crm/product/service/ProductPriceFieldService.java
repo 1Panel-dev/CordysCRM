@@ -16,23 +16,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class ProductPriceFieldService extends BaseResourceFieldService<ProductPriceField, ProductPriceFieldBlob> {
 
-	@Resource
-	private BaseMapper<ProductPriceField> productPriceFieldMapper;
-	@Resource
-	private BaseMapper<ProductPriceFieldBlob> productPriceFieldBlobMapper;
+    @Resource
+    private BaseMapper<ProductPriceField> productPriceFieldMapper;
+    @Resource
+    private BaseMapper<ProductPriceFieldBlob> productPriceFieldBlobMapper;
 
-	@Override
-	protected String getFormKey() {
-		return FormKey.PRICE.getKey();
-	}
+    @Override
+    protected String getFormKey() {
+        return FormKey.PRICE.getKey();
+    }
 
-	@Override
-	protected BaseMapper<ProductPriceField> getResourceFieldMapper() {
-		return productPriceFieldMapper;
-	}
+    @Override
+    protected BaseMapper<ProductPriceField> getResourceFieldMapper() {
+        return productPriceFieldMapper;
+    }
 
-	@Override
-	protected BaseMapper<ProductPriceFieldBlob> getResourceFieldBlobMapper() {
-		return productPriceFieldBlobMapper;
-	}
+    @Override
+    protected BaseMapper<ProductPriceFieldBlob> getResourceFieldBlobMapper() {
+        return productPriceFieldBlobMapper;
+    }
 }

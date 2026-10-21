@@ -20,27 +20,27 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.clue.service.PoolClueService;
-import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.clue.domain.Clue;
+import cn.cordys.crm.clue.service.PoolClueService;
+import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.follow.constants.FollowUpPlanStatusType;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
-import cn.cordys.crm.clue.domain.Clue;
-import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.dto.request.*;
-import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -89,12 +89,6 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
     /**
      * 新建跟进计划
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public FollowUpPlan add(FollowUpPlanAddRequest request, String userId, String orgId) {
         FollowUpPlan followUpPlan = BeanUtils.copyBean(new FollowUpPlan(), request);
@@ -120,15 +114,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
         return followUpPlan;
     }
 
-
     /**
      * 更新跟进计划
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.UPDATE, resourceId = "{#request.id}")
     public FollowUpPlan update(FollowUpPlanUpdateRequest request, String userId, String orgId) {
@@ -138,7 +125,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
             FollowUpPlan newPlan = BeanUtils.copyBean(new FollowUpPlan(), plan);
             FollowUpPlan updateFollowUpPlan = newPlan(newPlan, request, userId);
             // 获取模块字段
-            List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService
+                    .getModuleFieldValuesByResourceId(request.getId());
             // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
             // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
             StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
@@ -148,14 +136,16 @@ public class FollowUpPlanService extends BaseFollowUpService {
             followUpPlanMapper.update(updateFollowUpPlan);
             // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
             statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
-            baseService.handleUpdateLog(followUpPlan, updateFollowUpPlan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
+            baseService.handleUpdateLog(followUpPlan, updateFollowUpPlan, originCustomerFields,
+                    request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
         }, () -> {
             throw new GenericException(Translator.get("plan_not_found"));
         });
         return followUpPlanMapper.selectByPrimaryKey(request.getId());
     }
 
-    private void updateModuleField(FollowUpPlan followUpPlan, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(FollowUpPlan followUpPlan, List<BaseModuleFieldValue> moduleFields, String orgId,
+            String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -182,21 +172,14 @@ public class FollowUpPlanService extends BaseFollowUpService {
         return plan;
     }
 
-
     /**
      * 跟进计划列表查询
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     * @param resourceType
-     * @param type
-     *
-     * @return
      */
-    public PagerWithOption<List<FollowUpPlanListResponse>> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type) {
+    public PagerWithOption<List<FollowUpPlanListResponse>> list(FollowUpPlanPageRequest request, String userId,
+            String orgId, String resourceType, String type) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, null);
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType,
+                type, null);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
@@ -210,24 +193,27 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param orgId                  组织ID
      * @param clueDataPermission     线索数据权限
      * @param customerDataPermission 客户数据权限
-     *
      * @return 跟进计划汇总列表
      */
-    public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId, String orgId,
-                                                                     DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
+    public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId,
+            String orgId,
+            DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId, clueDataPermission, customerDataPermission);
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId,
+                clueDataPermission, customerDataPermission);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<FollowUpPlanListResponse> list, List<FollowUpPlanListResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<FollowUpPlanListResponse> list,
+            List<FollowUpPlanListResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, FollowUpPlanListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                FollowUpPlanListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -245,8 +231,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
     public List<FollowUpPlanListResponse> buildListData(List<FollowUpPlanListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpPlanListResponse::getId).toList();
-        Map<String, List<BaseModuleFieldValue>> resourceFieldMap = followUpPlanFieldService.getResourceFieldMap(ids, true);
-		Map<String, List<BaseModuleFieldValue>> resolveFvMap = followUpPlanFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.FOLLOW_PLAN.getKey(), orgId), resourceFieldMap);
+        Map<String, List<BaseModuleFieldValue>> resourceFieldMap = followUpPlanFieldService.getResourceFieldMap(ids,
+                true);
+        Map<String, List<BaseModuleFieldValue>> resolveFvMap = followUpPlanFieldService.setBusinessRefFieldValue(list,
+                moduleFormService.getFlattenFormFields(FormKey.FOLLOW_PLAN.getKey(), orgId), resourceFieldMap);
 
         List<String> createUserIds = list.stream().map(FollowUpPlanListResponse::getCreateUser).toList();
         List<String> updateUserIds = list.stream().map(FollowUpPlanListResponse::getUpdateUser).toList();
@@ -293,24 +281,22 @@ public class FollowUpPlanService extends BaseFollowUpService {
         return list;
     }
 
-
     /**
      * 跟进计划详情
-     *
-     * @param id
-     *
-     * @return
      */
     public FollowUpPlanDetailResponse get(String id, String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         FollowUpPlanDetailResponse response = BeanUtils.copyBean(new FollowUpPlanDetailResponse(), followUpPlan);
         List<FollowUpPlanListResponse> buildList = buildListData(List.of(response), orgId);
 
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService
+                .getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(List.of(response), FollowUpPlanDetailResponse::getModuleFields);
-		moduleFieldValues = followUpPlanFieldService.setBusinessRefFieldValue(List.of(response),
-				moduleFormService.getFlattenFormFields(FormKey.FOLLOW_PLAN.getKey(), followUpPlan.getOrganizationId()), new HashMap<>(Map.of(id, moduleFieldValues))).get(id);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(List.of(response),
+                FollowUpPlanDetailResponse::getModuleFields);
+        moduleFieldValues = followUpPlanFieldService.setBusinessRefFieldValue(List.of(response),
+                moduleFormService.getFlattenFormFields(FormKey.FOLLOW_PLAN.getKey(), followUpPlan.getOrganizationId()),
+                new HashMap<>(Map.of(id, moduleFieldValues))).get(id);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
         // 补充负责人选项
@@ -338,7 +324,6 @@ public class FollowUpPlanService extends BaseFollowUpService {
                 FollowUpPlanListResponse::getClueId, FollowUpPlanListResponse::getClueName);
         optionMap.put(BusinessModuleField.FOLLOW_PLAN_CLUE.getBusinessKey(), clueOption);
 
-
         response.setOptionMap(optionMap);
 
         // 附件信息
@@ -346,11 +331,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
         return response;
     }
 
-
     /**
      * 取消跟进计划
-     *
-     * @param id
      */
     @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.CANCEL, resourceId = "{#id}")
     public void cancelPlan(String id, String operator) {
@@ -371,11 +353,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
         OperationLogContext.setResourceName(Translator.get("cancel_follow_up_plan"));
     }
 
-
     /**
      * 删除跟进计划
-     *
-     * @param id
      */
     @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
@@ -389,12 +368,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
         OperationLogContext.setResourceName(Translator.get("delete_follow_up_plan"));
     }
 
-
     /**
      * 更新状态
-     *
-     * @param request
-     * @param userId
      */
     public void updateStatus(FollowUpPlanStatusRequest request, String userId) {
         //检查跟进计划是否可以更新状态,如果是已完成，并且已转记录的跟进计划，则不允许更新状态
@@ -466,17 +441,17 @@ public class FollowUpPlanService extends BaseFollowUpService {
      *
      * @param currentUser    当前用户ID
      * @param organizationId 组织ID
-     *
      * @return 数据权限配置
      */
     public ResourceTabEnableDTO getTabEnableConfig(String currentUser, String organizationId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(currentUser, organizationId);
         // 由于统一的记录/计划页面会展示多个业务模块的数据，因此需要合并多个数据权限, 展示范围更大的数据权限配置
-        ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
-        ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
+        ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
+                PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
+        ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
         return clueTabConfig.or(customerTabConfig);
     }
-
 
     /**
      * 拦截跟进计划的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
@@ -491,7 +466,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
     /**
      * 拦截跟进计划的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
      *
-     * @param plan    计划
+     * @param plan  计划
      * @param orgId 组织ID
      */
     public void checkPlanPermission(FollowUpPlan plan, String orgId, String userId, boolean isRead) {
@@ -506,7 +481,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (followUpPlan == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-        if (Strings.CS.equals(userId, InternalUser.ADMIN.toString()) || Strings.CS.equals(followUpPlan.getOwner(), userId)) {
+        if (Strings.CS.equals(userId, InternalUser.ADMIN.toString())
+                || Strings.CS.equals(followUpPlan.getOwner(), userId)) {
             return;
         }
         throw new GenericException(Translator.get("no.operation.permission"));

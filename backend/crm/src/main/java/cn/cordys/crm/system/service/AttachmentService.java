@@ -77,10 +77,14 @@ public class AttachmentService {
         Attachment attachment = attachmentMapper.selectByPrimaryKey(attachmentId);
         if (attachment == null) {
             // 删除临时文件目录
-            fileCommonService.deleteFolder(new FileRequest(DefaultRepositoryDir.getTempFileDir(attachmentId), StorageType.LOCAL.name(), null), true);
+            fileCommonService.deleteFolder(
+                    new FileRequest(DefaultRepositoryDir.getTempFileDir(attachmentId), StorageType.LOCAL.name(), null),
+                    true);
         } else {
             // 删除正式文件
-            fileCommonService.deleteFolder(new FileRequest(DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(), attachment.getId()),
+            fileCommonService.deleteFolder(new FileRequest(
+                    DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(),
+                            attachment.getId()),
                     StorageType.LOCAL.name(), attachment.getName()), false);
         }
     }
@@ -89,7 +93,6 @@ public class AttachmentService {
      * 获取文件流
      *
      * @param attachmentId 附件ID
-     *
      * @return 文件流
      */
     public ResponseEntity<org.springframework.core.io.Resource> getResource(String attachmentId) {
@@ -100,26 +103,36 @@ public class AttachmentService {
             InputStream fileStream;
             if (attachment == null) {
                 // get pic from temp dir
-                request = new FileRequest(DefaultRepositoryDir.getTempFileDir(attachmentId), StorageType.LOCAL.name(), null);
+                request = new FileRequest(DefaultRepositoryDir.getTempFileDir(attachmentId), StorageType.LOCAL.name(),
+                        null);
                 List<File> folderFiles = fileCommonService.getFolderFiles(request);
                 if (CollectionUtils.isEmpty(folderFiles)) {
                     return null;
                 }
                 File file = folderFiles.getFirst();
                 fileStream = new FileInputStream(file);
-                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodeName(file.getName()))
+                responseBuilder
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename*=UTF-8''" + encodeName(file.getName()))
                         .contentLength(file.length())
-                        .contentType(isSvg(file.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
+                        .contentType(isSvg(file.getName()) ? MediaType.parseMediaType("image/svg+xml")
+                                : MediaType.parseMediaType("application/octet-stream"));
             } else {
                 // get attachment from transferred dir
-                request = new FileRequest(DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(), attachment.getId()), StorageType.LOCAL.name(), attachment.getName());
+                request = new FileRequest(
+                        DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(),
+                                attachment.getResourceId(), attachment.getId()),
+                        StorageType.LOCAL.name(), attachment.getName());
                 fileStream = fileCommonService.getFileInputStream(request);
                 if (fileStream == null) {
                     throw new GenericException("The file does not exist or has been deleted");
                 }
-                responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodeName(attachment.getName()))
+                responseBuilder
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename*=UTF-8''" + encodeName(attachment.getName()))
                         .contentLength(attachment.getSize())
-                        .contentType(isSvg(attachment.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
+                        .contentType(isSvg(attachment.getName()) ? MediaType.parseMediaType("image/svg+xml")
+                                : MediaType.parseMediaType("application/octet-stream"));
             }
             return responseBuilder
                     .body(new InputStreamResource(fileStream));
@@ -129,12 +142,10 @@ public class AttachmentService {
         }
     }
 
-
     /**
      * 判断是否svg文件
      *
      * @param fileName 文件名
-     *
      * @return 是否svg
      */
     private boolean isSvg(String fileName) {
@@ -154,14 +165,135 @@ public class AttachmentService {
         List<Attachment> transferredAttachments = attachmentMapper.selectListByLambda(queryWrapper);
         List<String> transferredIds = transferredAttachments.stream().map(Attachment::getId).toList();
         // insert new attachment
-        transferRequest.getTempFileIds().stream().filter(tempFileId -> !transferredIds.contains(tempFileId)).forEach(tempFileId -> {
-            // transfer new pic
-            FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId, StorageType.LOCAL.name(), null);
+        transferRequest.getTempFileIds().stream().filter(tempFileId -> !transferredIds.contains(tempFileId))
+                .forEach(tempFileId -> {
+                    // transfer new pic
+                    FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId,
+                            StorageType.LOCAL.name(), null);
+                    List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
+                    if (!CollectionUtils.isEmpty(folderTempFiles)) {
+                        File tempFile = folderTempFiles.getFirst();
+                        FileCopyRequest copyRequest = new FileCopyRequest(
+                                DefaultRepositoryDir.getTempFileDir(tempFileId),
+                                DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
+                                        transferRequest.getResourceId(), tempFileId),
+                                tempFile.getName());
+                        fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
+                        Attachment attachment = new Attachment();
+                        attachment.setId(tempFileId);
+                        attachment.setName(tempFile.getName());
+                        String type = "";
+                        int index = tempFile.getName().lastIndexOf('.');
+                        if (index != -1 && index < tempFile.getName().length() - 1) {
+                            type = tempFile.getName().substring(index + 1);
+                        }
+                        attachment.setType(type);
+                        attachment.setSize(tempFile.length());
+                        attachment.setStorage(StorageType.LOCAL.name());
+                        attachment.setOrganizationId(transferRequest.getOrganizationId());
+                        attachment.setResourceId(transferRequest.getResourceId());
+                        attachment.setCreateTime(System.currentTimeMillis());
+                        attachment.setCreateUser(transferRequest.getOperatorUserId());
+                        attachment.setUpdateTime(System.currentTimeMillis());
+                        attachment.setUpdateUser(transferRequest.getOperatorUserId());
+                        attachments.add(attachment);
+                    }
+                });
+        attachmentMapper.batchInsert(attachments);
+        // remove deleted
+        List<String> removedIds = transferredIds.stream().filter(aId -> !transferRequest.getTempFileIds().contains(aId))
+                .toList();
+        if (!CollectionUtils.isEmpty(removedIds)) {
+            // 审批附件与表单附件共用资源ID，表单同步不能删除仍被审批记录引用的附件。
+            LambdaQueryWrapper<ApprovalInstanceAttachment> approvalQueryWrapper = new LambdaQueryWrapper<>();
+            approvalQueryWrapper.in(ApprovalInstanceAttachment::getAttachmentId, removedIds);
+            Set<String> approvalAttachmentIds = approvalInstanceAttachmentMapper
+                    .selectListByLambda(approvalQueryWrapper).stream()
+                    .map(ApprovalInstanceAttachment::getAttachmentId)
+                    .collect(Collectors.toSet());
+            removedIds = removedIds.stream().filter(id -> !approvalAttachmentIds.contains(id)).toList();
+        }
+        if (!CollectionUtils.isEmpty(removedIds)) {
+            LambdaQueryWrapper<Attachment> duplicateQueryWrapper = new LambdaQueryWrapper<>();
+            duplicateQueryWrapper.in(Attachment::getId, removedIds);
+            attachmentMapper.deleteByLambda(duplicateQueryWrapper);
+            removedIds.forEach(removeId -> {
+                FileRequest request = new FileRequest(
+                        DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
+                                transferRequest.getResourceId(), removeId),
+                        StorageType.LOCAL.name(), null);
+                fileCommonService.deleteFolder(request, true);
+            });
+        }
+    }
+
+    /**
+     * 通过ID映射批量复制附件
+     *
+     * @param oldOfNewIdMap {旧的附件ID: 新的附件ID} 集合
+     * @param targetId      目标资源ID
+     * @param currentUser   当前操作用户
+     */
+    public void batchCopyOfIdMap(Map<String, String> oldOfNewIdMap, String targetId, String currentUser) {
+        LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Attachment::getId, oldOfNewIdMap.keySet().stream().toList());
+        List<Attachment> attachments = attachmentMapper.selectListByLambda(queryWrapper);
+        Map<String, Attachment> attachmentMap = attachments.stream()
+                .collect(Collectors.toMap(Attachment::getId, Function.identity()));
+        List<Attachment> newAttachments = new ArrayList<>();
+        oldOfNewIdMap.forEach((oId, nId) -> {
+            if (!attachmentMap.containsKey(oId)) {
+                return;
+            }
+            Attachment oldAttachment = attachmentMap.get(oId);
+            // 复制文件
+            FileCopyRequest copyRequest = new FileCopyRequest(
+                    DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(),
+                            oldAttachment.getResourceId(), oId),
+                    DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), targetId, nId),
+                    oldAttachment.getName());
+            Thread.startVirtualThread(() -> fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name()));
+            // 复制附件记录
+            oldAttachment.setId(nId);
+            oldAttachment.setResourceId(targetId);
+            oldAttachment.setCreateTime(System.currentTimeMillis());
+            oldAttachment.setCreateUser(currentUser);
+            oldAttachment.setUpdateTime(System.currentTimeMillis());
+            oldAttachment.setUpdateUser(currentUser);
+            newAttachments.add(oldAttachment);
+        });
+        attachmentMapper.batchInsert(newAttachments);
+    }
+
+    /**
+     * 编码文件名
+     *
+     * @param fileName 文件名
+     * @return 编码后文件名
+     */
+    private String encodeName(String fileName) {
+        return URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
+    }
+
+    /**
+     * 追加临时文件
+     *
+     * @param transferRequest 参数
+     */
+    @Async
+    public void appendTemp(UploadTransferRequest transferRequest) {
+        List<Attachment> attachments = new ArrayList<>();
+        // insert new attachment
+        transferRequest.getTempFileIds().forEach(tempFileId -> {
+            FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId,
+                    StorageType.LOCAL.name(), null);
             List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
             if (!CollectionUtils.isEmpty(folderTempFiles)) {
                 File tempFile = folderTempFiles.getFirst();
                 FileCopyRequest copyRequest = new FileCopyRequest(DefaultRepositoryDir.getTempFileDir(tempFileId),
-                        DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(), transferRequest.getResourceId(), tempFileId),
+                        DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
+                                transferRequest.getResourceId(), tempFileId),
                         tempFile.getName());
                 fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
                 Attachment attachment = new Attachment();
@@ -185,113 +317,5 @@ public class AttachmentService {
             }
         });
         attachmentMapper.batchInsert(attachments);
-        // remove deleted
-        List<String> removedIds = transferredIds.stream().filter(aId -> !transferRequest.getTempFileIds().contains(aId)).toList();
-        if (!CollectionUtils.isEmpty(removedIds)) {
-            // 审批附件与表单附件共用资源ID，表单同步不能删除仍被审批记录引用的附件。
-            LambdaQueryWrapper<ApprovalInstanceAttachment> approvalQueryWrapper = new LambdaQueryWrapper<>();
-            approvalQueryWrapper.in(ApprovalInstanceAttachment::getAttachmentId, removedIds);
-            Set<String> approvalAttachmentIds = approvalInstanceAttachmentMapper.selectListByLambda(approvalQueryWrapper).stream()
-                    .map(ApprovalInstanceAttachment::getAttachmentId)
-                    .collect(Collectors.toSet());
-            removedIds = removedIds.stream().filter(id -> !approvalAttachmentIds.contains(id)).toList();
-        }
-        if (!CollectionUtils.isEmpty(removedIds)) {
-            LambdaQueryWrapper<Attachment> duplicateQueryWrapper = new LambdaQueryWrapper<>();
-            duplicateQueryWrapper.in(Attachment::getId, removedIds);
-            attachmentMapper.deleteByLambda(duplicateQueryWrapper);
-            removedIds.forEach(removeId -> {
-                FileRequest request = new FileRequest(DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(), transferRequest.getResourceId(), removeId), StorageType.LOCAL.name(), null);
-                fileCommonService.deleteFolder(request, true);
-            });
-        }
     }
-
-    /**
-     * 通过ID映射批量复制附件
-     *
-     * @param oldOfNewIdMap {旧的附件ID: 新的附件ID} 集合
-     * @param targetId      目标资源ID
-     * @param currentUser   当前操作用户
-     */
-    public void batchCopyOfIdMap(Map<String, String> oldOfNewIdMap, String targetId, String currentUser) {
-        LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Attachment::getId, oldOfNewIdMap.keySet().stream().toList());
-        List<Attachment> attachments = attachmentMapper.selectListByLambda(queryWrapper);
-        Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(Attachment::getId, Function.identity()));
-        List<Attachment> newAttachments = new ArrayList<>();
-        oldOfNewIdMap.forEach((oId, nId) -> {
-            if (!attachmentMap.containsKey(oId)) {
-                return;
-            }
-            Attachment oldAttachment = attachmentMap.get(oId);
-            // 复制文件
-            FileCopyRequest copyRequest = new FileCopyRequest(
-                    DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), oldAttachment.getResourceId(), oId),
-                    DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), targetId, nId),
-                    oldAttachment.getName());
-            Thread.startVirtualThread(() -> fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name()));
-            // 复制附件记录
-            oldAttachment.setId(nId);
-            oldAttachment.setResourceId(targetId);
-            oldAttachment.setCreateTime(System.currentTimeMillis());
-            oldAttachment.setCreateUser(currentUser);
-            oldAttachment.setUpdateTime(System.currentTimeMillis());
-            oldAttachment.setUpdateUser(currentUser);
-            newAttachments.add(oldAttachment);
-        });
-        attachmentMapper.batchInsert(newAttachments);
-    }
-
-    /**
-     * 编码文件名
-     *
-     * @param fileName 文件名
-     *
-     * @return 编码后文件名
-     */
-    private String encodeName(String fileName) {
-        return URLEncoder.encode(fileName, StandardCharsets.UTF_8)
-                .replaceAll("\\+", "%20");
-    }
-
-	/**
-	 * 追加临时文件
-	 * @param transferRequest 参数
-	 */
-	@Async
-	public void appendTemp(UploadTransferRequest transferRequest) {
-		List<Attachment> attachments = new ArrayList<>();
-		// insert new attachment
-		transferRequest.getTempFileIds().forEach(tempFileId -> {
-			FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId, StorageType.LOCAL.name(), null);
-			List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
-			if (!CollectionUtils.isEmpty(folderTempFiles)) {
-				File tempFile = folderTempFiles.getFirst();
-				FileCopyRequest copyRequest = new FileCopyRequest(DefaultRepositoryDir.getTempFileDir(tempFileId),
-						DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(), transferRequest.getResourceId(), tempFileId),
-						tempFile.getName());
-				fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
-				Attachment attachment = new Attachment();
-				attachment.setId(tempFileId);
-				attachment.setName(tempFile.getName());
-				String type = "";
-				int index = tempFile.getName().lastIndexOf('.');
-				if (index != -1 && index < tempFile.getName().length() - 1) {
-					type = tempFile.getName().substring(index + 1);
-				}
-				attachment.setType(type);
-				attachment.setSize(tempFile.length());
-				attachment.setStorage(StorageType.LOCAL.name());
-				attachment.setOrganizationId(transferRequest.getOrganizationId());
-				attachment.setResourceId(transferRequest.getResourceId());
-				attachment.setCreateTime(System.currentTimeMillis());
-				attachment.setCreateUser(transferRequest.getOperatorUserId());
-				attachment.setUpdateTime(System.currentTimeMillis());
-				attachment.setUpdateUser(transferRequest.getOperatorUserId());
-				attachments.add(attachment);
-			}
-		});
-		attachmentMapper.batchInsert(attachments);
-	}
 }

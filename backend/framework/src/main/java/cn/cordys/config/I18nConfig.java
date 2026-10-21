@@ -41,7 +41,6 @@ public class I18nConfig {
      * </p>
      *
      * @param messageSource 消息源，用于提供国际化的错误信息
-     *
      * @return 配置好的 LocalValidatorFactoryBean
      */
     @Bean
@@ -59,7 +58,6 @@ public class I18nConfig {
      * </p>
      *
      * @param localValidatorFactoryBean 校验工厂
-     *
      * @return 校验器实例
      */
     @Bean

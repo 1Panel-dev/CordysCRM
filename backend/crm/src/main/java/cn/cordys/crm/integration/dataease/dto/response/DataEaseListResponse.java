@@ -5,8 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-08-15  15:48
+ * @author jianxing
  */
 @Data
 public class DataEaseListResponse<T> extends DataEaseBaseResponse {

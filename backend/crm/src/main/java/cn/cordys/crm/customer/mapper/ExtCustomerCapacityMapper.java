@@ -12,7 +12,6 @@ public interface ExtCustomerCapacityMapper {
      *
      * @param scopeIds       范围ID集合
      * @param organizationId 组织ID
-     *
      * @return 容量
      */
     CustomerCapacity getCapacityByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String organizationId);

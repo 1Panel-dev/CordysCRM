@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 
-
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ProductExportService extends BaseExportService {
@@ -56,9 +55,9 @@ public class ProductExportService extends BaseExportService {
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(List<ProductListResponse> dataList,
-                                                        ExportFieldParam exportFieldParam) {
-        List<BaseModuleFieldValue> moduleFieldValues =
-                moduleFormService.getBaseModuleFieldValues(dataList, ProductListResponse::getModuleFields);
+            ExportFieldParam exportFieldParam) {
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(dataList,
+                ProductListResponse::getModuleFields);
         return moduleFormService.getOptionMap(exportFieldParam.getFormConfig(), moduleFieldValues);
     }
 }

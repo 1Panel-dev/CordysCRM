@@ -21,5 +21,4 @@ public class OpportunityStageAddRequest {
     @Schema(description = "源节点")
     private String targetId;
 
-
 }

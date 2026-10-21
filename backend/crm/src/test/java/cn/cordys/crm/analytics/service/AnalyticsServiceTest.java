@@ -1,24 +1,24 @@
 package cn.cordys.crm.analytics.service;
 
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.*;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
 import cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse.Scope;
 import cn.cordys.crm.analytics.mapper.AnalyticsQueryMapper;
+import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.opportunity.service.OpportunityService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
+import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
-import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,12 +56,16 @@ class AnalyticsServiceTest {
     }
 
     @AfterAll
-    static void closeValidator() { VALIDATION.close(); }
+    static void closeValidator() {
+        VALIDATION.close();
+    }
 
     static AnalyticsAccessService.Access access(String formKey, boolean empty) {
         var configuration = new Configuration();
         var statement = new MappedStatement.Builder(configuration, "test.visible",
-                new StaticSqlSource(configuration, "select id from `" + AnalyticsAccessService.SOURCES.get(formKey).table() + "`"), SqlCommandType.SELECT).build();
+                new StaticSqlSource(configuration,
+                        "select id from `" + AnalyticsAccessService.SOURCES.get(formKey).table() + "`"),
+                SqlCommandType.SELECT).build();
         return new AnalyticsAccessService.Access(AnalyticsAccessService.SOURCES.get(formKey), statement,
                 statement.getBoundSql(Map.of()), empty, "org-a", new Scope("ALL", "SELF", null, "test"));
     }
@@ -95,7 +99,8 @@ class AnalyticsServiceTest {
     static AnalyticsQueryRequest request() {
         var request = new AnalyticsQueryRequest();
         request.setFormKey("customer");
-        request.setMetrics(List.of(metric(Aggregate.COUNT, null, "count"), metric(Aggregate.SUM, "amount-field", "amount")));
+        request.setMetrics(
+                List.of(metric(Aggregate.COUNT, null, "count"), metric(Aggregate.SUM, "amount-field", "amount")));
         return request;
     }
 
@@ -322,8 +327,10 @@ class AnalyticsServiceTest {
         assertTrue(AnalyticsSqlBuilder.compile(access, catalog, request).sql().contains("MAX(f0) as m0"));
         range.setToExclusive("2026-08-01");
         assertThrows(GenericException.class, () -> AnalyticsSqlBuilder.compile(access, catalog, request));
-        assertThrows(GenericException.class, () -> AnalyticsSqlBuilder.instant("2026-11-01T01:30:00", ZoneId.of("America/New_York")));
-        assertThrows(GenericException.class, () -> AnalyticsSqlBuilder.instant("2026-03-08T02:30:00", ZoneId.of("America/New_York")));
+        assertThrows(GenericException.class,
+                () -> AnalyticsSqlBuilder.instant("2026-11-01T01:30:00", ZoneId.of("America/New_York")));
+        assertThrows(GenericException.class,
+                () -> AnalyticsSqlBuilder.instant("2026-03-08T02:30:00", ZoneId.of("America/New_York")));
     }
 
     @Test
@@ -343,15 +350,22 @@ class AnalyticsServiceTest {
     void jsonRejectsUnknownIdentityAndMisspelledFiltersAndPreservesNumbers() throws Exception {
         var json = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         for (String unknown : List.of("organizationId", "userId", "sql", "conditions")) {
-            assertThrows(Exception.class, () -> json.readValue("{\"" + unknown + "\":\"x\"}", AnalyticsQueryRequest.class));
+            assertThrows(Exception.class,
+                    () -> json.readValue("{\"" + unknown + "\":\"x\"}", AnalyticsQueryRequest.class));
         }
-        assertThrows(Exception.class, () -> json.readValue("{\"metrics\":[{\"op\":\"COUNT\",\"unknown\":true}]}", AnalyticsQueryRequest.class));
-        var request = json.readValue("""
+        assertThrows(Exception.class, () -> json.readValue("{\"metrics\":[{\"op\":\"COUNT\",\"unknown\":true}]}",
+                AnalyticsQueryRequest.class));
+        var request = json.readValue(
+                """
                 {"conditions":[{"field":"amount","operator":"EQUALS","value":12345678901234567890.12345678901234567890}]}
-                """, AnalyticsQueryRequest.class);
-        assertEquals(new BigDecimal("12345678901234567890.12345678901234567890"), request.getConditions().getFirst().getValue());
-        assertThrows(Exception.class, () -> json.readValue("{\"conditions\":[{\"value\":{\"sql\":\"x\"}}]}", AnalyticsQueryRequest.class));
+                """,
+                AnalyticsQueryRequest.class);
+        assertEquals(new BigDecimal("12345678901234567890.12345678901234567890"),
+                request.getConditions().getFirst().getValue());
+        assertThrows(Exception.class,
+                () -> json.readValue("{\"conditions\":[{\"value\":{\"sql\":\"x\"}}]}", AnalyticsQueryRequest.class));
     }
+
     static AnalyticsSchemaService.Catalog lineCatalog() {
         var product = field(new DatasourceField(), "product-id", "DATA_SOURCE", "productId");
         product.setDataSourceType("PRODUCT");
@@ -373,10 +387,13 @@ class AnalyticsServiceTest {
         assertEquals("productId", lines.require("line.productId").base().idOrBusinessKey());
         assertTrue(lines.require("line.tags").schema().multiple());
         assertThrows(GenericException.class, () -> root.dataset("hidden-table"));
-        var request = request(); request.setFormKey("order"); request.setSubTableFieldId("items");
+        var request = request();
+        request.setFormKey("order");
+        request.setSubTableFieldId("items");
         request.setMetrics(List.of(metric(Aggregate.SUM, "amount", "duplicated")));
         assertThrows(GenericException.class, () -> AnalyticsSqlBuilder.compile(access("order", false), lines, request));
-        request.setMetrics(List.of(metric(Aggregate.SUM, "line.line-amount", "amount"), metric(Aggregate.COUNT_DISTINCT, "id", "orders")));
+        request.setMetrics(List.of(metric(Aggregate.SUM, "line.line-amount", "amount"),
+                metric(Aggregate.COUNT_DISTINCT, "id", "orders")));
         var plan = AnalyticsSqlBuilder.compile(access("order", false), lines, request);
         assertTrue(plan.sql().contains("union select resource_id, row_id from `sales_order_field_blob`"));
         assertTrue(plan.sql().contains("and ref_sub_id = ? and row_id = r.row_id"));
@@ -389,7 +406,9 @@ class AnalyticsServiceTest {
         when(schemaService.load(anyString(), any(), anyString())).thenReturn(lineCatalog());
         when(accessService.resolve(eq("product"), any(), any(), anyString(), anyString()))
                 .thenThrow(new GenericException(cn.cordys.common.response.result.CrmHttpResultCode.FORBIDDEN));
-        var request = request(); request.setFormKey("order"); request.setSubTableFieldId("items");
+        var request = request();
+        request.setFormKey("order");
+        request.setSubTableFieldId("items");
         request.setMetrics(List.of(metric(Aggregate.COUNT, null, "count")));
         request.setRelationField("line.productId");
         assertThrows(GenericException.class, () -> service.query(request, "viewer", "org-a"));
@@ -401,18 +420,23 @@ class AnalyticsServiceTest {
 
     @Test
     void multiValueFiltersUseMembershipWithoutInflatingGroupTotals() {
-        var request = request(); request.setSubTableFieldId("items");
+        var request = request();
+        request.setSubTableFieldId("items");
         request.setMetrics(List.of(metric(Aggregate.COUNT, null, "count")));
         request.setDimensions(List.of(dimension("line.tags", Granularity.RAW)));
-        var condition = new Condition(); condition.setField("line.tags"); condition.setOperator(Operator.NOT_IN);
-        condition.setValue(List.of("private-tag")); request.setConditions(List.of(condition));
+        var condition = new Condition();
+        condition.setField("line.tags");
+        condition.setOperator(Operator.NOT_IN);
+        condition.setValue(List.of("private-tag"));
+        request.setConditions(List.of(condition));
         var plan = AnalyticsSqlBuilder.compile(access("order", false), lineCatalog().dataset("items"), request);
         assertTrue(plan.sql().contains("not ((select 1 from json_table"));
         assertTrue(plan.sql().contains("select distinct analytics_filtered.*"));
         assertTrue(plan.sql().contains("count(distinct id) from analytics_filtered"));
         assertFalse(plan.sql().contains("private-tag"));
         request.setMetrics(List.of(metric(Aggregate.COUNT_DISTINCT, "line.tags", "sets")));
-        assertThrows(GenericException.class, () -> AnalyticsSqlBuilder.compile(access("order", false), lineCatalog().dataset("items"), request));
+        assertThrows(GenericException.class,
+                () -> AnalyticsSqlBuilder.compile(access("order", false), lineCatalog().dataset("items"), request));
     }
 
 }

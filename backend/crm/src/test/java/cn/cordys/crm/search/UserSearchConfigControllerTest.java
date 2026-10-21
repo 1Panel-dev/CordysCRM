@@ -49,16 +49,15 @@ public class UserSearchConfigControllerTest extends BaseTest {
         field.setUpdateUser("admin");
         field.setUpdateTime(System.currentTimeMillis());
         moduleFieldMapper.insert(field);
-
     }
-
 
     @Test
     @Order(2)
     void testAdd() throws Exception {
         UserSearchConfigAddRequest request = new UserSearchConfigAddRequest();
         request.setResultDisplay(false);
-        request.setSortSetting(List.of("SEARCH_ADVANCED_CLUE", "SEARCH_ADVANCED_CUSTOMER", "SEARCH_ADVANCED_CONTACT", "SEARCH_ADVANCED_PUBLIC", "SEARCH_ADVANCED_CLUE_POOL", "SEARCH_ADVANCED_OPPORTUNITY"));
+        request.setSortSetting(List.of("SEARCH_ADVANCED_CLUE", "SEARCH_ADVANCED_CUSTOMER", "SEARCH_ADVANCED_CONTACT",
+                "SEARCH_ADVANCED_PUBLIC", "SEARCH_ADVANCED_CLUE_POOL", "SEARCH_ADVANCED_OPPORTUNITY"));
         request.setSearchFields(fieldMap());
 
         this.requestPost(SAVE, request);

@@ -18,8 +18,10 @@ import java.util.Properties;
  * 该拦截器会在查询结果中去除 User 对象的密码字段，以避免敏感信息泄露。
  */
 @Intercepts({
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
+        @Signature(type = Executor.class, method = "query", args = { MappedStatement.class, Object.class,
+                RowBounds.class, ResultHandler.class }),
+        @Signature(type = Executor.class, method = "query", args = { MappedStatement.class, Object.class,
+                RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class }),
 })
 public class UserDesensitizationInterceptor implements Interceptor {
 
@@ -27,9 +29,7 @@ public class UserDesensitizationInterceptor implements Interceptor {
      * 拦截 query 方法，脱敏 User 对象中的密码字段。
      *
      * @param invocation 方法调用对象
-     *
      * @return 脱敏后的结果
-     *
      * @throws Throwable 如果执行方法时发生错误
      */
     @Override
@@ -67,7 +67,6 @@ public class UserDesensitizationInterceptor implements Interceptor {
      * 将目标对象包装成拦截器对象。
      *
      * @param target 需要包装的目标对象
-     *
      * @return 包装后的目标对象
      */
     @Override

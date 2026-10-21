@@ -27,7 +27,6 @@ public class OperationLogConfig implements ImportAware {
      * 创建 LogRecordAopAdvisor 实例，配置日志记录的切面和拦截器。
      *
      * @param operationLogInterceptor LogRecordInterceptor 实例
-     *
      * @return LogRecordAopAdvisor 实例
      */
     @DependsOn("logRecordInterceptor")

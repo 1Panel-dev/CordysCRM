@@ -31,8 +31,8 @@ public class DingTalkDepartmentService {
     // 请求计数器（用于监控）
     private final AtomicInteger apiRequestCount = new AtomicInteger(0);
 
-
-    public ThirdOrgDataDTO convertToThirdOrgDataDTO(String accessToken, String dingTalkDepartmentId, Boolean needUsers) {
+    public ThirdOrgDataDTO convertToThirdOrgDataDTO(String accessToken, String dingTalkDepartmentId,
+            Boolean needUsers) {
         DingTalkOrgDataResponse response = getOrganizationAndUsers(accessToken, dingTalkDepartmentId, needUsers);
         ThirdOrgDataDTO thirdOrgDataDTO = new ThirdOrgDataDTO();
         thirdOrgDataDTO.setDepartments(Optional.ofNullable(response.getDepartments())
@@ -48,8 +48,7 @@ public class DingTalkDepartmentService {
                         entry -> entry.getKey().toString(),
                         entry -> entry.getValue().stream()
                                 .map(this::convertToThirdUser)
-                                .collect(java.util.stream.Collectors.toList())
-                ));
+                                .collect(java.util.stream.Collectors.toList())));
         thirdOrgDataDTO.setUsers(thirdUsersByDept);
 
         if (thirdOrgDataDTO.getDepartments().isEmpty()) {
@@ -71,7 +70,6 @@ public class DingTalkDepartmentService {
                 .gender(1)
                 .build();
     }
-
 
     private ThirdDepartment convertToThirdDepartment(DingTalkDepartment dingTalkDepartment) {
         var thirdDepartment = new ThirdDepartment();
@@ -98,7 +96,8 @@ public class DingTalkDepartmentService {
      * @param accessToken 访问令牌
      * @return 组织架构和用户数据响应
      */
-    public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken, String dingTalkDepartmentId, Boolean needUsers) {
+    public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken, String dingTalkDepartmentId,
+            Boolean needUsers) {
         List<Long> allDepartmentIds = getAllSubDepartmentIds(accessToken, dingTalkDepartmentId); // 从根部门(ID=1)开始
         DingTalkOrgDataResponse response = new DingTalkOrgDataResponse();
 
@@ -158,7 +157,6 @@ public class DingTalkDepartmentService {
         return response;
     }
 
-
     /**
      * 使用队列方式获取所有子部门ID（避免递归，更好的限流控制）
      *
@@ -209,7 +207,6 @@ public class DingTalkDepartmentService {
         return departmentIds;
     }
 
-
     /**
      * 应用API限流控制
      */
@@ -231,7 +228,6 @@ public class DingTalkDepartmentService {
         }
         return MIN_REQUEST_INTERVAL;
     }
-
 
     /**
      * 获取单个部门详情
@@ -256,7 +252,6 @@ public class DingTalkDepartmentService {
                     log.error("获取部门详情失败，错误码：{}，错误信息：{}", response.getErrCode(), response.getErrMsg());
                 }
             }
-
         } catch (Exception e) {
             log.error("获取部门详情失败", e);
             // 适当处理异常，例如记录日志
@@ -264,7 +259,6 @@ public class DingTalkDepartmentService {
         }
         return Optional.empty();
     }
-
 
     /**
      * 获取单个部门下的用户列表（处理分页）

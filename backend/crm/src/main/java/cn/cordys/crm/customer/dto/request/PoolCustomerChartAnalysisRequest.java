@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-10-23  13:40
+ * @author jianxing
  */
 @Data
 public class PoolCustomerChartAnalysisRequest extends ChartAnalysisRequest {

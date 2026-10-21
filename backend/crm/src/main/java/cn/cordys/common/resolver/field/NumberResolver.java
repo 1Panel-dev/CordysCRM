@@ -24,14 +24,18 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
         if (value != null && !(value instanceof Number)) {
             throwValidateException(numberField.getName());
         }
-        if (value == null) return;
+        if (value == null) {
+            return;
+        }
         try {
             BigDecimal number = new BigDecimal(value.toString()).stripTrailingZeros();
             if (checkIllegalDecimal(number)
                     || numberField.getMin() != null && number.compareTo(BigDecimal.valueOf(numberField.getMin())) < 0
                     || numberField.getMax() != null && number.compareTo(BigDecimal.valueOf(numberField.getMax())) > 0
                     || numberField.getDecimalPlaces() != null
-                    && number.scale() > (Boolean.TRUE.equals(numberField.getDecimalPlaces()) ? numberField.getPrecision() : 0)) {
+                            && number.scale() > (Boolean.TRUE.equals(numberField.getDecimalPlaces())
+                                    ? numberField.getPrecision()
+                                    : 0)) {
                 throwValidateException(numberField.getName());
             }
         } catch (NumberFormatException e) {
@@ -46,57 +50,58 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
 
     @Override
     public Object transformToValue(InputNumberField numberField, String value) {
-		if (isBlankOrNullStr(value)) {
-			return null;
-		}
-		BigDecimal actualDecimal = new BigDecimal(value).stripTrailingZeros();
-		if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
-			actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
-		}
-		String formatActualVal;
-		if (BooleanUtils.isTrue(numberField.getShowThousandsSeparator())) {
-			formatActualVal = InputNumberField.formatThousands(actualDecimal);
-		} else {
-			formatActualVal = actualDecimal.toPlainString();
-		}
-		return formatActualVal + (Strings.CI.equals(numberField.getNumberFormat(), "percent") ? "%" : "");
-	}
+        if (isBlankOrNullStr(value)) {
+            return null;
+        }
+        BigDecimal actualDecimal = new BigDecimal(value).stripTrailingZeros();
+        if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
+            actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
+        }
+        String formatActualVal;
+        if (BooleanUtils.isTrue(numberField.getShowThousandsSeparator())) {
+            formatActualVal = InputNumberField.formatThousands(actualDecimal);
+        } else {
+            formatActualVal = actualDecimal.toPlainString();
+        }
+        return formatActualVal + (Strings.CI.equals(numberField.getNumberFormat(), "percent") ? "%" : "");
+    }
 
-	@Override
+    @Override
     public Object textToValue(InputNumberField field, String text) {
         if (Strings.CS.equals(field.getNumberFormat(), PERCENT_FORMAT)) {
             text = text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);
         }
-		if (BooleanUtils.isTrue(field.getShowThousandsSeparator())) {
-			text = text.replace(",", StringUtils.EMPTY).replace("，", StringUtils.EMPTY);
-		}
+        if (BooleanUtils.isTrue(field.getShowThousandsSeparator())) {
+            text = text.replace(",", StringUtils.EMPTY).replace("，", StringUtils.EMPTY);
+        }
         try {
-			BigDecimal bd = new BigDecimal(text);
-			boolean illegal = checkIllegalDecimal(bd);
-			if (illegal) {
-				throw new FormulaParseException("数值超出范围, 整数不超过9位, 小数不超过4位;");
-			}
-			return bd;
+            BigDecimal bd = new BigDecimal(text);
+            boolean illegal = checkIllegalDecimal(bd);
+            if (illegal) {
+                throw new FormulaParseException("数值超出范围, 整数不超过9位, 小数不超过4位;");
+            }
+            return bd;
         } catch (NumberFormatException e) {
             throw new FormulaParseException("无法解析数值类型: " + text);
         }
     }
 
-	/**
-	 * 是否非法的数值范围 (整数不超过9位, 小数不超过4位)
-	 * @param value 数值
-	 * @return 是否非法
-	 */
-	private boolean checkIllegalDecimal(BigDecimal value) {
-		if (value == null) {
-			return false;
-		}
-		// 小数位
-		int scale = value.scale();
-		int precision = value.precision();
-		// 整数位
-		int integerDigits = precision - scale;
+    /**
+     * 是否非法的数值范围 (整数不超过9位, 小数不超过4位)
+     *
+     * @param value 数值
+     * @return 是否非法
+     */
+    private boolean checkIllegalDecimal(BigDecimal value) {
+        if (value == null) {
+            return false;
+        }
+        // 小数位
+        int scale = value.scale();
+        int precision = value.precision();
+        // 整数位
+        int integerDigits = precision - scale;
 
-		return integerDigits > 9 || scale > 4;
-	}
+        return integerDigits > 9 || scale > 4;
+    }
 }

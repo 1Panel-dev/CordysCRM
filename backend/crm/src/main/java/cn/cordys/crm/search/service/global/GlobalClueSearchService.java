@@ -57,7 +57,6 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
-
     @Override
     public Pager<List<GlobalClueResponse>> startSearchNoOption(BasePageRequest request, String orgId, String userId) {
         //获取查询关键字
@@ -73,7 +72,8 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //查询当前用户搜索配置
-        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.CLUE.getKey(), SearchModuleEnum.SEARCH_ADVANCED_CLUE);
+        List<UserSearchConfig> userSearchConfigs = getUserSearchConfigs(userId, orgId, FormKey.CLUE.getKey(),
+                SearchModuleEnum.SEARCH_ADVANCED_CLUE);
         //记住当前一共有多少字段，避免固定展示列与自由选择列字段重复
         Set<String> fieldIdSet = new HashSet<>();
         //记住选择的内置列,除自定义字段外，用户还会选择一些内置字段
@@ -84,7 +84,8 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
         // 2.用户有配置，使用用户配置的查询条件;
         // 3.用户当前模块没配置，直接返回;
         if (CollectionUtils.isNotEmpty(userSearchConfigs)) {
-            List<UserSearchConfig> clueSearchConfigs = userSearchConfigs.stream().filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE)).toList();
+            List<UserSearchConfig> clueSearchConfigs = userSearchConfigs.stream()
+                    .filter(t -> Strings.CI.equals(t.getModuleType(), SearchModuleEnum.SEARCH_ADVANCED_CLUE)).toList();
             if (CollectionUtils.isEmpty(clueSearchConfigs)) {
                 Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
                 return PageUtils.setPageInfo(page, List.of());
@@ -93,16 +94,30 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
                 //如果和固定展示列名重复不加入fieldIdSet
                 if (StringUtils.isBlank(userSearchConfig.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
-                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
+                } else if (!Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                        BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_OWNER.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
                     fieldIdSet.add(userSearchConfig.getFieldId());
                 }
-                if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey()) && !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_NAME.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) &&
-                        !Strings.CI.equals(userSearchConfig.getBusinessKey(), BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
+                if (StringUtils.isNotBlank(userSearchConfig.getBusinessKey())
+                        && !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_NAME.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_OWNER.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_PRODUCTS.getBusinessKey())
+                        &&
+                        !Strings.CI.equals(userSearchConfig.getBusinessKey(),
+                                BusinessModuleField.CLUE_CONTACT_PHONE.getBusinessKey())) {
                     internalKeyMap.put(userSearchConfig.getFieldId(), userSearchConfig.getBusinessKey());
                 }
 
@@ -110,7 +125,8 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             }
         } else {
             //设置默认查询属性
-            FilterCondition nameCondition = getFilterCondition("name", keyword, FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
+            FilterCondition nameCondition = getFilterCondition("name", keyword,
+                    FilterCondition.CombineConditionOperator.CONTAINS.toString(), FieldType.INPUT.toString());
             conditions.add(nameCondition);
             StringUtils.deleteWhitespace(keyword);
             List<String> phoneList = new ArrayList<>();
@@ -118,7 +134,8 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             for (String value : SearchPhoneEnum.VALUES) {
                 phoneList.add(value + keyword);
             }
-            FilterCondition phoneCondition = getFilterCondition("phone", phoneList, FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
+            FilterCondition phoneCondition = getFilterCondition("phone", phoneList,
+                    FilterCondition.CombineConditionOperator.IN.toString(), FieldType.DATA_SOURCE.toString());
             conditions.add(phoneCondition);
         }
         if (CollectionUtils.isEmpty(conditions)) {
@@ -135,13 +152,16 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             return PageUtils.setPageInfo(page, List.of());
         }
         //获取系统设置的脱敏字段
-        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId, SearchModuleEnum.SEARCH_ADVANCED_CLUE);
-        List<GlobalClueResponse> buildList = buildListData(globalClueResponses, orgId, userId, searchFieldMaskConfigs, fieldIdSet, internalKeyMap);
+        List<SearchFieldMaskConfig> searchFieldMaskConfigs = getSearchFieldMaskConfigs(orgId,
+                SearchModuleEnum.SEARCH_ADVANCED_CLUE);
+        List<GlobalClueResponse> buildList = buildListData(globalClueResponses, orgId, userId, searchFieldMaskConfigs,
+                fieldIdSet, internalKeyMap);
         return PageUtils.setPageInfo(page, buildList);
     }
 
-
-    public List<GlobalClueResponse> buildListData(List<GlobalClueResponse> list, String orgId, String userId, List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet, Map<String, String> internalKeyMap) {
+    public List<GlobalClueResponse> buildListData(List<GlobalClueResponse> list, String orgId, String userId,
+            List<SearchFieldMaskConfig> searchFieldMaskConfigs, Set<String> fieldIdSet,
+            Map<String, String> internalKeyMap) {
         List<String> clueIds = list.stream().map(GlobalClueResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> clueFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
@@ -166,19 +186,24 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
         Map<String, Clue> internalKeyValueMap = clues.stream().collect(Collectors.toMap(Clue::getId, t -> t));
         // 处理自定义字段选项数据
         ModuleFormConfigDTO clueFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
-        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream().collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
+        Map<String, SearchFieldMaskConfig> searchFieldMaskConfigMap = searchFieldMaskConfigs.stream()
+                .collect(Collectors.toMap(SearchFieldMaskConfig::getFieldId, t -> t));
         list.forEach(globalClueResponse -> {
             // 判断该数据是否有权限
-            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, globalClueResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, globalClueResponse.getOwner(),
+                    PermissionConstants.CLUE_MANAGEMENT_READ);
             // 处理自定义字段数据
             if (CollectionUtils.isNotEmpty(fieldIdSet)) {
-                List<BaseModuleFieldValue> returnOpportunityFields = getBaseModuleFieldValues(fieldIdSet, globalClueResponse.getId(), clueFiledMap, clueFormConfig, searchFieldMaskConfigMap, hasPermission);
+                List<BaseModuleFieldValue> returnOpportunityFields = getBaseModuleFieldValues(fieldIdSet,
+                        globalClueResponse.getId(), clueFiledMap, clueFormConfig, searchFieldMaskConfigMap,
+                        hasPermission);
 
                 globalClueResponse.setModuleFields(returnOpportunityFields);
             }
             //处理内置字段
             Clue clue = internalKeyValueMap.get(globalClueResponse.getId());
-            List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap, searchFieldMaskConfigMap, hasPermission, clue, Clue.class);
+            List<BaseModuleFieldValue> baseModuleFieldValues = buildInternalField(internalKeyMap,
+                    searchFieldMaskConfigMap, hasPermission, clue, Clue.class);
             List<BaseModuleFieldValue> moduleFields = globalClueResponse.getModuleFields();
             if (CollectionUtils.isEmpty(moduleFields)) {
                 globalClueResponse.setModuleFields(baseModuleFieldValues);
@@ -198,14 +223,18 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
             if (!hasPermission) {
                 searchFieldMaskConfigMap.forEach((fieldId, searchFieldMaskConfig) -> {
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "name")) {
-                        globalClueResponse.setName((String) getInputFieldValue(globalClueResponse.getName(), globalClueResponse.getName().length()));
+                        globalClueResponse.setName((String) getInputFieldValue(globalClueResponse.getName(),
+                                globalClueResponse.getName().length()));
                     }
                     if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "products")) {
-                        List<String> maskProductNames = productNames.stream().map(t -> (String) getInputFieldValue(t, t.length())).toList();
+                        List<String> maskProductNames = productNames.stream()
+                                .map(t -> (String) getInputFieldValue(t, t.length())).toList();
                         globalClueResponse.setProducts(maskProductNames);
                     }
-                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone") && StringUtils.isNotBlank(globalClueResponse.getPhone())) {
-                        globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(), globalClueResponse.getPhone().length()));
+                    if (Strings.CI.equals(searchFieldMaskConfig.getBusinessKey(), "phone")
+                            && StringUtils.isNotBlank(globalClueResponse.getPhone())) {
+                        globalClueResponse.setPhone((String) getPhoneFieldValue(globalClueResponse.getPhone(),
+                                globalClueResponse.getPhone().length()));
                     }
                 });
             }

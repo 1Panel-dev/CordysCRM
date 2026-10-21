@@ -26,8 +26,8 @@ public class ModuleFormCacheService {
 
     @Resource
     private ModuleFormService moduleFormService;
-	@Resource
-	private ModuleFieldService moduleFieldService;
+    @Resource
+    private ModuleFieldService moduleFieldService;
     @Resource
     private org.springframework.cache.CacheManager cacheManager;
 
@@ -36,13 +36,18 @@ public class ModuleFormCacheService {
         Runnable invalidate = () -> {
             for (String cacheName : List.of("form_cache", "field_cache")) {
                 org.springframework.cache.Cache cache = cacheManager.getCache(cacheName);
-                if (cache != null) cache.evict(orgId + ":" + formKey);
+                if (cache != null) {
+                    cache.evict(orgId + ":" + formKey);
+                }
             }
         };
         if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
             org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
                     new org.springframework.transaction.support.TransactionSynchronization() {
-                        @Override public void afterCommit() { invalidate.run(); }
+                        @Override
+                        public void afterCommit() {
+                            invalidate.run();
+                        }
                     });
         } else {
             invalidate.run();
@@ -54,7 +59,6 @@ public class ModuleFormCacheService {
      *
      * @param saveParam     保存参数
      * @param currentUserId 当前用户ID
-     *
      * @return 表单配置
      */
     @CachePut(value = "form_cache", key = "#currentOrgId + ':' + #saveParam.formKey", unless = "#result == null")
@@ -63,26 +67,25 @@ public class ModuleFormCacheService {
         return moduleFormService.save(saveParam, currentUserId, currentOrgId);
     }
 
-	/**
-	 * 保存表单配置并更新缓存
-	 *
-	 * @param saveParam     保存参数
-	 * @param currentUserId 当前用户ID
-	 *
-	 * @return 表单配置
-	 */
-	@CachePut(value = "form_cache", key = "#currentOrgId + ':' + #saveParam.formKey", unless = "#result == null")
-	@CacheEvict(value = "field_cache", key = "#currentOrgId + ':' + #saveParam.formKey")
-	public ModuleFormConfigDTO saveWithoutLog(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
-		return moduleFormService.saveWithoutLog(saveParam, currentUserId, currentOrgId);
-	}
+    /**
+     * 保存表单配置并更新缓存
+     *
+     * @param saveParam     保存参数
+     * @param currentUserId 当前用户ID
+     * @return 表单配置
+     */
+    @CachePut(value = "form_cache", key = "#currentOrgId + ':' + #saveParam.formKey", unless = "#result == null")
+    @CacheEvict(value = "field_cache", key = "#currentOrgId + ':' + #saveParam.formKey")
+    public ModuleFormConfigDTO saveWithoutLog(ModuleFormSaveRequest saveParam, String currentUserId,
+            String currentOrgId) {
+        return moduleFormService.saveWithoutLog(saveParam, currentUserId, currentOrgId);
+    }
 
     /**
      * 获取表单配置(缓存)
      *
      * @param formKey      表单Key
      * @param currentOrgId 当前组织ID
-     *
      * @return 表单配置
      */
     @Cacheable(value = "form_cache", key = "#currentOrgId + ':' + #formKey", unless = "#result == null")
@@ -95,11 +98,11 @@ public class ModuleFormCacheService {
      *
      * @param formKey        表单Key
      * @param organizationId 组织ID
-     *
      * @return 表单配置
      */
     public ModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
-        ModuleFormConfigDTO cached = Objects.requireNonNull(CommonBeanFactory.getBean(this.getClass())).getConfig(formKey, organizationId);
+        ModuleFormConfigDTO cached = Objects.requireNonNull(CommonBeanFactory.getBean(this.getClass()))
+                .getConfig(formKey, organizationId);
         // 业务化配置会改写引用字段，不能污染跨请求共享的缓存对象。
         ModuleFormConfigDTO config = JSON.parseObject(JSON.toJSONString(cached), ModuleFormConfigDTO.class);
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
@@ -108,19 +111,20 @@ public class ModuleFormCacheService {
         // 配置中持久化的是关联 ID，读取时以当前表单、字段名称刷新 Option 回显。
         moduleFormService.resolveDetailTabs(formKey, organizationId, config.getFormProp());
 
-		// 提前加载价格表子表格字段作为引用集合
-		List<BaseField> subFields = moduleFieldService.getSubFieldsBySourceType(FieldSourceType.PRICE.name());
-		Map<String, BaseField> refPriceSubFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
+        // 提前加载价格表子表格字段作为引用集合
+        List<BaseField> subFields = moduleFieldService.getSubFieldsBySourceType(FieldSourceType.PRICE.name());
+        Map<String, BaseField> refPriceSubFieldMap = subFields.stream()
+                .collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
 
-		// 处理字段信息
- 		List<BaseField> flattenFields = moduleFormService.flattenSourceRefFields(config.getFields(), refPriceSubFieldMap);
-		businessModuleFormConfig.setFields(flattenFields.stream()
-				.peek(moduleFormService::setFieldRefOption)
-				.peek(moduleFormService::setFieldBusinessParam)
-				.peek(moduleFormService::freshInitialOptions)
-				.peek(field -> moduleFormService.reloadPropOfSubRefFields(field, refPriceSubFieldMap))
-				.collect(Collectors.toList())
-		);
+        // 处理字段信息
+        List<BaseField> flattenFields = moduleFormService.flattenSourceRefFields(config.getFields(),
+                refPriceSubFieldMap);
+        businessModuleFormConfig.setFields(flattenFields.stream()
+                .peek(moduleFormService::setFieldRefOption)
+                .peek(moduleFormService::setFieldBusinessParam)
+                .peek(moduleFormService::freshInitialOptions)
+                .peek(field -> moduleFormService.reloadPropOfSubRefFields(field, refPriceSubFieldMap))
+                .collect(Collectors.toList()));
         return businessModuleFormConfig;
     }
 }

@@ -25,7 +25,6 @@ public class OrganizationSettingsControllerTests extends BaseTest {
     @Resource
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
 
-
     @Test
     @Order(1)
     public void testAdd() throws Exception {
@@ -34,14 +33,15 @@ public class OrganizationSettingsControllerTests extends BaseTest {
         emailDTO.setPort("25");
         emailDTO.setPassword("test");
         this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
-
     }
 
     @Test
     @Order(2)
     public void testEdit() throws Exception {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(DEFAULT_ORGANIZATION_ID, OrganizationConfigConstants.ConfigType.EMAIL.name());
-        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper
+                .getOrganizationConfig(DEFAULT_ORGANIZATION_ID, OrganizationConfigConstants.ConfigType.EMAIL.name());
+        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper
+                .getOrganizationConfigDetail(organizationConfig.getId());
         Assertions.assertNotNull(organizationConfigDetail);
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("smtp.163.com");
@@ -53,7 +53,6 @@ public class OrganizationSettingsControllerTests extends BaseTest {
         emailDTO.setSsl("true");
         emailDTO.setTsl("true");
         this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
-
     }
 
     //获取邮件接口的测试
@@ -62,7 +61,6 @@ public class OrganizationSettingsControllerTests extends BaseTest {
     public void testGetEmail() throws Exception {
         this.requestGet("/organization/settings/email").andExpect(status().isOk());
     }
-
 
     @Test
     @Order(5)
@@ -79,5 +77,4 @@ public class OrganizationSettingsControllerTests extends BaseTest {
         this.requestPost("/organization/settings/email/test", emailDTO, status().is5xxServerError());
     }
 
-
-} 
+}

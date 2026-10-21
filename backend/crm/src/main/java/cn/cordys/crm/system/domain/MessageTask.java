@@ -35,4 +35,3 @@ public class MessageTask extends BaseModel {
     @Schema(description = "消息模版")
     private byte[] template;
 }
-

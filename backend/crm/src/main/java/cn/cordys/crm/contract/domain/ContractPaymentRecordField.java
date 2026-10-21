@@ -6,6 +6,7 @@ import lombok.Data;
 
 /**
  * 合同回款记录自定义属性表
+ *
  * @author song-cc-rock
  */
 

@@ -11,7 +11,8 @@ import java.util.Map;
 
 public class ProductUtils {
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(ProductListResponse data, Map<String, List<OptionDTO>> optionMap) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(ProductListResponse data,
+            Map<String, List<OptionDTO>> optionMap) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());

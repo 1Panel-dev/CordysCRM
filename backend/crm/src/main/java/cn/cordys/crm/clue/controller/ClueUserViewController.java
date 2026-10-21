@@ -1,6 +1,5 @@
 package cn.cordys.crm.clue.controller;
 
-
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.request.PosRequest;
@@ -30,14 +29,13 @@ public class ClueUserViewController {
     @Resource
     private UserViewService userViewService;
 
-
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "添加线索视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CLUE.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                UserViewResourceType.CLUE.name());
     }
-
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
@@ -45,7 +43,6 @@ public class ClueUserViewController {
     public UserView update(@Validated @RequestBody UserViewUpdateRequest request) {
         return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
@@ -58,17 +55,17 @@ public class ClueUserViewController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
-        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.CLUE.getKey());
+        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                FormKey.CLUE.getKey());
     }
-
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索视图列表")
     public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.CLUE.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.list(UserViewResourceType.CLUE.name(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/fixed/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
@@ -83,7 +80,6 @@ public class ClueUserViewController {
     public void editPos(@Validated @RequestBody PosRequest request) {
         userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CLUE.name());
     }
-
 
     @GetMapping("/enable/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)

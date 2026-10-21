@@ -96,17 +96,17 @@ public enum FieldType {
      * 行业
      */
     INDUSTRY,
-	/**
-	 * 公式
-	 */
-	FORMULA,
-	/**
-	 * 统计
-	 */
-	STATISTIC,
-	/**
-	 * 子表-产品, 子表-价格
-	 */
-	SUB_PRODUCT,
-	SUB_PRICE
+    /**
+     * 公式
+     */
+    FORMULA,
+    /**
+     * 统计
+     */
+    STATISTIC,
+    /**
+     * 子表-产品, 子表-价格
+     */
+    SUB_PRODUCT,
+    SUB_PRICE
 }

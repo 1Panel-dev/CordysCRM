@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.notice;
 
-
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.context.OrganizationContext;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-
 @Aspect
 @Component
 @Slf4j
@@ -42,7 +40,8 @@ public class SendNoticeAspect {
     private final static String UPDATE_TIME = "updateTime";
     private final static String UPDATE_USER = "updateUser";
     private final ExpressionParser parser = new SpelExpressionParser();
-    private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
+    private final StandardReflectionParameterNameDiscoverer discoverer =
+            new StandardReflectionParameterNameDiscoverer();
     private final ThreadLocal<String> source = new ThreadLocal<>();
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
@@ -153,17 +152,15 @@ public class SendNoticeAspect {
             var object = JSON.parseMap(JSON.toJSONString(retValue));
             if (MapUtils.isNotEmpty(object)) {
                 List.of(ID, CREATE_USER, CREATE_TIME, UPDATE_TIME, UPDATE_USER)
-                        .forEach(key ->
-                                resources.forEach(resource -> {
-                                    if (object.containsKey(key) && resource.get(key) == null) {
-                                        resource.put(key, object.get(key));
-                                    }
-                                })
-                        );
+                        .forEach(key -> resources.forEach(resource -> {
+                            if (object.containsKey(key) && resource.get(key) == null) {
+                                resource.put(key, object.get(key));
+                            }
+                        }));
             }
 
-            commonNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-
+            commonNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(),
+                    OrganizationContext.getOrganizationId());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

@@ -11,10 +11,11 @@ import java.math.RoundingMode;
 
 /**
  * 统计字段解析器。
- *
- * <p>统计字段由后端聚合计算后持久化, 前端不可直接编辑, 因此保存表单数据时
+ * <p>
+ * 统计字段由后端聚合计算后持久化, 前端不可直接编辑, 因此保存表单数据时
  * 不校验必填与取值范围; 展示时按 {@code resultFormat / decimalPlaces / precision /
- * showThousandsSeparator} 格式化, 与数值、公式字段保持一致。</p>
+ * showThousandsSeparator} 格式化, 与数值、公式字段保持一致。
+ * </p>
  */
 public class StatisticResolver extends AbstractModuleFieldResolver<StatisticField> {
 
@@ -52,7 +53,9 @@ public class StatisticResolver extends AbstractModuleFieldResolver<StatisticFiel
             } else {
                 formatActualVal = actualDecimal.toPlainString();
             }
-            return formatActualVal + (Strings.CI.equals(statisticField.getNumberFormat(), PERCENT_FORMAT) ? PERCENT_SUFFIX : StringUtils.EMPTY);
+            return formatActualVal
+                    + (Strings.CI.equals(statisticField.getNumberFormat(), PERCENT_FORMAT) ? PERCENT_SUFFIX
+                            : StringUtils.EMPTY);
         } catch (NumberFormatException e) {
             return value;
         }

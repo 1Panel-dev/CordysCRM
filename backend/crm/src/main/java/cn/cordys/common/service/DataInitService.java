@@ -1,6 +1,5 @@
 package cn.cordys.common.service;
 
-
 import cn.cordys.common.util.OnceInterface;
 import cn.cordys.common.util.OnceInterfaceAction;
 import cn.cordys.crm.clue.service.ClueService;
@@ -26,7 +25,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-01-03 12:01:54
  */
 @Service
 @Slf4j
@@ -45,14 +43,14 @@ public class DataInitService {
     private ModuleFieldService moduleFieldService;
     @Resource
     private ClueService clueService;
-	@Resource
-	private ContractService contractService;
-	@Resource
-	private ContractInvoiceService contractInvoiceService;
-	@Resource
-	private OpportunityQuotationService opportunityQuotationService;
-	@Resource
-	private OrderService orderService;
+    @Resource
+    private ContractService contractService;
+    @Resource
+    private ContractInvoiceService contractInvoiceService;
+    @Resource
+    private OpportunityQuotationService opportunityQuotationService;
+    @Resource
+    private OrderService orderService;
 
     public void initOneTime() {
         RLock lock = redisson.getLock("init_data_lock");
@@ -80,19 +78,19 @@ public class DataInitService {
             initOneTime(moduleFieldExtService::modifySubProductSumColumn, "modify.quotation.product.sum.column");
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.6.0");
             initOneTime(moduleFieldService::initOrderFields, "init.order.fields");
-			initOneTime(moduleFormService::initContactFormLinkRules, "init.contact.form.link.rules");
-			initOneTime(moduleFormService::initContractToOrderLinkScenario, "init.order.form.link.rules");
+            initOneTime(moduleFormService::initContactFormLinkRules, "init.contact.form.link.rules");
+            initOneTime(moduleFormService::initContractToOrderLinkScenario, "init.order.form.link.rules");
             initOneTime(moduleFormService::initOrderFormScenarioProp, "init.order.form.scenario");
-			initOneTime(moduleFieldExtService::modifyInternalSubSumColumn, "modify.internal.sum.column");
-			initOneTime(moduleFieldExtService::modifyInternalSubCalcFormula, "modify.internal.calc.formula");
-			initOneTime(moduleFieldExtService::refreshFormulaOldReferencedId, "refresh.formula.old.referenced.id");
-			initOneTime(contractService::handleOldApprovalData, "handler.contract.approval.status");
-			initOneTime(contractInvoiceService::handleOldApprovalData, "handler.contract.invoice.approval.status");
-			initOneTime(opportunityQuotationService::handleOldApprovalData, "handler.quotation.approval.status");
-			initOneTime(orderService::handleOldApprovalData, "handler.order.approval.status");
-			// 更新标记以补齐新增系统标签，新环境仍只执行一次通用初始化。
-			initOneTime(moduleFormService::initInternalDetailTabs, "init.clue.transition.detail.tab");
-		} finally {
+            initOneTime(moduleFieldExtService::modifyInternalSubSumColumn, "modify.internal.sum.column");
+            initOneTime(moduleFieldExtService::modifyInternalSubCalcFormula, "modify.internal.calc.formula");
+            initOneTime(moduleFieldExtService::refreshFormulaOldReferencedId, "refresh.formula.old.referenced.id");
+            initOneTime(contractService::handleOldApprovalData, "handler.contract.approval.status");
+            initOneTime(contractInvoiceService::handleOldApprovalData, "handler.contract.invoice.approval.status");
+            initOneTime(opportunityQuotationService::handleOldApprovalData, "handler.quotation.approval.status");
+            initOneTime(orderService::handleOldApprovalData, "handler.order.approval.status");
+            // 更新标记以补齐新增系统标签，新环境仍只执行一次通用初始化。
+            initOneTime(moduleFormService::initInternalDetailTabs, "init.clue.transition.detail.tab");
+        } finally {
             lock.unlock();
         }
     }
@@ -114,10 +112,10 @@ public class DataInitService {
     /**
      * 执行单次接口 (带参数)
      *
+     * @param <P>      参数类型
      * @param onceFunc 执行函数
      * @param param    参数
      * @param key      执行Key
-     * @param <P>      参数类型
      */
     private <P> void initOneTime(OnceInterfaceAction<P> onceFunc, P param, final String key) {
         try {

@@ -24,7 +24,7 @@ public class InputNumberField extends BaseField {
     @Schema(description = "最大值范围")
     private Integer max;
 
-    @Schema(description = "格式", allowableValues = {"percent", "number", "currency"})
+    @Schema(description = "格式", allowableValues = { "percent", "number", "currency" })
     private String numberFormat;
 
     @Schema(description = "保留小数点位数")
@@ -36,48 +36,49 @@ public class InputNumberField extends BaseField {
     @Schema(description = "显示千分位")
     private Boolean showThousandsSeparator;
 
-	public static String formatThousands(BigDecimal num) {
-		if (num == null) {
-			return null;
-		}
-		String plain = num.toPlainString();
-		int dotIndex = plain.indexOf('.');
-		String integerPart;
-		String decimalPart = "";
-		if (dotIndex >= 0) {
-			integerPart = plain.substring(0, dotIndex);
-			decimalPart = plain.substring(dotIndex);
-		} else {
-			integerPart = plain;
-		}
-		DecimalFormat df = new DecimalFormat("#,##0");
-		return df.format(new BigDecimal(integerPart)) + decimalPart;
-	}
+    public static String formatThousands(BigDecimal num) {
+        if (num == null) {
+            return null;
+        }
+        String plain = num.toPlainString();
+        int dotIndex = plain.indexOf('.');
+        String integerPart;
+        String decimalPart = "";
+        if (dotIndex >= 0) {
+            integerPart = plain.substring(0, dotIndex);
+            decimalPart = plain.substring(dotIndex);
+        } else {
+            integerPart = plain;
+        }
+        DecimalFormat df = new DecimalFormat("#,##0");
+        return df.format(new BigDecimal(integerPart)) + decimalPart;
+    }
 
-	/**
-	 * 格式化数字
-	 * @param num 数字
-	 * @param precision 小数点位数
-	 * @param showThousandsSeparator 千分位
-	 * @param percent 百分比
-	 * @return 格式化后的字符串
-	 */
-	public static String formatNumber(BigDecimal num, int precision, boolean showThousandsSeparator, boolean percent) {
-		if (num == null) {
-			return null;
-		}
-		// 小数点位数
-		if (precision > 0) {
-			num = num.setScale(precision, RoundingMode.HALF_UP);
-		}
-		// 千分位
-		String formatActualVal;
-		if (showThousandsSeparator) {
-			formatActualVal = formatThousands(num);
-		} else {
-			formatActualVal = num.toPlainString();
-		}
-		// 百分比
-		return formatActualVal + (percent ? "%" : "");
-	}
+    /**
+     * 格式化数字
+     *
+     * @param num                    数字
+     * @param precision              小数点位数
+     * @param showThousandsSeparator 千分位
+     * @param percent                百分比
+     * @return 格式化后的字符串
+     */
+    public static String formatNumber(BigDecimal num, int precision, boolean showThousandsSeparator, boolean percent) {
+        if (num == null) {
+            return null;
+        }
+        // 小数点位数
+        if (precision > 0) {
+            num = num.setScale(precision, RoundingMode.HALF_UP);
+        }
+        // 千分位
+        String formatActualVal;
+        if (showThousandsSeparator) {
+            formatActualVal = formatThousands(num);
+        } else {
+            formatActualVal = num.toPlainString();
+        }
+        // 百分比
+        return formatActualVal + (percent ? "%" : "");
+    }
 }

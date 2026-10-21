@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-
 @Getter
 @Setter
 public class BusinessTitleExcelData {
@@ -89,7 +88,6 @@ public class BusinessTitleExcelData {
      */
     @ExcelIgnore
     private String remark;
-
 
     public List<List<String>> getHead() {
         return new ArrayList<>();

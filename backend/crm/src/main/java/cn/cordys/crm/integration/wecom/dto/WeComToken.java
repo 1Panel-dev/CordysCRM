@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class WeComToken extends WeComResponseEntity {
 
-
     /**
      * 获取到的凭证，最长为512字节
      */

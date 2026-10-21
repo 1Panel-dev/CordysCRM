@@ -39,7 +39,9 @@ public class SystemService {
     }
 
     private static String baseVersion(String v) {
-        if (StringUtils.isBlank(v)) return "";
+        if (StringUtils.isBlank(v)) {
+            return "";
+        }
         String core = StringUtils.substringBefore(v.trim(), "-");
         core = StringUtils.substringBefore(core, "+");
         if (core.startsWith("v") || core.startsWith("V")) {
@@ -50,11 +52,17 @@ public class SystemService {
 
     private static boolean isNumericSemver(String v) {
         String core = baseVersion(v);
-        if (StringUtils.isBlank(core)) return false;
+        if (StringUtils.isBlank(core)) {
+            return false;
+        }
         String[] parts = StringUtils.split(core, '.');
-        if (parts == null || parts.length == 0) return false;
+        if (parts == null || parts.length == 0) {
+            return false;
+        }
         for (String p : parts) {
-            if (!StringUtils.isNumeric(p)) return false;
+            if (!StringUtils.isNumeric(p)) {
+                return false;
+            }
         }
         return true;
     }
@@ -69,7 +77,9 @@ public class SystemService {
             int ai = i < al ? safeParseInt(a[i]) : 0;
             int bi = i < bl ? safeParseInt(b[i]) : 0;
             int cmp = Integer.compare(ai, bi);
-            if (cmp != 0) return cmp;
+            if (cmp != 0) {
+                return cmp;
+            }
         }
         return 0;
     }
@@ -95,8 +105,7 @@ public class SystemService {
                     "currentVersion", currentBase,
                     "majorVersion", "v1",
                     "edition", edition,
-                    "product", PRODUCT
-            ));
+                    "product", PRODUCT));
         } catch (Exception e) {
             log.info("检查版本信息失败: {}", e.getMessage());
         }
@@ -122,14 +131,16 @@ public class SystemService {
 
     /**
      * 清理表单相关缓存
-     * <p>清理表单缓存和表结构缓存，确保应用使用最新的表单配置和结构</p>
+     * <p>
+     * 清理表单缓存和表结构缓存，确保应用使用最新的表单配置和结构
+     * </p>
      */
     public void clearFormCache() {
         if (cacheManager == null) {
             log.info("CacheManager 未初始化，跳过清理。");
             return;
         }
-        String[] cacheNames = {CACHE_FORM, CACHE_FIELD, CACHE_TABLE_SCHEMA, CACHE_COPYRIGHT, PERMISSION_CACHE};
+        String[] cacheNames = { CACHE_FORM, CACHE_FIELD, CACHE_TABLE_SCHEMA, CACHE_COPYRIGHT, PERMISSION_CACHE };
         for (String cacheName : cacheNames) {
             try {
                 Cache cache = cacheManager.getCache(cacheName);

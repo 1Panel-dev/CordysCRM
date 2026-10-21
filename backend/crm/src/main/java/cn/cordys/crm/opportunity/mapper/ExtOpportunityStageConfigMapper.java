@@ -10,9 +10,7 @@ import java.util.List;
 
 public interface ExtOpportunityStageConfigMapper {
 
-
     int countStageConfig(@Param("orgId") String orgId);
-
 
     void moveUpStageConfig(@Param("start") Long start, @Param("orgId") String orgId, @Param("pos") Long pos);
 
@@ -26,11 +24,13 @@ public interface ExtOpportunityStageConfigMapper {
 
     List<OpportunityStageConfig> getAllStageConfigList();
 
-    void moveUp(@Param("start") Long start, @Param("end") Long end, @Param("orgId") String orgId, @Param("defaultPos") Long defaultPos);
+    void moveUp(@Param("start") Long start, @Param("end") Long end, @Param("orgId") String orgId,
+            @Param("defaultPos") Long defaultPos);
 
-    void moveDown(@Param("start") Long start, @Param("end") Long end, @Param("orgId") String orgId, @Param("defaultPos") Long defaultPos);
+    void moveDown(@Param("start") Long start, @Param("end") Long end, @Param("orgId") String orgId,
+            @Param("defaultPos") Long defaultPos);
 
     void updatePos(@Param("id") String id, @Param("pos") Long pos);
 
-    int countByType(@Param("type") String type,@Param("orgId") String orgId);
+    int countByType(@Param("type") String type, @Param("orgId") String orgId);
 }

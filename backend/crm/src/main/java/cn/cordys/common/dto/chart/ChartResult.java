@@ -3,8 +3,7 @@ package cn.cordys.common.dto.chart;
 import lombok.Data;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-10-15  11:40
+ * @author jianxing
  */
 @Data
 public class ChartResult {

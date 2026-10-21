@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 @Data
 @Table(name = "agent_collection")
 public class AgentCollection extends BaseModel {

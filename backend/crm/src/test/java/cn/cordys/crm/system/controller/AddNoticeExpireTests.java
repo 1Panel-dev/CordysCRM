@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
@@ -55,7 +54,6 @@ public class AddNoticeExpireTests {
 
     @Resource
     private BaseMapper<OrganizationUser> organizationUserBaseMapper;
-
 
     @Resource
     private ExtNotificationMapper extNotificationMapper;
@@ -235,7 +233,6 @@ public class AddNoticeExpireTests {
         organizationUser.setUpdateUser("admin");
         organizationUser.setUpdateTime(System.currentTimeMillis());
         organizationUserBaseMapper.insert(organizationUser);
-
     }
 
     @Test
@@ -258,6 +255,5 @@ public class AddNoticeExpireTests {
         notification.setResourceType("CONTRACT");
         notifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertTrue(CollectionUtils.isNotEmpty(notifications));
-
     }
 }

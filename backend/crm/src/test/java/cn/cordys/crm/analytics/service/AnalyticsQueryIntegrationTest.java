@@ -25,9 +25,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class AnalyticsQueryIntegrationTest extends BaseTest {
     private static final String ORG = "analytics-test-org";
-    @Resource private AnalyticsAccessService accessService;
-    @Resource private AnalyticsQueryMapper queryMapper;
-    @Resource private DataSource dataSource;
+    @Resource
+    private AnalyticsAccessService accessService;
+    @Resource
+    private AnalyticsQueryMapper queryMapper;
+    @Resource
+    private DataSource dataSource;
 
     @Test
     void everyModuleAggregatesAgainstItsRealListAndFieldTable() {
@@ -53,7 +56,8 @@ class AnalyticsQueryIntegrationTest extends BaseTest {
         // 默认月份分组不依赖数据库命名时区表；缺失时区表曾导致模型改为逐月反复查询。
         assertEquals("+08:00", request.getTimezone());
         request.setDimensions(List.of(dimension("createTime", Granularity.MONTH)));
-        request.setMetrics(List.of(metric(Aggregate.COUNT, null, "count"), metric(Aggregate.SUM, "amount-field", "amount"),
+        request.setMetrics(List.of(metric(Aggregate.COUNT, null, "count"),
+                metric(Aggregate.SUM, "amount-field", "amount"),
                 metric(Aggregate.AVG, "amount-field", "average"), metric(Aggregate.COUNT, "amount-field", "filled")));
         request.setLimit(1);
         var order = new OrderBy();
@@ -135,7 +139,8 @@ class AnalyticsQueryIntegrationTest extends BaseTest {
         var plan = AnalyticsSqlBuilder.compile(source, catalog(), request);
         for (Number number : List.of(10000000.0, new BigDecimal("1E+7"), new BigDecimal("1E-4"))) {
             resolver.validate(field, number);
-            jdbc.update("update product_field set field_value = ? where id = 'analytics-f1'", resolver.convertToString(field, number));
+            jdbc.update("update product_field set field_value = ? where id = 'analytics-f1'",
+                    resolver.convertToString(field, number));
             var row = queryMapper.query(plan).getFirst();
             assertNumber(new BigDecimal(number.toString()).add(new BigDecimal("50.51")).toPlainString(), row.get("m1"));
             assertNumber("0", row.get("_invalid_total"));
@@ -143,7 +148,8 @@ class AnalyticsQueryIntegrationTest extends BaseTest {
         for (String value : List.of("1e-20", "10e-21", "-1.25E+30", "0.1e45",
                 "1.2345678901234567890123E+30", "12345678901234567890123456789012345678901234567890e-5")) {
             jdbc.update("update product_field set field_value = ? where id = 'analytics-f1'", value);
-            assertNumber(new BigDecimal(value).add(new BigDecimal("50.51")).toPlainString(), queryMapper.query(plan).getFirst().get("m1"));
+            assertNumber(new BigDecimal(value).add(new BigDecimal("50.51")).toPlainString(),
+                    queryMapper.query(plan).getFirst().get("m1"));
         }
         for (String value : List.of("1e-21", "1e45", "1e999", "1e+", "NaN")) {
             jdbc.update("update product_field set field_value = ? where id = 'analytics-f1'", value);
@@ -157,18 +163,24 @@ class AnalyticsQueryIntegrationTest extends BaseTest {
         var relation = field(new DatasourceMultipleField(), "refs", "DATA_SOURCE_MULTIPLE", null);
         relation.setDataSourceType("PRODUCT");
         var catalog = AnalyticsSchemaService.catalog("product", List.of(relation), Map.of());
-        jdbc.update("insert into product_field_blob(id,resource_id,field_id,field_value) values ('refs','analytics-p1','refs','[\"analytics-p1\",\"analytics-p2\"]')");
+        jdbc.update(
+                "insert into product_field_blob(id,resource_id,field_id,field_value) values ('refs','analytics-p1','refs','[\"analytics-p1\",\"analytics-p2\"]')");
         var source = scopedAccess("product", "no-hidden-product");
         var related = scopedAccess("product", "analytics-p2");
-        var request = request(); request.setFormKey("product"); request.setRelationField("refs");
+        var request = request();
+        request.setFormKey("product");
+        request.setRelationField("refs");
         request.setMetrics(List.of(metric(Aggregate.COUNT, null, "count")));
-        var condition = new Condition(); condition.setField("refs"); request.setConditions(List.of(condition));
-        for (Operator operator : List.of(Operator.EQUALS, Operator.IN, Operator.NOT_EQUALS, Operator.NOT_IN, Operator.EMPTY, Operator.NOT_EMPTY)) {
+        var condition = new Condition();
+        condition.setField("refs");
+        request.setConditions(List.of(condition));
+        for (Operator operator : List.of(Operator.EQUALS, Operator.IN, Operator.NOT_EQUALS, Operator.NOT_IN,
+                Operator.EMPTY, Operator.NOT_EMPTY)) {
             condition.setOperator(operator);
             condition.setValue(switch (operator) {
-                case EMPTY, NOT_EMPTY -> null;
-                case IN, NOT_IN -> List.of("analytics-p2");
-                default -> "analytics-p2";
+            case EMPTY, NOT_EMPTY -> null;
+            case IN, NOT_IN -> List.of("analytics-p2");
+            default -> "analytics-p2";
             });
             boolean matches = List.of(Operator.NOT_EQUALS, Operator.NOT_IN, Operator.NOT_EMPTY).contains(operator);
             var row = queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request, related)).getFirst();
@@ -179,75 +191,104 @@ class AnalyticsQueryIntegrationTest extends BaseTest {
             assertNumber(matches ? "1" : "0", group.get("_groups"));
             request.setDimensions(List.of());
         }
-        condition.setOperator(Operator.IN); condition.setValue(List.of("analytics-p1"));
-        assertNumber("1", queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request, related)).getFirst().get("m0"));
+        condition.setOperator(Operator.IN);
+        condition.setValue(List.of("analytics-p1"));
+        assertNumber("1",
+                queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request, related)).getFirst().get("m0"));
     }
 
     @Test
     void subtableRowsMultiValuesAndBothRelationScopesAggregateExactly() {
         var jdbc = seed();
         for (String id : List.of("analytics-order", "hidden-order", "foreign-order")) {
-            jdbc.update("insert into sales_order(id,number,name,stage,approval_status,organization_id,create_time,update_time,create_user,update_user,amount) values (?,?,?,'PENDING','NONE',?,0,0,'test','test',999)",
+            jdbc.update(
+                    "insert into sales_order(id,number,name,stage,approval_status,organization_id,create_time,update_time,create_user,update_user,amount) values (?,?,?,'PENDING','NONE',?,0,0,'test','test',999)",
                     id, id, "test", id.equals("foreign-order") ? "foreign-org" : ORG);
             for (int i = 1; i <= 2; i++) {
-                jdbc.update("insert into sales_order_field(id,resource_id,field_id,field_value,ref_sub_id,row_id) values (?,?,?,?,'items',?)",
+                jdbc.update(
+                        "insert into sales_order_field(id,resource_id,field_id,field_value,ref_sub_id,row_id) values (?,?,?,?,'items',?)",
                         id + "p" + i, id, "productId", "analytics-p" + i, "" + i);
-                jdbc.update("insert into sales_order_field(id,resource_id,field_id,field_value,ref_sub_id,row_id) values (?,?,?,?,'items',?)",
+                jdbc.update(
+                        "insert into sales_order_field(id,resource_id,field_id,field_value,ref_sub_id,row_id) values (?,?,?,?,'items',?)",
                         id + "a" + i, id, "line-amount", "" + (10 * i), "" + i);
             }
         }
-        jdbc.update("insert into sales_order_field_blob(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('tag1','analytics-order','tags','[\"a\",\"a\",\"b\"]','items','1')");
-        jdbc.update("insert into sales_order_field_blob(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('tag2','analytics-order','tags','[\"b\",\"c\"]','items','2')");
-        jdbc.update("insert into sales_order_field_blob(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('blob-only','analytics-order','tags','[]','items','3')");
-        jdbc.update("insert into sales_order_field(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('empty-line','analytics-order','id','row4','items','4')");
+        jdbc.update(
+                "insert into sales_order_field_blob(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('tag1','analytics-order','tags','[\"a\",\"a\",\"b\"]','items','1')");
+        jdbc.update(
+                "insert into sales_order_field_blob(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('tag2','analytics-order','tags','[\"b\",\"c\"]','items','2')");
+        jdbc.update(
+                "insert into sales_order_field_blob(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('blob-only','analytics-order','tags','[]','items','3')");
+        jdbc.update(
+                "insert into sales_order_field(id,resource_id,field_id,field_value,ref_sub_id,row_id) values ('empty-line','analytics-order','id','row4','items','4')");
         var source = scopedAccess("order", "hidden-order");
         var related = scopedAccess("product", "analytics-p2");
         var catalog = lineCatalog().dataset("items");
-        var request = request(); request.setFormKey("order"); request.setSubTableFieldId("items");
-        request.setMetrics(List.of(metric(Aggregate.COUNT, null, "count"), metric(Aggregate.SUM, "line.line-amount", "amount")));
+        var request = request();
+        request.setFormKey("order");
+        request.setSubTableFieldId("items");
+        request.setMetrics(
+                List.of(metric(Aggregate.COUNT, null, "count"), metric(Aggregate.SUM, "line.line-amount", "amount")));
         var all = queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request)).getFirst();
-        assertNumber("4", all.get("m0")); assertNumber("30", all.get("m1"));
-        assertNumber("1", all.get("_matched")); assertNumber("4", all.get("_matched_rows"));
+        assertNumber("4", all.get("m0"));
+        assertNumber("30", all.get("m1"));
+        assertNumber("1", all.get("_matched"));
+        assertNumber("4", all.get("_matched_rows"));
         request.setRelationField("line.productId");
         var visible = queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request, related)).getFirst();
-        assertNumber("1", visible.get("m0")); assertNumber("10", visible.get("m1"));
+        assertNumber("1", visible.get("m0"));
+        assertNumber("10", visible.get("m1"));
         request.setRelationField(null);
         request.setDimensions(List.of(dimension("line.tags", Granularity.RAW)));
         var groups = queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request));
         assertEquals(4, groups.size());
         var b = groups.stream().filter(row -> "b".equals(row.get("d0"))).findFirst().orElseThrow();
-        assertNumber("2", b.get("m0")); assertNumber("30", b.get("m1"));
+        assertNumber("2", b.get("m0"));
+        assertNumber("30", b.get("m1"));
         assertNumber("4", b.get("_matched_rows"));
-        var condition = new Condition(); condition.setField("line.tags"); condition.setOperator(Operator.NOT_IN); condition.setValue(List.of("b"));
+        var condition = new Condition();
+        condition.setField("line.tags");
+        condition.setOperator(Operator.NOT_IN);
+        condition.setValue(List.of("b"));
         request.setConditions(List.of(condition));
         var emptyTags = queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request));
-        assertEquals(1, emptyTags.size()); assertNull(emptyTags.getFirst().get("d0"));
+        assertEquals(1, emptyTags.size());
+        assertNull(emptyTags.getFirst().get("d0"));
         assertNumber("2", emptyTags.getFirst().get("m0"));
         request.setConditions(List.of());
         jdbc.update("update sales_order_field_blob set field_value = 'invalid' where id = 'tag1'");
-        assertNumber("1", queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request)).getFirst().get("_invalid_total"));
+        assertNumber("1", queryMapper.query(AnalyticsSqlBuilder.compile(source, catalog, request)).getFirst()
+                .get("_invalid_total"));
     }
 
     private static AnalyticsAccessService.Access scopedAccess(String key, String hidden) {
         var config = new org.apache.ibatis.session.Configuration();
         var source = AnalyticsAccessService.SOURCES.get(key);
-        var mappings = List.of(new org.apache.ibatis.mapping.ParameterMapping.Builder(config, "org", String.class).build(),
+        var mappings = List.of(
+                new org.apache.ibatis.mapping.ParameterMapping.Builder(config, "org", String.class).build(),
                 new org.apache.ibatis.mapping.ParameterMapping.Builder(config, "hidden", String.class).build());
         var statement = new org.apache.ibatis.mapping.MappedStatement.Builder(config, "visible." + key,
                 new org.apache.ibatis.builder.StaticSqlSource(config, "select id from `" + source.table()
-                        + "` where organization_id = ? and id <> ?", mappings), org.apache.ibatis.mapping.SqlCommandType.SELECT).build();
-        return new AnalyticsAccessService.Access(source, statement, statement.getBoundSql(Map.of("org", ORG, "hidden", hidden)),
-                false, ORG, new cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse.Scope("ALL", "SELF", null, "test"));
+                        + "` where organization_id = ? and id <> ?", mappings),
+                org.apache.ibatis.mapping.SqlCommandType.SELECT).build();
+        return new AnalyticsAccessService.Access(source, statement,
+                statement.getBoundSql(Map.of("org", ORG, "hidden", hidden)),
+                false, ORG,
+                new cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse.Scope("ALL", "SELF", null, "test"));
     }
 
     private JdbcTemplate seed() {
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
         for (int i = 1; i <= 5; i++) {
-            jdbc.update("insert into product(id,name,price,status,organization_id,create_time,update_time,create_user,update_user,pos) values (?,?,0,'ON_SHELF',?,?,0,'test','test',0)",
+            jdbc.update(
+                    "insert into product(id,name,price,status,organization_id,create_time,update_time,create_user,update_user,pos) values (?,?,0,'ON_SHELF',?,?,0,'test','test',0)",
                     "analytics-p" + i, "analytics-product", i == 5 ? "analytics-foreign-org" : ORG,
                     i <= 2 ? 1788192000000L : 1790784000000L);
-            if (i != 4) jdbc.update("insert into product_field(id,resource_id,field_id,field_value) values (?,?,?,?)",
-                    "analytics-f" + i, "analytics-p" + i, "amount-field", Map.of(1, "10.10", 2, "20.20", 3, "30.31", 5, "99999").get(i));
+            if (i != 4) {
+                jdbc.update("insert into product_field(id,resource_id,field_id,field_value) values (?,?,?,?)",
+                        "analytics-f" + i, "analytics-p" + i, "amount-field",
+                        Map.of(1, "10.10", 2, "20.20", 3, "30.31", 5, "99999").get(i));
+            }
         }
         return jdbc;
     }

@@ -38,7 +38,7 @@ class PoolCustomerMembershipTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"member,true", "manager,true", "outsider,false", "admin,true"})
+    @CsvSource({ "member,true", "manager,true", "outsider,false", "admin,true" })
     void accessIncludesMembersAndAdministrators(String userId, boolean expected) {
         assertEquals(expected, service.hasPoolMember(pool.getId(), userId, "org-id"));
         verify(poolMapper).selectByPrimaryKey(pool.getId());

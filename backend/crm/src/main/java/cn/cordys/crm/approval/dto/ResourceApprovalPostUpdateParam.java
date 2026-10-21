@@ -16,18 +16,18 @@ import java.util.List;
 @NoArgsConstructor
 public class ResourceApprovalPostUpdateParam {
 
-	/**
-	 * 更新字段参数
-	 */
-	private List<ResourceApprovalFieldUpdateParam> fields;
+    /**
+     * 更新字段参数
+     */
+    private List<ResourceApprovalFieldUpdateParam> fields;
 
-	/**
-	 * 资源ID
-	 */
-	private String resourceId;
+    /**
+     * 资源ID
+     */
+    private String resourceId;
 
-	/**
-	 * 操作人
-	 */
-	private String operator;
+    /**
+     * 操作人
+     */
+    private String operator;
 }

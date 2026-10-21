@@ -1,8 +1,7 @@
 package cn.cordys.crm.customer.constants;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-03-13  11:51
+ * @author jianxing
  */
 public enum CustomerRelationType {
     GROUP,

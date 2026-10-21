@@ -87,7 +87,7 @@ public class CustomFormRoleService {
     }
 
     public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(CustomFormRoleUserPageRequest request,
-                                                                       String userId, String orgId) {
+            String userId, String orgId) {
         CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
@@ -183,7 +183,8 @@ public class CustomFormRoleService {
 
         CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
         List<String> userNames = extUserMapper.selectUserNameByIds(insertUserIds);
-        LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.ADD_USER, LogModule.CUSTOM_FORM, customForm.getName());
+        LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.ADD_USER, LogModule.CUSTOM_FORM,
+                customForm.getName());
         String detail = "[" + role.getName() + "]: " + userNames.stream().collect(Collectors.joining(", "));
         logDTO.setDetail(detail);
         logService.add(logDTO);
@@ -201,7 +202,8 @@ public class CustomFormRoleService {
         }
 
         LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).in(CustomFormRoleUser::getId, request.getUserIds());
+        wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).in(CustomFormRoleUser::getId,
+                request.getUserIds());
         List<String> roleUserIds = customFormRoleUserMapper.selectByIds(request.getUserIds())
                 .stream()
                 .map(CustomFormRoleUser::getUserId).toList();
@@ -210,7 +212,8 @@ public class CustomFormRoleService {
         CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
 
         List<String> userNames = extUserMapper.selectUserNameByIds(roleUserIds);
-        LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.REMOVE_USER, LogModule.CUSTOM_FORM, customForm.getName());
+        LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.REMOVE_USER, LogModule.CUSTOM_FORM,
+                customForm.getName());
         String detail = "[" + role.getName() + "]: " + userNames.stream().collect(Collectors.joining(", "));
         logDTO.setDetail(detail);
         logService.add(logDTO);

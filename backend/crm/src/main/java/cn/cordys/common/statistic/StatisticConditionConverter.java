@@ -11,24 +11,27 @@ import java.util.Map;
 
 /**
  * 设计器筛选弹窗的条件结构 -> 列表页高级搜索结构({@link CombineSearch})。
- *
- * <p>统计字段的「统计范围」与「更新范围」存的都是设计器筛选弹窗({@code filterModal.vue})的产物,
- * 也就是数据源字段那套「字段对字段」结构:</p>
+ * <p>
+ * 统计字段的「统计范围」与「更新范围」存的都是设计器筛选弹窗({@code filterModal.vue})的产物,
+ * 也就是数据源字段那套「字段对字段」结构:
+ * </p>
  *
  * <pre>
  * {searchMode, conditions: [{leftFieldId, leftFieldType, operator, matchType,
  *                            rightFieldId, rightFieldCustom, rightFieldCustomValue, rightFieldType}]}
  * </pre>
- *
- * <p>它与 {@link CombineSearch} 的 {@code conditions[{name, value, operator, type, multipleValue}]} 不是
+ * <p>
+ * 它与 {@link CombineSearch} 的 {@code conditions[{name, value, operator, type, multipleValue}]} 不是
  * 同一套键名。两边结构不同却共用 {@code Map} 存(与 {@code DatasourceField#combineSearch} 一致),
  * 所以必须在真正要拼 SQL 之前转一次 —— 不转的话 {@code leftFieldId} 在 {@code FilterCondition} 上
  * 无处安放, {@code name} 落成 null, {@code getConditions()} 按 {@code valid()} 一过滤整条条件被丢掉,
- * 「符合条件」静默退化成「不过滤」, 统计值偏大且从结果上看不出是配置问题。</p>
- *
- * <p>为什么是转换而不是靠 Jackson 直接绑定: 键名对不上是结构差异, 不是序列化配置问题。
+ * 「符合条件」静默退化成「不过滤」, 统计值偏大且从结果上看不出是配置问题。
+ * </p>
+ * <p>
+ * 为什么是转换而不是靠 Jackson 直接绑定: 键名对不上是结构差异, 不是序列化配置问题。
  * 给 {@code FilterCondition} 加 {@code @JsonAlias} 只能解决 {@code leftFieldId} 一个键,
- * {@code MATCH_FIELD}(匹配字段)时右值要从「另一个字段的ID」变成「取值引用对象」, 那一步绑定做不了。</p>
+ * {@code MATCH_FIELD}(匹配字段)时右值要从「另一个字段的ID」变成「取值引用对象」, 那一步绑定做不了。
+ * </p>
  */
 public final class StatisticConditionConverter {
 
@@ -51,13 +54,13 @@ public final class StatisticConditionConverter {
 
     /**
      * 把弹窗结构转成高级搜索结构。
-     *
-     * <p>没有条件、结构不认识、单条条件本身是半成品, 都不抛异常: 配错了字段的配置在刷新时
+     * <p>
+     * 没有条件、结构不认识、单条条件本身是半成品, 都不抛异常: 配错了字段的配置在刷新时
      * 抛出比「静默不过滤」更难排查, 而且保存校验已经拦过一道。这里只做结构转换, 由调用方按
-     * {@code getConditions()} 的结果判空。</p>
+     * {@code getConditions()} 的结果判空。
+     * </p>
      *
      * @param raw 弹窗产出的原始结构, 可以为 null
-     *
      * @return 转换后的条件, 不为 null; 没有可用的条件时 conditions 为空集合
      */
     public static CombineSearch toCombineSearch(Map<String, Object> raw) {
@@ -88,9 +91,10 @@ public final class StatisticConditionConverter {
 
     /**
      * 转换单条条件。
-     *
-     * <p>已经是高级搜索结构的({@code name} 有值)原样绑定: 历史上按 {@link CombineSearch} 存过的配置、
-     * 以及将来前端直接产出这种结构的情况都要能继续吃, 不能因为这次改造把旧配置读废。</p>
+     * <p>
+     * 已经是高级搜索结构的({@code name} 有值)原样绑定: 历史上按 {@link CombineSearch} 存过的配置、
+     * 以及将来前端直接产出这种结构的情况都要能继续吃, 不能因为这次改造把旧配置读废。
+     * </p>
      */
     private static FilterCondition toCondition(Map<?, ?> raw) {
         if (raw.get(NAME) != null) {
@@ -109,13 +113,15 @@ public final class StatisticConditionConverter {
 
     /**
      * 解析条件右值。
-     *
-     * <p>{@code MATCH_FIELD}(设计器里的「匹配字段」)时右值不是字面量, 而是宿主表单上的另一个字段:
+     * <p>
+     * {@code MATCH_FIELD}(设计器里的「匹配字段」)时右值不是字面量, 而是宿主表单上的另一个字段:
      * 保存配置的时候宿主记录还不存在, 拿不到值, 只能先存一个引用对象
      * (形如 {@code {"refFieldId": 宿主字段ID, "refFieldType": 宿主字段类型}}),
-     * 等刷新时按每条数据现取 —— 消费端靠「值是 Map 且带 refFieldId」认出这一支。</p>
-     *
-     * <p>其余情况({@code MATCH_VALUE})右值就是用户在弹窗里填的那个字面量。</p>
+     * 等刷新时按每条数据现取 —— 消费端靠「值是 Map 且带 refFieldId」认出这一支。
+     * </p>
+     * <p>
+     * 其余情况({@code MATCH_VALUE})右值就是用户在弹窗里填的那个字面量。
+     * </p>
      */
     private static Object resolveValue(Map<?, ?> raw) {
         if (!MATCH_FIELD.equals(toStringValue(raw.get(MATCH_TYPE)))) {

@@ -27,8 +27,6 @@ public class LambdaQueryWrapper<T> {
 
     /**
      * 返回 true 表示存在 SQL 注入风险
-     *
-     * @param script
      */
     public static void checkSqlInjection(String script) {
         if (StringUtils.isEmpty(script)) {
@@ -58,14 +56,14 @@ public class LambdaQueryWrapper<T> {
 
     private String generateParamName(String column, String operator) {
         return switch (operator) {
-            case "=" -> "%s_eq".formatted(column);
-            case "!=" -> "%s_nq".formatted(column);
-            case "LIKE" -> "%s_like".formatted(column);
-            case ">" -> "%s_gt".formatted(column);
-            case "<" -> "%s_lt".formatted(column);
-            case "<![CDATA[ > ]]>" -> "%s_gt_t".formatted(column);
-            case "<![CDATA[ < ]]>" -> "%s_lt_t".formatted(column);
-            default -> column;
+        case "=" -> "%s_eq".formatted(column);
+        case "!=" -> "%s_nq".formatted(column);
+        case "LIKE" -> "%s_like".formatted(column);
+        case ">" -> "%s_gt".formatted(column);
+        case "<" -> "%s_lt".formatted(column);
+        case "<![CDATA[ > ]]>" -> "%s_gt_t".formatted(column);
+        case "<![CDATA[ < ]]>" -> "%s_lt_t".formatted(column);
+        default -> column;
         };
     }
 
@@ -74,7 +72,6 @@ public class LambdaQueryWrapper<T> {
      *
      * @param column 列名的 Lambda 表达式
      * @param value  值
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> eq(XFunction<T, ?> column, Object value) {
@@ -97,7 +94,6 @@ public class LambdaQueryWrapper<T> {
      *
      * @param column 列名的 Lambda 表达式
      * @param value  值
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> like(XFunction<T, ?> column, Object value) {
@@ -113,7 +109,6 @@ public class LambdaQueryWrapper<T> {
      *
      * @param column 列名的 Lambda 表达式
      * @param value  值
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> gt(XFunction<T, ?> column, Object value) {
@@ -126,7 +121,6 @@ public class LambdaQueryWrapper<T> {
      *
      * @param column 列名的 Lambda 表达式
      * @param value  值
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> gtT(XFunction<T, ?> column, Object value) {
@@ -135,11 +129,10 @@ public class LambdaQueryWrapper<T> {
     }
 
     /**
-     * 添加小于条件（<）。
+     * 添加小于条件（{@code <}）。
      *
      * @param column 列名的 Lambda 表达式
      * @param value  值
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> lt(XFunction<T, ?> column, Object value) {
@@ -148,11 +141,10 @@ public class LambdaQueryWrapper<T> {
     }
 
     /**
-     * 时间类型的添加小于条件（<）。
+     * 时间类型的添加小于条件（{@code <}）。
      *
      * @param column 列名的 Lambda 表达式
      * @param value  值
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> ltT(XFunction<T, ?> column, Object value) {
@@ -166,7 +158,6 @@ public class LambdaQueryWrapper<T> {
      * @param column 列名的 Lambda 表达式
      * @param start  起始值
      * @param end    结束值
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> between(XFunction<T, ?> column, Object start, Object end) {
@@ -189,7 +180,6 @@ public class LambdaQueryWrapper<T> {
      *
      * @param column    列名的 Lambda 表达式
      * @param valueList 值的集合
-     *
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> in(XFunction<T, ?> column, List<?> valueList) {
@@ -274,7 +264,6 @@ public class LambdaQueryWrapper<T> {
      * 内部方法：将 Lambda 表达式转换为字段名。
      *
      * @param column 列名的 Lambda 表达式
-     *
      * @return 转换后的字段名
      */
     private String columnToString(XFunction<T, ?> column) {

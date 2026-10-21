@@ -19,7 +19,6 @@ public abstract class TimeUtils extends DateUtils {
     public static final String DAY_PATTERN = "yyyy-MM-dd";
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-
     /**
      * Parse date by 'yyyy-MM-dd' pattern
      */
@@ -34,12 +33,11 @@ public abstract class TimeUtils extends DateUtils {
      */
     public static Date parseDate(String str, String pattern) {
         try {
-            return parseDate(str, new String[]{pattern});
+            return parseDate(str, new String[] { pattern });
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
-
 
     /**
      * Format date by 'yyyy-MM-dd HH:mm:ss' pattern

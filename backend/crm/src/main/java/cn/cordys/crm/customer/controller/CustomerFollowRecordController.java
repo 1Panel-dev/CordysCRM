@@ -40,7 +40,6 @@ public class CustomerFollowRecordController {
         return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/update")
     @Operation(summary = "更新客户跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
@@ -48,37 +47,41 @@ public class CustomerFollowRecordController {
         return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping("/pool/page")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户公海池跟进记录列表")
-    public PagerWithOption<List<FollowUpRecordListResponse>> poolList(@Validated @RequestBody FollowUpRecordPageRequest request) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> poolList(
+            @Validated @RequestBody FollowUpRecordPageRequest request) {
         FollowUpRecord followUpRecord = new FollowUpRecord();
         followUpRecord.setCustomerId(request.getSourceId());
         followUpRecord.setType(ModuleKey.CUSTOMER.name());
-        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
-        return followUpRecordService.poolList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
+        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
+        return followUpRecordService.poolList(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
     }
 
     @PostMapping("/page")
     @Operation(summary = "客户跟进记录列表")
-    public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(
+            @Validated @RequestBody FollowUpRecordPageRequest request) {
         FollowUpRecord followUpRecord = new FollowUpRecord();
         followUpRecord.setCustomerId(request.getSourceId());
         followUpRecord.setType(ModuleKey.CUSTOMER.name());
-        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpRecordService.checkRecordPermission(followUpRecord, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
-        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
+        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                "CUSTOMER", "CUSTOMER");
     }
-
 
     @GetMapping("/get/{id}")
     @Operation(summary = "客户跟进记录详情")
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
-        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
+        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId(), true);
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "客户删除跟进记录")

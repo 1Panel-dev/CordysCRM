@@ -47,17 +47,21 @@ public class McpFormulaController {
             customForms.get(request.formKey(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         } else {
             List<String> permissions = switch (key) {
-                case CLUE -> List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
-                case CUSTOMER -> List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
-                case CONTACT -> List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-                case OPPORTUNITY -> List.of(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-                case QUOTATION -> List.of(PermissionConstants.OPPORTUNITY_QUOTATION_READ);
-                case CONTRACT -> List.of(PermissionConstants.CONTRACT_READ);
-                case INVOICE -> List.of(PermissionConstants.CONTRACT_INVOICE_READ);
-                case CONTRACT_PAYMENT_PLAN -> List.of(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-                case CONTRACT_PAYMENT_RECORD -> List.of(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-                case ORDER -> List.of(PermissionConstants.ORDER_READ);
-                case PRODUCT, PRICE, FOLLOW_RECORD, FOLLOW_PLAN -> List.of();
+            case CLUE ->
+                List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
+            case CUSTOMER -> List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
+            case CONTACT -> List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ,
+                    PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+            case OPPORTUNITY -> List.of(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+            case QUOTATION -> List.of(PermissionConstants.OPPORTUNITY_QUOTATION_READ);
+            case CONTRACT -> List.of(PermissionConstants.CONTRACT_READ);
+            case INVOICE -> List.of(PermissionConstants.CONTRACT_INVOICE_READ);
+            case CONTRACT_PAYMENT_PLAN -> List.of(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+            case CONTRACT_PAYMENT_RECORD -> List.of(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+            case ORDER -> List.of(PermissionConstants.ORDER_READ);
+            case PRODUCT, PRICE, FOLLOW_RECORD, FOLLOW_PLAN -> List.of();
             };
             if (!permissions.isEmpty() && permissions.stream().noneMatch(PermissionUtils::hasPermission)) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -66,5 +70,6 @@ public class McpFormulaController {
         return completion.prepare(request.formKey(), request.values());
     }
 
-    public record PrepareRequest(@NotBlank String formKey, @NotNull Map<String, Object> values) { }
+    public record PrepareRequest(@NotBlank String formKey, @NotNull Map<String, Object> values) {
+    }
 }

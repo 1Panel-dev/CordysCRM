@@ -123,7 +123,8 @@ class ProductControllerTests extends BaseTest {
         request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
 
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 12), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 12),
+                new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
 
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
@@ -135,7 +136,8 @@ class ProductControllerTests extends BaseTest {
         request.setName("productTwo");
         request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 14), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 14),
+                new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
 
@@ -146,7 +148,8 @@ class ProductControllerTests extends BaseTest {
         request.setName("productThree");
         request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),
+                new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
         // 校验请求成功数据
@@ -159,9 +162,9 @@ class ProductControllerTests extends BaseTest {
         request.setName("productFour");
         request.setPrice(BigDecimal.valueOf(100000000000d));
         request.setStatus("1");
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13), new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),
+                new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         this.requestPost(DEFAULT_ADD, request).andExpect(status().is4xxClientError());
-
     }
 
     @Test
@@ -199,7 +202,6 @@ class ProductControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_GET, addProduct.getId());
     }
 
-
     @Test
     @Order(5)
     void testPage() throws Exception {
@@ -224,7 +226,6 @@ class ProductControllerTests extends BaseTest {
             responseProduct.setPos(product.getPos());
             Assertions.assertEquals(product, responseProduct);
         });
-
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_PAGE, request);
@@ -264,7 +265,6 @@ class ProductControllerTests extends BaseTest {
         Assertions.assertTrue(addProduct.getPos() < product.getPos());
     }
 
-
     @Test
     @Order(8)
     void delete() throws Exception {
@@ -283,7 +283,6 @@ class ProductControllerTests extends BaseTest {
     @Test
     @Order(9)
     void batchDelete() throws Exception {
-
         this.requestPostWithOk("batch/delete", batchIds);
         Assertions.assertNull(productBaseMapper.selectByPrimaryKey(batchIds.getFirst()));
 
@@ -299,7 +298,6 @@ class ProductControllerTests extends BaseTest {
     @Test
     @Order(10)
     void getOption() throws Exception {
-
         MvcResult mvcResult = this.requestGetWithOkAndReturn("list/option");
         List<OptionDTO> optionDTOList = getResultDataArray(mvcResult, OptionDTO.class);
         Assertions.assertNotNull(optionDTOList);

@@ -13,8 +13,8 @@ public class CustomerPaymentRecordStatisticResponse {
 
     @Schema(description = "应回款")
     private BigDecimal totalAmount;
-	@Schema(description = "已回款")
-	private BigDecimal receivedAmount;
-	@Schema(description = "待回款")
-	private BigDecimal pendingAmount;
+    @Schema(description = "已回款")
+    private BigDecimal receivedAmount;
+    @Schema(description = "待回款")
+    private BigDecimal pendingAmount;
 }

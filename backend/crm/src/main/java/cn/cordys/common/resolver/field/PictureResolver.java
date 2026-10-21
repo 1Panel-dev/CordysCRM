@@ -10,7 +10,6 @@ public class PictureResolver extends AbstractModuleFieldResolver<PictureField> {
 
     @Override
     public void validate(PictureField customField, Object value) {
-
     }
 
     @Override

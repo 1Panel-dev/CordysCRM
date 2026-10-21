@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.groups.Created;
 import cn.cordys.common.groups.Updated;
@@ -32,15 +31,19 @@ public class MessageTaskController {
     @PostMapping("save")
     @Operation(summary = "项目管理-消息管理-消息设置-保存消息设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
-    public MessageTask saveMessage(@Validated({Created.class, Updated.class}) @RequestBody MessageTaskRequest messageTaskRequest) {
-        return messageNotificationService.saveMessageTask(messageTaskRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public MessageTask saveMessage(
+            @Validated({ Created.class, Updated.class }) @RequestBody MessageTaskRequest messageTaskRequest) {
+        return messageNotificationService.saveMessageTask(messageTaskRequest, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("batch/save")
     @Operation(summary = "项目管理-消息管理-消息设置-批量编辑")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
-    public void batchSaveMessage(@Validated({Created.class, Updated.class}) @RequestBody MessageTaskBatchRequest messageTaskBatchRequest) {
-        messageNotificationService.batchSaveMessageTask(messageTaskBatchRequest, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public void batchSaveMessage(
+            @Validated({ Created.class, Updated.class }) @RequestBody MessageTaskBatchRequest messageTaskBatchRequest) {
+        messageNotificationService.batchSaveMessageTask(messageTaskBatchRequest,
+                OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @GetMapping("get")
@@ -55,9 +58,8 @@ public class MessageTaskController {
     @Operation(summary = "项目管理-消息管理-消息设置-获取消息配置")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public MessageTaskConfigWithNameDTO getMessageConfig(@Validated @RequestBody MessageTaskConfigRequest request) {
-        return messageNotificationService.getMessageConfig(request.getModule(), request.getEvent(), OrganizationContext.getOrganizationId());
+        return messageNotificationService.getMessageConfig(request.getModule(), request.getEvent(),
+                OrganizationContext.getOrganizationId());
     }
 
-
 }
-

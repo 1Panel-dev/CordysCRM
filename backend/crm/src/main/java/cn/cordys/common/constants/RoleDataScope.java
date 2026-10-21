@@ -3,8 +3,7 @@ package cn.cordys.common.constants;
 /**
  * 角色的数据权限范围
  *
- * @Author: jianxing
- * @CreateTime: 2025-01-07  16:42
+ * @author jianxing
  */
 public enum RoleDataScope {
     /**

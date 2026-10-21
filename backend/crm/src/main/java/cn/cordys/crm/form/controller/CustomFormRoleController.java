@@ -32,13 +32,15 @@ public class CustomFormRoleController {
     @Operation(summary = "获取表单角色列表")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public List<CustomFormRoleListResponse> listByFormId(@PathVariable String customFormId) {
-        return customFormRoleService.listByFormId(customFormId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customFormRoleService.listByFormId(customFormId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/users")
     @Operation(summary = "获取角色用户列表")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(@Validated @RequestBody CustomFormRoleUserPageRequest request) {
+    public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(
+            @Validated @RequestBody CustomFormRoleUserPageRequest request) {
         return customFormRoleService.listUsersByRole(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
     }
@@ -46,7 +48,8 @@ public class CustomFormRoleController {
     @GetMapping("/user/dept/tree")
     @Operation(summary = "获取部门用户树")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public List<DeptUserTreeNode> getDeptUserTree(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+    public List<DeptUserTreeNode> getDeptUserTree(
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return customFormRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 

@@ -1,6 +1,5 @@
 package cn.cordys.crm.search.controller;
 
-
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.search.request.FieldMaskConfigDTO;
@@ -21,14 +20,12 @@ public class SearchFieldMaskConfigController {
     @Resource
     private SearchFieldMaskConfigService searchFieldMaskConfigService;
 
-
     @PostMapping("/save")
     @Operation(summary = "保存配置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
     public void save(@Validated @RequestBody FieldMaskConfigDTO request) {
         searchFieldMaskConfigService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/get")
     @Operation(summary = "获取脱敏字段配置")

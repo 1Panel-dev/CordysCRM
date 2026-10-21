@@ -1,9 +1,9 @@
 package cn.cordys.crm.analytics.service;
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -68,30 +68,49 @@ import java.util.function.Supplier;
  */
 @Service
 public class AnalyticsAccessService {
-    @Resource private DataScopeService dataScopeService;
-    @Resource private SqlSessionFactory sqlSessionFactory;
-    @Resource private CustomFormAnalyticsAccessService customFormAccess;
-    @Resource private PoolCustomerService poolCustomerService;
-    @Resource private PoolClueService poolClueService;
+    @Resource
+    private DataScopeService dataScopeService;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private CustomFormAnalyticsAccessService customFormAccess;
+    @Resource
+    private PoolCustomerService poolCustomerService;
+    @Resource
+    private PoolClueService poolClueService;
 
     static final Map<String, Source> SOURCES = Map.ofEntries(
-            entry("clue", Clue.class, ExtClueMapper.class, CluePageRequest::new, PermissionConstants.CLUE_MANAGEMENT_READ),
-            entry("customer", Customer.class, ExtCustomerMapper.class, CustomerPageRequest::new, PermissionConstants.CUSTOMER_MANAGEMENT_READ),
-            entry("contact", CustomerContact.class, ExtCustomerContactMapper.class, CustomerContactPageRequest::new, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ),
-            entry("opportunity", Opportunity.class, ExtOpportunityMapper.class, OpportunityPageRequest::new, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ),
-            entry("quotation", OpportunityQuotation.class, ExtOpportunityQuotationMapper.class, OpportunityQuotationPageRequest::new, PermissionConstants.OPPORTUNITY_QUOTATION_READ),
-            entry("contract", Contract.class, ExtContractMapper.class, ContractPageRequest::new, PermissionConstants.CONTRACT_READ),
-            entry("invoice", ContractInvoice.class, ExtContractInvoiceMapper.class, ContractInvoicePageRequest::new, PermissionConstants.CONTRACT_INVOICE_READ),
-            entry("contractPaymentPlan", ContractPaymentPlan.class, ExtContractPaymentPlanMapper.class, ContractPaymentPlanPageRequest::new, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ),
-            entry("contractPaymentRecord", ContractPaymentRecord.class, ExtContractPaymentRecordMapper.class, ContractPaymentRecordPageRequest::new, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ),
+            entry("clue", Clue.class, ExtClueMapper.class, CluePageRequest::new,
+                    PermissionConstants.CLUE_MANAGEMENT_READ),
+            entry("customer", Customer.class, ExtCustomerMapper.class, CustomerPageRequest::new,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_READ),
+            entry("contact", CustomerContact.class, ExtCustomerContactMapper.class, CustomerContactPageRequest::new,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ),
+            entry("opportunity", Opportunity.class, ExtOpportunityMapper.class, OpportunityPageRequest::new,
+                    PermissionConstants.OPPORTUNITY_MANAGEMENT_READ),
+            entry("quotation", OpportunityQuotation.class, ExtOpportunityQuotationMapper.class,
+                    OpportunityQuotationPageRequest::new, PermissionConstants.OPPORTUNITY_QUOTATION_READ),
+            entry("contract", Contract.class, ExtContractMapper.class, ContractPageRequest::new,
+                    PermissionConstants.CONTRACT_READ),
+            entry("invoice", ContractInvoice.class, ExtContractInvoiceMapper.class, ContractInvoicePageRequest::new,
+                    PermissionConstants.CONTRACT_INVOICE_READ),
+            entry("contractPaymentPlan", ContractPaymentPlan.class, ExtContractPaymentPlanMapper.class,
+                    ContractPaymentPlanPageRequest::new, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ),
+            entry("contractPaymentRecord", ContractPaymentRecord.class, ExtContractPaymentRecordMapper.class,
+                    ContractPaymentRecordPageRequest::new, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ),
             entry("order", Order.class, ExtOrderMapper.class, OrderPageRequest::new, PermissionConstants.ORDER_READ),
-            entry("product", Product.class, ExtProductMapper.class, ProductPageRequest::new, PermissionConstants.PRODUCT_MANAGEMENT_READ),
-            entry("price", ProductPrice.class, ExtProductPriceMapper.class, ProductPricePageRequest::new, PermissionConstants.PRICE_READ),
-            entry("record", FollowUpRecord.class, ExtFollowUpRecordMapper.class, RecordHomePageRequest::new, PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ),
-            entry("plan", FollowUpPlan.class, ExtFollowUpPlanMapper.class, PlanHomePageRequest::new, PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
+            entry("product", Product.class, ExtProductMapper.class, ProductPageRequest::new,
+                    PermissionConstants.PRODUCT_MANAGEMENT_READ),
+            entry("price", ProductPrice.class, ExtProductPriceMapper.class, ProductPricePageRequest::new,
+                    PermissionConstants.PRICE_READ),
+            entry("record", FollowUpRecord.class, ExtFollowUpRecordMapper.class, RecordHomePageRequest::new,
+                    PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+                    PermissionConstants.OPPORTUNITY_MANAGEMENT_READ),
+            entry("plan", FollowUpPlan.class, ExtFollowUpPlanMapper.class, PlanHomePageRequest::new,
+                    PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
 
     private static Map.Entry<String, Source> entry(String key, Class<?> entity, Class<?> mapper,
-                                                   Supplier<BasePageRequest> request, String... permissions) {
+            Supplier<BasePageRequest> request, String... permissions) {
         String method = key.equals("record") || key.equals("plan") ? ".selectTotalList" : ".list";
         return Map.entry(key, new Source(entity, mapper.getName() + method, request, List.of(permissions)));
     }
@@ -115,7 +134,8 @@ public class AnalyticsAccessService {
         }
 
         List<String> permissions = pool ? List.of(formKey.equals("clue")
-                ? PermissionConstants.CLUE_MANAGEMENT_POOL_READ : PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
+                ? PermissionConstants.CLUE_MANAGEMENT_POOL_READ
+                : PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
                 : source.permissions();
         if (permissions.stream().noneMatch(PermissionUtils::hasPermission)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -155,15 +175,18 @@ public class AnalyticsAccessService {
             DeptDataPermissionDTO customer = scope(userId, orgId, view, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
             parameters.put("clueDataPermission", clue);
             parameters.put("customerDataPermission", customer);
-            if (request instanceof PlanHomePageRequest plan) plan.setStatus("ALL");
+            if (request instanceof PlanHomePageRequest plan) {
+                plan.setStatus("ALL");
+            }
             empty = clue.getInvisible() && customer.getInvisible();
             effectiveScope = "FOLLOW_PAGE";
         } else {
             DeptDataPermissionDTO permission = scope(userId, orgId, view, permissions.getFirst());
             parameters.put("dataPermission", permission);
             empty = permission.getInvisible();
-            effectiveScope = permission.getVisible() ? "COLLABORATION" : permission.getSelf() ? "SELF"
-                    : permission.getAll() ? "ORGANIZATION" : empty ? "NONE" : "DEPARTMENTS";
+            effectiveScope = permission.getVisible() ? "COLLABORATION"
+                    : permission.getSelf() ? "SELF"
+                            : permission.getAll() ? "ORGANIZATION" : empty ? "NONE" : "DEPARTMENTS";
         }
 
         MappedStatement statement = sqlSessionFactory.getConfiguration().getMappedStatement(source.statementId());
@@ -178,7 +201,9 @@ public class AnalyticsAccessService {
     private DeptDataPermissionDTO scope(String userId, String orgId, View view, String permission) {
         DeptDataPermissionDTO result = dataScopeService.getDeptDataPermission(userId, orgId, view.name(), permission);
         // 部分旧列表未处理空范围；新接口始终关闭空权限，不能把它误解成“无条件”。
-        if (result == null) throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        if (result == null) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
         if (!result.getAll() && !result.getSelf() && !result.getVisible() && result.getDeptIds().isEmpty()) {
             result.setInvisible(true);
         }
@@ -189,8 +214,11 @@ public class AnalyticsAccessService {
         return new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Map.of("reason", reason));
     }
 
-    public record Source(Class<?> entity, String statementId, Supplier<BasePageRequest> request, List<String> permissions) {
-        public String table() { return EntityTableMapper.generateTableName(entity); }
+    public record Source(Class<?> entity, String statementId, Supplier<BasePageRequest> request,
+            List<String> permissions) {
+        public String table() {
+            return EntityTableMapper.generateTableName(entity);
+        }
 
         public boolean hasSubtableFields() {
             // 固定领域实体均有同包的 XxxField；从现有实体继承关系读取存储能力，避免另维护一张表结构清单。
@@ -203,5 +231,6 @@ public class AnalyticsAccessService {
     }
 
     public record Access(Source source, MappedStatement statement, BoundSql boundSql, boolean empty,
-                         String orgId, Scope scope) { }
+            String orgId, Scope scope) {
+    }
 }

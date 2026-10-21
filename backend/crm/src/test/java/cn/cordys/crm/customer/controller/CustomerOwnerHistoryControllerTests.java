@@ -58,7 +58,8 @@ class CustomerOwnerHistoryControllerTests extends BaseTest {
         customerAddRequest.setOwner(InternalUser.ADMIN.getValue());
         addCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
 
-        CustomerOwner customerOwner = customerOwnerHistoryService.add(addCustomer, InternalUser.ADMIN.getValue(), false);
+        CustomerOwner customerOwner = customerOwnerHistoryService.add(addCustomer, InternalUser.ADMIN.getValue(),
+                false);
         // 校验成功数据
         Assertions.assertEquals(customerOwner.getCustomerId(), addCustomer.getId());
         Assertions.assertEquals(customerOwner.getOperator(), InternalUser.ADMIN.getValue());
@@ -74,7 +75,8 @@ class CustomerOwnerHistoryControllerTests extends BaseTest {
         transferRequest.setOwner(PERMISSION_USER_NAME);
         customerOwnerHistoryService.batchAdd(transferRequest, InternalUser.ADMIN.getValue());
 
-        List<CustomerOwnerListResponse> list = customerOwnerHistoryService.list(addCustomer.getId(), DEFAULT_ORGANIZATION_ID);
+        List<CustomerOwnerListResponse> list = customerOwnerHistoryService.list(addCustomer.getId(),
+                DEFAULT_ORGANIZATION_ID);
         for (CustomerOwnerListResponse customerOwner : list) {
             // 校验成功数据
             Assertions.assertEquals(customerOwner.getCustomerId(), addCustomer.getId());
@@ -107,7 +109,8 @@ class CustomerOwnerHistoryControllerTests extends BaseTest {
     @Order(10)
     void batchDelete() {
         customerOwnerHistoryService.deleteByCustomerIds(List.of(addCustomer.getId()));
-        List<CustomerOwnerListResponse> list = customerOwnerHistoryService.list(addCustomer.getId(), DEFAULT_ORGANIZATION_ID);
+        List<CustomerOwnerListResponse> list = customerOwnerHistoryService.list(addCustomer.getId(),
+                DEFAULT_ORGANIZATION_ID);
         Assertions.assertTrue(list.isEmpty());
     }
 }

@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author jianxing
- * @date 2025-01-03 12:01:54
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -70,11 +69,6 @@ public class DataScopeService {
 
     /**
      * 获取用户角色的数据权限
-     *
-     * @param userId
-     * @param orgId
-     *
-     * @return
      */
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String permission) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
@@ -126,13 +120,14 @@ public class DataScopeService {
     }
 
     private DeptDataPermissionDTO getDeptDataPermissionForDept(String userId, String orgId,
-                                                               Map<String, List<RolePermissionDTO>> dataScopeRoleMap,
-                                                               String permission) {
+            Map<String, List<RolePermissionDTO>> dataScopeRoleMap,
+            String permission) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
         // 查询部门树
         List<BaseTreeNode> tree = departmentService.getTree(orgId);
 
-        boolean hasDeptAndChildPermission = hasDataScopePermission(dataScopeRoleMap, RoleDataScope.DEPT_AND_CHILD.name(), permission);
+        boolean hasDeptAndChildPermission = hasDataScopePermission(dataScopeRoleMap,
+                RoleDataScope.DEPT_AND_CHILD.name(), permission);
 
         if (hasDeptAndChildPermission) {
             // 查看用户部门及其子部门数据
@@ -142,7 +137,8 @@ public class DataScopeService {
         }
 
         List<RolePermissionDTO> customDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name());
-        boolean hasDeptCustomPermission = hasDataScopePermission(dataScopeRoleMap, RoleDataScope.DEPT_CUSTOM.name(), permission);
+        boolean hasDeptCustomPermission = hasDataScopePermission(dataScopeRoleMap, RoleDataScope.DEPT_CUSTOM.name(),
+                permission);
 
         if (hasDeptCustomPermission) {
             // 查看指定部门及其子部门数据
@@ -156,7 +152,8 @@ public class DataScopeService {
         return deptDataPermission;
     }
 
-    public boolean hasDataScopePermission(Map<String, List<RolePermissionDTO>> dataScopeRoleMap, String dataScope, String permission) {
+    public boolean hasDataScopePermission(Map<String, List<RolePermissionDTO>> dataScopeRoleMap, String dataScope,
+            String permission) {
         List<RolePermissionDTO> roleDataScopes = dataScopeRoleMap.get(dataScope);
         if (roleDataScopes == null) {
             return false;
@@ -185,11 +182,6 @@ public class DataScopeService {
     /**
      * 根据已选的部门ID
      * 获取部门及其子部门的ID
-     *
-     * @param tree
-     * @param deptIds
-     *
-     * @return
      */
     public List<String> getDeptIdsWithChild(List<BaseTreeNode> tree, Set<String> deptIds) {
         List<String> childDeptIds = new ArrayList<>();
@@ -206,10 +198,6 @@ public class DataScopeService {
 
     /**
      * 获取树节点及其子节点的ID
-     *
-     * @param tree
-     *
-     * @return
      */
     private List<String> getNodeIdsWithChild(List<BaseTreeNode> tree) {
         if (CollectionUtils.isEmpty(tree)) {
@@ -225,9 +213,6 @@ public class DataScopeService {
 
     /**
      * 校验数据权限
-     *
-     * @param userId
-     * @param orgId
      */
     public void checkDataPermission(String userId, String orgId, List<String> owners, String permission) {
         if (CollectionUtils.isEmpty(owners)) {
@@ -267,7 +252,8 @@ public class DataScopeService {
             for (String owner : owners) {
                 UserDeptDTO customerOwnerDept = userDeptMapByUserIds.get(owner);
                 // 部门权限是否有该客户的权限
-                if (customerOwnerDept == null || !deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId())) {
+                if (customerOwnerDept == null
+                        || !deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId())) {
                     if (!Strings.CS.equals(owner, userId)) {
                         return false;
                     }

@@ -7,7 +7,6 @@ import lombok.Data;
 import java.util.List;
 import java.util.Locale;
 
-
 @Data
 @ColumnWidth(15)
 public class BusinessTitleExcelDataCn extends BusinessTitleExcelData {

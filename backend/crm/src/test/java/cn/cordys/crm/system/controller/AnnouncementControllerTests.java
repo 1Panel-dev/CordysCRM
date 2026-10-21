@@ -52,7 +52,6 @@ public class AnnouncementControllerTests extends BaseTest {
         request.setStartTime(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 6);
         request.setEndTime(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7);
         this.requestPost("/announcement/edit", request).andExpect(status().isOk());
-
     }
 
     @Test
@@ -64,10 +63,10 @@ public class AnnouncementControllerTests extends BaseTest {
         basePageRequest.setOrganizationId("1");
         MvcResult mvcResult = this.requestPostWithOkAndReturn("/announcement/page", basePageRequest);
         var tableData = JSON.parseObject(JSON.toJSONString(
-                        JSON.parseObject(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                JSON.parseObject(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class)
+                        .getData()),
                 Pager.class);
         log.info(tableData.getList().toString());
-
     }
 
     @Test
@@ -93,4 +92,4 @@ public class AnnouncementControllerTests extends BaseTest {
         Announcement announcement = getAnnouncement();
         requestGetWithOk("/announcement/delete/" + announcement.getId());
     }
-} 
+}

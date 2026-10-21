@@ -11,7 +11,8 @@ import java.util.List;
 
 public class JsonDifferenceUtils {
 
-    public static List<JsonDifferenceDTO> compareJson(String oldJson, String newJson, List<JsonDifferenceDTO> JsonDifferenceDTO) throws Exception {
+    public static List<JsonDifferenceDTO> compareJson(String oldJson, String newJson,
+            List<JsonDifferenceDTO> JsonDifferenceDTO) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode oldNode = oldJson != null ? mapper.readTree(oldJson) : mapper.createObjectNode();
         JsonNode newNode = newJson != null ? mapper.readTree(newJson) : mapper.createObjectNode();
@@ -22,14 +23,16 @@ public class JsonDifferenceUtils {
         return JsonDifferenceDTO;
     }
 
-    private static void compareJsonNodes(JsonNode oldNode, JsonNode newNode, List<JsonDifferenceDTO> JsonDifferenceDTOList) {
+    private static void compareJsonNodes(JsonNode oldNode, JsonNode newNode,
+            List<JsonDifferenceDTO> JsonDifferenceDTOList) {
         Iterator<String> fieldNames1 = oldNode.fieldNames();
         //遍历
         while (fieldNames1.hasNext()) {
             String fieldName = fieldNames1.next();
             JsonNode oldValue = oldNode.get(fieldName);
             JsonNode newValue = newNode.get(fieldName);
-            if ((newValue instanceof NullNode || newValue == null) && (oldValue instanceof NullNode || oldValue == null)) {
+            if ((newValue instanceof NullNode || newValue == null)
+                    && (oldValue instanceof NullNode || oldValue == null)) {
                 // 都是 null 的情况
                 continue;
             }
@@ -105,9 +108,10 @@ public class JsonDifferenceUtils {
      *
      * @param oldNode           旧节点
      * @param newNode           新节点
-     * @param jsonDifferenceDTO 差异属性集合  [节点1:属性1:值1 => 值2]
+     * @param jsonDifferenceDTO 差异属性集合 [节点1:属性1:值1 => 值2]
      */
-    private static void compareArrayNodesById(JsonNode oldNode, JsonNode newNode, List<JsonDifferenceDTO> jsonDifferenceDTO) {
+    private static void compareArrayNodesById(JsonNode oldNode, JsonNode newNode,
+            List<JsonDifferenceDTO> jsonDifferenceDTO) {
         List<String> oldNodeIds = new ArrayList<>();
         Iterator<JsonNode> elements = oldNode.elements();
         while (elements.hasNext()) {

@@ -22,7 +22,6 @@ public class MessageSubscriber implements MessageListener {
      */
     static Map<String, TopicConsumer> consumerMap = new HashMap<>();
 
-
     public MessageSubscriber(List<TopicConsumer> consumers) {
         consumers.forEach(consumer -> consumerMap.put(consumer.getChannel(), consumer));
     }
@@ -60,6 +59,5 @@ public class MessageSubscriber implements MessageListener {
         }
         consumer.consume(message);
     }
-
 
 }

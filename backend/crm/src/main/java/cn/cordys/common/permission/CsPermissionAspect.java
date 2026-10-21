@@ -19,20 +19,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @CsPermission 注解切面
- * <p>
- * 拦截标注了 @CsPermission 的方法，执行权限校验
+ * 拦截标注了 {@link CsPermission} 或 {@link CsBatchPermission} 的方法，执行权限校验。
  */
 @Aspect
 @Component
 public class CsPermissionAspect {
 
     private final ExpressionParser parser = new SpelExpressionParser();
-    private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
+    private final StandardReflectionParameterNameDiscoverer discoverer =
+            new StandardReflectionParameterNameDiscoverer();
 
     @Resource
     private ResourcePermissionService resourcePermissionService;
-
 
     @Before("@annotation(cn.cordys.common.permission.CsPermission)")
     public void checkPermission(JoinPoint joinPoint) {
@@ -116,10 +114,10 @@ public class CsPermissionAspect {
     }
 
     /**
-     * 从方法参数中解析资源ID列表（支持SpEL表达式，结果为List<String>）
+     * 从方法参数中解析资源ID列表（支持SpEL表达式，结果为 {@code List<String>}）
      * <p>
      * SpEL {expr} 会将结果包一层 list，如 {#request.ids} 中 ids 为 List 时，
-     * 结果为 List<List<String>>，需要展平内层
+     * 结果为 {@code List<List<String>>}，需要展平内层
      */
     private List<String> resolveResourceIds(Method method, Object[] args, String expression) {
         String[] params = discoverer.getParameterNames(method);

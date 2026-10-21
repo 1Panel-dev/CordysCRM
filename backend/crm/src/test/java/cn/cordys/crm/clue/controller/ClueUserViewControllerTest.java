@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -39,7 +38,6 @@ public class ClueUserViewControllerTest extends BaseTest {
     @Test
     @Order(1)
     void testAdd() throws Exception {
-
         UserViewAddRequest request = new UserViewAddRequest();
         request.setName("测试视图11");
         request.setSearchMode("AND");
@@ -47,7 +45,6 @@ public class ClueUserViewControllerTest extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         UserView resultData = getResultData(mvcResult, UserView.class);
         viewId = resultData.getId();
-
     }
 
     private List<FilterCondition> buildConditions() {
@@ -73,7 +70,6 @@ public class ClueUserViewControllerTest extends BaseTest {
         conditions.add(condition2);
         return conditions;
     }
-
 
     @Test
     @Order(2)

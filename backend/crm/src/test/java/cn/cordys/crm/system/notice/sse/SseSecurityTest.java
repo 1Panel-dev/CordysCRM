@@ -139,7 +139,8 @@ class SseSecurityTest {
     void closeTerminatesHeartbeatAndFreesSlot() throws Exception {
         AtomicBoolean completed = new AtomicBoolean();
         Flux<String> original = service.addClient(null, "one");
-        subscriptions.add(original.subscribe(message -> { }, error -> fail(error), () -> completed.set(true)));
+        subscriptions.add(original.subscribe(message -> {
+        }, error -> fail(error), () -> completed.set(true)));
         listen(service.addClient(null, "two"));
         mvc.perform(get("/sse/close").param("clientId", "one")).andExpect(status().isOk());
         assertTrue(completed.get());
@@ -245,7 +246,7 @@ class SseSecurityTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"other-organization", "expired", "empty"})
+    @ValueSource(strings = { "other-organization", "expired", "empty" })
     @SuppressWarnings("unchecked")
     void fallsBackToCurrentOrganizationWhenCacheHasNoMatchingNotifications(String scenario) {
         StringRedisTemplate redis = mock(StringRedisTemplate.class);

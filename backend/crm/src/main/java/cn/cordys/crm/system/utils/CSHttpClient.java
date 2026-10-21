@@ -36,7 +36,6 @@ public class CSHttpClient {
      * 基于完整 URL 的 GET 调用（保留以兼容旧用法）。
      *
      * @param url 绝对 URL
-     *
      * @return 下载信息
      */
     public static DownloadInfo sendGetRequest(String url) {
@@ -70,7 +69,6 @@ public class CSHttpClient {
      * 基于基础地址与查询参数的 GET 调用，自动进行 URL 编码并忽略空参数。
      *
      * @param queryParams 查询参数 Map（null/空值将被忽略）
-     *
      * @return 下载信息
      */
     public static DownloadInfo sendGetRequest(Map<String, String> queryParams) {
@@ -84,7 +82,6 @@ public class CSHttpClient {
      *
      * @param baseUrl 基础地址
      * @param params  参数
-     *
      * @return 完整 URL
      */
     private static String buildUrl(String baseUrl, Map<String, String> params) {

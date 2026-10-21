@@ -66,7 +66,8 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 
     public CustomTemplateWriteHandler(List<BaseField> fields) {
         int index = 0;
-        List<BaseField> importFields = fields.stream().filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)).toList();
+        List<BaseField> importFields = fields.stream()
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)).toList();
         for (BaseField field : importFields) {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 for (BaseField f : subField.getSubFields()) {
@@ -125,8 +126,10 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
             DataValidationHelper dataValidationHelper = sheet.getDataValidationHelper();
             validationOptionMap.forEach((k, v) -> {
                 List<String> simpleOps = limitCellDropdown(v);
-                DataValidationConstraint dvc = dataValidationHelper.createExplicitListConstraint(simpleOps.toArray(String[]::new));
-                DataValidation dataValidation = dataValidationHelper.createValidation(dvc, new CellRangeAddressList(1, 1048575, k, k));
+                DataValidationConstraint dvc = dataValidationHelper
+                        .createExplicitListConstraint(simpleOps.toArray(String[]::new));
+                DataValidation dataValidation = dataValidationHelper.createValidation(dvc,
+                        new CellRangeAddressList(1, 1048575, k, k));
                 sheet.addValidationData(dataValidation);
             });
         }
@@ -146,7 +149,8 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
                 }
                 if (Strings.CS.equals(k.getType(), FieldType.INPUT.name())) {
                     if (k instanceof InputField inputField) {
-                        if (Strings.CI.equals(inputField.getDefaultValueType(), "formula") && StringUtils.isNotBlank(inputField.getFormula())) {
+                        if (Strings.CI.equals(inputField.getDefaultValueType(), "formula")
+                                && StringUtils.isNotBlank(inputField.getFormula())) {
                             Map map = JSON.parseObject(inputField.getFormula(), Map.class);
                             setComment(v, map.get("display").toString());
                         }
@@ -158,7 +162,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 
     @Override
     public void afterCellDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder,
-                                 List<WriteCellData<?>> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
+            List<WriteCellData<?>> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
         // 设置样式
         WriteCellStyle headStyle = new WriteCellStyle();
         WriteFont font = new WriteFont();
@@ -189,18 +193,19 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
         if (index == null) {
             return;
         }
-        Comment comment = drawingPatriarch.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, index, downOffSet.contains(index) ? 1 : 0, index + 3, 1));
+        Comment comment = drawingPatriarch.createCellComment(
+                new XSSFClientAnchor(0, 0, 0, 0, index, downOffSet.contains(index) ? 1 : 0, index + 3, 1));
         comment.setString(new XSSFRichTextString(text));
         mainSheet.getRow(0).getCell(0).setCellComment(comment);
     }
 
     private String buildComment(BaseField field) {
         return switch (field.getType()) {
-            case "INPUT_NUMBER" -> getNumberComment(field);
-            case "DATE_TIME" -> getDateTimeComment(field);
-            case "LOCATION" -> getLocationComment(field);
-            case "INDUSTRY" -> getIndustryComment();
-            default -> getOptionComment(field);
+        case "INPUT_NUMBER" -> getNumberComment(field);
+        case "DATE_TIME" -> getDateTimeComment(field);
+        case "LOCATION" -> getLocationComment(field);
+        case "INDUSTRY" -> getIndustryComment();
+        default -> getOptionComment(field);
         };
     }
 
@@ -208,9 +213,11 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
         StringBuilder sb = new StringBuilder();
         InputNumberField numberField = (InputNumberField) field;
         if (Strings.CS.equals(numberField.getNumberFormat(), NumberResolver.PERCENT_FORMAT)) {
-            sb.append(Translator.get("format.preview")).append(": 99.9999%, ").append(Translator.get("keep.decimal.places"));
+            sb.append(Translator.get("format.preview")).append(": 99.9999%, ")
+                    .append(Translator.get("keep.decimal.places"));
         } else {
-            sb.append(Translator.get("format.preview")).append(": 9999999999.9, ").append(Translator.get("keep.decimal.places"));
+            sb.append(Translator.get("format.preview")).append(": 9999999999.9, ")
+                    .append(Translator.get("keep.decimal.places"));
         }
         return sb.toString();
     }

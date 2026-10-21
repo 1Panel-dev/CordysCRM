@@ -30,7 +30,8 @@ public class UserSyncController {
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_SYNC)
     @Operation(summary = "用户(员工)-同步组织架构")
     public void syncUser(@Validated @RequestBody SyncUserRequest request) {
-        thirdDepartmentService.syncUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+        thirdDepartmentService.syncUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/check")
@@ -40,14 +41,13 @@ public class UserSyncController {
         return thirdDepartmentService.getSyncStatus(OrganizationContext.getOrganizationId());
     }
 
-
     @PostMapping(value = "/schedule-config")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_SYNC)
     @Operation(summary = "保存用户(员工)-同步组织架构定时任务配置")
     public void scheduleConfig(@Validated @RequestBody SyncUserScheduleConfigRequest request) {
-        thirdDepartmentService.scheduleConfig(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        thirdDepartmentService.scheduleConfig(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/schedule-config/{type}")
     @Operation(summary = "获取用户(员工)-同步组织架构定时任务配置")
@@ -55,7 +55,6 @@ public class UserSyncController {
     public SyncUserScheduleConfigResponse getScheduleConfig(@PathVariable String type) {
         return thirdDepartmentService.getScheduleConfig(type, OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/third-org/{type}")
     @Operation(summary = "获取第三方的组织架构")

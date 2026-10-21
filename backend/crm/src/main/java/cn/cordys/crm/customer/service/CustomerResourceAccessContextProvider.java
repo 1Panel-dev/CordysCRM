@@ -42,7 +42,8 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
 
     @Override
     public boolean hasAdditionalDataPermission(String permission, String resourceId, String userId) {
-        if (!PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission) || StringUtils.isAnyBlank(resourceId, userId)) {
+        if (!PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)
+                || StringUtils.isAnyBlank(resourceId, userId)) {
             return false;
         }
         CustomerCollaboration example = new CustomerCollaboration();

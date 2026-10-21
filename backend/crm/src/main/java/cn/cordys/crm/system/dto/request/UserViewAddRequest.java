@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.dto.request;
 
-
 import cn.cordys.common.dto.condition.CombineSearch;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

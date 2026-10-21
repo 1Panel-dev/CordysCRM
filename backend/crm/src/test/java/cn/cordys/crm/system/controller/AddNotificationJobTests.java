@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.domain.Announcement;
 import cn.cordys.crm.system.domain.Notification;

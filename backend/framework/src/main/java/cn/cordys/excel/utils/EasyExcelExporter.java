@@ -20,11 +20,13 @@ public class EasyExcelExporter {
     public void buildExportResponse(HttpServletResponse response, String fileName) {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + ".xlsx");
+        response.setHeader("Content-disposition",
+                "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + ".xlsx");
     }
 
-    public void exportByCustomWriteHandler(HttpServletResponse response, List<List<String>> headList, List<List<Object>> data,
-                                           String fileName, String sheetName, WriteHandler writeHandler) {
+    public void exportByCustomWriteHandler(HttpServletResponse response, List<List<String>> headList,
+            List<List<Object>> data,
+            String fileName, String sheetName, WriteHandler writeHandler) {
         buildExportResponse(response, fileName);
         try {
             EasyExcel.write(response.getOutputStream())
@@ -38,8 +40,9 @@ public class EasyExcelExporter {
         }
     }
 
-    public void exportMultiSheetTplWithSharedHandler(HttpServletResponse response, List<List<String>> headList, String fileName,
-                                                     String mainSheetName, String tipSheetName, WriteHandler sharedHandler, WriteHandler styleHandler) {
+    public void exportMultiSheetTplWithSharedHandler(HttpServletResponse response, List<List<String>> headList,
+            String fileName,
+            String mainSheetName, String tipSheetName, WriteHandler sharedHandler, WriteHandler styleHandler) {
         buildExportResponse(response, fileName);
         try (ExcelWriter writer = EasyExcel.write(response.getOutputStream()).build()) {
             WriteSheet mainSheet = EasyExcel.writerSheet(0, mainSheetName)

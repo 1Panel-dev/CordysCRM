@@ -8,8 +8,12 @@ import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 /**
- * <p>表示分页请求的 DTO 类，继承自 {@link BaseCondition} 类，包含了分页参数和排序字段。</p>
- * <p>用于分页查询时传递当前页码、每页条数和排序信息。</p>
+ * <p>
+ * 表示分页请求的 DTO 类，继承自 {@link BaseCondition} 类，包含了分页参数和排序字段。
+ * </p>
+ * <p>
+ * 用于分页查询时传递当前页码、每页条数和排序信息。
+ * </p>
  */
 @Data
 public class BasePageRequest extends BaseCondition {

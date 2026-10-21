@@ -53,7 +53,6 @@ public class ShiroConfig {
      * </p>
      *
      * @param sessionManager 默认的 Web 安全管理器
-     *
      * @return 配置好的 {@link ShiroFilterFactoryBean} 实例
      */
     @Bean
@@ -94,7 +93,6 @@ public class ShiroConfig {
         chain.put("/**", pattern);
     }
 
-
     /**
      * 配置 Shiro 的缓存管理器，使用内存缓存管理。
      *
@@ -127,11 +125,11 @@ public class ShiroConfig {
      * @param sessionManager 会话管理器
      * @param cacheManager   缓存管理器
      * @param localRealm     自定义 Realm 实例
-     *
      * @return 配置好的 {@link DefaultWebSecurityManager} 实例
      */
     @Bean(name = "securityManager")
-    public DefaultWebSecurityManager securityManager(SessionManager sessionManager, CacheManager cacheManager, Realm localRealm) {
+    public DefaultWebSecurityManager securityManager(SessionManager sessionManager, CacheManager cacheManager,
+            Realm localRealm) {
         DefaultWebSecurityManager defaultManager = new DefaultWebSecurityManager();
         defaultManager.setSessionManager(sessionManager);
         defaultManager.setCacheManager(cacheManager);
@@ -169,7 +167,7 @@ public class ShiroConfig {
      * @return 配置好的 {@link DefaultAdvisorAutoProxyCreator} 实例
      */
     @Bean
-    @DependsOn({"lifecycleBeanPostProcessor"})
+    @DependsOn({ "lifecycleBeanPostProcessor" })
     public DefaultAdvisorAutoProxyCreator getDefaultAdvisorAutoProxyCreator() {
         DefaultAdvisorAutoProxyCreator daap = new DefaultAdvisorAutoProxyCreator();
         daap.setProxyTargetClass(true);
@@ -184,16 +182,17 @@ public class ShiroConfig {
      * </p>
      *
      * @param sessionManager 默认的 Web 安全管理器
-     *
      * @return 配置好的 {@link AuthorizationAttributeSourceAdvisor} 实例
      */
     @Bean
-    public AuthorizationAttributeSourceAdvisor getAuthorizationAttributeSourceAdvisor(DefaultWebSecurityManager sessionManager) {
+    public AuthorizationAttributeSourceAdvisor getAuthorizationAttributeSourceAdvisor(
+            DefaultWebSecurityManager sessionManager) {
         AuthorizationAttributeSourceAdvisor aasa = new AuthorizationAttributeSourceAdvisor();
         aasa.setSecurityManager(sessionManager);
 
         // 配置注解拦截器
-        AopAllianceAnnotationsAuthorizingMethodInterceptor advice = new AopAllianceAnnotationsAuthorizingMethodInterceptor();
+        AopAllianceAnnotationsAuthorizingMethodInterceptor advice =
+                new AopAllianceAnnotationsAuthorizingMethodInterceptor();
         List<AuthorizingAnnotationMethodInterceptor> interceptors = new ArrayList<>(5);
 
         AnnotationResolver resolver = new SpringAnnotationResolver();
@@ -214,8 +213,6 @@ public class ShiroConfig {
      * <p>
      * 使用 {@link DelegatingFilterProxy} 将 Shiro 过滤器集成到 Spring Boot 的过滤器链中。
      * </p>
-     *
-     * @return
      */
     @Bean
     public FilterRegistrationBean<DelegatingFilterProxy> filterRegistrationBean() {

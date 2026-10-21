@@ -58,8 +58,10 @@ class AttachmentServiceTest {
 
     @Test
     void emptyFormDoesNotDeleteAttachmentsFromEitherApproval() {
-        when(attachmentMapper.selectListByLambda(any())).thenReturn(List.of(attachment("approval-a"), attachment("approval-b")));
-        when(approvalMapper.selectListByLambda(any())).thenReturn(List.of(approval("instance-a", "approval-a"), approval("instance-a", "approval-b")));
+        when(attachmentMapper.selectListByLambda(any()))
+                .thenReturn(List.of(attachment("approval-a"), attachment("approval-b")));
+        when(approvalMapper.selectListByLambda(any()))
+                .thenReturn(List.of(approval("instance-a", "approval-a"), approval("instance-a", "approval-b")));
 
         service.processTemp(request(List.of()));
 
@@ -73,8 +75,10 @@ class AttachmentServiceTest {
     @Test
     void onlyRemovedFormAttachmentIsDeletedWhenApprovalAndFormAttachmentsCoexist() {
         when(attachmentMapper.selectListByLambda(any())).thenReturn(List.of(
-                attachment("approval-a"), attachment("approval-b"), attachment("form-removed"), attachment("form-kept")));
-        when(approvalMapper.selectListByLambda(any())).thenReturn(List.of(approval("instance-a", "approval-a"), approval("instance-b", "approval-b")));
+                attachment("approval-a"), attachment("approval-b"), attachment("form-removed"),
+                attachment("form-kept")));
+        when(approvalMapper.selectListByLambda(any()))
+                .thenReturn(List.of(approval("instance-a", "approval-a"), approval("instance-b", "approval-b")));
 
         service.processTemp(request(List.of("form-kept")));
 
@@ -114,7 +118,8 @@ class AttachmentServiceTest {
         ArgumentCaptor<FileCopyRequest> copyRequest = ArgumentCaptor.forClass(FileCopyRequest.class);
         verify(files).copyFile(copyRequest.capture(), eq(StorageType.LOCAL.name()));
         assertEquals(DefaultRepositoryDir.getTempFileDir("new-file"), copyRequest.getValue().getSourceFolder());
-        assertEquals(DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, "new-file"), copyRequest.getValue().getDestFolder());
+        assertEquals(DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, "new-file"),
+                copyRequest.getValue().getDestFolder());
         assertEquals(source.getFileName().toString(), copyRequest.getValue().getFileName());
         verifyNoMoreInteractions(files);
 
@@ -138,14 +143,16 @@ class AttachmentServiceTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<LambdaQueryWrapper<Attachment>> query = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
         verify(attachmentMapper).selectListByLambda(query.capture());
-        assertEquals(Map.of("resource_id_eq", RESOURCE_ID, "organization_id_eq", ORGANIZATION_ID), query.getValue().getParams());
+        assertEquals(Map.of("resource_id_eq", RESOURCE_ID, "organization_id_eq", ORGANIZATION_ID),
+                query.getValue().getParams());
         assertTrue(query.getValue().getWhereClause().contains("resource_id = #{resource_id_eq}"));
         assertTrue(query.getValue().getWhereClause().contains("organization_id = #{organization_id_eq}"));
     }
 
     private void verifyApprovalCandidates(List<String> attachmentIds) {
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<LambdaQueryWrapper<ApprovalInstanceAttachment>> query = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
+        ArgumentCaptor<LambdaQueryWrapper<ApprovalInstanceAttachment>> query = ArgumentCaptor
+                .forClass(LambdaQueryWrapper.class);
         verify(approvalMapper).selectListByLambda(query.capture());
         assertEquals(Map.of("array_attachment_id", attachmentIds), query.getValue().getParams());
         assertTrue(query.getValue().getWhereClause().contains("attachment_id IN"));
@@ -160,9 +167,11 @@ class AttachmentServiceTest {
         assertAll(
                 () -> assertEquals(Map.of("array_id", attachmentIds), query.getValue().getParams()),
                 () -> assertTrue(query.getValue().getWhereClause().contains("id IN")),
-                () -> assertEquals(attachmentIds.stream().map(id -> DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, id)).toList(),
+                () -> assertEquals(attachmentIds.stream()
+                        .map(id -> DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, id)).toList(),
                         deletedFolders.getAllValues().stream().map(FileRequest::getFolder).toList()),
-                () -> assertTrue(deletedFolders.getAllValues().stream().allMatch(request -> StorageType.LOCAL.name().equals(request.getStorage()))));
+                () -> assertTrue(deletedFolders.getAllValues().stream()
+                        .allMatch(request -> StorageType.LOCAL.name().equals(request.getStorage()))));
         verifyNoMoreInteractions(files);
     }
 

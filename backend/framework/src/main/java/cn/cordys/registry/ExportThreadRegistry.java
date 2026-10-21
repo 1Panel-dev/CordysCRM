@@ -26,7 +26,7 @@ public final class ExportThreadRegistry {
     }
 
     /**
-     * 停止任务线程并中断它
+     * 移除任务注册并发送线程中断信号；线程是否退出取决于任务对中断的处理。
      *
      * @param taskId 任务ID
      */
@@ -41,7 +41,6 @@ public final class ExportThreadRegistry {
      * 检查任务是否已被中断
      *
      * @param taskId 任务ID
-     *
      * @return 如果任务不存在或已被中断返回true，否则返回false
      */
     public static boolean isInterrupted(String taskId) {
@@ -62,7 +61,6 @@ public final class ExportThreadRegistry {
      * 检查任务是否存在
      *
      * @param taskId 任务ID
-     *
      * @return 如果任务存在返回true
      */
     public static boolean exists(String taskId) {

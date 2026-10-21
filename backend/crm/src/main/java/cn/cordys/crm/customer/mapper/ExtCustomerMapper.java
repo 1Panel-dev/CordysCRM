@@ -23,15 +23,14 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-08 17:42:41
  */
 public interface ExtCustomerMapper extends StatisticSqlMapper {
 
     List<CustomerListResponse> list(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
-                                    @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<CustomerListResponse> sourceList(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
-                                          @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
@@ -47,8 +46,9 @@ public interface ExtCustomerMapper extends StatisticSqlMapper {
      */
     void revertTransferByApproval(@Param("id") String id, @Param("collectionTime") Long collectionTime);
 
-    List<AdvancedCustomerResponse> checkRepeatCustomer(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
-                                                       @Param("userId") String userId);
+    List<AdvancedCustomerResponse> checkRepeatCustomer(@Param("request") CustomerPageRequest request,
+            @Param("orgId") String orgId,
+            @Param("userId") String userId);
 
     int countByOwner(@Param("owner") String owner);
 
@@ -72,23 +72,25 @@ public interface ExtCustomerMapper extends StatisticSqlMapper {
      *
      * @param ownerId 负责人ID
      * @param filters 过滤条件集合
-     *
      * @return 客户数量
      */
     long filterOwnerCount(@Param("ownerId") String ownerId, @Param("filters") List<FilterConditionDTO> filters);
 
     List<CustomerListResponse> getListByIds(@Param("ids") List<String> ids);
 
-    Long selectCustomerCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed") boolean unfollowed);
+    Long selectCustomerCount(@Param("request") HomeStatisticSearchWrapperRequest request,
+            @Param("unfollowed") boolean unfollowed);
 
-    List<AdvancedCustomerPoolResponse> customerPoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<AdvancedCustomerPoolResponse> customerPoolList(@Param("request") BasePageRequest request,
+            @Param("orgId") String orgId);
 
-    List<GlobalCustomerPoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<GlobalCustomerPoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request,
+            @Param("orgId") String orgId);
 
     long globalPoolSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-
-    List<GlobalCustomerResponse> globalSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<GlobalCustomerResponse> globalSearchList(@Param("request") BasePageRequest request,
+            @Param("orgId") String orgId);
 
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
@@ -103,16 +105,17 @@ public interface ExtCustomerMapper extends StatisticSqlMapper {
 
     List<OptionDTO> getCustomerPoolId(@Param("ids") List<String> ids);
 
-    List<ChartResult> chart(@Param("request") CustomerChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+    List<ChartResult> chart(@Param("request") CustomerChartAnalysisDbRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId,
+            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
-    void updateCustomer(@Param("customer")Customer customer);
+    void updateCustomer(@Param("customer") Customer customer);
 
     int freeze(@Param("id") String id, @Param("orgId") String orgId, @Param("reason") String reason,
-               @Param("unfreezeTime") Long unfreezeTime);
+            @Param("unfreezeTime") Long unfreezeTime);
 
     int unfreeze(@Param("id") String id, @Param("orgId") String orgId, @Param("now") long now,
-                 @Param("expiredOnly") boolean expiredOnly);
+            @Param("expiredOnly") boolean expiredOnly);
 
     List<Customer> selectExpiredFrozen(@Param("now") long now);
 }

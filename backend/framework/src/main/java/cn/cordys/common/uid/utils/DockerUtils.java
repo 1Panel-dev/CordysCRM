@@ -18,7 +18,7 @@ public abstract class DockerUtils {
     private static final String ENV_KEY_PORT_ORIGINAL = "JPAAS_HOST_PORT_8080";
 
     /**
-     * Docker host & port
+     * Docker host &amp; port
      */
     private static String DOCKER_HOST = "";
     private static String DOCKER_PORT = "";
@@ -52,15 +52,13 @@ public abstract class DockerUtils {
 
     /**
      * Whether a docker
-     *
-     * @return
      */
     public static boolean isDocker() {
         return IS_DOCKER;
     }
 
     /**
-     * Retrieve host & port from environment
+     * Retrieve host &amp; port from environment
      */
     private static void retrieveFromEnv() {
         // retrieve host & port from environment
@@ -82,7 +80,6 @@ public abstract class DockerUtils {
             // found nothing means not a docker, maybe an actual machine
         } else if (!hasEnvHost && !hasEnvPort) {
             IS_DOCKER = false;
-
         } else {
             LOGGER.error("Missing host or port from env for Docker. host:{}, port:{}", DOCKER_HOST, DOCKER_PORT);
             throw new RuntimeException(

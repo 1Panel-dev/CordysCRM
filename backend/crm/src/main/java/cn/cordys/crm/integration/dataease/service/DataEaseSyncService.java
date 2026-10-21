@@ -77,7 +77,8 @@ public class DataEaseSyncService {
             return;
         }
         if (thirdConfig == null
-                || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {
+                || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(),
+                        thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {
             return;
         }
         if (isAuto && BooleanUtils.isNotTrue(thirdConfig.getDeAutoSync())) {
@@ -184,8 +185,9 @@ public class DataEaseSyncService {
         deTempResourceDTO.setRolePermissionMap(rolePermissionMap);
     }
 
-    private void updateUser(DeTempResourceDTO deTempResourceDTO, Map<String, UserDTO> crmUserMap, Set<String> roleNameSet,
-                            UserPageDTO deUser) {
+    private void updateUser(DeTempResourceDTO deTempResourceDTO, Map<String, UserDTO> crmUserMap,
+            Set<String> roleNameSet,
+            UserPageDTO deUser) {
         UserDTO crmUser = crmUserMap.get(deUser.getAccount());
         DataEaseClient dataEaseClient = deTempResourceDTO.getDataEaseClient();
         Map<String, RoleDTO> roleMap = deTempResourceDTO.getDeRoleMap();
@@ -211,7 +213,8 @@ public class DataEaseSyncService {
         userUpdateRequest.setId(deUser.getId());
         boolean needUpdate = false;
 
-        if (!Strings.CS.equals(deUser.getName(), crmUser.getName()) || !Strings.CS.equals(deUser.getEmail(), crmUser.getEmail())) {
+        if (!Strings.CS.equals(deUser.getName(), crmUser.getName())
+                || !Strings.CS.equals(deUser.getEmail(), crmUser.getEmail())) {
             needUpdate = true;
             userUpdateRequest.setName(crmUser.getName());
             userUpdateRequest.setEmail(crmUser.getEmail());
@@ -265,7 +268,8 @@ public class DataEaseSyncService {
                 needUpdate = true;
             }
             // 记录待更新的用户变量
-            UserCreateRequest.Variable variable = getCreateVariable(deTempResourceDTO.getSysVariableMap(), value.name(), deTempResourceDTO.getVariableValueMap(), crmDataScope);
+            UserCreateRequest.Variable variable = getCreateVariable(deTempResourceDTO.getSysVariableMap(), value.name(),
+                    deTempResourceDTO.getVariableValueMap(), crmDataScope);
             variables.add(variable);
         }
 
@@ -282,7 +286,8 @@ public class DataEaseSyncService {
             }
             if (CollectionUtils.isNotEmpty(crmDeptIds)) {
                 // 记录待更新的用户变量
-                UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap, crmDeptIds);
+                UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap,
+                        crmDeptIds);
                 variables.add(variable);
             }
         }
@@ -330,7 +335,8 @@ public class DataEaseSyncService {
                         return;
                     }
                     List<RoleListResponse> userCrmRoles = getUserCrmRoles(userRoleMap, crmRoleMap, crmUser.getId());
-                    UserVariableTempDTO userVariableTempDTO = getUserVariableTempDTO(userCrmRoles, customDeptRoleDeptMap,
+                    UserVariableTempDTO userVariableTempDTO = getUserVariableTempDTO(userCrmRoles,
+                            customDeptRoleDeptMap,
                             tree, rolePermissionMap, crmUser);
 
                     UserCreateRequest userCreateRequest = new UserCreateRequest();
@@ -353,14 +359,16 @@ public class DataEaseSyncService {
                 });
     }
 
-    private List<UserCreateRequest.Variable> getCreateVariables(DeTempResourceDTO deTempResourceDTO, UserVariableTempDTO userVariableTempDTO) {
+    private List<UserCreateRequest.Variable> getCreateVariables(DeTempResourceDTO deTempResourceDTO,
+            UserVariableTempDTO userVariableTempDTO) {
         List<UserCreateRequest.Variable> variables = new ArrayList<>();
         Map<String, SysVariableDTO> sysVariableMap = deTempResourceDTO.getSysVariableMap();
         Map<String, Map<String, String>> variableValueMap = deTempResourceDTO.getVariableValueMap();
         for (int i = 0; i < DataScopeVariable.values().length; i++) {
             DataScopeVariable value = DataScopeVariable.values()[i];
             String crmDataScope = userVariableTempDTO.getScopeValueMap().get(value.name());
-            UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap, crmDataScope);
+            UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap,
+                    crmDataScope);
             variables.add(variable);
         }
 
@@ -369,7 +377,8 @@ public class DataEaseSyncService {
                     .orElse(List.of());
 
             if (CollectionUtils.isNotEmpty(crmDeptIds)) {
-                UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap, crmDeptIds);
+                UserCreateRequest.Variable variable = getCreateVariable(sysVariableMap, value.name(), variableValueMap,
+                        crmDeptIds);
                 variables.add(variable);
             }
         }
@@ -402,8 +411,9 @@ public class DataEaseSyncService {
         return customDeptRoleDeptMap;
     }
 
-    private UserCreateRequest.Variable getCreateVariable(Map<String, SysVariableDTO> sysVariableMap, String variableName,
-                                                         Map<String, Map<String, String>> variableValueMap, String variableValueName) {
+    private UserCreateRequest.Variable getCreateVariable(Map<String, SysVariableDTO> sysVariableMap,
+            String variableName,
+            Map<String, Map<String, String>> variableValueMap, String variableValueName) {
         SysVariableDTO sysVariable = sysVariableMap.get(variableName);
         String variableId = sysVariable.getId();
         UserCreateRequest.Variable variable = new UserCreateRequest.Variable();
@@ -416,8 +426,9 @@ public class DataEaseSyncService {
         return variable;
     }
 
-    private UserCreateRequest.Variable getCreateVariable(Map<String, SysVariableDTO> sysVariableMap, String variableName,
-                                                         Map<String, Map<String, String>> variableValueMap, List<String> variableValueNames) {
+    private UserCreateRequest.Variable getCreateVariable(Map<String, SysVariableDTO> sysVariableMap,
+            String variableName,
+            Map<String, Map<String, String>> variableValueMap, List<String> variableValueNames) {
         SysVariableDTO sysVariable = sysVariableMap.get(variableName);
         String variableId = sysVariable.getId();
         UserCreateRequest.Variable variable = new UserCreateRequest.Variable();
@@ -430,10 +441,10 @@ public class DataEaseSyncService {
     }
 
     private UserVariableTempDTO getUserVariableTempDTO(List<RoleListResponse> userCrmRoles,
-                                                       Map<String, List<String>> customDeptRoleDeptMap,
-                                                       List<BaseTreeNode> tree,
-                                                       Map<String, Set<String>> rolePermissionMap,
-                                                       UserDTO orgUser) {
+            Map<String, List<String>> customDeptRoleDeptMap,
+            List<BaseTreeNode> tree,
+            Map<String, Set<String>> rolePermissionMap,
+            UserDTO orgUser) {
         UserVariableTempDTO userVariableTempDTO = new UserVariableTempDTO();
 
         for (DataScopeVariable value : DataScopeVariable.values()) {
@@ -452,7 +463,8 @@ public class DataEaseSyncService {
                 List<String> crmDataScopeDeptIds = getCrmDataScopeDeptIds(tree, permissionRoles,
                         customDeptRoleDeptMap, orgUser);
                 // 记录用户有权限的部门ID
-                userVariableTempDTO.getUserDeptIdMap().put(value.getDataScopeDeptVariable().name(), crmDataScopeDeptIds);
+                userVariableTempDTO.getUserDeptIdMap().put(value.getDataScopeDeptVariable().name(),
+                        crmDataScopeDeptIds);
             }
         }
         return userVariableTempDTO;
@@ -460,14 +472,9 @@ public class DataEaseSyncService {
 
     /**
      * 获取当前用户的角色
-     *
-     * @param userRoleMap
-     * @param crmRoleMap
-     * @param userId
-     *
-     * @return
      */
-    private List<RoleListResponse> getUserCrmRoles(Map<String, List<UserRole>> userRoleMap, Map<String, RoleListResponse> crmRoleMap, String userId) {
+    private List<RoleListResponse> getUserCrmRoles(Map<String, List<UserRole>> userRoleMap,
+            Map<String, RoleListResponse> crmRoleMap, String userId) {
         if (userRoleMap.get(userId) == null) {
             return List.of();
         }
@@ -483,7 +490,8 @@ public class DataEaseSyncService {
         for (RoleListResponse userCrmRole : userCrmRoles) {
             if (Strings.CS.equals(userCrmRole.getDataScope(), RoleDataScope.ALL.name())) {
                 return RoleDataScope.ALL.name();
-            } else if (Strings.CS.equalsAny(userCrmRole.getDataScope(), RoleDataScope.DEPT_CUSTOM.name(), RoleDataScope.DEPT_AND_CHILD.name())) {
+            } else if (Strings.CS.equalsAny(userCrmRole.getDataScope(), RoleDataScope.DEPT_CUSTOM.name(),
+                    RoleDataScope.DEPT_AND_CHILD.name())) {
                 dataScope = RoleDataScope.DEPT_CUSTOM.name();
             } else {
                 dataScope = RoleDataScope.SELF.name();
@@ -493,7 +501,7 @@ public class DataEaseSyncService {
     }
 
     private List<String> getCrmDataScopeDeptIds(List<BaseTreeNode> tree, List<RoleListResponse> userCrmRoles,
-                                                Map<String, List<String>> customDeptRoleDeptMap, UserDTO orgUser) {
+            Map<String, List<String>> customDeptRoleDeptMap, UserDTO orgUser) {
         List<String> parentDeptIds = new ArrayList<>();
         for (RoleListResponse userCrmRole : userCrmRoles) {
             if (Strings.CS.equals(userCrmRole.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())) {
@@ -591,7 +599,8 @@ public class DataEaseSyncService {
         for (DataScopeVariable value : DataScopeVariable.values()) {
             if (!sysVariableMap.containsKey(value.name())) {
                 // 创建数据权限系统变量
-                SysVariableDTO dataScopeVariable = createDataScopeVariable(dataEaseClient, value.name(), variableValueMap);
+                SysVariableDTO dataScopeVariable = createDataScopeVariable(dataEaseClient, value.name(),
+                        variableValueMap);
                 sysVariableMap.put(value.name(), dataScopeVariable);
             } else {
                 // 同步数据权限系统变量值
@@ -603,8 +612,8 @@ public class DataEaseSyncService {
                 variableValueMap.putIfAbsent(sysVariable.getId(), new HashMap<>());
                 Map<String, String> variableValueIdNameMap = variableValueMap.get(sysVariable.getId());
 
-                valueMap.forEach((variableValueId, sysVariableValue) ->
-                        variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId()));
+                valueMap.forEach((variableValueId, sysVariableValue) -> variableValueIdNameMap
+                        .put(sysVariableValue.getValue(), sysVariableValue.getId()));
 
                 List<String> dataScopeValues = List.of(RoleDataScope.ALL.name(),
                         RoleDataScope.SELF.name(),
@@ -617,7 +626,8 @@ public class DataEaseSyncService {
                         variableValueCreateRequest.setSysVariableId(sysVariable.getId());
                         variableValueCreateRequest.setValue(dataScopeValue);
                         try {
-                            SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(variableValueCreateRequest);
+                            SysVariableValueDTO sysVariableValue = dataEaseClient
+                                    .createSysVariableValue(variableValueCreateRequest);
                             variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
                         } catch (Exception e) {
                             log.error(e.getMessage(), e);
@@ -633,7 +643,8 @@ public class DataEaseSyncService {
             if (!sysVariableMap.containsKey(value.name())) {
                 // 创建数据权限部门变量
                 try {
-                    SysVariableDTO dataScopeDeptVariable = createDataScopeDeptVariable(dataEaseClient, value.name(), deptIds, variableValueMap);
+                    SysVariableDTO dataScopeDeptVariable = createDataScopeDeptVariable(dataEaseClient, value.name(),
+                            deptIds, variableValueMap);
                     sysVariableMap.put(value.name(), dataScopeDeptVariable);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
@@ -652,8 +663,8 @@ public class DataEaseSyncService {
 
                 variableValueMap.putIfAbsent(sysVariable.getId(), new HashMap<>());
                 Map<String, String> variableValueIdNameMap = variableValueMap.get(sysVariable.getId());
-                valueMap.forEach((variableValueId, sysVariableValue) ->
-                        variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId()));
+                valueMap.forEach((variableValueId, sysVariableValue) -> variableValueIdNameMap
+                        .put(sysVariableValue.getValue(), sysVariableValue.getId()));
 
                 // 取 deptIds 和 valueMap.key() 的差集（DE 缺失的部门，需要创建）
                 List<String> addValues = deptIds.stream()
@@ -668,7 +679,8 @@ public class DataEaseSyncService {
                 for (String addValue : addValues) {
                     variableValueCreateRequest.setValue(addValue);
                     try {
-                        SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(variableValueCreateRequest);
+                        SysVariableValueDTO sysVariableValue = dataEaseClient
+                                .createSysVariableValue(variableValueCreateRequest);
                         variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
@@ -689,7 +701,7 @@ public class DataEaseSyncService {
     }
 
     private SysVariableDTO createDataScopeVariable(DataEaseClient dataEaseClient, String sysVariableName,
-                                                   Map<String, Map<String, String>> variableValueMap) {
+            Map<String, Map<String, String>> variableValueMap) {
         SysVariableCreateRequest sysVariableCreateRequest = new SysVariableCreateRequest();
         sysVariableCreateRequest.setName(sysVariableName);
         SysVariableDTO sysVariable = dataEaseClient.createSysVariable(sysVariableCreateRequest);
@@ -701,13 +713,13 @@ public class DataEaseSyncService {
                 RoleDataScope.SELF.name(),
                 RoleDataScope.DEPT_CUSTOM.name(), NONE_DATA_SCOPE);
 
-
         SysVariableValueCreateRequest sysVariableValueCreateRequest = new SysVariableValueCreateRequest();
         sysVariableValueCreateRequest.setSysVariableId(sysVariable.getId());
         for (String dataScopeValue : dataScopeValues) {
             sysVariableValueCreateRequest.setValue(dataScopeValue);
             try {
-                SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(sysVariableValueCreateRequest);
+                SysVariableValueDTO sysVariableValue = dataEaseClient
+                        .createSysVariableValue(sysVariableValueCreateRequest);
                 variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -717,7 +729,7 @@ public class DataEaseSyncService {
     }
 
     private SysVariableDTO createDataScopeDeptVariable(DataEaseClient dataEaseClient, String sysVariableName,
-                                                       List<String> deptIds, Map<String, Map<String, String>> variableValueMap) {
+            List<String> deptIds, Map<String, Map<String, String>> variableValueMap) {
         SysVariableCreateRequest sysVariableCreateRequest = new SysVariableCreateRequest();
         sysVariableCreateRequest.setName(sysVariableName);
         sysVariableCreateRequest.setDesc("CRM生成，请勿修改！");
@@ -731,7 +743,8 @@ public class DataEaseSyncService {
             sysVariableValueCreateRequest.setSysVariableId(sysVariable.getId());
             sysVariableValueCreateRequest.setValue(deptId);
             try {
-                SysVariableValueDTO sysVariableValue = dataEaseClient.createSysVariableValue(sysVariableValueCreateRequest);
+                SysVariableValueDTO sysVariableValue = dataEaseClient
+                        .createSysVariableValue(sysVariableValueCreateRequest);
                 variableValueIdNameMap.put(sysVariableValue.getValue(), sysVariableValue.getId());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

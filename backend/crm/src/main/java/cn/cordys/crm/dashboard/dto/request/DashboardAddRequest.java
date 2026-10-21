@@ -13,8 +13,8 @@ import java.util.List;
 @Data
 public class DashboardAddRequest {
 
-    @Size(min = 1, max = 255, message = "{department.name.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{dashboard.name.not_blank}", groups = {Created.class, Updated.class})
+    @Size(min = 1, max = 255, message = "{department.name.length_range}", groups = { Created.class, Updated.class })
+    @NotBlank(message = "{dashboard.name.not_blank}", groups = { Created.class, Updated.class })
     @Schema(description = "仪表板名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 

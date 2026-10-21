@@ -35,7 +35,6 @@ public class UserExcelDataUs extends UserExcelData {
     @ColumnWidth(30)
     private String department;
 
-
     @ColumnWidth(50)
     @ExcelProperty("Position")
     private String position;

@@ -56,7 +56,8 @@ public class CustomerCapacityService {
             capacityDTO.setId(capacity.getId());
             capacityDTO.setCapacity(capacity.getCapacity());
             capacityDTO.setMembers(userExtendService.getScope(JSON.parseArray(capacity.getScopeId(), String.class)));
-            capacityDTO.setFilters(StringUtils.isEmpty(capacity.getFilter()) ? new ArrayList<>() : JSON.parseArray(capacity.getFilter(), FilterConditionDTO.class));
+            capacityDTO.setFilters(StringUtils.isEmpty(capacity.getFilter()) ? new ArrayList<>()
+                    : JSON.parseArray(capacity.getFilter(), FilterConditionDTO.class));
             capacityList.add(capacityDTO);
         });
         return capacityList;
@@ -65,7 +66,8 @@ public class CustomerCapacityService {
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
     public void add(CapacityAddRequest request, String currentUserId, String currentOrgId) {
         List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectAll(null);
-        List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
+        List<String> targetScopeIds = oldCapacities.stream()
+                .flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
                 .toList();
         boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
         if (duplicate) {
@@ -77,7 +79,8 @@ public class CustomerCapacityService {
         capacity.setOrganizationId(currentOrgId);
         capacity.setCapacity(request.getCapacity());
         capacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
-        capacity.setFilter(CollectionUtils.isNotEmpty(request.getFilters()) ? JSON.toJSONString(request.getFilters()) : null);
+        capacity.setFilter(
+                CollectionUtils.isNotEmpty(request.getFilters()) ? JSON.toJSONString(request.getFilters()) : null);
         capacity.setCreateTime(System.currentTimeMillis());
         capacity.setCreateUser(currentUserId);
         capacity.setUpdateTime(System.currentTimeMillis());
@@ -101,7 +104,8 @@ public class CustomerCapacityService {
         var wrapper = new LambdaQueryWrapper<CustomerCapacity>();
         wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId).nq(CustomerCapacity::getId, request.getId());
         var oldCapacities = customerCapacityMapper.selectListByLambda(wrapper);
-        List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
+        List<String> targetScopeIds = oldCapacities.stream()
+                .flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
                 .toList();
         boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
         if (duplicate) {
@@ -109,7 +113,8 @@ public class CustomerCapacityService {
         }
         oldCapacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
         oldCapacity.setCapacity(request.getCapacity());
-        oldCapacity.setFilter(CollectionUtils.isNotEmpty(request.getFilters()) ? JSON.toJSONString(request.getFilters()) : null);
+        oldCapacity.setFilter(
+                CollectionUtils.isNotEmpty(request.getFilters()) ? JSON.toJSONString(request.getFilters()) : null);
         oldCapacity.setUpdateTime(System.currentTimeMillis());
         oldCapacity.setUpdateUser(currentUserId);
         extCustomerCapacityMapper.updateCapacity(oldCapacity);
@@ -120,8 +125,7 @@ public class CustomerCapacityService {
                         .resourceName(Translator.get("module.customer.capacity.setting"))
                         .originalValue(oldCapacity)
                         .modifiedValue(customerCapacityMapper.selectByPrimaryKey(request.getId()))
-                        .build()
-        );
+                        .build());
     }
 
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")

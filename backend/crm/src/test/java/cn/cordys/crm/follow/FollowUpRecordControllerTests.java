@@ -27,5 +27,4 @@ public class FollowUpRecordControllerTests extends BaseTest {
         this.requestGetWithOkAndReturn(MODULE_FORM);
     }
 
-
 }

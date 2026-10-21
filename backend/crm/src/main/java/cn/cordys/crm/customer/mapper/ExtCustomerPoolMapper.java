@@ -16,7 +16,6 @@ public interface ExtCustomerPoolMapper {
      *
      * @param request 请求参数
      * @param orgId   组织ID
-     *
      * @return 公海池列表
      */
     List<CustomerPoolDTO> list(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
@@ -39,7 +38,6 @@ public interface ExtCustomerPoolMapper {
      * 获取公海池集合
      *
      * @param orgId 组织ID
-     *
      * @return 公海池集合
      */
     List<CustomerPool> getAllPool(@Param("orgId") String orgId);
@@ -49,7 +47,6 @@ public interface ExtCustomerPoolMapper {
      *
      * @param scopeIds 范围ID集合
      * @param orgId    组织ID
-     *
      * @return 公海池集合
      */
     List<CustomerPool> getPoolByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);

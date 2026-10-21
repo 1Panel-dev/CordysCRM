@@ -85,7 +85,8 @@ public class MybatisInterceptorConfig {
      * @param interceptorMethod 自定义拦截器方法
      * @param undoMethod        自定义反操作方法
      */
-    public MybatisInterceptorConfig(Class<?> modelClass, String attrName, Class<?> interceptorClass, String interceptorMethod, String undoMethod) {
+    public MybatisInterceptorConfig(Class<?> modelClass, String attrName, Class<?> interceptorClass,
+            String interceptorMethod, String undoMethod) {
         this.modelName = modelClass.getName();
         this.attrName = attrName;
         this.interceptorClass = interceptorClass.getName();

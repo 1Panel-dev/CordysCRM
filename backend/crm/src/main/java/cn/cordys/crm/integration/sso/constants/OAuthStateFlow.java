@@ -5,9 +5,10 @@ import java.util.Optional;
 
 /**
  * OAuth 登录流程类型。
- *
- * <p>枚举值对应系统内部支持的 OAuth 登录入口，{@link #value} 是写入 {@code state} 参数前缀的稳定标识。
- * 使用显式字符串而不是枚举名称，可以避免枚举重命名意外改变前后端约定或已发出的授权请求。</p>
+ * <p>
+ * 枚举值对应系统内部支持的 OAuth 登录入口，{@link #value} 是写入 {@code state} 参数前缀的稳定标识。
+ * 使用显式字符串而不是枚举名称，可以避免枚举重命名意外改变前后端约定或已发出的授权请求。
+ * </p>
  */
 public enum OAuthStateFlow {
 

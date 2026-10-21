@@ -6,7 +6,7 @@ import lombok.Data;
 import java.io.Serial;
 
 /**
- * <p>用户数据传输对象，用于传输用户信息，包含其他平台对接信息和头像。</p>
+ * 审批用户信息，包含用户标识、联系方式、头像及审批结果和原因。
  */
 @Data
 public class UserApprovalDTO implements java.io.Serializable {

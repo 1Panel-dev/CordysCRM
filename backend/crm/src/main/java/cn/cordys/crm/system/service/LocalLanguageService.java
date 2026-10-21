@@ -12,7 +12,6 @@ public class LocalLanguageService {
     @Resource
     private BaseMapper<User> userMapper;
 
-
     public void localeLanguageChange(LocaleLanguageRequest request, String userId) {
         User user = new User();
         user.setId(userId);

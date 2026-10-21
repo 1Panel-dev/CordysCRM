@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * 统计字段字段值读取语句的冒烟测试。
- *
- * <p>取值有两种存法(业务字段在主表列上, 自定义字段在字段值表里), 两条语句都要能拼出能执行的 SQL。
- * 聚合与游标语句已按表单下放, 覆盖在 {@code StatisticSqlMapperTests}。</p>
- *
- * <p>全部是只读查询, 用不存在的ID跑, 不依赖也不产生任何测试数据。</p>
+ * <p>
+ * 取值有两种存法(业务字段在主表列上, 自定义字段在字段值表里), 两条语句都要能拼出能执行的 SQL。
+ * 聚合与游标语句已按表单下放, 覆盖在 {@code StatisticSqlMapperTests}。
+ * </p>
+ * <p>
+ * 全部是只读查询, 用不存在的ID跑, 不依赖也不产生任何测试数据。
+ * </p>
  */
 class ExtStatisticMapperTests extends BaseTest {
 
@@ -33,8 +35,9 @@ class ExtStatisticMapperTests extends BaseTest {
 
     /**
      * 统计范围条件里的「匹配字段」右值读的是宿主记录的字段值表, 没有值时返回 null。
-     *
-     * <p>返回 null 会被上层当成「这个条件取不到值」丢掉, 所以这里必须是真的 null 而不是空串。</p>
+     * <p>
+     * 返回 null 会被上层当成「这个条件取不到值」丢掉, 所以这里必须是真的 null 而不是空串。
+     * </p>
      */
     @Test
     void selectFieldValueReturnsNullWhenValueAbsent() {

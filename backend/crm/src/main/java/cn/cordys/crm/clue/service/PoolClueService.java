@@ -60,8 +60,8 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
@@ -155,7 +155,8 @@ public class PoolClueService {
             return new ArrayList<>();
         }
 
-        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
+        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser()))
+                .toList();
         List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
         Map<String, String> userMap = createOrUpdateUsers.stream()
                 .collect(Collectors.toMap(User::getId, User::getName));
@@ -178,16 +179,21 @@ public class PoolClueService {
         Map<String, CluePoolRecycleRule> recycleRuleMap = recycleRules.stream()
                 .collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 
-        Map<String, List<CluePoolHiddenField>> hiddenFieldMap = cluePoolService.getCluePoolHiddenFieldsByPoolIds(poolIds)
+        Map<String, List<CluePoolHiddenField>> hiddenFieldMap = cluePoolService
+                .getCluePoolHiddenFieldsByPoolIds(poolIds)
                 .stream()
                 .collect(Collectors.groupingBy(CluePoolHiddenField::getPoolId));
 
-        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), currentOrgId).getFields();
+        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), currentOrgId)
+                .getFields();
 
         pools.forEach(pool -> {
-            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
-            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
-            if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue())) {
+            List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class),
+                    currentOrgId);
+            List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class),
+                    currentOrgId);
+            if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser)
+                    || Strings.CS.equals(currentUser, InternalUser.ADMIN.getValue())) {
                 CluePoolDTO poolDTO = new CluePoolDTO();
                 BeanUtils.copyBean(poolDTO, pool);
                 poolDTO.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
@@ -204,7 +210,8 @@ public class PoolClueService {
                 CluePoolRecycleRule cluePoolRecycleRule = recycleRuleMap.get(pool.getId());
                 if (cluePoolRecycleRule != null) {
                     BeanUtils.copyBean(recycleRule, cluePoolRecycleRule);
-                    recycleRule.setConditions(JSON.parseArray(cluePoolRecycleRule.getCondition(), RuleConditionDTO.class));
+                    recycleRule
+                            .setConditions(JSON.parseArray(cluePoolRecycleRule.getCondition(), RuleConditionDTO.class));
                 }
 
                 poolDTO.setPickRule(pickRule);
@@ -242,7 +249,8 @@ public class PoolClueService {
         pickRuleWrapper.eq(CluePoolPickRule::getPoolId, request.getPoolId());
         List<CluePoolPickRule> cluePoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
         CluePoolPickRule pickRule = cluePoolPickRules.getFirst();
-        boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser, currentOrgId);
+        boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser,
+                currentOrgId);
         if (!poolAdmin) {
             validateDailyPickNum(1, currentUser, pickRule);
         }
@@ -313,11 +321,13 @@ public class PoolClueService {
         pickRuleWrapper.eq(CluePoolPickRule::getPoolId, request.getPoolId());
         List<CluePoolPickRule> cluePoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
         CluePoolPickRule pickRule = cluePoolPickRules.getFirst();
-        boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser, currentOrgId);
+        boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser,
+                currentOrgId);
         if (!poolAdmin) {
             validateDailyPickNum(request.getBatchIds().size(), currentUser, pickRule);
         }
-        request.getBatchIds().forEach(id -> ownClue(id, currentUser, pickRule, currentUser, LogType.PICK, currentOrgId, poolAdmin));
+        request.getBatchIds()
+                .forEach(id -> ownClue(id, currentUser, pickRule, currentUser, LogType.PICK, currentOrgId, poolAdmin));
     }
 
     /**
@@ -327,10 +337,12 @@ public class PoolClueService {
      * @param assignUserId 分配用户ID
      * @param currentOrgId 当前组织ID
      */
-    public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
+    public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId,
+            String currentUser) {
         validateBatchNotFrozen(request.getBatchIds());
         validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
-        request.getBatchIds().forEach(id -> ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
+        request.getBatchIds()
+                .forEach(id -> ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
     }
 
     /**
@@ -356,8 +368,7 @@ public class PoolClueService {
                 orgId,
                 Clue::getId,
                 Clue::getApprovalStatus,
-                PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE
-        );
+                PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE);
         int fail = clues.size() - permittedIds.size();
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(fail).skip(0)
@@ -383,9 +394,8 @@ public class PoolClueService {
 
             List<LogDTO> logs = clues.stream()
                     .filter(clue -> deleteIds.contains(clue.getId()))
-                    .map(clue ->
-                            new LogDTO(orgId, clue.getId(), userId, LogType.DELETE, LogModule.CLUE_POOL_INDEX, clue.getName())
-                    )
+                    .map(clue -> new LogDTO(orgId, clue.getId(), userId, LogType.DELETE, LogModule.CLUE_POOL_INDEX,
+                            clue.getName()))
                     .toList();
             logService.batchAdd(logs);
         }
@@ -404,7 +414,8 @@ public class PoolClueService {
         unfreezeExpired(clue, now);
 
         Long unfreezeTime = request.isPermanentFreeze()
-                ? null : now + request.getFreezeDays() * DAY_MILLIS;
+                ? null
+                : now + request.getFreezeDays() * DAY_MILLIS;
         if (extClueMapper.freeze(clue.getId(), orgId, request.getReason(), unfreezeTime) == 0) {
             throw new GenericException(Translator.getWithArgs("pool.resource.already_frozen", clue.getName()));
         }
@@ -447,7 +458,8 @@ public class PoolClueService {
         Integer capacity = getUserCapacity(ownUserId, currentOrgId);
         int ownCount = (int) extClueMapper.getOwnerCount(ownUserId);
         if (capacity != null && capacity - ownCount < processCount) {
-            throw new GenericException(Translator.getWithArgs("customer.capacity.over", Math.max(capacity - ownCount, 0)));
+            throw new GenericException(
+                    Translator.getWithArgs("customer.capacity.over", Math.max(capacity - ownCount, 0)));
         }
     }
 
@@ -464,7 +476,8 @@ public class PoolClueService {
             clueWrapper
                     .eq(Clue::getOwner, ownUserId)
                     .eq(Clue::getInSharedPool, false)
-                    .between(Clue::getCollectionTime, TimeUtils.getTodayStart(), TimeUtils.getTodayStart() + DAY_MILLIS);
+                    .between(Clue::getCollectionTime, TimeUtils.getTodayStart(),
+                            TimeUtils.getTodayStart() + DAY_MILLIS);
             List<Clue> clues = clueMapper.selectListByLambda(clueWrapper);
             int pickedCount = clues.size();
             if (pickingCount + pickedCount > pickRule.getPickNumber()) {
@@ -491,7 +504,8 @@ public class PoolClueService {
      * @param clueId  线索ID
      * @param ownerId 拥有人ID
      */
-    private void ownClue(String clueId, String ownerId, CluePoolPickRule pickRule, String operateUserId, String logType, String currentOrgId, boolean isPoolAdmin) {
+    private void ownClue(String clueId, String ownerId, CluePoolPickRule pickRule, String operateUserId, String logType,
+            String currentOrgId, boolean isPoolAdmin) {
         Clue clue = clueMapper.selectByPrimaryKey(clueId);
         if (clue == null) {
             throw new IllegalArgumentException(Translator.get("clue.not.exist"));
@@ -501,11 +515,13 @@ public class PoolClueService {
         }
         validateNotFrozen(clue);
         if (!isPoolAdmin && pickRule != null && pickRule.getLimitNew()) {
-            LocalDateTime joinPoolTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(clue.getUpdateTime()), ZoneId.systemDefault());
+            LocalDateTime joinPoolTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(clue.getUpdateTime()),
+                    ZoneId.systemDefault());
             LocalDateTime releaseDate = joinPoolTime.plusDays(pickRule.getNewPickInterval());
             if (releaseDate.isAfter(LocalDateTime.now())) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                throw new GenericException(Translator.getWithArgs("pool.data.release.date", releaseDate.format(formatter)));
+                throw new GenericException(
+                        Translator.getWithArgs("pool.data.release.date", releaseDate.format(formatter)));
             }
         }
         if (pickRule != null && pickRule.getLimitPreOwner()) {
@@ -516,11 +532,14 @@ public class PoolClueService {
                 clueOwners.sort(Comparator.comparingLong(ClueOwner::getCollectionTime).reversed());
                 ClueOwner lastOwner = clueOwners.getFirst();
                 if (Strings.CS.equals(lastOwner.getOwner(), ownerId) &&
-                        System.currentTimeMillis() < pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()) {
-                    LocalDateTime nextPickTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()),
+                        System.currentTimeMillis() < pickRule.getPickIntervalDays() * DAY_MILLIS
+                                + lastOwner.getEndTime()) {
+                    LocalDateTime nextPickTime = LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli(pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()),
                             ZoneId.systemDefault());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    throw new GenericException(Translator.getWithArgs("customer.pre_owner.pick.limit", nextPickTime.format(formatter)));
+                    throw new GenericException(
+                            Translator.getWithArgs("customer.pre_owner.pick.limit", nextPickTime.format(formatter)));
                 }
             }
         }
@@ -540,12 +559,14 @@ public class PoolClueService {
         }
 
         // 日志
-        LogDTO logDTO = new LogDTO(currentOrgId, clue.getId(), operateUserId, logType, LogModule.CLUE_POOL_INDEX, clue.getName());
+        LogDTO logDTO = new LogDTO(currentOrgId, clue.getId(), operateUserId, logType, LogModule.CLUE_POOL_INDEX,
+                clue.getName());
         logService.add(logDTO);
 
         // 分配通知
         if (Strings.CS.equals(logType, LogType.ASSIGN)) {
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_DISTRIBUTED,
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.CLUE_DISTRIBUTED,
                     clue.getName(), operateUserId, currentOrgId, List.of(clue.getOwner()), true);
         }
     }
@@ -562,9 +583,12 @@ public class PoolClueService {
         if (pool == null) {
             throw new GenericException(Translator.get("clue_pool_not_exist"));
         }
-        List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
-        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
-        if (!scopeIds.contains(userId) && !ownerIds.contains(userId) && !Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+        List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class),
+                orgId);
+        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class),
+                orgId);
+        if (!scopeIds.contains(userId) && !ownerIds.contains(userId)
+                && !Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             throw new GenericException(Translator.get("clue_pool_member_access_fail"));
         }
     }
@@ -658,7 +682,8 @@ public class PoolClueService {
         logService.add(log);
     }
 
-    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId,
+            String organizationId) {
         BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
         List<Clue> originClues = clueMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originClues)) {
@@ -674,8 +699,7 @@ public class PoolClueService {
                 organizationId,
                 Clue::getId,
                 Clue::getApprovalStatus,
-                PermissionConstants.CLUE_MANAGEMENT_POOL_UPDATE
-        );
+                PermissionConstants.CLUE_MANAGEMENT_POOL_UPDATE);
         int fail = originClues.size() - permittedIds.size();
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(fail).skip(0)
@@ -702,36 +726,31 @@ public class PoolClueService {
                 .toList();
 
         CommonBeanFactory.getBean(ApprovalResourceService.class)
-                .batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CLUE, organizationId, userId, field.getName(), request.getFieldValue());
-        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_POOL_INDEX, extClueMapper::batchUpdate, userId, organizationId, true);
+                .batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CLUE, organizationId, userId,
+                        field.getName(), request.getFieldValue());
+        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_POOL_INDEX,
+                extClueMapper::batchUpdate, userId, organizationId, true);
 
         return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(fail).skip(0)
                 .errorMessages(Translator.get("batch.update.reason")).build();
     }
 
-
     /**
      * 下载导入模板
-     *
-     * @param response
-     * @param orgId
      */
     public void downloadImportTpl(HttpServletResponse response, String orgId) {
         List<List<String>> headList = moduleFormService.getCustomImportHeadsNoRefAndOwner(FormKey.CLUE.getKey(), orgId);
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
                 headList,
-                Translator.get("clue_pool.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
-                new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFieldsNoOwner(FormKey.CLUE.getKey(), orgId)),
+                Translator.get("clue_pool.import_tpl.name"), Translator.get(SheetKey.DATA),
+                Translator.get(SheetKey.COMMENT),
+                new CustomTemplateWriteHandler(
+                        moduleFormService.getAllCustomImportFieldsNoOwner(FormKey.CLUE.getKey(), orgId)),
                 new CustomHeadColWidthStyleStrategy());
     }
 
     /**
      * 导入校验
-     *
-     * @param file
-     * @param request
-     * @param orgId
-     * @return
      */
     public ImportResponse importPreCheck(MultipartFile file, CluePoolImportRequest request, String orgId) {
         if (file == null) {
@@ -747,9 +766,12 @@ public class PoolClueService {
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CLUE.getKey(), currentOrg);
-            fields.removeIf(baseField -> Strings.CI.equals(baseField.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()));
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg, importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            fields.removeIf(baseField -> Strings.CI.equals(baseField.getBusinessKey(),
+                    BusinessModuleField.CLUE_OWNER.getBusinessKey()));
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue",
+                    "clue_field", currentOrg, importType);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -760,126 +782,134 @@ public class PoolClueService {
 
     /**
      * 导入
-     *
-     * @param file
-     * @param request
-     * @param orgId
-     * @param userId
-     * @return
      */
     public ImportResponse realImport(MultipartFile file, CluePoolImportRequest request, String orgId, String userId) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CLUE.getKey(), orgId);
-            fields.removeIf(baseField -> Strings.CI.equals(baseField.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()));
+            fields.removeIf(baseField -> Strings.CI.equals(baseField.getBusinessKey(),
+                    BusinessModuleField.CLUE_OWNER.getBusinessKey()));
             CustomImportAfterDoConsumer<Clue, BaseResourceSubField> afterDo = (clues, clueFields, clueFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                    case ADD -> {
+                case ADD -> {
+                    clues.forEach(clue -> {
+                        clue.setStage(ClueStatus.NEW.name());
+                        clue.setInSharedPool(true);
+                        clue.setPoolId(request.getPoolId());
+                        clue.setFrozen(false);
+                        clue.setApprovalStatus(ApprovalStatus.NONE.name());
+                        logs.add(new LogDTO(orgId, clue.getId(), userId, LogType.ADD, LogModule.CLUE_POOL_INDEX,
+                                clue.getName()));
+                    });
+                    clueMapper.batchInsert(clues);
+                    clueFieldMapper.batchInsert(
+                            clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
+                    clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
+                    // 日志
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = clues.stream().map(Clue::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
+                    }
+                    //原数据
+                    List<Clue> originClueList = clueMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originClueList)) {
+                        break;
+                    }
+                    Map<String, Clue> originClueMaps = originClueList.stream()
+                            .collect(Collectors.toMap(Clue::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = clueFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    List<ClueField> insertField = new ArrayList<>();
+                    List<ClueFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtClueMapper clueBatchMapper = sqlSession.getMapper(ExtClueMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                    //更新
+                    if (CollectionUtils.isNotEmpty(clues)) {
                         clues.forEach(clue -> {
-                            clue.setStage(ClueStatus.NEW.name());
                             clue.setInSharedPool(true);
                             clue.setPoolId(request.getPoolId());
-                            clue.setFrozen(false);
-                            clue.setApprovalStatus(ApprovalStatus.NONE.name());
-                            logs.add(new LogDTO(orgId, clue.getId(), userId, LogType.ADD, LogModule.CLUE_POOL_INDEX, clue.getName()));
+                            clueBatchMapper.updateClue(clue);
                         });
-                        clueMapper.batchInsert(clues);
-                        clueFieldMapper.batchInsert(clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
-                        clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
-                        // 日志
-                        logService.batchAdd(logs);
                     }
-                    case UPDATE -> {
-                        List<String> ids = clues.stream().map(Clue::getId).toList();
-                        if (CollectionUtils.isEmpty(ids)) {
-                            break;
-                        }
-                        //原数据
-                        List<Clue> originClueList = clueMapper.selectByIds(ids);
-                        if (CollectionUtils.isEmpty(originClueList)) {
-                            break;
-                        }
-                        Map<String, Clue> originClueMaps = originClueList.stream().collect(Collectors.toMap(Clue::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
 
-                        List<ClueField> insertField = new ArrayList<>();
-                        List<ClueFieldBlob> insertFieldBlob = new ArrayList<>();
-                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                        ExtClueMapper clueBatchMapper = sqlSession.getMapper(ExtClueMapper.class);
-                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-                        //更新
-                        if (CollectionUtils.isNotEmpty(clues)) {
-                            clues.forEach(clue -> {
-                                clue.setInSharedPool(true);
-                                clue.setPoolId(request.getPoolId());
-                                clueBatchMapper.updateClue(clue);
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(clueFields)) {
-                            List<ClueField> fieldList = clueFieldMapper.selectByIds(clueFields.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ClueField> fieldMap = fieldList.stream().collect(Collectors.toMap(ClueField::getId, Function.identity()));
-                            clueFields.forEach(clueField -> {
-                                if (fieldMap.containsKey(clueField.getId())) {
-                                    commonMapper.updateCustomerField("clue_field", clueField);
-                                } else {
-                                    insertField.add(BeanUtils.copyBean(new ClueField(), clueField));
-                                }
-                            });
-                        }
-
-                        if (CollectionUtils.isNotEmpty(clueFieldBlobs)) {
-                            List<ClueFieldBlob> blobList = clueFieldBlobMapper.selectByIds(clueFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                            Map<String, ClueFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ClueFieldBlob::getId, Function.identity()));
-                            clueFieldBlobs.forEach(clueFieldBlob -> {
-                                if (blobMap.containsKey(clueFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("clue_field_blob", clueFieldBlob);
-                                } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new ClueFieldBlob(), clueFieldBlob));
-                                }
-                            });
-                        }
-
-                        sqlSession.flushStatements();
-                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                        if (CollectionUtils.isNotEmpty(insertField)) {
-                            clueFieldMapper.batchInsert(insertField);
-                        }
-                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                            clueFieldBlobMapper.batchInsert(insertFieldBlob);
-                        }
-
-                        SqlSession currentSession =
-                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                        currentSession.clearCache();
-
-                        Map<String, Clue> modifiedClueMaps = clueMapper.selectByIds(ids).stream().collect(Collectors.toMap(Clue::getId, Function.identity()));
-                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
-
-                        //日志
-                        ids.forEach(id -> {
-                            Clue originDate = originClueMaps.get(id);
-                            Clue modifiedDate = modifiedClueMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
-                            LogContextInfo contextInfo = OperationLogContext.getContext();
-                            if (contextInfo != null) {
-                                LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.UPDATE, LogModule.CLUE_POOL_INDEX, modifiedDate.getName());
-                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                                logs.add(logDTO);
-                                OperationLogContext.clear();
+                    if (CollectionUtils.isNotEmpty(clueFields)) {
+                        List<ClueField> fieldList = clueFieldMapper
+                                .selectByIds(clueFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ClueField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(ClueField::getId, Function.identity()));
+                        clueFields.forEach(clueField -> {
+                            if (fieldMap.containsKey(clueField.getId())) {
+                                commonMapper.updateCustomerField("clue_field", clueField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new ClueField(), clueField));
                             }
                         });
-                        logService.batchAdd(logs);
                     }
-                }
 
+                    if (CollectionUtils.isNotEmpty(clueFieldBlobs)) {
+                        List<ClueFieldBlob> blobList = clueFieldBlobMapper
+                                .selectByIds(clueFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ClueFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(ClueFieldBlob::getId, Function.identity()));
+                        clueFieldBlobs.forEach(clueFieldBlob -> {
+                            if (blobMap.containsKey(clueFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("clue_field_blob", clueFieldBlob);
+                            } else {
+                                insertFieldBlob.add(BeanUtils.copyBean(new ClueFieldBlob(), clueFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        clueFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        clueFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, Clue> modifiedClueMaps = clueMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(Clue::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = clueFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    //日志
+                    ids.forEach(id -> {
+                        Clue originDate = originClueMaps.get(id);
+                        Clue modifiedDate = modifiedClueMaps.get(id);
+                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.UPDATE, LogModule.CLUE_POOL_INDEX,
+                                    modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                }
+                }
             };
-            CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, orgId, userId,
+            CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields,
+                    Clue.class, orgId, userId,
                     "clue_field", "clue_field_blob", afterDo, 2000, null, null, request.getImportType());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet()
+                    .doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {

@@ -50,7 +50,8 @@ public class WeComNoticeSender extends AbstractNoticeSender {
     }
 
     private void sendWeCom(String context, NoticeModel noticeModel, String organizationId) {
-        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(), noticeModel.getOperator());
+        List<Receiver> receivers = super.getReceivers(noticeModel.getReceivers(), noticeModel.isExcludeSelf(),
+                noticeModel.getOperator());
         if (CollectionUtils.isEmpty(receivers)) {
             return;
         }
@@ -72,19 +73,21 @@ public class WeComNoticeSender extends AbstractNoticeSender {
             return;
         }
         //获取企业微信通知的配置数据
-        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper.getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.WECOM_SYNC.toString());
+        OrganizationConfigDetail orgConfigDetailByIdAndType = extOrganizationConfigDetailMapper
+                .getOrgConfigDetailByIdAndType(organizationConfig.getId(), ThirdDetailType.WECOM_SYNC.toString());
         if (orgConfigDetailByIdAndType == null || orgConfigDetailByIdAndType.getContent() == null) {
             log.warn("没有配置企业微信通知信息，无法发送消息");
             return;
         }
         var thirdConfigurationDTO = JSON.parseObject(
-                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class
-        );
+                new String(orgConfigDetailByIdAndType.getContent()), ThirdConfigBaseDTO.class);
         WecomThirdConfigRequest wecomThirdConfigRequest = new WecomThirdConfigRequest();
         if (thirdConfigurationDTO.getConfig() == null) {
-            wecomThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()), WecomThirdConfigRequest.class);
+            wecomThirdConfigRequest = JSON.parseObject(new String(orgConfigDetailByIdAndType.getContent()),
+                    WecomThirdConfigRequest.class);
         } else {
-            wecomThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigurationDTO.getConfig(), WecomThirdConfigRequest.class);
+            wecomThirdConfigRequest = JSON.MAPPER.convertValue(thirdConfigurationDTO.getConfig(),
+                    WecomThirdConfigRequest.class);
         }
 
         //构建企业微信消息
@@ -95,6 +98,7 @@ public class WeComNoticeSender extends AbstractNoticeSender {
         weComSendDTO.setText(new Text(context));
         weComSendDTO.setMsgtype("text");
 
-        tokenService.sendNoticeByToken(weComSendDTO, wecomThirdConfigRequest.getCorpId(), wecomThirdConfigRequest.getAppSecret());
+        tokenService.sendNoticeByToken(weComSendDTO, wecomThirdConfigRequest.getCorpId(),
+                wecomThirdConfigRequest.getAppSecret());
     }
 }

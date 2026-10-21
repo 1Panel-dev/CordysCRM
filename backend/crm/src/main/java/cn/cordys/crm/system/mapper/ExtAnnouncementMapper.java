@@ -15,6 +15,7 @@ public interface ExtAnnouncementMapper {
 
     List<String> selectFixTimeExpiredIds(@Param("startTime") long startTime, @Param("endTime") long endTime);
 
-    int updateNotice(@Param("ids") List<String> ids, @Param("notice") Boolean notice, @Param("organizationId") String organizationId);
+    int updateNotice(@Param("ids") List<String> ids, @Param("notice") Boolean notice,
+            @Param("organizationId") String organizationId);
 
 }

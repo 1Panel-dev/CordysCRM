@@ -1,6 +1,5 @@
 package cn.cordys.mybatis.lambda;
 
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandleProxies;
 import java.lang.invoke.MethodHandles;

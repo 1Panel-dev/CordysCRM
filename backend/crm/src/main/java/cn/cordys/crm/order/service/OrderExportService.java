@@ -54,7 +54,8 @@ public class OrderExportService extends BaseExportService {
         var filteredList = queryResult.getLeft();
         var queryCount = queryResult.getRight();
         if (CollectionUtils.isEmpty(filteredList)) {
-            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).queryCount(queryCount).build();
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0)
+                    .queryCount(queryCount).build();
         }
         var dataList = orderService.buildList(filteredList, exportParam.getOrgId());
         // 从缓存获取阶段配置，避免重复查询
@@ -66,7 +67,6 @@ public class OrderExportService extends BaseExportService {
         result.setQueryCount(queryCount);
         return result;
     }
-
 
     private Pair<List<OrderListResponse>, Integer> collectExportList(ExportDTO exportParam) {
         var orgId = exportParam.getOrgId();
@@ -96,13 +96,14 @@ public class OrderExportService extends BaseExportService {
     @SuppressWarnings("unchecked")
     private Map<String, String> getOrLoadStageConfigMap(ExportDTO exportParam) {
         return (Map<String, String>) exportParam.getExtraParams()
-                .computeIfAbsent(STAGE_CONFIG_MAP_KEY, key ->
-                        extOrderStageConfigMapper.getStageConfigList(exportParam.getOrgId())
-                                .stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName)));
+                .computeIfAbsent(STAGE_CONFIG_MAP_KEY,
+                        key -> extOrderStageConfigMapper.getStageConfigList(exportParam.getOrgId())
+                                .stream()
+                                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName)));
     }
 
-
-    public LinkedHashMap<String, Object> getSystemFieldMap(OrderListResponse data, List<FieldExportMeta> exportMetas, Map<String, String> stageConfigMap, Locale locale) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(OrderListResponse data, List<FieldExportMeta> exportMetas,
+            Map<String, String> stageConfigMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -115,7 +116,8 @@ public class OrderExportService extends BaseExportService {
             systemFieldMap.put("stage", stageConfigMap.get(data.getStage()));
         }
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+            systemFieldMap.put("approvalStatus",
+                    Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));

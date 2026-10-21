@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.notice.message;
 
-
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.system.domain.MessageTask;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
@@ -33,10 +32,10 @@ public class MessageDetailService {
      *
      * @param module         任务类型
      * @param organizationId 项目ID
-     *
-     * @return List<MessageDetail>list
+     * @return 消息通知配置列表
      */
-    public List<MessageDetailDTO> searchMessageByTypeAndOrgId(String module, boolean useTemplate, String template, String organizationId) {
+    public List<MessageDetailDTO> searchMessageByTypeAndOrgId(String module, boolean useTemplate, String template,
+            String organizationId) {
         try {
             return getMessageDetailDTOs(module, useTemplate, template, organizationId);
         } catch (Exception e) {
@@ -45,22 +44,27 @@ public class MessageDetailService {
         }
     }
 
-    private List<MessageDetailDTO> getMessageDetailDTOs(String module, boolean useTemplate, String template, String organizationId) {
+    private List<MessageDetailDTO> getMessageDetailDTOs(String module, boolean useTemplate, String template,
+            String organizationId) {
         List<MessageDetailDTO> messageDetails = new ArrayList<>();
-        List<MessageTask> messageTaskLists = extMessageTaskMapper.getEnableMessageTaskByReceiveTypeAndTaskType(module, organizationId);
+        List<MessageTask> messageTaskLists = extMessageTaskMapper.getEnableMessageTaskByReceiveTypeAndTaskType(module,
+                organizationId);
         if (messageTaskLists == null) {
             return new ArrayList<>();
         }
         buildMessageDetails(useTemplate, template, messageDetails, messageTaskLists);
         return messageDetails.stream()
-                .sorted(Comparator.comparing(MessageDetailDTO::getCreateTime, Comparator.nullsLast(Long::compareTo)).reversed())
+                .sorted(Comparator.comparing(MessageDetailDTO::getCreateTime, Comparator.nullsLast(Long::compareTo))
+                        .reversed())
                 .distinct()
                 .collect(Collectors.toList());
     }
 
-    private void buildMessageDetails(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetails, List<MessageTask> messageTaskLists) {
+    private void buildMessageDetails(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetails,
+            List<MessageTask> messageTaskLists) {
         //消息通知任务以消息类型事件接收类型唯一进行分组
-        Map<String, List<MessageTask>> messageTaskGroup = messageTaskLists.stream().collect(Collectors.groupingBy(t -> (t.getTaskType() + t.getEvent())));
+        Map<String, List<MessageTask>> messageTaskGroup = messageTaskLists.stream()
+                .collect(Collectors.groupingBy(t -> (t.getTaskType() + t.getEvent())));
         messageTaskGroup.forEach((messageTaskId, messageTaskList) -> {
             //获取同一任务所有的接收人
             MessageTask messageTask = messageTaskList.getFirst();

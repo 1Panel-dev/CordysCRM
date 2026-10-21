@@ -60,8 +60,10 @@ class CustomFormAuthorizationServiceTest {
                 Map<String, Object> params = query.getParams();
                 assertEquals("org-1", params.get("organization_id_eq"));
                 assertTrue(query.getWhereClause().contains("organization_id ="));
-                return allForms.stream().filter(form -> Objects.equals(form.getOrganizationId(), params.get("organization_id_eq")))
-                        .filter(form -> !(params.get("array_id") instanceof List<?> ids) || ids.contains(form.getId())).toList();
+                return allForms.stream()
+                        .filter(form -> Objects.equals(form.getOrganizationId(), params.get("organization_id_eq")))
+                        .filter(form -> !(params.get("array_id") instanceof List<?> ids) || ids.contains(form.getId()))
+                        .toList();
             });
             CustomFormAdmin localAdmin = new CustomFormAdmin();
             localAdmin.setCustomFormId("disabled");
@@ -82,7 +84,8 @@ class CustomFormAuthorizationServiceTest {
             List<CustomFormListResponse> result = service.list(userId, "org-1");
             assertEquals(List.of("enabled", "disabled"), result.stream().map(CustomFormListResponse::getId).toList());
             assertTrue(result.stream().allMatch(form -> Boolean.TRUE.equals(form.getHasCreateDataPermission())));
-            assertEquals(List.of("enabled"), service.getOptions(userId, "org-1").stream().map(option -> option.getId()).toList());
+            assertEquals(List.of("enabled"),
+                    service.getOptions(userId, "org-1").stream().map(option -> option.getId()).toList());
             verify(formMapper, never()).selectAll(any());
             verify(formMapper, never()).selectByIds(anyList());
         }
@@ -107,7 +110,8 @@ class CustomFormAuthorizationServiceTest {
         CustomFormService service = new CustomFormService();
         ReflectionTestUtils.setField(service, "customFormMapper", formMapper);
         ReflectionTestUtils.setField(service, "extCustomFormMapper", extMapper);
-        for (String mapper : List.of("moduleFormMapper", "moduleFormBlobMapper", "customFormRoleMapper", "customFormAdminMapper")) {
+        for (String mapper : List.of("moduleFormMapper", "moduleFormBlobMapper", "customFormRoleMapper",
+                "customFormAdminMapper")) {
             ReflectionTestUtils.setField(service, mapper, mock(BaseMapper.class));
         }
         ReflectionTestUtils.setField(service, "moduleFormService", mock(ModuleFormService.class));

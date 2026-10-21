@@ -48,7 +48,7 @@ import static cn.cordys.security.SessionUtils.kickOutUser;
 @Service
 public class PersonalCenterService {
 
-    private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
+    private static final String PREFIX = "personal_email_code:"; // Redis 存储前缀
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
@@ -97,10 +97,9 @@ public class PersonalCenterService {
             mailSender.send(
                     Translator.get("email_setting_subject"),
                     emailContent,
-                    new String[]{email},
+                    new String[] { email },
                     new String[0],
-                    organizationId
-            );
+                    organizationId);
         } catch (Exception e) {
             stringRedisTemplate.delete(redisKey);
             throw new GenericException(e.getMessage());
@@ -126,7 +125,6 @@ public class PersonalCenterService {
      *
      * @param personalPasswordRequest 包含邮箱、验证码和新密码的请求对象
      * @param operatorId              操作者用户ID
-     *
      * @throws GenericException 验证码错误或密码重置失败时抛出
      */
     public void resetUserPassword(PersonalPasswordRequest personalPasswordRequest, String operatorId) {
@@ -144,11 +142,6 @@ public class PersonalCenterService {
 
     /**
      * 检查原密码
-     *
-     * @param originPassword
-     * @param userId
-     *
-     * @return
      */
     private boolean checkPwd(String originPassword, String userId) {
         User example = new User();
@@ -199,24 +192,22 @@ public class PersonalCenterService {
      * @param request        分页查询请求参数
      * @param userId         当前用户ID
      * @param organizationId 组织ID
-     *
      * @return 分页的跟进计划列表及选项数据
      */
     public PagerWithOption<List<FollowUpPlanListResponse>> getPlanList(
             FollowUpPlanPageRequest request,
             String userId,
             String organizationId) {
-
         // 1. 获取用户权限和模块信息
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
         boolean isAdmin = Strings.CI.equals(userId, InternalUser.ADMIN.getValue());
 
         // 2. 查询已启用的模块
         List<String> enabledModules = moduleMapper.selectListByLambda(
-                        new LambdaQueryWrapper<Module>()
-                                .eq(Module::getOrganizationId, organizationId)
-                                .eq(Module::getEnable, true)
-                ).stream()
+                new LambdaQueryWrapper<Module>()
+                        .eq(Module::getOrganizationId, organizationId)
+                        .eq(Module::getEnable, true))
+                .stream()
                 .map(Module::getModuleKey)
                 .toList();
 
@@ -228,13 +219,14 @@ public class PersonalCenterService {
         // 5. 查询跟进计划基础数据
         if (CollectionUtils.isEmpty(resourceTypeList)) {
             return PageUtils.setPageInfoWithOption(page, new ArrayList<>(), new HashMap<>());
-
         }
-        List<FollowUpPlanListResponse> planList = extFollowUpPlanMapper.selectList(request, userId, organizationId, null, null, resourceTypeList);
+        List<FollowUpPlanListResponse> planList = extFollowUpPlanMapper.selectList(request, userId, organizationId,
+                null, null, resourceTypeList);
 
         // 6. 构建完整数据和选项映射
         List<FollowUpPlanListResponse> enrichedList = followUpPlanService.buildListData(planList, organizationId);
-        Map<String, List<OptionDTO>> optionMap = followUpPlanService.buildOptionMap(organizationId, planList, enrichedList);
+        Map<String, List<OptionDTO>> optionMap = followUpPlanService.buildOptionMap(organizationId, planList,
+                enrichedList);
 
         // 7. 返回分页结果
         return PageUtils.setPageInfoWithOption(page, enrichedList, optionMap);
@@ -244,8 +236,8 @@ public class PersonalCenterService {
      * 构建用户可访问的资源类型列表
      */
     private List<String> buildAccessibleResourceTypes(List<String> permissions,
-                                                      boolean isAdmin,
-                                                      List<String> enabledModules) {
+            boolean isAdmin,
+            List<String> enabledModules) {
         List<String> resourceTypes = new ArrayList<>();
 
         // 检查客户模块权限
@@ -268,6 +260,5 @@ public class PersonalCenterService {
 
         return resourceTypes;
     }
-
 
 }

@@ -32,7 +32,8 @@ public class PermissionUtils {
         return permissionIds.contains(permission);
     }
 
-    public static ResourceTabEnableDTO getTabEnableConfig(String userId, String permission, List<RolePermissionDTO> rolePermissions) {
+    public static ResourceTabEnableDTO getTabEnableConfig(String userId, String permission,
+            List<RolePermissionDTO> rolePermissions) {
         ResourceTabEnableDTO resourceTabEnableDTO = new ResourceTabEnableDTO();
         if (Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
             resourceTabEnableDTO.setAll(true);
@@ -43,11 +44,13 @@ public class PermissionUtils {
                 // 判断权限
                 continue;
             }
-            if (Strings.CS.equalsAny(rolePermission.getDataScope(), RoleDataScope.ALL.name(), RoleDataScope.DEPT_CUSTOM.name())) {
+            if (Strings.CS.equalsAny(rolePermission.getDataScope(), RoleDataScope.ALL.name(),
+                    RoleDataScope.DEPT_CUSTOM.name())) {
                 // 数据权限为全部或指定部门，显示所有tab
                 resourceTabEnableDTO.setAll(true);
             }
-            if (Strings.CS.equalsAny(rolePermission.getDataScope(), RoleDataScope.ALL.name(), RoleDataScope.DEPT_CUSTOM.name(),
+            if (Strings.CS.equalsAny(rolePermission.getDataScope(), RoleDataScope.ALL.name(),
+                    RoleDataScope.DEPT_CUSTOM.name(),
                     RoleDataScope.DEPT_AND_CHILD.name())) {
                 // 数据权限为全部或部门，显示部门tab
                 resourceTabEnableDTO.setDept(true);

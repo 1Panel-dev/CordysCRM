@@ -61,13 +61,12 @@ public class ProductController {
     @Resource
     private ProductExportService productExportService;
 
-
     @GetMapping("/module/form")
     @Operation(summary = "获取产品表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
@@ -112,7 +111,6 @@ public class ProductController {
         productService.delete(id);
     }
 
-
     @PostMapping("/batch/delete")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_DELETE)
     @Operation(summary = "批量删除产品")
@@ -137,15 +135,18 @@ public class ProductController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
         return productService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入产品")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
-        return productService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
+        return productService.realImport(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @GetMapping("/list/option")
@@ -160,7 +161,8 @@ public class ProductController {
     public String productExportAll(@Validated @RequestBody ProductExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.PRODUCT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.PRODUCT_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(),
+                PermissionConstants.PRODUCT_MANAGEMENT_READ);
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.PRODUCT.name())
                 .fileName(request.getFileName())
@@ -175,7 +177,6 @@ public class ProductController {
                 .build();
         return productExportService.exportAllWithMergeStrategy(exportDTO);
     }
-
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中合同")

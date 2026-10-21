@@ -15,42 +15,42 @@ import java.util.List;
 @AllArgsConstructor
 public class ApprovalTaskNode {
 
-	@Schema(description = "审批任务ID")
-	private String taskId;
+    @Schema(description = "审批任务ID")
+    private String taskId;
 
-	@Schema(description = "审批人ID")
-	private String approverId;
+    @Schema(description = "审批人ID")
+    private String approverId;
 
-	@Schema(description = "审批人名称")
-	private String approver;
+    @Schema(description = "审批人名称")
+    private String approver;
 
-	@Schema(description = "抄送人头像")
-	private String approverAvatar;
+    @Schema(description = "抄送人头像")
+    private String approverAvatar;
 
-	@Schema(description = "审批状态")
-	private String approvalStatus;
+    @Schema(description = "审批状态")
+    private String approvalStatus;
 
-	@Schema(description = "是否加签任务")
-	private boolean sign;
+    @Schema(description = "是否加签任务")
+    private boolean sign;
 
-	@Schema(description = "加签意见")
-	private String signComment;
+    @Schema(description = "加签意见")
+    private String signComment;
 
-	@Schema(description = "加签附件")
-	private List<Attachment> signAttachments;
+    @Schema(description = "加签附件")
+    private List<Attachment> signAttachments;
 
-	@Schema(description = "是否进行加签操作")
-	private boolean signAction;
+    @Schema(description = "是否进行加签操作")
+    private boolean signAction;
 
-	@Schema(description = "执行记录ID")
-	private String recordId;
+    @Schema(description = "执行记录ID")
+    private String recordId;
 
-	@Schema(description = "审批意见")
-	private String comment;
+    @Schema(description = "审批意见")
+    private String comment;
 
-	@Schema(description = "审批附件")
-	private List<Attachment> attachments;
+    @Schema(description = "审批附件")
+    private List<Attachment> attachments;
 
-	@Schema(description = "审批完成时间")
-	private Long approvalTime;
+    @Schema(description = "审批完成时间")
+    private Long approvalTime;
 }

@@ -35,7 +35,8 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
         return getNullableResult(cs, columnIndex);
     }
 
-    public abstract void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
+    public abstract void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType)
+            throws SQLException;
 
     public abstract T getNullableResult(ResultSet rs, String columnName) throws SQLException;
 

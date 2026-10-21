@@ -71,7 +71,8 @@ public class ClueController {
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
@@ -81,7 +82,8 @@ public class ClueController {
         ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
+        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission, false);
     }
 
     @GetMapping("/get/{id}")
@@ -152,7 +154,6 @@ public class ClueController {
     public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         return clueService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/batch/delete")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CLUE)
@@ -227,18 +228,22 @@ public class ClueController {
     }
 
     @PostMapping("/transition/account/page")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.AND)
+    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.AND)
     @Operation(summary = "客户转移分页查询")
-    public PagerWithOption<List<CustomerListResponse>> transitionCustomerPage(@Validated @RequestBody CustomerPageRequest request) {
+    public PagerWithOption<List<CustomerListResponse>> transitionCustomerPage(
+            @Validated @RequestBody CustomerPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
-        return customerService.transitionList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customerService.transitionList(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/transition/account/list/{id}")
     @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_READ, resourceId = "{#id}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "查询线索转换关联的客户记录")
     public ClueTransitionCustomerListResponse transitionCustomerList(@PathVariable String id) {
-        return clueService.getTransitionCustomerList(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return clueService.getTransitionCustomerList(id, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/re-transition/account")
@@ -265,14 +270,16 @@ public class ClueController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
-    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
         return clueService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
-    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request,
+            @RequestPart(value = "file") MultipartFile file) {
         return clueService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
@@ -282,6 +289,7 @@ public class ClueController {
     public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        return clueService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return clueService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
     }
 }

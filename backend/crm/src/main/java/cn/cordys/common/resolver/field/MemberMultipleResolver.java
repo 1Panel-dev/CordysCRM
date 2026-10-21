@@ -1,6 +1,5 @@
 package cn.cordys.common.resolver.field;
 
-
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.dto.field.MemberMultipleField;
@@ -39,7 +38,6 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
     public Object convertToValue(MemberMultipleField memberField, String value) {
         return parse2Array(value);
     }
-
 
     @Override
     public Object transformToValue(MemberMultipleField memberMultipleField, String value) {

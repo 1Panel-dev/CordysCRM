@@ -23,12 +23,12 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-08 17:42:41
  */
 public interface ExtClueMapper extends StatisticSqlMapper {
 
     List<ClueListResponse> list(@Param("request") CluePageRequest request, @Param("orgId") String orgId,
-                                @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission, @Param("source") boolean source);
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
+            @Param("source") boolean source);
 
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
@@ -57,7 +57,8 @@ public interface ExtClueMapper extends StatisticSqlMapper {
      * @param customerName 客户名称
      * @return 相似线索列表
      */
-    List<AdvancedClueResponse> getSimilarClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
+    List<AdvancedClueResponse> getSimilarClueList(@Param("customerName") String customerName,
+            @Param("orgId") String orgId);
 
     /**
      * 获取重复线索列表
@@ -65,7 +66,8 @@ public interface ExtClueMapper extends StatisticSqlMapper {
      * @param customerName 客户名称
      * @return 重复线索列表
      */
-    List<AdvancedClueResponse> getRepeatClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
+    List<AdvancedClueResponse> getRepeatClueList(@Param("customerName") String customerName,
+            @Param("orgId") String orgId);
 
     /**
      * 查询用户负责的线索条数
@@ -77,9 +79,11 @@ public interface ExtClueMapper extends StatisticSqlMapper {
 
     List<ClueListResponse> getListByIds(@Param("ids") List<String> ids);
 
-    Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed") boolean unfollowed);
+    Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request,
+            @Param("unfollowed") boolean unfollowed);
 
-    List<AdvancedCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<AdvancedCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request,
+            @Param("orgId") String orgId);
 
     List<OptionDTO> getClueOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
@@ -87,8 +91,8 @@ public interface ExtClueMapper extends StatisticSqlMapper {
 
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
-
-    List<GlobalCluePoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+    List<GlobalCluePoolResponse> globalPoolSearchList(@Param("request") BasePageRequest request,
+            @Param("orgId") String orgId);
 
     long globalPoolSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
@@ -117,13 +121,12 @@ public interface ExtClueMapper extends StatisticSqlMapper {
      */
     List<String> getTransitionClueIds(@Param("customerId") String customerId);
 
-    List<ChartResult> chart(@Param("request") ClueChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+    List<ChartResult> chart(@Param("request") ClueChartAnalysisDbRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId,
+            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     /**
      * 更新线索
-     *
-     * @param clue
      */
     void updateClue(@Param("clue") Clue clue);
 
@@ -139,16 +142,15 @@ public interface ExtClueMapper extends StatisticSqlMapper {
      * @return 更新行数, 0 表示线索已被其他请求转化
      */
     int updateTransitionIfAbsent(@Param("id") String id, @Param("orgId") String orgId,
-                                 @Param("transitionType") String transitionType, @Param("transitionId") String transitionId,
-                                 @Param("updateUser") String updateUser, @Param("updateTime") Long updateTime);
+            @Param("transitionType") String transitionType, @Param("transitionId") String transitionId,
+            @Param("updateUser") String updateUser, @Param("updateTime") Long updateTime);
 
     int freeze(@Param("id") String id, @Param("orgId") String orgId, @Param("reason") String reason,
-               @Param("unfreezeTime") Long unfreezeTime);
+            @Param("unfreezeTime") Long unfreezeTime);
 
     int unfreeze(@Param("id") String id, @Param("orgId") String orgId, @Param("now") long now,
-                 @Param("expiredOnly") boolean expiredOnly);
+            @Param("expiredOnly") boolean expiredOnly);
 
     List<Clue> selectExpiredFrozen(@Param("now") long now);
-
 
 }

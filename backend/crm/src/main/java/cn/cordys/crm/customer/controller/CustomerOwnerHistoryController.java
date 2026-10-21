@@ -18,7 +18,6 @@ import java.util.List;
 
 /**
  * @author jianxing
- * @date 2025-02-08 17:42:41
  */
 @Tag(name = "客户责任人历史")
 @RestController
@@ -28,7 +27,8 @@ public class CustomerOwnerHistoryController {
     private CustomerOwnerHistoryService customerOwnerHistoryService;
 
     @GetMapping("/list/{customerId}")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+            PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ }, logical = Logical.OR)
     @Operation(summary = "客户责任人历史列表")
     public List<CustomerOwnerListResponse> list(@PathVariable String customerId) {
         return customerOwnerHistoryService.list(customerId, OrganizationContext.getOrganizationId());

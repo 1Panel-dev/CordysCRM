@@ -13,31 +13,33 @@ import java.util.List;
 
 public interface ExtContractInvoiceMapper extends StatisticSqlMapper {
 
-
-    List<ContractInvoiceListResponse> list(@Param("request") ContractInvoicePageRequest request, @Param("orgId") String orgId,
-                                    @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    List<ContractInvoiceListResponse> list(@Param("request") ContractInvoicePageRequest request,
+            @Param("orgId") String orgId,
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     ContractInvoiceGetResponse getDetail(@Param("id") String id);
 
-
-    List<ContractInvoiceListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    List<ContractInvoiceListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<String> selectByStatusAndIds(@Param("ids") List<String> ids, @Param("approvalStatus") String approvalStatus);
 
-    void updateStatus(@Param("id") String id, @Param("approvalStatus") String approvalStatus, @Param("userId") String userId, @Param("updateTime") long updateTime);
+    void updateStatus(@Param("id") String id, @Param("approvalStatus") String approvalStatus,
+            @Param("userId") String userId, @Param("updateTime") long updateTime);
 
     BigDecimal calculateCustomerInvoiceAmount(@Param("customerId") String customerId, @Param("userId") String userId,
-                                              @Param("orgId") String orgId, @Param("approved") boolean approved);
+            @Param("orgId") String orgId, @Param("approved") boolean approved);
 
     BigDecimal calculateContractInvoiceAmount(@Param("contractId") String contractId, @Param("userId") String userId,
-                                              @Param("orgId") String orgId, @Param("approved") boolean approved);
+            @Param("orgId") String orgId, @Param("approved") boolean approved);
 
-    BigDecimal calculateContractInvoiceValidAmount(@Param("contractId") String contractId, @Param("userId") String userId,
-                                              @Param("orgId") String orgId, @Param("excludeId") String excludeId);
+    BigDecimal calculateContractInvoiceValidAmount(@Param("contractId") String contractId,
+            @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("excludeId") String excludeId);
 
     Boolean hasContractInvoice(@Param("contractId") String contractId);
 
-	void updateOldApprovalStatusNone();
+    void updateOldApprovalStatusNone();
 
-    void updateInvoice(@Param("contractInvoice")ContractInvoice contractInvoice);
+    void updateInvoice(@Param("contractInvoice") ContractInvoice contractInvoice);
 }

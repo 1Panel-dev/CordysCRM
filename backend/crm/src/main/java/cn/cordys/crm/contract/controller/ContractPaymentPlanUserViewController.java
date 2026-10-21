@@ -1,6 +1,5 @@
 package cn.cordys.crm.contract.controller;
 
-
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.request.PosRequest;
@@ -30,14 +29,13 @@ public class ContractPaymentPlanUserViewController {
     @Resource
     private UserViewService userViewService;
 
-
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     @Operation(summary = "添加回款计划视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CONTRACT_PAYMENT_PLAN.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                UserViewResourceType.CONTRACT_PAYMENT_PLAN.name());
     }
-
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
@@ -45,7 +43,6 @@ public class ContractPaymentPlanUserViewController {
     public UserView update(@Validated @RequestBody UserViewUpdateRequest request) {
         return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
@@ -58,17 +55,17 @@ public class ContractPaymentPlanUserViewController {
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     @Operation(summary = "回款计划视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
-        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.CONTRACT_PAYMENT_PLAN.getKey());
+        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                FormKey.CONTRACT_PAYMENT_PLAN.getKey());
     }
-
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     @Operation(summary = "回款计划视图列表")
     public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.CONTRACT_PAYMENT_PLAN.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.list(UserViewResourceType.CONTRACT_PAYMENT_PLAN.name(), SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/fixed/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
@@ -83,7 +80,6 @@ public class ContractPaymentPlanUserViewController {
     public void editPos(@Validated @RequestBody PosRequest request) {
         userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.CONTRACT_PAYMENT_PLAN.name());
     }
-
 
     @GetMapping("/enable/{id}")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)

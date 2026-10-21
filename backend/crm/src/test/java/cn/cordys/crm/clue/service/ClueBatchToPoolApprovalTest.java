@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InOrder;
-import org.mockito.MockedStatic;
 import org.mockito.MockMakers;
+import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -111,14 +111,15 @@ class ClueBatchToPoolApprovalTest {
         // 无权回收的线索不能跟着一起被移入线索池, 负责人也不该被清空
         verify(extClueMapper).moveToPool(argThat(clue -> "clue-1".equals(clue.getId())));
         verify(extClueMapper, never()).moveToPool(argThat(clue -> "clue-2".equals(clue.getId())));
-        verify(noticeSendService, never()).sendNotice(any(), any(), eq("clue-clue-2"), anyString(), anyString(), anyList(), anyBoolean());
+        verify(noticeSendService, never()).sendNotice(any(), any(), eq("clue-clue-2"), anyString(), anyString(),
+                anyList(), anyBoolean());
         // 没权限的那些既不算成功也不跳过, 与查不到的 id 一样落在 fail 里
         assertEquals(1, response.getSuccess());
         assertEquals(1, response.getFail());
     }
 
     @ParameterizedTest
-    @EnumSource(value = ApprovalStatus.class, names = {"PENDING", "APPROVING", "APPROVED", "UNAPPROVED", "REVOKED"})
+    @EnumSource(value = ApprovalStatus.class, names = { "PENDING", "APPROVING", "APPROVED", "UNAPPROVED", "REVOKED" })
     void recycleWithoutAnyPermittedClueIsRejectedBeforeWrites(ApprovalStatus status) {
         Clue clue = clue("clue-1");
         clue.setApprovalStatus(status.name());

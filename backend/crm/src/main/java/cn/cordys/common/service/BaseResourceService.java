@@ -38,10 +38,9 @@ public abstract class BaseResourceService {
     /**
      * 获取资源字段值
      *
+     * @param <K>       资源类型
      * @param resource  资源对象
      * @param fieldName 字段名称
-     * @param <K>       资源类型
-     *
      * @return 值
      */
     protected <K> Object getResourceFieldValue(K resource, String fieldName) {
@@ -60,10 +59,10 @@ public abstract class BaseResourceService {
     /**
      * 设置资源字段值
      *
+     * @param <K>       资源类型
      * @param resource  资源对象
      * @param fieldName 字段名称
      * @param value     值
-     * @param <K>       资源类型
      */
     public <K> void setResourceFieldValue(K resource, String fieldName, Object value) {
         try {
@@ -102,9 +101,8 @@ public abstract class BaseResourceService {
     /**
      * 创建资源实例
      *
-     * @param clazz 资源类对象
      * @param <K>   资源类型
-     *
+     * @param clazz 资源类对象
      * @return 资源实例
      */
     protected <K> K newInstance(Class<K> clazz) {
@@ -120,37 +118,36 @@ public abstract class BaseResourceService {
      * 判断值非空
      *
      * @param value 值
-     *
      * @return 是否非空
      */
     protected boolean isNotBlank(Object value) {
         return switch (value) {
-            case null -> false;
-            case String str -> StringUtils.isNotBlank(str);
-            case List<?> list -> CollectionUtils.isNotEmpty(list);
-            default -> true;
+        case null -> false;
+        case String str -> StringUtils.isNotBlank(str);
+        case List<?> list -> CollectionUtils.isNotEmpty(list);
+        default -> true;
         };
     }
 
     /**
      * 记录自定义字段批量更新日志
      *
+     * @param <K>                资源类型
      * @param originResourceList 资源集合
      * @param originFields       旧的字段值
-     * @param field              字段信息
      * @param request            请求参数
+     * @param field              字段信息
      * @param userId             用户ID
      * @param orgId              组织ID
-     * @param <K>                资源类型
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected <K> void addCustomFieldBatchUpdateLog(List<K> originResourceList,
-                                                    List<? extends BaseResourceField> originFields,
-                                                    ResourceBatchEditRequest request,
-                                                    BaseField field,
-                                                    String logModule,
-                                                    String userId,
-                                                    String orgId) {
+            List<? extends BaseResourceField> originFields,
+            ResourceBatchEditRequest request,
+            BaseField field,
+            String logModule,
+            String userId,
+            String orgId) {
         Map<String, ? extends BaseResourceField> fieldMap = originFields.stream()
                 .collect(Collectors.toMap(BaseResourceField::getResourceId, Function.identity()));
         // 记录日志
@@ -158,15 +155,17 @@ public abstract class BaseResourceService {
                 .map(resource -> {
                     Object id = getResourceFieldValue(resource, "id");
                     Object name = getResourceFieldValue(resource, "name");
-					Object customFormId = getResourceFieldValue(resource, "customFormId");
+                    Object customFormId = getResourceFieldValue(resource, "customFormId");
 
-					BaseResourceField baseResourceField = fieldMap.get(id.toString());
+                    BaseResourceField baseResourceField = fieldMap.get(id.toString());
                     Map originResource = new HashMap();
                     if (baseResourceField != null && isNotBlank(baseResourceField.getFieldValue())) {
                         // 获取字段解析器
-                        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
+                                .getResolver(field.getType());
                         // 将数据库中的字符串值,转换为对应的对象值
-                        Object objectValue = customFieldResolver.convertToValue(field, baseResourceField.getFieldValue().toString());
+                        Object objectValue = customFieldResolver.convertToValue(field,
+                                baseResourceField.getFieldValue().toString());
                         baseResourceField.setFieldValue(objectValue);
                         originResource.put(request.getFieldId(), baseResourceField.getFieldValue());
                     }
@@ -176,12 +175,13 @@ public abstract class BaseResourceService {
                         modifiedResource.put(request.getFieldId(), request.getFieldValue());
                     }
 
-					if (customFormId != null) {
-						originResource.put("customFormId", customFormId);
-						modifiedResource.put("customFormId", customFormId);
-					}
+                    if (customFormId != null) {
+                        originResource.put("customFormId", customFormId);
+                        modifiedResource.put("customFormId", customFormId);
+                    }
 
-                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
+                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule,
+                            name.toString());
                     logDTO.setOriginalValue(originResource);
                     logDTO.setModifiedValue(modifiedResource);
                     return logDTO;
@@ -193,26 +193,27 @@ public abstract class BaseResourceService {
     /**
      * 记录业务字段批量更新日志
      *
+     * @param <K>                资源类型
      * @param originResourceList 资源集合
      * @param field              字段信息
      * @param request            请求参数
      * @param userId             用户ID
      * @param orgId              组织ID
-     * @param <K>                资源类型
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected <K> void addBusinessFieldBatchUpdateLog(List<K> originResourceList,
-                                                      BaseField field,
-                                                      ResourceBatchEditRequest request,
-                                                      String logModule,
-                                                      String userId,
-                                                      String orgId) {
+            BaseField field,
+            ResourceBatchEditRequest request,
+            String logModule,
+            String userId,
+            String orgId) {
         // 记录日志
         List<LogDTO> logs = originResourceList.stream()
                 .map(resource -> {
                     Map originResource = new HashMap();
                     if (isNotBlank(getResourceFieldValue(resource, field.getBusinessKey()))) {
-                        originResource.put(field.getBusinessKey(), getResourceFieldValue(resource, field.getBusinessKey()));
+                        originResource.put(field.getBusinessKey(),
+                                getResourceFieldValue(resource, field.getBusinessKey()));
                     }
 
                     Map modifiedResource = new HashMap();
@@ -223,7 +224,8 @@ public abstract class BaseResourceService {
                     Object id = getResourceFieldValue(resource, "id");
                     Object name = getResourceFieldValue(resource, "name");
 
-                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
+                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule,
+                            name.toString());
                     logDTO.setOriginalValue(originResource);
                     logDTO.setModifiedValue(modifiedResource);
                     return logDTO;

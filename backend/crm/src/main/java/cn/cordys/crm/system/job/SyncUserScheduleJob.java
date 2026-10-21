@@ -20,16 +20,17 @@ import java.util.Objects;
 @Slf4j
 public class SyncUserScheduleJob extends BaseScheduleJob {
 
-
     @Override
     protected void businessExecute(JobExecutionContext context) {
         ThirdDepartmentService thirdDepartmentService = CommonBeanFactory.getBean(ThirdDepartmentService.class);
         assert thirdDepartmentService != null;
         List<String> departmentIds;
         if (StringUtils.isNotBlank(context.getJobDetail().getJobDataMap().getString("config"))) {
-            List<OptionDTO> optionDTOS = JSON.parseObject(context.getJobDetail().getJobDataMap().getString("config"), new TypeReference<List<OptionDTO>>() {
-            });
-            departmentIds = optionDTOS.stream().map(OptionDTO::getId).filter(Objects::nonNull).map(String::valueOf).toList();
+            List<OptionDTO> optionDTOS = JSON.parseObject(context.getJobDetail().getJobDataMap().getString("config"),
+                    new TypeReference<List<OptionDTO>>() {
+                    });
+            departmentIds = optionDTOS.stream().map(OptionDTO::getId).filter(Objects::nonNull).map(String::valueOf)
+                    .toList();
         } else {
             departmentIds = null;
         }
@@ -37,11 +38,9 @@ public class SyncUserScheduleJob extends BaseScheduleJob {
         String resourceType = context.getJobDetail().getJobDataMap().getString("resourceType");
         log.info("同步组织架构任务开始执行. 部门ID：" + departmentIds.toString());
         Locale locale = LocaleContextHolder.getLocale();
-        Thread.startVirtualThread(() ->
-                thirdDepartmentService.syncUserAndDepartment(departmentIds, userId, orgId, resourceType, locale)
-        );
+        Thread.startVirtualThread(
+                () -> thirdDepartmentService.syncUserAndDepartment(departmentIds, userId, orgId, resourceType, locale));
     }
-
 
     public static JobKey getJobKey(String key) {
         return new JobKey(key, SyncUserScheduleJob.class.getName());

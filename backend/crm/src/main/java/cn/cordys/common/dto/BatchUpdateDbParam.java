@@ -6,8 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-09-25  11:37
+ * @author jianxing
  */
 @Data
 public class BatchUpdateDbParam {

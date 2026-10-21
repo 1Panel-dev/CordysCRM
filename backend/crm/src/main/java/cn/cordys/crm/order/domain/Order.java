@@ -32,8 +32,8 @@ public class Order extends BaseModel {
     @Schema(description = "状态")
     private String stage;
 
-	@Schema(description = "审核状态")
-	private String approvalStatus;
+    @Schema(description = "审核状态")
+    private String approvalStatus;
 
     @Schema(description = "组织id")
     private String organizationId;

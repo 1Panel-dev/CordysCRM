@@ -65,8 +65,7 @@ public class MessageNotificationService {
             "DAY", "time.day",
             "WEEK", "time.week",
             "MONTH", "time.month",
-            "YEAR", "time.year"
-    );
+            "YEAR", "time.year");
 
     @PostConstruct
     public void init() {
@@ -74,7 +73,6 @@ public class MessageNotificationService {
     }
 
     public MessageTask saveMessageTask(MessageTaskRequest request, String userId, String organizationId) {
-
         Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
 
         MessageTask existTask = extMessageTaskMapper.getMessageByModuleAndEvent(
@@ -98,8 +96,7 @@ public class MessageNotificationService {
                 userId,
                 eventMap.get(messageTask.getEvent()),
                 null,
-                buildLogDTO(messageTask, null)
-        );
+                buildLogDTO(messageTask, null));
 
         return messageTask;
     }
@@ -110,7 +107,6 @@ public class MessageNotificationService {
             MessageTask oldTask,
             Map<String, String> eventMap,
             String organizationId) {
-
         MessageTask updateTask = new MessageTask();
 
         updateTask.setId(oldTask.getId());
@@ -124,13 +120,12 @@ public class MessageNotificationService {
 
         messageTaskMapper.update(updateTask);
 
-        MessageTaskConfigWithNameDTO oldConfig =
-                getMessageConfig(request.getModule(), request.getEvent(), organizationId);
+        MessageTaskConfigWithNameDTO oldConfig = getMessageConfig(request.getModule(), request.getEvent(),
+                organizationId);
 
         saveOrUpdateConfig(request, organizationId);
 
-        MessageTaskConfigWithNameDTO newConfig =
-                buildLogMessageTaskConfigWithNameDTO(request.getConfig());
+        MessageTaskConfigWithNameDTO newConfig = buildLogMessageTaskConfigWithNameDTO(request.getConfig());
 
         addLog(
                 organizationId,
@@ -138,14 +133,12 @@ public class MessageNotificationService {
                 userId,
                 eventMap.get(request.getEvent()),
                 buildLogDTO(oldTask, oldConfig),
-                buildLogDTO(updateTaskToLogTask(oldTask, request), newConfig)
-        );
+                buildLogDTO(updateTaskToLogTask(oldTask, request), newConfig));
 
         return updateTask;
     }
 
     public void batchSaveMessageTask(MessageTaskBatchRequest request, String organizationId, String userId) {
-
         List<MessageTask> oldList = extMessageTaskMapper.getMessageTaskList(organizationId);
         extMessageTaskMapper.updateMessageTask(request, organizationId);
 
@@ -159,30 +152,30 @@ public class MessageNotificationService {
     }
 
     public List<MessageTaskDTO> getMessageList(String organizationId) {
-
-        List<MessageTaskDTO> result =
-                JSON.parseArray(JSON.toJSONString(templateMessageTasks), MessageTaskDTO.class);
+        List<MessageTaskDTO> result = JSON.parseArray(JSON.toJSONString(templateMessageTasks), MessageTaskDTO.class);
 
         List<MessageTask> messageTasks = extMessageTaskMapper.getMessageTaskList(organizationId);
 
-        if (CollectionUtils.isEmpty(messageTasks)) return result;
+        if (CollectionUtils.isEmpty(messageTasks)) {
+            return result;
+        }
 
         Map<String, String> moduleMap = MessageTemplateUtils.getModuleMap();
         Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
 
-        Map<String, MessageTask> messageMap =
-                messageTasks.stream().collect(Collectors.toMap(MessageTask::getEvent, Function.identity(), (a, b) -> b));
+        Map<String, MessageTask> messageMap = messageTasks.stream()
+                .collect(Collectors.toMap(MessageTask::getEvent, Function.identity(), (a, b) -> b));
 
         for (MessageTaskDTO dto : result) {
-
             dto.setModuleName(moduleMap.get(dto.getModule()));
 
             for (MessageTaskDetailDTO detail : dto.getMessageTaskDetailDTOList()) {
-
                 detail.setEventName(eventMap.get(detail.getEvent()));
 
                 MessageTask task = messageMap.get(detail.getEvent());
-                if (task == null) continue;
+                if (task == null) {
+                    continue;
+                }
 
                 detail.setEmailEnable(task.getEmailEnable());
                 detail.setSysEnable(task.getSysEnable());
@@ -197,21 +190,19 @@ public class MessageNotificationService {
 
     @Transactional(readOnly = true)
     public MessageTaskConfigWithNameDTO getMessageConfig(String module, String event, String organizationId) {
+        List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
+                new LambdaQueryWrapper<MessageTaskConfig>()
+                        .eq(MessageTaskConfig::getOrganizationId, organizationId)
+                        .eq(MessageTaskConfig::getTaskType, module)
+                        .eq(MessageTaskConfig::getEvent, event));
 
-        List<MessageTaskConfig> configs =
-                messageTaskConfigMapper.selectListByLambda(
-                        new LambdaQueryWrapper<MessageTaskConfig>()
-                                .eq(MessageTaskConfig::getOrganizationId, organizationId)
-                                .eq(MessageTaskConfig::getTaskType, module)
-                                .eq(MessageTaskConfig::getEvent, event)
-                );
-
-        if (CollectionUtils.isEmpty(configs)) return null;
+        if (CollectionUtils.isEmpty(configs)) {
+            return null;
+        }
 
         MessageTaskConfig config = configs.getFirst();
 
-        MessageTaskConfigWithNameDTO dto =
-                JSON.parseObject(config.getValue(), MessageTaskConfigWithNameDTO.class);
+        MessageTaskConfigWithNameDTO dto = JSON.parseObject(config.getValue(), MessageTaskConfigWithNameDTO.class);
 
         setUserNames(dto, dto.getUserIds(), dto.getRoleIds());
 
@@ -219,7 +210,6 @@ public class MessageNotificationService {
     }
 
     private MessageTask buildMessageTask(MessageTaskRequest request, String organizationId, String userId) {
-
         MessageTask task = new MessageTask();
 
         task.setId(IDGenerator.nextStr());
@@ -242,20 +232,21 @@ public class MessageNotificationService {
     }
 
     private void saveConfigIfNeeded(MessageTaskRequest request, String organizationId) {
-        if (request.getConfig() != null) saveConfig(request, organizationId);
+        if (request.getConfig() != null) {
+            saveConfig(request, organizationId);
+        }
     }
 
     private void saveOrUpdateConfig(MessageTaskRequest request, String organizationId) {
+        if (request.getConfig() == null) {
+            return;
+        }
 
-        if (request.getConfig() == null) return;
-
-        List<MessageTaskConfig> configs =
-                messageTaskConfigMapper.selectListByLambda(
-                        new LambdaQueryWrapper<MessageTaskConfig>()
-                                .eq(MessageTaskConfig::getOrganizationId, organizationId)
-                                .eq(MessageTaskConfig::getTaskType, request.getModule())
-                                .eq(MessageTaskConfig::getEvent, request.getEvent())
-                );
+        List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
+                new LambdaQueryWrapper<MessageTaskConfig>()
+                        .eq(MessageTaskConfig::getOrganizationId, organizationId)
+                        .eq(MessageTaskConfig::getTaskType, request.getModule())
+                        .eq(MessageTaskConfig::getEvent, request.getEvent()));
 
         checkTimeList(request);
 
@@ -270,7 +261,6 @@ public class MessageNotificationService {
     }
 
     private void saveConfig(MessageTaskRequest request, String organizationId) {
-
         checkTimeList(request);
 
         MessageTaskConfig config = new MessageTaskConfig();
@@ -285,8 +275,9 @@ public class MessageNotificationService {
     }
 
     private void checkTimeList(MessageTaskRequest request) {
-
-        if (request.getConfig() == null || request.getConfig().getTimeList() == null) return;
+        if (request.getConfig() == null || request.getConfig().getTimeList() == null) {
+            return;
+        }
 
         List<TimeDTO> timeList = request.getConfig().getTimeList().stream()
                 .filter(Objects::nonNull)
@@ -297,8 +288,9 @@ public class MessageNotificationService {
     }
 
     private MessageTaskConfigWithNameDTO buildLogMessageTaskConfigWithNameDTO(MessageTaskConfigDTO config) {
-
-        if (config == null) return null;
+        if (config == null) {
+            return null;
+        }
 
         MessageTaskConfigWithNameDTO dto = new MessageTaskConfigWithNameDTO();
 
@@ -310,19 +302,22 @@ public class MessageNotificationService {
     }
 
     private void setUserNames(MessageTaskConfigWithNameDTO dto, List<String> userIds, List<String> roleIds) {
-
         if (CollectionUtils.isNotEmpty(userIds)) {
-
             List<OptionDTO> users = extUserMapper.selectUserOptionByIds(userIds);
 
-            if (userIds.contains("OWNER")) users.addFirst(new OptionDTO("OWNER", Translator.get("message.owner")));
-            if (userIds.contains("CREATE_USER"))
+            if (userIds.contains("OWNER")) {
+                users.addFirst(new OptionDTO("OWNER", Translator.get("message.owner")));
+            }
+            if (userIds.contains("CREATE_USER")) {
                 users.addFirst(new OptionDTO("CREATE_USER", Translator.get("message.create_user")));
+            }
 
             dto.setUserIdNames(users);
         }
 
-        if (CollectionUtils.isEmpty(roleIds)) return;
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return;
+        }
 
         Set<String> internalRoleSet = new HashSet<>(extRoleMapper.getInternalRoleIds());
 
@@ -336,8 +331,7 @@ public class MessageNotificationService {
                     .forEach(role -> roleNameMap.put(role.getIdAsString(), role.getName()));
         }
 
-        internalRoles.forEach(role ->
-                roleNameMap.put(role, Translator.get("role." + role, role)));
+        internalRoles.forEach(role -> roleNameMap.put(role, Translator.get("role." + role, role)));
 
         List<OptionDTO> roleNames = roleIds.stream()
                 .map(id -> {
@@ -351,16 +345,14 @@ public class MessageNotificationService {
     }
 
     private void addLog(String organizationId, String targetId, String userId,
-                        String eventName, Object oldValue, Object newValue) {
-
+            String eventName, Object oldValue, Object newValue) {
         LogDTO logDTO = new LogDTO(
                 organizationId,
                 targetId,
                 userId,
                 LogType.UPDATE,
                 LogModule.SYSTEM_MESSAGE_MESSAGE,
-                eventName
-        );
+                eventName);
 
         logDTO.setOriginalValue(oldValue);
         logDTO.setModifiedValue(newValue);
@@ -374,17 +366,26 @@ public class MessageNotificationService {
             String userId,
             MessageTask task,
             Map<String, String> eventMap) {
-
         MessageTaskLogDTO oldDTO = buildLogDTO(task, null);
 
         MessageTask newTask = new MessageTask();
         BeanUtils.copyBean(newTask, task);
 
-        if (request.getEmailEnable() != null) newTask.setEmailEnable(request.getEmailEnable());
-        if (request.getSysEnable() != null) newTask.setSysEnable(request.getSysEnable());
-        if (request.getWeComEnable() != null) newTask.setWeComEnable(request.getWeComEnable());
-        if (request.getDingTalkEnable() != null) newTask.setDingTalkEnable(request.getDingTalkEnable());
-        if (request.getLarkEnable() != null) newTask.setLarkEnable(request.getLarkEnable());
+        if (request.getEmailEnable() != null) {
+            newTask.setEmailEnable(request.getEmailEnable());
+        }
+        if (request.getSysEnable() != null) {
+            newTask.setSysEnable(request.getSysEnable());
+        }
+        if (request.getWeComEnable() != null) {
+            newTask.setWeComEnable(request.getWeComEnable());
+        }
+        if (request.getDingTalkEnable() != null) {
+            newTask.setDingTalkEnable(request.getDingTalkEnable());
+        }
+        if (request.getLarkEnable() != null) {
+            newTask.setLarkEnable(request.getLarkEnable());
+        }
 
         MessageTaskLogDTO newDTO = buildLogDTO(newTask, null);
 
@@ -394,8 +395,7 @@ public class MessageNotificationService {
                 userId,
                 LogType.UPDATE,
                 LogModule.SYSTEM_MESSAGE_MESSAGE,
-                eventMap.get(task.getEvent())
-        );
+                eventMap.get(task.getEvent()));
 
         logDTO.setOriginalValue(oldDTO);
         logDTO.setModifiedValue(newDTO);
@@ -404,7 +404,6 @@ public class MessageNotificationService {
     }
 
     private static MessageTaskLogDTO buildLogDTO(MessageTask task, MessageTaskConfigWithNameDTO config) {
-
         MessageTaskLogDTO dto = new MessageTaskLogDTO();
 
         dto.setEmailEnable(toEnableText(task.getEmailEnable()));
@@ -414,7 +413,9 @@ public class MessageNotificationService {
         dto.setLarkEnable(toEnableText(task.getLarkEnable()));
         dto.setEvent(MessageTemplateUtils.getEventMap().get(task.getEvent()));
 
-        if (config == null) return dto;
+        if (config == null) {
+            return dto;
+        }
 
         dto.setOwnerEnable(toEnableText(config.isOwnerEnable()));
         dto.setOwnerLevel(config.getOwnerLevel());
@@ -433,12 +434,16 @@ public class MessageNotificationService {
     }
 
     private static List<String> extractNames(List<OptionDTO> options) {
-        if (CollectionUtils.isEmpty(options)) return Collections.emptyList();
+        if (CollectionUtils.isEmpty(options)) {
+            return Collections.emptyList();
+        }
         return options.stream().map(OptionDTO::getName).collect(Collectors.toList());
     }
 
     private static List<String> buildTimes(List<TimeDTO> timeList) {
-        if (CollectionUtils.isEmpty(timeList)) return Collections.emptyList();
+        if (CollectionUtils.isEmpty(timeList)) {
+            return Collections.emptyList();
+        }
         return timeList.stream()
                 .map(MessageNotificationService::buildTimeText)
                 .filter(Objects::nonNull)
@@ -446,15 +451,15 @@ public class MessageNotificationService {
     }
 
     private static String buildTimeText(TimeDTO dto) {
-
         String key = TIME_UNIT_MAP.get(dto.getTimeUnit().toUpperCase());
-        if (key == null) return null;
+        if (key == null) {
+            return null;
+        }
 
         return dto.getTimeValue() + Translator.get(key);
     }
 
     private MessageTask updateTaskToLogTask(MessageTask oldTask, MessageTaskRequest request) {
-
         MessageTask task = new MessageTask();
 
         BeanUtils.copyBean(task, oldTask);
@@ -469,18 +474,17 @@ public class MessageNotificationService {
     }
 
     private List<MessageTaskDTO> loadTemplateMessageTasks() {
-
         StringBuilder json = new StringBuilder();
 
         try (InputStream inputStream = getClass().getResourceAsStream("/task/message_task.json")) {
-
             Objects.requireNonNull(inputStream);
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
                 String line;
-                while ((line = reader.readLine()) != null) json.append(line);
+                while ((line = reader.readLine()) != null) {
+                    json.append(line);
+                }
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

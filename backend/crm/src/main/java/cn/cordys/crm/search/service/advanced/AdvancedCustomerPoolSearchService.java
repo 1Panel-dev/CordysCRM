@@ -48,7 +48,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePageRequest, AdvancedCustomerPoolResponse> {
+public class AdvancedCustomerPoolSearchService
+        extends BaseSearchService<BasePageRequest, AdvancedCustomerPoolResponse> {
 
     @Resource
     private ExtCustomerMapper extCustomerMapper;
@@ -70,10 +71,9 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
     @Resource
     private ModuleFormService moduleFormService;
 
-
     @Override
-    public PagerWithOption<List<AdvancedCustomerPoolResponse>> startSearch(BasePageRequest request, String orgId, String userId) {
-
+    public PagerWithOption<List<AdvancedCustomerPoolResponse>> startSearch(BasePageRequest request, String orgId,
+            String userId) {
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = getEnabledModules();
 
@@ -94,14 +94,16 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    public List<AdvancedCustomerPoolResponse> buildListData(List<AdvancedCustomerPoolResponse> list, String orgId, String userId) {
+    public List<AdvancedCustomerPoolResponse> buildListData(List<AdvancedCustomerPoolResponse> list, String orgId,
+            String userId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFieldMap(customerIds, true);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService
+                .getResourceFieldMap(customerIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(CustomerListResponse::getOwner)
@@ -137,8 +139,10 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         } else {
             LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
             recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
-            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
-            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
+            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper
+                    .selectListByLambda(recycleRuleWrapper);
+            recycleRuleMap = recycleRules.stream()
+                    .collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
         }
 
         // 公海原因
@@ -148,8 +152,11 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
 
         //获取用户公海
         Map<String, String> userPoolMap = getUserCustomerPool(orgId, userId);
-        ModuleFormConfigDTO moduleFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
-        List<String> phoneTypeFieldIds = moduleFormConfig.getFields().stream().filter(field -> Strings.CI.equals(field.getType(), FieldType.PHONE.name())).map(BaseField::getId).toList();
+        ModuleFormConfigDTO moduleFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(),
+                orgId);
+        List<String> phoneTypeFieldIds = moduleFormConfig.getFields().stream()
+                .filter(field -> Strings.CI.equals(field.getType(), FieldType.PHONE.name())).map(BaseField::getId)
+                .toList();
 
         list.forEach(customerListResponse -> {
             boolean hasPermission = getHasPermission(userId, orgId, customerListResponse, userPoolMap);
@@ -170,11 +177,14 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
                 customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
 
-            String followerName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
+            String followerName = baseService
+                    .getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
             customerListResponse.setFollowerName(followerName);
-            String createUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getCreateUser()));
+            String createUserName = baseService
+                    .getAndCheckOptionName(userNameMap.get(customerListResponse.getCreateUser()));
             customerListResponse.setCreateUserName(createUserName);
-            String updateUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
+            String updateUserName = baseService
+                    .getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
             customerListResponse.setUpdateUserName(updateUserName);
             customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
             String reasonName = baseService.getAndCheckOptionName(dictMap.get(customerListResponse.getReasonId()));
@@ -190,8 +200,10 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
 
             if (CollectionUtils.isNotEmpty(customerListResponse.getModuleFields())) {
                 customerListResponse.getModuleFields().stream().forEach(moduleField -> {
-                    if (phoneTypeFieldIds.contains(moduleField.getFieldId()) && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
-                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(), moduleField.getFieldValue().toString().length())));
+                    if (phoneTypeFieldIds.contains(moduleField.getFieldId())
+                            && StringUtils.isNotBlank(moduleField.getFieldValue().toString())) {
+                        moduleField.setFieldValue((getPhoneFieldValue(moduleField.getFieldValue(),
+                                moduleField.getFieldValue().toString().length())));
                     }
                 });
             }
@@ -200,11 +212,14 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         return list;
     }
 
-    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCustomerPoolResponse> list, List<AdvancedCustomerPoolResponse> buildList) {
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<AdvancedCustomerPoolResponse> list,
+            List<AdvancedCustomerPoolResponse> buildList) {
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(),
+                orgId);
         // 获取所有模块字段的值
-        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerListResponse::getModuleFields);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list,
+                CustomerListResponse::getModuleFields);
         // 获取选项值对应的 option
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
@@ -216,8 +231,8 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         return optionMap;
     }
 
-    private boolean getHasPermission(String userId, String orgId, AdvancedCustomerPoolResponse customerPoolResponse, Map<String, String> userPoolMap) {
-
+    private boolean getHasPermission(String userId, String orgId, AdvancedCustomerPoolResponse customerPoolResponse,
+            Map<String, String> userPoolMap) {
         if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             return true;
         }
@@ -227,7 +242,8 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
         }
 
         boolean hasPool = userPoolMap.containsKey(customerPoolResponse.getPoolId());
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(), PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
+        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, new ArrayList<>(),
+                PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ);
 
         return hasPool && hasPermission;
     }

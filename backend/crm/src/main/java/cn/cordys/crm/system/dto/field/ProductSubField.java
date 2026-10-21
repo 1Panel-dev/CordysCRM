@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 产品子表字段
+ *
  * @author song-cc-rock
  */
 @Data

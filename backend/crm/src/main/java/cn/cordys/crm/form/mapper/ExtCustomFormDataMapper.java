@@ -11,25 +11,25 @@ import java.util.List;
 public interface ExtCustomFormDataMapper {
 
     List<CustomFormDataListResponse> list(@Param("request") CustomFormDataPageRequest request,
-                                          @Param("orgId") String orgId,
-                                          @Param("userId") String userId,
-                                          @Param("manageOwn") boolean manageOwn);
+            @Param("orgId") String orgId,
+            @Param("userId") String userId,
+            @Param("manageOwn") boolean manageOwn);
 
     List<CustomFormDataListResponse> listForExport(@Param("request") CustomFormDataPageRequest request,
-                                                   @Param("orgId") String orgId,
-                                                   @Param("userId") String userId,
-                                                   @Param("manageOwn") boolean manageOwn,
-                                                   @Param("limit") int limit,
-                                                   @Param("offset") int offset);
+            @Param("orgId") String orgId,
+            @Param("userId") String userId,
+            @Param("manageOwn") boolean manageOwn,
+            @Param("limit") int limit,
+            @Param("offset") int offset);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam batchUpdateDbParam);
 
     void deleteFormDataByCustomFormId(@Param("formId") String formId);
 
     List<CustomFormDataListResponse> getListByIds(@Param("ids") List<String> ids,
-                                                  @Param("orgId") String orgId,
-                                                  @Param("userId") String userId,
-                                                  @Param("manageOwn") boolean manageOwn);
+            @Param("orgId") String orgId,
+            @Param("userId") String userId,
+            @Param("manageOwn") boolean manageOwn);
 
     void updateData(@Param("customFormData") CustomFormData customFormData);
 }

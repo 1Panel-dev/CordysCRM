@@ -2,8 +2,8 @@ package cn.cordys.common.formula;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.Translator;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -19,9 +19,10 @@ import java.util.function.Function;
 
 /**
  * 显式调用的公式请求适配器，仅由 MCP 专用预计算入口使用，不参与 CRM 普通写入生命周期。
- *
- * <p>公式始终取服务端当前组织的实时表单，而不是信任客户端随请求传入的表单快照。
- * 请求 DTO 只需沿用既有业务属性和 {@code moduleFields}，不增加任何给 AI 生成的参数。</p>
+ * <p>
+ * 公式始终取服务端当前组织的实时表单，而不是信任客户端随请求传入的表单快照。
+ * 请求 DTO 只需沿用既有业务属性和 {@code moduleFields}，不增加任何给 AI 生成的参数。
+ * </p>
  */
 @Service
 public class FormulaRequestCompletionService {
@@ -31,8 +32,7 @@ public class FormulaRequestCompletionService {
 
     public FormulaRequestCompletionService(
             ModuleFormService moduleFormService,
-            FormulaCompletionService formulaCompletionService
-    ) {
+            FormulaCompletionService formulaCompletionService) {
         this.moduleFormService = moduleFormService;
         this.formulaCompletionService = formulaCompletionService;
     }
@@ -53,7 +53,9 @@ public class FormulaRequestCompletionService {
             }
         }
         List<BaseField> fields = moduleFormService.getAllFields(formKey, OrganizationContext.getOrganizationId());
-        if (fields == null || fields.isEmpty()) throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED);
+        if (fields == null || fields.isEmpty()) {
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED);
+        }
         try {
             formulaCompletionService.complete(fields, moduleFields, result.get("id") == null,
                     result::get, result::put);
@@ -103,7 +105,9 @@ public class FormulaRequestCompletionService {
         Map<String, BaseModuleFieldValue> oldFields = new LinkedHashMap<>();
         if (baseline.get("moduleFields") instanceof List<?> values) {
             for (Object value : values) {
-                if (value instanceof BaseModuleFieldValue field) oldFields.put(field.getFieldId(), field);
+                if (value instanceof BaseModuleFieldValue field) {
+                    oldFields.put(field.getFieldId(), field);
+                }
             }
         }
         Map<String, BaseModuleFieldValue> merged = new LinkedHashMap<>(oldFields);
@@ -164,8 +168,7 @@ public class FormulaRequestCompletionService {
 
     private void writeModuleFields(
             BeanWrapper requestValues,
-            Map<String, BaseModuleFieldValue> moduleFieldMap
-    ) {
+            Map<String, BaseModuleFieldValue> moduleFieldMap) {
         if (!requestValues.isWritableProperty("moduleFields")) {
             return;
         }

@@ -1,8 +1,7 @@
 package cn.cordys.common.constants;
 
 /**
- * @Author: jianxing
- * @CreateTime: 2025-10-14  10:11
+ * @author jianxing
  */
 public enum ChartAggregateMethod {
     SUM,

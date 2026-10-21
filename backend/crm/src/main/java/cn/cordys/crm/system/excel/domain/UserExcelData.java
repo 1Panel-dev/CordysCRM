@@ -67,7 +67,6 @@ public class UserExcelData {
     @ExcelIgnore
     private String employeeType;
 
-
     public List<List<String>> getHead() {
         return new ArrayList<>();
     }

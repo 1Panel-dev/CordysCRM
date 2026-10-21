@@ -73,12 +73,14 @@ class CustomFormDataServiceTest {
         ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
         when(mapper.selectByPrimaryKey("record-1")).thenReturn(record("record-1", "form-1", "org-1", "owner"));
         for (CrmHttpResultCode code : List.of(CrmHttpResultCode.FORBIDDEN, CrmHttpResultCode.NOT_FOUND)) {
-            org.mockito.Mockito.doThrow(new GenericException(code)).when(service).getDataScope("form-1", "reader", "org-1");
+            org.mockito.Mockito.doThrow(new GenericException(code)).when(service).getDataScope("form-1", "reader",
+                    "org-1");
             assertFalse(service.hasViewPermission("record-1", "reader", "org-1"));
         }
         GenericException unexpected = new GenericException("非权限业务异常");
         org.mockito.Mockito.doThrow(unexpected).when(service).getDataScope("form-1", "reader", "org-1");
-        assertSame(unexpected, assertThrows(GenericException.class, () -> service.hasViewPermission("record-1", "reader", "org-1")));
+        assertSame(unexpected,
+                assertThrows(GenericException.class, () -> service.hasViewPermission("record-1", "reader", "org-1")));
     }
 
     @Test
@@ -225,8 +227,7 @@ class CustomFormDataServiceTest {
         existing.setId("record-1");
         when(dataMapper.selectByIds(anyList())).thenReturn(List.of(existing));
 
-        CustomFormDataBatchUpdateRequest request =
-                new CustomFormDataBatchUpdateRequest();
+        CustomFormDataBatchUpdateRequest request = new CustomFormDataBatchUpdateRequest();
         request.setCustomFormId("form-1");
         request.setIds(List.of("record-1", "missing-record"));
         request.setFieldId("note-field");

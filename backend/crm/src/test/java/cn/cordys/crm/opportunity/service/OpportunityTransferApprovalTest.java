@@ -102,43 +102,50 @@ class OpportunityTransferApprovalTest {
     @Test
     void onlyOpportunitiesWhoseOwnerChangesArePushedToApproval() {
         when(opportunityMapper.selectByIds(request.getIds()))
-                .thenReturn(List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", NEW_OWNER)));
+                .thenReturn(
+                        List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", NEW_OWNER)));
 
         runTransfer();
 
         // 转移 SQL 逐条改写商机, 但负责人本就相同的商机不需要审批介入
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
+                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID,
+                NEW_OWNER, null);
     }
 
     @Test
     void snapshotIsTakenBeforeTheTransferWrites() {
-        when(opportunityMapper.selectByIds(request.getIds())).thenReturn(List.of(opportunity("opportunity-1", "old-owner")));
+        when(opportunityMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(opportunity("opportunity-1", "old-owner")));
 
         runTransfer();
 
         // 快照必须早于转移 SQL, 否则驳回/撤回会把负责人回退成转移后的值
         InOrder inOrder = inOrder(approvalResourceService, extOpportunityMapper);
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
+                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID,
+                NEW_OWNER, null);
         inOrder.verify(extOpportunityMapper).transfer(eq(NEW_OWNER), eq(USER_ID), eq("opportunity-1"), anyLong());
     }
 
     @Test
     void transferThatKeepsEveryOwnerStillGoesThroughTheEntryPointWithNoResource() {
-        when(opportunityMapper.selectByIds(request.getIds())).thenReturn(List.of(opportunity("opportunity-1", NEW_OWNER)));
+        when(opportunityMapper.selectByIds(request.getIds()))
+                .thenReturn(List.of(opportunity("opportunity-1", NEW_OWNER)));
 
         runTransfer();
 
         // 入口必须被调用, 由它自己短路; 若改成调用方提前 return, 这里的空集合断言会失败
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of(), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
+                List.of(), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER,
+                null);
     }
 
     @Test
     void onlyOpportunitiesWhoseOwnerChangesAreWrittenAndSynced() {
         when(opportunityMapper.selectByIds(request.getIds()))
-                .thenReturn(List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", NEW_OWNER)));
+                .thenReturn(
+                        List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", NEW_OWNER)));
 
         runTransfer();
 
@@ -155,7 +162,8 @@ class OpportunityTransferApprovalTest {
         // 入参里带一个查不到的 id, 它既不算成功也不算跳过
         request.setIds(List.of("opportunity-1", "opportunity-2", "opportunity-3"));
         when(opportunityMapper.selectByIds(request.getIds()))
-                .thenReturn(List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", NEW_OWNER)));
+                .thenReturn(
+                        List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", NEW_OWNER)));
 
         BatchAffectReasonResponse response = runTransfer();
 
@@ -176,7 +184,8 @@ class OpportunityTransferApprovalTest {
 
     @Test
     void statusPermissionIsCheckedBeforeTheApprovalIsRaised() {
-        List<Opportunity> opportunities = List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner"));
+        List<Opportunity> opportunities = List.of(opportunity("opportunity-1", "old-owner"),
+                opportunity("opportunity-2", "old-owner"));
         when(opportunityMapper.selectByIds(request.getIds())).thenReturn(opportunities);
 
         runTransfer();
@@ -187,13 +196,15 @@ class OpportunityTransferApprovalTest {
                 eq(ApprovalFormTypeEnum.OPPORTUNITY.getValue()), same(opportunities),
                 eq(PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER), eq(ORG_ID), any(), any());
         inOrder.verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1", "opportunity-2"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
+                List.of("opportunity-1", "opportunity-2"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY,
+                ORG_ID, USER_ID, NEW_OWNER, null);
     }
 
     @Test
     void transferLeavesOutTheOpportunitiesTheOperatorHasNoPermissionFor() {
         when(opportunityMapper.selectByIds(request.getIds()))
-                .thenReturn(List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner")));
+                .thenReturn(
+                        List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner")));
         // doReturn 而非 when: 默认 stub 已注册, when(...) 会先跑一遍它, 拿到的却是匹配器占位的 null
         doReturn(List.of("opportunity-1")).when(approvalFlowService)
                 .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
@@ -201,7 +212,8 @@ class OpportunityTransferApprovalTest {
         BatchAffectReasonResponse response = runTransfer();
 
         verify(approvalResourceService).batchTransferTriggerApproval(
-                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID, NEW_OWNER, null);
+                List.of("opportunity-1"), BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, ORG_ID, USER_ID,
+                NEW_OWNER, null);
         verify(extOpportunityMapper).transfer(eq(NEW_OWNER), eq(USER_ID), eq("opportunity-1"), anyLong());
         verify(extOpportunityMapper, never()).transfer(anyString(), anyString(), eq("opportunity-2"), anyLong());
         verify(extCustomerContactMapper, never()).updateContactById(eq("contact-opportunity-2"), anyString());
@@ -214,13 +226,15 @@ class OpportunityTransferApprovalTest {
     @Test
     void transferWithoutAnyPermittedOpportunityTouchesNothing() {
         when(opportunityMapper.selectByIds(request.getIds()))
-                .thenReturn(List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner")));
+                .thenReturn(
+                        List.of(opportunity("opportunity-1", "old-owner"), opportunity("opportunity-2", "old-owner")));
         doReturn(List.of()).when(approvalFlowService)
                 .filterResourcesWithPermission(any(), any(), any(), any(), any(), any());
 
         BatchAffectReasonResponse response = runTransfer();
 
-        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any(), any());
+        verify(approvalResourceService, never()).batchTransferTriggerApproval(any(), any(), any(), any(), any(), any(),
+                any());
         verify(extOpportunityMapper, never()).transfer(anyString(), anyString(), anyString(), anyLong());
         assertEquals(0, response.getSuccess());
         assertEquals(2, response.getFail());
@@ -275,7 +289,8 @@ class OpportunityTransferApprovalTest {
 
         // 只是改改金额之类的, 不该当成一次转移
         verify(extCustomerContactMapper, never()).updateContactById(anyString(), anyString());
-        verify(noticeSendService, never()).sendNotice(any(), any(), anyString(), anyString(), anyString(), any(), anyBoolean());
+        verify(noticeSendService, never()).sendNotice(any(), any(), anyString(), anyString(), anyString(), any(),
+                anyBoolean());
     }
 
     private BatchAffectReasonResponse runTransfer() {
