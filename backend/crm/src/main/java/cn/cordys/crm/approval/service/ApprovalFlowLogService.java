@@ -123,9 +123,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             JsonDifferenceDTO nodesDiff = getNodesJsonDifferenceDTO(configDifferences, NODES_COLUMN);
             // 处理 nodes 字段的差异
             List<JsonDifferenceDTO> nodesDifference = handleNodesDifference(nodesDiff);
-            nodesDifference.forEach(diff -> {
-                diff.setColumnName(prefix + "-" + diff.getColumnName());
-            });
+            nodesDifference.forEach(diff -> diff.setColumnName(prefix + "-" + diff.getColumnName()));
             return nodesDifference;
         } catch (Exception e) {
            log.error(e.getMessage(), e);
@@ -185,11 +183,10 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     }
 
     private JsonDifferenceDTO getNodesJsonDifferenceDTO(List<JsonDifferenceDTO> differences, String nodeName) {
-        Optional<JsonDifferenceDTO> nodesDiffOpt = differences.stream()
+        return differences.stream()
                 .filter(differ -> Strings.CS.equals(differ.getColumn(), nodeName))
-                .findFirst();
-
-        return nodesDiffOpt.orElse(null);
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -732,13 +729,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             return "";
         }
         try {
-            List<?> list;
-            if (value instanceof List<?> l) {
-                list = l;
-            } else {
-                String strValue = value.toString();
-                list = JSON.parseArray(strValue, Object.class);
-            }
+            List<?> list = value instanceof List<?> items ? items : JSON.parseArray(value.toString(), Object.class);
 
             List<String> results = new ArrayList<>();
             for (Object item : list) {
@@ -808,7 +799,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private String translatePostConfig(Object value) {
         if (value == null) return "";
         try {
-            String jsonStr = value instanceof String ? (String) value : JSON.toJSONString(value);
+            String jsonStr = value instanceof String text ? text : JSON.toJSONString(value);
             ApprovalPostConfigDTO postConfig = JSON.parseObject(jsonStr, ApprovalPostConfigDTO.class);
 
             if (postConfig == null) {
@@ -859,7 +850,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private String translateConditionConfig(Object value) {
         if (value == null) return "";
         try {
-            String jsonStr = value instanceof String ? (String) value : JSON.toJSONString(value);
+            String jsonStr = value instanceof String text ? text : JSON.toJSONString(value);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode configNode = mapper.readTree(jsonStr);
 
@@ -970,7 +961,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                             labels.add(translatedStr);
                         }
                     }
-                    return labels.stream().collect(Collectors.joining(", "));
+                    return String.join(", ", labels);
                 } else {
                     Object translated = transformFieldValue(field, valueNode);
                     return translated != null ? translated.toString() : "";
@@ -1010,7 +1001,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             for (JsonNode item : valueNode) {
                 items.add(item.asText(""));
             }
-            return items.stream().collect(Collectors.joining(", "));
+            return String.join(", ", items);
         }
         return valueNode.asText("");
     }
@@ -1072,13 +1063,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private String translateFieldPermissions(Object value) {
         if (value == null) return "";
         try {
-            List<?> list;
-            if (value instanceof List<?> l) {
-                list = l;
-            } else {
-                String strValue = value.toString();
-                list = JSON.parseArray(strValue, Object.class);
-            }
+            List<?> list = value instanceof List<?> items ? items : JSON.parseArray(value.toString(), Object.class);
 
             Map<String, BaseField> fieldMap = fields != null
                     ? fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (a, b) -> a))
