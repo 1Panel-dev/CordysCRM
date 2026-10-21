@@ -33,7 +33,7 @@ public class ApprovalCommentService {
     private BaseMapper<ApprovalComment> commentMapper;
     @Resource
     private BaseMapper<ApprovalCommentMention> mentionMapper;
-    @Resource
+    @Resource(name = "extApprovalCommentMapper")
     private ExtApprovalCommentMapper extCommentMapper;
     @Resource
     private ApprovalResourceService approvalResourceService;

@@ -13,6 +13,7 @@ import cn.cordys.crm.approval.dto.request.ApprovalCommentUpdateRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentMentionUserResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
+import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.junit.jupiter.api.AfterAll;
@@ -25,6 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -94,6 +96,26 @@ class ApprovalCommentServiceTest {
         instance = new ApprovalInstance();
         instance.setId(INSTANCE);
         when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(instance);
+    }
+
+    @Test
+    void injectsApprovalMapperWhenFollowCommentMapperIsAlsoRegistered() {
+        ExtCommentMapper followCommentMapper = mock(ExtCommentMapper.class);
+        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(true);
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+            context.getBeanFactory().registerSingleton("extCommentMapper", followCommentMapper);
+            context.getBeanFactory().registerSingleton("extApprovalCommentMapper", extCommentMapper);
+            context.getBeanFactory().registerSingleton("commentMapper", commentMapper);
+            context.getBeanFactory().registerSingleton("mentionMapper", mentionMapper);
+            context.getBeanFactory().registerSingleton("approvalResourceService", approvalResourceService);
+            context.registerBean(ApprovalCommentService.class);
+            context.refresh();
+
+            assertTrue(context.getBean(ApprovalCommentService.class).hasCommentPermission(INSTANCE, USER, ORG));
+
+            verify(extCommentMapper).selectInstance(INSTANCE, ORG);
+            verifyNoInteractions(followCommentMapper);
+        }
     }
 
     @ParameterizedTest
