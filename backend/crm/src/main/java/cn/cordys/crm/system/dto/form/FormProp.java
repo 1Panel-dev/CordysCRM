@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.dto.form;
 
 import cn.cordys.crm.system.dto.form.base.BtnContentProp;
+import cn.cordys.crm.system.dto.form.base.FormValidationRule;
 import cn.cordys.crm.system.dto.form.base.LinkScenario;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -31,4 +32,7 @@ public class FormProp {
 
     @Schema(description = "表单详情标签页配置")
     private List<FormDetailTab> detailTabs;
+
+    @Schema(description = "表单校验规则")
+    private List<FormValidationRule> validationRules;
 }
