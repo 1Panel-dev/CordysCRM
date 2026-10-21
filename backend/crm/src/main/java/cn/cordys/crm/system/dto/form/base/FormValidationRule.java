@@ -9,6 +9,9 @@ import lombok.Data;
 @Data
 public class FormValidationRule {
 
+    @Schema(description = "是否启用")
+    private Boolean enable;
+
     @Schema(description = "校验公式（由前端解析执行）")
     private String formula;
 
