@@ -37,9 +37,6 @@ public class UserSearchConfigService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private BaseMapper<UserSearchConfig> userSearchConfigMapper;
-    @Resource
-    private ExtUserSearchConfigMapper extUserSearchConfigMapper;
-
 
     /**
      * 保存配置
