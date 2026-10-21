@@ -2,10 +2,10 @@ package cn.cordys.crm.opportunity.domain;
 
 import cn.cordys.common.domain.BaseModel;
 import cn.cordys.common.util.BigDecimalNoTrailingZeroSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.math.BigDecimal;
 import java.util.List;

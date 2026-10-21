@@ -103,7 +103,7 @@ public class HttpClientUtils {
         SSRFValidator ssrfValidator = CommonBeanFactory.getBean(SSRFValidator.class);
         ssrfValidator.validate(url);
         var httpHeaders = buildHeaders(headers);
-        if (!httpHeaders.containsKey(HttpHeaders.CONTENT_TYPE)) {
+        if (!httpHeaders.containsHeader(HttpHeaders.CONTENT_TYPE)) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         }
         var entity = new HttpEntity<>(body, httpHeaders);
@@ -129,7 +129,7 @@ public class HttpClientUtils {
         SSRFValidator ssrfValidator = CommonBeanFactory.getBean(SSRFValidator.class);
         ssrfValidator.validate(url);
         var httpHeaders = buildHeaders(headers);
-        if (body != null && !httpHeaders.containsKey(HttpHeaders.CONTENT_TYPE)) {
+        if (body != null && !httpHeaders.containsHeader(HttpHeaders.CONTENT_TYPE)) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         }
         var entity = new HttpEntity<>(body, httpHeaders);

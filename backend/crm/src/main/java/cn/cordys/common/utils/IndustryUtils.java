@@ -3,10 +3,10 @@ package cn.cordys.common.utils;
 import cn.cordys.common.resolver.field.IndustryResolver;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.dto.form.IndustryDict;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;

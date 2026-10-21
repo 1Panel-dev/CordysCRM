@@ -49,10 +49,6 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.SessionUtils;
 import cn.cordys.security.UserApprovalDTO;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +59,11 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -992,13 +993,11 @@ public class ApprovalResourceService {
     public void sendWebHook(String postConfig, List<BaseModuleFieldValue> fieldValues, ApprovalInstance instance) {
         ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(instance.getType(),
                 OrganizationContext.getOrganizationId());
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builderWithJackson2Defaults().build();
         WebHookConfig webHookConfig;
         try {
-            webHookConfig = mapper.readTree(postConfig)
-                    .get("webHookConfig")
-                    .traverse(mapper)
-                    .readValueAs(WebHookConfig.class);
+            webHookConfig = mapper.readerFor(WebHookConfig.class)
+                    .readValue(mapper.readTree(postConfig).get("webHookConfig"));
         } catch (Exception e) {
             throw new GenericException(e.getMessage());
         }
@@ -1100,7 +1099,7 @@ public class ApprovalResourceService {
     private String postDataParse(WebHookConfig webHookConfig, List<BaseField> moduleFields,
             List<BaseModuleFieldValue> fieldValues, String resourceId) throws Exception {
         String webHookBody = webHookConfig.getWebHookBody();
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builderWithJackson2Defaults().build();
         JsonNode rootNode = mapper.readTree(webHookBody);
         replacePlaceholders(rootNode, moduleFields, fieldValues, resourceId);
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
@@ -1113,7 +1112,7 @@ public class ApprovalResourceService {
             List<BaseModuleFieldValue> fieldValues, String resourceId) {
         if (node.isObject()) {
             ObjectNode objNode = (ObjectNode) node;
-            Iterator<Map.Entry<String, JsonNode>> fields = objNode.fields();
+            Iterator<Map.Entry<String, JsonNode>> fields = objNode.properties().iterator();
             while (fields.hasNext()) {
                 Map.Entry<String, JsonNode> entry = fields.next();
                 JsonNode childNode = entry.getValue();

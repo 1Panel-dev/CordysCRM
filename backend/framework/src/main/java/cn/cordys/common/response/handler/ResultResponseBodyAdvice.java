@@ -5,7 +5,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  * 如果返回的是空值，自动包装为一个成功的响应。
  * </p>
  * <p>
- * 支持的消息转换器类型为：MappingJackson2HttpMessageConverter 和 StringHttpMessageConverter。
+ * 支持的消息转换器类型为：JacksonJsonHttpMessageConverter 和 StringHttpMessageConverter。
  * </p>
  */
 @RestControllerAdvice(value = { "cn.cordys" })
@@ -36,7 +36,7 @@ public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
     @Override
     public boolean supports(MethodParameter methodParameter,
             Class<? extends HttpMessageConverter<?>> converterType) {
-        return MappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType) ||
+        return JacksonJsonHttpMessageConverter.class.isAssignableFrom(converterType) ||
                 StringHttpMessageConverter.class.isAssignableFrom(converterType);
     }
 

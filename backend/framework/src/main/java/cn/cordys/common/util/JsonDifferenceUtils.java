@@ -1,9 +1,10 @@
 package cn.cordys.common.util;
 
 import cn.cordys.common.dto.JsonDifferenceDTO;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.NullNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.NullNode;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,7 +14,7 @@ public class JsonDifferenceUtils {
 
     public static List<JsonDifferenceDTO> compareJson(String oldJson, String newJson,
             List<JsonDifferenceDTO> JsonDifferenceDTO) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builderWithJackson2Defaults().build();
         JsonNode oldNode = oldJson != null ? mapper.readTree(oldJson) : mapper.createObjectNode();
         JsonNode newNode = newJson != null ? mapper.readTree(newJson) : mapper.createObjectNode();
         if (oldNode.isArray() && newNode.isArray()) {
@@ -25,7 +26,7 @@ public class JsonDifferenceUtils {
 
     private static void compareJsonNodes(JsonNode oldNode, JsonNode newNode,
             List<JsonDifferenceDTO> JsonDifferenceDTOList) {
-        Iterator<String> fieldNames1 = oldNode.fieldNames();
+        Iterator<String> fieldNames1 = oldNode.propertyNames().iterator();
         //遍历
         while (fieldNames1.hasNext()) {
             String fieldName = fieldNames1.next();
@@ -55,7 +56,7 @@ public class JsonDifferenceUtils {
         }
 
         //遍历查找新增的属性
-        Iterator<String> fieldNames2 = newNode.fieldNames();
+        Iterator<String> fieldNames2 = newNode.propertyNames().iterator();
         while (fieldNames2.hasNext()) {
             String fieldName = fieldNames2.next();
             if (!oldNode.has(fieldName)) {
@@ -113,7 +114,7 @@ public class JsonDifferenceUtils {
     private static void compareArrayNodesById(JsonNode oldNode, JsonNode newNode,
             List<JsonDifferenceDTO> jsonDifferenceDTO) {
         List<String> oldNodeIds = new ArrayList<>();
-        Iterator<JsonNode> elements = oldNode.elements();
+        Iterator<JsonNode> elements = oldNode.iterator();
         while (elements.hasNext()) {
             JsonNode oldElement = elements.next();
             boolean found = false;

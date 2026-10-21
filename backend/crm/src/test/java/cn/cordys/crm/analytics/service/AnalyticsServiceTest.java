@@ -12,8 +12,6 @@ import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import org.apache.ibatis.builder.StaticSqlSource;
@@ -25,6 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -348,7 +349,8 @@ class AnalyticsServiceTest {
 
     @Test
     void jsonRejectsUnknownIdentityAndMisspelledFiltersAndPreservesNumbers() throws Exception {
-        var json = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        var json = JsonMapper.builderWithJackson2Defaults()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
         for (String unknown : List.of("organizationId", "userId", "sql", "conditions")) {
             assertThrows(Exception.class,
                     () -> json.readValue("{\"" + unknown + "\":\"x\"}", AnalyticsQueryRequest.class));

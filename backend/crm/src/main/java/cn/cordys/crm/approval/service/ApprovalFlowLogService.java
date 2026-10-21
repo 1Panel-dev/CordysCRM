@@ -28,8 +28,6 @@ import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.crm.system.service.SysOperationLogService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -37,6 +35,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -147,7 +148,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             return List.of();
         }
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = JsonMapper.builderWithJackson2Defaults().build();
             JsonNode oldNodes = nodesDiff.getOldValue() != null
                     ? mapper.valueToTree(nodesDiff.getOldValue())
                     : mapper.createArrayNode();
@@ -266,7 +267,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         Set<String> comparedFields = new HashSet<>();
 
         // 比较旧节点中的属性
-        Iterator<String> oldFields = oldNode.fieldNames();
+        Iterator<String> oldFields = oldNode.propertyNames().iterator();
         while (oldFields.hasNext()) {
             String field = oldFields.next();
             if (!propertyNames.containsKey(field) || comparedFields.contains(field)) {
@@ -298,7 +299,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
 
         // 检查新增的属性
-        Iterator<String> newFields = newNode.fieldNames();
+        Iterator<String> newFields = newNode.propertyNames().iterator();
         while (newFields.hasNext()) {
             String field = newFields.next();
             if (!propertyNames.containsKey(field) || comparedFields.contains(field)) {
@@ -888,7 +889,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
         try {
             String jsonStr = value instanceof String text ? text : JSON.toJSONString(value);
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = JsonMapper.builderWithJackson2Defaults().build();
             JsonNode configNode = mapper.readTree(jsonStr);
 
             JsonNode conditionsNode = configNode.get("conditions");

@@ -1,6 +1,7 @@
 package cn.cordys.config;
 
 import cn.cordys.common.handler.ListTypeHandler;
+import cn.cordys.common.handler.PageHelperCountSqlParser;
 import cn.cordys.common.interceptor.UserDesensitizationInterceptor;
 import cn.cordys.mybatis.interceptor.MybatisInterceptor;
 import cn.cordys.quartz.anno.QuartzDataSource;
@@ -8,7 +9,7 @@ import com.github.pagehelper.PageInterceptor;
 import com.zaxxer.hikari.HikariDataSource;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -52,6 +53,7 @@ public class MybatisConfig {
         properties.setProperty("reasonable", "true");
         properties.setProperty("offsetAsPageNum", "true");
         properties.setProperty("pageSizeZero", "true");
+        properties.setProperty("countSqlParser", PageHelperCountSqlParser.class.getName());
         pageInterceptor.setProperties(properties);
         return pageInterceptor;
     }

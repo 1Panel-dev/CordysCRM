@@ -2,16 +2,13 @@ package cn.cordys.crm;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
-import org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration;
-import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
-import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.boot.quartz.autoconfigure.QuartzAutoConfiguration;
+import org.springframework.boot.web.server.servlet.context.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootApplication(exclude = {
-        QuartzAutoConfiguration.class,
-        LdapAutoConfiguration.class,
-        Neo4jAutoConfiguration.class
+@SpringBootApplication(exclude = QuartzAutoConfiguration.class, excludeName = {
+        "org.springframework.boot.ldap.autoconfigure.LdapAutoConfiguration",
+        "org.springframework.boot.neo4j.autoconfigure.Neo4jAutoConfiguration"
 })
 @ServletComponentScan
 @ComponentScan(basePackages = { "cn.cordys" })
