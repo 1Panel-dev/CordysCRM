@@ -31,7 +31,6 @@ import cn.cordys.crm.system.service.UserLoginService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionUser;
 import cn.cordys.security.UserDTO;
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +39,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.DisabledAccountException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;

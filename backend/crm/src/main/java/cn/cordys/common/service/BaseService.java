@@ -36,7 +36,6 @@ import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +43,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
 
 import java.lang.reflect.Method;
 import java.util.*;

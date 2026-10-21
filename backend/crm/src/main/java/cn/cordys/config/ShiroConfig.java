@@ -6,6 +6,8 @@ import cn.cordys.common.security.CsrfFilter;
 import cn.cordys.common.security.realm.LocalRealm;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.security.FileAccessAuthFilter;
+import cn.cordys.security.SessionConstants;
+import cn.cordys.security.SessionUser;
 import cn.cordys.security.ShiroFilter;
 import jakarta.servlet.Filter;
 import org.apache.shiro.aop.AnnotationResolver;
@@ -13,12 +15,14 @@ import org.apache.shiro.authz.aop.*;
 import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.aop.SpringAnnotationResolver;
 import org.apache.shiro.spring.security.interceptor.AopAllianceAnnotationsAuthorizingMethodInterceptor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.ServletContainerSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
@@ -58,6 +62,8 @@ public class ShiroConfig {
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(final DefaultWebSecurityManager sessionManager) {
         final var bean = new ShiroFilterFactoryBean();
+        // 与 Spring MVC 的大小写敏感路径匹配保持一致。
+        bean.setCaseInsensitive(false);
         bean.setLoginUrl("/login");
         bean.setSecurityManager(sessionManager);
         bean.setUnauthorizedUrl("/403");
@@ -130,7 +136,18 @@ public class ShiroConfig {
     @Bean(name = "securityManager")
     public DefaultWebSecurityManager securityManager(SessionManager sessionManager, CacheManager cacheManager,
             Realm localRealm) {
-        DefaultWebSecurityManager defaultManager = new DefaultWebSecurityManager();
+        DefaultWebSecurityManager defaultManager = new DefaultWebSecurityManager() {
+            @Override
+            protected void beforeSuccessfulLogin(Subject subject) {
+                super.beforeSuccessfulLogin(subject);
+                // Shiro 轮换会话 ID 后，登录响应和 CSRF Token 必须绑定新会话。
+                Session session = subject.getSession(false);
+                if (session != null && session.getAttribute(SessionConstants.ATTR_USER) instanceof SessionUser user) {
+                    session.setAttribute(SessionConstants.ATTR_USER,
+                            SessionUser.fromUser(user, (String) session.getId()));
+                }
+            }
+        };
         defaultManager.setSessionManager(sessionManager);
         defaultManager.setCacheManager(cacheManager);
         defaultManager.setRealm(localRealm);

@@ -41,7 +41,6 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.utils.ScheduleUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -55,6 +54,7 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.*;
 

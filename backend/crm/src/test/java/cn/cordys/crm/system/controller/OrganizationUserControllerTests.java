@@ -14,7 +14,7 @@ import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.OrganizationUserService;
 import cn.cordys.crm.utils.FileBaseUtils;
 import org.junit.jupiter.api.*;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;

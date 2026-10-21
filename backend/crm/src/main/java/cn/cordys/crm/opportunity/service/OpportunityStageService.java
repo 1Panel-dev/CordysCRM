@@ -24,11 +24,11 @@ import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.*;
 import java.util.function.Function;

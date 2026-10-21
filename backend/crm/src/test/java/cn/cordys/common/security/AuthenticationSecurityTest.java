@@ -2,6 +2,7 @@ package cn.cordys.common.security;
 
 import cn.cordys.common.response.handler.RestControllerExceptionHandler;
 import cn.cordys.common.security.realm.LocalRealm;
+import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.util.rsa.RsaUtils;
@@ -69,8 +70,9 @@ class AuthenticationSecurityTest {
 
         LocalRealm realm = new LocalRealm();
         ReflectionTestUtils.setField(realm, "userLoginService", users);
-        manager = new DefaultWebSecurityManager(realm);
-        manager.setSessionManager(new ServletContainerSessionManager());
+        ShiroConfig config = new ShiroConfig();
+        manager = config.securityManager(new ServletContainerSessionManager(),
+                config.memoryConstrainedCacheManager(), realm);
         mvc = createMvc();
     }
 
@@ -134,6 +136,25 @@ class AuthenticationSecurityTest {
         assertEquals("admin", subject.getPrincipal());
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void successfulLoginBindsUserAndCsrfTokenToTheRotatedSession(boolean verified) {
+        when(users.checkUserPassword("admin", "synthetic-correct-password")).thenReturn(true);
+        Subject subject = bindSubject();
+        String previousSessionId = subject.getSession().getId().toString();
+
+        subject.login(verified ? new VerifiedUserToken("admin")
+                : new UsernamePasswordToken("admin", "synthetic-correct-password"));
+
+        SessionUser user = (SessionUser) subject.getSession().getAttribute(SessionConstants.ATTR_USER);
+        String currentSessionId = subject.getSession().getId().toString();
+        assertNotEquals(previousSessionId, currentSessionId);
+        assertEquals(currentSessionId, user.getSessionId());
+        String csrfPayload = CodingUtils.aesDecrypt(user.getCsrfToken(), SessionUser.secret,
+                CodingUtils.generateLegacyIv());
+        assertEquals(currentSessionId, csrfPayload.split("\\|")[2]);
+    }
+
     @Test
     void loginEndpointRejectsWrongPasswordEvenWithAnExternalAuthenticationField() throws Exception {
         String key = RsaUtils.getRsaKey().getPublicKey();
@@ -151,6 +172,14 @@ class AuthenticationSecurityTest {
     @Test
     void rootPageStillLoadsWithoutAuthentication() throws Exception {
         mvc.perform(get("/")).andExpect(status().isOk()).andExpect(content().string("synthetic front page"));
+        verifyNoInteractions(users);
+    }
+
+    @Test
+    void unknownAndCaseVariantRoutesStillRequireAuthentication() throws Exception {
+        for (String path : new String[] { "/not-configured", "/LOGIN", "/BASE-DISPLAY/admin" }) {
+            mvc.perform(get(path)).andExpect(status().isUnauthorized());
+        }
         verifyNoInteractions(users);
     }
 

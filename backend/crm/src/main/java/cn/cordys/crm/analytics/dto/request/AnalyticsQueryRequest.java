@@ -1,17 +1,16 @@
 package cn.cordys.crm.analytics.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,14 +112,14 @@ public class AnalyticsQueryRequest extends AnalyticsInput {
         @NotNull
         private Operator operator;
         @Schema(description = "标量或最多 100 项数组；EMPTY/NOT_EMPTY 不传值，日期支持毫秒时间戳或 ISO 时间")
-        @JsonDeserialize(using = ValueDeserializer.class)
+        @JsonDeserialize(using = ConditionValueDeserializer.class)
         private Object value;
     }
 
     /** 金额条件直接按十进制解析，不能先经 Double 丢失精度；仅影响新增统计接口。 */
-    public static class ValueDeserializer extends JsonDeserializer<Object> {
+    public static class ConditionValueDeserializer extends ValueDeserializer<Object> {
         @Override
-        public Object deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+        public Object deserialize(JsonParser parser, DeserializationContext context) {
             if (!parser.isExpectedStartArrayToken()) {
                 return scalar(parser, context);
             }
@@ -134,7 +133,7 @@ public class AnalyticsQueryRequest extends AnalyticsInput {
             return values;
         }
 
-        private Object scalar(JsonParser parser, DeserializationContext context) throws IOException {
+        private Object scalar(JsonParser parser, DeserializationContext context) {
             return switch (parser.currentToken()) {
             case VALUE_STRING -> parser.getText();
             case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> parser.getDecimalValue();

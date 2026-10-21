@@ -9,7 +9,7 @@ import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.*;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;

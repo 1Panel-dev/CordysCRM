@@ -58,8 +58,6 @@ import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -74,6 +72,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -120,7 +121,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
     @Resource
     private ApprovalFlowService approvalFlowService;
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = JsonMapper.builderWithJackson2Defaults().build();
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 

@@ -1,20 +1,22 @@
 package cn.cordys.config;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.HtmlUtils;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.deser.std.StdScalarDeserializer;
+import tools.jackson.databind.module.SimpleModule;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -37,32 +39,37 @@ public class RequestParamTrimConfig {
     private String xssFilterUrlList;
 
     /**
-     * 定义一个 {@link Jackson2ObjectMapperBuilderCustomizer} Bean，
+     * 定义一个 {@link JsonMapperBuilderCustomizer} Bean，
      * 用于定制 Jackson 的 ObjectMapper 设置，特别是针对 String 类型字段的反序列化。
      * <p>
      * 通过此定制，所有从 JSON 反序列化的 String 类型字段将在反序列化时自动去除前后空格。
      * </p>
      *
-     * @return 定制后的 {@link Jackson2ObjectMapperBuilderCustomizer} 实例
+     * @return 定制后的 {@link JsonMapperBuilderCustomizer} 实例
      */
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+    public JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
         AntPathMatcher pathMatcher = new AntPathMatcher(); // 线程安全，可复用
 
         return builder -> builder
-                .deserializerByType(String.class, new StdScalarDeserializer<String>(String.class) {
-                    @Override
-                    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-                        String rawValue = p.getValueAsString();
-                        String trimmedValue = StringUtils.trim(rawValue);
+                // 兼容原 ParameterNamesModule 和 Lombok @Builder 的包级构造器。
+                .enable(MapperFeature.DETECT_PARAMETER_NAMES)
+                .changeDefaultVisibility(visibility ->
+                        visibility.withCreatorVisibility(JsonAutoDetect.Visibility.NON_PRIVATE))
+                .addModule(new SimpleModule().addDeserializer(String.class,
+                        new StdScalarDeserializer<String>(String.class) {
+                            @Override
+                            public String deserialize(JsonParser p, DeserializationContext ctxt) {
+                                String rawValue = p.getValueAsString();
+                                String trimmedValue = StringUtils.trim(rawValue);
 
-                        // 判断是否需要对当前值进行 HTML 转义
-                        if (shouldEscapeXss(pathMatcher)) {
-                            return HtmlUtils.htmlEscape(trimmedValue);
-                        }
-                        return trimmedValue;
-                    }
-                });
+                                // 判断是否需要对当前值进行 HTML 转义
+                                if (shouldEscapeXss(pathMatcher)) {
+                                    return HtmlUtils.htmlEscape(trimmedValue);
+                                }
+                                return trimmedValue;
+                            }
+                        }));
     }
 
     /**

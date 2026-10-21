@@ -2,12 +2,12 @@ package cn.cordys.crm.product.domain;
 
 import cn.cordys.common.domain.BaseModel;
 import cn.cordys.common.util.BigDecimalNoTrailingZeroSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.math.BigDecimal;
 

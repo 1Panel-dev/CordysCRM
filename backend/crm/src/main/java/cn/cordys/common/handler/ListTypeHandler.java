@@ -1,21 +1,19 @@
 package cn.cordys.common.handler;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.common.util.StringUtils;
 import org.apache.ibatis.type.JdbcType;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.type.CollectionType;
+import tools.jackson.databind.type.TypeFactory;
 
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,32 +23,22 @@ import java.util.List;
 
 public class ListTypeHandler extends BaseTypeHandler<List<String>> {
     public static final int DEFAULT_MAX_STRING_LEN = Integer.MAX_VALUE;
-    private static final ObjectMapper objectMapper = JsonMapper.builder()
-            .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)
+    private static final ObjectMapper objectMapper = JsonMapper.builder(JsonFactory.builder()
+            .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(DEFAULT_MAX_STRING_LEN).build())
+            .build())
+            .configureForJackson2()
+            .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS, JsonReadFeature.ALLOW_JAVA_COMMENTS)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+            .changeDefaultVisibility(visibility -> visibility.withFieldVisibility(JsonAutoDetect.Visibility.ANY))
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
             .build();
     private static final TypeFactory typeFactory = objectMapper.getTypeFactory();
-
-    static {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        // 支持json字符中带注释符
-        objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-        // 自动检测所有类的全部属性
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        // 如果一个对象中没有任何的属性，那么在序列化的时候就会报错
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-        // 设置JSON处理字符长度限制
-        objectMapper.getFactory()
-                .setStreamReadConstraints(
-                        StreamReadConstraints.builder().maxStringLength(DEFAULT_MAX_STRING_LEN).build());
-        // 处理时间格式
-        objectMapper.registerModule(new JavaTimeModule());
-    }
 
     public static String toJSONString(Object value) {
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -59,7 +47,7 @@ public class ListTypeHandler extends BaseTypeHandler<List<String>> {
         CollectionType javaType = typeFactory.constructCollectionType(List.class, valueType);
         try {
             return objectMapper.readValue(content, javaType);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }

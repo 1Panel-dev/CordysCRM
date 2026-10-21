@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
@@ -20,8 +20,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -44,7 +48,11 @@ public class LoginControllerTests {
 
         // 1. 正常登录
         String login = "/login";
+        String anonymousSessionId = mockMvc.perform(MockMvcRequestBuilders.get("/is-login"))
+                .andReturn().getResponse().getHeader(SessionConstants.HEADER_TOKEN);
+        assertNotNull(anonymousSessionId);
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(login)
+                .header(SessionConstants.HEADER_TOKEN, anonymousSessionId)
                 .content("""
                                 {
                                   "username": "%s",
@@ -65,6 +73,18 @@ public class LoginControllerTests {
 
         String sessionId = JsonPath.read(contentAsString, "$.data.sessionId");
         String csrfToken = JsonPath.read(contentAsString, "$.data.csrfToken");
+        assertNotEquals(anonymousSessionId, sessionId);
+        assertEquals(sessionId, mvcResult.getResponse().getHeader(SessionConstants.HEADER_TOKEN));
+        mockMvc.perform(MockMvcRequestBuilders.get("/get-auth")
+                .header(SessionConstants.HEADER_TOKEN, sessionId)
+                .header(SessionConstants.CSRF_TOKEN, csrfToken)
+                .header("Organization-Id", "100001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.sessionId").value(sessionId));
+        mockMvc.perform(MockMvcRequestBuilders.get("/get-auth")
+                .header(SessionConstants.HEADER_TOKEN, anonymousSessionId)
+                .header(SessionConstants.CSRF_TOKEN, csrfToken))
+                .andExpect(status().isUnauthorized());
         // 2. 仅携带前端保存的会话请求头，/is-login 应补发文件访问 Cookie
         mockMvc.perform(MockMvcRequestBuilders.get("/is-login")
                 .header(SessionConstants.HEADER_TOKEN, sessionId)

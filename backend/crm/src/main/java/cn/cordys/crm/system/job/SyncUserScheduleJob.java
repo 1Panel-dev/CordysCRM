@@ -5,13 +5,13 @@ import cn.cordys.common.schedule.BaseScheduleJob;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.sync.service.ThirdDepartmentService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
 import org.quartz.TriggerKey;
 import org.springframework.context.i18n.LocaleContextHolder;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
 import java.util.Locale;

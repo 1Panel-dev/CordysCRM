@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,6 +30,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -136,7 +137,7 @@ public abstract class BaseTest {
                 .contentType(MediaType.APPLICATION_JSON);
     }
 
-    private MockHttpServletRequestBuilder setRequestBuilderHeader(MockHttpServletRequestBuilder requestBuilder,
+    private <B extends AbstractMockHttpServletRequestBuilder<B>> B setRequestBuilderHeader(B requestBuilder,
             AuthInfo authInfo) {
         return requestBuilder
                 .header(SessionConstants.HEADER_TOKEN, authInfo.getSessionId())
@@ -373,12 +374,12 @@ public abstract class BaseTest {
 
     protected ResultActions requestMultipart(String url, MultiValueMap<String, Object> paramMap, Object... uriVariables)
             throws Exception {
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(url, paramMap, uriVariables);
+        MockMultipartHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(url, paramMap, uriVariables);
         return mockMvc.perform(requestBuilder)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-    private MockHttpServletRequestBuilder getMultipartRequestBuilder(String url,
+    private MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String url,
             MultiValueMap<String, Object> paramMap,
             Object[] uriVariables) {
         MockMultipartHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilderWithParam(url, paramMap,
