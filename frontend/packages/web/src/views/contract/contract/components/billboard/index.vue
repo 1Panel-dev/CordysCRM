@@ -139,7 +139,7 @@
   }
 
   function canMoveItem(payload: StageBoardMoveCheckPayload<ContractItem>) {
-    if (!hasAnyPermission(['CONTRACT:STAGE'])) {
+    if (!hasAnyPermission(['CONTRACT:UPDATE'])) {
       return false;
     }
 

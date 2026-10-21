@@ -569,10 +569,6 @@
             "license": false
           },
           {
-            "id": "CONTRACT:STAGE",
-            "license": false
-          },
-          {
             "id": "CONTRACT:PAYMENT"
           }
         ]

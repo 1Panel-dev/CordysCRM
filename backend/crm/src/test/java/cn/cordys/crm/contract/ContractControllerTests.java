@@ -5,9 +5,11 @@ import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.ContractAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractStageRequest;
 import cn.cordys.crm.contract.service.ContractFieldService;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
@@ -33,6 +35,7 @@ public class ContractControllerTests extends BaseTest {
 
     protected static final String MODULE_FORM = "module/form";
     protected static final String BATCH_UPDATE = "batch/update";
+    protected static final String UPDATE_STAGE = "update/stage";
     private static final String BASE_PATH = "/contract/";
 
     private static Contract addContract;
@@ -206,6 +209,17 @@ public class ContractControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CONTRACT_UPDATE, BATCH_UPDATE, request);
+    }
+
+    @Test
+    @Order(5)
+    void testUpdateStage() throws Exception {
+        ContractStageRequest request = new ContractStageRequest();
+        request.setId(addContract.getId());
+        request.setStage(ContractStage.SIGNED.name());
+
+        // 阶段变更复用合同编辑权限
+        requestPostPermissionTest(PermissionConstants.CONTRACT_UPDATE, UPDATE_STAGE, request);
     }
 
     @Test

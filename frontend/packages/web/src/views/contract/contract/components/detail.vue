@@ -30,9 +30,9 @@
         is-limit-back
         is-no-resign-flow
         :readonly="!canUpdateStage"
-        :back-stage-permission="['CONTRACT:STAGE']"
+        :back-stage-permission="['CONTRACT:UPDATE']"
         :source-id="sourceId"
-        :operation-permission="['CONTRACT:STAGE']"
+        :operation-permission="['CONTRACT:UPDATE']"
         :update-api="updateContractStage"
         :before-change-stage="handleBeforeChangeStage"
         @load-detail="handleSaved()"
@@ -423,7 +423,7 @@
       return false;
     }
 
-    return hasApprovalScopedPermission(detailInfo.value, ['CONTRACT:STAGE']);
+    return hasApprovalScopedPermission(detailInfo.value, ['CONTRACT:UPDATE']);
   });
 
   function handleFormReview(res: any) {

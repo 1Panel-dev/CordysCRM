@@ -77,7 +77,7 @@
         :view-id="activeTab"
         :advance-filter="advanceFilter"
         :enable-approval="enableApproval"
-        :has-stage-permission="hasContractStagePermission"
+        :has-stage-permission="hasContractUpdatePermission"
         @change="getStatistic()"
         @open-detail="handleOpenDetail"
         @init="handleBillboardInit"
@@ -559,8 +559,8 @@
     showDetailDrawer.value = true;
   }
 
-  function hasContractStagePermission(row: ContractItem) {
-    return hasApprovalScopedPermission(row, ['CONTRACT:STAGE']);
+  function hasContractUpdatePermission(row: ContractItem) {
+    return hasApprovalScopedPermission(row, ['CONTRACT:UPDATE']);
   }
 
   const stageConfig = ref<OpportunityStageConfig>();
@@ -689,7 +689,7 @@
             );
       },
       stage: (row: ContractItem) => {
-        const canEditStage = hasApprovalScopedPermission(row, ['CONTRACT:STAGE']);
+        const canEditStage = hasApprovalScopedPermission(row, ['CONTRACT:UPDATE']);
         return h(StatusTagSelect, {
           'status': row.stage as ContractStatusEnum,
           'noRender': true,
