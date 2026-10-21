@@ -59,6 +59,13 @@
               </div>
             </div>
             <div v-else>{{ activeModuleTitle }}</div>
+            <div v-if="activeTaskType.startsWith('pending-')" class="text-[12px] font-normal text-[var(--text-n4)]">
+              {{
+                listTotal > 0
+                  ? t('taskDrawer.pendingCount', { count: listTotal })
+                  : t('taskDrawer.processedCount', { count: processedCount })
+              }}
+            </div>
             <div v-if="activeTaskType.includes('pending') && selectedKeys.length > 0">
               <n-button type="primary" ghost class="mr-[8px]" @click="handleReject">
                 {{ t('common.reject') }}
@@ -82,9 +89,10 @@
           :activeTaskType="activeTaskType"
           :load-params="{ keyword }"
           :approval-config-detail="approvalConfigDetail"
+          :empty-text="pendingEmptyText"
           @list-init="handleListInit"
           @open-detail="handleOpenDetail"
-          @approval-success="initStatistic"
+          @approval-success="handleTaskListApprovalSuccess"
         />
       </div>
     </div>
@@ -94,7 +102,7 @@
     :approval-type="approvalType"
     :approval-item-keys="selectedKeys"
     :resource-type="activeResourceType"
-    @approval-success="handleApproveSuccess"
+    @approval-success="handleBatchApprovalSuccess"
   />
   <ContractDetailDrawer
     v-model:visible="contractDetailVisible"
@@ -328,6 +336,12 @@
   const selectedKeys = ref<string[]>([]);
   const listTotal = ref(0);
   const listAllKeys = ref<string[]>([]);
+  const processedCount = ref(0);
+  const pendingEmptyText = computed(() =>
+    processedCount.value > 0 && activeTaskType.value.startsWith('pending-')
+      ? t('taskDrawer.categoryComplete', { count: processedCount.value })
+      : ''
+  );
   const indeterminate = computed(() => {
     if (selectedKeys.value.length === 0 || selectedKeys.value.length === listTotal.value) {
       return false;
@@ -398,6 +412,40 @@
   function handleListInit(total: number, keys: string[]) {
     listTotal.value = total;
     listAllKeys.value = keys;
+  }
+
+  watch(
+    () => activeTaskType.value,
+    () => {
+      processedCount.value = 0;
+    }
+  );
+
+  async function handleSuccessfulProcessing(count = 1, listAlreadyReloaded = false) {
+    if (!activeTaskType.value.startsWith('pending-')) return;
+    processedCount.value += count;
+    await initStatistic();
+    if (!listAlreadyReloaded) {
+      await taskListRef.value?.loadTaskList(true);
+    }
+    taskListRef.value?.openNextPending();
+  }
+
+  function handleTaskListApprovalSuccess(singleItem: boolean) {
+    if (singleItem) {
+      handleSuccessfulProcessing(1, true);
+    } else {
+      initStatistic();
+    }
+  }
+
+  function handleBatchApprovalSuccess() {
+    const count = selectedKeys.value.length;
+    allSelect.value = false;
+    selectedKeys.value = [];
+    if (count > 0) {
+      handleSuccessfulProcessing(count);
+    }
   }
 
   const taskListRef = ref<InstanceType<typeof taskList>>();
@@ -606,6 +654,7 @@
     closeDetailDrawers();
     allSelect.value = false;
     selectedKeys.value = [];
+    handleSuccessfulProcessing();
   }
 
   function handleCustomFormEdit(sourceId: string) {

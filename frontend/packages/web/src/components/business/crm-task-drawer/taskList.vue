@@ -158,7 +158,7 @@
   const emit = defineEmits<{
     (e: 'openDetail', id: string, resourceType: string, approvalTaskId: string, item: ApprovalTodoItem): void;
     (e: 'listInit', total: number, keys: string[]): void;
-    (e: 'approvalSuccess'): void;
+    (e: 'approvalSuccess', singleItem: boolean): void;
   }>();
 
   const selectedKeys = defineModel<any[]>('selectedKeys', {
@@ -276,10 +276,12 @@
     approvalVisible.value = true;
   }
 
-  function handleApproveSuccess() {
-    loadTaskList(true);
+  async function handleApproveSuccess() {
+    const singleItem = Boolean(approvalItem.value && selectedKeys.value.length === 0);
+    await loadTaskList(true);
     selectedKeys.value = [];
-    emit('approvalSuccess');
+    approvalItem.value = undefined;
+    emit('approvalSuccess', singleItem);
   }
 
   function handleApproveCancel() {
@@ -359,6 +361,11 @@
 
   defineExpose({
     loadTaskList,
+    openNextPending() {
+      if (getTaskListType() === ApprovalListTypeEnum.PENDING && list.value.length) {
+        handleOpenDetail(list.value[0]);
+      }
+    },
   });
 </script>
 
