@@ -88,7 +88,14 @@
         LEFT JOIN sys_user ru ON ru.id = c.reply_to_user_id
     </sql>
 
-    <select id="selectList" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentResponse">
+    <sql id="commentOrderBy">
+        <choose>
+            <when test="asc">ORDER BY c.create_time ASC, c.id ASC</when>
+            <otherwise>ORDER BY c.create_time DESC, c.id DESC</otherwise>
+        </choose>
+    </sql>
+
+    <select id="selectPage" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentResponse">
         SELECT
         <include refid="commentColumns"/>
         FROM approval_comment c
@@ -96,7 +103,7 @@
         WHERE c.organization_id = #{organizationId}
           AND c.instance_id = #{instanceId}
           AND c.parent_id IS NULL
-        ORDER BY c.create_time DESC, c.id DESC
+        <include refid="commentOrderBy"/>
     </select>
 
     <select id="selectChildren" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentResponse">
@@ -110,7 +117,7 @@
         <foreach collection="parentIds" item="parentId" open="(" separator="," close=")">
             #{parentId}
         </foreach>
-        ORDER BY c.create_time DESC, c.id DESC
+        <include refid="commentOrderBy"/>
     </select>
 
     <select id="selectDetail" resultType="cn.cordys.crm.approval.dto.response.ApprovalCommentResponse">

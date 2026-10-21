@@ -1,5 +1,6 @@
 package cn.cordys.crm.approval.mapper;
 
+import cn.cordys.common.handler.PageHelperCountSqlParser;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
@@ -104,10 +105,10 @@ class ApprovalCommentMapperTest {
     }
 
     @Test
-    void listAndChildrenKeepParentAndInstanceBoundariesWithScopedReplyCounts() {
+    void pageAndChildrenKeepParentAndInstanceBoundariesWithScopedReplyCounts() {
         Map<String, Object> parameters = Map.of("organizationId", "org-a", "instanceId", "instance-a",
                 "parentIds", List.of("comment-a", "comment-b"));
-        for (String statement : List.of("selectList", "selectChildren")) {
+        for (String statement : List.of("selectPage", "selectChildren")) {
             boolean children = statement.equals("selectChildren");
             assertSql(statement, parameters,
                     children ? List.of("org-a", "instance-a", "comment-a", "comment-b")
@@ -119,6 +120,38 @@ class ApprovalCommentMapperTest {
                     "and reply.instance_id = c.instance_id",
                     "and reply.organization_id = c.organization_id) as reply_count");
         }
+    }
+
+    @Test
+    void pageAndChildrenOnlySortByCreationTimeAndIdInRequestedDirection() {
+        for (boolean asc : List.of(true, false)) {
+            Map<String, Object> parameters = Map.of("organizationId", "org-a", "instanceId", "instance-a",
+                    "parentIds", List.of("comment-a"), "asc", asc, "sortBy", "content; drop table approval_comment");
+            String direction = asc ? "asc" : "desc";
+            for (String statement : List.of("selectPage", "selectChildren")) {
+                assertSql(statement, parameters,
+                        statement.equals("selectChildren") ? List.of("org-a", "instance-a", "comment-a")
+                                : List.of("org-a", "instance-a"),
+                        "order by c.create_time " + direction + ", c.id " + direction);
+                String sql = configuration.getMappedStatement(ExtApprovalCommentMapper.class.getName() + "." + statement)
+                        .getBoundSql(parameters).getSql().toLowerCase(Locale.ROOT);
+                assertFalse(sql.contains("drop table"), "排序字段应固定，不允许拼接外部 SQL");
+            }
+        }
+    }
+
+    @Test
+    void rootPaginationCountKeepsInstanceOrganizationAndTopLevelBoundaries() {
+        BoundSql boundSql = configuration.getMappedStatement(ExtApprovalCommentMapper.class.getName() + ".selectPage")
+                .getBoundSql(Map.of("instanceId", "instance-a", "organizationId", "org-a", "asc", true));
+        String countSql = new PageHelperCountSqlParser().getSmartCountSql(boundSql.getSql(), "0")
+                .replaceAll("\\s+", " ").trim().toLowerCase(Locale.ROOT);
+
+        assertTrue(countSql.startsWith("select count("));
+        assertTrue(countSql.contains("c.parent_id is null"));
+        assertTrue(countSql.contains("c.instance_id = ?"));
+        assertTrue(countSql.contains("c.organization_id = ?"));
+        assertEquals(2L, countSql.chars().filter(character -> character == '?').count());
     }
 
     private static void assertSql(String statement, Map<String, Object> parameters,

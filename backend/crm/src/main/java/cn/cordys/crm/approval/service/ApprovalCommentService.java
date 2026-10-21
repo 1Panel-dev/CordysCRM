@@ -1,18 +1,23 @@
 package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.pager.PageUtils;
+import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalComment;
 import cn.cordys.crm.approval.domain.ApprovalCommentMention;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentAddRequest;
+import cn.cordys.crm.approval.dto.request.ApprovalCommentPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentUpdateRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentMentionUserResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -43,25 +48,29 @@ public class ApprovalCommentService {
     @Resource
     private ApprovalCommentNoticeService approvalCommentNoticeService;
 
-    public List<ApprovalCommentResponse> list(String instanceId, String userId, String orgId) {
+    public Pager<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId, String orgId) {
+        String instanceId = request.getInstanceId();
         checkPermission(instanceId, userId, orgId);
-        List<ApprovalCommentResponse> comments = extCommentMapper.selectList(instanceId, orgId);
-        if (comments.isEmpty()) {
-            return comments;
+        boolean asc = request.getSort() != null && "asc".equals(request.getSort().getType());
+        try (Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize())) {
+            List<ApprovalCommentResponse> comments = extCommentMapper.selectPage(instanceId, orgId, asc);
+            if (comments.isEmpty()) {
+                return PageUtils.setPageInfo(page, comments);
+            }
+            List<ApprovalCommentResponse> children = extCommentMapper.selectChildren(instanceId,
+                    comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId, asc);
+            List<ApprovalCommentResponse> allComments = new ArrayList<>(comments);
+            allComments.addAll(children);
+            enrichComments(allComments, userId, orgId);
+            Map<String, List<ApprovalCommentResponse>> replies = children.stream()
+                    .collect(Collectors.groupingBy(ApprovalCommentResponse::getParentId));
+            comments.forEach(comment -> {
+                List<ApprovalCommentResponse> commentReplies = replies.getOrDefault(comment.getId(), List.of());
+                comment.setReplies(commentReplies);
+                comment.setReplyCount(commentReplies.size());
+            });
+            return PageUtils.setPageInfo(page, comments);
         }
-        List<ApprovalCommentResponse> children = extCommentMapper.selectChildren(instanceId,
-                comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId);
-        List<ApprovalCommentResponse> allComments = new ArrayList<>(comments);
-        allComments.addAll(children);
-        enrichComments(allComments, userId, orgId);
-        Map<String, List<ApprovalCommentResponse>> replies = children.stream()
-                .collect(Collectors.groupingBy(ApprovalCommentResponse::getParentId));
-        comments.forEach(comment -> {
-            List<ApprovalCommentResponse> commentReplies = replies.getOrDefault(comment.getId(), List.of());
-            comment.setReplies(commentReplies);
-            comment.setReplyCount(commentReplies.size());
-        });
-        return comments;
     }
 
     public ApprovalCommentResponse add(ApprovalCommentAddRequest request, String userId, String orgId) {
