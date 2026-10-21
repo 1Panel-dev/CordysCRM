@@ -39,14 +39,16 @@ public class CustomerRelationController {
     @PostMapping("/add/{customerId}")
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "添加客户关系")
-    public CustomerRelation add(@PathVariable String customerId, @Validated @RequestBody CustomerRelationSaveRequest request) {
+    public CustomerRelation add(@PathVariable String customerId,
+                                @Validated(CustomerRelationSaveRequest.SingleOperation.class) @RequestBody CustomerRelationSaveRequest request) {
         return customerRelationService.add(request, customerId);
     }
 
     @PostMapping("/update/{customerId}")
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "更新客户关系")
-    public CustomerRelation update(@PathVariable String customerId, @Validated @RequestBody CustomerRelationUpdateRequest request) {
+    public CustomerRelation update(@PathVariable String customerId,
+                                   @Validated(CustomerRelationSaveRequest.SingleOperation.class) @RequestBody CustomerRelationUpdateRequest request) {
         return customerRelationService.update(request, customerId);
     }
 

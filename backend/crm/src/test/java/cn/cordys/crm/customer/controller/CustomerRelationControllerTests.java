@@ -3,6 +3,7 @@ package cn.cordys.crm.customer.controller;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.constants.RoleDataScope;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.constants.CustomerRelationType;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -191,6 +193,66 @@ class CustomerRelationControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, UPDATE, customerRelationUpdateRequest, addCustomer.getId());
+    }
+
+    @Test
+    @Order(6)
+    void testAddAndUpdateWithoutRequiredFields() throws Exception {
+        CustomerRelation example = new CustomerRelation();
+        example.setSourceCustomerId(addCustomer.getId());
+        example.setTargetCustomerId(anotherAddCustomer.getId());
+        Long relationCount = customerRelationBaseMapper.countByExample(example);
+
+        // 不传关联客户：应返回参数校验失败，而不是落入数据库非空约束导致 500
+        CustomerRelationSaveRequest withoutCustomer = new CustomerRelationSaveRequest(null, CustomerRelationType.SUBSIDIARY.name());
+        MvcResult result = requestPost(ADD, withoutCustomer, addCustomer.getId()).andReturn();
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        Map<?, ?> response = parseResponse(result);
+        Assertions.assertEquals(CrmHttpResultCode.VALIDATE_FAILED.getCode(), response.get("code"));
+        Assertions.assertTrue(((Map<?, ?>) response.get("messageDetail")).containsKey("customerId"));
+
+        // 不传关系类型
+        CustomerRelationSaveRequest withoutType = new CustomerRelationSaveRequest(anotherAddCustomer.getId(), null);
+        result = requestPost(ADD, withoutType, addCustomer.getId()).andReturn();
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        response = parseResponse(result);
+        Assertions.assertEquals(CrmHttpResultCode.VALIDATE_FAILED.getCode(), response.get("code"));
+        Assertions.assertTrue(((Map<?, ?>) response.get("messageDetail")).containsKey("relationType"));
+
+        // 更新时同样校验关联客户
+        CustomerRelationUpdateRequest updateRequest = new CustomerRelationUpdateRequest();
+        updateRequest.setId(addCustomerRelation.getId());
+        updateRequest.setRelationType(CustomerRelationType.SUBSIDIARY.name());
+        result = requestPost(UPDATE, updateRequest, addCustomer.getId()).andReturn();
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        response = parseResponse(result);
+        Assertions.assertEquals(CrmHttpResultCode.VALIDATE_FAILED.getCode(), response.get("code"));
+        Assertions.assertTrue(((Map<?, ?>) response.get("messageDetail")).containsKey("customerId"));
+
+        // 校验失败时不应写入关系记录
+        Assertions.assertEquals(relationCount, customerRelationBaseMapper.countByExample(example));
+    }
+
+    @Test
+    @Order(7)
+    void testUpdateTargetCustomerAlreadyInGroup() throws Exception {
+        // addCustomer 已是 anotherAddCustomer 的子公司，再把关系改为子公司应被业务规则拒绝
+        CustomerRelationUpdateRequest request = new CustomerRelationUpdateRequest();
+        request.setId(addCustomerRelation.getId());
+        request.setCustomerId(anotherAddCustomer.getId());
+        request.setRelationType(CustomerRelationType.SUBSIDIARY.name());
+
+        MvcResult result = requestPost(UPDATE, request, addCustomer.getId()).andReturn();
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        Map<?, ?> response = parseResponse(result);
+        Assertions.assertEquals(CrmHttpResultCode.VALIDATE_FAILED.getCode(), response.get("code"));
+        String messageDetail = String.valueOf(response.get("messageDetail"));
+        Assertions.assertTrue(messageDetail.contains(anotherAddCustomer.getName()));
+
+        // 关系未被修改
+        CustomerRelation relation = customerRelationBaseMapper.selectByPrimaryKey(addCustomerRelation.getId());
+        Assertions.assertEquals(anotherAddCustomer.getId(), relation.getSourceCustomerId());
+        Assertions.assertEquals(addCustomer.getId(), relation.getTargetCustomerId());
     }
 
     @Test

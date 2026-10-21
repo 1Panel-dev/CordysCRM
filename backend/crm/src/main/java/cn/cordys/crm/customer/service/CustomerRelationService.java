@@ -2,6 +2,7 @@ package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.constants.CustomerRelationType;
@@ -130,7 +131,8 @@ public class CustomerRelationService {
                     .map(OptionDTO::getName)
                     .distinct()
                     .collect(Collectors.joining(","));
-            throw new GenericException(Translator.getWithArgs("customer.relation.target_customer.exist", userNames));
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED,
+                    Translator.getWithArgs("customer.relation.target_customer.exist", userNames));
         }
     }
 
