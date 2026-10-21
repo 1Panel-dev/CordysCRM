@@ -131,20 +131,20 @@ public class SystemModuleLogService extends BaseModuleLogService {
             if (Strings.CS.equalsAny(differ.getColumn(), "orderSetting", "contractSetting", "opportunitySetting")) {
                 differ.setColumnName(Translator.get("advanced_circulation_setting"));
                 switch (differ.getColumn()) {
-                    case "orderSetting":
+                    case "orderSetting" -> {
                         differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.ORDER.getKey())));
                         differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.ORDER.getKey()).toString()));
-                        break;
-                    case "contractSetting":
+                    }
+                    case "contractSetting" -> {
                         differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.CONTRACT.getKey())));
                         differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.CONTRACT.getKey()).toString()));
-                        break;
-                    case "opportunitySetting":
+                    }
+                    case "opportunitySetting" -> {
                         differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.OPPORTUNITY.getKey())));
                         differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.OPPORTUNITY.getKey()).toString()));
-                        break;
-                    default:
-                        break;
+                    }
+                    default -> {
+                    }
                 }
             }
 
@@ -247,14 +247,10 @@ public class SystemModuleLogService extends BaseModuleLogService {
                                     if (baseField != null) {
                                         if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
                                             switch (fieldValue.getDateDefaultType()) {
-                                                case "custom":
-                                                    dateDefaultType = Translator.get("CUSTOM");
-                                                    break;
-                                                case "current":
-                                                    dateDefaultType = Translator.get("CURRENT");
-                                                    break;
-                                                default:
-                                                    break;
+                                                case "custom" -> dateDefaultType = Translator.get("CUSTOM");
+                                                case "current" -> dateDefaultType = Translator.get("CURRENT");
+                                                default -> {
+                                                }
                                             }
                                         }
                                         String s = baseField.getName() + "|" +
@@ -333,24 +329,12 @@ public class SystemModuleLogService extends BaseModuleLogService {
                     .toList());
         }
         switch (differ.getColumn()) {
-            case SearchModuleEnum.SEARCH_ADVANCED_CLUE:
-                differ.setColumnName(Translator.get("clue"));
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER:
-                differ.setColumnName(Translator.get("customer"));
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT:
-                differ.setColumnName(Translator.get("contact"));
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC:
-                differ.setColumnName(Translator.get("customer_pool"));
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL:
-                differ.setColumnName(Translator.get("clue_pool"));
-                break;
-            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY:
-                differ.setColumnName(Translator.get("opportunity"));
-                break;
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE -> differ.setColumnName(Translator.get("clue"));
+            case SearchModuleEnum.SEARCH_ADVANCED_CUSTOMER -> differ.setColumnName(Translator.get("customer"));
+            case SearchModuleEnum.SEARCH_ADVANCED_CONTACT -> differ.setColumnName(Translator.get("contact"));
+            case SearchModuleEnum.SEARCH_ADVANCED_PUBLIC -> differ.setColumnName(Translator.get("customer_pool"));
+            case SearchModuleEnum.SEARCH_ADVANCED_CLUE_POOL -> differ.setColumnName(Translator.get("clue_pool"));
+            case SearchModuleEnum.SEARCH_ADVANCED_OPPORTUNITY -> differ.setColumnName(Translator.get("opportunity"));
         }
     }
 

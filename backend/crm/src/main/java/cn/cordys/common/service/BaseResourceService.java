@@ -108,14 +108,12 @@ public abstract class BaseResourceService {
      * @return 资源实例
      */
     protected <K> K newInstance(Class<K> clazz) {
-        K resource;
         try {
-            resource = clazz.getConstructor().newInstance();
+            return clazz.getConstructor().newInstance();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-        return resource;
     }
 
     /**
@@ -125,22 +123,13 @@ public abstract class BaseResourceService {
      *
      * @return 是否非空
      */
-    @SuppressWarnings("rawtypes")
     protected boolean isNotBlank(Object value) {
-        switch (value) {
-            case null -> {
-                return false;
-            }
-            case String str -> {
-                return StringUtils.isNotBlank(str);
-            }
-            case List list -> {
-                return CollectionUtils.isNotEmpty(list);
-            }
-            default -> {
-                return true;
-            }
-        }
+        return switch (value) {
+            case null -> false;
+            case String str -> StringUtils.isNotBlank(str);
+            case List<?> list -> CollectionUtils.isNotEmpty(list);
+            default -> true;
+        };
     }
 
     /**
