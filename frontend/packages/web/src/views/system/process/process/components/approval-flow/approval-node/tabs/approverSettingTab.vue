@@ -127,8 +127,8 @@
         </n-form-item>
 
         <!-- 异常处理 -->
-        <div>
-          <div class="mb-[8px] inline-flex items-center gap-[8px] font-semibold">
+        <div class="mb-[24px] flex flex-col gap-[8px]">
+          <div class="inline-flex items-center gap-[8px] font-semibold">
             {{ t('process.process.flow.exceptionHandling') }}
 
             <n-tooltip
@@ -160,17 +160,12 @@
             </n-tooltip>
           </div>
 
-          <CrmTab
-            v-model:active-tab="activeExceptionTab"
-            no-content
-            :tab-list="exceptionTabList"
-            type="segment"
-            class="approval-exception-tabs mb-[8px]"
-            :disabled="props.readonly"
-          />
-
-          <template v-if="activeExceptionTab === 'emptyApprover'">
-            <n-form-item path="emptyApproverAction" :show-label="false">
+          <div class="rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]">
+            <n-form-item
+              path="emptyApproverAction"
+              :label="t('process.process.flow.exceptionHandling.emptyApprover')"
+              class="[&_.n-form-item-feedback-wrapper:empty]:!min-h-0 [&_.n-form-item-label]:font-semibold"
+            >
               <n-radio-group
                 v-model:value="nodeConfig.emptyApproverAction"
                 :disabled="props.readonly"
@@ -195,11 +190,12 @@
               path="fallbackApprover"
               :show-label="false"
               :show-feedback="false"
+              class="mt-[8px] [&_.n-form-item-feedback-wrapper:empty]:!min-h-0 [&_.n-form-item-label]:font-semibold"
             >
               <ApprovalMemberSelector
                 v-model:value="fallbackApproverList"
                 v-model:selected-list="nodeConfig.emptyApproverSelectedList"
-                class="mb-[24px]"
+                class="[&_.n-select]:bg-[var(--text-n10)]"
                 :label="t('org.addMember')"
                 :add-text="t('role.addMember')"
                 :api-type-key="MemberApiTypeEnum.FORM_FIELD"
@@ -218,6 +214,7 @@
               path="fallbackApprover"
               :label="t('process.process.flow.selectAdmin')"
               required
+              class="mt-[8px] [&_.n-form-item-feedback-wrapper:empty]:!min-h-0 [&_.n-form-item-label]:font-semibold"
             >
               <n-select
                 v-model:value="nodeConfig.fallbackApprover"
@@ -227,10 +224,14 @@
                 @update:value="clearCurrentNodeInvalid"
               />
             </n-form-item>
-          </template>
+          </div>
 
-          <template v-else>
-            <n-form-item path="sameSubmitterAction" :show-label="false">
+          <div class="rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]">
+            <n-form-item
+              path="sameSubmitterAction"
+              :label="t('process.process.flow.exceptionHandling.sameSubmitter')"
+              class="[&_.n-form-item-feedback-wrapper:empty]:!min-h-0 [&_.n-form-item-label]:font-semibold"
+            >
               <n-radio-group v-model:value="nodeConfig.sameSubmitterAction" :disabled="props.readonly">
                 <n-space vertical :size="8">
                   <n-radio :value="SameSubmitterActionEnum.ALLOW">
@@ -245,7 +246,7 @@
                 </n-space>
               </n-radio-group>
             </n-form-item>
-          </template>
+          </div>
         </div>
       </template>
 
@@ -355,7 +356,6 @@
   import type { ApprovalActionNode } from '@lib/shared/models/system/process';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import ApprovalLevelExamplePopover from './approvalLevelExamplePopover.vue';
   import ApprovalMemberSelector from './approvalMemberSelector.vue';
 
@@ -387,8 +387,6 @@
   }>();
 
   const { t } = useI18n();
-
-  const activeExceptionTab = ref<'emptyApprover' | 'sameSubmitter'>('emptyApprover'); // 异常处理的tab
 
   const approverMaxCount = 15;
   const ccMemberMaxCount = 100;
@@ -435,17 +433,6 @@
   ];
 
   const disabledMemberNodeTypes = [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE];
-
-  const exceptionTabList = [
-    {
-      name: 'emptyApprover',
-      tab: t('process.process.flow.exceptionHandling.emptyApprover'),
-    },
-    {
-      name: 'sameSubmitter',
-      tab: t('process.process.flow.exceptionHandling.sameSubmitter'),
-    },
-  ];
 
   const approverLevel = computed({
     get() {
@@ -606,10 +593,6 @@
       {
         trigger: ['change', 'blur'],
         validator: (_rule, value: string | null) => {
-          if (activeExceptionTab.value !== 'emptyApprover') {
-            return true;
-          }
-
           if (nodeConfig.value.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_SPECIFIC) {
             return (
               !!value ||
@@ -739,11 +722,6 @@
     :deep(.n-form-item-label__text) {
       display: flex;
       justify-content: space-between;
-      width: 100%;
-    }
-  }
-  .approval-exception-tabs {
-    :deep(.n-tabs-rail) {
       width: 100%;
     }
   }
