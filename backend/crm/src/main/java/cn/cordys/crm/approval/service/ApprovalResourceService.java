@@ -1102,8 +1102,7 @@ public class ApprovalResourceService {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(webHookBody);
         replacePlaceholders(rootNode, moduleFields, fieldValues, resourceId);
-        String resultJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
-        return resultJson;
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
     }
 
 
@@ -1124,12 +1123,12 @@ public class ApprovalResourceService {
                 if (childNode.isTextual()) {
                     String text = childNode.asText();
                     Object value = replaceText(text, moduleFields, fieldValues, resourceId);
-                    if (value instanceof Integer) {
-                        objNode.put(entry.getKey(), (Integer) value);
-                    } else if (value instanceof Long) {
-                        objNode.put(entry.getKey(), (Long) value);
-                    } else if (value instanceof Boolean) {
-                        objNode.put(entry.getKey(), (Boolean) value);
+                    if (value instanceof Integer intValue) {
+                        objNode.put(entry.getKey(), intValue);
+                    } else if (value instanceof Long longValue) {
+                        objNode.put(entry.getKey(), longValue);
+                    } else if (value instanceof Boolean booleanValue) {
+                        objNode.put(entry.getKey(), booleanValue);
                     } else {
                         objNode.put(entry.getKey(), String.valueOf(value));
                     }

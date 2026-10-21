@@ -130,12 +130,12 @@ public class BaseChartService {
             String categoryAxis = getKeyFunc.apply(chartResult);
             if (mergedResults.containsKey(categoryAxis)) {
                 ChartResult existingResult = mergedResults.get(categoryAxis);
-                if (existingResult.getValueAxis() instanceof Double && chartResult.getValueAxis() instanceof Double) {
-                    existingResult.setValueAxis((Double) existingResult.getValueAxis() + (Double) chartResult.getValueAxis());
-                } else if (existingResult.getValueAxis() instanceof Long && chartResult.getValueAxis() instanceof Long) {
-                    existingResult.setValueAxis((Long) existingResult.getValueAxis() + (Long) chartResult.getValueAxis());
-                } else if (existingResult.getValueAxis() instanceof Integer && chartResult.getValueAxis() instanceof Integer) {
-                    existingResult.setValueAxis((Integer) existingResult.getValueAxis() + (Integer) chartResult.getValueAxis());
+                if (existingResult.getValueAxis() instanceof Double existingValue && chartResult.getValueAxis() instanceof Double value) {
+                    existingResult.setValueAxis(existingValue + value);
+                } else if (existingResult.getValueAxis() instanceof Long existingValue && chartResult.getValueAxis() instanceof Long value) {
+                    existingResult.setValueAxis(existingValue + value);
+                } else if (existingResult.getValueAxis() instanceof Integer existingValue && chartResult.getValueAxis() instanceof Integer value) {
+                    existingResult.setValueAxis(existingValue + value);
                 }
             } else {
                 mergedResults.put(categoryAxis, chartResult);

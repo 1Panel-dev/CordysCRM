@@ -2501,8 +2501,8 @@ public class ModuleFormService {
         Map<String, String> optionMap = options.stream()
                 .filter(option -> option.getValue() != null)
                 .collect(Collectors.toMap(option -> option.getValue().toString(), OptionProp::getLabel, (a, b) -> a));
-        if (value instanceof List) {
-            return ((List<?>) value).stream().map(v -> optionMap.get(v.toString())).toList();
+        if (value instanceof List<?> values) {
+            return values.stream().map(v -> optionMap.get(v.toString())).toList();
         } else {
             return optionMap.get(value.toString());
         }
@@ -2522,8 +2522,8 @@ public class ModuleFormService {
         Map<String, String> optionMap = options.stream()
                 .filter(option -> option.getValue() != null)
                 .collect(Collectors.toMap(OptionProp::getLabel, option -> option.getValue().toString(), (a, b) -> a));
-        if (text instanceof List) {
-            return ((List<?>) text).stream().map(v -> optionMap.get(v.toString())).filter(Objects::nonNull).toList();
+        if (text instanceof List<?> texts) {
+            return texts.stream().map(v -> optionMap.get(v.toString())).filter(Objects::nonNull).toList();
         } else {
             return optionMap.get(text.toString());
         }
@@ -2548,8 +2548,11 @@ public class ModuleFormService {
             tmpVal = sourceClass.getMethod(capitalizeGetParam(sourceField.getBusinessKey())).invoke(source);
         } else {
             // 自定义字段取值
-            Optional<BaseModuleFieldValue> find = sourceFieldVals.stream().filter(fieldVal -> Strings.CS.equals(sourceField.getId(), fieldVal.getFieldId())).findFirst();
-            tmpVal = find.map(BaseModuleFieldValue::getFieldValue).orElse(null);
+            tmpVal = sourceFieldVals.stream()
+                    .filter(fieldVal -> Strings.CS.equals(sourceField.getId(), fieldVal.getFieldId()))
+                    .findFirst()
+                    .map(BaseModuleFieldValue::getFieldValue)
+                    .orElse(null);
         }
         sourceApply.setActualVal(tmpVal);
         // 取展示值

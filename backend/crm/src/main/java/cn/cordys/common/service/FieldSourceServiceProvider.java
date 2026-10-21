@@ -143,11 +143,11 @@ public class FieldSourceServiceProvider {
 				Method method = service.getClass().getMethod(methodName, List.class);
 				return method.invoke(service, ids);
 			} else {
-				if (!(id instanceof String) || ((String) id).isEmpty()) {
+				if (!(id instanceof String stringId) || stringId.isEmpty()) {
 					return null;
 				}
 				Method method = service.getClass().getMethod(methodName, String.class);
-				return method.invoke(service, id.toString());
+				return method.invoke(service, stringId);
 			}
 		} catch (Exception e) {
 			log.error("获取数据源详情异常：type={}, id={}, error={}", type.name(), id, e.getMessage(), e);
@@ -170,11 +170,11 @@ public class FieldSourceServiceProvider {
 				Method method = service.getClass().getMethod(methodName, List.class);
 				return method.invoke(service, ids);
 			} else {
-				if (!(id instanceof String) || ((String) id).isEmpty()) {
+				if (!(id instanceof String stringId) || stringId.isEmpty()) {
 					return null;
 				}
 				Method method = service.getClass().getMethod(methodName, String.class);
-				return method.invoke(service, id.toString());
+				return method.invoke(service, stringId);
 			}
 		} catch (Exception e) {
 			log.error("获取业务数据详情异常：type={}, id={}, error={}", formKey, id, e.getMessage(), e);

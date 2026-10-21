@@ -147,8 +147,7 @@ public abstract class BaseModuleLogService {
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
 
         Map<String, BaseField> subFieldMap = new HashMap<>();
-        Set<String> subFieldRemoveIds = new HashSet<>() {
-        };
+        Set<String> subFieldRemoveIds = new HashSet<>();
         for (BaseField field : fields) {
             if (field.isSubField()) {
                 if (StringUtils.isNotBlank(field.getBusinessKey())) {
@@ -168,9 +167,7 @@ public abstract class BaseModuleLogService {
 
 
         List<JsonDifferenceDTO> modifiable = new ArrayList<>(differences);
-        modifiable.removeIf(differ -> {
-            return subFieldRemoveIds.contains(differ.getColumn());
-        });
+        modifiable.removeIf(differ -> subFieldRemoveIds.contains(differ.getColumn()));
         differences = modifiable;
         // 记录选项字段的字段值
         List<BaseModuleFieldValue> optionFieldValues = new ArrayList<>();
@@ -178,8 +175,12 @@ public abstract class BaseModuleLogService {
         List<BaseModuleFieldValue> optionSubFieldValues = new ArrayList<>();
         List<JsonDifferenceDTO> returnDifferences = new ArrayList<>();
         differences.forEach(differ -> {
-            boolean addDiffer = differ.getOldValue() != null && (differ.getOldValue() instanceof String ? !StringUtils.isBlank((String) differ.getOldValue()) && !Strings.CI.equals((String) differ.getOldValue(), "null") : !((List<?>) differ.getOldValue()).isEmpty());
-            if (differ.getNewValue() != null && (differ.getNewValue() instanceof String ? !StringUtils.isBlank((String) differ.getNewValue()) && !Strings.CI.equals((String) differ.getNewValue(), "null") : !((List<?>) differ.getNewValue()).isEmpty())) {
+            boolean addDiffer = differ.getOldValue() != null && (differ.getOldValue() instanceof String oldText
+                    ? !StringUtils.isBlank(oldText) && !Strings.CI.equals(oldText, "null")
+                    : !((List<?>) differ.getOldValue()).isEmpty());
+            if (differ.getNewValue() != null && (differ.getNewValue() instanceof String newText
+                    ? !StringUtils.isBlank(newText) && !Strings.CI.equals(newText, "null")
+                    : !((List<?>) differ.getNewValue()).isEmpty())) {
                 addDiffer = true;
             }
             if (addDiffer) {
@@ -187,13 +188,17 @@ public abstract class BaseModuleLogService {
             }
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             if (moduleField != null && moduleField.hasSingleOptions()) {
-                if (differ.getOldValue() != null && (differ.getOldValue() instanceof String ? !StringUtils.isBlank((String) differ.getOldValue()) && !Strings.CI.equals((String) differ.getOldValue(), "null") : !((List<?>) differ.getOldValue()).isEmpty())) {
+                if (differ.getOldValue() != null && (differ.getOldValue() instanceof String oldText
+                        ? !StringUtils.isBlank(oldText) && !Strings.CI.equals(oldText, "null")
+                        : !((List<?>) differ.getOldValue()).isEmpty())) {
                     BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
                     fieldValue.setFieldId(differ.getColumn());
                     fieldValue.setFieldValue(differ.getOldValue());
                     optionFieldValues.add(fieldValue);
                 }
-                if (differ.getNewValue() != null && (differ.getNewValue() instanceof String ? !StringUtils.isBlank((String) differ.getNewValue()) && !Strings.CI.equals((String) differ.getNewValue(), "null") : !((List<?>) differ.getNewValue()).isEmpty())) {
+                if (differ.getNewValue() != null && (differ.getNewValue() instanceof String newText
+                        ? !StringUtils.isBlank(newText) && !Strings.CI.equals(newText, "null")
+                        : !((List<?>) differ.getNewValue()).isEmpty())) {
                     BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
                     fieldValue.setFieldId(differ.getColumn());
                     fieldValue.setFieldValue(differ.getNewValue());
@@ -214,13 +219,17 @@ public abstract class BaseModuleLogService {
                     }
                     if (Strings.CS.equals(subBusinessKey, differColumn) || Strings.CS.equals(subFieldIdKey, differColumn)) {
                         //判断differ.getOldValue() 是否为空，如果是String 类型 不能为空字符串,不能为"null"，如果是List 类型 不能为空
-                        if (differ.getOldValue() != null && (differ.getOldValue() instanceof String ? !StringUtils.isBlank((String) differ.getOldValue()) && !Strings.CI.equals((String) differ.getOldValue(), "null") : !((List<?>) differ.getOldValue()).isEmpty())) {
+                        if (differ.getOldValue() != null && (differ.getOldValue() instanceof String oldText
+                                ? !StringUtils.isBlank(oldText) && !Strings.CI.equals(oldText, "null")
+                                : !((List<?>) differ.getOldValue()).isEmpty())) {
                             BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
                             fieldValue.setFieldId(differColumn);
                             fieldValue.setFieldValue(differ.getOldValue());
                             optionSubFieldValues.add(fieldValue);
                         }
-                        if (differ.getNewValue() != null && (differ.getNewValue() instanceof String ? !StringUtils.isBlank((String) differ.getNewValue()) && !Strings.CI.equals((String) differ.getNewValue(), "null") : !((List<?>) differ.getNewValue()).isEmpty())) {
+                        if (differ.getNewValue() != null && (differ.getNewValue() instanceof String newText
+                                ? !StringUtils.isBlank(newText) && !Strings.CI.equals(newText, "null")
+                                : !((List<?>) differ.getNewValue()).isEmpty())) {
                             BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
                             fieldValue.setFieldId(differColumn);
                             fieldValue.setFieldValue(differ.getNewValue());
