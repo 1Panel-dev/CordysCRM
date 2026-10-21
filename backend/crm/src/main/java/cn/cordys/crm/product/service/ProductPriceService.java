@@ -375,7 +375,7 @@ public class ProductPriceService extends BaseExportService {
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.PRICE.getKey(), request.getFieldId(), request.getIds(), currentOrg);
         productPriceFieldService.batchUpdate(request, field, prices, ProductPrice.class,
-                LogModule.PRODUCT_PRICE_MANAGEMENT, extProductPriceMapper::batchUpdate, currentUser, currentOrg);
+                LogModule.PRODUCT_PRICE_MANAGEMENT, extProductPriceMapper::batchUpdate, currentUser, currentOrg, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }

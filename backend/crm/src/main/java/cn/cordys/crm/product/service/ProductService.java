@@ -305,7 +305,7 @@ public class ProductService {
         // 这一步在服务内部直接短路, 只多一次反查
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.PRODUCT.getKey(), request.getFieldId(), request.getIds(), organizationId);
-        productFieldService.batchUpdate(request, field, products, Product.class, LogModule.PRODUCT_MANAGEMENT, extProductMapper::batchUpdate, userId, organizationId);
+        productFieldService.batchUpdate(request, field, products, Product.class, LogModule.PRODUCT_MANAGEMENT, extProductMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }

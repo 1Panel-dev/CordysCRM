@@ -773,7 +773,7 @@ public class PoolCustomerService {
 
         CommonBeanFactory.getBean(ApprovalResourceService.class)
                 .batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CUSTOMER, organizationId, userId, field.getName(), request.getFieldValue());
-        customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class, LogModule.CUSTOMER_POOL, extCustomerMapper::batchUpdate, userId, organizationId);
+        customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class, LogModule.CUSTOMER_POOL, extCustomerMapper::batchUpdate, userId, organizationId, true);
 
         return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(fail).skip(0)
                 .errorMessages(Translator.get("batch.update.reason")).build();

@@ -179,7 +179,7 @@ class PoolClueApprovalTest {
 
         verify(approvalResourceService, never()).batchEditTriggerApproval(
                 anyList(), anyString(), any(), anyString(), anyString(), anyString(), any());
-        verify(clueFieldService, never()).batchUpdate(any(), any(), anyList(), any(), anyString(), any(), anyString(), anyString());
+        verify(clueFieldService, never()).batchUpdate(any(), any(), anyList(), any(), anyString(), any(), anyString(), anyString(), true);
         assertEquals(0, response.getSuccess());
         assertEquals(1, response.getFail());
     }

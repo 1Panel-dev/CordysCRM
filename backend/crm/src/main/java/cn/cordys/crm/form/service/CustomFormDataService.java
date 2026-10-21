@@ -658,7 +658,7 @@ public class CustomFormDataService extends BaseExportService implements Approval
             filteredRequest.setFieldId(request.getFieldId());
             filteredRequest.setFieldValue(request.getFieldValue());
             customFormDataFieldService.batchUpdate(filteredRequest, field, permittedDataList, CustomFormData.class,
-                    LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId);
+                    LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId, true);
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
