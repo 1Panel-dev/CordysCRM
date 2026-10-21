@@ -18,4 +18,7 @@ export default {
   'taskDrawer.operation.REJECT': 'Reject',
   'taskDrawer.operation.SIGN': 'Sign',
   'taskDrawer.operation.BACK': 'Back',
+  'taskDrawer.pendingCount': '{count} items pending',
+  'taskDrawer.categoryComplete': 'This category is complete · {count} items processed',
+  'taskDrawer.processedCount': 'This category is complete · {count} items processed',
 };

@@ -18,4 +18,7 @@ export default {
   'taskDrawer.operation.REJECT': '驳回',
   'taskDrawer.operation.SIGN': '加签',
   'taskDrawer.operation.BACK': '退回',
+  'taskDrawer.pendingCount': '共{count}条待处理',
+  'taskDrawer.categoryComplete': '本分类已处理完 · 共处理 {count} 条',
+  'taskDrawer.processedCount': '本分类已处理完 · 共处理 {count} 条',
 };
