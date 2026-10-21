@@ -414,6 +414,8 @@
     listAllKeys.value = keys;
   }
 
+  const taskListRef = ref<InstanceType<typeof taskList>>();
+
   watch(
     () => activeTaskType.value,
     () => {
@@ -448,7 +450,6 @@
     }
   }
 
-  const taskListRef = ref<InstanceType<typeof taskList>>();
   function searchData(val?: string) {
     taskListRef.value?.loadTaskList(true, val);
   }
