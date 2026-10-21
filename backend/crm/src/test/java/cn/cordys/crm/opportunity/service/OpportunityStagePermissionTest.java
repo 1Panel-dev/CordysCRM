@@ -6,6 +6,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
@@ -14,6 +15,7 @@ import cn.cordys.crm.opportunity.dto.request.OpportunityStageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -40,6 +42,9 @@ class OpportunityStagePermissionTest {
     private final OpportunityStageRequest request = new OpportunityStageRequest();
     private MockedStatic<PermissionUtils> permissions;
     private MockedStatic<Translator> translator;
+    private final OpportunityFieldService opportunityFieldService = mock(OpportunityFieldService.class);
+    private final BaseService baseService = mock(BaseService.class);
+    private final ModuleFormCacheService moduleFormCacheService = mock(ModuleFormCacheService.class);
 
     @BeforeEach
     void setUp() {
@@ -48,6 +53,9 @@ class OpportunityStagePermissionTest {
         ReflectionTestUtils.setField(service, "extOpportunityStageConfigMapper", stages);
         ReflectionTestUtils.setField(service, "extOpportunityMapper", extMapper);
         ReflectionTestUtils.setField(service, "stageAdvancedConfigService", stageAdvancedConfigService);
+        ReflectionTestUtils.setField(service, "opportunityFieldService", opportunityFieldService);
+        ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "moduleFormCacheService", moduleFormCacheService);
         permissions = mockStatic(PermissionUtils.class);
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
         permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE))
@@ -127,7 +135,6 @@ class OpportunityStagePermissionTest {
         assertEquals("SUCCESS", saved.getValue().getStage());
         assertEquals("CREATE", saved.getValue().getLastStage());
         assertNotNull(saved.getValue().getActualEndTime());
-        assertNotNull(OperationLogContext.getVariable(OperationLogContext.OPERATION_LOG_CONTEXT_KEY));
     }
 
     @Test

@@ -96,11 +96,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
-import cn.cordys.crm.system.service.DictService;
-import cn.cordys.crm.system.service.LogService;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
-import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.*;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
@@ -1722,7 +1718,7 @@ public class ClueService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CLUE.getKey(), request.getFieldId(), permittedIds, organizationId);
-        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 

@@ -854,47 +854,38 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
                         && Strings.CI.equals(cfg.getRate(), "0"))
                 .findFirst();
 
-        final Map<String, String> stageMap = stageConfigList.stream()
-                .collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName));
-
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("stage", stageMap.get(oldOpportunity.getStage()));
-
         if (!stageAdvancedConfigService.checkStage(oldOpportunity.getStage(), request.getStage(), FormKey.OPPORTUNITY.getKey())) {
             return;
         }
 
+        List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
 
-        oldOpportunity.setLastStage(oldOpportunity.getStage());
-        oldOpportunity.setStage(request.getStage());
+        Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), oldOpportunity);
+        newOpportunity.setLastStage(oldOpportunity.getStage());
+        newOpportunity.setStage(request.getStage());
 
         final boolean isSuccessStage = successOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
         final boolean isFailStage = failOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
 
         if (isSuccessStage || isFailStage) {
-            oldOpportunity.setActualEndTime(System.currentTimeMillis());
+            newOpportunity.setActualEndTime(System.currentTimeMillis());
         }
         if (isFailStage) {
-            oldOpportunity.setFailureReason(request.getFailureReason());
+            newOpportunity.setFailureReason(request.getFailureReason());
         }
 
-        final Long nextPos = getNextPos(oldOpportunity.getOrganizationId(), request.getStage());
-        oldOpportunity.setPos(nextPos);
+        final Long nextPos = getNextPos(newOpportunity.getOrganizationId(), request.getStage());
+        newOpportunity.setPos(nextPos);
 
-        opportunityMapper.update(oldOpportunity);
+        opportunityMapper.update(newOpportunity);
 
         updateField(oldOpportunity, request.getFields(), userId);
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getId());
 
-        final Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("stage", stageMap.get(request.getStage()));
+        baseService.handleUpdateLogWithSubTable(oldOpportunity, opportunity, originCustomerFields,
+                opportunityFieldService.getModuleFieldValuesByResourceId(request.getId()),
+                request.getId(), opportunity.getName(), Translator.get("products_info"), getFormConfig(orgId));
 
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceName(oldOpportunity.getName())
-                        .originalValue(originalVal)
-                        .modifiedValue(modifiedVal)
-                        .build()
-        );
     }
 
     private void updateField(Opportunity opportunity, List<BaseModuleFieldValue> requestFields, String userId) {
@@ -907,7 +898,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
                 updateRequest.setIds(List.of(opportunity.getId()));
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
-                opportunityFieldService.batchUpdate(updateRequest, baseField, List.of(opportunity), Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, opportunity.getOrganizationId());
+                opportunityFieldService.batchUpdate(updateRequest, baseField, List.of(opportunity), Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, opportunity.getOrganizationId(), false);
             });
 
             // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
@@ -1226,7 +1217,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.OPPORTUNITY.getKey(), request.getFieldId(), permittedIds, organizationId);
-        opportunityFieldService.batchUpdate(filteredRequest, field, permittedOpportunities, Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId);
+        opportunityFieldService.batchUpdate(filteredRequest, field, permittedOpportunities, Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 

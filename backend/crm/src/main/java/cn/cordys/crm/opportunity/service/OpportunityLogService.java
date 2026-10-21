@@ -5,6 +5,8 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -14,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -21,10 +25,16 @@ public class OpportunityLogService extends BaseModuleLogService {
 
     @Resource
     private BaseMapper<Customer> customerMapper;
+    @Resource
+    private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         differences = super.handleModuleLogField(differences, orgId, FormKey.OPPORTUNITY.getKey());
+
+        List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        final Map<String, String> stageMap = stageConfigList.stream()
+                .collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName));
 
         for (JsonDifferenceDTO differ : differences) {
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey())) {
@@ -60,10 +70,10 @@ public class OpportunityLogService extends BaseModuleLogService {
 
             if (Strings.CS.equals(differ.getColumnName(), Translator.get("log.stage"))) {
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(Translator.get(differ.getOldValueName().toString(), differ.getOldValueName().toString()));
+                    differ.setOldValueName(stageMap.get(differ.getOldValue()));
                 }
                 if (differ.getNewValue() != null) {
-                    differ.setNewValueName(Translator.get(differ.getNewValueName().toString(), differ.getNewValueName().toString()));
+                    differ.setNewValueName(stageMap.get(differ.getNewValue()));
                 }
             }
 

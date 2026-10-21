@@ -198,7 +198,7 @@ class PoolCustomerApprovalTest {
         verify(approvalResourceService, never()).batchEditTriggerApproval(
                 anyList(), anyString(), any(), anyString(), anyString(), anyString(), any());
         verify(customerFieldService, never()).batchUpdate(
-                any(), any(), anyList(), any(), anyString(), any(), anyString(), anyString());
+                any(), any(), anyList(), any(), anyString(), any(), anyString(), anyString(), eq(true));
         assertEquals(0, response.getSuccess());
         assertEquals(1, response.getFail());
         assertEquals("no.operation.permission", response.getErrorMessages());

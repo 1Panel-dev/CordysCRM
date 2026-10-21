@@ -1245,7 +1245,7 @@ public class CustomerService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CUSTOMER.getKey(), request.getFieldId(), permittedIds, organizationId);
-        customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class, LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId);
+        customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class, LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 

@@ -29,7 +29,10 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
-import cn.cordys.common.util.*;
+import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
@@ -45,11 +48,7 @@ import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.*;
-import cn.cordys.crm.contract.dto.request.ContractAddRequest;
-import cn.cordys.crm.contract.dto.request.ContractApprovalSnapshotRequest;
-import cn.cordys.crm.contract.dto.request.ContractPageRequest;
-import cn.cordys.crm.contract.dto.request.ContractStageRequest;
-import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
+import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractStatisticResponse;
@@ -62,7 +61,6 @@ import cn.cordys.crm.system.constants.*;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
-import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
@@ -744,46 +742,36 @@ public class ContractService extends BaseExportService implements ApprovalResour
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}", comment = "{#request.comment}")
     public void updateStage(ContractStageRequest request, String userId, String orgId) {
-        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
-        if (contract == null) {
+        Contract oldContract = contractMapper.selectByPrimaryKey(request.getId());
+        if (oldContract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
 
-        List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
-
-        Map<String, String> stageMap = stageConfigList.stream()
-                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
-
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("contractStage", stageMap.get(contract.getStage()));
-
-        if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(), FormKey.CONTRACT.getKey())) {
+        if (!stageAdvancedConfigService.checkStage(oldContract.getStage(), request.getStage(), FormKey.CONTRACT.getKey())) {
             return;
         }
-        contract.setStage(request.getStage());
+        List<BaseModuleFieldValue> originCustomerFields = contractFieldService.getModuleFieldValuesByResourceId(request.getId());
+
+        Contract newContract = BeanUtils.copyBean(new Contract(), oldContract);
+        newContract.setStage(request.getStage());
         if (StringUtils.isNotBlank(request.getVoidReason())) {
-            contract.setVoidReason(request.getVoidReason());
+            newContract.setVoidReason(request.getVoidReason());
         }
-        contractMapper.update(contract);
+        contractMapper.update(newContract);
 
-        updateFieldAndSnapshot(contract, request.getFields(), userId);
+        updateFieldAndSnapshot(newContract, request.getFields(), userId);
 
+        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
             String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) ?
                     NotificationConstants.Event.CONTRACT_VOID : NotificationConstants.Event.CONTRACT_ARCHIVED;
-            Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
-            sendNotice(contract, userId, orgId, event, customer.getName());
+            sendNotice(newContract, userId, orgId, event, contract.getName());
         }
 
-        final Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("contractStage", stageMap.get(request.getStage()));
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceName(contract.getName())
-                        .originalValue(originalVal)
-                        .modifiedValue(modifiedVal)
-                        .build()
-        );
+        baseService.handleUpdateLogWithSubTable(oldContract, contract, originCustomerFields,
+                contractFieldService.getModuleFieldValuesByResourceId(request.getId()),
+                request.getId(), contract.getName(), Translator.get("products_info"), getFormConfig(orgId));
+
 
     }
 
@@ -797,7 +785,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 updateRequest.setIds(List.of(contract.getId()));
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
-                contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId());
+                contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId(), false);
 
                 // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
                 Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
@@ -1182,7 +1170,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTRACT.getKey(), request.getFieldId(), permittedIds, organizationId);
-        contractFieldService.batchUpdate(filteredRequest, field, permittedContracts, Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId);
+        contractFieldService.batchUpdate(filteredRequest, field, permittedContracts, Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 
@@ -1699,7 +1687,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
     }
 
     /**
-     *  占位符替换成真实流水号
+     * 占位符替换成真实流水号
      */
     private void fillSerialNumberFormulas(Contract contract, BaseField serialField, List<BaseField> formulaFields,
                                           List<BaseResourceSubField> contractFields, String serialNo) {

@@ -915,34 +915,26 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}", comment = "{#request.comment}")
     public void updateStage(OrderStageRequest request, String userId, String orgId) {
-        Order order = orderMapper.selectByPrimaryKey(request.getId());
-        if (order == null) {
+        Order oldOrder = orderMapper.selectByPrimaryKey(request.getId());
+        if (oldOrder == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
-        List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
-        Map<String, String> stageMap = stageConfigList.stream()
-                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("orderStage", stageMap.get(order.getStage()));
-
-        if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.getKey())) {
+        if (!stageAdvancedConfigService.checkStage(oldOrder.getStage(), request.getStage(), FormKey.ORDER.getKey())) {
             return;
         }
-        order.setStage(request.getStage());
-        orderMapper.update(order);
+        List<BaseModuleFieldValue> originCustomerFields = orderFieldService.getModuleFieldValuesByResourceId(request.getId());
 
-        updateFieldAndSnapshot(order, request.getFields(), userId);
+        Order newOrder = BeanUtils.copyBean(new Order(), oldOrder);
+        newOrder.setStage(request.getStage());
+        orderMapper.update(newOrder);
 
-        final Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("orderStage", stageMap.get(request.getStage()));
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceName(order.getName())
-                        .originalValue(originalVal)
-                        .modifiedValue(modifiedVal)
-                        .build()
-        );
+        updateFieldAndSnapshot(newOrder, request.getFields(), userId);
+
+        Order order = orderMapper.selectByPrimaryKey(request.getId());
+        baseService.handleUpdateLogWithSubTable(oldOrder, order, originCustomerFields,
+                orderFieldService.getModuleFieldValuesByResourceId(request.getId()),
+                request.getId(), order.getName(), Translator.get("products_info"), getFormConfig(orgId));
     }
 
     private void updateFieldAndSnapshot(Order order, List<BaseModuleFieldValue> requestFields, String userId) {
@@ -955,7 +947,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                 updateRequest.setIds(List.of(order.getId()));
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
-                orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId());
+                orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId(),false);
 
                 // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
                 Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
@@ -1021,7 +1013,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.ORDER.getKey(), request.getFieldId(), permittedIds, orgId);
-        orderFieldService.batchUpdate(filteredRequest, field, permittedOrders, Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId);
+        orderFieldService.batchUpdate(filteredRequest, field, permittedOrders, Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId,true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 

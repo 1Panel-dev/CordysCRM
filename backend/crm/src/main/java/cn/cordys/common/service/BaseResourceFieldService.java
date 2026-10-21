@@ -372,7 +372,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 String logModule,
                                 Consumer<BatchUpdateDbParam> batchInsertFunc,
                                 String userId,
-                                String orgId) {
+                                String orgId,
+                                boolean saveLog) {
 
         if (field.needRepeatCheck() && request.getIds().size() > 1 && isNotBlank(request.getFieldValue())) {
             // 如果字段唯一，则校验不能同时修改多条
@@ -392,8 +393,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             businessFieldRepeatCheck(orgId, resource, request.getIds(), field, field.getBusinessKey());
             updateParam.setFieldName(field.getBusinessKey());
             updateParam.setFieldValue(request.getFieldValue());
-            // 添加日志
-            addBusinessFieldBatchUpdateLog(originResourceList, field, request, logModule, userId, orgId);
+            if (saveLog) {
+                // 添加日志
+                addBusinessFieldBatchUpdateLog(originResourceList, field, request, logModule, userId, orgId);
+            }
         } else {
             ModuleField moduleField = moduleFieldMapper.selectByPrimaryKey(request.getFieldId());
             List<? extends BaseResourceField> originFields;
@@ -410,8 +413,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             if (isNotBlank(request.getFieldValue())) {
                 batchUpdateFieldValues(request, field, moduleField);
             }
-            // 添加日志
-            addCustomFieldBatchUpdateLog(originResourceList, originFields, request, field, logModule, userId, orgId);
+            if (saveLog) {
+                // 添加日志
+                addCustomFieldBatchUpdateLog(originResourceList, originFields, request, field, logModule, userId, orgId);
+            }
         }
         // 批量修改业务字段和更新时间等
         batchInsertFunc.accept(updateParam);
