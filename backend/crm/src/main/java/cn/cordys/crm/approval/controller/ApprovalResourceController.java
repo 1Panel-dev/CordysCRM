@@ -4,6 +4,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
@@ -15,6 +16,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -53,17 +55,31 @@ public class ApprovalResourceController {
 
     @GetMapping("/simple-detail/{resourceId}")
     @Operation(summary = "列表详情")
-    public ResourceApprovalResponse resourceDetail(@PathVariable String resourceId) {
+    public ResourceApprovalResponse resourceDetail(@PathVariable String resourceId,
+                                                   @RequestParam(required = false) String commentMentionId) {
+        if (StringUtils.isNotBlank(commentMentionId)) {
+            approvalCommentService.getMentionInstance(commentMentionId, resourceId, SessionUtils.getUserId(),
+                    OrganizationContext.getOrganizationId());
+        } else {
         approvalResourceService.checkViewPermission(resourceId);
+        }
         return approvalResourceService.resourceDetail(resourceId);
     }
 
     @GetMapping("/detail/{resourceId}")
     @Operation(summary = "记录详情")
-    public ApprovalInstanceDetail getRecordDetail(@PathVariable String resourceId) {
-        approvalResourceService.checkViewPermission(resourceId);
+    public ApprovalInstanceDetail getRecordDetail(@PathVariable String resourceId,
+                                                 @RequestParam(required = false) String commentMentionId) {
         String orgId = OrganizationContext.getOrganizationId();
-        ApprovalInstanceDetail detail = approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, orgId);
+        ApprovalInstanceDetail detail;
+        if (StringUtils.isNotBlank(commentMentionId)) {
+            ApprovalInstance instance = approvalCommentService.getMentionInstance(commentMentionId, resourceId,
+                    SessionUtils.getUserId(), orgId);
+            detail = approvalInstanceService.getApprovalInstanceDetail(instance, orgId);
+        } else {
+            approvalResourceService.checkViewPermission(resourceId);
+            detail = approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, orgId);
+        }
         if (detail != null) {
             detail.setCommentable(
                     approvalCommentService.hasCommentPermission(detail.getId(), SessionUtils.getUserId(), orgId));

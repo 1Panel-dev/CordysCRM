@@ -74,6 +74,13 @@ public class ApprovalInstanceService {
         if (latestInstance == null) {
             return null;
         }
+		return getApprovalInstanceDetail(latestInstance, currentOrgId);
+	}
+
+	/**
+	 * 获取已授权审批实例的记录详情。
+	 */
+	public ApprovalInstanceDetail getApprovalInstanceDetail(ApprovalInstance latestInstance, String currentOrgId) {
         Map<String, UserSimple> simpleUserMap = userExtendService.getAllUserSimpleMap();
         ApprovalInstanceDetail instanceDetail = BeanUtils.copyBean(new ApprovalInstanceDetail(), latestInstance);
         if (simpleUserMap.containsKey(instanceDetail.getSubmitterId())) {

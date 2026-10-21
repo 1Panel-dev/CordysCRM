@@ -18,4 +18,7 @@ public class ApprovalCommentMention {
 
     @Schema(description = "被@用户ID")
     private String userId;
+
+    @Schema(description = "被@时间，毫秒时间戳")
+    private Long createTime;
 }

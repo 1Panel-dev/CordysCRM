@@ -364,8 +364,8 @@ public class CustomerService implements ApprovalResourceHandler {
         if (getResponse == null) {
             throw new GenericException(Translator.get("customer.not.exist"));
         }
-        // 待办审批人可查看资源详情，无需再校验数据权限与协作人
-        if (resourcePermissionService.hasApprovalTaskPermission(id, userId)) {
+        // 待办审批人和有效评论@用户可查看对应资源详情。
+        if (resourcePermissionService.hasApprovalViewPermission(id, userId, orgId, FormKey.CUSTOMER.getKey())) {
             return getResponse;
         }
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(),

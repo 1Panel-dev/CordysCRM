@@ -23,7 +23,7 @@ import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -45,9 +45,9 @@ import static org.mockito.Mockito.when;
 class ApprovalInstanceServiceTest {
 
     @ParameterizedTest
-    @ValueSource(longs = { 0, 3 })
+    @CsvSource({ "0,true", "3,true", "0,false", "3,false" })
     @SuppressWarnings("unchecked")
-    void latestInstanceDetailCountsAllCommentsWithinCurrentOrganization(long commentCount) {
+    void instanceDetailCountsCommentsForRequestedOrLatestInstance(long commentCount, boolean latestInstance) {
         ApprovalInstanceService service = new ApprovalInstanceService();
         BaseMapper<ApprovalInstance> instanceMapper = mock(BaseMapper.class);
         BaseMapper<ApprovalComment> commentMapper = mock(BaseMapper.class);
@@ -64,6 +64,8 @@ class ApprovalInstanceServiceTest {
         ApprovalInstance previous = new ApprovalInstance();
         previous.setId("instance-previous");
         previous.setSubmitTime(1L);
+        previous.setSubmitterId("submitter");
+        previous.setCurrentNodeId("");
         ApprovalInstance latest = new ApprovalInstance();
         latest.setId("instance-latest");
         latest.setSubmitTime(2L);
@@ -73,15 +75,20 @@ class ApprovalInstanceServiceTest {
         when(userExtendService.getAllUserSimpleMap()).thenReturn(Map.of());
         when(commentMapper.countByExample(any())).thenReturn(commentCount);
 
-        ApprovalInstanceDetail detail = service.getLatestApprovalInstanceDetail("resource-1", "org-1");
+        ApprovalInstance requested = latestInstance ? latest : previous;
+        ApprovalInstanceDetail detail = latestInstance ? service.getLatestApprovalInstanceDetail("resource-1", "org-1")
+                : service.getApprovalInstanceDetail(requested, "org-1");
 
-        assertEquals(latest.getId(), detail.getId());
+        assertEquals(requested.getId(), detail.getId());
         assertEquals(commentCount, detail.getCommentCount());
         ArgumentCaptor<ApprovalComment> criteria = ArgumentCaptor.forClass(ApprovalComment.class);
         verify(commentMapper).countByExample(criteria.capture());
-        assertEquals(latest.getId(), criteria.getValue().getInstanceId());
+        assertEquals(requested.getId(), criteria.getValue().getInstanceId());
         assertEquals("org-1", criteria.getValue().getOrganizationId());
         assertNull(criteria.getValue().getParentId());
+        if (!latestInstance) {
+            verifyNoInteractions(instanceMapper);
+        }
     }
 
     @Test

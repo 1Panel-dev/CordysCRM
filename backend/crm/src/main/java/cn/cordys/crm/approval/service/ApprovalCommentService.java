@@ -18,11 +18,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +40,8 @@ public class ApprovalCommentService {
     private ExtApprovalCommentMapper extCommentMapper;
     @Resource
     private ApprovalResourceService approvalResourceService;
+    @Resource
+    private ApprovalCommentNoticeService approvalCommentNoticeService;
 
     public List<ApprovalCommentResponse> list(String instanceId, String userId, String orgId) {
         checkPermission(instanceId, userId, orgId);
@@ -78,7 +83,8 @@ public class ApprovalCommentService {
         comment.setCreateTime(now);
         comment.setUpdateTime(now);
         commentMapper.insert(comment);
-        saveMentions(comment.getId(), mentionedUserIds);
+        saveMentions(comment.getId(), mentionedUserIds, now);
+        sendMentionNoticeAfterCommit(comment, mentionedUserIds);
         return loadResponse(comment.getId(), userId, orgId);
     }
 
@@ -89,8 +95,20 @@ public class ApprovalCommentService {
         comment.setUpdateUser(userId);
         comment.setUpdateTime(System.currentTimeMillis());
         commentMapper.update(comment);
-        extCommentMapper.deleteMentions(List.of(comment.getId()), orgId);
-        saveMentions(comment.getId(), mentionedUserIds);
+        ApprovalCommentMention criteria = new ApprovalCommentMention();
+        criteria.setCommentId(comment.getId());
+        List<ApprovalCommentMention> existingMentions = mentionMapper.select(criteria);
+        List<String> removedIds = existingMentions.stream()
+                .filter(mention -> !mentionedUserIds.contains(mention.getUserId()))
+                .map(ApprovalCommentMention::getId).toList();
+        if (!removedIds.isEmpty()) {
+            mentionMapper.deleteByIds(removedIds);
+        }
+        Set<String> existingUserIds = existingMentions.stream()
+                .map(ApprovalCommentMention::getUserId).collect(Collectors.toSet());
+        List<String> addedUserIds = mentionedUserIds.stream().filter(id -> !existingUserIds.contains(id)).toList();
+        saveMentions(comment.getId(), addedUserIds, comment.getUpdateTime());
+        sendMentionNoticeAfterCommit(comment, addedUserIds);
         // 本次编辑可能移除操作者最后一条有效@，返回结果不再次判权。
         return loadResponse(comment.getId(), userId, orgId);
     }
@@ -116,6 +134,14 @@ public class ApprovalCommentService {
     public boolean hasCommentPermission(String instanceId, String userId, String orgId) {
         ApprovalInstance instance = extCommentMapper.selectInstance(instanceId, orgId);
         return instance != null && hasCommentPermission(instance, userId, orgId);
+    }
+
+    public ApprovalInstance getMentionInstance(String mentionId, String resourceId, String userId, String orgId) {
+        ApprovalInstance instance = extCommentMapper.selectMentionInstance(mentionId, userId, orgId);
+        if (instance == null || !Objects.equals(resourceId, instance.getResourceId())) {
+            throw new GenericException(Translator.get("approval.comment.no_permission"));
+        }
+        return instance;
     }
 
     private boolean hasCommentPermission(ApprovalInstance instance, String userId, String orgId) {
@@ -180,7 +206,7 @@ public class ApprovalCommentService {
         return distinctIds;
     }
 
-    private void saveMentions(String commentId, List<String> userIds) {
+    private void saveMentions(String commentId, List<String> userIds, long createTime) {
         if (userIds.isEmpty()) {
             return;
         }
@@ -189,9 +215,26 @@ public class ApprovalCommentService {
             mention.setId(IDGenerator.nextStr());
             mention.setCommentId(commentId);
             mention.setUserId(userId);
+            mention.setCreateTime(createTime);
             return mention;
         }).toList();
         mentionMapper.batchInsert(mentions);
+    }
+
+    private void sendMentionNoticeAfterCommit(ApprovalComment comment, List<String> userIds) {
+        if (userIds.isEmpty()) {
+            return;
+        }
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    approvalCommentNoticeService.sendMentionNotice(comment, userIds);
+                }
+            });
+        } else {
+            approvalCommentNoticeService.sendMentionNotice(comment, userIds);
+        }
     }
 
     private ApprovalCommentResponse getResponse(String id, String orgId) {
@@ -213,7 +256,7 @@ public class ApprovalCommentService {
             return;
         }
         Map<String, List<ApprovalCommentMentionUserResponse>> mentionUsers = extCommentMapper.selectMentionUsers(
-                comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId).stream()
+                        comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId).stream()
                 .collect(Collectors.groupingBy(ApprovalCommentMentionUserResponse::getCommentId));
         comments.forEach(comment -> {
             comment.setMentionUsers(mentionUsers.getOrDefault(comment.getId(), List.of()));

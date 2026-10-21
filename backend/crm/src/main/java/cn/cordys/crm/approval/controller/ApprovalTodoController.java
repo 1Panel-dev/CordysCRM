@@ -48,6 +48,12 @@ public class ApprovalTodoController {
         return approvalTodoService.getCcPage(request, SessionUtils.getUserId());
     }
 
+    @PostMapping("/mention/page")
+    @Operation(summary = "审核代办-评论@我的审批分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
+    public Pager<List<ApprovalTodoItemResponse>> mentionPage(@Validated @RequestBody ApprovalTodoPageRequest request) {
+        return approvalTodoService.getMentionPage(request, SessionUtils.getUserId());
+    }
+
     @GetMapping("/pending/count")
     @Operation(summary = "审核代办-待我审批统计", description = "返回值：key 与 getFlowFormOptions 保持一致（标准表单为 clue/customer/opportunity/quotation/contract/order/invoice，自定义表单为 customFormId），value 为对应待审批数量")
     public Map<String, Integer> pendingCount() {
