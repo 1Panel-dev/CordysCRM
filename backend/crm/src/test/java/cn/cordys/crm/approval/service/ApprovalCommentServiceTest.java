@@ -1,6 +1,8 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.dto.SortRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -9,6 +11,7 @@ import cn.cordys.crm.approval.domain.ApprovalComment;
 import cn.cordys.crm.approval.domain.ApprovalCommentMention;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentAddRequest;
+import cn.cordys.crm.approval.dto.request.ApprovalCommentPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentUpdateRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentMentionUserResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentResponse;
@@ -16,7 +19,10 @@ import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,10 +43,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -103,6 +112,11 @@ class ApprovalCommentServiceTest {
         instance = new ApprovalInstance();
         instance.setId(INSTANCE);
         when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(instance);
+    }
+
+    @AfterEach
+    void clearPage() {
+        PageHelper.clearPage();
     }
 
     @Test
@@ -169,12 +183,12 @@ class ApprovalCommentServiceTest {
     @ValueSource(booleans = { false, true })
     void allowsBusinessOrTaskPermissionAndEffectiveMention(boolean businessOrTaskPermission) {
         ApprovalCommentResponse detail = detail("comment-a");
-        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of(detail));
+        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenReturn(List.of(detail));
         when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG))
                 .thenReturn(businessOrTaskPermission);
         when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(!businessOrTaskPermission);
 
-        assertEquals(List.of(detail), service.list(INSTANCE, USER, ORG));
+        assertEquals(List.of(detail), service.page(pageRequest(), USER, ORG).getList());
 
         assertTrue(detail.isEditable());
         verify(approvalResourceService).hasInstanceViewPermission(instance, USER, ORG);
@@ -184,7 +198,7 @@ class ApprovalCommentServiceTest {
     }
 
     @Test
-    void listsTwoLevelsWithTheirOwnMentionsAndDisplayInformation() {
+    void pagesRootCommentsWithCompleteRepliesAndDisplayInformation() {
         allowExistingPermission();
         ApprovalCommentResponse root = detail("comment-a");
         root.setContent("一级评论");
@@ -203,31 +217,53 @@ class ApprovalCommentServiceTest {
         reply.setUpdateTime(210L);
         reply.setReplyToUserId(USER);
         reply.setReplyToUserName(root.getCreateUserName());
+        ApprovalCommentResponse anotherReply = detail("reply-b");
+        anotherReply.setParentId(root.getId());
         ApprovalCommentMentionUserResponse rootMention = new ApprovalCommentMentionUserResponse();
         rootMention.setCommentId(root.getId());
         rootMention.setId("member-a");
         ApprovalCommentMentionUserResponse replyMention = new ApprovalCommentMentionUserResponse();
         replyMention.setCommentId(reply.getId());
         replyMention.setId("member-b");
-        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of(root));
-        when(extCommentMapper.selectChildren(INSTANCE, List.of(root.getId()), ORG)).thenReturn(List.of(reply));
-        when(extCommentMapper.selectMentionUsers(List.of(root.getId(), reply.getId()), ORG))
+        ApprovalCommentPageRequest request = pageRequest();
+        request.setCurrent(2);
+        request.setPageSize(1);
+        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
+            Page<?> page = PageHelper.getLocalPage();
+            assertEquals(2, page.getPageNum());
+            assertEquals(1, page.getPageSize());
+            page.setTotal(9);
+            // 模拟真实分页拦截器在一级查询结束后清理上下文。
+            PageHelper.clearPage();
+            return List.of(root);
+        });
+        when(extCommentMapper.selectChildren(INSTANCE, List.of(root.getId()), ORG, false))
+                .thenAnswer(invocation -> {
+                    assertNull(PageHelper.getLocalPage());
+                    return List.of(reply, anotherReply);
+                });
+        when(extCommentMapper.selectMentionUsers(List.of(root.getId(), reply.getId(), anotherReply.getId()), ORG))
                 .thenReturn(List.of(replyMention, rootMention));
 
-        List<ApprovalCommentResponse> roots = service.list(INSTANCE, USER, ORG);
+        Pager<List<ApprovalCommentResponse>> result = service.page(request, USER, ORG);
+        List<ApprovalCommentResponse> roots = result.getList();
 
+        assertEquals(9L, result.getTotal());
+        assertEquals(2L, result.getCurrent());
+        assertEquals(1L, result.getPageSize());
+        assertNull(PageHelper.getLocalPage());
         assertEquals(List.of(root), roots);
         assertEquals("一级评论", roots.getFirst().getContent());
         assertEquals("评论甲", roots.getFirst().getCreateUserName());
         assertEquals("avatar-a", roots.getFirst().getCreateUserAvatar());
         assertEquals(100L, roots.getFirst().getCreateTime());
         assertEquals(110L, roots.getFirst().getUpdateTime());
-        assertEquals(1L, roots.getFirst().getReplyCount());
+        assertEquals(2L, roots.getFirst().getReplyCount());
         assertEquals(List.of(rootMention), roots.getFirst().getMentionUsers());
         assertTrue(roots.getFirst().isEditable());
         List<ApprovalCommentResponse> replies = roots.getFirst().getReplies();
 
-        assertEquals(List.of(reply), replies);
+        assertEquals(List.of(reply, anotherReply), replies);
         assertEquals("二级回复", replies.getFirst().getContent());
         assertEquals("评论乙", replies.getFirst().getCreateUserName());
         assertEquals("avatar-b", replies.getFirst().getCreateUserAvatar());
@@ -239,8 +275,8 @@ class ApprovalCommentServiceTest {
         assertFalse(replies.getFirst().isEditable());
         assertTrue(replies.getFirst().getReplies().isEmpty());
         assertEquals(0L, replies.getFirst().getReplyCount());
-        verify(extCommentMapper).selectChildren(INSTANCE, List.of(root.getId()), ORG);
-        verify(extCommentMapper).selectMentionUsers(List.of(root.getId(), reply.getId()), ORG);
+        verify(extCommentMapper).selectChildren(INSTANCE, List.of(root.getId()), ORG, false);
+        verify(extCommentMapper).selectMentionUsers(List.of(root.getId(), reply.getId(), anotherReply.getId()), ORG);
     }
 
     @Test
@@ -256,11 +292,11 @@ class ApprovalCommentServiceTest {
         ApprovalCommentResponse secondReply = detail("reply-b");
         secondReply.setParentId(second.getId());
         List<String> parentIds = List.of(first.getId(), second.getId(), noReply.getId());
-        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of(first, second, noReply));
-        when(extCommentMapper.selectChildren(INSTANCE, parentIds, ORG))
+        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenReturn(List.of(first, second, noReply));
+        when(extCommentMapper.selectChildren(INSTANCE, parentIds, ORG, false))
                 .thenReturn(List.of(secondReply, firstReply, nextReply));
 
-        List<ApprovalCommentResponse> comments = service.list(INSTANCE, USER, ORG);
+        List<ApprovalCommentResponse> comments = service.page(pageRequest(), USER, ORG).getList();
 
         assertEquals(List.of(first, second, noReply), comments);
         assertEquals(List.of(firstReply, nextReply), first.getReplies());
@@ -269,19 +305,74 @@ class ApprovalCommentServiceTest {
         assertEquals(1L, second.getReplyCount());
         assertTrue(noReply.getReplies().isEmpty());
         assertEquals(0L, noReply.getReplyCount());
-        verify(extCommentMapper).selectChildren(INSTANCE, parentIds, ORG);
+        verify(extCommentMapper).selectChildren(INSTANCE, parentIds, ORG, false);
     }
 
     @Test
-    void skipsChildrenAndMentionLookupWhenRootListIsEmpty() {
+    void emptyPageKeepsRootTotalAndSkipsChildrenAndMentionLookup() {
         allowExistingPermission();
-        when(extCommentMapper.selectList(INSTANCE, ORG)).thenReturn(List.of());
+        ApprovalCommentPageRequest request = pageRequest();
+        request.setCurrent(4);
+        request.setPageSize(5);
+        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
+            Page<?> page = PageHelper.getLocalPage();
+            page.setTotal(12);
+            return List.of();
+        });
 
-        List<ApprovalCommentResponse> comments = service.list(INSTANCE, USER, ORG);
+        Pager<List<ApprovalCommentResponse>> result = service.page(request, USER, ORG);
 
-        assertTrue(comments.isEmpty());
-        verify(extCommentMapper, never()).selectChildren(anyString(), any(), anyString());
+        assertTrue(result.getList().isEmpty());
+        assertEquals(12L, result.getTotal());
+        assertEquals(4L, result.getCurrent());
+        assertEquals(5L, result.getPageSize());
+        assertNull(PageHelper.getLocalPage());
+        verify(extCommentMapper, never()).selectChildren(anyString(), any(), anyString(), anyBoolean());
         verify(extCommentMapper, never()).selectMentionUsers(any(), anyString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = { "asc,true", "ASC,true", "desc,false", "invalid,false", "NULL,false" }, nullValues = "NULL")
+    void passesCreationTimeDirectionToRootAndReplyQueries(String direction, boolean asc) {
+        allowExistingPermission();
+        ApprovalCommentPageRequest request = pageRequest();
+        request.setSort(new SortRequest("createTime", direction));
+        ApprovalCommentResponse root = detail("comment-a");
+        when(extCommentMapper.selectPage(INSTANCE, ORG, asc)).thenReturn(List.of(root));
+
+        service.page(request, USER, ORG);
+
+        verify(extCommentMapper).selectPage(INSTANCE, ORG, asc);
+        verify(extCommentMapper).selectChildren(INSTANCE, List.of(root.getId()), ORG, asc);
+        assertNull(PageHelper.getLocalPage());
+    }
+
+    @Test
+    void deniedPageDoesNotStartPaginationOrReadComments() {
+        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenAnswer(invocation -> {
+            assertNull(PageHelper.getLocalPage());
+            return false;
+        });
+
+        assertThrows(GenericException.class, () -> service.page(pageRequest(), USER, ORG));
+
+        assertNull(PageHelper.getLocalPage());
+        verify(extCommentMapper, never()).selectPage(anyString(), anyString(), anyBoolean());
+        verify(extCommentMapper, never()).selectChildren(anyString(), any(), anyString(), anyBoolean());
+    }
+
+    @Test
+    void rootQueryFailureClearsPaginationContext() {
+        allowExistingPermission();
+        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
+            assertNotNull(PageHelper.getLocalPage());
+            throw new IllegalStateException("查询失败");
+        });
+
+        assertThrows(IllegalStateException.class, () -> service.page(pageRequest(), USER, ORG));
+
+        assertNull(PageHelper.getLocalPage());
+        verify(extCommentMapper, never()).selectChildren(anyString(), any(), anyString(), anyBoolean());
     }
 
     @Test
@@ -556,6 +647,14 @@ class ApprovalCommentServiceTest {
 
     private void allowExistingPermission() {
         when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(true);
+    }
+
+    private ApprovalCommentPageRequest pageRequest() {
+        ApprovalCommentPageRequest request = new ApprovalCommentPageRequest();
+        request.setInstanceId(INSTANCE);
+        request.setCurrent(1);
+        request.setPageSize(10);
+        return request;
     }
 
     private ApprovalCommentAddRequest addRequest() {

@@ -1,7 +1,9 @@
 package cn.cordys.crm.approval.controller;
 
+import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentAddRequest;
+import cn.cordys.crm.approval.dto.request.ApprovalCommentPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentUpdateRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
@@ -22,10 +24,10 @@ public class ApprovalCommentController {
     @Resource
     private ApprovalCommentService approvalCommentService;
 
-    @GetMapping("/list/{instanceId}")
-    @Operation(summary = "查询审批实例的一级评论及二级回复")
-    public List<ApprovalCommentResponse> list(@PathVariable String instanceId) {
-        return approvalCommentService.list(instanceId, SessionUtils.getUserId(),
+    @PostMapping("/page")
+    @Operation(summary = "分页查询审批一级评论及完整二级回复，支持创建时间排序")
+    public Pager<List<ApprovalCommentResponse>> page(@Validated @RequestBody ApprovalCommentPageRequest request) {
+        return approvalCommentService.page(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
     }
 

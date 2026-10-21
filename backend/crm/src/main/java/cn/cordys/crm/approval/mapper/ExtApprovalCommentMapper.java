@@ -26,12 +26,14 @@ public interface ExtApprovalCommentMapper {
     ApprovalComment selectCommentForUpdate(@Param("id") String id,
                                            @Param("organizationId") String organizationId);
 
-    List<ApprovalCommentResponse> selectList(@Param("instanceId") String instanceId,
-                                             @Param("organizationId") String organizationId);
+    List<ApprovalCommentResponse> selectPage(@Param("instanceId") String instanceId,
+                                           @Param("organizationId") String organizationId,
+                                           @Param("asc") boolean asc);
 
     List<ApprovalCommentResponse> selectChildren(@Param("instanceId") String instanceId,
                                                  @Param("parentIds") List<String> parentIds,
-                                                 @Param("organizationId") String organizationId);
+                                                 @Param("organizationId") String organizationId,
+                                                 @Param("asc") boolean asc);
 
     ApprovalCommentResponse selectDetail(@Param("id") String id,
                                          @Param("organizationId") String organizationId);
