@@ -1,12 +1,21 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourceAccessContext;
+import cn.cordys.common.permission.ResourceAccessContextProvider;
+import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
@@ -16,7 +25,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
+import org.mockito.MockedStatic;
+import org.mockito.MockMakers;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.InputStream;
@@ -24,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,19 +44,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 class ApprovalResourceServiceTest {
 
     private ApprovalResourceService service;
     private BaseMapper<ApprovalTask> taskMapper;
     private BaseMapper<ApprovalInstance> instanceMapper;
+    private BaseMapper<ApprovalFlowVersion> flowVersionMapper;
     private ExtApprovalInstanceMapper extInstanceMapper;
+    private ExtApprovalTaskMapper extTaskMapper;
     private ApprovalFlowService flowService;
     private ApprovalActionService actionService;
+    private DataScopeService dataScopeService;
+    private CustomFormDataService customFormDataService;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -51,14 +70,22 @@ class ApprovalResourceServiceTest {
         service = new ApprovalResourceService();
         taskMapper = mock(BaseMapper.class);
         instanceMapper = mock(BaseMapper.class);
+        flowVersionMapper = mock(BaseMapper.class);
         extInstanceMapper = mock(ExtApprovalInstanceMapper.class);
+        extTaskMapper = mock(ExtApprovalTaskMapper.class);
         flowService = mock(ApprovalFlowService.class);
         actionService = mock(ApprovalActionService.class);
+        dataScopeService = mock(DataScopeService.class);
+        customFormDataService = mock(CustomFormDataService.class);
         ReflectionTestUtils.setField(service, "approvalTaskMapper", taskMapper);
         ReflectionTestUtils.setField(service, "approvalInstanceMapper", instanceMapper);
+        ReflectionTestUtils.setField(service, "approvalFlowVersionMapper", flowVersionMapper);
         ReflectionTestUtils.setField(service, "extApprovalInstanceMapper", extInstanceMapper);
+        ReflectionTestUtils.setField(service, "extApprovalTaskMapper", extTaskMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", flowService);
         ReflectionTestUtils.setField(service, "approvalActionService", actionService);
+        ReflectionTestUtils.setField(service, "dataScopeService", dataScopeService);
+        ReflectionTestUtils.setField(service, "customFormDataService", customFormDataService);
     }
 
     @ParameterizedTest
@@ -152,5 +179,129 @@ class ApprovalResourceServiceTest {
         boolean permitted = ReflectionTestUtils.invokeMethod(service, "hasApprovalTaskPermission", instance, "sign-approver");
 
         assertTrue(permitted);
+    }
+
+    @Test
+    void instanceViewPermissionIncludesHistoricalAddSignTasks() {
+        ApprovalInstance instance = instanceForView();
+        ApprovalTask signTask = new ApprovalTask();
+        signTask.setInstanceId(instance.getId());
+        signTask.setApproverId("sign-approver");
+        signTask.setType(ApprovalTaskType.SN.name());
+        signTask.setStatus(ApprovalStatus.APPROVED.name());
+        signTask.setNodeRound(-1);
+        when(taskMapper.selectListByLambda(any())).thenAnswer(invocation -> {
+            LambdaQueryWrapper<ApprovalTask> wrapper = invocation.getArgument(0);
+            assertEquals(2, wrapper.getParams().size());
+            return wrapper.getParams().containsValue(instance.getId())
+                    && wrapper.getParams().containsValue(signTask.getApproverId()) ? List.of(signTask) : List.of();
+        });
+
+        assertTrue(service.hasInstanceViewPermission(instance, "sign-approver", "org-a"));
+
+        verifyNoInteractions(extTaskMapper, dataScopeService, customFormDataService);
+    }
+
+    @Test
+    void instanceViewPermissionRejectsOtherOrganizationAndMissingFlowVersionBeforeSubmitter() {
+        ApprovalInstance instance = instanceForView();
+        ApprovalFlowVersion version = new ApprovalFlowVersion();
+        version.setOrganizationId("org-b");
+        when(flowVersionMapper.selectByPrimaryKey(instance.getFlowVersionId())).thenReturn(version);
+
+        assertFalse(service.hasInstanceViewPermission(instance, instance.getSubmitterId(), "org-a"));
+
+        when(flowVersionMapper.selectByPrimaryKey(instance.getFlowVersionId())).thenReturn(null);
+        assertFalse(service.hasInstanceViewPermission(instance, instance.getSubmitterId(), "org-a"));
+        verifyNoInteractions(taskMapper, dataScopeService, customFormDataService, extTaskMapper);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void instanceBusinessPermissionRequiresReadAndOwnerDataScope(boolean dataPermitted) {
+        ApprovalInstance instance = instanceForView();
+        ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
+        when(provider.getFormType()).thenReturn("contract");
+        when(provider.requiresOwner()).thenReturn(true);
+        ResourceAccessContext context = new ResourceAccessContext();
+        context.setOwnerId("resource-owner");
+        when(provider.getAccessContext("resource-a", "org-a")).thenReturn(context);
+        when(dataScopeService.hasDataPermission("reader", "org-a", "resource-owner", PermissionConstants.CONTRACT_READ))
+                .thenReturn(dataPermitted);
+
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
+             MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class, withSettings().mockMaker(MockMakers.INLINE))) {
+            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CONTRACT_READ)).thenReturn(true);
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class)).thenReturn(Map.of("contract", provider));
+
+            assertEquals(dataPermitted, service.hasInstanceViewPermission(instance, "reader", "org-a"));
+        }
+        verify(dataScopeService).hasDataPermission("reader", "org-a", "resource-owner", PermissionConstants.CONTRACT_READ);
+        verifyNoInteractions(extTaskMapper, customFormDataService);
+    }
+
+    @Test
+    void latestInstanceParticipantDoesNotGainPermissionOnOlderInstance() {
+        ApprovalInstance instance = instanceForView();
+        ApprovalInstance latest = new ApprovalInstance();
+        latest.setId("instance-new");
+        latest.setSubmitterId("new-submitter");
+        when(extTaskMapper.selectLatestInstanceByResourceId(instance.getResourceId())).thenReturn(latest);
+
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE))) {
+            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CONTRACT_READ)).thenReturn(false);
+            assertFalse(service.hasInstanceViewPermission(instance, "new-submitter", "org-a"));
+        }
+
+        verifyNoInteractions(extTaskMapper, dataScopeService, customFormDataService);
+    }
+
+    @Test
+    void instanceBusinessPermissionRejectsMissingProviderResourceAndOwner() {
+        ApprovalInstance instance = instanceForView();
+        ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
+        when(provider.getFormType()).thenReturn("contract");
+        when(provider.requiresOwner()).thenReturn(true);
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
+             MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class, withSettings().mockMaker(MockMakers.INLINE))) {
+            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CONTRACT_READ)).thenReturn(true);
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class)).thenReturn(Map.of());
+            assertFalse(service.hasInstanceViewPermission(instance, "reader", "org-a"));
+
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class)).thenReturn(Map.of("contract", provider));
+            assertFalse(service.hasInstanceViewPermission(instance, "reader", "org-a"));
+
+            when(provider.getAccessContext("resource-a", "org-a")).thenReturn(new ResourceAccessContext());
+            assertFalse(service.hasInstanceViewPermission(instance, "reader", "org-a"));
+        }
+        verifyNoInteractions(dataScopeService, customFormDataService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void customFormInstanceReusesCustomFormDataViewPermission(boolean permitted) {
+        ApprovalInstance instance = instanceForView();
+        instance.setType("custom-form-a");
+        when(customFormDataService.hasViewPermission("resource-a", "reader", "org-a")).thenReturn(permitted);
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE))) {
+            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOM_FORM_READ)).thenReturn(true);
+            assertEquals(permitted, service.hasInstanceViewPermission(instance, "reader", "org-a"));
+        }
+        verify(customFormDataService).hasViewPermission("resource-a", "reader", "org-a");
+        verifyNoInteractions(extTaskMapper, dataScopeService);
+    }
+
+    private ApprovalInstance instanceForView() {
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setId("instance-old");
+        instance.setFlowVersionId("version-a");
+        instance.setType("contract");
+        instance.setResourceId("resource-a");
+        instance.setSubmitterId("submitter");
+        ApprovalFlowVersion version = new ApprovalFlowVersion();
+        version.setId(instance.getFlowVersionId());
+        version.setOrganizationId("org-a");
+        when(flowVersionMapper.selectByPrimaryKey(instance.getFlowVersionId())).thenReturn(version);
+        return instance;
     }
 }

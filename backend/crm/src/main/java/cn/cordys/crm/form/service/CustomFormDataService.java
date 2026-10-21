@@ -234,6 +234,28 @@ public class CustomFormDataService extends BaseExportService implements Approval
         return optionMap;
     }
 
+    /**
+     * 校验表单角色与数据范围，不使用审批待办授权；模块查看权限由调用方校验。
+     */
+    public boolean hasViewPermission(String id, String userId, String orgId) {
+        if (StringUtils.isAnyBlank(id, userId, orgId)) {
+            return false;
+        }
+        CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
+        if (data == null || !orgId.equals(data.getOrganizationId())) {
+            return false;
+        }
+        try {
+            CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
+            return dataScope != CustomFormRoleKey.MANAGE_OWN || userId.equals(data.getOwner());
+        } catch (GenericException e) {
+            if (e.getErrorCode() == CrmHttpResultCode.FORBIDDEN || e.getErrorCode() == CrmHttpResultCode.NOT_FOUND) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
     public CustomFormDataGetResponse get(String id, String userId, String orgId) {
         CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
         if (data == null) {
