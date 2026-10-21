@@ -11,6 +11,7 @@ import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoTypeCount;
+import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.contract.domain.Contract;
@@ -62,6 +63,8 @@ public class ApprovalTodoService {
     private BaseMapper<CustomFormData> customFormDataMapper;
     @Resource
     private ExtApprovalTaskMapper extApprovalTaskMapper;
+    @Resource
+    private ExtApprovalCommentMapper extApprovalCommentMapper;
     @Resource
     private ApprovalFlowService approvalFlowService;
 
@@ -194,6 +197,20 @@ public class ApprovalTodoService {
                 userId,
                 resolveResourceTypeFilter(filterType, request.getResourceType()),
                 keyword);
+        fillSharedPoolInfo(items);
+        return PageUtils.setPageInfo(page, items);
+    }
+
+    public Pager<List<ApprovalTodoItemResponse>> getMentionPage(ApprovalTodoPageRequest request, String userId) {
+        String organizationId = StringUtils.isBlank(userId) ? null : OrganizationContext.getOrganizationId();
+        if (StringUtils.isAnyBlank(userId, organizationId)) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+        ApprovalFormTypeEnum filterType = parseFilterType(request.getResourceType());
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<ApprovalTodoItemResponse> items = extApprovalCommentMapper.selectMentionTodos(
+                userId, organizationId, resolveResourceTypeFilter(filterType, request.getResourceType()),
+                StringUtils.trimToNull(request.getKeyword()));
         fillSharedPoolInfo(items);
         return PageUtils.setPageInfo(page, items);
     }

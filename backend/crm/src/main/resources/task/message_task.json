@@ -318,6 +318,13 @@
         "emailEnable": false,
         "sysEnable": true,
         "weComEnable": false
+      },
+      {
+        "event": "APPROVAL_COMMENT_MENTIONED",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": true,
+        "weComEnable": false
       }
     ]
   }

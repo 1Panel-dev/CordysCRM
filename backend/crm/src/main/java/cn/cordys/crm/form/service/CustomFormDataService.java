@@ -271,7 +271,7 @@ public class CustomFormDataService extends BaseExportService implements Approval
 
         CustomFormRoleKey dataScope = null;
         // 先校验是否是审批资源
-        if (!resourcePermissionService.hasApprovalTaskPermission(id, userId)) {
+        if (!resourcePermissionService.hasApprovalViewPermission(id, userId, orgId, data.getCustomFormId())) {
             checkCurrentOrganization(data, orgId);
             // 获取并校验权限
             dataScope = getDataScope(data.getCustomFormId(), userId, orgId);

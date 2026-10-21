@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -76,6 +77,8 @@ public class CustomFormService {
     private ExtUserMapper extUserMapper;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
@@ -168,7 +171,9 @@ public class CustomFormService {
     }
 
     public CustomFormGetResponse get(String id, String userId, String orgId) {
+        if (!resourcePermissionService.hasApprovalCommentMentionFormPermission(id, userId, orgId)) {
         checkFormAccess(id, userId, orgId);
+        }
 
         CustomForm form = customFormMapper.selectByPrimaryKey(id);
         ModuleForm moduleForm = moduleFormMapper.selectByPrimaryKey(id);

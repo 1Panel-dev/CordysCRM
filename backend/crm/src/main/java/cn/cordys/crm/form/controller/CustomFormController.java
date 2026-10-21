@@ -3,6 +3,7 @@ package cn.cordys.crm.form.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
@@ -29,6 +30,8 @@ public class CustomFormController {
 
     @Resource
     private CustomFormService customFormService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     @GetMapping("/list")
     @Operation(summary = "自定义表单列表")
@@ -52,9 +55,13 @@ public class CustomFormController {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "自定义表单详情")
-    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public CustomFormGetResponse get(@PathVariable String id) {
-        return customFormService.get(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        if (!resourcePermissionService.hasApprovalCommentMentionFormPermission(id, userId, orgId)) {
+            resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+        }
+        return customFormService.get(id, userId, orgId);
     }
 
     @PostMapping("/add")

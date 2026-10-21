@@ -183,6 +183,9 @@ public class NotificationConstants {
         @Schema(description = "message.approval_cc")
         String APPROVAL_CC = "APPROVAL_CC";
 
+        @Schema(description = "message.approval_comment_mentioned")
+        String APPROVAL_COMMENT_MENTIONED = "APPROVAL_COMMENT_MENTIONED";
+
         @Schema(description = "message.follow_up_plan_comment_added")
         String CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED = "CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED";
 
@@ -381,6 +384,9 @@ public class NotificationConstants {
 
         @Schema(description = "message.approval_cc_text")
         String APPROVAL_CC_TEXT = "APPROVAL_CC_TEXT";
+
+        @Schema(description = "message.approval_comment_mentioned_text")
+        String APPROVAL_COMMENT_MENTIONED_TEXT = "APPROVAL_COMMENT_MENTIONED_TEXT";
 
         @Schema(description = "message.follow_up_plan_comment_added_text")
         String CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT = "CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT";

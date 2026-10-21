@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,6 +36,44 @@ class ApprovalCommentMapperTest {
                 List.of("instance-a", "org-a"),
                 "join approval_flow_version afv on afv.id = ai.flow_version_id",
                 "where ai.id = ?", "and afv.organization_id = ?");
+    }
+
+    @Test
+    void mentionTodosKeepEveryMentionAndRestrictUserAndBothOrganizations() {
+        Map<String, Object> parameters = Map.of("userId", "user-a", "organizationId", "org-a");
+        assertSql("selectMentionTodos", parameters, List.of("user-a", "org-a", "org-a"),
+                "from approval_comment_mention m", "join approval_comment c on c.id = m.comment_id",
+                "join approval_instance ai on ai.id = c.instance_id",
+                "join approval_flow_version afv on afv.id = ai.flow_version_id",
+                "where m.user_id = ?", "and c.organization_id = ?", "and afv.organization_id = ?",
+                "m.id as commentmentionid", "c.id as commentid", "m.create_time as mentiontime",
+                "order by m.create_time desc, m.id desc");
+        String sql = configuration.getMappedStatement(ExtApprovalCommentMapper.class.getName() + ".selectMentionTodos")
+                .getBoundSql(parameters).getSql().toLowerCase(Locale.ROOT);
+        assertFalse(sql.contains("distinct"));
+        assertFalse(sql.contains("group by"));
+        assertFalse(sql.contains("approval_status ="));
+        assertFalse(sql.contains("approval_task"));
+    }
+
+    @Test
+    void mentionTodosBindStandardAndCustomFormTypeAndKeywordFilters() {
+        for (String resourceType : List.of("contract", "custom-form-a")) {
+            assertSql("selectMentionTodos", Map.of("userId", "user-a", "organizationId", "org-a",
+                            "resourceType", resourceType, "keyword", "合同"),
+                    List.of("user-a", "org-a", "org-a", resourceType, "合同"),
+                    "and ai.type = ?", "and ai.resource_name like concat('%', ?, '%')");
+        }
+    }
+
+    @Test
+    void mentionInstanceRequiresExactMentionCurrentUserAndBothOrganizations() {
+        assertSql("selectMentionInstance", Map.of("mentionId", "mention-a", "userId", "user-a", "organizationId", "org-a"),
+                List.of("mention-a", "user-a", "org-a", "org-a"),
+                "select ai.*", "join approval_comment c on c.id = m.comment_id",
+                "join approval_instance ai on ai.id = c.instance_id",
+                "join approval_flow_version afv on afv.id = ai.flow_version_id",
+                "where m.id = ?", "and m.user_id = ?", "and c.organization_id = ?", "and afv.organization_id = ?");
     }
 
     @Test
