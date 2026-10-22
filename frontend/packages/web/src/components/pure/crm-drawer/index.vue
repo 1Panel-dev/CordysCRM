@@ -39,7 +39,10 @@
               </slot>
             </div>
             <div class="flex flex-shrink-0 items-center justify-end gap-[12px]">
-              <div v-if="autoOpenNextEnabled" class="flex items-center gap-[8px] text-[14px] font-normal">
+              <div
+                v-if="props.showAutoOpenNext && autoOpenNextEnabled"
+                class="flex items-center gap-[8px] text-[14px] font-normal"
+              >
                 <span>{{ t('taskDrawer.autoOpenNext') }}</span>
                 <n-switch v-model:value="autoOpenNextValue" size="small" />
               </div>
@@ -131,6 +134,7 @@
       disabledWidthDrag?: boolean; // 禁止拖拽宽度
       minWidth?: number;
       viewSize?: FormViewSize;
+      showAutoOpenNext?: boolean;
     }>(),
     {
       placement: 'right',

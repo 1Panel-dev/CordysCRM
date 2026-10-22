@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :footer="false" :title="title" :view-size="formViewSize">
+  <CrmDrawer
+    v-model:show="visible"
+    resizable
+    no-padding
+    :footer="false"
+    :title="title"
+    :view-size="formViewSize"
+    :show-auto-open-next="Boolean(props.approvalTaskId)"
+  >
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />

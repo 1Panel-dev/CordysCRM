@@ -254,7 +254,9 @@
     required: true,
     default: false,
   });
-  const autoOpenNext = ref(true);
+  const autoOpenNextStorageKey = 'crm-task-auto-open-next';
+  const autoOpenNext = ref(localStorage.getItem(autoOpenNextStorageKey) !== 'false');
+  watch(autoOpenNext, (value) => localStorage.setItem(autoOpenNextStorageKey, String(value)));
   provide('crmTaskAutoOpenNext', autoOpenNext);
 
   const keyword = ref('');

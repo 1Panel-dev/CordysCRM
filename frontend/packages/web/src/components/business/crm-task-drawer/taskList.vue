@@ -267,13 +267,10 @@
   const approvalItem = ref<ApprovalTodoItem>();
   const lastActionTaskId = ref('');
   const lastActionPosition = ref(-1);
-  const nextPendingQueue = ref<ApprovalTodoItem[]>([]);
 
   function rememberActionPosition(item: ApprovalTodoItem) {
     lastActionTaskId.value = item.approvalTaskId;
-    const currentIndex = list.value.findIndex((listItem) => listItem.approvalTaskId === item.approvalTaskId);
-    lastActionPosition.value = currentIndex;
-    nextPendingQueue.value = currentIndex >= 0 ? list.value.slice(currentIndex + 1) : [];
+    lastActionPosition.value = list.value.findIndex((listItem) => listItem.approvalTaskId === item.approvalTaskId);
   }
 
   function handleReject(item: ApprovalTodoItem) {
@@ -381,38 +378,26 @@
       if (getTaskListType() !== ApprovalListTypeEnum.PENDING) return;
 
       const currentIndex = list.value.findIndex((item) => item.approvalTaskId === currentApprovalTaskId);
-      if (lastActionTaskId.value !== currentApprovalTaskId) {
-        if (currentIndex < 0) return;
-        nextPendingQueue.value = list.value.slice(currentIndex + 1);
+      let currentPosition = currentIndex;
+      if (currentPosition < 0 && lastActionTaskId.value === currentApprovalTaskId) {
+        currentPosition = lastActionPosition.value;
       }
 
-      if (
-        !nextPendingQueue.value.length &&
-        currentIndex >= 0 &&
-        currentIndex >= list.value.length - 2 &&
-        list.value.length < pageNation.value.total
-      ) {
-        pageNation.value.current += 1;
-        await loadTaskList(false);
-        nextPendingQueue.value = list.value.slice(currentIndex + 1);
-      }
-      if (!nextPendingQueue.value.length && currentIndex < 0 && lastActionPosition.value >= 0) {
-        const nextPosition = lastActionPosition.value;
-        while (list.value.length <= nextPosition && list.value.length < pageNation.value.total) {
-          pageNation.value.current += 1;
-          // Pages must be appended in order to keep the cached index accurate.
-          // eslint-disable-next-line no-await-in-loop
-          await loadTaskList(false);
-        }
-        nextPendingQueue.value = list.value.slice(nextPosition);
-      }
-      const nextItem = nextPendingQueue.value.shift();
+      if (currentPosition < 0) return;
+
+      // Refresh before selecting so concurrent approvals cannot send us to a stale task.
       await loadTaskList(true);
-      if (nextItem) {
-        lastActionTaskId.value = nextItem.approvalTaskId;
-        lastActionPosition.value = currentIndex >= 0 ? currentIndex : lastActionPosition.value;
-        handleOpenDetail(nextItem, false);
+      if (!list.value.length) return;
+
+      const targetIndex = currentPosition >= list.value.length ? 0 : currentPosition;
+      while (list.value.length <= targetIndex && list.value.length < pageNation.value.total) {
+        pageNation.value.current += 1;
+        // Pages must be appended in order to preserve the refreshed list position.
+        // eslint-disable-next-line no-await-in-loop
+        await loadTaskList(false);
       }
+      const nextItem = list.value[targetIndex];
+      if (nextItem) handleOpenDetail(nextItem);
     },
   });
 </script>

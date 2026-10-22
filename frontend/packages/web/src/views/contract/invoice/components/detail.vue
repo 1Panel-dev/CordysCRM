@@ -7,6 +7,7 @@
     :width="800"
     :footer="false"
     :view-size="formViewSize"
+    :show-auto-open-next="Boolean(props.approvalTaskId)"
   >
     <template #titleLeft>
       <div class="text-[14px] font-normal">
