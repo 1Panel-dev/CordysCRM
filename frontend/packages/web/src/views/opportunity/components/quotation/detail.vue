@@ -7,6 +7,7 @@
     :footer="false"
     :title="detailInfo?.name ?? ''"
     :view-size="formViewSize"
+    :show-auto-open-next="Boolean(props.approvalTaskId)"
   >
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
