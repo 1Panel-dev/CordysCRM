@@ -14,6 +14,17 @@ function walkAST(node: ASTNode, visitor: (node: ASTNode) => void) {
     return;
   }
 
+  if (node.type === 'unary') {
+    walkAST(node.operand, visitor);
+    return;
+  }
+
+  if (node.type === 'compare') {
+    walkAST(node.left, visitor);
+    walkAST(node.right, visitor);
+    return;
+  }
+
   if (node.type === 'function') {
     node.args.forEach((arg) => {
       walkAST(arg, visitor);

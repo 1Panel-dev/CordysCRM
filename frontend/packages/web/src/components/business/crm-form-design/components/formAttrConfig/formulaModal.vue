@@ -14,7 +14,11 @@
       :field-config="fieldConfig"
       :form-fields="formFields"
       :is-sub-table-field="isSubTableField"
-    />
+    >
+      <template #prefix>
+        <slot name="prefix"></slot>
+      </template>
+    </CrmFormulaEditor>
   </CrmModal>
 </template>
 
@@ -25,6 +29,8 @@
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import CrmFormulaEditor from '@/components/business/crm-formula-editor/index.vue';
 
+  import type { RendererElement, RendererNode } from 'vue';
+
   const { t } = useI18n();
   const visible = defineModel<boolean>('visible', { required: true });
 
@@ -32,6 +38,7 @@
     fieldConfig: FormCreateField;
     formFields: FormCreateField[];
     isSubTableField?: boolean;
+    prefixText?: string | VNode<RendererNode, RendererElement, { [key: string]: any }>;
   }>();
 
   const emit = defineEmits<{

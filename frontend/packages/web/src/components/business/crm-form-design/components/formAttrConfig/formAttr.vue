@@ -127,6 +127,7 @@
         </n-radio-button>
       </n-radio-group>
     </div>
+    <validationRules v-model:rules="submitValidationRuleList" :form-fields="list" />
     <div class="crm-form-design-config-item">
       <div class="flex items-center justify-between">
         <div class="crm-form-design-config-item-title mb-0">{{ t('crmFormDesign.detailTabs') }}</div>
@@ -212,6 +213,7 @@
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import formDetailTabModal from './formDetailTabModal.vue';
   import formLinkDrawer from './formLinkDrawer.vue';
+  import validationRules from './submitValidationRules.vue';
 
   const props = defineProps<{
     formKey: FormDesignKeyEnum;
@@ -317,6 +319,12 @@
   const detailTabModalVisible = ref(false);
   const currentFormLinkKey = ref<FormDesignKeyEnum>(formKeyOptions.value[0]?.value);
   const hasCustomDetailTabs = computed(() => formConfig.value.detailTabs?.some((item) => !item.internalKey));
+  const submitValidationRuleList = computed({
+    get: () => formConfig.value.validationRules || [],
+    set: (value) => {
+      formConfig.value.validationRules = value;
+    },
+  });
 
   function showLinkConfig(key: FormDesignKeyEnum) {
     currentFormLinkKey.value = key;

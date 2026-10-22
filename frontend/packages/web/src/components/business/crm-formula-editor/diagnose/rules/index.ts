@@ -9,6 +9,7 @@ import NOW from './now.rule';
 import SUM from './sum.rule';
 import TEXT from './text.rule';
 import TODAY from './today.rule';
+import UNION from './union.rule';
 
 const FUNCTION_RULES: Record<string, FormulaFunctionRule> = {
   SUM,
@@ -20,6 +21,7 @@ const FUNCTION_RULES: Record<string, FormulaFunctionRule> = {
   NOW,
   TEXT,
   TODAY,
+  UNION,
 };
 
 export default FUNCTION_RULES;

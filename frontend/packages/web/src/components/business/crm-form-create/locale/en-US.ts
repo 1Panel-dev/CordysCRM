@@ -15,4 +15,8 @@ export default {
   'crmFormCreate.dataSourceLinkOptionsFailed': 'Failed to parse data source linkage options',
   'crmFormCreate.reCalculation': 'Recalculate',
   'crmFormCreate.reCalculationTip': 'This will recalculate the field value and other related fields for this record',
+  'crmFormCreate.submitValidationProgressTitle': 'Validation Rule Execution Order',
+  'crmFormCreate.submitValidationPassed': 'Passed',
+  'crmFormCreate.submitValidationFailed': 'Failed',
+  'crmFormCreate.submitValidationNotExecuted': 'Not executed',
 };

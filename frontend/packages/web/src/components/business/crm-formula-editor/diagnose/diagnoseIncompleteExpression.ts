@@ -60,5 +60,16 @@ export default function diagnoseIncompleteExpression(node: ASTNode): FormulaDiag
     }
   }
 
+  if (node.type === 'unary' && node.operand.type === 'empty') {
+    diagnostics.push({
+      type: 'error',
+      code: FormulaErrorCode.INCOMPLETE_EXPRESSION,
+      message: t('formulaEditor.diagnostics.expressionNotComplete'),
+      highlight: {
+        tokenRange: [node.startTokenIndex, node.endTokenIndex],
+      },
+    });
+  }
+
   return diagnostics;
 }

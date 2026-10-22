@@ -211,6 +211,16 @@ export interface FormDetailTabQuery {
 
 export interface FormDetailTabPageQuery extends TableQueryParams, FormDetailTabQuery {}
 
+export interface FormSubmitValidationRule {
+  enable: boolean;
+  formula: string;
+  message: string;
+  allowIgnore: boolean;
+}
+
+// 提交校验规则在进度弹窗中的执行状态
+export type FormSubmitValidationRuleStatus = 'pending' | 'pass' | 'fail' | 'skipped';
+
 export interface FormConfig {
   layout: number;
   labelPos: 'left' | 'top';
@@ -220,6 +230,7 @@ export interface FormConfig {
   viewSize?: FormViewSize;
   linkProp?: FormConfigLinkProp;
   detailTabs?: FormDetailTabConfig[];
+  validationRules?: FormSubmitValidationRule[];
 }
 
 export interface SaveFormDesignConfigParams {

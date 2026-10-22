@@ -42,6 +42,13 @@ function resolveNode(node: ASTNode, ctx: ResolveContext): IRNode {
         right: resolveNode(node.right, { expectScalar: true }),
       };
 
+    case IRNodeType.Unary:
+      return {
+        type: IRNodeType.Unary,
+        operator: node.operator,
+        operand: resolveNode(node.operand, { expectScalar: true }),
+      };
+
     case IRNodeType.Compare:
       return {
         type: IRNodeType.Compare,
@@ -75,6 +82,7 @@ function resolveFunction(node: FunctionNode, _ctx: ResolveContext): IRNode {
    */
   switch (name) {
     case 'SUM':
+    case 'UNION':
       return {
         type: IRNodeType.Function,
         name,

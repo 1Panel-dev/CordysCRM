@@ -91,6 +91,15 @@ export function serializeNode(
       break;
     }
 
+    case 'unary': {
+      const operand = serializeNode(node.operand, fieldNameMap, fields);
+      result = {
+        source: `!${operand.source}`,
+        display: `!${operand.display}`,
+      };
+      break;
+    }
+
     case 'compare': {
       const left = serializeNode(node.left, fieldNameMap, fields);
       const right = serializeNode(node.right, fieldNameMap, fields);
@@ -165,6 +174,7 @@ const CHAR_TOKEN_TYPE_MAP: Record<string, TokenType> = {
   '-': 'operator',
   '*': 'operator',
   '/': 'operator',
+  '!': 'operator',
 };
 
 /**
@@ -294,13 +304,16 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
     }
 
     // ---------- operator / comma / paren ----------
-    else if (char === '=' || char === '<' || char === '>') {
+    else if (char === '=' || char === '<' || char === '>' || (char === '!' && source[i + 1] === '=')) {
       const next = source[i + 1];
 
       let value = char;
       let length = 1;
 
-      if (char === '>' && next === '=') {
+      if (char === '!' && next === '=') {
+        value = '!=';
+        length = 2;
+      } else if (char === '>' && next === '=') {
         value = '>=';
         length = 2;
       } else if (char === '<' && next === '=') {
@@ -319,6 +332,14 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
       });
 
       consumed = length;
+    } else if (char === '!') {
+      tokens.push({
+        type: 'operator',
+        value: '!',
+        start: i,
+        end: i + 1,
+      });
+      consumed = 1;
     } else {
       const tokenType = CHAR_TOKEN_TYPE_MAP[char];
       if (tokenType) {

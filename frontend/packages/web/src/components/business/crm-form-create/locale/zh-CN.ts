@@ -15,4 +15,8 @@ export default {
   'crmFormCreate.dataSourceLinkOptionsFailed': '数据源联动选项解析失败',
   'crmFormCreate.reCalculation': '重新计算',
   'crmFormCreate.reCalculationTip': '会重新计算该字段值和本条数据相关的其他字段',
+  'crmFormCreate.submitValidationProgressTitle': '校验规则执行顺序',
+  'crmFormCreate.submitValidationPassed': '已通过',
+  'crmFormCreate.submitValidationFailed': '未通过',
+  'crmFormCreate.submitValidationNotExecuted': '未执行',
 };

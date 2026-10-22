@@ -239,7 +239,7 @@ const leadingOperatorRule: DiagnoseRule = {
     if (index !== 0) return;
 
     // + - * /
-    if (cur?.type === 'operator') {
+    if (cur?.type === 'operator' && cur.value !== '!') {
       ctx.push({
         type: 'error',
         code: FormulaErrorCode.SYNTAX_ERROR,
