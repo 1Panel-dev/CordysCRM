@@ -2,7 +2,7 @@ package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.dto.SortRequest;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -228,6 +228,10 @@ class ApprovalCommentServiceTest {
         ApprovalCommentPageRequest request = pageRequest();
         request.setCurrent(2);
         request.setPageSize(1);
+        when(commentMapper.countByExample(any())).thenAnswer(invocation -> {
+            assertNull(PageHelper.getLocalPage());
+            return 18L;
+        });
         when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
             Page<?> page = PageHelper.getLocalPage();
             assertEquals(2, page.getPageNum());
@@ -245,10 +249,16 @@ class ApprovalCommentServiceTest {
         when(extCommentMapper.selectMentionUsers(List.of(root.getId(), reply.getId(), anotherReply.getId()), ORG))
                 .thenReturn(List.of(replyMention, rootMention));
 
-        Pager<List<ApprovalCommentResponse>> result = service.page(request, USER, ORG);
+        PagerWithCommentCount<List<ApprovalCommentResponse>> result = service.page(request, USER, ORG);
         List<ApprovalCommentResponse> roots = result.getList();
 
         assertEquals(9L, result.getTotal());
+        assertEquals(18L, result.getCommentCount());
+        ArgumentCaptor<ApprovalComment> criteria = ArgumentCaptor.forClass(ApprovalComment.class);
+        verify(commentMapper).countByExample(criteria.capture());
+        assertEquals(INSTANCE, criteria.getValue().getInstanceId());
+        assertEquals(ORG, criteria.getValue().getOrganizationId());
+        assertNull(criteria.getValue().getParentId());
         assertEquals(2L, result.getCurrent());
         assertEquals(1L, result.getPageSize());
         assertNull(PageHelper.getLocalPage());
@@ -308,22 +318,25 @@ class ApprovalCommentServiceTest {
         verify(extCommentMapper).selectChildren(INSTANCE, parentIds, ORG, false);
     }
 
-    @Test
-    void emptyPageKeepsRootTotalAndSkipsChildrenAndMentionLookup() {
+    @ParameterizedTest
+    @CsvSource({ "0,0", "12,18" })
+    void emptyPageKeepsRootTotalAndCommentCountAndSkipsChildrenAndMentionLookup(long total, long commentCount) {
         allowExistingPermission();
         ApprovalCommentPageRequest request = pageRequest();
         request.setCurrent(4);
         request.setPageSize(5);
+        when(commentMapper.countByExample(any())).thenReturn(commentCount);
         when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
             Page<?> page = PageHelper.getLocalPage();
-            page.setTotal(12);
+            page.setTotal(total);
             return List.of();
         });
 
-        Pager<List<ApprovalCommentResponse>> result = service.page(request, USER, ORG);
+        PagerWithCommentCount<List<ApprovalCommentResponse>> result = service.page(request, USER, ORG);
 
         assertTrue(result.getList().isEmpty());
-        assertEquals(12L, result.getTotal());
+        assertEquals(total, result.getTotal());
+        assertEquals(commentCount, result.getCommentCount());
         assertEquals(4L, result.getCurrent());
         assertEquals(5L, result.getPageSize());
         assertNull(PageHelper.getLocalPage());
@@ -357,6 +370,7 @@ class ApprovalCommentServiceTest {
         assertThrows(GenericException.class, () -> service.page(pageRequest(), USER, ORG));
 
         assertNull(PageHelper.getLocalPage());
+        verifyNoInteractions(commentMapper);
         verify(extCommentMapper, never()).selectPage(anyString(), anyString(), anyBoolean());
         verify(extCommentMapper, never()).selectChildren(anyString(), any(), anyString(), anyBoolean());
     }

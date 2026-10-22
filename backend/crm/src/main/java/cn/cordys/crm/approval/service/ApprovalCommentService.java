@@ -2,7 +2,7 @@ package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalComment;
@@ -48,14 +48,19 @@ public class ApprovalCommentService {
     @Resource
     private ApprovalCommentNoticeService approvalCommentNoticeService;
 
-    public Pager<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId, String orgId) {
+    public PagerWithCommentCount<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId,
+            String orgId) {
         String instanceId = request.getInstanceId();
         checkPermission(instanceId, userId, orgId);
+        ApprovalComment criteria = new ApprovalComment();
+        criteria.setInstanceId(instanceId);
+        criteria.setOrganizationId(orgId);
+        long commentCount = commentMapper.countByExample(criteria);
         boolean asc = request.getSort() != null && "asc".equals(request.getSort().getType());
         try (Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize())) {
             List<ApprovalCommentResponse> comments = extCommentMapper.selectPage(instanceId, orgId, asc);
             if (comments.isEmpty()) {
-                return PageUtils.setPageInfo(page, comments);
+                return PageUtils.setPageInfoWithCommentCount(page, comments, commentCount);
             }
             List<ApprovalCommentResponse> children = extCommentMapper.selectChildren(instanceId,
                     comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId, asc);
@@ -69,7 +74,7 @@ public class ApprovalCommentService {
                 comment.setReplies(commentReplies);
                 comment.setReplyCount(commentReplies.size());
             });
-            return PageUtils.setPageInfo(page, comments);
+            return PageUtils.setPageInfoWithCommentCount(page, comments, commentCount);
         }
     }
 

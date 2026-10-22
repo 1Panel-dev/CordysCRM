@@ -1,6 +1,6 @@
 package cn.cordys.crm.approval.controller;
 
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.util.JSON;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentPageRequest;
@@ -52,8 +52,14 @@ class ApprovalCommentControllerTest {
     void pageBindsPaginationAndSortAndUsesCurrentUserAndOrganization() throws Exception {
         ApprovalCommentResponse root = new ApprovalCommentResponse();
         root.setId("comment-a");
+        PagerWithCommentCount<List<ApprovalCommentResponse>> page = new PagerWithCommentCount<>();
+        page.setList(List.of(root));
+        page.setTotal(8);
+        page.setPageSize(2);
+        page.setCurrent(3);
+        page.setCommentCount(18L);
         when(service.page(any(), eq("user-a"), eq("org-a")))
-                .thenReturn(new Pager<>(List.of(root), 8, 2, 3));
+                .thenReturn(page);
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
                 var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-a");
@@ -64,6 +70,7 @@ class ApprovalCommentControllerTest {
                                     "pageSize", 2, "sort", Map.of("name", "createTime", "type", "asc")))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.total").value(8))
+                    .andExpect(jsonPath("$.commentCount").value(18))
                     .andExpect(jsonPath("$.current").value(3))
                     .andExpect(jsonPath("$.pageSize").value(2))
                     .andExpect(jsonPath("$.list[0].id").value("comment-a"));
