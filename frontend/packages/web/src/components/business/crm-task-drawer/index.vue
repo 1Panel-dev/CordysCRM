@@ -443,15 +443,15 @@
   }
 
   function handleTaskListApprovalSuccess(
-    singleItem: boolean,
-    currentApprovalTaskId: string | undefined,
+    _singleItem: boolean,
+    _currentApprovalTaskId: string | undefined,
     count: number
   ) {
-    if (singleItem) {
-      handleSuccessfulProcessing(1, currentApprovalTaskId);
-    } else {
-      handleSuccessfulProcessing(count);
+    if (activeTaskType.value.startsWith('pending-')) {
+      processedCount.value += count;
     }
+    initStatistic();
+    taskListRef.value?.loadTaskList(true);
   }
 
   function handleBatchApprovalSuccess() {
