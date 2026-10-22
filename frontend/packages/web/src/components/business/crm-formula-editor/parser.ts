@@ -80,6 +80,19 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
       return parseFunctionCall();
     }
 
+    if (token.type === 'operator' && token.value === '!') {
+      const startTokenIndex = index;
+      consume();
+      const operand = parsePrimary();
+      return {
+        type: 'unary',
+        operator: '!',
+        operand,
+        startTokenIndex,
+        endTokenIndex: operand.endTokenIndex,
+      };
+    }
+
     if (token.type === 'paren' && token.value === '(') {
       const startIndex = index;
       consume(); // '('
@@ -204,6 +217,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
     return (
       token?.type === 'operator' &&
       (token.value === '=' ||
+        token.value === '!=' ||
         token.value === '<>' ||
         token.value === '>' ||
         token.value === '>=' ||

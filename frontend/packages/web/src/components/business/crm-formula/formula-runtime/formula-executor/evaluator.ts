@@ -218,6 +218,9 @@ export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
       }
     }
 
+    case IRNodeType.Unary:
+      return !evaluateIR(node.operand, ctx);
+
     case IRNodeType.Compare: {
       let left = evaluateIR(node.left, ctx);
       let right = evaluateIR(node.right, ctx);

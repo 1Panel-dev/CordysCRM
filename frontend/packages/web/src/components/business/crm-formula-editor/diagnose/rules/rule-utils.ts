@@ -11,6 +11,8 @@ export function isLogicalNode(node: ASTNode): boolean {
 
   if (node.type === 'compare') return true;
 
+  if (node.type === 'unary') return isLogicalNode(node.operand);
+
   if (node.type === 'literal' && node.valueType === 'boolean') return true;
 
   if (node.type === 'function') {

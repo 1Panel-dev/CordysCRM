@@ -121,6 +121,7 @@ export function excelCompare(left: any, right: any, operator: CompareOperator, w
       return compareEqual(left, right, warn);
 
     case '<>':
+    case '!=':
       return !compareEqual(left, right, warn);
 
     case '>': {

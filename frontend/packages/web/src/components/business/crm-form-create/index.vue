@@ -1,59 +1,66 @@
 <template>
-  <n-form
-    ref="formRef"
-    :model="formDetail"
-    :label-placement="formConfig.labelPos"
-    :require-mark-placement="formConfig.labelPos === 'left' ? 'left' : 'right'"
-    label-width="auto"
-    class="crm-form-create"
-  >
-    <n-scrollbar>
-      <div class="flex h-full w-full flex-wrap content-start">
-        <template v-for="item in renderFieldList" :key="item.id">
-          <div
-            v-if="item.show !== false && item.readable"
-            class="crm-form-create-item"
-            :style="{ width: item.type === FieldTypeEnum.ATTACHMENT ? '100%' : `${item.fieldWidth * 100}%` }"
-          >
-            <component
-              :is="getItemComponent(item)"
-              :id="item.id"
-              v-model:value="formDetail[item.id]"
-              :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
-              :form-detail="formDetail"
-              :origin-form-detail="originFormDetail"
-              :source-id="props.sourceId"
-              :path="item.id"
-              :form-key="props.formKey"
-              :need-init-detail="needInitDetail"
-              :form-config="formConfig"
-              :readonly="!item.editable"
-              @change="(value: any, source: Record<string, any>[], dataSourceFormFields?: FormCreateField[]) => handleFieldChange(value, source, item, dataSourceFormFields)"
-            />
-          </div>
+  <div class="h-full">
+    <SubmitValidationProgressModal
+      v-model:show="progressModalVisible"
+      :rules="validationRules"
+      :status-list="ruleStatusList"
+    />
+    <n-form
+      ref="formRef"
+      :model="formDetail"
+      :label-placement="formConfig.labelPos"
+      :require-mark-placement="formConfig.labelPos === 'left' ? 'left' : 'right'"
+      label-width="auto"
+      class="crm-form-create"
+    >
+      <n-scrollbar>
+        <div class="flex h-full w-full flex-wrap content-start">
+          <template v-for="item in renderFieldList" :key="item.id">
+            <div
+              v-if="item.show !== false && item.readable"
+              class="crm-form-create-item"
+              :style="{ width: item.type === FieldTypeEnum.ATTACHMENT ? '100%' : `${item.fieldWidth * 100}%` }"
+            >
+              <component
+                :is="getItemComponent(item)"
+                :id="item.id"
+                v-model:value="formDetail[item.id]"
+                :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
+                :form-detail="formDetail"
+                :origin-form-detail="originFormDetail"
+                :source-id="props.sourceId"
+                :path="item.id"
+                :form-key="props.formKey"
+                :need-init-detail="needInitDetail"
+                :form-config="formConfig"
+                :readonly="!item.editable"
+                @change="(value: any, source: Record<string, any>[], dataSourceFormFields?: FormCreateField[]) => handleFieldChange(value, source, item, dataSourceFormFields)"
+              />
+            </div>
+          </template>
+        </div>
+      </n-scrollbar>
+      <div v-if="!props.inlineApprovalEdit" class="crm-form-create-footer" :class="formConfig.optBtnPos">
+        <n-button v-if="props.isEdit" type="primary" @click="handleSave(false)">
+          {{ t('common.update') }}
+        </n-button>
+        <template v-else>
+          <n-button v-if="formConfig.optBtnContent[0].enable" type="primary" @click="handleSave(false)">
+            {{ formConfig.optBtnContent[0].text }}
+          </n-button>
+          <n-button v-if="formConfig.optBtnContent[1].enable" type="primary" ghost @click="handleSave(true)">
+            {{ formConfig.optBtnContent[1].text }}
+          </n-button>
         </template>
+        <n-button v-if="reviewAction.visible" type="primary" ghost @click="handleReview">
+          {{ reviewAction.text }}
+        </n-button>
+        <n-button v-if="formConfig.optBtnContent[2].enable" secondary @click="emit('cancel')">
+          {{ formConfig.optBtnContent[2].text }}
+        </n-button>
       </div>
-    </n-scrollbar>
-    <div v-if="!props.inlineApprovalEdit" class="crm-form-create-footer" :class="formConfig.optBtnPos">
-      <n-button v-if="props.isEdit" type="primary" @click="handleSave(false)">
-        {{ t('common.update') }}
-      </n-button>
-      <template v-else>
-        <n-button v-if="formConfig.optBtnContent[0].enable" type="primary" @click="handleSave(false)">
-          {{ formConfig.optBtnContent[0].text }}
-        </n-button>
-        <n-button v-if="formConfig.optBtnContent[1].enable" type="primary" ghost @click="handleSave(true)">
-          {{ formConfig.optBtnContent[1].text }}
-        </n-button>
-      </template>
-      <n-button v-if="reviewAction.visible" type="primary" ghost @click="handleReview">
-        {{ reviewAction.text }}
-      </n-button>
-      <n-button v-if="formConfig.optBtnContent[2].enable" secondary @click="emit('cancel')">
-        {{ formConfig.optBtnContent[2].text }}
-      </n-button>
-    </div>
-  </n-form>
+    </n-form>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -83,10 +90,15 @@
     transformData,
     transformFieldValue,
   } from '@lib/shared/method/formCreate';
-  import { FormViewSize } from '@lib/shared/models/system/module';
+  import {
+    FormSubmitValidationRule,
+    FormSubmitValidationRuleStatus,
+    FormViewSize,
+  } from '@lib/shared/models/system/module';
   import type { ApprovalFieldPermission } from '@lib/shared/models/system/process';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
+  import SubmitValidationProgressModal from '@/components/business/crm-form-create/components/submitValidationProgressModal.vue';
   import { type DataSourceSubFieldLinkField, FormCreateField } from '@/components/business/crm-form-create/types';
 
   import { getDatasourceRefDetailList } from '@/api/modules';
@@ -95,6 +107,7 @@
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
 
   import { formKeyMap } from '../crm-data-source-select/config';
+  import { executeFormFormula } from '../crm-formula/formula-runtime/formula-executor';
   import { FormulaDataSourceMap } from '../crm-formula/formula-runtime/types';
   import { formatFormulaResultValue } from '../crm-formula/utils';
   import { safeParseFormula } from '../crm-formula-editor/utils';
@@ -758,9 +771,79 @@
     return result;
   }
 
+  const progressModalVisible = ref(false);
+  const ruleStatusList = ref<FormSubmitValidationRuleStatus[]>([]);
+
+  const validationRules = computed(() => (formConfig.value.validationRules || []).filter((rule) => rule.enable));
+
+  // 单条规则求值：严格 FALSE 返回 false；其他情况（非布尔/解析失败）一律放行
+  function evaluateSubmitRule(rule: FormSubmitValidationRule): boolean {
+    try {
+      const result = executeFormFormula({
+        formula: rule.formula,
+        formDetail: formDetail.value,
+        fields: fieldList.value,
+        formulaDataSource: formulaDataSource.value,
+        needInitDetail: props.needInitDetail,
+        evaluationNow: evaluationNow.value,
+        expectedType: 'boolean',
+      });
+      return result?.rawResult !== false;
+    } catch (error) {
+      // Fail-open: a broken rule must never block a legitimate submission.
+      return true;
+    }
+  }
+
+  function sleep(ms: number) {
+    return new Promise<void>((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  async function validateSubmitRules(): Promise<boolean> {
+    const rules = validationRules.value;
+    if (rules.length === 0) {
+      return true;
+    }
+    // 顶部弹出弹窗，逐条展示校验进度
+    ruleStatusList.value = rules.map(() => 'pending' as FormSubmitValidationRuleStatus);
+    progressModalVisible.value = true;
+    let failedIndex = -1;
+    const ignoredFailureMessages: string[] = [];
+    // 逐条串行求值并展示进度（顺序执行是设计要求）
+    for (let i = 0; i < rules.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(100); // 逐条求值，让进度可见
+      const passed = evaluateSubmitRule(rules[i]);
+      ruleStatusList.value[i] = passed ? 'pass' : 'fail';
+      if (!passed && !rules[i].allowIgnore) {
+        failedIndex = i;
+        break;
+      }
+      if (!passed) {
+        ignoredFailureMessages.push(rules[i].message);
+      }
+    }
+    if (failedIndex >= 0) {
+      // 拦截后，后续规则标记为未执行，弹窗保留供用户查看
+      ruleStatusList.value = ruleStatusList.value.map((status, index) => (index > failedIndex ? 'skipped' : status));
+      Message.error(rules[failedIndex].message);
+      return false;
+    }
+    progressModalVisible.value = false;
+    if (ignoredFailureMessages.length) {
+      Message.warning(ignoredFailureMessages.join('\n'));
+    }
+    return true;
+  }
+
   function handleSave(isContinue = false, afterSave?: () => Promise<void>) {
     formRef.value?.validate(async (errors) => {
       if (!errors) {
+        if (!(await validateSubmitRules())) {
+          return;
+        }
         const result = buildSavePayload();
         // 获取变更说明
         const extraParams = await getUpdateReviewExtraParams(shouldConfirmUpdateChange.value);
@@ -791,8 +874,11 @@
   defineExpose({ handleSave, handleSaveWithCallback });
 
   function handleReview() {
-    formRef.value?.validate((errors) => {
+    formRef.value?.validate(async (errors) => {
       if (!errors) {
+        if (!(await validateSubmitRules())) {
+          return;
+        }
         const result = buildSavePayload();
         saveForm(
           result,

@@ -1,7 +1,10 @@
 <template>
   <n-scrollbar>
     <div class="crm-form-design-formula-header">
-      <div class="ph-prefix">{{ props.fieldConfig.name }} = </div>
+      <div class="ph-prefix">
+        {{ props.fieldConfig.name }} =
+        <slot name="prefix"></slot>
+      </div>
       <n-button type="primary" text @click="handleClearFormulaField">
         {{ t('common.clear') }}
       </n-button>
@@ -183,6 +186,14 @@
                   >, ... )
                 </div>
               </div>
+              <div v-if="activeFun?.name === 'UNION'" class="flex flex-col gap-[8px]">
+                <div class="flex flex-wrap items-center">
+                  <div :style="{ color: FUN_COLOR }">UNION</div>(<div :class="`text-[${ARRAY_COLOR}]`">
+                    {{ t('crmFormDesign.submitValidationUnionArgument') }} </div
+                  >)
+                </div>
+                <div class="function-desc-text">{{ t('crmFormDesign.submitValidationUnionExample') }}</div>
+              </div>
             </div>
 
             <div v-else class="function-desc-text">
@@ -286,6 +297,14 @@
   };
 
   const allowFormulaType = [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATE_TIME];
+  const allowArrayFieldType = [
+    ...allowFormulaType,
+    FieldTypeEnum.FORMULA,
+    FieldTypeEnum.INPUT,
+    FieldTypeEnum.TEXTAREA,
+    FieldTypeEnum.DATA_SOURCE,
+    FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+  ];
 
   function pushByType(
     field: FormCreateField,
@@ -365,7 +384,7 @@
       if (!field.inSubTable) {
         pushByType(field, numberGroup, dateGroup, textGroup);
       }
-      if (field.inSubTable && [...allowFormulaType, FieldTypeEnum.FORMULA].includes(field.type)) {
+      if (field.inSubTable && allowArrayFieldType.includes(field.type)) {
         // 生成路径字段
         arrayGroup.push({
           ...field,
@@ -871,6 +890,9 @@
     background: var(--text-n9);
     @apply flex items-center justify-between;
     .ph-prefix {
+      @apply flex items-center;
+
+      gap: 4px;
       margin-right: 4px;
       font-weight: 600;
       color: var(--text-n1);

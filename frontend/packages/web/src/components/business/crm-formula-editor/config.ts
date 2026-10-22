@@ -131,6 +131,19 @@ export const allFunctionSource: (FormCreateField & { isFunction: boolean })[] = 
     rules: [],
     description: t('crmFormDesign.formulaANDDescription'),
   },
+  {
+    icon: 'UNION',
+    name: 'UNION',
+    id: 'UNION',
+    isFunction: true,
+    type: FieldTypeEnum.INPUT,
+    showLabel: true,
+    readable: false,
+    editable: false,
+    fieldWidth: 0,
+    rules: [],
+    description: t('crmFormDesign.formulaUNIONDescription'),
+  },
 ];
 
 // 允许空值的函数

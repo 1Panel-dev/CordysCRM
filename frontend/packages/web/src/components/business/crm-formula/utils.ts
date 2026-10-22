@@ -52,6 +52,11 @@ export function hydrateIRNumberType(node: IRNode | any, fieldTypeMap: FieldTypeM
       return node;
     }
 
+    case IRNodeType.Unary: {
+      node.operand = hydrateIRNumberType(node.operand, fieldTypeMap);
+      return node;
+    }
+
     case IRNodeType.Compare: {
       node.left = hydrateIRNumberType(node.left, fieldTypeMap);
       node.right = hydrateIRNumberType(node.right, fieldTypeMap);

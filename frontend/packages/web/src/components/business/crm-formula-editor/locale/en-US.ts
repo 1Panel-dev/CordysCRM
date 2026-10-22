@@ -1,4 +1,5 @@
 export default {
+  'formulaEditor.diagnostics.unionRequiresSubtableField': 'UNION requires a subtable field',
   'formulaEditor.diagnostics.emptyParams': 'Parameter count cannot be empty',
   'formulaEditor.diagnostics.duplicateSeparator': 'There are extra separators at the end of the function parameters',
   'formulaEditor.diagnostics.duplicateSeparatorOfCenter': 'There are extra separators in the function parameters',

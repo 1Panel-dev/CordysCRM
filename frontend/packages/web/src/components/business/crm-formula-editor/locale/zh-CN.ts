@@ -1,4 +1,5 @@
 export default {
+  'formulaEditor.diagnostics.unionRequiresSubtableField': 'UNION 参数必须是子表字段',
   'formulaEditor.diagnostics.emptyParams': '参数个数不能为空',
   'formulaEditor.diagnostics.duplicateSeparator': '函数参数末尾存在多余的分隔符',
   'formulaEditor.diagnostics.duplicateSeparatorOfCenter': '函数参数中存在多余的分隔符',

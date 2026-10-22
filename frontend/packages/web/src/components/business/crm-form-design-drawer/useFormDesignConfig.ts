@@ -37,6 +37,7 @@ export function createDefaultFormConfig(t: ReturnType<typeof useI18n>['t']): For
     ],
     optBtnPos: 'flex-row',
     viewSize: 'small',
+    validationRules: [],
   };
 }
 
@@ -226,7 +227,10 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
           }) || [],
       };
     });
-    formConfig.value = res.formProp;
+    formConfig.value = {
+      ...res.formProp,
+      validationRules: res.formProp.validationRules || [],
+    };
     nextTick(() => {
       unsaved.value = false;
     });

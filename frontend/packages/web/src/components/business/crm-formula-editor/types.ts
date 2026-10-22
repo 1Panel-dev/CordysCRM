@@ -54,7 +54,7 @@ export interface NumberToken extends BaseToken {
   numberType?: NumberType;
 }
 
-export type OperatorValue = '+' | '-' | '*' | '/' | '=' | '<>' | '>' | '>=' | '<' | '<=';
+export type OperatorValue = '+' | '-' | '*' | '/' | '!' | '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=';
 
 export interface OperatorToken extends BaseToken {
   type: 'operator';
@@ -85,7 +85,7 @@ export type Token =
   | UnknownToken;
 
 // ----AST类型----
-export type ASTNode = FunctionNode | FieldNode | BinaryNode | CompareNode | LiteralNode | EmptyNode;
+export type ASTNode = FunctionNode | FieldNode | BinaryNode | UnaryNode | CompareNode | LiteralNode | EmptyNode;
 
 export interface ASTNodeBase {
   startTokenIndex: number;
@@ -129,9 +129,15 @@ export interface BinaryNode extends ASTNodeBase {
   right: ASTNode;
 }
 
+export interface UnaryNode extends ASTNodeBase {
+  type: 'unary';
+  operator: '!';
+  operand: ASTNode;
+}
+
 export interface CompareNode extends ASTNodeBase {
   type: 'compare';
-  operator: '=' | '<>' | '>' | '>=' | '<' | '<=';
+  operator: '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=';
   left: ASTNode;
   right: ASTNode;
 }

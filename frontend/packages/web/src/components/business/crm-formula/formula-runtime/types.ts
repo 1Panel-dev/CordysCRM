@@ -9,7 +9,14 @@ export interface ResolveContext {
 }
 
 // ---- IR 类型 ----
-export type IRNode = IRLiteralNode | IRFieldNode | IRBinaryNode | IRCompareNode | IRFunctionNode | IRInvalidNode;
+export type IRNode =
+  | IRLiteralNode
+  | IRFieldNode
+  | IRBinaryNode
+  | IRUnaryNode
+  | IRCompareNode
+  | IRFunctionNode
+  | IRInvalidNode;
 
 export interface IRLiteralNode {
   type: IRNodeType.Literal;
@@ -18,7 +25,7 @@ export interface IRLiteralNode {
 }
 
 // 比较符
-export type CompareOperator = '=' | '<>' | '>' | '>=' | '<' | '<=';
+export type CompareOperator = '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=';
 
 export interface IRCompareNode {
   type: IRNodeType.Compare;
@@ -38,6 +45,12 @@ export interface IRBinaryNode {
   operator: '+' | '-' | '*' | '/';
   left: IRNode;
   right: IRNode;
+}
+
+export interface IRUnaryNode {
+  type: IRNodeType.Unary;
+  operator: '!';
+  operand: IRNode;
 }
 
 export interface IRFunctionNode {

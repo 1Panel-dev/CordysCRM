@@ -10,6 +10,7 @@ import NOW from './now';
 import SUM from './sum';
 import TEXT from './text';
 import TODAY from './today';
+import UNION from './union';
 
 const BUILTIN_FUNCTIONS: Record<string, FnSpec> = {
   SUM: {
@@ -43,6 +44,11 @@ const BUILTIN_FUNCTIONS: Record<string, FnSpec> = {
     source: 'builtin',
     lazy: true,
     fn: AND,
+  },
+
+  UNION: {
+    source: 'builtin',
+    fn: UNION,
   },
 
   TODAY: {

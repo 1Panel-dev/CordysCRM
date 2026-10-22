@@ -141,14 +141,17 @@ function tokenizePlainText(text: string, startOffset: number): { tokens: Token[]
     }
 
     // ===== 比较运算符 =====
-    else if (char === '=' || char === '<' || char === '>') {
+    else if (char === '=' || char === '<' || char === '>' || (char === '!' && text[i + 1] === '=')) {
       const start = charIndex;
       const next = text[i + 1];
 
       let value = char;
       let length = 1;
 
-      if (char === '>' && next === '=') {
+      if (char === '!' && next === '=') {
+        value = '!=';
+        length = 2;
+      } else if (char === '>' && next === '=') {
         value = '>=';
         length = 2;
       } else if (char === '<' && next === '=') {
@@ -171,7 +174,7 @@ function tokenizePlainText(text: string, startOffset: number): { tokens: Token[]
     }
 
     // ===== 四则运算符 =====
-    else if (['+', '-', '*', '/'].includes(char)) {
+    else if (['+', '-', '*', '/', '!'].includes(char)) {
       tokens.push({
         type: 'operator',
         value: char as any,
