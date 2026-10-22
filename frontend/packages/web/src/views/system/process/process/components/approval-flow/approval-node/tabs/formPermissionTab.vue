@@ -100,6 +100,40 @@
     nodeConfig.value.fieldPermissions = fieldPermissions;
   }
 
+  function getLinkedFieldIds(field: FormCreateField) {
+    const linkedFieldIds = new Set<string>();
+    if (field.linkProp?.targetField && field.linkProp.linkOptions?.length) {
+      linkedFieldIds.add(field.linkProp.targetField);
+    }
+    if (field.type === FieldTypeEnum.DATA_SOURCE) {
+      field.linkFields
+        ?.filter((link) => link.enable !== false && link.current)
+        .forEach((link) => linkedFieldIds.add(link.current));
+    }
+    return [...linkedFieldIds];
+  }
+
+  function setFieldPermissionWithDependencies(
+    fieldId: string,
+    permissionType: ApprovalFieldPermissionModeEnum,
+    visited = new Set<string>()
+  ) {
+    if (visited.has(fieldId)) return;
+    visited.add(fieldId);
+    setFieldPermission(fieldId, permissionType);
+
+    if (permissionType !== ApprovalFieldPermissionModeEnum.EDIT) return;
+    const field = formFields.value.find((item) => item.id === fieldId);
+    if (!field) return;
+
+    getLinkedFieldIds(field).forEach((linkedFieldId) => {
+      const linkedField = formFields.value.find((item) => item.id === linkedFieldId);
+      if (linkedField && isEditableField(linkedField)) {
+        setFieldPermissionWithDependencies(linkedFieldId, ApprovalFieldPermissionModeEnum.EDIT, visited);
+      }
+    });
+  }
+
   function isPermissionDisabled(field: FormCreateField, permissionType: ApprovalFieldPermissionModeEnum) {
     const isViewOrEditPermission =
       permissionType === ApprovalFieldPermissionModeEnum.VIEW ||
@@ -125,7 +159,7 @@
 
   function setColumnPermission(permissionType: ApprovalFieldPermissionModeEnum) {
     getSelectableFields(permissionType).forEach((field) => {
-      setFieldPermission(field.id, permissionType);
+      setFieldPermissionWithDependencies(field.id, permissionType);
     });
   }
 
@@ -184,7 +218,7 @@
               disabled: props.readonly || isPermissionDisabled(row, item.value),
               onUpdateChecked: (checked: boolean) => {
                 if (checked) {
-                  setFieldPermission(row.id, item.value);
+                  setFieldPermissionWithDependencies(row.id, item.value);
                 }
               },
             }),
@@ -214,6 +248,12 @@
             ? ApprovalFieldPermissionModeEnum.VIEW
             : permissionType,
       };
+    });
+
+    fields.forEach((field) => {
+      if (getFieldPermission(field.id) === ApprovalFieldPermissionModeEnum.EDIT) {
+        setFieldPermissionWithDependencies(field.id, ApprovalFieldPermissionModeEnum.EDIT);
+      }
     });
   }
 
