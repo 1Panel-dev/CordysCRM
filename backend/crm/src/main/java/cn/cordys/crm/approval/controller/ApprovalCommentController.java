@@ -25,7 +25,7 @@ public class ApprovalCommentController {
     private ApprovalCommentService approvalCommentService;
 
     @PostMapping("/page")
-    @Operation(summary = "分页查询审批一级评论及完整二级回复，支持创建时间排序")
+    @Operation(summary = "分页查询审批评论")
     public Pager<List<ApprovalCommentResponse>> page(@Validated @RequestBody ApprovalCommentPageRequest request) {
         return approvalCommentService.page(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());

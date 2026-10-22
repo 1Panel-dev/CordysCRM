@@ -30,6 +30,7 @@ CREATE TABLE approval_comment_mention
     `id`         VARCHAR(32) NOT NULL COMMENT 'ID',
     `comment_id` VARCHAR(32) NOT NULL COMMENT '评论ID',
     `user_id`    VARCHAR(32) NOT NULL COMMENT '被@用户ID',
+    `create_time` BIGINT     NOT NULL COMMENT '被@时间',
     PRIMARY KEY (`id`)
 ) COMMENT = '审批评论@用户关系'
     ENGINE = InnoDB
@@ -37,6 +38,7 @@ CREATE TABLE approval_comment_mention
     COLLATE = utf8mb4_general_ci;
 
 CREATE UNIQUE INDEX idx_comment_user ON approval_comment_mention (comment_id ASC, user_id ASC);
+CREATE INDEX idx_user_time_id ON approval_comment_mention (user_id, create_time, id);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
