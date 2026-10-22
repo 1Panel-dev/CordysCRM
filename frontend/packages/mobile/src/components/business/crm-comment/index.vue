@@ -1,12 +1,25 @@
 <template>
-  <div class="crm-comment h-full">
-    <CommentHeader :count="commentCount" :title="props.title" :show-add="canOperateComment" @add="openCreateEditor" />
-    <div :class="['crm-comment-body', { 'crm-comment-body--editing': activeEditor }]">
+  <div :class="['crm-comment h-full', { 'crm-comment--embedded': props.embedded }]">
+    <CommentHeader
+      :count="commentCount"
+      :title="props.title"
+      :show-add="props.canCreate"
+      :show-time-sort="props.showTimeSort"
+      :sort-order="sortOrder"
+      @add="openCreateEditor"
+      @sort-change="handleSortChange"
+    />
+    <div
+      :class="[
+        'crm-comment-body',
+        { 'crm-comment-body--editing': activeEditor, 'crm-comment-body--embedded': props.embedded },
+      ]"
+    >
       <CrmList
         :key="`${props.type}-${props.sourceId}`"
         ref="commentListRef"
         :model-value="comments"
-        class="crm-comment-list min-h-0 flex-1"
+        :class="`crm-comment-list min-h-0 flex-1 ${props.embedded ? ' crm-comment-list--embedded' : ''}`"
         :item-gap="0"
         :load-list-api="handleLoadCommentList"
         :close-init-load="!props.sourceId"
@@ -16,7 +29,7 @@
           <div class="crm-comment-list-item">
             <CommentItem
               :comment="item"
-              :can-reply="canOperateComment"
+              :can-reply="props.canReply"
               :can-edit="canEditComment(item)"
               :can-delete="canDeleteComment(item)"
               :show-divider="hasReplies(item) || !isLastComment(item)"
@@ -31,7 +44,7 @@
                 :key="reply.id"
                 :comment="reply"
                 :level="2"
-                :can-reply="canOperateComment"
+                :can-reply="props.canReply"
                 :can-edit="isCommentOwner(reply)"
                 :can-delete="isCommentOwner(reply)"
                 :show-divider="shouldShowReplyDivider(item, replyIndex)"
@@ -72,6 +85,7 @@
         :initial-mention-users="initialEditorMentionUsers"
         :reply-user-name="fixedEditorReplyUserName"
         :loading="submitLoading"
+        :enable-attachment="props.enableAttachment"
         @submit="handleSubmit"
         @cancel="closeEditor"
       />
@@ -81,7 +95,6 @@
 
 <script setup lang="ts">
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
   import type { TableQueryParams } from '@lib/shared/models/common';
   import type {
     FollowCommentActiveEditor,
@@ -97,7 +110,6 @@
   import CommentItem from './components/commentItem.vue';
 
   import useUserStore from '@/store/modules/user';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import useCommentResource, { type MobileCommentResourceType } from './useCommentResource';
 
@@ -107,10 +119,20 @@
       sourceId: string;
       title?: string;
       defaultReplyCount?: number;
+      canCreate?: boolean;
+      canReply?: boolean;
+      embedded?: boolean; // 由外层容器统一滚动
+      enableAttachment?: boolean;
+      showTimeSort?: boolean;
     }>(),
     {
       title: '',
       defaultReplyCount: 1,
+      canCreate: true,
+      canReply: true,
+      embedded: false,
+      enableAttachment: false,
+      showTimeSort: false,
     }
   );
 
@@ -131,15 +153,17 @@
   });
   const expandedCommentIds = ref<string[]>([]);
   const acceptEmptyCommentList = ref(false);
+  const sortOrder = ref<'asc' | 'desc'>('desc');
 
   const { submitLoading, loadCommentList, createComment, replyComment, editComment, deleteComment } =
     useCommentResource({
       type: toRef(props, 'type'),
       sourceId: toRef(props, 'sourceId'),
+      sortOrder,
+      enableSort: toRef(props, 'showTimeSort'),
     });
 
   const commentCount = computed(() => count.value);
-  const canOperateComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
 
   const isCommentOwner = (comment: FollowCommentItem) => comment.createUser === userStore.userInfo.id;
 
@@ -198,6 +222,7 @@
   }
 
   function openCreateEditor() {
+    if (!props.canCreate) return;
     setActiveEditor({
       action: 'create',
     });
@@ -205,6 +230,7 @@
   }
 
   function openReplyEditor(comment: FollowCommentItem) {
+    if (!props.canReply) return;
     setActiveEditor({
       action: 'reply',
       commentId: comment.id,
@@ -220,6 +246,7 @@
       },
       comment.content
     );
+    focusCommentEditor();
   }
 
   function closeEditor() {
@@ -228,6 +255,11 @@
 
   async function reloadComments() {
     await commentListRef.value?.loadList(true);
+  }
+
+  function handleSortChange(value: 'asc' | 'desc') {
+    sortOrder.value = value;
+    reloadComments();
   }
 
   function getReplies(comment: FollowCommentItem) {
@@ -297,7 +329,7 @@
     }
 
     if (activeEditor.value.action === 'create') {
-      if (!canOperateComment.value) {
+      if (!props.canCreate) {
         return;
       }
 
@@ -309,7 +341,7 @@
 
     const activeComment = findCommentById(activeEditor.value.commentId);
     if (activeEditor.value.action === 'reply' && activeComment) {
-      if (!canOperateComment.value) {
+      if (!props.canReply) {
         return;
       }
 
@@ -345,10 +377,20 @@
   .crm-comment {
     @apply flex min-h-0 flex-col overflow-hidden;
   }
+  .crm-comment--embedded {
+    overflow: visible;
+    height: auto;
+  }
   .crm-comment-body {
     @apply flex min-h-0 flex-1 flex-col overflow-hidden;
 
     background: var(--text-n10);
+  }
+  .crm-comment-body--embedded {
+    @apply block overflow-visible;
+  }
+  .crm-comment-list--embedded {
+    @apply !h-auto !overflow-visible;
   }
   .crm-comment-list-toggle {
     @apply relative flex w-full items-center;

@@ -14,19 +14,23 @@ import type {
 } from '@lib/shared/models/follow';
 
 import {
+  addApprovalComment,
   addFollowPlanComment,
   addFollowRecordComment,
+  deleteApprovalComment,
   deleteFollowPlanComment,
   deleteFollowRecordComment,
+  getApprovalCommentList,
   getFollowPlanCommentList,
   getFollowRecordCommentList,
+  updateApprovalComment,
   updateFollowPlanComment,
   updateFollowRecordComment,
 } from '@/api/modules';
 
 import type { Ref } from 'vue';
 
-export type MobileCommentResourceType = 'record' | 'plan';
+export type MobileCommentResourceType = 'record' | 'plan' | 'approval';
 
 interface CommentApiGroup {
   list: (params: FollowCommentListParams) => Promise<FollowCommentPageResult>;
@@ -48,9 +52,20 @@ const commentApiMap: Record<MobileCommentResourceType, CommentApiGroup> = {
     update: updateFollowPlanComment,
     delete: deleteFollowPlanComment,
   },
+  approval: {
+    list: getApprovalCommentList,
+    add: addApprovalComment,
+    update: updateApprovalComment,
+    delete: deleteApprovalComment,
+  },
 };
 
-export default function useCommentResource(options: { type: Ref<MobileCommentResourceType>; sourceId: Ref<string> }) {
+export default function useCommentResource(options: {
+  type: Ref<MobileCommentResourceType>;
+  sourceId: Ref<string>;
+  sortOrder?: Ref<'asc' | 'desc'>;
+  enableSort?: Ref<boolean>;
+}) {
   const { t } = useI18n();
   const submitLoading = ref(false);
   const loadedComments = ref<FollowCommentItem[]>([]);
@@ -65,6 +80,13 @@ export default function useCommentResource(options: { type: Ref<MobileCommentRes
     const result = await currentApi.value.list({
       ...params,
       resourceId: options.sourceId.value,
+      ...(options.enableSort?.value
+        ? {
+            sort: {
+              type: options.sortOrder?.value || 'desc',
+            },
+          }
+        : {}),
     });
 
     if ((params.current || 1) === 1) {

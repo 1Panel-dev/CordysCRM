@@ -30,6 +30,9 @@
             :currentApprovalNode="currentApprovalNode"
             :currentApprovalNodeIndex="currentApprovalNodeIndex"
             :finally-result="approvalInfo?.approvalStatus"
+            :approval-id="approvalInfo?.id"
+            :comment-count="approvalInfo?.commentCount"
+            :commentable="approvalInfo?.commentable"
           />
         </div>
       </van-tab>

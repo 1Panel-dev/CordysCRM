@@ -33,6 +33,9 @@
             :currentApprovalNode="currentApprovalNode"
             :currentApprovalNodeIndex="currentApprovalNodeIndex"
             :finally-result="approvalInfo?.approvalStatus"
+            :approval-id="approvalInfo?.id"
+            :comment-count="approvalInfo?.commentCount"
+            :commentable="approvalInfo?.commentable"
           />
         </div>
         <CrmHeaderList v-else :source-id="sourceId" :load-list-api="getCustomerHeaderList" />

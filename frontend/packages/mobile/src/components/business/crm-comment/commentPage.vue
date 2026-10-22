@@ -7,6 +7,8 @@
         :type="commentType"
         :source-id="commentSourceId"
         :default-reply-count="1"
+        :can-create="canComment"
+        :can-reply="canComment"
       />
     </div>
   </CrmPageWrapper>
@@ -16,17 +18,20 @@
   import { useRoute } from 'vue-router';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmComment from './index.vue';
 
   import type { MobileCommentResourceType } from './useCommentResource';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const route = useRoute();
   const { t } = useI18n();
 
   const commentSourceId = computed(() => String(route.query.id || ''));
   const commentType = computed<MobileCommentResourceType>(() => (route.query.type === 'plan' ? 'plan' : 'record'));
+  const canComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
 
   function getInitialCommentCount() {
     const count = Number(route.query.commentCount);
