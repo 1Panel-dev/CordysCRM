@@ -30,6 +30,8 @@ ARG DEPENDENCY=/build/backend/${MODULE}/target/dependency
 
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+# META-INF 中的文件系统 SPI 需要对应的 Spring Boot Loader 类。
+COPY --from=build ${DEPENDENCY}/org /app/org
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 COPY --from=build /build/backend/${MODULE}/src/main/resources/static /app/static
 COPY installer/shells /shells
