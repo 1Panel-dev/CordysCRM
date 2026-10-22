@@ -1,8 +1,23 @@
 package cn.cordys.crm.approval.mapper;
 
+import cn.cordys.crm.approval.domain.ApprovalInstance;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface ExtApprovalInstanceMapper {
+
+    /**
+     * 查询当前组织业务的全部审批实例，按提审时间和实例ID倒序。
+     */
+    List<ApprovalInstance> selectInstancesByResourceId(@Param("resourceId") String resourceId,
+            @Param("organizationId") String organizationId);
+
+    /**
+     * 按实例ID和组织查询审批实例。
+     */
+    ApprovalInstance selectInstanceById(@Param("instanceId") String instanceId,
+            @Param("organizationId") String organizationId);
 
     /**
      * 判断当前组织的资源是否已有审批中的实例，跨执行时机和流程版本去重。
