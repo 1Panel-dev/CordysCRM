@@ -1,6 +1,7 @@
 export default {
   'crmComment.title': 'Comment',
-  'crmComment.addComment': 'Add comment',
+  'crmComment.addComment': 'Add',
+  'crmComment.timeSort': 'Sort by time',
   'crmComment.commentPlaceholder': 'Enter a comment, supports @mention',
   'crmComment.commentPlaceholderOthers': 'others',
   'crmComment.replyPlaceholder': 'Reply to {name}',

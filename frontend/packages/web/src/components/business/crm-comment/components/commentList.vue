@@ -6,7 +6,7 @@
           :active-editor="getParentCommentEditor(comment)"
           :can-delete="canDelete(comment)"
           :can-edit="canEdit(comment)"
-          :can-reply="canOperateComment"
+          :can-reply="props.canReply"
           :comment="comment"
           :submit-loading="props.submitLoading"
           @reply="handleReply"
@@ -24,6 +24,7 @@
             v-if="isReplyingParentComment(comment)"
             class="crm-comment-list__parent-reply-input mb-[8px]"
             :loading="props.submitLoading"
+            :enable-attachment="props.enableAttachment"
             :reply-user-name="comment.createUserName"
             @submit="(value) => handleParentReplySubmit(comment, value)"
             @cancel="emit('cancelEditor')"
@@ -34,9 +35,10 @@
               :active-editor="props.activeEditor"
               :can-delete="canDelete(reply)"
               :can-edit="canEdit(reply)"
-              :can-reply="canOperateComment"
+              :can-reply="props.canReply"
               :comment="reply"
               :submit-loading="props.submitLoading"
+              :enable-attachment="props.enableAttachment"
               :level="2"
               @reply="handleReply"
               @edit="handleEdit"
@@ -91,7 +93,6 @@
   import { NButton, NDivider } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
   import type {
     FollowCommentActionValue,
     FollowCommentActiveEditor,
@@ -103,7 +104,6 @@
   import MentionInput from './mentionInput.vue';
 
   import useUserStore from '@/store/modules/user';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
@@ -112,6 +112,8 @@
       comments?: FollowCommentItem[];
       activeEditor?: FollowCommentActiveEditor | null;
       submitLoading?: boolean;
+      canReply?: boolean;
+      enableAttachment?: boolean;
     }>(),
     {
       comments: () => [],
@@ -130,7 +132,6 @@
 
   const expandedCommentIds = ref<string[]>([]);
   const userStore = useUserStore();
-  const canOperateComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
 
   function getReplies(comment: FollowCommentItem) {
     return comment.replies || [];
@@ -196,7 +197,7 @@
   const canDelete = (comment: FollowCommentItem) => isCommentOwner(comment);
 
   function handleReply(comment: FollowCommentItem) {
-    if (!canOperateComment.value) {
+    if (!props.canReply) {
       return;
     }
     emit('reply', comment);
@@ -217,7 +218,7 @@
   }
 
   function handleParentReplySubmit(comment: FollowCommentItem, value: FollowCommentSubmitValue) {
-    if (!canOperateComment.value) {
+    if (!props.canReply) {
       return;
     }
 
@@ -228,7 +229,7 @@
   }
 
   function handleReplySubmit(value: FollowCommentActionValue) {
-    if (!canOperateComment.value) {
+    if (!props.canReply) {
       return;
     }
     emit('replySubmit', value);

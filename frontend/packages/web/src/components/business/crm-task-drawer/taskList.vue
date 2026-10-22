@@ -139,6 +139,7 @@
   import {
     getCcApprovalList,
     getInitiatedApprovalList,
+    getMentionedApprovalList,
     getPendingApprovalList,
     getProcessedApprovalList,
   } from '@/api/modules/index';
@@ -181,6 +182,7 @@
     [ApprovalListTypeEnum.APPROVAL]: getProcessedApprovalList,
     [ApprovalListTypeEnum.INITIATED]: getInitiatedApprovalList,
     [ApprovalListTypeEnum.COPIED]: getCcApprovalList,
+    [ApprovalListTypeEnum.MENTIONED]: getMentionedApprovalList,
   };
 
   function getTaskListType() {

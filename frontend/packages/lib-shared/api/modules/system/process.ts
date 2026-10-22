@@ -13,10 +13,15 @@ import {
   ReviewResourceUrl,
   RevokeResourceUrl,
   GetApprovalResourceDetailUrl,
+  GetApprovalCommentListUrl,
+  AddApprovalCommentUrl,
+  UpdateApprovalCommentUrl,
+  DeleteApprovalCommentUrl,
   GetProcessedApprovalTodosUrl,
   GetPendingApprovalTodosUrl,
   GetInitiatedApprovalTodosUrl,
   GetCcApprovalTodosUrl,
+  GetMentionedApprovalTodosUrl,
   RejectApprovalUrl,
   BackApprovalUrl,
   AddSignApprovalUrl,
@@ -49,6 +54,12 @@ import {
 import type { CommonList } from '@lib/shared/models/common';
 import type { OptionDTO } from '@lib/shared/models/system/business';
 import type { TableQueryParams } from '@lib/shared/models/common';
+import type {
+  FollowCommentListParams,
+  FollowCommentPageResult,
+  SaveFollowCommentParams,
+  UpdateFollowCommentParams,
+} from '@lib/shared/models/follow';
 
 export default function useProcessApi(CDR: CordysAxios) {
   // 审批流数据权限
@@ -112,6 +123,11 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ApprovalTodoItem>>({ url: GetCcApprovalTodosUrl, data });
   }
 
+  // 获取@我的审批待办列表
+  function getMentionedApprovalList(data: ApprovalTodoTableParams) {
+    return CDR.post<CommonList<ApprovalTodoItem>>({ url: GetMentionedApprovalTodosUrl, data });
+  }
+
   // 驳回
   function rejectApproval(data: ApprovalOperationParams) {
     return CDR.post({ url: RejectApprovalUrl, data });
@@ -150,6 +166,35 @@ export default function useProcessApi(CDR: CordysAxios) {
   // 获取审批资源详情
   function getApprovalResourceDetail(id: string) {
     return CDR.get<ApprovalDetail>({ url: `${GetApprovalResourceDetailUrl}/${id}` });
+  }
+
+  function getApprovalCommentList(data: FollowCommentListParams) {
+    const { resourceId, ...params } = data;
+    return CDR.post<FollowCommentPageResult>({
+      url: GetApprovalCommentListUrl,
+      data: {
+        ...params,
+        instanceId: resourceId,
+      },
+    });
+  }
+
+  function addApprovalComment(data: SaveFollowCommentParams) {
+    return CDR.post({
+      url: AddApprovalCommentUrl,
+      data: {
+        instanceId: data.resourceId,
+        ...data,
+      },
+    });
+  }
+
+  function updateApprovalComment(data: UpdateFollowCommentParams) {
+    return CDR.post({ url: UpdateApprovalCommentUrl, data });
+  }
+
+  function deleteApprovalComment(id: string) {
+    return CDR.get({ url: `${DeleteApprovalCommentUrl}/${id}` });
   }
 
   // 获取待办统计
@@ -194,10 +239,15 @@ export default function useProcessApi(CDR: CordysAxios) {
     getPendingApprovalList,
     getInitiatedApprovalList,
     getCcApprovalList,
+    getMentionedApprovalList,
     rejectApproval,
     backApproval,
     addSignApproval,
     getApprovalResourceDetail,
+    getApprovalCommentList,
+    addApprovalComment,
+    updateApprovalComment,
+    deleteApprovalComment,
     getTodoStatistic,
     revokeApproval,
     agreeApproval,

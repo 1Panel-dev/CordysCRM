@@ -21,4 +21,5 @@ export default {
   'taskDrawer.pendingCount': '共{count}条待处理',
   'taskDrawer.categoryComplete': '本分类已处理完 · 共处理 {count} 条',
   'taskDrawer.processedCount': '本分类已处理完 · 共处理 {count} 条',
+  'taskDrawer.mentionedMe': '@我的',
 };

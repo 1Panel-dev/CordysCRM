@@ -52,23 +52,49 @@
           {{ t('crm.approval.historyTip') }}
         </div>
         <div v-else class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
-          <div class="flex-1 overflow-hidden px-[16px] py-[24px] pb-[32px]">
-            <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
-            <CrmApprovalLine
-              :nodes="approvalInfo?.nodes || []"
-              :submitter="{
-                submitAvatar: approvalInfo?.submitAvatar,
-                submitter: approvalInfo?.submitter,
-                submitTime: approvalInfo?.submitTime,
-                submitterId: approvalInfo?.submitterId,
-                comment: approvalInfo?.comment,
-              }"
-              :currentApprovalNode="currentApprovalNode"
-              :currentApprovalNodeIndex="currentApprovalNodeIndex"
-              :finally-result="approvalInfo?.approvalStatus"
-              class="pr-[8px]"
+          <div class="shrink-0 px-[16px] pt-[24px]">
+            <CrmTab
+              v-model:active-tab="activeAnchor"
+              no-content
+              type="segment"
+              class="approval-anchor-tab"
+              :tab-list="approvalAnchorTabList"
+              @change="handleAnchorTabChange"
             />
           </div>
+          <n-scrollbar class="min-h-0 flex-1" :content-style="{ padding: '16px 24px 32px 16px' }">
+            <div ref="approvalRecordRef">
+              <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
+              <CrmApprovalLine
+                :nodes="approvalInfo?.nodes || []"
+                :submitter="{
+                  submitAvatar: approvalInfo?.submitAvatar,
+                  submitter: approvalInfo?.submitter,
+                  submitTime: approvalInfo?.submitTime,
+                  submitterId: approvalInfo?.submitterId,
+                  comment: approvalInfo?.comment,
+                }"
+                :currentApprovalNode="currentApprovalNode"
+                :currentApprovalNodeIndex="currentApprovalNodeIndex"
+                :finally-result="approvalInfo?.approvalStatus"
+                class="pr-[8px]"
+              />
+            </div>
+            <div ref="approvalCommentRef">
+              <CrmComment
+                v-if="approvalInfo?.id"
+                v-model:expanded="commentExpanded"
+                v-model:count="approvalInfo.commentCount"
+                type="approval"
+                :can-create="approvalInfo.commentable"
+                :can-reply="approvalInfo.commentable"
+                enable-attachment
+                show-time-sort
+                :source-id="approvalInfo.id"
+                class="mt-[24px]"
+              />
+            </div>
+          </n-scrollbar>
           <div
             v-if="
               approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
@@ -242,6 +268,7 @@
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { ApprovalTaskExecuteTimeEnum, MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatBadgeCount } from '@lib/shared/method';
   import type { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig } from '@lib/shared/models/system/module';
   import type {
@@ -258,6 +285,8 @@
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmComment from '@/components/business/crm-comment/index.vue';
   import CrmFileInput from '@/components/business/crm-file-input/index.vue';
   import CrmMemberSelect from '@/components/business/crm-user-tag-selector/index.vue';
   import ApprovalOpinionModal from './approvalOpinionModal.vue';
@@ -324,6 +353,28 @@
   function setLeftSlotLoading(loading: boolean) {
     leftSlotLoading.value = loading;
   }
+
+  const activeAnchor = ref<'record' | 'comment'>('record');
+  const approvalAnchorTabList = computed(() => [
+    { name: 'record', tab: t('crm.approval.record') },
+    { name: 'comment', tab: `${t('crmComment.title')} ${formatBadgeCount(approvalInfo.value?.commentCount || 0)}` },
+  ]);
+  const approvalRecordRef = ref<HTMLElement>();
+  const approvalCommentRef = ref<HTMLElement>();
+
+  function scrollToAnchor(anchor: 'record' | 'comment') {
+    activeAnchor.value = anchor;
+    const target = anchor === 'record' ? approvalRecordRef.value : approvalCommentRef.value;
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function handleAnchorTabChange(anchor: string | number) {
+    if (anchor === 'record' || anchor === 'comment') {
+      scrollToAnchor(anchor);
+    }
+  }
+
+  const commentExpanded = ref(true);
 
   async function initApprovalConfig() {
     try {
@@ -863,5 +914,10 @@
   .approval-left-skeleton-enter-from,
   .approval-left-skeleton-leave-to {
     opacity: 0;
+  }
+  .approval-anchor-tab {
+    :deep(.n-tabs-rail) {
+      width: 100%;
+    }
   }
 </style>

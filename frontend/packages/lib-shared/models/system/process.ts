@@ -308,6 +308,8 @@ export interface ApprovalDetail {
   submitter: string;
   submitTime: number;
   comment: string;
+  commentCount: number;
+  commentable: boolean;
   result: string;
   approvalStatus: ProcessStatusEnum;
   currentNodeId: string;
