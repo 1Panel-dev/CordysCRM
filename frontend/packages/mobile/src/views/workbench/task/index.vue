@@ -157,6 +157,7 @@
     getCcApprovalList,
     getApprovalFlowFormOptions,
     getInitiatedApprovalList,
+    getMentionedApprovalList,
     getPendingApprovalList,
     getProcessedApprovalList,
     getTodoStatistic,
@@ -203,6 +204,11 @@
       title: t('workbench.copyToMe'),
       count: 0,
     },
+    {
+      name: ApprovalListTypeEnum.MENTIONED,
+      title: t('workbench.mentionedMe'),
+      count: 0,
+    },
   ];
 
   const keyword = ref('');
@@ -227,6 +233,7 @@
     [ApprovalListTypeEnum.APPROVAL]: getProcessedApprovalList,
     [ApprovalListTypeEnum.INITIATED]: getInitiatedApprovalList,
     [ApprovalListTypeEnum.COPIED]: getCcApprovalList,
+    [ApprovalListTypeEnum.MENTIONED]: getMentionedApprovalList,
   };
   const listParams = computed(() => {
     return {

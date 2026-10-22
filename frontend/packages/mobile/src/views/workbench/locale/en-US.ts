@@ -43,6 +43,7 @@ export default {
   'workbench.task': 'My task',
   'workbench.myApproval': 'My approvals pending',
   'workbench.copyToMe': 'Copied to me',
+  'workbench.mentionedMe': 'Mentioned Me',
   'workbench.myApply': 'My applications',
   'workbench.myProcess': 'My processed',
   'workbench.result.PENDING': 'Pending',

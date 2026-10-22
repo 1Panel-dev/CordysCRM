@@ -79,6 +79,8 @@
             class="crm-follow-record-comment-input"
             :type="props.type"
             :source-id="item.id"
+            :can-create="canComment"
+            :can-reply="canComment"
           />
         </div>
       </div>
@@ -95,6 +97,7 @@
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
   import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
@@ -107,6 +110,7 @@
 
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import useUserStore from '@/store/modules/user';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -129,6 +133,8 @@
   const listData = defineModel<FollowDetailItem[]>('data', {
     default: [],
   });
+
+  const canComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
 
   function getFutureClass(item: FollowDetailItem) {
     if (props.type === 'followPlan') {

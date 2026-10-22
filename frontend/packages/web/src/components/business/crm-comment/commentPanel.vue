@@ -1,5 +1,5 @@
 <template>
-  <div class="crm-comment border-1 border-b-[var(--text-n8)]">
+  <div class="crm-comment border-b border-[var(--text-n8)]">
     <div class="crm-comment__header">
       <div class="flex cursor-pointer items-center gap-[8px]">
         <n-button
@@ -22,15 +22,35 @@
           </div>
         </n-button>
 
-        <CrmTag>
-          {{ displayCount }}
-        </CrmTag>
+        <span class="text-[var(--text-n4)]">{{ displayCount }}</span>
       </div>
 
-      <n-button v-if="canOperateComment" type="default" class="outline--secondary" @click="handleCreate">
-        <CrmIcon class="mr-[8px] text-[var(--text-n1)]" type="iconicon_add" :size="16" />
-        {{ t('crmComment.addComment') }}
-      </n-button>
+      <div class="flex items-center gap-[8px]">
+        <CrmTag v-if="props.showTimeSort" custom-class="cursor-pointer" @click="toggleSortOrder">
+          <span class="flex items-center">
+            {{ t('crmComment.timeSort') }}
+            <span class="ml-[4px] flex flex-col">
+              <CrmIcon
+                type="iconicon_chevron_up"
+                :size="16"
+                class="mb-[-6px]"
+                :class="props.sortOrder === 'asc' ? 'text-[var(--primary-1)]' : 'text-[var(--text-n4)]'"
+              />
+              <CrmIcon
+                type="iconicon_chevron_down"
+                :size="16"
+                :class="props.sortOrder === 'desc' ? 'text-[var(--primary-1)]' : 'text-[var(--text-n4)]'"
+              />
+            </span>
+          </span>
+        </CrmTag>
+        <n-button v-if="props.canCreate" size="small" type="primary" ghost @click="handleCreate">
+          <template #icon>
+            <CrmIcon type="iconicon_add" :size="16" />
+          </template>
+          {{ t('crmComment.addComment') }}
+        </n-button>
+      </div>
     </div>
 
     <n-divider v-if="showHeaderDivider" class="crm-comment__header-divider" />
@@ -40,6 +60,7 @@
         v-if="activeEditor?.action === 'create'"
         class="mb-[12px]"
         :loading="props.submitLoading"
+        :enable-attachment="props.enableAttachment"
         :submit-text="t('common.confirm')"
         @submit="handleCreateSubmit"
         @cancel="handleCreateCancel"
@@ -49,6 +70,8 @@
         :active-editor="listActiveEditor"
         :comments="props.comments"
         :submit-loading="props.submitLoading"
+        :can-reply="props.canReply"
+        :enable-attachment="props.enableAttachment"
         @reply="handleReply"
         @edit="handleEdit"
         @delete="emit('delete', $event)"
@@ -66,7 +89,6 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatBadgeCount } from '@lib/shared/method';
-  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
   import type {
     FollowCommentActionValue,
     FollowCommentActiveEditor,
@@ -77,8 +99,6 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CommentList from './components/commentList.vue';
   import MentionInput from './components/mentionInput.vue';
-
-  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
@@ -94,6 +114,11 @@
       hasMore?: boolean;
       loading?: boolean;
       submitLoading?: boolean;
+      canCreate?: boolean;
+      canReply?: boolean;
+      enableAttachment?: boolean;
+      showTimeSort?: boolean;
+      sortOrder?: 'asc' | 'desc';
     }>(),
     {
       comments: () => [],
@@ -106,6 +131,7 @@
     (event: 'editSubmit', value: FollowCommentActionValue): void;
     (event: 'delete', comment: FollowCommentItem): void;
     (event: 'reachBottom'): void;
+    (event: 'sortChange', value: 'asc' | 'desc'): void;
   }>();
 
   const expanded = defineModel<boolean>('expanded', {
@@ -114,8 +140,6 @@
 
   const activeEditor = ref<FollowCommentActiveEditor | null>(null);
   const reachBottomTriggerRef = ref<HTMLElement | null>(null);
-  const canOperateComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
-
   let reachBottomObserver: IntersectionObserver | null = null;
 
   function closeEditor() {
@@ -154,7 +178,7 @@
   }
 
   function handleCreate() {
-    if (!canOperateComment.value) {
+    if (!props.canCreate) {
       return;
     }
 
@@ -162,8 +186,15 @@
     activeEditor.value = activeEditor.value?.action === 'create' ? null : { action: 'create' };
   }
 
+  function toggleSortOrder() {
+    if (props.loading) {
+      return;
+    }
+    emit('sortChange', props.sortOrder === 'desc' ? 'asc' : 'desc');
+  }
+
   function handleReply(comment: FollowCommentItem) {
-    if (!canOperateComment.value) {
+    if (!props.canReply) {
       return;
     }
 
@@ -183,7 +214,7 @@
   }
 
   function handleCreateSubmit(value: FollowCommentSubmitValue) {
-    if (!canOperateComment.value) {
+    if (!props.canCreate) {
       return;
     }
 
@@ -192,7 +223,7 @@
   }
 
   function handleReplySubmit(value: FollowCommentActionValue) {
-    if (!canOperateComment.value) {
+    if (!props.canReply) {
       return;
     }
 

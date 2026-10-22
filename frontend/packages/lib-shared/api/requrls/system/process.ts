@@ -19,6 +19,7 @@ export const GetProcessedApprovalTodosUrl = '/approval-todo/processed/page'; // 
 export const GetPendingApprovalTodosUrl = '/approval-todo/pending/page'; // 待处理审批待办列表
 export const GetInitiatedApprovalTodosUrl = '/approval-todo/initiated/page'; // 我发起审批待办列表
 export const GetCcApprovalTodosUrl = '/approval-todo/cc/page'; // 抄送我的审批待办列表
+export const GetMentionedApprovalTodosUrl = '/approval-todo/mention/page'; // @我的审批待办列表
 export const GetTodoStatisticUrl = '/approval-todo/pending/count'; // 获取待办统计
 export const GetCCStatisticUrl = '/approval-todo/cc/count'; // 获取抄送统计
 
@@ -33,3 +34,7 @@ export const BatchApprovalApprovalUrl = '/approval-action/batch-approve'; // 批
 
 // 审批记录
 export const GetApprovalResourceDetailUrl = '/approval-resource/detail'; // 审批资源详情
+export const GetApprovalCommentListUrl = '/approval-comment/page'; // 审批评论列表
+export const AddApprovalCommentUrl = '/approval-comment/add'; // 添加审批评论
+export const UpdateApprovalCommentUrl = '/approval-comment/update'; // 编辑审批评论
+export const DeleteApprovalCommentUrl = '/approval-comment/delete'; // 删除审批评论

@@ -1,5 +1,26 @@
 <template>
   <div class="crm-comment-mention-input">
+    <div
+      v-if="props.enableAttachment"
+      class="flex h-[24px] items-center rounded-[3px_3px_0_0] border border-b-0 border-[var(--text-n7)] px-[8px]"
+    >
+      <n-tooltip trigger="hover" placement="top-start">
+        <template #trigger>
+          <n-upload
+            v-model:file-list="fileList"
+            class="crm-file-input-upload"
+            :custom-request="uploadAttachment"
+            :show-file-list="false"
+            :max="10"
+            directory-dnd
+            @before-upload="beforeUpload"
+          >
+            <CrmIcon type="iconicon_link1" :size="16" class="text-[var(--text-n4)]" />
+          </n-upload>
+        </template>
+        {{ fileList.length === 10 ? t('crm.approval.fileLimitTip') : t('crmFormDesign.file') }}
+      </n-tooltip>
+    </div>
     <n-mention
       v-model:value="mentionContent"
       type="textarea"
@@ -10,10 +31,17 @@
       :options="mentionOptions"
       :placeholder="placeholder"
       :render-label="renderMentionLabel"
+      :class="{ 'crm-comment-mention-input__mention--with-attachment': props.enableAttachment }"
       to="body"
       @search="handleMentionSearch"
       @select="handleMentionSelect"
       @blur="syncMentionUserIds"
+    />
+    <CrmFileList
+      v-if="props.enableAttachment && fileList.length"
+      :files="fileList as unknown as AttachmentInfo[]"
+      class="mt-[8px]"
+      @delete-file="deleteAttachment"
     />
     <div class="mt-[8px] flex justify-end gap-[8px]">
       <n-button :disabled="props.loading" secondary @click="handleCancel">
@@ -27,19 +55,32 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NCheckbox, NMention } from 'naive-ui';
+  import {
+    NButton,
+    NCheckbox,
+    NMention,
+    NTooltip,
+    NUpload,
+    type UploadCustomRequestOptions,
+    type UploadFileInfo,
+    useMessage,
+  } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { filterMentionUsers, FOLLOW_COMMENT_MAX_LENGTH } from '@lib/shared/method/comment';
   import type { FollowCommentUser } from '@lib/shared/models/follow';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmFileList from '@/components/business/crm-file-list/index.vue';
+  import type { AttachmentInfo } from '@/components/business/crm-form-create/types';
 
-  import { getUserOptions } from '@/api/modules';
+  import { getUserOptions, uploadTempAttachment } from '@/api/modules';
 
   import type { MentionOption as NaiveMentionOption } from 'naive-ui/es/mention/src/interface';
 
   const { t } = useI18n();
+  const message = useMessage();
 
   interface MentionOption extends NaiveMentionOption {
     id?: string;
@@ -60,6 +101,7 @@
       loading?: boolean;
       includeDisabled?: boolean;
       initialMentionUsers?: FollowCommentUser[];
+      enableAttachment?: boolean;
     }>(),
     {
       includeDisabled: false,
@@ -67,7 +109,7 @@
   );
 
   const emit = defineEmits<{
-    (event: 'submit', value: { content: string; mentionUserIds: string[] }): void;
+    (event: 'submit', value: { content: string; mentionUserIds: string[]; attachmentIds: string[] }): void;
     (event: 'cancel'): void;
   }>();
 
@@ -86,6 +128,7 @@
   const includeDisabled = ref(props.includeDisabled);
   const rawUserOptions = ref<MentionOption[]>([]);
   const selectedMentionUsers = ref<FollowCommentUser[]>([]);
+  const fileList = ref<UploadFileInfo[]>([]);
   const lastKeyword = ref('');
   const userRequestId = ref(0);
   const hasLoadedUsers = ref(false);
@@ -190,6 +233,7 @@
   function handleCancel() {
     content.value = '';
     selectedMentionUsers.value = [];
+    fileList.value = [];
     emit('cancel');
   }
 
@@ -202,7 +246,36 @@
     emit('submit', {
       content: trimmedContent,
       mentionUserIds: getMentionUserIds(),
+      attachmentIds: fileList.value.map((file) => file.id),
     });
+  }
+
+  function beforeUpload({ file }: { file: UploadFileInfo }) {
+    if (fileList.value.some((item) => item.name === file.name)) {
+      message.warning(t('crm.upload.repeatFileTip'));
+      return false;
+    }
+    if (file.file?.size && file.file.size > 50 * 1024 * 1024) {
+      message.warning(t('crm.upload.overSize', { size: 50, unit: 'MB' }));
+      return false;
+    }
+    return true;
+  }
+
+  async function uploadAttachment({ file, onFinish, onError }: UploadCustomRequestOptions) {
+    try {
+      const result = await uploadTempAttachment(file.file);
+      fileList.value = fileList.value.map((item) =>
+        item.id === file.id ? { ...item, id: result.data[0], local: false } : item
+      );
+      onFinish();
+    } catch {
+      onError();
+    }
+  }
+
+  function deleteAttachment(fileId: string) {
+    fileList.value = fileList.value.filter((file) => file.id !== fileId);
   }
 
   function renderDisabledTag(option: NaiveMentionOption) {
@@ -295,6 +368,18 @@
   :deep(.n-base-select-menu) {
     .n-base-select-option.n-base-select-option--show-checkmark {
       padding-right: 12px;
+    }
+  }
+  .crm-file-input-upload {
+    :deep(.n-upload-trigger) {
+      @apply flex cursor-pointer items-center;
+    }
+  }
+  .crm-comment-mention-input__mention--with-attachment {
+    :deep(.n-input),
+    :deep(.n-input-wrapper) {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
     }
   }
 </style>

@@ -14,7 +14,7 @@ export interface FollowCommentItem {
   parentId: string;
   replyToUserId: string;
   replyToUserName: string;
-  content: string; 
+  content: string;
   createUser: string;
   createUserName: string;
   createUserAvatar: string;
@@ -41,6 +41,7 @@ export interface SaveFollowCommentParams {
   replyToUserId?: string; // 回复二级评论时，用于标记回复XX
   content: string;
   mentionedUserIds?: string[]; // @成员ids
+  attachmentIds?: string[];
 }
 
 // 编辑评论接口入参
@@ -48,13 +49,15 @@ export interface UpdateFollowCommentParams {
   id: string;
   content: string;
   mentionedUserIds: string[];
+  attachmentIds?: string[];
 }
 
 // 评论输入组件提交值
 export interface FollowCommentSubmitValue {
   content: string;
-  mentionUsers?: FollowCommentUser[];  // 编辑回显使用
-  mentionUserIds?: string[];  // 调新增/编辑接口使用
+  mentionUsers?: FollowCommentUser[]; // 编辑回显使用
+  mentionUserIds?: string[]; // 调新增/编辑接口使用
+  attachmentIds?: string[];
 }
 
 export type FollowCommentEditorAction = 'create' | 'reply' | 'edit';

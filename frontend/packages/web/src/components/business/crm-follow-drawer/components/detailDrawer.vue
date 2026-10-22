@@ -51,6 +51,8 @@
           v-model:count="commentInitialCount"
           :type="commentResourceType"
           :source-id="props.sourceId"
+          :can-create="canComment"
+          :can-reply="canComment"
         />
       </CrmCard>
     </div>
@@ -63,11 +65,14 @@
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmComment from '@/components/business/crm-comment/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;
@@ -91,6 +96,7 @@
   }>();
 
   const { t } = useI18n();
+  const canComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
 
   const commentExpanded = ref(false);
   const commentResourceType = computed(() =>
