@@ -159,7 +159,7 @@
   const emit = defineEmits<{
     (e: 'openDetail', id: string, resourceType: string, approvalTaskId: string, item: ApprovalTodoItem): void;
     (e: 'listInit', total: number, keys: string[]): void;
-    (e: 'approvalSuccess', singleItem: boolean): void;
+    (e: 'approvalSuccess', singleItem: boolean, approvalTaskId: string | undefined, count: number): void;
   }>();
 
   const selectedKeys = defineModel<any[]>('selectedKeys', {
@@ -265,25 +265,38 @@
   const approvalVisible = ref(false);
   const approvalType = ref<'approve' | 'reject'>('approve');
   const approvalItem = ref<ApprovalTodoItem>();
+  const lastActionTaskId = ref('');
+  const lastActionPosition = ref(-1);
+  const nextPendingQueue = ref<ApprovalTodoItem[]>([]);
+
+  function rememberActionPosition(item: ApprovalTodoItem) {
+    lastActionTaskId.value = item.approvalTaskId;
+    const currentIndex = list.value.findIndex((listItem) => listItem.approvalTaskId === item.approvalTaskId);
+    lastActionPosition.value = currentIndex;
+    nextPendingQueue.value = currentIndex >= 0 ? list.value.slice(currentIndex + 1) : [];
+  }
 
   function handleReject(item: ApprovalTodoItem) {
+    rememberActionPosition(item);
     approvalItem.value = item;
     approvalType.value = 'reject';
     approvalVisible.value = true;
   }
 
   function handleApprove(item: ApprovalTodoItem) {
+    rememberActionPosition(item);
     approvalItem.value = item;
     approvalType.value = 'approve';
     approvalVisible.value = true;
   }
 
-  async function handleApproveSuccess() {
+  function handleApproveSuccess() {
     const singleItem = Boolean(approvalItem.value && selectedKeys.value.length === 0);
-    await loadTaskList(true);
+    const currentApprovalTaskId = approvalItem.value?.approvalTaskId;
+    const count = singleItem ? 1 : selectedKeys.value.length;
     selectedKeys.value = [];
     approvalItem.value = undefined;
-    emit('approvalSuccess', singleItem);
+    emit('approvalSuccess', singleItem, currentApprovalTaskId, count);
   }
 
   function handleApproveCancel() {
@@ -336,7 +349,8 @@
     return standardResourceTypes.includes(item.resourceType) ? item.resourceType : getActiveResourceType();
   }
 
-  function handleOpenDetail(item: ApprovalTodoItem) {
+  function handleOpenDetail(item: ApprovalTodoItem, rememberPosition = true) {
+    if (rememberPosition) rememberActionPosition(item);
     emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId, item);
   }
 
@@ -363,9 +377,41 @@
 
   defineExpose({
     loadTaskList,
-    openNextPending() {
-      if (getTaskListType() === ApprovalListTypeEnum.PENDING && list.value.length) {
-        handleOpenDetail(list.value[0]);
+    async openNextPending(currentApprovalTaskId: string) {
+      if (getTaskListType() !== ApprovalListTypeEnum.PENDING) return;
+
+      const currentIndex = list.value.findIndex((item) => item.approvalTaskId === currentApprovalTaskId);
+      if (lastActionTaskId.value !== currentApprovalTaskId) {
+        if (currentIndex < 0) return;
+        nextPendingQueue.value = list.value.slice(currentIndex + 1);
+      }
+
+      if (
+        !nextPendingQueue.value.length &&
+        currentIndex >= 0 &&
+        currentIndex >= list.value.length - 2 &&
+        list.value.length < pageNation.value.total
+      ) {
+        pageNation.value.current += 1;
+        await loadTaskList(false);
+        nextPendingQueue.value = list.value.slice(currentIndex + 1);
+      }
+      if (!nextPendingQueue.value.length && currentIndex < 0 && lastActionPosition.value >= 0) {
+        const nextPosition = lastActionPosition.value;
+        while (list.value.length <= nextPosition && list.value.length < pageNation.value.total) {
+          pageNation.value.current += 1;
+          // Pages must be appended in order to keep the cached index accurate.
+          // eslint-disable-next-line no-await-in-loop
+          await loadTaskList(false);
+        }
+        nextPendingQueue.value = list.value.slice(nextPosition);
+      }
+      const nextItem = nextPendingQueue.value.shift();
+      await loadTaskList(true);
+      if (nextItem) {
+        lastActionTaskId.value = nextItem.approvalTaskId;
+        lastActionPosition.value = currentIndex >= 0 ? currentIndex : lastActionPosition.value;
+        handleOpenDetail(nextItem, false);
       }
     },
   });
