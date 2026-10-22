@@ -190,6 +190,9 @@ public class OrderService implements ApprovalResourceHandler {
                 ModuleFormConfigDTO.class);
         Order order = new Order();
         BeanUtils.copyBean(order, request);
+        if (StringUtils.isBlank(order.getOwner())) {
+            order.setOwner(operatorId);
+        }
         order.setId(IDGenerator.nextStr());
         order.setStage(stageConfigList.getFirst().getId());
         order.setPos(nextPos);

@@ -188,7 +188,7 @@ public class ContractService implements ApprovalResourceHandler {
         contract.setId(id);
         contract.setName(request.getName());
         contract.setCustomerId(request.getCustomerId());
-        contract.setOwner(request.getOwner());
+        contract.setOwner(StringUtils.isBlank(request.getOwner()) ? operatorId : request.getOwner());
         contract.setNumber(request.getNumber());
         contract.setStage(stageConfigList.getFirst().getId());
         contract.setPos(nextPos);
