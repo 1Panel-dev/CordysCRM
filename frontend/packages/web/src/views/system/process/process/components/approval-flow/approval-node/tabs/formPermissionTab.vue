@@ -64,9 +64,13 @@
   // 仅部分类型支持编辑， 其它类型的编辑按钮禁用
   function isEditableField(field: FormCreateField) {
     return (
-      ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.STATISTIC, FieldTypeEnum.DIVIDER, FieldTypeEnum.FORMULA].includes(
-        field.type
-      ) &&
+      ![
+        FieldTypeEnum.SERIAL_NUMBER,
+        FieldTypeEnum.STATISTIC,
+        FieldTypeEnum.DIVIDER,
+        FieldTypeEnum.FORMULA,
+        FieldTypeEnum.INPUT_MULTIPLE,
+      ].includes(field.type) &&
       field.editable !== false &&
       isReadableField(field) &&
       !field.resourceFieldId
