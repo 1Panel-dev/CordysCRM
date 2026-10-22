@@ -120,11 +120,6 @@
                 <version>9.11.1</version>
             </dependency>
             <dependency>
-                <groupId>org.webjars</groupId>
-                <artifactId>swagger-ui</artifactId>
-                <version>5.34.0</version>
-            </dependency>
-            <dependency>
                 <groupId>com.github.jsqlparser</groupId>
                 <artifactId>jsqlparser</artifactId>
                 <version>5.4</version>
