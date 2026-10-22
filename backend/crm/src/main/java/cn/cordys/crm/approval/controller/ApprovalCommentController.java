@@ -1,6 +1,6 @@
 package cn.cordys.crm.approval.controller;
 
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentAddRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentPageRequest;
@@ -26,7 +26,8 @@ public class ApprovalCommentController {
 
     @PostMapping("/page")
     @Operation(summary = "分页查询审批评论")
-    public Pager<List<ApprovalCommentResponse>> page(@Validated @RequestBody ApprovalCommentPageRequest request) {
+    public PagerWithCommentCount<List<ApprovalCommentResponse>> page(
+            @Validated @RequestBody ApprovalCommentPageRequest request) {
         return approvalCommentService.page(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
     }
