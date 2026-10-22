@@ -1,4 +1,3 @@
 FROM metersphere/alpine-openjdk21-jre
 
-RUN apk add --no-cache libc6-compat mysql mysql-client redis jq curl
-RUN curl -fsSL https://resource.fit2cloud.com/tmp/CVE-2026-91403/blocked.certs -o /opt/java/openjdk/lib/security/blocked.certs
+RUN apk add --no-cache libc6-compat mysql mysql-client redis jq
