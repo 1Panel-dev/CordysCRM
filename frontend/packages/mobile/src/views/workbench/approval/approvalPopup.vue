@@ -39,6 +39,15 @@
               },
             ]"
           />
+          <div class="mt-[8px] flex flex-wrap gap-[4px] px-[16px]">
+            <CrmTag
+              v-for="quickOpinion of quickOpinions"
+              :key="quickOpinion"
+              :tag="quickOpinion"
+              class="cursor-pointer"
+              @click="approvalForm.reason = quickOpinion"
+            />
+          </div>
           <CrmUploadFile
             :key="uploadKey"
             v-model:value="approvalForm.fileList"
@@ -217,6 +226,12 @@
   const isCommentRequired = computed(() =>
     props.isRejecting ? approvalConfig.value?.requireRejectComment : approvalConfig.value?.requireApproveComment
   );
+  const quickOpinions = computed(() =>
+    props.isRejecting
+      ? [t('workbench.approval.quickOpinion.reject1'), t('workbench.approval.quickOpinion.reject2')]
+      : [t('workbench.approval.quickOpinion.approve1'), t('workbench.approval.quickOpinion.approve2')]
+  );
+
   async function initApprovalConfig() {
     try {
       approvalConfig.value = await getApprovalConfigDetail(props.resourceType);

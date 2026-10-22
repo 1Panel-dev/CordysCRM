@@ -6,6 +6,30 @@
       <CrmTag :tag="displayCount" />
     </div>
 
+    <div
+      v-if="props.showTimeSort"
+      class="crm-comment-header__sort"
+      @click="emit('sortChange', props.sortOrder === 'desc' ? 'asc' : 'desc')"
+      @keydown.enter.prevent="emit('sortChange', props.sortOrder === 'desc' ? 'asc' : 'desc')"
+      @keydown.space.prevent="emit('sortChange', props.sortOrder === 'desc' ? 'asc' : 'desc')"
+    >
+      {{ t('crmComment.timeSort') }}
+      <span class="crm-comment-header__sort-arrows">
+        <CrmIcon
+          name="iconicon_chevron_up"
+          width="14px"
+          height="14px"
+          class="mb-[-6px]"
+          :color="props.sortOrder === 'asc' ? 'var(--primary-8)' : 'var(--text-n4)'"
+        />
+        <CrmIcon
+          name="iconicon_chevron_down"
+          width="14px"
+          height="14px"
+          :color="props.sortOrder === 'desc' ? 'var(--primary-8)' : 'var(--text-n4)'"
+        />
+      </span>
+    </div>
     <van-button
       v-if="props.showAdd"
       class="crm-comment-header__add"
@@ -32,15 +56,20 @@
       count?: number;
       title?: string;
       showAdd?: boolean;
+      showTimeSort?: boolean;
+      sortOrder?: 'asc' | 'desc';
     }>(),
     {
       count: 0,
       showAdd: true,
+      showTimeSort: false,
+      sortOrder: 'desc',
     }
   );
 
   const emit = defineEmits<{
     (event: 'add'): void;
+    (event: 'sortChange', value: 'asc' | 'desc'): void;
   }>();
 
   const { t } = useI18n();
@@ -80,5 +109,20 @@
     border-color: var(--text-n7);
     color: var(--text-n1);
     background-color: var(--text-n10);
+  }
+  .crm-comment-header__sort {
+    display: flex;
+    margin-left: auto;
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+    color: var(--text-n1);
+    background: var(--text-n8);
+    cursor: pointer;
+    gap: 4px;
+  }
+  .crm-comment-header__sort-arrows {
+    display: flex;
+    flex-direction: column;
   }
 </style>

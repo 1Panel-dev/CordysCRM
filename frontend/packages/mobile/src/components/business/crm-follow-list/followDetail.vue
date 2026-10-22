@@ -17,6 +17,8 @@
         class="crm-comment--detail"
         :type="commentType"
         :source-id="sourceId"
+        :can-create="canComment"
+        :can-reply="canComment"
         @change-editor="commentEditing = Boolean($event)"
       />
     </div>
@@ -51,6 +53,7 @@
   import { showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
@@ -62,6 +65,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const route = useRoute();
   const router = useRouter();
@@ -72,6 +76,7 @@
   const sourceId = computed(() => route.query.id?.toString() || '');
   const commentType = computed<MobileCommentResourceType>(() => (isPlan.value ? 'plan' : 'record'));
   const canEditDetail = computed(() => route.query.readonly?.toString() !== 'true');
+  const canComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
   const commentEditing = ref(false);
 
   const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({

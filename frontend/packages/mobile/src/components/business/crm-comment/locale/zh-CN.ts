@@ -1,6 +1,7 @@
 export default {
   'crmComment.title': '评论',
   'crmComment.addComment': '添加评论',
+  'crmComment.timeSort': '时间排序',
   'crmComment.commentPlaceholder': '输入评论，支持',
   'crmComment.commentPlaceholderOthers': '他人',
   'crmComment.replyPlaceholder': '回复{name}',
