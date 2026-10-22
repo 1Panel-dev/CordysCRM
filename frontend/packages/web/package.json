@@ -40,7 +40,8 @@
     "sortablejs": "^1.15.7",
     "vfonts": "^0.0.3",
     "vue-draggable-plus": "^0.6.1",
-    "vue3-colorpicker": "^2.3.0"
+    "vue3-colorpicker": "^2.3.0",
+    "xq-doc-viewer": "^0.1.8"
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
@@ -52,6 +53,7 @@
     "@vue/test-utils": "^2.4.10",
     "color": "^4.2.3",
     "consola": "^2.15.3",
+    "cross-env": "^10.1.0",
     "fast-glob": "^3.3.3",
     "jsdom": "^22.1.0",
     "less": "4.3.0",

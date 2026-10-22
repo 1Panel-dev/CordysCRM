@@ -3,7 +3,7 @@
  * 生成打包分析
  */
 import { isReportMode } from '../utils';
-import visualizer from 'rollup-plugin-visualizer';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default function configVisualizerPlugin() {
   if (isReportMode()) {
