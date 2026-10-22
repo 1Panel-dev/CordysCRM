@@ -619,7 +619,7 @@ public class PoolCustomerService {
     public void checkPoolMember(String poolId, String userId, String orgId) {
         CustomerPool pool = poolMapper.selectByPrimaryKey(poolId);
         if (pool == null) {
-            throw new GenericException(Translator.get("customer_pool_not_exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer_pool_not_exist"));
         }
         if (!isPoolMember(pool, userId, orgId)) {
             throw new GenericException(Translator.get("customer_pool_member_access_fail"));
@@ -658,7 +658,7 @@ public class PoolCustomerService {
     public String getPoolIdByCustomerId(String customerId) {
         Customer customer = customerMapper.selectByPrimaryKey(customerId);
         if (customer == null) {
-            throw new GenericException(Translator.get("customer.not.exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer.not.exist"));
         }
         return customer.getPoolId();
     }
@@ -666,7 +666,7 @@ public class PoolCustomerService {
     private Customer getPoolCustomer(String id, String orgId) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         if (customer == null || !Objects.equals(customer.getOrganizationId(), orgId)) {
-            throw new GenericException(Translator.get("customer.not.exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer.not.exist"));
         }
         if (!Boolean.TRUE.equals(customer.getInSharedPool())) {
             throw new GenericException(Translator.getWithArgs("customer.pool.occupied", customer.getName()));
@@ -830,7 +830,7 @@ public class PoolCustomerService {
         }
         CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         if (pool == null) {
-            throw new GenericException(Translator.get("customer_pool_not_exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer_pool_not_exist"));
         }
         return checkImportExcel(file, request.getImportType(), orgId);
     }

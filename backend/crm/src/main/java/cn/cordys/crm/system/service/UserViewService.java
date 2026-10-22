@@ -7,6 +7,7 @@ import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.*;
@@ -168,7 +169,7 @@ public class UserViewService {
 
     private void checkView(String userId, String id, String orgId) {
         if (extUserViewMapper.countUserView(userId, id, orgId) <= 0) {
-            throw new GenericException(Translator.get("view_blank"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("view_blank"));
         }
     }
 

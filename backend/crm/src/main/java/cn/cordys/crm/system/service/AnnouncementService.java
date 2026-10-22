@@ -9,6 +9,7 @@ import cn.cordys.common.constants.TopicConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.redis.MessagePublisher;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -143,7 +144,7 @@ public class AnnouncementService {
         String organizationId = request.getOrganizationId();
         Announcement originalAnnouncement = announcementMapper.selectByPrimaryKey(request.getId());
         if (originalAnnouncement == null) {
-            throw new GenericException(Translator.get("announcement.blank"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("announcement.blank"));
         }
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
         Set<String> userSet = new HashSet<>();
@@ -292,7 +293,7 @@ public class AnnouncementService {
     public void delete(String id) {
         Announcement announcement = announcementMapper.selectByPrimaryKey(id);
         if (announcement == null) {
-            throw new RuntimeException(Translator.get("announcement.blank"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("announcement.blank"));
         }
         deleteAnnouncementKeyById(id, announcement.getOrganizationId());
         announcementMapper.deleteByPrimaryKey(id);
@@ -328,7 +329,7 @@ public class AnnouncementService {
     public AnnouncementDTO detail(String id) {
         AnnouncementDTO announcementDTO = extAnnouncementMapper.selectById(id);
         if (announcementDTO == null) {
-            throw new RuntimeException(Translator.get("announcement.blank"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("announcement.blank"));
         }
         setReceiverNameOption(announcementDTO);
         announcementDTO.setContentText(new String(announcementDTO.getContent(), StandardCharsets.UTF_8));

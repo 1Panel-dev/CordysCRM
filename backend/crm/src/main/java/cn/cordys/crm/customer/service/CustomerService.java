@@ -362,7 +362,7 @@ public class CustomerService implements ApprovalResourceHandler {
     public CustomerGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
         CustomerGetResponse getResponse = get(id);
         if (getResponse == null) {
-            throw new GenericException(Translator.get("customer.not.exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer.not.exist"));
         }
         // 待办审批人和有效评论@用户可查看对应资源详情。
         if (resourcePermissionService.hasApprovalViewPermission(id, userId, orgId, FormKey.CUSTOMER.getKey())) {
@@ -1015,7 +1015,7 @@ public class CustomerService implements ApprovalResourceHandler {
         CustomerPool customerPool = customerPoolMapper.selectByPrimaryKey(poolId);
         if (customerPool == null || !Strings.CS.equals(customerPool.getOrganizationId(), orgId)
                 || !BooleanUtils.isTrue(customerPool.getEnable())) {
-            throw new GenericException(Translator.get("customer_pool_not_exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer_pool_not_exist"));
         }
         return customerPool;
     }
