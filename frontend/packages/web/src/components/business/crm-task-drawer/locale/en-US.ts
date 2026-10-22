@@ -22,4 +22,5 @@ export default {
   'taskDrawer.categoryComplete': 'This category is complete · {count} items processed',
   'taskDrawer.processedCount': 'This category is complete · {count} items processed',
   'taskDrawer.mentionedMe': 'Mentioned Me',
+  'taskDrawer.autoOpenNext': 'Automatically open next',
 };

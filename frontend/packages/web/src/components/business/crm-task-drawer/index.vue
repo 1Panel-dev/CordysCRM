@@ -59,7 +59,7 @@
               </div>
             </div>
             <div v-else>{{ activeModuleTitle }}</div>
-            <div v-if="activeTaskType.startsWith('pending-')" class="text-[12px] font-normal text-[var(--text-n4)]">
+            <div v-if="activeTaskType.startsWith('pending-')" class="text-[14px] leading-[24px] text-[var(--text-n4)]">
               {{
                 listTotal > 0
                   ? t('taskDrawer.pendingCount', { count: listTotal })
@@ -254,6 +254,8 @@
     required: true,
     default: false,
   });
+  const autoOpenNext = ref(true);
+  provide('crmTaskAutoOpenNext', autoOpenNext);
 
   const keyword = ref('');
   const activeTaskType = ref<string>('');
@@ -436,7 +438,9 @@
     if (!listAlreadyReloaded) {
       await taskListRef.value?.loadTaskList(true);
     }
-    taskListRef.value?.openNextPending();
+    if (autoOpenNext.value) {
+      taskListRef.value?.openNextPending();
+    }
   }
 
   function handleTaskListApprovalSuccess(singleItem: boolean) {

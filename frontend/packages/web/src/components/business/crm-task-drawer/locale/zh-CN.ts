@@ -22,4 +22,5 @@ export default {
   'taskDrawer.categoryComplete': '本分类已处理完 · 共处理 {count} 条',
   'taskDrawer.processedCount': '本分类已处理完 · 共处理 {count} 条',
   'taskDrawer.mentionedMe': "{'@'}我的",
+  'taskDrawer.autoOpenNext': '自动打开下一个',
 };

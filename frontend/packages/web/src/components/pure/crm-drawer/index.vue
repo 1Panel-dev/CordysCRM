@@ -38,7 +38,11 @@
                 </n-tooltip>
               </slot>
             </div>
-            <div class="flex flex-shrink-0 justify-end">
+            <div class="flex flex-shrink-0 items-center justify-end gap-[12px]">
+              <div v-if="autoOpenNextEnabled" class="flex items-center gap-[8px] text-[14px] font-normal">
+                <span>{{ t('taskDrawer.autoOpenNext') }}</span>
+                <n-switch v-model:value="autoOpenNextValue" size="small" />
+              </div>
               <slot name="titleRight"></slot>
             </div>
           </div>
@@ -87,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDrawer, NDrawerContent, NIcon, NScrollbar, NSpin, NTooltip } from 'naive-ui';
+  import { NButton, NDrawer, NDrawerContent, NIcon, NScrollbar, NSpin, NSwitch, NTooltip } from 'naive-ui';
   import { ChevronBackOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -95,7 +99,17 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
+  import type { Ref } from 'vue';
+
   const { t } = useI18n();
+  const autoOpenNext = inject<Ref<boolean> | null>('crmTaskAutoOpenNext', null);
+  const autoOpenNextEnabled = computed(() => Boolean(autoOpenNext));
+  const autoOpenNextValue = computed({
+    get: () => autoOpenNext?.value ?? false,
+    set: (value: boolean) => {
+      if (autoOpenNext) autoOpenNext.value = value;
+    },
+  });
   const props = withDefaults(
     defineProps<{
       width?: string | number;
