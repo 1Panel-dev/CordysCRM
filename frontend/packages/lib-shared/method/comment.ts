@@ -15,7 +15,7 @@ export const FOLLOW_COMMENT_OPERATE_PERMISSIONS = [
 export const FOLLOW_COMMENT_MAX_LENGTH = 300;
 
 function getCommentReplyCount(comment: FollowCommentItem) {
-  return typeof comment.replyCount === 'number' ? comment.replyCount : (comment.replies?.length || 0);
+  return typeof comment.replyCount === 'number' ? comment.replyCount : comment.replies?.length || 0;
 }
 
 export function getLocalCommentCount(comments: FollowCommentItem[] = []) {
@@ -52,6 +52,7 @@ export function buildSaveCommentParams({
     replyToUserId: parentComment?.createUser,
     content: value.content,
     mentionedUserIds: value.mentionUserIds || [],
+    attachmentIds: value.attachmentIds || [],
   };
 }
 
@@ -66,5 +67,6 @@ export function buildUpdateCommentParams({
     id: commentId,
     content: value.content,
     mentionedUserIds: value.mentionUserIds || [],
+    attachmentIds: value.attachmentIds || [],
   };
 }

@@ -12,19 +12,23 @@ import type {
 } from '@lib/shared/models/follow';
 
 import {
+  addApprovalComment,
   addFollowPlanComment,
   addFollowRecordComment,
+  deleteApprovalComment,
   deleteFollowPlanComment,
   deleteFollowRecordComment,
+  getApprovalCommentList,
   getFollowPlanCommentList,
   getFollowRecordCommentList,
+  updateApprovalComment,
   updateFollowPlanComment,
   updateFollowRecordComment,
 } from '@/api/modules';
 
 import type { Ref } from 'vue';
 
-export type CommentResourceType = 'followRecord' | 'followPlan';
+export type CommentResourceType = 'followRecord' | 'followPlan' | 'approval';
 
 interface CommentApiGroup {
   list: (params: FollowCommentListParams) => Promise<FollowCommentPageResult>;
@@ -37,6 +41,8 @@ interface UseCommentResourceOptions {
   type: Ref<CommentResourceType>;
   sourceId: Ref<string>;
   initialCount?: Ref<number | undefined>;
+  sortOrder?: Ref<'asc' | 'desc'>;
+  enableSort?: Ref<boolean | undefined>;
   pageSize?: number;
 }
 
@@ -54,6 +60,12 @@ const commentApiMap: Record<CommentResourceType, CommentApiGroup> = {
     add: addFollowPlanComment,
     update: updateFollowPlanComment,
     delete: deleteFollowPlanComment,
+  },
+  approval: {
+    list: getApprovalCommentList,
+    add: addApprovalComment,
+    update: updateApprovalComment,
+    delete: deleteApprovalComment,
   },
 };
 
@@ -100,6 +112,13 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
         resourceId: sourceId,
         current: requestCurrent,
         pageSize,
+        ...(options.enableSort?.value
+          ? {
+              sort: {
+                type: options.sortOrder?.value || 'desc',
+              },
+            }
+          : {}),
       });
 
       comments.value = refresh ? res.list : comments.value.concat(res.list);

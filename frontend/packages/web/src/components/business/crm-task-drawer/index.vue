@@ -304,6 +304,12 @@
       count: 0,
       children: moduleItems.value.map((e) => ({ ...e, name: `copied-${e.name}` })),
     },
+    {
+      name: 'mentioned',
+      title: t('taskDrawer.mentionedMe'),
+      count: 0,
+      children: moduleItems.value.map((e) => ({ ...e, name: `mentioned-${e.name}` })),
+    },
   ]);
 
   function getStatisticCount(resourceType: string) {

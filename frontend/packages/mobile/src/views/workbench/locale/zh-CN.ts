@@ -43,6 +43,7 @@ export default {
   'workbench.task': '我的待办',
   'workbench.myApproval': '待我审批',
   'workbench.copyToMe': '抄送我的',
+  'workbench.mentionedMe': "{'@'}我的",
   'workbench.myApply': '我发起的',
   'workbench.myProcess': '我处理的',
   'workbench.result.PENDING': '待提审',

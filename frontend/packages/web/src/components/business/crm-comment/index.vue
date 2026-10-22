@@ -6,11 +6,17 @@
     :has-more="hasMore"
     :loading="loading"
     :submit-loading="submitLoading"
+    :can-create="props.canCreate"
+    :can-reply="props.canReply"
+    :enable-attachment="props.enableAttachment"
+    :show-time-sort="props.showTimeSort"
+    :sort-order="sortOrder"
     @create-submit="handleCreateComment"
     @reply-submit="handleReplyComment"
     @edit-submit="editComment"
     @delete="handleDeleteComment"
     @reach-bottom="() => loadComments()"
+    @sort-change="handleSortChange"
   />
 </template>
 
@@ -19,10 +25,21 @@
 
   import useCommentResource, { type CommentResourceType } from './useCommentResource';
 
-  const props = defineProps<{
-    type: CommentResourceType;
-    sourceId: string;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      type?: CommentResourceType;
+      sourceId: string;
+      canCreate?: boolean;
+      canReply?: boolean;
+      enableAttachment?: boolean;
+      showTimeSort?: boolean;
+    }>(),
+    {
+      canCreate: true,
+      canReply: true,
+      showTimeSort: false,
+    }
+  );
 
   const count = defineModel<number>('count', {
     default: 0,
@@ -31,6 +48,8 @@
   const expanded = defineModel<boolean>('expanded', {
     default: false,
   });
+
+  const sortOrder = ref<'asc' | 'desc'>('desc');
 
   const {
     comments,
@@ -44,9 +63,11 @@
     editComment,
     deleteComment,
   } = useCommentResource({
-    type: computed(() => props.type),
+    type: computed(() => props.type || 'followRecord'),
     sourceId: computed(() => props.sourceId),
     initialCount: computed(() => count.value),
+    sortOrder,
+    enableSort: computed(() => props.showTimeSort),
   });
 
   watch(resourceCommentCount, (value) => {
@@ -75,5 +96,12 @@
 
   async function handleDeleteComment(comment: Parameters<typeof deleteComment>[0]) {
     await deleteComment(comment);
+  }
+
+  function handleSortChange(value: 'asc' | 'desc') {
+    sortOrder.value = value;
+    if (expanded.value) {
+      loadComments(true);
+    }
   }
 </script>
