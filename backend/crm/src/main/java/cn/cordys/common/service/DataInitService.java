@@ -90,6 +90,7 @@ public class DataInitService {
             initOneTime(orderService::handleOldApprovalData, "handler.order.approval.status");
             // 更新标记以补齐新增系统标签，新环境仍只执行一次通用初始化。
             initOneTime(moduleFormService::initInternalDetailTabs, "init.clue.transition.detail.tab");
+            initOneTime(moduleFormService::initChangeLogTabs, "init.change.log.detail.tab");
         } finally {
             lock.unlock();
         }

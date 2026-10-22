@@ -39,4 +39,24 @@
             </include>
     </select>
 
+    <select id="listChangeLog" resultType="cn.cordys.crm.system.dto.response.ChangeLogResponse">
+        SELECT
+            t.id,
+            t.type,
+            t.module,
+            t.create_time,
+            t.create_user as operator,
+            t.resource_name,
+            t.detail
+        FROM
+        sys_operation_log t
+        WHERE t.organization_id = #{orgId}
+            AND t.resource_id = #{resourceId}
+            AND t.module IN
+            <foreach collection="modules" item="module" open="(" separator="," close=")">
+                #{module}
+            </foreach>
+        ORDER BY t.create_time DESC
+    </select>
+
 </mapper>
