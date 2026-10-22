@@ -59,7 +59,7 @@
               </div>
             </div>
             <div v-else>{{ activeModuleTitle }}</div>
-            <div v-if="activeTaskType.startsWith('pending-')" class="text-[12px] font-normal text-[var(--text-n4)]">
+            <div v-if="activeTaskType.startsWith('pending-')" class="text-[14px] leading-[24px] text-[var(--text-n4)]">
               {{
                 listTotal > 0
                   ? t('taskDrawer.pendingCount', { count: listTotal })
@@ -254,6 +254,8 @@
     required: true,
     default: false,
   });
+  const autoOpenNext = ref(true);
+  provide('crmTaskAutoOpenNext', autoOpenNext);
 
   const keyword = ref('');
   const activeTaskType = ref<string>('');
@@ -429,21 +431,26 @@
     }
   );
 
-  async function handleSuccessfulProcessing(count = 1, listAlreadyReloaded = false) {
+  async function handleSuccessfulProcessing(count = 1, currentApprovalTaskId?: string) {
     if (!activeTaskType.value.startsWith('pending-')) return;
     processedCount.value += count;
     await initStatistic();
-    if (!listAlreadyReloaded) {
+    if (autoOpenNext.value && currentApprovalTaskId) {
+      await taskListRef.value?.openNextPending(currentApprovalTaskId);
+    } else {
       await taskListRef.value?.loadTaskList(true);
     }
-    taskListRef.value?.openNextPending();
   }
 
-  function handleTaskListApprovalSuccess(singleItem: boolean) {
+  function handleTaskListApprovalSuccess(
+    singleItem: boolean,
+    currentApprovalTaskId: string | undefined,
+    count: number
+  ) {
     if (singleItem) {
-      handleSuccessfulProcessing(1, true);
+      handleSuccessfulProcessing(1, currentApprovalTaskId);
     } else {
-      initStatistic();
+      handleSuccessfulProcessing(count);
     }
   }
 
@@ -661,7 +668,7 @@
     closeDetailDrawers();
     allSelect.value = false;
     selectedKeys.value = [];
-    handleSuccessfulProcessing();
+    handleSuccessfulProcessing(1, approvalTaskId.value);
   }
 
   function handleCustomFormEdit(sourceId: string) {
