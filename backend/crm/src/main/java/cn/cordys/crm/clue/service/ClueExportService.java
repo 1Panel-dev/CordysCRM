@@ -17,6 +17,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,21 +43,26 @@ public class ClueExportService extends BaseExportService {
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
-        var exportList = collectExportList(exportParam);
+        var queryResult = collectExportList(exportParam);
+        var exportList = queryResult.getLeft();
+        int queryCount = queryResult.getRight();
         if (CollectionUtils.isEmpty(exportList)) {
-            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0)
+                    .queryCount(queryCount).build();
         }
         // 构建自定义字段数据
         var dataList = clueService.buildListData(exportList, exportParam.getOrgId());
         // 构建选项数据
         Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(exportParam.getOrgId(), exportList,
                 dataList);
-        return buildExportMergeResult(taskId, exportParam, dataList, ClueListResponse::getModuleFields,
+        var result = buildExportMergeResult(taskId, exportParam, dataList, ClueListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         PoolClueFieldUtils.getSystemFieldMap(detail, optionMap, exportParam.getLocale()), cache));
+        result.setQueryCount(queryCount);
+        return result;
     }
 
-    private List<ClueListResponse> collectExportList(ExportDTO exportParam) {
+    private Pair<List<ClueListResponse>, Integer> collectExportList(ExportDTO exportParam) {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
@@ -68,9 +74,11 @@ public class ClueExportService extends BaseExportService {
             PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
             exportList = extClueMapper.list(request, orgId, userId, deptDataPermission, false);
         }
+        int queryCount = exportList.size();
         // 按审批流状态权限过滤, 无导出权限的状态不导出
-        return filterApprovalExportPermission(exportList, orgId, FormKey.CLUE.getKey(),
+        var filtered = filterApprovalExportPermission(exportList, orgId, FormKey.CLUE.getKey(),
                 ClueListResponse::getId, ClueListResponse::getApprovalStatus, approvalFlowService);
+        return Pair.of(filtered, queryCount);
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(List<ClueListResponse> dataList,

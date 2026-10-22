@@ -12,6 +12,7 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
@@ -78,6 +79,7 @@ class CustomerContactPermissionTest {
     private final ExtCustomerContactMapper contacts = mock(ExtCustomerContactMapper.class);
     private final CustomerCollaborationService collaborations = mock(CustomerCollaborationService.class);
     private final BaseService base = mock(BaseService.class);
+    private final UserQueryService users = mock(UserQueryService.class);
     private final DataScopeService dataScope = spy(new DataScopeService());
     private final ApprovalFlowService approvals = mock(ApprovalFlowService.class);
     private final ResourcePermissionService resourcePermissions = new ResourcePermissionService();
@@ -119,7 +121,7 @@ class CustomerContactPermissionTest {
                 contact("collaboration", "collaborator"), contact("read-only", "reader-only")));
         scope.setSelf(true);
         doReturn(scope).when(dataScope).getDeptDataPermission(anyString(), anyString(), anyString());
-        ReflectionTestUtils.setField(dataScope, "baseService", base);
+        ReflectionTestUtils.setField(dataScope, "userQueryService", users);
         Map<String, UserDeptDTO> departments = Map.of(
                 "owner", ownerDepartment,
                 USER, new UserDeptDTO(USER, "dept-a", "示例部门"),
@@ -127,6 +129,7 @@ class CustomerContactPermissionTest {
         when(base.getUserDeptMapByUserId("owner", ORG)).thenReturn(departments.get("owner"));
         when(base.getUserDeptMapByUserIds(anyList(), eq(ORG))).thenReturn(departments);
         when(base.getUserDeptMapByUserIds(anySet(), eq(ORG))).thenReturn(departments);
+        when(users.getUserDeptMapByUserIds(anyList(), eq(ORG))).thenReturn(departments);
         configureCollaboration("NONE");
 
         ReflectionTestUtils.setField(provider, "customerMapper", customers);

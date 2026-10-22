@@ -3,11 +3,18 @@ package cn.cordys.crm.analytics.service;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Aggregate;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Operator;
-import cn.cordys.crm.analytics.dto.response.AnalyticsSchemaResponse.UnsupportedField;
 import cn.cordys.crm.analytics.dto.response.AnalyticsSchemaResponse;
+import cn.cordys.crm.analytics.dto.response.AnalyticsSchemaResponse.UnsupportedField;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.system.constants.FieldSourceType;
-import cn.cordys.crm.system.dto.field.*;
+import cn.cordys.crm.system.dto.field.DatasourceField;
+import cn.cordys.crm.system.dto.field.DateTimeField;
+import cn.cordys.crm.system.dto.field.DepartmentField;
+import cn.cordys.crm.system.dto.field.FormulaField;
+import cn.cordys.crm.system.dto.field.InputField;
+import cn.cordys.crm.system.dto.field.InputNumberField;
+import cn.cordys.crm.system.dto.field.MemberField;
+import cn.cordys.crm.system.dto.field.StatisticField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.SubField;
@@ -20,11 +27,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import static cn.cordys.crm.analytics.service.AnalyticsAccessService.invalid;
 
-/** 从当前表单发布可执行字段和数据粒度；引用展示字段不冒充持久化值。 */
+/**
+ * 从当前表单发布可执行字段和数据粒度；引用展示字段不冒充持久化值。
+ */
 @Service
 public class AnalyticsSchemaService {
     @Resource
@@ -177,8 +192,8 @@ public class AnalyticsSchemaService {
             return "SUBTABLE_GRAIN";
         }
         if (!Set.of("INPUT", "INPUT_NUMBER", "DATE_TIME", "RADIO", "SELECT", "MEMBER", "DEPARTMENT",
-                "PHONE", "DATA_SOURCE", "SERIAL_NUMBER", "FORMULA", "STATISTIC", "CHECKBOX", "SELECT_MULTIPLE",
-                "INPUT_MULTIPLE", "MEMBER_MULTIPLE", "DEPARTMENT_MULTIPLE", "DATA_SOURCE_MULTIPLE")
+                        "PHONE", "DATA_SOURCE", "SERIAL_NUMBER", "FORMULA", "STATISTIC", "CHECKBOX", "SELECT_MULTIPLE",
+                        "INPUT_MULTIPLE", "MEMBER_MULTIPLE", "DEPARTMENT_MULTIPLE", "DATA_SOURCE_MULTIPLE")
                 .contains(field.getType())) {
             return "UNSUPPORTED_FIELD_TYPE";
         }
@@ -216,10 +231,10 @@ public class AnalyticsSchemaService {
             return;
         }
         BaseField field = switch (type) {
-        case "DATE_TIME" -> new DateTimeField();
-        case "MEMBER" -> new MemberField();
-        case "DEPARTMENT" -> new DepartmentField();
-        default -> new InputField();
+            case "DATE_TIME" -> new DateTimeField();
+            case "MEMBER" -> new MemberField();
+            case "DEPARTMENT" -> new DepartmentField();
+            default -> new InputField();
         };
         field.setId(key);
         field.setBusinessKey(key);
@@ -231,11 +246,11 @@ public class AnalyticsSchemaService {
     }
 
     public record Field(BaseField base, AnalyticsSchemaResponse.Field schema, String column, boolean department,
-            boolean line) {
+                        boolean line) {
     }
 
     public record Catalog(ModuleFormConfigDTO config, Map<String, Field> fields, AnalyticsSchemaResponse response,
-            Map<String, Catalog> subtables) {
+                          Map<String, Catalog> subtables) {
         public Catalog dataset(String id) {
             if (id == null) {
                 return this;

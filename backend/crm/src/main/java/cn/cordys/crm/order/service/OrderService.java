@@ -18,6 +18,7 @@ import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.formula.FormulaEngine;
+import cn.cordys.common.formula.SerialNumberFormulaService;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -26,7 +27,6 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
@@ -123,8 +123,10 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class OrderService extends BaseExportService implements ApprovalResourceHandler {
+public class OrderService implements ApprovalResourceHandler {
 
+    @Resource
+    private SerialNumberFormulaService serialNumberFormulaService;
     @Resource
     private OrderFieldService orderFieldService;
     @Resource
@@ -1271,7 +1273,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response,
-                        processDuplicateLastLevelHeads(
+                        EasyExcelExporter.processDuplicateLastLevelHeads(
                                 moduleFormService.getCustomImportHeadsNoRef(FormKey.ORDER.getKey(), currentOrg)),
                         Translator.get("order.import_tpl.name"), Translator.get(SheetKey.DATA),
                         Translator.get(SheetKey.COMMENT),
@@ -1355,7 +1357,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                             .findAny();
                     // 获取当前表单中计算类型字段公式包含serialOptional流水号的所有字段（排除显示字段中的计算类型字段）
                     List<BaseField> formulaFields = serialOptional
-                            .map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
+                            .map(serial -> serialNumberFormulaService.serialNumberFormulaFields(fields, serial))
+                            .orElseGet(List::of);
                     for (int i = 0; i < orders.size(); i++) {
                         Order order = orders.get(i);
                         if (serialOptional.isPresent()) {
@@ -1365,7 +1368,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
                                     FormKey.ORDER.getKey());
                             order.setNumber(serialNo);
                             // 根据获取到的计算字段，进行占位符替换，比如serialOptional流水号字段的name是订单编号 如果计算字段包含 ${订单编号} 则获取到的serialNo替换掉占位符，然后set到order的对应计算字段中
-                            fillSerialNumberFormulas(order, serialOptional.get(), formulaFields, orderFields, serialNo);
+                            serialNumberFormulaService.fillSerialNumberFormulas(order, serialOptional.get(),
+                                    formulaFields, orderFields, serialNo);
                         }
                         order.setApprovalStatus(ApprovalStatus.NONE.name());
                         order.setStage(stageConfigList.getFirst().getId());

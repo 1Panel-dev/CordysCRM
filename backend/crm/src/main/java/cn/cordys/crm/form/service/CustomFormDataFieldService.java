@@ -8,6 +8,8 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.function.Supplier;
+
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class CustomFormDataFieldService extends BaseResourceFieldService<CustomFormDataField, CustomFormDataFieldBlob> {
@@ -25,6 +27,23 @@ public class CustomFormDataFieldService extends BaseResourceFieldService<CustomF
 
     public static void clearFormKey() {
         FORM_KEY_HOLDER.remove();
+    }
+
+    /**
+     * 引用其他自定义表单时临时切换上下文，结束后恢复调用方的表单。
+     */
+    public static <R> R withFormKey(String formKey, Supplier<R> action) {
+        String previous = FORM_KEY_HOLDER.get();
+        try {
+            FORM_KEY_HOLDER.set(formKey);
+            return action.get();
+        } finally {
+            if (previous == null) {
+                FORM_KEY_HOLDER.remove();
+            } else {
+                FORM_KEY_HOLDER.set(previous);
+            }
+        }
     }
 
     @Override

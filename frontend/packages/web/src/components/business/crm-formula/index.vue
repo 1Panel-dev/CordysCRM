@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
   import { NTooltip } from 'naive-ui';
-  import { debounce } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FormConfig } from '@lib/shared/models/system/module';
@@ -96,8 +95,8 @@
 
   const formulaTooltip = computed(() => formulaDisplayInfo.value.tooltip);
 
-  // 根据公式实时计算 todo 等待优化
-  const updateValue = debounce(() => {
+  // 及时回写计算结果，避免紧接着保存时提交旧值。
+  function updateValue() {
     const { formula } = props.fieldConfig;
     const resultFormatOptions = getFormulaResultFormatOptions(props.fieldConfig);
     const result = executeFormFormula({
@@ -127,7 +126,7 @@
     if (Object.is(next, value.value)) return;
     value.value = next;
     emit('change', next);
-  }, 100);
+  }
 
   watch(
     () => props.fieldConfig.defaultValue,
@@ -144,14 +143,7 @@
     }
   );
 
-  watch(
-    () => props.formDetail,
-    () => {
-      updateValue.flush?.();
-      updateValue();
-    },
-    { deep: true }
-  );
+  watch(() => props.formDetail, updateValue, { deep: true });
 
   watch(
     value,

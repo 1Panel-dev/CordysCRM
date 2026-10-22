@@ -5,10 +5,8 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.context.CustomFunction;
 import cn.cordys.common.context.ExportTaskFunction;
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.formula.FormulaEngine;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
@@ -33,6 +31,7 @@ import cn.cordys.crm.system.service.ExportTaskService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.file.engine.DefaultRepositoryDir;
 import cn.cordys.registry.ExportThreadRegistry;
 import cn.idev.excel.EasyExcel;
@@ -48,15 +47,12 @@ import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -82,8 +78,6 @@ public abstract class BaseExportService {
     private LogService logService;
     @Resource
     private ExportTaskService exportTaskService;
-    @Resource
-    private FormulaEngine formulaEngine;
 
     public Map<String, BaseField> getFieldConfigMap(String formKey, String orgId) {
         return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
@@ -102,6 +96,8 @@ public abstract class BaseExportService {
                 .excelType(ExcelTypeEnum.XLSX)
                 .build()) {
             WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+            // 无数据时也创建工作表和表头，避免生成无法打开的空工作簿。
+            writer.write(List.of(), sheet);
 
             int current = 1;
             t.setPageSize(EXPORT_MAX_COUNT);
@@ -150,6 +146,7 @@ public abstract class BaseExportService {
                 .build()) {
             WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
             setRowAccessWindowSize(writer);
+            writer.write(List.of(), sheet);
 
             int offset = 2, current = 1;
             t.setPageSize(EXPORT_MAX_COUNT);
@@ -161,25 +158,23 @@ public abstract class BaseExportService {
 
                 t.setCurrent(current);
                 MergeResult mergeResult = func.apply(t);
-                if (CollectionUtils.isEmpty(mergeResult.getDataList())) {
-                    break;
+                if (CollectionUtils.isNotEmpty(mergeResult.getDataList())) {
+                    // 写入数据
+                    writer.write(mergeResult.getDataList(), sheet);
+                    // 执行合并策略
+                    Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
+                    SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns,
+                            getSummaryColIdx(headList, mergeColumns), offset);
+                    strategy.merge(mergeSheet);
+                    offset += mergeResult.getDataList().size();
                 }
-                // 写入数据
-                writer.write(mergeResult.getDataList(), sheet);
-                // 执行合并策略
-                Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-                SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns,
-                        getSummaryColIdx(headList, mergeColumns), offset);
-                strategy.merge(mergeSheet);
                 // 使用 queryCount（过滤前数量）判断是否还有下一页，避免过滤后数量减少导致提前终止
                 int fetchedCount = mergeResult.getQueryCount() > 0 ? mergeResult.getQueryCount()
                         : mergeResult.getHandleCount();
                 if (fetchedCount < EXPORT_MAX_COUNT) {
                     break;
                 }
-                // 下一页&&记录偏移量
                 current++;
-                offset += mergeResult.getDataList().size();
             }
         }
     }
@@ -252,7 +247,8 @@ public abstract class BaseExportService {
         exportParam.setMergeHeads(
                 getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
         return exportWithMergeStrategy(exportParam,
-                (task) -> batchHandleDataWithMergeStrategy(processDuplicateLastLevelHeads(exportHeads), task,
+                (task) -> batchHandleDataWithMergeStrategy(
+                        EasyExcelExporter.processDuplicateLastLevelHeads(exportHeads), task,
                         exportParam.getFileName(),
                         mergeColumns, exportParam.getPageRequest(),
                         t -> getExportMergeData(task.getId(), exportParam)));
@@ -272,53 +268,34 @@ public abstract class BaseExportService {
                 getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
         return exportWithMergeStrategy(exportParam, (task) -> {
             File file = prepareExportFile(task.getFileId(), exportParam.getFileName(), task.getOrganizationId());
-            try (ExcelWriter writer = EasyExcel.write(file).head(processDuplicateLastLevelHeads(exportHeads))
+            try (ExcelWriter writer = EasyExcel.write(file)
+                    .head(EasyExcelExporter.processDuplicateLastLevelHeads(exportHeads))
                     .excelType(ExcelTypeEnum.XLSX)
                     .registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
                 WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
                 setRowAccessWindowSize(writer);
-                AtomicInteger offset = new AtomicInteger(2);
-                List<String> allSelectIds = exportParam.getSelectIds();
-                SubListUtils.dealForSubList(allSelectIds, SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
-                    MergeResult mergeResult = new MergeResult();
-                    try {
-                        exportParam.setSelectIds(subIds);
-                        mergeResult = getExportMergeData(task.getId(), exportParam);
-                    } catch (InterruptedException e) {
-                        log.error("任务停止中断", e);
-                        exportTaskService.update(task.getId(), ExportConstants.ExportStatus.STOP.toString(),
-                                exportParam.getUserId());
+                writer.write(List.of(), sheet);
+                int offset = 2;
+                List<String> allSelectIds = new ArrayList<>(
+                        Optional.ofNullable(exportParam.getSelectIds()).orElseGet(List::of));
+                for (int from = 0; from < allSelectIds.size(); from += SubListUtils.DEFAULT_EXPORT_BATCH_SIZE) {
+                    if (ExportThreadRegistry.isInterrupted(task.getId())) {
+                        throw new InterruptedException("线程已被中断，主动退出");
                     }
+                    exportParam.setSelectIds(allSelectIds.subList(from,
+                            Math.min(from + SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, allSelectIds.size())));
+                    MergeResult mergeResult = getExportMergeData(task.getId(), exportParam);
                     // 写入数据
                     writer.write(mergeResult.getDataList(), sheet);
                     // 执行合并策略
                     Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
                     SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns,
-                            getSummaryColIdx(exportHeads, mergeColumns), offset.get());
+                            getSummaryColIdx(exportHeads, mergeColumns), offset);
                     strategy.merge(mergeSheet);
-                    offset.addAndGet(mergeResult.getDataList().size());
-                });
+                    offset += mergeResult.getDataList().size();
+                }
             }
         });
-    }
-
-    public List<List<String>> processDuplicateLastLevelHeads(List<List<String>> exportHeads) {
-        Map<String, Integer> countMap = new HashMap<>();
-        List<List<String>> result = new ArrayList<>(exportHeads.size());
-        for (List<String> head : exportHeads) {
-            List<String> newHead = new ArrayList<>(head);
-            int lastIndex = newHead.size() - 1;
-            String lastHead = newHead.get(lastIndex);
-            int count = countMap.getOrDefault(lastHead, 0);
-            if (count > 0) {
-                newHead.set(
-                        lastIndex,
-                        lastHead + "\u00A0".repeat(count));
-            }
-            countMap.put(lastHead, count + 1);
-            result.add(newHead);
-        }
-        return result;
     }
 
     /**
@@ -630,6 +607,9 @@ public abstract class BaseExportService {
                     }
                     dbSemaphore.acquire();
                     try {
+                        if (ExportThreadRegistry.isInterrupted(taskId)) {
+                            throw new InterruptedException("导出中断");
+                        }
                         List<List<Object>> buildData = rowBuilder.buildRow(detail, exportFieldParam, exportMetas,
                                 cacheMap);
                         return Pair.of(idx, buildData);
@@ -643,8 +623,12 @@ public abstract class BaseExportService {
             for (Future<Pair<Integer, List<List<Object>>>> f : futures) {
                 try {
                     results.add(f.get());
-                } catch (Exception e) {
-                    log.error("Parse row data error: {}", e.getMessage(), e);
+                } catch (InterruptedException | ExecutionException e) {
+                    executor.shutdownNow();
+                    if (e instanceof InterruptedException || e.getCause() instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                    throw new CompletionException(e instanceof ExecutionException ? e.getCause() : e);
                 }
             }
 
@@ -855,21 +839,30 @@ public abstract class BaseExportService {
 
                 func.apply();
 
+                if (ExportThreadRegistry.isInterrupted(exportTask.getId())) {
+                    throw new InterruptedException("线程已被中断，主动退出");
+                }
+
                 exportTaskService.update(
                         exportTask.getId(),
                         ExportConstants.ExportStatus.SUCCESS.name(),
                         userId);
             } catch (InterruptedException e) {
+                Thread.interrupted();
                 log.error("任务停止中断", e);
                 exportTaskService.update(
                         exportTask.getId(),
                         ExportConstants.ExportStatus.STOP.name(),
                         userId);
             } catch (Exception e) {
+                boolean stopped = ExportThreadRegistry.isInterrupted(exportTask.getId());
+                if (stopped) {
+                    Thread.interrupted();
+                }
                 log.error("导出任务异常", e);
                 exportTaskService.update(
                         exportTask.getId(),
-                        ExportConstants.ExportStatus.ERROR.name(),
+                        stopped ? ExportConstants.ExportStatus.STOP.name() : ExportConstants.ExportStatus.ERROR.name(),
                         userId);
             } finally {
                 ExportThreadRegistry.remove(exportTask.getId());
@@ -878,9 +871,7 @@ public abstract class BaseExportService {
         });
     }
 
-    protected void exportSelectData(ExportTask exportTask, ExportDTO exportDTO) {
-        LocaleContextHolder.setLocale(exportDTO.getLocale());
-        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+    protected void exportSelectData(ExportTask exportTask, ExportDTO exportDTO) throws InterruptedException {
         //表头信息
         List<List<String>> headList = null;
         if (StringUtils.isNotBlank(exportDTO.getFormKey())) {
@@ -897,23 +888,20 @@ public abstract class BaseExportService {
                 .excelType(ExcelTypeEnum.XLSX)
                 .build()) {
             WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+            writer.write(List.of(), sheet);
 
-            SubListUtils.dealForSubList(exportDTO.getSelectIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
-                List<List<Object>> data = null;
-                try {
-                    data = getSelectExportData(subIds, exportTask.getId(), exportDTO);
-                } catch (InterruptedException e) {
-                    log.error("任务停止中断", e);
-                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(),
-                            exportDTO.getUserId());
+            List<String> allSelectIds = new ArrayList<>(
+                    Optional.ofNullable(exportDTO.getSelectIds()).orElseGet(List::of));
+            for (int from = 0; from < allSelectIds.size(); from += SubListUtils.DEFAULT_EXPORT_BATCH_SIZE) {
+                if (ExportThreadRegistry.isInterrupted(exportTask.getId())) {
+                    throw new InterruptedException("线程已被中断，主动退出");
                 }
+                List<String> subIds = allSelectIds.subList(from,
+                        Math.min(from + SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, allSelectIds.size()));
+                List<List<Object>> data = getSelectExportData(subIds, exportTask.getId(), exportDTO);
                 writer.write(data, sheet);
-            });
+            }
         }
-
-        //更新导出任务状态
-        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(),
-                exportDTO.getUserId());
     }
 
     /**
@@ -957,8 +945,6 @@ public abstract class BaseExportService {
     }
 
     public void exportCustomerData(ExportTask exportTask, ExportDTO exportDTO) throws Exception {
-        LocaleContextHolder.setLocale(exportDTO.getLocale());
-        ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
         //表头信息
         List<List<String>> headList = null;
         if (StringUtils.isNotBlank(exportDTO.getFormKey())) {
@@ -975,9 +961,6 @@ public abstract class BaseExportService {
                 exportDTO.getFileName(),
                 exportDTO.getPageRequest(),
                 t -> getExportData(exportTask.getId(), exportDTO));
-        //更新状态
-        exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(),
-                exportDTO.getUserId());
     }
 
     protected String getOptionLabel(String value, List<OptionProp> options) {
@@ -1127,53 +1110,6 @@ public abstract class BaseExportService {
         if (meta != null && meta.getField() != null) {
             sysMap.put(businessKey,
                     transformFieldValue(meta.getResolver(), meta.getField(), rawValue, new HashMap<>()));
-        }
-    }
-
-    /**
-     * 取当前表单中「公式里引用了流水号字段」的计算字段。
-     */
-    public List<BaseField> serialNumberFormulaFields(List<BaseField> fields, BaseField serialField) {
-        return fields.stream()
-                .filter(field -> StringUtils.isBlank(field.getResourceFieldId()))
-                .filter(field -> field instanceof InputField inputField
-                        && StringUtils.isNotBlank(inputField.getFormula())
-                        && Strings.CI.equals(inputField.getDefaultValueType(), "formula")
-                        && formulaEngine.referencedFieldIds(inputField.getFormula()).contains(serialField.getId()))
-                .toList();
-    }
-
-    /**
-     * 公式中的占位符替换成真实流水号。
-     *
-     * @param resource       业务实体(Order/ContractPaymentRecord 等)
-     * @param serialField    当前表单自己的流水号字段
-     * @param formulaFields  引用了该流水号字段的公式类型字段
-     * @param resourceFields 该实体的字段值行
-     * @param serialNo       已生成的流水号
-     */
-    public <K> void fillSerialNumberFormulas(K resource, BaseField serialField, List<BaseField> formulaFields,
-            List<BaseResourceSubField> resourceFields, String serialNo) {
-        String placeholder = "${" + serialField.getName() + "}";
-        BeanWrapper resourceWrapper = new BeanWrapperImpl(resource);
-        Object resourceId = resourceWrapper.getPropertyValue("id");
-        for (BaseField field : formulaFields) {
-            if (field.hasBusinessKey()) {
-                Object value = resourceWrapper.getPropertyValue(field.getBusinessKey());
-                if (value != null) {
-                    resourceWrapper.setPropertyValue(field.getBusinessKey(),
-                            value.toString().replace(placeholder, serialNo));
-                }
-                continue;
-            }
-            BaseResourceSubField resourceField = resourceFields.stream()
-                    .filter(item -> Objects.equals(resourceId, item.getResourceId())
-                            && StringUtils.equals(field.getId(), item.getFieldId()))
-                    .findFirst()
-                    .orElse(null);
-            if (resourceField != null && resourceField.getFieldValue() != null) {
-                resourceField.setFieldValue(resourceField.getFieldValue().toString().replace(placeholder, serialNo));
-            }
         }
     }
 }

@@ -154,6 +154,7 @@ class BaseResourceFieldServiceTest {
         ModuleFormService moduleFormService = mock(ModuleFormService.class);
         ApplicationContext context = mock(ApplicationContext.class);
         CustomFormDataFieldService service = new CustomFormDataFieldService();
+        ReflectionTestUtils.setField(service, "fieldReferenceService", new FieldReferenceService());
         ReflectionTestUtils.setField(
                 service, "customFormDataFieldMapper", fieldMapper);
         ReflectionTestUtils.setField(
@@ -205,6 +206,7 @@ class BaseResourceFieldServiceTest {
         ModuleFormService moduleFormService = mock(ModuleFormService.class);
         ApplicationContext context = mock(ApplicationContext.class);
         CustomFormDataFieldService service = new CustomFormDataFieldService();
+        ReflectionTestUtils.setField(service, "fieldReferenceService", new FieldReferenceService());
         ReflectionTestUtils.setField(service, "customFormDataFieldMapper", fieldMapper);
         ReflectionTestUtils.setField(service, "customFormDataFieldBlobMapper", blobMapper);
 
@@ -249,6 +251,7 @@ class BaseResourceFieldServiceTest {
         uidGenerator.init();
         ApplicationContext context = mock(ApplicationContext.class);
         CustomFormDataFieldService service = new CustomFormDataFieldService();
+        ReflectionTestUtils.setField(service, "fieldReferenceService", new FieldReferenceService());
         ReflectionTestUtils.setField(service, "customFormDataFieldMapper", fieldMapper);
         ReflectionTestUtils.setField(service, "customFormDataFieldBlobMapper", blobMapper);
 

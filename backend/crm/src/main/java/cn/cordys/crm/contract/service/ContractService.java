@@ -17,6 +17,7 @@ import cn.cordys.common.dto.stage.CirculationFieldValue;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.formula.SerialNumberFormulaService;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -24,7 +25,6 @@ import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
-import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
@@ -112,8 +112,10 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractService extends BaseExportService implements ApprovalResourceHandler {
+public class ContractService implements ApprovalResourceHandler {
 
+    @Resource
+    private SerialNumberFormulaService serialNumberFormulaService;
     @Resource
     private ContractFieldService contractFieldService;
     @Resource
@@ -1377,7 +1379,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-                processDuplicateLastLevelHeads(
+                EasyExcelExporter.processDuplicateLastLevelHeads(
                         moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT.getKey(), currentOrg)),
                 Translator.get("contract.import_tpl.name"),
                 Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
@@ -1527,7 +1529,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
                         field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_NO.getKey()))
                         .findAny();
                 //获取当前表单中公式类型输入字段公式包含合同编号的所有字段（排除显示字段中的字段）
-                List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial))
+                List<BaseField> formulaFields = serialOptional
+                        .map(serial -> serialNumberFormulaService.serialNumberFormulaFields(fields, serial))
                         .orElseGet(List::of);
                 for (int i = 0; i < contracts.size(); i++) {
                     Contract contract = contracts.get(i);

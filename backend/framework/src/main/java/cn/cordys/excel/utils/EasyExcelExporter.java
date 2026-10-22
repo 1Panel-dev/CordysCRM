@@ -12,11 +12,34 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 public class EasyExcelExporter {
+
+    /**
+     * 为同名末级表头追加不换行空格，避免导入、导出时相邻同名列被合并。
+     */
+    public static List<List<String>> processDuplicateLastLevelHeads(List<List<String>> exportHeads) {
+        Map<String, Integer> countMap = new HashMap<>();
+        List<List<String>> result = new ArrayList<>(exportHeads.size());
+        for (List<String> head : exportHeads) {
+            List<String> newHead = new ArrayList<>(head);
+            int lastIndex = newHead.size() - 1;
+            String lastHead = newHead.get(lastIndex);
+            int count = countMap.getOrDefault(lastHead, 0);
+            if (count > 0) {
+                newHead.set(lastIndex, lastHead + "\u00A0".repeat(count));
+            }
+            countMap.put(lastHead, count + 1);
+            result.add(newHead);
+        }
+        return result;
+    }
+
     public void buildExportResponse(HttpServletResponse response, String fileName) {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());

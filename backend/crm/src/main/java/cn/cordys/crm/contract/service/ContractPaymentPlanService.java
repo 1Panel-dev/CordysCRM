@@ -19,7 +19,6 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -90,7 +89,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractPaymentPlanService extends BaseExportService {
+public class ContractPaymentPlanService {
     @Resource
     private BaseMapper<Contract> contractMapper;
     @Resource
@@ -536,7 +535,7 @@ public class ContractPaymentPlanService extends BaseExportService {
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response,
-                        processDuplicateLastLevelHeads(moduleFormService
+                        EasyExcelExporter.processDuplicateLastLevelHeads(moduleFormService
                                 .getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg)),
                         Translator.get("payment.plan.import_tpl.name"), Translator.get(SheetKey.DATA),
                         Translator.get(SheetKey.COMMENT),

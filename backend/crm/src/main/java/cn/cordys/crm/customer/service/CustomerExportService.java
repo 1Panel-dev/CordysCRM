@@ -13,6 +13,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,19 +33,24 @@ public class CustomerExportService extends BaseExportService {
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
-        var exportList = collectExportList(exportParam);
+        var queryResult = collectExportList(exportParam);
+        var exportList = queryResult.getLeft();
+        int queryCount = queryResult.getRight();
         if (CollectionUtils.isEmpty(exportList)) {
-            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0)
+                    .queryCount(queryCount).build();
         }
         // 构建自定义字段数据
         var dataList = customerService.buildListData(exportList, exportParam.getOrgId());
-        return buildExportMergeResult(taskId, exportParam, dataList,
+        var result = buildExportMergeResult(taskId, exportParam, dataList,
                 CustomerListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         PoolCustomerFieldUtils.getSystemFieldMap(detail, exportParam.getLocale()), cache));
+        result.setQueryCount(queryCount);
+        return result;
     }
 
-    private List<CustomerListResponse> collectExportList(ExportDTO exportParam) {
+    private Pair<List<CustomerListResponse>, Integer> collectExportList(ExportDTO exportParam) {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
@@ -56,8 +62,10 @@ public class CustomerExportService extends BaseExportService {
             PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
             exportList = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         }
+        int queryCount = exportList.size();
         // 按审批流状态权限过滤, 无导出权限的状态不导出
-        return filterApprovalExportPermission(exportList, orgId, FormKey.CUSTOMER.getKey(),
+        var filtered = filterApprovalExportPermission(exportList, orgId, FormKey.CUSTOMER.getKey(),
                 CustomerListResponse::getId, CustomerListResponse::getApprovalStatus, approvalFlowService);
+        return Pair.of(filtered, queryCount);
     }
 }

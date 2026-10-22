@@ -21,7 +21,6 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
@@ -98,7 +97,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractInvoiceService extends BaseExportService implements ApprovalResourceHandler {
+public class ContractInvoiceService implements ApprovalResourceHandler {
 
     @Resource
     private ContractInvoiceFieldService invoiceFieldService;
@@ -938,7 +937,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response,
-                        processDuplicateLastLevelHeads(
+                        EasyExcelExporter.processDuplicateLastLevelHeads(
                                 moduleFormService.getCustomImportHeadsNoRef(FormKey.INVOICE.getKey(), currentOrg)),
                         Translator.get("invoice.import_tpl.name"), Translator.get(SheetKey.DATA),
                         Translator.get(SheetKey.COMMENT),

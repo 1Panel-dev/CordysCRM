@@ -36,7 +36,7 @@ public class DataScopeService {
     @Resource
     private RoleService roleService;
     @Resource
-    private BaseService baseService;
+    private UserQueryService userQueryService;
     @Resource
     private PermissionCache permissionCache;
 
@@ -248,7 +248,7 @@ public class DataScopeService {
         }
 
         if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
-            Map<String, UserDeptDTO> userDeptMapByUserIds = baseService.getUserDeptMapByUserIds(owners, orgId);
+            Map<String, UserDeptDTO> userDeptMapByUserIds = userQueryService.getUserDeptMapByUserIds(owners, orgId);
             for (String owner : owners) {
                 UserDeptDTO customerOwnerDept = userDeptMapByUserIds.get(owner);
                 // 部门权限是否有该客户的权限

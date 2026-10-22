@@ -24,7 +24,6 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
-import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -116,7 +115,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class OpportunityService extends BaseExportService implements ApprovalResourceHandler {
+public class OpportunityService implements ApprovalResourceHandler {
 
     public static final String SUCCESS = "SUCCESS";
     public static final Long DEFAULT_POS = 1L;
@@ -960,7 +959,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
                 .exportMultiSheetTplWithSharedHandler(response,
-                        processDuplicateLastLevelHeads(
+                        EasyExcelExporter.processDuplicateLastLevelHeads(
                                 moduleFormService.getCustomImportHeadsNoRef(FormKey.OPPORTUNITY.getKey(), currentOrg)),
                         Translator.get("opportunity.import_tpl.name"), Translator.get(SheetKey.DATA),
                         Translator.get(SheetKey.COMMENT),

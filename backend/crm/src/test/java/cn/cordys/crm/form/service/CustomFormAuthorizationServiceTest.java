@@ -3,6 +3,9 @@ package cn.cordys.crm.form.service;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.uid.impl.DefaultUidGenerator;
+import cn.cordys.common.uid.worker.WorkerIdAssigner;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
@@ -22,6 +25,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -44,16 +48,25 @@ import static org.mockito.Mockito.when;
 
 class CustomFormAuthorizationServiceTest {
 
+    private ApplicationContext previousContext;
     private MessageSource previousMessageSource;
 
     @BeforeEach
-    void initializeTranslator() {
+    void initializeCommonUtilities() {
+        previousContext = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class, "context");
         previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
         ReflectionTestUtils.setField(Translator.class, "messageSource", new StaticMessageSource());
+        DefaultUidGenerator generator = new DefaultUidGenerator();
+        ReflectionTestUtils.setField(generator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
+        generator.init();
+        ApplicationContext context = mock(ApplicationContext.class);
+        when(context.getBean(DefaultUidGenerator.class)).thenReturn(generator);
+        new CommonBeanFactory().setApplicationContext(context);
     }
 
     @AfterEach
-    void restoreTranslator() {
+    void restoreCommonUtilities() {
+        new CommonBeanFactory().setApplicationContext(previousContext);
         ReflectionTestUtils.setField(Translator.class, "messageSource", previousMessageSource);
     }
 

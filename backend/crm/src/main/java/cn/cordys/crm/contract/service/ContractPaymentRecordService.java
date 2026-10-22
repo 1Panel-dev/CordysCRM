@@ -13,13 +13,13 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.formula.SerialNumberFormulaService;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -92,8 +92,10 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractPaymentRecordService extends BaseExportService {
+public class ContractPaymentRecordService {
 
+    @Resource
+    private SerialNumberFormulaService serialNumberFormulaService;
     @Resource
     private BaseService baseService;
     @Resource
@@ -397,7 +399,7 @@ public class ContractPaymentRecordService extends BaseExportService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-                processDuplicateLastLevelHeads(moduleFormService
+                EasyExcelExporter.processDuplicateLastLevelHeads(moduleFormService
                         .getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
                 Translator.get("payment.record.import_tpl.name"), Translator.get(SheetKey.DATA),
                 Translator.get(SheetKey.COMMENT),
@@ -511,7 +513,8 @@ public class ContractPaymentRecordService extends BaseExportService {
                             .findAny();
                     // 获取当前表单中计算类型字段公式包含serialOptional流水号的所有字段（排除显示字段中的计算类型字段）
                     List<BaseField> formulaFields = serialOptional
-                            .map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
+                            .map(serial -> serialNumberFormulaService.serialNumberFormulaFields(fields, serial))
+                            .orElseGet(List::of);
                     records.forEach(record -> {
                         if (serialOptional.isPresent()) {
                             List<String> serialNumberRules = ((SerialNumberField) serialOptional.get())
@@ -520,8 +523,8 @@ public class ContractPaymentRecordService extends BaseExportService {
                                     FormKey.CONTRACT_PAYMENT_RECORD.getKey());
                             record.setNo(serialNo);
                             // 根据获取到的计算字段，进行占位符替换，比如serialOptional流水号字段的name是订单编号 如果计算字段包含 ${订单编号} 则获取到的serialNo替换掉占位符，然后set到order的对应计算字段中
-                            fillSerialNumberFormulas(record, serialOptional.get(), formulaFields, recordFields,
-                                    serialNo);
+                            serialNumberFormulaService.fillSerialNumberFormulas(record, serialOptional.get(),
+                                    formulaFields, recordFields, serialNo);
                         }
                         logs.add(new LogDTO(currentOrg, record.getId(), currentUser, LogType.ADD,
                                 LogModule.CONTRACT_PAYMENT_RECORD, record.getName()));

@@ -15,7 +15,6 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
-import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
@@ -86,7 +85,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ProductPriceService extends BaseExportService {
+public class ProductPriceService {
 
     @Resource
     private BaseService baseService;
@@ -395,7 +394,7 @@ public class ProductPriceService extends BaseExportService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-                processDuplicateLastLevelHeads(
+                EasyExcelExporter.processDuplicateLastLevelHeads(
                         moduleFormService.getCustomImportHeadsNoRef(FormKey.PRICE.getKey(), currentOrg)),
                 Translator.get("product.price.import_tpl.name"),
                 Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),

@@ -19,7 +19,7 @@ import cn.cordys.common.permission.Permission;
 import cn.cordys.common.permission.PermissionDefinitionItem;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -83,7 +83,7 @@ public class ApprovalFlowService {
     @Resource
     private RoleService roleService;
     @Resource
-    private BaseService baseService;
+    private UserQueryService userQueryService;
     @Resource
     private BaseMapper<Department> departmentBaseMapper;
     @Resource
@@ -312,7 +312,7 @@ public class ApprovalFlowService {
     public Pager<List<ApprovalFlowListResponse>> list(ApprovalFlowPageRequest request, String organizationId) {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ApprovalFlowListResponse> responses = extApprovalFlowMapper.list(request, organizationId);
-        baseService.setCreateAndUpdateUserName(responses);
+        userQueryService.setCreateAndUpdateUserName(responses);
         Page<ApprovalFlowListResponse> page = (Page<ApprovalFlowListResponse>) responses;
         return PageUtils.setPageInfo(page, responses);
     }
@@ -329,7 +329,7 @@ public class ApprovalFlowService {
         ApprovalFlowDetailResponse response = BeanUtils.copyBean(new ApprovalFlowDetailResponse(), flow);
 
         // 设置创建人和更新人名称
-        baseService.setCreateAndUpdateUserName(response);
+        userQueryService.setCreateAndUpdateUserName(response);
 
         List<Permission> permissions = getPermissionsByFormType(flow.getFormType());
 
@@ -827,7 +827,7 @@ public class ApprovalFlowService {
                 .collect(Collectors.toSet());
 
         // 批量查询兜底审批人名称
-        Map<String, String> fallbackApproverNameMap = baseService.getUserNameMap(fallbackApproverIds);
+        Map<String, String> fallbackApproverNameMap = userQueryService.getUserNameMap(fallbackApproverIds);
 
         // 设置兜底审批人名称
         allNodes.stream()
@@ -835,7 +835,7 @@ public class ApprovalFlowService {
                 .map(node -> (ApprovalNodeApproverResponse) node)
                 .filter(node -> StringUtils.isNotBlank(node.getFallbackApprover()))
                 .forEach(node -> node.setFallbackApproverName(
-                        baseService.getAndCheckOptionName(fallbackApproverNameMap.get(node.getFallbackApprover()))));
+                        userQueryService.getAndCheckOptionName(fallbackApproverNameMap.get(node.getFallbackApprover()))));
 
         // 获取节点连接关系并按 sort 排序
         ApprovalNodeLink linkCriteria = new ApprovalNodeLink();

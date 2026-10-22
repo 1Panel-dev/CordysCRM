@@ -3169,14 +3169,9 @@ public class ModuleFormService {
                 final FieldSourceType sourceType = FieldSourceType.safeValueOf(sourceField.getDataSourceType());
                 final Object detail;
                 if (sourceType == FieldSourceType.CUSTOM_FORM) {
-                    // 自定义表单：设置 formId 到 ThreadLocal
-                    try {
-                        CustomFormDataFieldService.setFormKey(sourceField.getDataSourceType());
-                        detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType,
-                                fv.getFieldValue().toString());
-                    } finally {
-                        CustomFormDataFieldService.clearFormKey();
-                    }
+                    detail = CustomFormDataFieldService.withFormKey(sourceField.getDataSourceType(),
+                            () -> fieldSourceServiceProvider.safeGetSimpleById(sourceType,
+                                    fv.getFieldValue().toString()));
                 } else {
                     detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
                 }
@@ -3212,13 +3207,8 @@ public class ModuleFormService {
                         final FieldSourceType sourceType = FieldSourceType.safeValueOf(sourceField.getDataSourceType());
                         final Object detail;
                         if (sourceType == FieldSourceType.CUSTOM_FORM) {
-                            // 自定义表单：设置 formId 到 ThreadLocal
-                            try {
-                                CustomFormDataFieldService.setFormKey(sourceField.getDataSourceType());
-                                detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, v.toString());
-                            } finally {
-                                CustomFormDataFieldService.clearFormKey();
-                            }
+                            detail = CustomFormDataFieldService.withFormKey(sourceField.getDataSourceType(),
+                                    () -> fieldSourceServiceProvider.safeGetSimpleById(sourceType, v.toString()));
                         } else {
                             detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, v.toString());
                         }

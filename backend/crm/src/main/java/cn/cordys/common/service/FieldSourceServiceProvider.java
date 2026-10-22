@@ -1,9 +1,12 @@
 package cn.cordys.common.service;
 
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.clue.service.ClueService;
-import cn.cordys.crm.contract.service.*;
+import cn.cordys.crm.contract.service.BusinessTitleService;
+import cn.cordys.crm.contract.service.ContractInvoiceService;
+import cn.cordys.crm.contract.service.ContractPaymentPlanService;
+import cn.cordys.crm.contract.service.ContractPaymentRecordService;
+import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.form.service.CustomFormDataService;
@@ -17,29 +20,29 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
- * @author song-cc-rock
+ * 按数据源分发详情查询，查询失败时保留引用字段的空值降级行为。
  */
 @Service
 @Slf4j
 public class FieldSourceServiceProvider {
 
-    private static final Map<FieldSourceType, Object> SERVICE_MAP = new HashMap<>();
-
-    /**
-     * 开启的审批流表单表格映射
-     */
-    private static final Map<String, Object> APPROVAL_FORM_SERVICE_MAP = new HashMap<>(4);
+    private final Map<FieldSourceType, SourceReader> sources = new EnumMap<>(FieldSourceType.class);
+    private final Map<String, SourceReader> approvalSources = new HashMap<>();
+    private final Map<String, Function<String, Object>> approvalFields = new HashMap<>();
+    private SourceReader customSource;
 
     @Resource
     private ClueService clueService;
@@ -68,157 +71,127 @@ public class FieldSourceServiceProvider {
     @Resource
     private ContractInvoiceService invoiceService;
 
+    @Lazy
+    @Resource
+    private CustomFormDataService customFormDataService;
+
     @PostConstruct
     public void init() {
-        SERVICE_MAP.put(FieldSourceType.CLUE, clueService);
-        SERVICE_MAP.put(FieldSourceType.CUSTOMER, customerService);
-        SERVICE_MAP.put(FieldSourceType.OPPORTUNITY, opportunityService);
-        SERVICE_MAP.put(FieldSourceType.CONTACT, customerContactService);
-        SERVICE_MAP.put(FieldSourceType.PRODUCT, productService);
-        SERVICE_MAP.put(FieldSourceType.PRICE, productPriceService);
-        SERVICE_MAP.put(FieldSourceType.QUOTATION, opportunityQuotationService);
-        SERVICE_MAP.put(FieldSourceType.CONTRACT, contractService);
-        SERVICE_MAP.put(FieldSourceType.BUSINESS_TITLE, businessTitleService);
-        SERVICE_MAP.put(FieldSourceType.ORDER, orderService);
-        SERVICE_MAP.put(FieldSourceType.CONTRACT_PAYMENT_RECORD, paymentRecordService);
-        SERVICE_MAP.put(FieldSourceType.PAYMENT_PLAN, paymentPlanService);
-        SERVICE_MAP.put(FieldSourceType.INVOICE, invoiceService);
+        sources.put(FieldSourceType.CLUE,
+                new SourceReader(clueService::getSimple,
+                        clueService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.CUSTOMER,
+                new SourceReader(customerService::getSimple,
+                        customerService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.OPPORTUNITY,
+                new SourceReader(opportunityService::getSimple,
+                        opportunityService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.CONTACT,
+                new SourceReader(customerContactService::getSimple,
+                        customerContactService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.PRODUCT,
+                new SourceReader(productService::getSimple,
+                        productService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.PRICE,
+                new SourceReader(productPriceService::getSimple,
+                        productPriceService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.QUOTATION,
+                new SourceReader(opportunityQuotationService::getSimple,
+                        opportunityQuotationService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.CONTRACT,
+                new SourceReader(contractService::getSimple,
+                        contractService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.BUSINESS_TITLE,
+                new SourceReader(businessTitleService::getSimple,
+                        businessTitleService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.ORDER,
+                new SourceReader(orderService::getSimple,
+                        orderService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.CONTRACT_PAYMENT_RECORD,
+                new SourceReader(paymentRecordService::getSimple,
+                        paymentRecordService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.PAYMENT_PLAN,
+                new SourceReader(paymentPlanService::getSimple,
+                        paymentPlanService::batchGetSimpleByIds));
+        sources.put(FieldSourceType.INVOICE,
+                new SourceReader(invoiceService::getSimple,
+                        invoiceService::batchGetSimpleByIds));
+        customSource = new SourceReader(customFormDataService::getSimple, customFormDataService::batchGetSimpleByIds);
 
-        APPROVAL_FORM_SERVICE_MAP.put(FormKey.CLUE.getKey(), clueService);
-        APPROVAL_FORM_SERVICE_MAP.put(FormKey.CUSTOMER.getKey(), customerService);
-        APPROVAL_FORM_SERVICE_MAP.put(FormKey.OPPORTUNITY.getKey(), opportunityService);
-        APPROVAL_FORM_SERVICE_MAP.put(FormKey.QUOTATION.getKey(), opportunityQuotationService);
-        APPROVAL_FORM_SERVICE_MAP.put(FormKey.CONTRACT.getKey(), contractService);
-        APPROVAL_FORM_SERVICE_MAP.put(FormKey.INVOICE.getKey(), invoiceService);
-        APPROVAL_FORM_SERVICE_MAP.put(FormKey.ORDER.getKey(), orderService);
+        approvalSources.put(FormKey.CLUE.getKey(), sources.get(FieldSourceType.CLUE));
+        approvalSources.put(FormKey.CUSTOMER.getKey(), sources.get(FieldSourceType.CUSTOMER));
+        approvalSources.put(FormKey.OPPORTUNITY.getKey(), sources.get(FieldSourceType.OPPORTUNITY));
+        approvalSources.put(FormKey.QUOTATION.getKey(), sources.get(FieldSourceType.QUOTATION));
+        approvalSources.put(FormKey.CONTRACT.getKey(), sources.get(FieldSourceType.CONTRACT));
+        approvalSources.put(FormKey.INVOICE.getKey(), sources.get(FieldSourceType.INVOICE));
+        approvalSources.put(FormKey.ORDER.getKey(), sources.get(FieldSourceType.ORDER));
+
+        approvalFields.put(FormKey.QUOTATION.getKey(), opportunityQuotationService::getFieldValues);
+        approvalFields.put(FormKey.CONTRACT.getKey(), contractService::getFieldValues);
+        approvalFields.put(FormKey.INVOICE.getKey(), invoiceService::getFieldValues);
+        approvalFields.put(FormKey.ORDER.getKey(), orderService::getFieldValues);
     }
 
     /**
-     * 根据来源类型获取对应的 Service
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T getService(FieldSourceType type) {
-        Object service = SERVICE_MAP.get(type);
-        if (service != null) {
-            return (T) service;
-        }
-        return (T) CommonBeanFactory.getBean(CustomFormDataService.class);
-    }
-
-    /**
-     * 根据来源类型获取对应的 Service
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T getServiceOfKey(String key) {
-        Object service = APPROVAL_FORM_SERVICE_MAP.get(key);
-        if (service == null && FormKey.ofKey(key) == null) {
-            // 非标准枚举 key（自定义表单 customFormId）路由到自定义表单数据服务
-            service = CommonBeanFactory.getBean(CustomFormDataService.class);
-        }
-        return (T) service;
-    }
-
-    /**
-     * 执行资源详情方法（单个或批量）
-     *
-     * @param type       资源或数据源类型
-     * @param id         单个或批量ID
-     * @param methodName 方法名称
-     * @return 单个数据对象或数据对象列表
-     */
-    public Object executeServiceMethod(FieldSourceType type, Object id, String methodName) {
-        Object service = getService(type);
-        if (service == null) {
-            log.error("数据源引用失败, 类型 {} 有误", type.name());
-            return id instanceof List ? Collections.emptyList() : null;
-        }
-        try {
-            if (id instanceof List<?> idList) {
-                if (CollectionUtils.isEmpty(idList)) {
-                    return Collections.emptyList();
-                }
-                List<String> ids = idList.stream().map(Object::toString).toList();
-                Method method = service.getClass().getMethod(methodName, List.class);
-                return method.invoke(service, ids);
-            } else {
-                if (!(id instanceof String stringId) || stringId.isEmpty()) {
-                    return null;
-                }
-                Method method = service.getClass().getMethod(methodName, String.class);
-                return method.invoke(service, stringId);
-            }
-        } catch (Exception e) {
-            log.error("获取数据源详情异常：type={}, id={}, error={}", type.name(), id, e.getMessage(), e);
-            return id instanceof List ? Collections.emptyList() : null;
-        }
-    }
-
-    public Object executeServiceMethod(String formKey, Object id, String methodName) {
-        Object service = getServiceOfKey(formKey);
-        if (service == null) {
-            log.error("审批表单类型 {} 有误", formKey);
-            return id instanceof List ? Collections.emptyList() : null;
-        }
-        try {
-            if (id instanceof List<?> idList) {
-                if (CollectionUtils.isEmpty(idList)) {
-                    return Collections.emptyList();
-                }
-                List<String> ids = idList.stream().map(Object::toString).toList();
-                Method method = service.getClass().getMethod(methodName, List.class);
-                return method.invoke(service, ids);
-            } else {
-                if (!(id instanceof String stringId) || stringId.isEmpty()) {
-                    return null;
-                }
-                Method method = service.getClass().getMethod(methodName, String.class);
-                return method.invoke(service, stringId);
-            }
-        } catch (Exception e) {
-            log.error("获取业务数据详情异常：type={}, id={}, error={}", formKey, id, e.getMessage(), e);
-            return id instanceof List ? Collections.emptyList() : null;
-        }
-    }
-
-    /**
-     * 挂起事务, 防止下游方法异常回滚当前事务
-     *
-     * @param type 数据源类型
-     * @param id   主键ID
-     * @return 数据对象
+     * 挂起调用方事务，避免详情查询失败将业务操作标记为回滚。
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Object safeGetSimpleById(FieldSourceType type, String id) {
-        return executeServiceMethod(type, id, "getSimple");
+        return readSingle(sources.getOrDefault(type, customSource).single(), id, type);
     }
 
-    /**
-     * 获取表单业务数据详情
-     *
-     * @param formKey 表单
-     * @param id      主表ID
-     * @return 业务数据详情
-     */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Object safeGetSimpleById(String formKey, String id) {
-        return executeServiceMethod(formKey, id, "getSimple");
+        SourceReader source = approvalSources.get(formKey);
+        if (source == null && FormKey.ofKey(formKey) == null) {
+            source = customSource;
+        }
+        return readSingle(source == null ? null : source.single(), id, formKey);
     }
 
-    /**
-     * 批量获取数据源详情（挂起事务，防止下游方法异常回滚当前事务）
-     *
-     * @param type 数据源类型
-     * @param ids  主键ID集合
-     * @return 数据对象列表
-     */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @SuppressWarnings("unchecked")
     public List<Object> batchGetSimpleByIds(FieldSourceType type, List<String> ids) {
-        return (List<Object>) executeServiceMethod(type, ids, "batchGetSimpleByIds");
+        if (ids == null) {
+            return null;
+        }
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        try {
+            return (List<Object>) sources.getOrDefault(type, customSource).batch()
+                    .apply(ids.stream().map(Object::toString).toList());
+        } catch (Exception e) {
+            log.error("获取数据源详情异常：type={}, ids={}, error={}", type, ids, e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Object safeGetFieldsById(String formKey, String id) {
-        return executeServiceMethod(formKey, id, "getFieldValues");
+        Function<String, Object> reader = approvalFields.get(formKey);
+        if (reader == null && FormKey.ofKey(formKey) == null) {
+            reader = customFormDataService::getFieldValues;
+        }
+        return readSingle(reader, id, formKey);
+    }
+
+    private Object readSingle(Function<String, Object> reader, String id, Object source) {
+        if (id == null || id.isEmpty()) {
+            return null;
+        }
+        if (reader == null) {
+            log.error("数据源查询不支持该表单：{}", source);
+            return null;
+        }
+        try {
+            return reader.apply(id);
+        } catch (Exception e) {
+            log.error("获取数据源详情异常：type={}, id={}, error={}", source, id, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private record SourceReader(Function<String, Object> single, Function<List<String>, List<?>> batch) {
     }
 }

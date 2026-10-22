@@ -11,7 +11,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.Permission;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionDefinitionItem;
-import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -69,13 +69,13 @@ public class RoleService {
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
     @Resource
-    private BaseService baseService;
+    private UserQueryService userQueryService;
     @Resource
     private PermissionCache permissionCache;
 
     public List<RoleListResponse> list(String orgId) {
         List<RoleListResponse> roleListResponseList = getRoleListResponses(orgId);
-        return baseService.setCreateAndUpdateUserName(roleListResponseList);
+        return userQueryService.setCreateAndUpdateUserName(roleListResponseList);
     }
 
     public List<RoleListResponse> getRoleListResponses(String orgId) {
@@ -113,7 +113,7 @@ public class RoleService {
         if (Strings.CS.equals(role.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())) {
             roleGetResponse.setDeptIds(getDeptIdsByRoleId(id));
         }
-        return baseService.setCreateAndUpdateUserName(roleGetResponse);
+        return userQueryService.setCreateAndUpdateUserName(roleGetResponse);
     }
 
     private List<String> getDeptIdsByRoleId(String roleId) {
