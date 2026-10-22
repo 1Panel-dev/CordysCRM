@@ -104,6 +104,8 @@ public class ModuleFormService {
     private static final String UPGRADE_EXT_FIELD = "ext_ver";
     public static final String SLASH = "/";
     private static final String REF_UNDERLINE = "_ref_";
+    static final String CHANGE_LOG_TAB_INTERNAL_KEY = "CHANGE_LOG";
+    static final String CHANGE_LOG_TAB_LABEL_KEY = "module.form.detail_tab.change_record";
 
     static {
         TYPE_SOURCE_MAP = Map.ofEntries(
@@ -629,6 +631,10 @@ public class ModuleFormService {
             return invalidDetailTab(strict);
         }
 
+        if (CHANGE_LOG_TAB_INTERNAL_KEY.equals(tab.getInternalKey())) {
+            return resolveChangeLogDetailTab(tab, strict);
+        }
+
         Optional<InternalDetailTab> internalTab = InternalDetailTab.findByInternalKey(formKey, tab.getInternalKey());
         if (internalTab.isPresent()) {
             return resolveInternalDetailTab(tab, internalTab.get(), strict, context);
@@ -657,6 +663,17 @@ public class ModuleFormService {
         tab.setRelatedField(new OptionDTO(relatedField.getId(), relatedField.getName()));
         tab.setEnable(tab.getEnable() == null || tab.getEnable());
         tab.setInternalKey(null);
+        return tab;
+    }
+
+    private FormDetailTab resolveChangeLogDetailTab(FormDetailTab tab, boolean strict) {
+        if (strict && (tab.getRelatedForm() != null || tab.getRelatedField() != null)) {
+            throw new GenericException(Translator.get("module.form.detail_tab.system.readonly"));
+        }
+        tab.setRelatedForm(null);
+        tab.setRelatedField(null);
+        tab.setEnable(tab.getEnable() == null || tab.getEnable());
+        tab.setName(Translator.get(tab.getName(), tab.getName()));
         return tab;
     }
 
@@ -2976,6 +2993,57 @@ public class ModuleFormService {
                     tab.setName(internalTabNames.get(tab.getInternalKey()));
                 }
             });
+            formBlob.setProp(JSON.toJSONString(formProp));
+            moduleFormBlobMapper.updateById(formBlob);
+        }
+    }
+
+    /**
+     * 为已有表单配置补齐变更记录详情标签。
+     */
+    public void initChangeLogTabs() {
+        List<String> formKeys = List.of(
+                FormKey.CUSTOMER.getKey(), FormKey.CLUE.getKey(), FormKey.CONTACT.getKey(),
+                FormKey.CONTRACT.getKey(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+                FormKey.CONTRACT_PAYMENT_PLAN.getKey(), FormKey.INVOICE.getKey(), FormKey.ORDER.getKey(),
+                FormKey.OPPORTUNITY.getKey(), FormKey.QUOTATION.getKey());
+        List<ModuleForm> moduleForms = new ArrayList<>(moduleFormMapper.selectListByLambda(
+                new LambdaQueryWrapper<ModuleForm>().in(ModuleForm::getFormKey, formKeys)));
+        // 自定义表单的 formKey 即表单 ID，无法通过枚举列出，按 custom_form 表补查。
+        List<String> customFormIds = customFormMapper.selectAll(null).stream()
+                .map(CustomForm::getId)
+                .toList();
+        if (CollectionUtils.isNotEmpty(customFormIds)) {
+            moduleForms.addAll(moduleFormMapper.selectListByLambda(new LambdaQueryWrapper<ModuleForm>()
+                    .in(ModuleForm::getFormKey, customFormIds)));
+        }
+        if (CollectionUtils.isEmpty(moduleForms)) {
+            return;
+        }
+
+        List<String> formIds = moduleForms.stream().map(ModuleForm::getId).toList();
+        Map<String, ModuleFormBlob> formBlobMap = moduleFormBlobMapper.selectByIds(formIds).stream()
+                .collect(Collectors.toMap(ModuleFormBlob::getId, Function.identity()));
+        for (ModuleForm moduleForm : moduleForms) {
+            ModuleFormBlob formBlob = formBlobMap.get(moduleForm.getId());
+            if (formBlob == null) {
+                continue;
+            }
+            FormProp formProp = StringUtils.isBlank(formBlob.getProp())
+                    ? new FormProp() : JSON.parseObject(formBlob.getProp(), FormProp.class);
+            List<FormDetailTab> tabs = formProp.getDetailTabs() == null
+                    ? new ArrayList<>() : new ArrayList<>(formProp.getDetailTabs());
+            if (tabs.stream().filter(Objects::nonNull)
+                    .anyMatch(tab -> CHANGE_LOG_TAB_INTERNAL_KEY.equals(tab.getInternalKey()))) {
+                continue;
+            }
+
+            FormDetailTab tab = new FormDetailTab();
+            tab.setName(Translator.get(CHANGE_LOG_TAB_LABEL_KEY));
+            tab.setEnable(true);
+            tab.setInternalKey(CHANGE_LOG_TAB_INTERNAL_KEY);
+            tabs.add(tab);
+            formProp.setDetailTabs(tabs);
             formBlob.setProp(JSON.toJSONString(formProp));
             moduleFormBlobMapper.updateById(formBlob);
         }
