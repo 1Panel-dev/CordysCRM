@@ -74,13 +74,25 @@ public class ApprovalInstanceService {
         if (latestInstance == null) {
             return null;
         }
-		return getApprovalInstanceDetail(latestInstance, currentOrgId);
-	}
+        return getApprovalInstanceDetail(latestInstance, currentOrgId);
+    }
 
-	/**
-	 * 获取已授权审批实例的记录详情。
-	 */
-	public ApprovalInstanceDetail getApprovalInstanceDetail(ApprovalInstance latestInstance, String currentOrgId) {
+    /**
+     * 获取已授权审批实例的记录详情。
+     */
+    public ApprovalInstanceDetail getApprovalInstanceDetail(ApprovalInstance latestInstance, String currentOrgId) {
+        return getApprovalInstanceDetail(latestInstance, currentOrgId, false);
+    }
+
+    /**
+     * 获取已授权历史实例的详情，仅展示实际执行过的节点。
+     */
+    public ApprovalInstanceDetail getHistoricalApprovalInstanceDetail(ApprovalInstance instance, String currentOrgId) {
+        return getApprovalInstanceDetail(instance, currentOrgId, true);
+    }
+
+    private ApprovalInstanceDetail getApprovalInstanceDetail(ApprovalInstance latestInstance, String currentOrgId,
+            boolean historical) {
         Map<String, UserSimple> simpleUserMap = userExtendService.getAllUserSimpleMap();
         ApprovalInstanceDetail instanceDetail = BeanUtils.copyBean(new ApprovalInstanceDetail(), latestInstance);
         if (simpleUserMap.containsKey(instanceDetail.getSubmitterId())) {
@@ -96,7 +108,7 @@ public class ApprovalInstanceService {
         List<ApprovalReturnBackRecord> backRecords = getBackRecords(latestInstance);
         Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records, signTasks, backRecords);
         instanceDetail.setNodes(buildApprovalRecordNodeList(latestInstance, tasks, records, signTasks, backRecords,
-                elementAttachmentsMap, simpleUserMap, currentOrgId));
+                elementAttachmentsMap, simpleUserMap, currentOrgId, historical));
         instanceDetail.setCurrentNodeId(latestInstance.getCurrentNodeId());
         instanceDetail.setComment(latestInstance.getComment());
         ApprovalComment commentCriteria = new ApprovalComment();
@@ -266,32 +278,45 @@ public class ApprovalInstanceService {
             List<ApprovalRecord> records, List<ApprovalAddSignTask> signTasks,
             List<ApprovalReturnBackRecord> backRecords, Map<String, List<Attachment>> attachmentMap,
             Map<String, UserSimple> simpleUserMap, String currentOrgId) {
+        return buildApprovalRecordNodeList(instance, tasks, records, signTasks, backRecords, attachmentMap,
+                simpleUserMap, currentOrgId, false);
+    }
+
+    private List<ApprovalRecordNode> buildApprovalRecordNodeList(ApprovalInstance instance, List<ApprovalTask> tasks,
+            List<ApprovalRecord> records, List<ApprovalAddSignTask> signTasks,
+            List<ApprovalReturnBackRecord> backRecords, Map<String, List<Attachment>> attachmentMap,
+            Map<String, UserSimple> simpleUserMap, String currentOrgId, boolean historical) {
         // 处理过的节点
         List<ApprovalRecordNode> processedApprovalNodes = buildProcessedApprovalNodes(instance, tasks, records,
-                signTasks, backRecords, attachmentMap, simpleUserMap, currentOrgId);
+                signTasks, backRecords, attachmentMap, simpleUserMap, currentOrgId, historical);
         // 未来节点
-        List<ApprovalRecordNode> pendingApprovalNodes = buildPendingApprovalNodes(instance, simpleUserMap,
-                currentOrgId);
+        List<ApprovalRecordNode> pendingApprovalNodes = historical ? List.of()
+                : buildPendingApprovalNodes(instance, simpleUserMap, currentOrgId);
         // 兼容旧实例残留的有效轮次，未来节点及其加签历史不再作为当前进度重复展示。
         Set<String> pendingNodeIds = pendingApprovalNodes.stream().map(ApprovalRecordNode::getNodeId)
                 .collect(Collectors.toSet());
         processedApprovalNodes.removeIf(node -> pendingNodeIds.contains(node.getNodeId().split(SIGN_SPILT)[0]));
         List<ApprovalRecordNode> nodes = new ArrayList<>(ListUtils.union(processedApprovalNodes, pendingApprovalNodes));
         // 处理结束节点
-        ApprovalRecordNode endNode = getInstanceEndNode(instance);
-        if (endNode == null) {
-            // 历史数据兜底
-            endNode = getInstanceAnyEndNode(instance);
-        }
-        if (endNode != null) {
-            nodes.addLast(endNode);
+        if (!historical || ApprovalStatus.APPROVED.name().equals(instance.getApprovalStatus())) {
+            ApprovalRecordNode endNode = getInstanceEndNode(instance);
+            if (endNode == null) {
+                // 历史数据兜底
+                endNode = getInstanceAnyEndNode(instance);
+            }
+            if (endNode != null) {
+                nodes.addLast(endNode);
+            }
         }
 
-        List<String> allNodeIds = nodes.stream().map(ApprovalRecordNode::getNodeId).distinct().toList();
+        List<String> allNodeIds = nodes.stream()
+                .map(node -> historical ? StringUtils.substringBefore(node.getNodeId(), SIGN_SPILT) : node.getNodeId())
+                .distinct().toList();
         Map<String, ApprovalNodeApprover> approverNodeMap = getApproverNodeMapByIds(allNodeIds);
         Map<String, ApprovalNode> approvalNodeMap = getApprovalNodeMapByIds(allNodeIds);
         nodes.forEach(node -> {
-            ApprovalNodeApprover approverNode = approverNodeMap.get(node.getNodeId());
+            ApprovalNodeApprover approverNode = approverNodeMap.get(historical
+                    ? StringUtils.substringBefore(node.getNodeId(), SIGN_SPILT) : node.getNodeId());
             if (approverNode != null) {
                 node.setMultiApproverMode(MultiApproverModeEnum.valueOf(approverNode.getMultiApproverMode()));
                 if (CollectionUtils.isNotEmpty(node.getTaskNodes()) && node.getTaskNodes().size() > 1
@@ -329,6 +354,15 @@ public class ApprovalInstanceService {
         });
         // 节点流程配置顺序
         nodes.sort(Comparator.comparing(ApprovalRecordNode::getSort));
+        if (historical && ApprovalStatus.UNAPPROVED.name().equals(instance.getApprovalStatus())) {
+            // 加签链中的后续任务可能已创建，历史详情在实际驳回处截止。
+            for (int i = 0; i < nodes.size(); i++) {
+                if (ApprovalStatus.UNAPPROVED.name().equals(nodes.get(i).getApprovalStatus())
+                        || ApprovalStatus.AUTO_UNAPPROVED.name().equals(nodes.get(i).getApprovalStatus())) {
+                    return new ArrayList<>(nodes.subList(0, i + 1));
+                }
+            }
+        }
         return nodes;
     }
 
@@ -347,6 +381,15 @@ public class ApprovalInstanceService {
             List<ApprovalRecord> records, List<ApprovalAddSignTask> signTasks,
             List<ApprovalReturnBackRecord> backRecords,
             Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap, String currentOrgId) {
+        return buildProcessedApprovalNodes(instance, tasks, records, signTasks, backRecords, attachmentsMap,
+                simpleUserMap, currentOrgId, false);
+    }
+
+    private List<ApprovalRecordNode> buildProcessedApprovalNodes(ApprovalInstance instance, List<ApprovalTask> tasks,
+            List<ApprovalRecord> records, List<ApprovalAddSignTask> signTasks,
+            List<ApprovalReturnBackRecord> backRecords,
+            Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap, String currentOrgId,
+            boolean historical) {
         List<ApprovalRecordNode> nodes = new ArrayList<>();
         Map<String, ApprovalRecord> autoNodeRecordMap = records.stream()
                 .filter(record -> StringUtils.isBlank(record.getTaskId()))
@@ -403,8 +446,6 @@ public class ApprovalInstanceService {
              * 获取节点下最后一轮正常待办任务 (排除正常加签操作)
              * 加签场景下, 同一节点可能存在多条rootTask, 只展示最新创建的那个待办
              */
-            List<String> nodeMultiApprover = approvalFlowService.getCurrentNodeApproverList(instance, hisNode,
-                    currentOrgId);
             List<ApprovalTask> nlTasks = tasks.stream()
                     .filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL
                             && Strings.CI.equals(task.getNodeId(), hisNode)
@@ -414,6 +455,9 @@ public class ApprovalInstanceService {
             if (CollectionUtils.isEmpty(nlTasks)) {
                 return;
             }
+            List<String> nodeMultiApprover = historical
+                    ? nlTasks.stream().map(ApprovalTask::getApproverId).distinct().toList()
+                    : approvalFlowService.getCurrentNodeApproverList(instance, hisNode, currentOrgId);
             List<ApprovalTask> snTasks = tasks.stream()
                     .filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN
                             && Strings.CI.contains(task.getNodeId(), hisNode))
@@ -452,7 +496,7 @@ public class ApprovalInstanceService {
                 });
                 // 依次审批的后续节点审批人需要作为待审批追加
                 ApprovalNodeApprover approvalNodeApprover = hisApproverNodeMap.get(hisNode);
-                if (approvalNodeApprover != null && MultiApproverModeEnum
+                if (!historical && approvalNodeApprover != null && MultiApproverModeEnum
                         .valueOf(approvalNodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.SEQUENTIAL) {
                     appendSeqTasks(nodeMultiApprover, allTask);
                 }

@@ -8,8 +8,10 @@ import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.response.ApprovalInstanceHistoryResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
+import cn.cordys.crm.approval.service.ApprovalHistoryService;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.security.SessionUtils;
@@ -18,6 +20,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 资源审批相关
@@ -33,6 +37,8 @@ public class ApprovalResourceController {
     private ApprovalInstanceService approvalInstanceService;
     @Resource
     private ApprovalCommentService approvalCommentService;
+    @Resource
+    private ApprovalHistoryService approvalHistoryService;
 
     @PostMapping("/push")
     @Operation(summary = "提审")
@@ -85,5 +91,19 @@ public class ApprovalResourceController {
                     approvalCommentService.hasCommentPermission(detail.getId(), SessionUtils.getUserId(), orgId));
         }
         return detail;
+    }
+
+    @GetMapping("/instances/{resourceId}")
+    @Operation(summary = "查询历史审批实例")
+    public List<ApprovalInstanceHistoryResponse> getHistoryInstances(@PathVariable String resourceId) {
+        return approvalHistoryService.getHistoryInstances(resourceId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/instance-detail/{instanceId}")
+    @Operation(summary = "查询历史审批实例详情")
+    public ApprovalInstanceDetail getHistoryInstanceDetail(@PathVariable String instanceId) {
+        return approvalHistoryService.getHistoryInstanceDetail(instanceId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 }
