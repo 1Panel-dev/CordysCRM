@@ -39,11 +39,16 @@
           <n-divider v-if="!props.readonly" vertical />
           <n-button type="default" text @click="handlePreview(file)">{{ t('common.preview') }}</n-button>
         </template>
-        <n-divider v-if="/(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type) || !props.readonly" vertical />
+        <template v-else-if="isDocumentFile(file)">
+          <n-divider v-if="!props.readonly" vertical />
+          <n-button type="default" text @click="handleDocumentPreview(file)">{{ t('common.preview') }}</n-button>
+        </template>
+        <n-divider v-if="isPreviewableFile(file) || !props.readonly" vertical />
         <n-button type="default" text @click="handleDownload(file)">{{ t('common.download') }}</n-button>
       </div>
     </div>
     <n-image-preview v-model:show="showPreview" :src="previewSrc" />
+    <DocumentPreviewModal v-model:show="showDocumentPreview" :file="documentPreviewFile" />
   </div>
 </template>
 
@@ -57,6 +62,7 @@
 
   import CrmFileIcon from '@/components/pure/crm-file-icon/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
+  import DocumentPreviewModal from './documentPreviewModal.vue';
 
   import { downloadAttachment } from '@/api/modules';
   import useUserStore from '@/store/modules/user';
@@ -82,9 +88,28 @@
 
   const showPreview = ref(false);
   const previewSrc = ref('');
+  const showDocumentPreview = ref(false);
+  const documentPreviewFile = ref<AttachmentInfo | null>(null);
+  const documentExtensions = ['docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'pdf'];
+
+  function isDocumentFile(file: AttachmentInfo) {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const type = file.type.toLowerCase().replace(/^\./, '');
+    return documentExtensions.includes(extension || '') || documentExtensions.includes(type);
+  }
+
+  function isPreviewableFile(file: AttachmentInfo) {
+    return /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type) || isDocumentFile(file);
+  }
+
   function handlePreview(file: AttachmentInfo) {
     previewSrc.value = `${PreviewAttachmentUrl}/${file.id}?userId=${userStore.userInfo.id}`;
     showPreview.value = true;
+  }
+
+  function handleDocumentPreview(file: AttachmentInfo) {
+    documentPreviewFile.value = file;
+    showDocumentPreview.value = true;
   }
 
   async function handleDownload(file: AttachmentInfo) {
