@@ -10,6 +10,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -370,7 +371,7 @@ public class CustomerPoolService {
     private CustomerPool checkPoolExist(String id) {
         CustomerPool pool = customerPoolMapper.selectByPrimaryKey(id);
         if (pool == null) {
-            throw new GenericException(Translator.get("customer_pool_not_exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer_pool_not_exist"));
         }
         return pool;
     }

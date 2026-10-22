@@ -14,6 +14,7 @@ import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -1259,7 +1260,7 @@ public class ApprovalResourceService {
      */
     public void checkViewPermission(String resourceId) {
         if (!hasViewPermission(resourceId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId())) {
-            throw new GenericException(Translator.get("no.view.permission"));
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN, Translator.get("no.view.permission"));
         }
     }
 

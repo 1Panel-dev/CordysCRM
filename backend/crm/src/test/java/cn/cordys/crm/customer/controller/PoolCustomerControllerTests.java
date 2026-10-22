@@ -302,7 +302,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         PoolBatchAssignRequest request = new PoolBatchAssignRequest();
         request.setBatchIds(List.of("aaa"));
         request.setAssignUserId("cc");
-        MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError())
+        MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is4xxClientError())
                 .andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.not.exist"));
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN, BATCH_ASSIGN, request);
