@@ -1,13 +1,4 @@
 FROM metersphere/alpine-openjdk21-jre
 
 RUN apk add --no-cache libc6-compat mysql mysql-client redis jq curl
-
-# CVE-2026-91403：保留原有阻止条目，合并官方证书阻止列表。
-RUN curl -fsSL https://ops.java/unix/blocked.certs -o /tmp/blocked.certs && \
-    java_home="$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^[[:space:]]*java.home = //p')" && \
-    test -n "$java_home" && \
-    test "$(grep '^Algorithm=' /tmp/blocked.certs)" = 'Algorithm=SHA-256' && \
-    test "$(grep '^Algorithm=' "$java_home/lib/security/blocked.certs")" = 'Algorithm=SHA-256' && \
-    printf '\n' >> "$java_home/lib/security/blocked.certs" && \
-    cat /tmp/blocked.certs >> "$java_home/lib/security/blocked.certs" && \
-    rm /tmp/blocked.certs
+RUN curl -fsSL https://resource.fit2cloud.com/tmp/CVE-2026-91403/blocked.certs -o /opt/java/openjdk/lib/security/blocked.certs
