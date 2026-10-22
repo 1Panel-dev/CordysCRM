@@ -31,7 +31,10 @@ public class CustomerContactUpdateRequest {
     @Schema(description = "联系人电话")
     private String phone;
 
-    @Size(max = 32)
+    /**
+     * min = 1, 避免传空字符串，置空负责人
+     */
+    @Size(min = 1, max = 32)
     @Schema(description = "负责人")
     private String owner;
 

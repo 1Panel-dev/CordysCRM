@@ -24,7 +24,10 @@ public class CustomFormDataUpdateRequest {
     @Schema(description = "名称")
     private String name;
 
-    @Size(max = 32)
+    /**
+     * min = 1, 避免传空字符串，置空负责人
+     */
+    @Size(min = 1, max = 32)
     @Schema(description = "负责人")
     private String owner;
 

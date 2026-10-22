@@ -28,6 +28,10 @@ public class ContractInvoiceUpdateRequest {
     @Schema(description = "合同id")
     private String contractId;
 
+    /**
+     * min = 1, 避免传空字符串，置空负责人
+     */
+    @Size(min = 1, max = 32)
     @Schema(description = "负责人")
     private String owner;
 

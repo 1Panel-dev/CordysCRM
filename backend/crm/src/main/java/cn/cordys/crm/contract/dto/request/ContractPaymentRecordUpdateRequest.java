@@ -25,9 +25,11 @@ public class ContractPaymentRecordUpdateRequest {
     @Schema(description = "回款记录名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
-    @NotBlank
-    @Size(max = 32)
-    @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
+    /**
+     * min = 1, 避免传空字符串，置空负责人
+     */
+    @Size(min = 1, max = 32)
+    @Schema(description = "负责人")
     private String owner;
 
     @NotBlank
