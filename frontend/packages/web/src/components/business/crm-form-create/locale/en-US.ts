@@ -18,5 +18,7 @@ export default {
   'crmFormCreate.submitValidationProgressTitle': 'Validation Rule Execution Order',
   'crmFormCreate.submitValidationPassed': 'Passed',
   'crmFormCreate.submitValidationFailed': 'Failed',
+  'crmFormCreate.submitValidationIgnore': 'Ignore',
+  'crmFormCreate.submitValidationIgnored': 'Ignored',
   'crmFormCreate.submitValidationNotExecuted': 'Not executed',
 };

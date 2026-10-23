@@ -15,7 +15,13 @@
         class="flex items-center gap-[12px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] px-[16px] py-[12px]"
       >
         <div class="w-[12px] shrink-0 text-[14px] leading-[22px] text-[var(--text-n1)]">{{ index + 1 }}</div>
-        <div class="one-line-text flex-1 text-[14px] leading-[22px] text-[var(--text-n1)]">{{ rule.message }}</div>
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <div class="one-line-text flex-1 text-[14px] leading-[22px] text-[var(--text-n1)]">{{ rule.message }}</div>
+          </template>
+          {{ rule.message }}
+        </n-tooltip>
+
         <div class="flex shrink-0 items-center gap-[8px]">
           <CrmIcon
             :type="statusMap[props.statusList[index] || 'pending'].icon"
@@ -25,6 +31,15 @@
           <span class="text-[14px] leading-[22px] text-[var(--text-n1)]">
             {{ t(statusMap[props.statusList[index] || 'pending'].label) }}
           </span>
+          <n-button
+            v-if="props.ignoreRuleIndices.includes(index)"
+            text
+            type="primary"
+            size="small"
+            @click="emit('ignore', index)"
+          >
+            {{ t('crmFormCreate.submitValidationIgnore') }}
+          </n-button>
         </div>
       </div>
     </div>
@@ -32,6 +47,8 @@
 </template>
 
 <script setup lang="ts">
+  import { NButton, NTooltip } from 'naive-ui';
+
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FormSubmitValidationRule, FormSubmitValidationRuleStatus } from '@lib/shared/models/system/module';
 
@@ -41,6 +58,10 @@
   const props = defineProps<{
     rules: FormSubmitValidationRule[];
     statusList: FormSubmitValidationRuleStatus[];
+    ignoreRuleIndices: number[];
+  }>();
+  const emit = defineEmits<{
+    (e: 'ignore', index: number): void;
   }>();
 
   const visible = defineModel<boolean>('show', {
@@ -65,6 +86,11 @@
       icon: 'iconicon_close_circle_filled',
       color: 'var(--error-red)',
       label: 'crmFormCreate.submitValidationFailed',
+    },
+    ignored: {
+      icon: 'iconicon_check_circle_filled',
+      color: 'var(--text-n4)',
+      label: 'crmFormCreate.submitValidationIgnored',
     },
     skipped: {
       icon: 'iconicon_minus_circle_filled1',

@@ -90,7 +90,7 @@
   const previewSrc = ref('');
   const showDocumentPreview = ref(false);
   const documentPreviewFile = ref<AttachmentInfo | null>(null);
-  const documentExtensions = ['docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'pdf'];
+  const documentExtensions = ['docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'pdf', 'wps', 'doc', 'txt'];
 
   function isDocumentFile(file: AttachmentInfo) {
     const extension = file.name.split('.').pop()?.toLowerCase();
