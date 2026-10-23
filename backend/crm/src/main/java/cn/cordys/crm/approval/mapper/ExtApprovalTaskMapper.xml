@@ -10,6 +10,21 @@
         LIMIT 1
     </select>
 
+    <select id="existsResourceParticipant" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM approval_instance ai
+            WHERE ai.resource_id = #{resourceId}
+              AND (ai.submitter_id = #{userId}
+                   OR EXISTS (
+                       SELECT 1
+                       FROM approval_task at
+                       WHERE at.instance_id = ai.id
+                         AND at.approver_id = #{userId}
+                   ))
+        )
+    </select>
+
     <select id="selectPendingTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
         SELECT
         ai.resource_id AS resourceId,

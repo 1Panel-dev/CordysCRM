@@ -1272,16 +1272,12 @@ public class ApprovalResourceService {
             return false;
         }
 
-        ApprovalInstance latestInstance = extApprovalTaskMapper.selectLatestInstanceByResourceId(resourceId);
-
-        // 有审批实例时：提交人或审批人/抄送人直接通过
-        if (latestInstance != null) {
-            if (userId.equals(latestInstance.getSubmitterId()) || hasApprovalTaskPermission(latestInstance, userId)) {
-                return true;
-            }
+        // 历史任一审批实例中作为提交人或审批人/抄送人参与过, 直接放行
+        if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId)) {
+            return true;
         }
 
-        // 既不是提交人也未参与审批时，再校验资源权限
+        // 未参与过任何审批实例时，再校验资源权限
         return hasResourcePermission(resourceId, userId, orgId);
     }
 

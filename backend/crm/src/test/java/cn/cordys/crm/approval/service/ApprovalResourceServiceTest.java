@@ -304,6 +304,76 @@ class ApprovalResourceServiceTest {
         verifyNoInteractions(extTaskMapper, dataScopeService);
     }
 
+    @Test
+    void historicalInstanceParticipantGainsViewPermissionWithoutResourceCheck() {
+        when(extTaskMapper.existsResourceParticipant("resource-a", "history-approver")).thenReturn(true);
+
+        Boolean permitted = ReflectionTestUtils.invokeMethod(service, "hasViewPermission",
+                "resource-a", "history-approver", "org-a");
+
+        assertTrue(permitted);
+        verify(extTaskMapper).existsResourceParticipant("resource-a", "history-approver");
+        verifyNoInteractions(dataScopeService, customFormDataService);
+    }
+
+    @Test
+    void nonParticipantFallsBackToResourceViewPermission() {
+        when(extTaskMapper.existsResourceParticipant("resource-a", "reader")).thenReturn(false);
+        ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
+        when(provider.getFormType()).thenReturn("contract");
+        when(provider.requiresOwner()).thenReturn(true);
+        ResourceAccessContext context = new ResourceAccessContext();
+        context.setOwnerId("resource-owner");
+        when(provider.getAccessContext("resource-a", "org-a")).thenReturn(context);
+        when(dataScopeService.hasDataPermission("reader", "org-a", "resource-owner", PermissionConstants.CONTRACT_READ))
+                .thenReturn(true);
+
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class,
+                withSettings().mockMaker(MockMakers.INLINE));
+                MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                        withSettings().mockMaker(MockMakers.INLINE))) {
+            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CONTRACT_READ)).thenReturn(true);
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("contract", provider));
+
+            // 泛型 invokeMethod 的返回值需先落到 Boolean, 否则 assertTrue 会重载到 BooleanSupplier
+            Boolean permitted = ReflectionTestUtils.invokeMethod(service, "hasViewPermission",
+                    "resource-a", "reader", "org-a");
+            assertTrue(permitted);
+        }
+    }
+
+    @Test
+    void resourceParticipantQueryCoversSubmitterAndAnyHistoricalTask() throws Exception {
+        Configuration configuration = new Configuration();
+        String resource = ExtApprovalTaskMapper.class.getName().replace('.', '/') + ".xml";
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+            assertNotNull(in, "找不到 Mapper XML：" + resource);
+            new XMLMapperBuilder(in, configuration, resource, configuration.getSqlFragments()).parse();
+        }
+        Map<String, Object> parameters = Map.of("resourceId", "resource-a", "userId", "user-a");
+        BoundSql sql = configuration
+                .getMappedStatement(ExtApprovalTaskMapper.class.getName() + ".existsResourceParticipant")
+                .getBoundSql(parameters);
+
+        assertEquals("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM approval_instance ai
+                    WHERE ai.resource_id = ?
+                      AND (ai.submitter_id = ?
+                           OR EXISTS (
+                               SELECT 1
+                               FROM approval_task at
+                               WHERE at.instance_id = ai.id
+                                 AND at.approver_id = ?
+                           ))
+                )
+                """.replaceAll("\\s+", " ").trim(), sql.getSql().replaceAll("\\s+", " ").trim());
+        assertEquals(List.of("resourceId", "userId", "userId"),
+                sql.getParameterMappings().stream().map(mapping -> mapping.getProperty()).toList());
+    }
+
     private ApprovalInstance instanceForView() {
         ApprovalInstance instance = new ApprovalInstance();
         instance.setId("instance-old");
