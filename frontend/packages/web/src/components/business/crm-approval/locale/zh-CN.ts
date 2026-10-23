@@ -47,4 +47,7 @@ export default {
   'crm.approval.reviewDisabledTip': '未匹配到生效审批流，请联系管理员',
   'crm.approval.copyToTip': '抄送 {count} 人',
   'crm.approval.historyTip': '该资源为历史数据，仅保留最终审批状态',
+  'crm.approval.previousRoundTitle': '上一轮审批卡在「{nodeName}」',
+  'crm.approval.currentRound': '本轮',
+  'crm.approval.historyDetailLoadFailed': '历史审批记录加载失败',
 };

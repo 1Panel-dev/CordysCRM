@@ -780,15 +780,19 @@
   let submitValidationCanceled = false;
   let resolveIgnoredRules: ((shouldSubmit: boolean) => void) | null = null;
 
-  watch(progressModalVisible, (visible) => {
-    if (visible || !isSubmitValidationRunning.value) return;
+  watch(
+    progressModalVisible,
+    (visible) => {
+      if (visible || !isSubmitValidationRunning.value) return;
 
-    submitValidationCanceled = true;
-    ignoreRuleIndices.value = [];
-    const resolve = resolveIgnoredRules;
-    resolveIgnoredRules = null;
-    resolve?.(false);
-  });
+      submitValidationCanceled = true;
+      ignoreRuleIndices.value = [];
+      const resolve = resolveIgnoredRules;
+      resolveIgnoredRules = null;
+      resolve?.(false);
+    },
+    { flush: 'sync' }
+  );
 
   const validationRules = computed(() => (formConfig.value.validationRules || []).filter((rule) => rule.enable));
 

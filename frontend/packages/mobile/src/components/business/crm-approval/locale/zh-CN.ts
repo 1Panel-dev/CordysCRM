@@ -1,5 +1,8 @@
 export default {
   'crm.approval.record': '审批记录',
+  'crm.approval.previousRoundTitle': '上一轮审批卡在「{nodeName}」',
+  'crm.approval.historyLoadFailed': '历史审批记录加载失败',
+  'crm.approval.historyDetailLoadFailed': '历史审批详情加载失败',
   'crm.approval.pending': '待审批',
   'crm.approval.opinion': '审批意见',
   'crm.approval.rejectConfirm': '确认驳回吗？',

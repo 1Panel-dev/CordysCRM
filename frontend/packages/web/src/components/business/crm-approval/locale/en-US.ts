@@ -50,4 +50,7 @@ export default {
   'crm.approval.reviewDisabledTip': 'No active approval workflow was matched. Please contact the administrator.',
   'crm.approval.copyToTip': 'Copy to {count} people',
   'crm.approval.historyTip': 'This resource is historical data; only the final approval status is retained.',
+  'crm.approval.previousRoundTitle': 'Previous round stopped at "{nodeName}"',
+  'crm.approval.currentRound': 'Current round',
+  'crm.approval.historyDetailLoadFailed': 'Failed to load historical approval details',
 };

@@ -56,22 +56,26 @@
           :initial-source-name="initialSourceName"
         />
         <div v-else-if="tab.name === 'approval'" class="flex h-full bg-[var(--text-n9)] p-[16px]">
-          <CrmApprovalLine
-            :nodes="approvalInfo?.nodes || []"
-            :submitter="{
-              submitAvatar: approvalInfo?.submitAvatar,
-              submitter: approvalInfo?.submitter,
-              submitTime: approvalInfo?.submitTime,
-              submitterId: approvalInfo?.submitterId,
-              comment: approvalInfo?.comment,
-            }"
-            :currentApprovalNode="currentApprovalNode"
-            :currentApprovalNodeIndex="currentApprovalNodeIndex"
-            :finally-result="approvalInfo?.approvalStatus"
-            :approval-id="approvalInfo?.id"
-            :comment-count="approvalInfo?.commentCount"
-            :commentable="approvalInfo?.commentable"
-          />
+          <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
+            <CrmApprovalLine
+              :resource-id="sourceId"
+              class="min-h-0 flex-1"
+              :nodes="approvalInfo?.nodes || []"
+              :submitter="{
+                submitAvatar: approvalInfo?.submitAvatar,
+                submitter: approvalInfo?.submitter,
+                submitTime: approvalInfo?.submitTime,
+                submitterId: approvalInfo?.submitterId,
+                comment: approvalInfo?.comment,
+              }"
+              :currentApprovalNode="currentApprovalNode"
+              :currentApprovalNodeIndex="currentApprovalNodeIndex"
+              :finally-result="approvalInfo?.approvalStatus"
+              :approval-id="approvalInfo?.id"
+              :comment-count="approvalInfo?.commentCount"
+              :commentable="approvalInfo?.commentable"
+            />
+          </div>
         </div>
       </van-tab>
     </van-tabs>
