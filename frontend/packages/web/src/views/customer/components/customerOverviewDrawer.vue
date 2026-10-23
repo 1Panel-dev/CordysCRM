@@ -60,7 +60,7 @@
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
           >
-            <template #left="{ fieldPermissions, taskNode, setLoading }">
+            <template #left="{ fieldPermissions, taskNode, setLoading, setEditing }">
               <ApprovalFieldEditor
                 ref="descriptionRef"
                 :form-key="FormDesignKeyEnum.CUSTOMER"
@@ -69,6 +69,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
+                :set-editing="setEditing"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"

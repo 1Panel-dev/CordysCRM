@@ -58,7 +58,7 @@
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
           >
-            <template #left="{ fieldPermissions, taskNode, setLoading }">
+            <template #left="{ fieldPermissions, taskNode, setLoading, setEditing }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
@@ -69,6 +69,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
+                :set-editing="setEditing"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
                 @init="handleInit"
                 @refresh="emit('refresh')"

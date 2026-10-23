@@ -54,7 +54,7 @@
             @refresh="handleSavedRefresh"
             @delete-approved="handleDeleteApproved"
           >
-            <template #left="{ fieldPermissions, taskNode, setLoading }">
+            <template #left="{ fieldPermissions, taskNode, setLoading, setEditing }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.CUSTOM_FORM"
@@ -65,6 +65,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
+                :set-editing="setEditing"
                 :readonly="!canUpdateDetail"
                 :custom-form-id="props.customFormId"
                 @init="handleInit"

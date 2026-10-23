@@ -35,20 +35,7 @@
           >
             {{ item.label }}
           </div>
-          <CrmSingleText
-            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
-            v-model:value="formDetail[item.fieldInfo?.id]"
-            :field-config="{
-              ...item.fieldInfo,
-              showLabel: false,
-            }"
-            :path="item.fieldInfo?.id"
-            isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo?.id]"
-            needInitDetail
-            class="flex-1"
-          />
-          <div v-else>{{ item.value || '-' }}</div>
+          <div>{{ item.value || '-' }}</div>
         </div>
       </template>
       <template #[FieldTypeEnum.TEXTAREA]="{ item }">
@@ -59,21 +46,7 @@
           >
             {{ item.label }}
           </div>
-          <CrmTextarea
-            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
-            v-model:value="formDetail[item.fieldInfo?.id]"
-            :field-config="{
-              ...item.fieldInfo,
-              showLabel: false,
-            }"
-            :path="item.fieldInfo?.id"
-            :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
-            isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo?.id]"
-            needInitDetail
-            class="flex-1"
-          />
-          <div v-else-if="item.value" class="break-all" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+          <div v-if="item.value" class="break-all" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
           <div v-else>-</div>
         </div>
       </template>
@@ -172,25 +145,18 @@
             {{ item.label }}
           </div>
           <CrmDateTime
-            v-if="
-              (item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)) ||
-              (item.fieldInfo?.businessKey === 'expectedEndTime' && !item.fieldInfo?.resourceFieldId)
-            "
+            v-if="isOpportunityEndDate(item.fieldInfo)"
             v-model:value="formDetail[item.fieldInfo?.id]"
             :field-config="{
               ...item.fieldInfo,
               showLabel: false,
             }"
             :path="item.fieldInfo?.id"
-            :disabled="
-              item.fieldInfo?.businessKey === 'expectedEndTime' && !item.fieldInfo?.resourceFieldId
-                ? !item.fieldInfo?.editable
-                : !editableByPermission.includes(item.fieldInfo?.id)
-            "
+            :disabled="!item.fieldInfo?.editable"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo?.id]"
             needInitDetail
-            @change="editableByPermission.includes(item.fieldInfo?.id) ? undefined : handleFormChange()"
+            @change="handleFormChange()"
           />
           <div v-else>{{ item.value || '-' }}</div>
         </div>
@@ -200,22 +166,8 @@
           <div class="mr-[16px] text-nowrap text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
-          <CrmSelect
-            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
-            v-model:value="formDetail[item.fieldInfo?.id]"
-            :field-config="{
-              ...item.fieldInfo,
-              showLabel: false,
-            }"
-            :path="item.fieldInfo?.id"
-            isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo?.id]"
-            class="w-[180px]"
-            needInitDetail
-            @update:value="handleFieldChange(item.fieldInfo, $event)"
-          />
           <CrmTagGroup
-            v-else-if="Array.isArray(item.value) && item.value.length"
+            v-if="Array.isArray(item.value) && item.value.length"
             :tags="item.value"
             :label-key="item.tagProps?.labelKey"
             :class="`justify-${props.valueAlign ?? 'end'}`"
@@ -228,19 +180,7 @@
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
-          <CrmInputNumber
-            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
-            v-model:value="formDetail[item.fieldInfo?.id]"
-            :field-config="{
-              ...item.fieldInfo,
-              showLabel: false,
-            }"
-            :path="item.fieldInfo?.id"
-            isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo?.id]"
-            needInitDetail
-          />
-          <div v-else>{{ isNotEmpty(item.value) ? item.value : '-' }}</div>
+          <div>{{ isNotEmpty(item.value) ? item.value : '-' }}</div>
         </div>
       </template>
       <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
@@ -348,10 +288,6 @@
   import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
   import CrmDateTime from '@/components/business/crm-form-create/components/basic/dateTime.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
-  import CrmInputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
-  import CrmSelect from '@/components/business/crm-form-create/components/basic/select.vue';
-  import CrmSingleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
-  import CrmTextarea from '@/components/business/crm-form-create/components/basic/textarea.vue';
   import { AttachmentInfo, type FormCreateField } from '@/components/business/crm-form-create/types';
   import type { FormulaDataSourceMap } from '@/components/business/crm-formula/formula-runtime/types.js';
   import { safeParseFormula } from '@/components/business/crm-formula-editor/utils.js';
@@ -432,12 +368,6 @@
         ?.filter((e) => e.permissionType === ApprovalFieldPermissionModeEnum.HIDDEN)
         .map((e) => e.fieldId) || []
   );
-  const editableByPermission = computed(
-    () =>
-      props.fieldPermissions
-        ?.filter((e) => e.permissionType === ApprovalFieldPermissionModeEnum.EDIT)
-        .map((e) => e.fieldId) || []
-  );
   const { formKey, sourceId, otherSaveParams, customFormId } = toRefs(props);
   const {
     fieldList,
@@ -453,8 +383,6 @@
     initFormConfig,
     initFormDescription,
     saveForm,
-    initFormShowControl,
-    applyFieldLink,
   } = useFormCreateApi({
     formKey,
     sourceId,
@@ -494,12 +422,15 @@
 
   const feedbackMap = ref<Record<string, string>>({});
 
+  function isOpportunityEndDate(field?: FormCreateField): field is FormCreateField {
+    return (
+      props.formKey === FormDesignKeyEnum.BUSINESS && field?.businessKey === 'expectedEndTime' && !field.resourceFieldId
+    );
+  }
+
   function validateField(field: FormCreateField) {
-    if (
-      editableByPermission.value.includes(field.id) ||
-      (field.businessKey === 'expectedEndTime' && !field.resourceFieldId)
-    ) {
-      // 只校验可编辑字段（商机结束日期字段特殊处理）
+    if (isOpportunityEndDate(field)) {
+      // 商机结束日期字段仍需校验
       if (field.rules.some((rule) => rule.key === 'required')) {
         const currentValue = formDetail.value[field.id];
         if (
@@ -518,17 +449,6 @@
     }
     feedbackMap.value[field.id] = '';
     return true;
-  }
-
-  function handleFieldChange(item: FormCreateField, value: any) {
-    // 控制显示规则
-    if (item.showControlRules?.length) {
-      initFormShowControl();
-    }
-    // 字段联动
-    if (item.linkProp?.targetField && item.linkProp?.linkOptions.length) {
-      applyFieldLink(item);
-    }
   }
 
   function handleFormChange(callback?: () => void) {

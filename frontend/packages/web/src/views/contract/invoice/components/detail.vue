@@ -55,7 +55,7 @@
             @save-approval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
           >
-            <template #left="{ fieldPermissions, taskNode, setLoading }">
+            <template #left="{ fieldPermissions, taskNode, setLoading, setEditing }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.INVOICE"
@@ -66,6 +66,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
+                :set-editing="setEditing"
                 :readonly="props.readonly || !hasAnyPermission(['CONTRACT_INVOICE:UPDATE'])"
                 @init="handleInit"
                 @open-contract-detail="emit('openContractDrawer', $event)"

@@ -38,6 +38,7 @@
                 :fieldPermissions="filedPermission"
                 :taskNode="currentTaskNode"
                 :setLoading="setLeftSlotLoading"
+                :setEditing="setLeftEditing"
               ></slot>
             </n-scrollbar>
           </div>
@@ -97,6 +98,7 @@
           </n-scrollbar>
           <div
             v-if="
+              !leftSlotEditing &&
               approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
               (isApprover || canCancelApply || canCancelApproval)
             "
@@ -144,7 +146,13 @@
     </CrmSplitPanel>
     <div v-else class="flex h-full w-full p-[24px_16px_24px_24px]">
       <n-scrollbar x-scrollable>
-        <slot name="left" :fieldPermissions="[]" :taskNode="currentTaskNode" :setLoading="setLeftSlotLoading"></slot>
+        <slot
+          name="left"
+          :fieldPermissions="[]"
+          :taskNode="currentTaskNode"
+          :setLoading="setLeftSlotLoading"
+          :setEditing="setLeftEditing"
+        ></slot>
       </n-scrollbar>
     </div>
   </CrmCard>
@@ -320,6 +328,7 @@
       fieldPermissions: ApprovalFieldPermission[];
       taskNode?: ApprovalNodeTaskNode;
       setLoading: (loading: boolean) => void;
+      setEditing: (editing: boolean) => void;
     }): any;
   }>();
   const approvalStandardFormKeys = new Set<string>([
@@ -349,9 +358,14 @@
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
   const leftSlotLoading = ref(props.leftLoading ?? false);
+  const leftSlotEditing = ref(false);
 
   function setLeftSlotLoading(loading: boolean) {
     leftSlotLoading.value = loading;
+  }
+
+  function setLeftEditing(editing: boolean) {
+    leftSlotEditing.value = editing;
   }
 
   const activeAnchor = ref<'record' | 'comment'>('record');
