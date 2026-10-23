@@ -33,6 +33,13 @@
         <span class="text-[var(--text-n1)]">{{ props.comment.content }}</span>
       </div>
 
+      <CrmFileList
+        v-if="!isEditing && props.comment.attachments?.length"
+        :files="props.comment.attachments"
+        class="mt-[8px]"
+        readonly
+      />
+
       <div v-if="!isEditing" class="mt-[8px] flex justify-end gap-[8px]">
         <n-button v-if="props.canReply" size="small" class="p-[8px]" quaternary @click="emit('reply', props.comment)">
           <template #icon>
@@ -81,6 +88,7 @@
   } from '@lib/shared/models/follow';
 
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
+  import CrmFileList from '@/components/business/crm-file-list/index.vue';
   import MentionInput from './mentionInput.vue';
 
   const { t } = useI18n();
