@@ -1,4 +1,5 @@
 import type { CommonList, TableQueryParams } from './common';
+import type { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export interface FollowCommentUser {
   id: string;
@@ -24,6 +25,7 @@ export interface FollowCommentItem {
   replyCount: number;
   replies: FollowCommentItem[];
   mentionUsers?: FollowCommentUser[];
+  attachments?: AttachmentInfo[];
 }
 
 export interface FollowCommentListParams extends TableQueryParams {
