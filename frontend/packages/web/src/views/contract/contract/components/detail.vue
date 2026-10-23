@@ -1,12 +1,5 @@
 <template>
-  <CrmDrawer
-    v-model:show="visible"
-    resizable
-    no-padding
-    :footer="false"
-    :title="title"
-    :view-size="formViewSize"
-  >
+  <CrmDrawer v-model:show="visible" resizable no-padding :footer="false" :title="title" :view-size="formViewSize">
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
@@ -129,6 +122,11 @@
             @open-customer-drawer="emit('showCustomerDrawer', $event)"
           />
         </div>
+        <CrmChangeRecord
+          v-if="activeTab === 'changeRecord'"
+          :source-id="props.sourceId"
+          :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.CONTRACT, params)"
+        />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -183,6 +181,7 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
@@ -195,7 +194,13 @@
   import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
-  import { deleteContract, getContractFormConfig, getContractStatusConfig, updateContractStage } from '@/api/modules';
+  import {
+    deleteContract,
+    getChangeLogPage,
+    getContractFormConfig,
+    getContractStatusConfig,
+    updateContractStage,
+  } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -262,6 +267,7 @@
       permission: ['ORDER:READ'],
       internalKey: 'CONTRACT_ORDER',
     },
+    { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
   ];
   const { availableDetailTabIds } = useFormDetailTabAvailability(detailTabConfig, FormDesignKeyEnum.CONTRACT);
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(

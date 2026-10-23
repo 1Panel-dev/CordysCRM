@@ -14,6 +14,7 @@ import useProductApi from '@lib/shared/api/modules/product';
 import useSysApi from '@lib/shared/api/modules/sys';
 import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
 import useBusinessApi from '@lib/shared/api/modules/system/business';
+import useChangeLogApi from '@lib/shared/api/modules/system/changeLog';
 import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
@@ -54,12 +55,15 @@ const messageApi = useMessageApi(CDR);
 const licenseApi = useLicenseApi(CDR);
 const customerApi = useCustomerApi(CDR);
 const businessApi = useBusinessApi(CDR);
+const changeLogApi = useChangeLogApi(CDR);
 const dashboardApi = useDashboard(CDR);
 const opportunityApi = useOpportunityApi(CDR);
 const contractApi = useContractApi(CDR);
 const orderApi = useOrderApi(CDR);
 const customFormApi = useCustomFormApi(CDR);
 const processApi = useProcessApi(CDR);
+
+export const { getChangeLogPage } = changeLogApi;
 
 export const {
   addCustomForm,

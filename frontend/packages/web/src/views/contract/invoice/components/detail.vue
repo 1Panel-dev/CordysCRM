@@ -77,6 +77,11 @@
             </template>
           </CrmApprovalDetail>
         </div>
+        <CrmChangeRecord
+          v-if="activeTab === 'changeRecord'"
+          :source-id="props.sourceId"
+          :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.INVOICE, params)"
+        />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -114,12 +119,13 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
-  import { deleteInvoiced, getInvoicedFormConfig } from '@/api/modules';
+  import { deleteInvoiced, getChangeLogPage, getInvoicedFormConfig } from '@/api/modules';
   import { deleteInvoiceContentMap } from '@/config/contract';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -161,7 +167,14 @@
 
   const activeTab = ref('invoice');
   const { availableDetailTabIds } = useFormDetailTabAvailability(detailTabConfig, FormDesignKeyEnum.INVOICE);
-  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(detailTabConfig, [], availableDetailTabIds);
+  const staticTabList = computed<TabContentItem[]>(() => [
+    { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
+  ]);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
+    detailTabConfig,
+    staticTabList,
+    availableDetailTabIds
+  );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>

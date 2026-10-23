@@ -1,4 +1,5 @@
 export default {
+  'common.changeRecord': '变更记录',
   'common.pleaseSelectMember': '请选择成员',
   'common.add': '添加',
   'common.saveAndContinue': '保存并继续添加',

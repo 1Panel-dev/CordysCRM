@@ -1,12 +1,5 @@
 <template>
-  <CrmDrawer
-    v-model:show="show"
-    resizable
-    no-padding
-    :footer="false"
-    :title="sourceName"
-    :view-size="formViewSize"
-  >
+  <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
@@ -151,6 +144,11 @@
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
+        <CrmChangeRecord
+          v-if="activeTab === 'changeRecord'"
+          :source-id="props.sourceId"
+          :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.CUSTOMER, params)"
+        />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -200,6 +198,7 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
@@ -215,7 +214,7 @@
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
-  import { deleteCustomer, getCustomerHeaderList, transferCustomer } from '@/api/modules';
+  import { deleteCustomer, getChangeLogPage, getCustomerHeaderList, transferCustomer } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
@@ -418,6 +417,7 @@
         permission: ['ORDER:READ'],
         internalKey: 'CUSTOMER_ORDER',
       },
+      { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
     ];
     if (collaborationType.value) {
       return fullList.filter((item) => item.name !== 'collaborator');

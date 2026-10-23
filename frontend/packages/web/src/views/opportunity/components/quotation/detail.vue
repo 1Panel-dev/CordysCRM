@@ -78,6 +78,11 @@
             </template>
           </CrmApprovalDetail>
         </div>
+        <CrmChangeRecord
+          v-if="activeTab === 'changeRecord'"
+          :source-id="props.sourceId"
+          :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.OPPORTUNITY_QUOTATION, params)"
+        />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -117,12 +122,13 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
-  import { deleteQuotation, voidQuotation } from '@/api/modules';
+  import { deleteQuotation, getChangeLogPage, voidQuotation } from '@/api/modules';
   import { quotationDataActionMap } from '@/config/opportunity';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -173,7 +179,14 @@
   const activeTab = ref('quotation');
   // TODO: 确认 OPPORTUNITY_QUOTATION_SNAPSHOT 是否同步 detailTabs；若不同步需改为单独读取普通报价表单配置。
   const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.OPPORTUNITY_QUOTATION);
-  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
+  const staticTabList = computed<TabContentItem[]>(() => [
+    { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
+  ]);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
+    formConfig,
+    staticTabList,
+    availableDetailTabIds
+  );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
