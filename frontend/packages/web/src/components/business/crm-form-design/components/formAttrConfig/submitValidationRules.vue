@@ -33,9 +33,9 @@
 
     <div
       v-if="!rules.length"
-      class="mt-[8px] flex min-h-[88px] items-center justify-center rounded-[var(--border-radius-small)] bg-[var(--text-n9)]"
+      class="mt-[8px] flex items-center justify-center rounded-[var(--border-radius-small)] bg-[var(--text-n9)]"
     >
-      <n-empty :description="t('crmFormDesign.submitValidationEmpty')" />
+      <n-empty :description="t('crmFormDesign.submitValidationEmpty')" :show-icon="false" />
     </div>
     <VueDraggable
       v-else

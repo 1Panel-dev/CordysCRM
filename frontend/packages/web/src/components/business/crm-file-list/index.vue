@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-[8px]">
     <div v-for="file in props.files" :key="file.id" class="crm-file-item">
       <div class="flex min-w-0 flex-1 items-center gap-[12px]">
-        <CrmFileIcon :type="file.type" :size="32" class="shrink-0" />
+        <CrmFileIcon :name="file.name" :size="32" class="shrink-0" />
         <div class="flex min-w-0 flex-1 flex-col gap-[2px]">
           <n-tooltip trigger="hover" :delay="300">
             <template #trigger>
