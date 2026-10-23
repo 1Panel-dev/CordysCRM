@@ -131,8 +131,8 @@ class ApprovalCommentNoticeServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"zh-CN,张三 在 合同甲 的审批评论中 @了你：请确认付款条款。",
-            "en-US,Zhang mentioned you in an approval comment on 合同甲: 请确认付款条款。"})
+    @CsvSource({"zh-CN,张三在 合同甲 中提及了你: 请确认付款条款。",
+            "en-US,Zhang mentioned you in <<合同甲>>: 请确认付款条款。"})
     void defaultMessageContainsOnlyCommenterResourceNameAndSummary(String language, String expected) {
         Map<String, Object> params = new HashMap<>();
         params.put("OPERATOR", language.startsWith("zh") ? "张三" : "Zhang");
