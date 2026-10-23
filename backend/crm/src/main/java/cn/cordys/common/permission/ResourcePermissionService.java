@@ -190,8 +190,7 @@ public class ResourcePermissionService {
     /**
      * 校验当前用户是否是指定待办任务的所有人，且该任务关联的资源与请求资源一致
      * <p>
-     * 待办任务仅在“处理中”时才代表审批人当前可以查看/编辑的授权：
-     * 已完成、已失效、未流转到当前节点或非审批任务（抄送）都不能作为权限来源。
+     * 能够查看历史的审批任务
      */
     private boolean isTaskOwner(String approvalTaskId, String resourceId, String userId) {
         if (StringUtils.isBlank(approvalTaskId) || StringUtils.isBlank(userId)) {
@@ -203,11 +202,7 @@ public class ResourcePermissionService {
             return false;
         }
 
-        // 只有处理中的审批待办（非抄送、尚未执行操作）才可执行, 已处理的待办 ID 不能重复使用
-        if (!ApprovalStatus.APPROVING.name().equals(task.getStatus())
-                || StringUtils.isNotBlank(task.getAction())
-                || ApprovalTaskType.CC.name().equals(task.getType())
-                || StringUtils.isBlank(task.getInstanceId())) {
+        if (StringUtils.isBlank(task.getInstanceId())) {
             return false;
         }
 
@@ -217,12 +212,7 @@ public class ResourcePermissionService {
             return false;
         }
 
-        // 审批实例已结束或任务不在当前审批节点时, 该任务已不可执行
-        if (ApprovalStatus.APPROVED.name().equals(instance.getApprovalStatus())
-                || ApprovalStatus.UNAPPROVED.name().equals(instance.getApprovalStatus())) {
-            return false;
-        }
-        return StringUtils.equals(instance.getCurrentNodeId(), task.getNodeId());
+        return true;
     }
 
     /**

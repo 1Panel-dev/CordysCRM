@@ -67,7 +67,7 @@ public class ApprovalResourceController {
             approvalCommentService.getMentionInstance(commentMentionId, resourceId, SessionUtils.getUserId(),
                     OrganizationContext.getOrganizationId());
         } else {
-        approvalResourceService.checkViewPermission(resourceId);
+            approvalResourceService.checkViewPermission(resourceId);
         }
         return approvalResourceService.resourceDetail(resourceId);
     }
