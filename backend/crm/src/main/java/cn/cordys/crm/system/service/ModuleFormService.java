@@ -673,8 +673,17 @@ public class ModuleFormService {
         tab.setRelatedForm(null);
         tab.setRelatedField(null);
         tab.setEnable(tab.getEnable() == null || tab.getEnable());
-        tab.setName(Translator.get(tab.getName(), tab.getName()));
+        // 兼容历史初始化写入的默认语言名称，统一改回 key 以便按请求语言翻译。
+        String name = StringUtils.isBlank(tab.getName()) || isChangeLogTabDefaultName(tab.getName())
+                ? CHANGE_LOG_TAB_LABEL_KEY : tab.getName();
+        tab.setName(Translator.get(name, name));
         return tab;
+    }
+
+    private boolean isChangeLogTabDefaultName(String name) {
+        return Translator.get(CHANGE_LOG_TAB_LABEL_KEY, Locale.US, CHANGE_LOG_TAB_LABEL_KEY).equals(name)
+                || Translator.get(CHANGE_LOG_TAB_LABEL_KEY, Locale.SIMPLIFIED_CHINESE, CHANGE_LOG_TAB_LABEL_KEY)
+                        .equals(name);
     }
 
     private FormDetailTab resolveInternalDetailTab(FormDetailTab tab, InternalDetailTab internalTab, boolean strict,
@@ -3039,7 +3048,7 @@ public class ModuleFormService {
             }
 
             FormDetailTab tab = new FormDetailTab();
-            tab.setName(Translator.get(CHANGE_LOG_TAB_LABEL_KEY));
+            tab.setName(CHANGE_LOG_TAB_LABEL_KEY);
             tab.setEnable(true);
             tab.setInternalKey(CHANGE_LOG_TAB_INTERNAL_KEY);
             tabs.add(tab);
