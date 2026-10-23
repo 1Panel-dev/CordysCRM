@@ -153,8 +153,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取商机表单配置
-  function getOptFormConfig() {
-    return CDR.get<FormDesignConfigDetailParams>({ url: GetOptFormConfigUrl });
+  function getOptFormConfig(_id?: string, approvalTaskId?: string) {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetOptFormConfigUrl, params: { approvalTaskId } });
   }
 
   // 商机跟进记录列表

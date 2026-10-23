@@ -252,7 +252,6 @@ export interface ApprovalTodoItem {
   resourceId: string;
   resourceName: string;
   resourceType: string;
-  resourceNotFound: boolean;
   applicant: string;
   submitTime: number;
   approvalOperation: ApprovalOperationEnum;

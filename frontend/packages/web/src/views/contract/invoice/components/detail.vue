@@ -64,6 +64,7 @@
                 refresh-form-config
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
+                :approval-task-id="props.approvalTaskId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="props.readonly || !hasAnyPermission(['CONTRACT_INVOICE:UPDATE'])"

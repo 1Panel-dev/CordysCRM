@@ -80,16 +80,7 @@
                   <div class="flex items-center justify-between">
                     <div class="one-line-text flex-1">{{ item.applicant }}</div>
                     <div class="flex items-center gap-[8px]">
-                      <van-button
-                        v-if="
-                          !item.resourceNotFound &&
-                          (activeName === ApprovalListTypeEnum.PENDING || getResourcePermission(item))
-                        "
-                        type="primary"
-                        size="mini"
-                        class="h-[20px]"
-                        @click.stop="goDetail(item)"
-                      >
+                      <van-button type="primary" size="mini" class="h-[20px]" @click.stop="goDetail(item)">
                         {{ t('common.detail') }}
                       </van-button>
                       <template v-if="activeName === ApprovalListTypeEnum.PENDING">
@@ -176,7 +167,6 @@
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum.js';
   import { setLocalStorage } from '@lib/shared/method/local-storage.js';
-  import { hasAnyPermission } from '@/utils/permission.js';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -268,27 +258,6 @@
     }
   }
 
-  function getResourcePermission(item: ApprovalTodoItem) {
-    switch (item.resourceType) {
-      case ApprovalResourceTypeEnum.CLUE:
-        return hasAnyPermission(['CLUE_MANAGEMENT:READ']);
-      case ApprovalResourceTypeEnum.CUSTOMER:
-        return hasAnyPermission(['CUSTOMER_MANAGEMENT:READ']);
-      case ApprovalResourceTypeEnum.OPPORTUNITY:
-        return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']);
-      case ApprovalResourceTypeEnum.CONTRACT:
-        return hasAnyPermission(['CONTRACT:READ']);
-      case ApprovalResourceTypeEnum.INVOICE:
-        return hasAnyPermission(['CONTRACT_INVOICE:READ']);
-      case ApprovalResourceTypeEnum.ORDER:
-        return hasAnyPermission(['ORDER:READ']);
-      case ApprovalResourceTypeEnum.QUOTATION:
-        return hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']);
-      default:
-        return true;
-    }
-  }
-
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
 
   async function initApprovalConfig() {
@@ -349,9 +318,7 @@
 
   function handleItemClick(item: ApprovalTodoItem) {
     if (activeName.value !== ApprovalListTypeEnum.PENDING || !approvalConfig.value?.allowBatchProcess) {
-      if (getResourcePermission(item)) {
-        goDetail(item);
-      }
+      goDetail(item);
       return;
     }
     const index = selectedKeys.value.indexOf(item.approvalTaskId);
@@ -419,10 +386,6 @@
   }
 
   function goDetail(item: ApprovalTodoItemWithPool) {
-    if (item.resourceNotFound) {
-      return;
-    }
-
     router.push({
       name: WorkbenchRouteEnum.WORKBENCH_APPROVAL,
       query: {
