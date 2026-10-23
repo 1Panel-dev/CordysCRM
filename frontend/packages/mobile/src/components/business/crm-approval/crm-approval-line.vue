@@ -8,6 +8,53 @@
       @select="(value) => scrollToAnchor(value as 'record' | 'comment')"
     />
     <div ref="scrollContainerRef" class="min-h-0 flex-1 overflow-y-auto">
+      <van-collapse
+        v-if="historyInstances.length"
+        v-model="expandedHistoryInstanceNames"
+        class="mb-[16px] rounded-[var(--border-radius-small)]"
+        :border="false"
+        @change="handleHistoryExpandedNames"
+      >
+        <van-collapse-item v-for="instance in historyInstances" :key="instance.id" :name="instance.id" :border="false">
+          <template #title>
+            <div class="flex items-center gap-[8px]">
+              <CrmApprovalStatus :status="instance.approvalStatus" scene="approvalRecord" />
+              <div class="text-[14px] font-semibold text-[var(--text-n1)]">
+                {{ t('crm.approval.previousRoundTitle', { nodeName: instance.currentNodeName }) }}
+              </div>
+            </div>
+          </template>
+          <template #right-icon>
+            <CrmIcon
+              :name="
+                expandedHistoryInstanceNames.includes(instance.id) ? 'iconicon_chevron_down' : 'iconicon_chevron_right'
+              "
+              width="16px"
+              height="16px"
+              color="var(--van-cell-right-icon-color)"
+            />
+          </template>
+          <div class="bg-[var(--text-n10)] p-[8px]">
+            <van-loading v-if="historyLoadingIds.includes(instance.id)" class="py-[16px]" />
+            <CrmApprovalLine
+              v-else-if="historyDetails[instance.id]"
+              :nodes="historyDetails[instance.id]?.nodes || []"
+              :submitter="{
+                submitAvatar: historyDetails[instance.id]?.submitAvatar,
+                submitter: historyDetails[instance.id]?.submitter,
+                submitTime: historyDetails[instance.id]?.submitTime,
+                submitterId: historyDetails[instance.id]?.submitterId,
+                comment: historyDetails[instance.id]?.comment,
+              }"
+              :current-approval-node="getCurrentNode(historyDetails[instance.id])"
+              :current-approval-node-index="getCurrentNodeIndex(historyDetails[instance.id])"
+              :finally-result="historyDetails[instance.id]?.approvalStatus"
+              class="h-[55vh]"
+            />
+            <div v-else class="h-[24px]"></div>
+          </div>
+        </van-collapse-item>
+      </van-collapse>
       <van-steps
         active="none"
         :icon-size="20"
@@ -249,11 +296,12 @@
 
 <script setup lang="ts">
   import dayjs from 'dayjs';
+  import { showFailToast } from 'vant';
 
   import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatBadgeCount } from '@lib/shared/method';
-  import type { ApprovalNode } from '@lib/shared/models/system/process';
+  import type { ApprovalDetail, ApprovalNode, ApprovalResourceInstance } from '@lib/shared/models/system/process';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmSegmentedControl from '@/components/pure/crm-segmented-control/index.vue';
@@ -263,6 +311,8 @@
   import CrmApprovalAvatar from './crm-approval-avatar.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmComment from '@/components/business/crm-comment/index.vue';
+
+  import { getApprovalResourceInstanceDetail, getApprovalResourceInstances } from '@/api/modules';
 
   const props = defineProps<{
     nodes: ApprovalNode[];
@@ -279,6 +329,7 @@
     approvalId?: string;
     commentCount?: number;
     commentable?: boolean;
+    resourceId?: string;
   }>();
 
   const { t } = useI18n();
@@ -286,6 +337,10 @@
   const activeAnchor = ref<'record' | 'comment'>('record');
   const scrollContainerRef = ref<HTMLElement>();
   const commentAnchorRef = ref<HTMLElement>();
+  const historyInstances = ref<ApprovalResourceInstance[]>([]);
+  const historyDetails = ref<Record<string, ApprovalDetail>>({});
+  const historyLoadingIds = ref<string[]>([]);
+  const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
   const anchorOptions = computed(() => [
     { value: 'record' as const, label: t('crm.approval.record') },
     { value: 'comment' as const, label: `${t('crmComment.title')} ${formatBadgeCount(commentCount.value)}` },
@@ -316,6 +371,65 @@
     [MultiApproverModeEnum.ANY]: t('crm.approval.multiApprovalType.any'),
     [MultiApproverModeEnum.SEQUENTIAL]: t('crm.approval.multiApprovalType.sequential'),
   };
+
+  function getCurrentNodeIndex(detail?: ApprovalDetail) {
+    return detail?.nodes.findIndex((node) => node.nodeId === detail.currentNodeId) ?? -1;
+  }
+
+  function getCurrentNode(detail?: ApprovalDetail) {
+    return detail?.nodes.find((node) => node.nodeId === detail.currentNodeId);
+  }
+
+  async function loadHistoryInstances(resourceId?: string) {
+    if (!resourceId) {
+      historyInstances.value = [];
+      return;
+    }
+    try {
+      const instances = await getApprovalResourceInstances(resourceId);
+      if (props.resourceId !== resourceId) return;
+      historyInstances.value = instances.filter((instance) => instance.id !== props.approvalId);
+      historyDetails.value = {};
+      expandedHistoryInstanceNames.value = [];
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      showFailToast(t('crm.approval.historyLoadFailed'));
+      historyInstances.value = [];
+    }
+  }
+
+  async function handleHistoryExpandedNames(names: Array<string | number>) {
+    expandedHistoryInstanceNames.value = names;
+    const expandedIds = names.map(String);
+    const instancesToLoad = historyInstances.value.filter(
+      (instance) =>
+        expandedIds.includes(instance.id) &&
+        !historyDetails.value[instance.id] &&
+        !historyLoadingIds.value.includes(instance.id)
+    );
+
+    await Promise.all(
+      instancesToLoad.map(async (instance) => {
+        historyLoadingIds.value.push(instance.id);
+        try {
+          historyDetails.value[instance.id] = await getApprovalResourceInstanceDetail(instance.id);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+          showFailToast(t('crm.approval.historyDetailLoadFailed'));
+        } finally {
+          historyLoadingIds.value = historyLoadingIds.value.filter((id) => id !== instance.id);
+        }
+      })
+    );
+  }
+
+  watch(
+    () => [props.resourceId, props.approvalId],
+    () => loadHistoryInstances(props.resourceId),
+    { immediate: true }
+  );
 
   function getIconClass(node: ApprovalNode) {
     const { approvalStatus, endNode, nodeId } = node;

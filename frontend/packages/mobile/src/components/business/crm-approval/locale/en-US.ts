@@ -1,5 +1,8 @@
 export default {
   'crm.approval.record': 'Approval Record',
+  'crm.approval.previousRoundTitle': 'Previous round stopped at "{nodeName}"',
+  'crm.approval.historyLoadFailed': 'Failed to load approval history',
+  'crm.approval.historyDetailLoadFailed': 'Failed to load historical approval details',
   'crm.approval.pending': 'Pending Approval',
   'crm.approval.opinion': 'Approval Opinion',
   'crm.approval.rejectConfirm': 'Confirm Rejection?',

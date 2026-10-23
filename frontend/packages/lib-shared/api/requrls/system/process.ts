@@ -34,6 +34,8 @@ export const BatchApprovalApprovalUrl = '/approval-action/batch-approve'; // 批
 
 // 审批记录
 export const GetApprovalResourceDetailUrl = '/approval-resource/detail'; // 审批资源详情
+export const GetApprovalResourceInstancesUrl = '/approval-resource/instances'; // 审批资源历史实例
+export const GetApprovalResourceInstanceDetailUrl = '/approval-resource/instance-detail'; // 审批实例详情
 export const GetApprovalCommentListUrl = '/approval-comment/page'; // 审批评论列表
 export const AddApprovalCommentUrl = '/approval-comment/add'; // 添加审批评论
 export const UpdateApprovalCommentUrl = '/approval-comment/update'; // 编辑审批评论

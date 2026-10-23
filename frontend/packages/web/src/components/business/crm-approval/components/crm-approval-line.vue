@@ -10,6 +10,11 @@
         <template #header>
           <div class="mb-[16px] flex items-center justify-between">
             <div class="font-semibold leading-[22px]">{{ t('crm.approval.submit') }}</div>
+            <span
+              class="ml-[8px] mr-auto rounded-[2px] bg-[var(--text-n8)] px-[6px] py-[2px] text-[12px] font-normal leading-[18px] text-[var(--info-blue)]"
+            >
+              {{ t('crm.approval.currentRound') }}
+            </span>
             <div class="text-[var(--text-n4)]">
               {{ dayjs(props.submitter.submitTime).format('YYYY-MM-DD HH:mm') }}
             </div>
@@ -49,7 +54,7 @@
             <template #arrow>
               <div></div>
             </template>
-            <n-collapse-item :name="node.nodeId" :disabled="!node.taskNodes?.length || node.endNode">
+            <n-collapse-item :name="node.nodeId" :disabled="!node.taskNodes?.length || node.endNode" class="!ml-0">
               <template #header>
                 <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
                   <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
@@ -271,6 +276,7 @@
     };
     currentApprovalNode?: ApprovalNode;
     currentApprovalNodeIndex: number;
+    currentRoundStartIndex?: number;
     finallyResult?: ProcessStatusEnum;
   }>();
 

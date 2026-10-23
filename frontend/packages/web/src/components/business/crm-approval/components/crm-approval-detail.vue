@@ -66,6 +66,50 @@
           <n-scrollbar class="min-h-0 flex-1" :content-style="{ padding: '16px 24px 32px 16px' }">
             <div ref="approvalRecordRef">
               <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
+              <n-collapse
+                v-if="historicalApprovalInstances.length"
+                v-model:expanded-names="expandedHistoryInstanceNames"
+                class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
+                @update:expanded-names="handleHistoryExpandedNames"
+              >
+                <template #arrow><div></div></template>
+                <n-collapse-item v-for="instance in historicalApprovalInstances" :key="instance.id" :name="instance.id">
+                  <template #header>
+                    <div class="flex items-center gap-[8px]">
+                      <CrmApprovalStatus
+                        :status="instance.approvalStatus"
+                        isTag
+                        scene="approvalRecord"
+                        class="font-normal"
+                      />
+                      <div class="text-[14px] font-semibold text-[var(--text-n1)]">
+                        {{ t('crm.approval.previousRoundTitle', { nodeName: instance.currentNodeName }) }}
+                      </div>
+                    </div>
+                  </template>
+                  <template #header-extra="{ collapsed }">
+                    <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
+                  </template>
+                  <n-spin :show="historyLoadingIds.includes(instance.id)">
+                    <CrmApprovalLine
+                      v-if="historyApprovalDetails[instance.id]"
+                      :nodes="historyApprovalDetails[instance.id]?.nodes || []"
+                      :submitter="{
+                        submitAvatar: historyApprovalDetails[instance.id]?.submitAvatar,
+                        submitter: historyApprovalDetails[instance.id]?.submitter,
+                        submitTime: historyApprovalDetails[instance.id]?.submitTime,
+                        submitterId: historyApprovalDetails[instance.id]?.submitterId,
+                        comment: historyApprovalDetails[instance.id]?.comment,
+                      }"
+                      :currentApprovalNode="getCurrentNode(historyApprovalDetails[instance.id])"
+                      :currentApprovalNodeIndex="getCurrentNodeIndex(historyApprovalDetails[instance.id])"
+                      :finally-result="historyApprovalDetails[instance.id]?.approvalStatus"
+                      class="bg-[var(--text-n10)] p-[8px]"
+                    />
+                    <div v-else class="h-[24px]"></div>
+                  </n-spin>
+                </n-collapse-item>
+              </n-collapse>
               <CrmApprovalLine
                 :nodes="approvalInfo?.nodes || []"
                 :submitter="{
@@ -77,6 +121,7 @@
                 }"
                 :currentApprovalNode="currentApprovalNode"
                 :currentApprovalNodeIndex="currentApprovalNodeIndex"
+                :current-round-start-index="currentRoundStartIndex"
                 :finally-result="approvalInfo?.approvalStatus"
                 class="pr-[8px]"
               />
@@ -261,6 +306,8 @@
   import {
     type FormInst,
     NButton,
+    NCollapse,
+    NCollapseItem,
     NForm,
     NFormItem,
     NRadio,
@@ -268,6 +315,7 @@
     NScrollbar,
     NSelect,
     NSkeleton,
+    NSpin,
     type UploadFileInfo,
     useMessage,
   } from 'naive-ui';
@@ -285,6 +333,7 @@
     ApprovalNode,
     ApprovalNodeTaskNode,
     ApprovalProcessDetail,
+    ApprovalResourceInstance,
   } from '@lib/shared/models/system/process';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -299,6 +348,7 @@
   import CrmMemberSelect from '@/components/business/crm-user-tag-selector/index.vue';
   import ApprovalOpinionModal from './approvalOpinionModal.vue';
   import CrmApprovalLine from './crm-approval-line.vue';
+  import CrmApprovalStatus from './crm-approval-status.vue';
 
   import {
     addSignApproval,
@@ -306,6 +356,8 @@
     backApproval,
     getApprovalConfigDetail,
     getApprovalResourceDetail,
+    getApprovalResourceInstanceDetail,
+    getApprovalResourceInstances,
     rejectApproval,
     revokeApproval,
     revokeResource,
@@ -357,6 +409,10 @@
   const userStore = useUserStore();
 
   const approvalInfo = ref<ApprovalDetail>();
+  const historicalApprovalInstances = ref<ApprovalResourceInstance[]>([]);
+  const historyApprovalDetails = ref<Record<string, ApprovalDetail>>({});
+  const historyLoadingIds = ref<string[]>([]);
+  const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
   const leftSlotLoading = ref(props.leftLoading ?? false);
   const leftSlotEditing = ref(false);
@@ -413,6 +469,10 @@
   );
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
+  const currentRoundStartIndex = computed(() => {
+    if (!currentApprovalNode.value || !approvalInfo.value) return -1;
+    return approvalInfo.value.nodes.findIndex((node) => node.nodeRound === currentApprovalNode.value?.nodeRound);
+  });
   const hasApprovalStatus = [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE];
   // 我审批的上一个节点
   const prevMineApprovalNode = computed(() => {
@@ -558,6 +618,41 @@
     }
   });
   const noApproval = ref(false);
+
+  function getCurrentNodeIndex(detail?: ApprovalDetail) {
+    return detail?.nodes.findIndex((node) => node.nodeId === detail.currentNodeId) ?? -1;
+  }
+
+  function getCurrentNode(detail?: ApprovalDetail) {
+    return detail?.nodes.find((node) => node.nodeId === detail.currentNodeId);
+  }
+
+  async function handleHistoryExpandedNames(names: Array<string | number>) {
+    expandedHistoryInstanceNames.value = names;
+    const expandedIds = names.map(String);
+    const instancesToLoad = historicalApprovalInstances.value.filter(
+      (instance) =>
+        expandedIds.includes(instance.id) &&
+        !historyApprovalDetails.value[instance.id] &&
+        !historyLoadingIds.value.includes(instance.id)
+    );
+
+    await Promise.all(
+      instancesToLoad.map(async (instance) => {
+        historyLoadingIds.value.push(instance.id);
+        try {
+          historyApprovalDetails.value[instance.id] = await getApprovalResourceInstanceDetail(instance.id);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+          message.error(t('crm.approval.historyDetailLoadFailed'));
+        } finally {
+          historyLoadingIds.value = historyLoadingIds.value.filter((id) => id !== instance.id);
+        }
+      })
+    );
+  }
+
   async function initApprovalDetail() {
     try {
       approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
@@ -568,6 +663,15 @@
         (node) => node.nodeId === approvalInfo.value?.currentNodeId
       );
       currentApprovalNode.value = approvalInfo.value?.nodes[currentApprovalNodeIndex.value];
+      try {
+        const instances = await getApprovalResourceInstances(props.sourceId);
+        historicalApprovalInstances.value = instances.filter((instance) => instance.id !== approvalInfo.value?.id);
+        historyApprovalDetails.value = {};
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        historicalApprovalInstances.value = [];
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
