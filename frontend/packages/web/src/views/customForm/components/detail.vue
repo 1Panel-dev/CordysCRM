@@ -33,6 +33,7 @@
           <template #suffix>
             <CrmTabSetting
               v-if="showDetailTabs"
+              :key="props.customFormId"
               :tab-list="enabledDetailTabList"
               :setting-key="`${props.customFormId}-settingKey`"
               @init="initTabList"
@@ -76,6 +77,11 @@
             </template>
           </CrmApprovalDetail>
         </div>
+        <CrmChangeRecord
+          v-if="activeTab === 'changeRecord' && isChangeRecordEnabled"
+          :source-id="props.sourceId"
+          :fetcher="(params) => getChangeLogPage(props.customFormId, params)"
+        />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -104,11 +110,12 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
-  import { deleteCustomFormData } from '@/api/modules';
+  import { deleteCustomFormData, getChangeLogPage } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
@@ -258,8 +265,16 @@
     formConfig,
     computed(() => props.customFormId)
   );
-  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
+  const staticTabList = computed<TabContentItem[]>(() => [
+    { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
+  ]);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
+    formConfig,
+    staticTabList,
+    availableDetailTabIds
+  );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const isChangeRecordEnabled = computed(() => enabledDetailTabList.value.some((tab) => tab.name === 'changeRecord'));
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
@@ -271,7 +286,7 @@
   const tabList = computed<TabContentItem[]>(() => [
     {
       name: 'customForm',
-      tab: title.value,
+      tab: t('module.customForm'),
       enable: true,
       permission: ['CUSTOM_FORM:READ'],
     },
@@ -281,6 +296,10 @@
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;
   }
+
+  watch([() => props.sourceId, () => props.customFormId], () => {
+    activeTab.value = 'customForm';
+  });
 
   watch([() => visible.value, () => props.sourceId, () => props.customFormId, () => props.refreshId], ([isVisible]) => {
     if (isVisible) {

@@ -1,11 +1,5 @@
 <template>
-  <CrmDrawer
-    v-model:show="showOptOverviewDrawer"
-    resizable
-    no-padding
-    :footer="false"
-    :view-size="formViewSize"
-  >
+  <CrmDrawer v-model:show="showOptOverviewDrawer" resizable no-padding :footer="false" :view-size="formViewSize">
     <template #title>
       <n-tooltip trigger="hover" :delay="300" :disabled="!titleName">
         <template #trigger>
@@ -134,6 +128,11 @@
             :source-name="titleName"
           />
         </div>
+        <CrmChangeRecord
+          v-if="activeTab === 'changeRecord'"
+          :source-id="sourceId"
+          :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.BUSINESS, params)"
+        />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -171,6 +170,7 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
@@ -181,7 +181,7 @@
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import quotationTable from './quotation/quotationTable.vue';
 
-  import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
+  import { deleteOpt, getChangeLogPage, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -364,6 +364,7 @@
       permission: ['OPPORTUNITY_QUOTATION:READ'],
       internalKey: 'OPPORTUNITY_QUOTATION',
     },
+    { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
   ];
   const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.BUSINESS);
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(

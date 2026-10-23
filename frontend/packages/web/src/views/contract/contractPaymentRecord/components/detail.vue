@@ -58,6 +58,11 @@
             @refresh="emit('refresh')"
           />
         </div>
+        <CrmChangeRecord
+          v-if="activeTab === 'changeRecord'"
+          :source-id="props.sourceId"
+          :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD, params)"
+        />
 
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
@@ -90,12 +95,13 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
-  import { deletePaymentRecord } from '@/api/modules';
+  import { deletePaymentRecord, getChangeLogPage } from '@/api/modules';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -133,7 +139,14 @@
 
   const activeTab = ref('paymentRecord');
   const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD);
-  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
+  const staticTabList = computed<TabContentItem[]>(() => [
+    { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
+  ]);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
+    formConfig,
+    staticTabList,
+    availableDetailTabIds
+  );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>

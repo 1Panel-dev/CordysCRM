@@ -1,12 +1,5 @@
 <template>
-  <CrmDrawer
-    v-model:show="show"
-    resizable
-    no-padding
-    :footer="false"
-    :title="sourceName"
-    :view-size="formViewSize"
-  >
+  <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
@@ -95,6 +88,11 @@
           />
         </div>
         <transformRecord v-else-if="activeTab === 'transformRecord'" :resource-id="sourceId" />
+        <CrmChangeRecord
+          v-else-if="activeTab === 'changeRecord'"
+          :source-id="sourceId"
+          :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.CLUE, params)"
+        />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
@@ -147,6 +145,7 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
@@ -158,7 +157,7 @@
   import convertClueModal from './convertClueModal.vue';
   import transformRecord from './transformRecord.vue';
 
-  import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
+  import { batchTransferClue, deleteClue, getChangeLogPage, getClueHeaderList } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -380,6 +379,12 @@
       tab: t('common.transformRecord'),
       enable: true,
       internalKey: 'CLUE_TRANSITION_RECORD',
+    },
+    {
+      name: 'changeRecord',
+      tab: t('common.changeRecord'),
+      enable: true,
+      internalKey: 'CHANGE_LOG',
     },
   ];
   const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.CLUE);
