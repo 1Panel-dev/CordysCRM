@@ -16,12 +16,7 @@
             :class="selectedKeys.includes(item.approvalTaskId) ? '!border-[var(--primary-8)]' : ''"
             @click.stop="
               () => {
-                if (
-                  !item.resourceNotFound &&
-                  (props.activeTaskType.includes('pending') || getResourcePermission(item))
-                ) {
-                  handleOpenDetail(item);
-                }
+                handleOpenDetail(item);
               }
             "
           >
@@ -44,7 +39,6 @@
                   <CrmApprovalStatus :status="item.dataResult" isTag scene="approvalRecord" />
                 </div>
                 <CrmTableButton
-                  v-if="props.activeTaskType.includes('pending') && !item.resourceNotFound"
                   type="primary"
                   text
                   size="small"
@@ -54,35 +48,23 @@
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
                 </CrmTableButton>
-                <CrmTableButton
-                  v-else-if="getResourcePermission(item) && !item.resourceNotFound"
-                  type="primary"
-                  text
-                  size="small"
-                  class="max-w-max flex-1 overflow-hidden text-[14px]"
-                  @click="handleOpenDetail(item)"
-                >
-                  {{ item.resourceName }}
-                  <template #trigger> {{ item.resourceName }} </template>
-                </CrmTableButton>
-                <n-tooltip v-else trigger="hover">
-                  <template #trigger>
-                    {{ item.resourceName }}
-                  </template>
-                  {{ item.resourceName }}
-                </n-tooltip>
               </div>
               <div class="flex w-full items-center justify-between">
-                <div class="flex gap-[24px]">
-                  <div class="flex items-center gap-[8px]">
-                    <div class="text-[var(--text-n2)]">{{ t('taskDrawer.applicant') }}</div>
-                    <div>{{ item.applicant }}</div>
+                <div class="mr-[24px] flex flex-1 gap-[24px] overflow-hidden">
+                  <div class="flex items-center gap-[8px] overflow-hidden">
+                    <div class="shrink-0 text-[var(--text-n2)]">{{ t('taskDrawer.applicant') }}</div>
+                    <n-tooltip trigger="hover">
+                      <template #trigger>
+                        <div class="one-line-text">{{ item.applicant }}</div>
+                      </template>
+                      {{ item.applicant }}
+                    </n-tooltip>
                   </div>
-                  <div class="flex items-center gap-[8px]">
+                  <div class="flex shrink-0 items-center gap-[8px]">
                     <div class="text-[var(--text-n2)]">{{ t('taskDrawer.approvalType') }}</div>
                     <div>{{ getExecuteType(item.executeTime) }}</div>
                   </div>
-                  <div class="flex items-center gap-[8px]">
+                  <div class="flex shrink-0 items-center gap-[8px]">
                     <div class="text-[var(--text-n2)]">{{ t('taskDrawer.applyTime') }}</div>
                     <div>{{ dayjs(item.submitTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
                   </div>
@@ -143,7 +125,6 @@
     getPendingApprovalList,
     getProcessedApprovalList,
   } from '@/api/modules/index';
-  import { hasAnyPermission } from '@/utils/permission.js';
 
   const { t } = useI18n();
 
@@ -172,7 +153,7 @@
 
   const pageNation = ref({
     total: 0,
-    pageSize: 10,
+    pageSize: 20,
     current: 1,
   });
 
@@ -349,27 +330,6 @@
   function handleOpenDetail(item: ApprovalTodoItem, rememberPosition = true) {
     if (rememberPosition) rememberActionPosition(item);
     emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId, item);
-  }
-
-  function getResourcePermission(item: ApprovalTodoItem) {
-    switch (item.resourceType) {
-      case ApprovalResourceTypeEnum.CLUE:
-        return hasAnyPermission(['CLUE_MANAGEMENT:READ']);
-      case ApprovalResourceTypeEnum.CUSTOMER:
-        return hasAnyPermission(['CUSTOMER_MANAGEMENT:READ']);
-      case ApprovalResourceTypeEnum.OPPORTUNITY:
-        return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']);
-      case ApprovalResourceTypeEnum.CONTRACT:
-        return hasAnyPermission(['CONTRACT:READ']);
-      case ApprovalResourceTypeEnum.INVOICE:
-        return hasAnyPermission(['CONTRACT_INVOICE:READ']);
-      case ApprovalResourceTypeEnum.ORDER:
-        return hasAnyPermission(['ORDER:READ']);
-      case ApprovalResourceTypeEnum.QUOTATION:
-        return hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']);
-      default:
-        return Boolean(getActiveResourceType());
-    }
   }
 
   defineExpose({

@@ -216,8 +216,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取客户表单配置
-  function getCustomerFormConfig() {
-    return CDR.get<FormDesignConfigDetailParams>({ url: GetCustomerFormConfigUrl });
+  function getCustomerFormConfig(_id?: string, approvalTaskId?: string) {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetCustomerFormConfigUrl, params: { approvalTaskId } });
   }
 
   // 获取客户详情

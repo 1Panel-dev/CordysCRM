@@ -63,6 +63,7 @@
                 refresh-form-config
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
+                :approval-task-id="props.approvalTaskId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="!canUpdateDetail"

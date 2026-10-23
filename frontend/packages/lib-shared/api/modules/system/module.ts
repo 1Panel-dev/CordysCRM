@@ -447,7 +447,10 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getDatasourceFieldConfig(type: FormDesignKeyEnum | string, approvalTaskId?: string) {
-    return CDR.get<FormDesignConfigDetailParams | CustomFormDetail>({ url: `${GetFieldConfigUrl}/${type}` });
+    return CDR.get<FormDesignConfigDetailParams | CustomFormDetail>({
+      url: `${GetFieldConfigUrl}/${type}`,
+      params: { approvalTaskId },
+    });
   }
 
   return {

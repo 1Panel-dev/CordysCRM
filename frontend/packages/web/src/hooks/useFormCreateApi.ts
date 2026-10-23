@@ -1316,7 +1316,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           ? getDatasourceFieldConfig
           : getFormConfigApiMap[props.formKey.value];
       if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM) {
-        const res = await api(props.customFormId?.value ?? '');
+        const res = await api(props.customFormId?.value ?? '', props.otherSaveParams?.value?.approvalTaskId);
         moduleFormConfig.value = cloneDeep(res);
         initFormFieldConfig(res.fields);
         formConfig.value = res.formProp;

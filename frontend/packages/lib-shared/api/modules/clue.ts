@@ -189,8 +189,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取线索表单配置
-  function getClueFormConfig() {
-    return CDR.get<FormDesignConfigDetailParams>({ url: GetClueFormConfigUrl });
+  function getClueFormConfig(_id?: string, approvalTaskId?: string) {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetClueFormConfigUrl, params: { approvalTaskId } });
   }
 
   // 获取线索详情
