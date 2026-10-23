@@ -1,5 +1,12 @@
 <template>
-  <CrmDrawer v-model:show="show" :title="t('workbench.dataOverview.myTasks')" :width="1200" :footer="false" no-padding>
+  <CrmDrawer
+    v-model:show="show"
+    :title="t('workbench.dataOverview.myTasks')"
+    :width="1200"
+    :footer="false"
+    show-auto-open-next
+    no-padding
+  >
     <div class="task-wrapper">
       <div class="task-class">
         <n-scrollbar class="p-[24px]">

@@ -6,7 +6,6 @@
     :footer="false"
     :title="props.detail?.name"
     :view-size="formViewSize"
-    :show-auto-open-next="Boolean(props.approvalTaskId)"
   >
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />

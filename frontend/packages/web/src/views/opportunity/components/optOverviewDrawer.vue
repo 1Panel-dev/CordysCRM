@@ -5,7 +5,6 @@
     no-padding
     :footer="false"
     :view-size="formViewSize"
-    :show-auto-open-next="Boolean(props.approvalTaskId)"
   >
     <template #title>
       <n-tooltip trigger="hover" :delay="300" :disabled="!titleName">
