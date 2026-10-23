@@ -16,6 +16,11 @@ public interface ExtApprovalTaskMapper {
     ApprovalInstance selectLatestInstanceByResourceId(@Param("resourceId") String resourceId);
 
     /**
+     * 用户是否在资源的历史审批实例中作为提交人或审批人/抄送人参与过。
+     */
+    boolean existsResourceParticipant(@Param("resourceId") String resourceId, @Param("userId") String userId);
+
+    /**
      * 分页查询待我审批任务，按创建时间和ID倒序。
      */
     java.util.List<ApprovalTodoItemResponse> selectPendingTasks(@Param("approverId") String approverId,
