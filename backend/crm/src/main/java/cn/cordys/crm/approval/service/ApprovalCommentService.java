@@ -4,6 +4,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalComment;
 import cn.cordys.crm.approval.domain.ApprovalCommentMention;
@@ -14,6 +15,13 @@ import cn.cordys.crm.approval.dto.request.ApprovalCommentUpdateRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentMentionUserResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
+import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.dto.request.UploadTransferRequest;
+import cn.cordys.crm.system.service.AttachmentService;
+import cn.cordys.crm.system.service.FileCommonService;
+import cn.cordys.file.engine.DefaultRepositoryDir;
+import cn.cordys.file.engine.FileRequest;
+import cn.cordys.file.engine.StorageType;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -26,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +56,12 @@ public class ApprovalCommentService {
     private ApprovalResourceService approvalResourceService;
     @Resource
     private ApprovalCommentNoticeService approvalCommentNoticeService;
+    @Resource
+    private BaseMapper<Attachment> attachmentMapper;
+    @Resource
+    private AttachmentService attachmentService;
+    @Resource
+    private FileCommonService fileCommonService;
 
     public PagerWithCommentCount<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId,
             String orgId) {
@@ -96,6 +111,7 @@ public class ApprovalCommentService {
         comment.setUpdateUser(userId);
         comment.setCreateTime(now);
         comment.setUpdateTime(now);
+        saveAttachments(comment.getId(), request.getAttachmentIds(), userId, orgId);
         commentMapper.insert(comment);
         saveMentions(comment.getId(), mentionedUserIds, now);
         sendMentionNoticeAfterCommit(comment, mentionedUserIds);
@@ -105,6 +121,7 @@ public class ApprovalCommentService {
     public ApprovalCommentResponse update(ApprovalCommentUpdateRequest request, String userId, String orgId) {
         ApprovalComment comment = getOwnComment(request.getId(), userId, orgId);
         List<String> mentionedUserIds = checkMentionUsers(request.getMentionedUserIds(), orgId);
+        saveAttachments(comment.getId(), request.getAttachmentIds(), userId, orgId);
         comment.setContent(request.getContent());
         comment.setUpdateUser(userId);
         comment.setUpdateTime(System.currentTimeMillis());
@@ -138,6 +155,8 @@ public class ApprovalCommentService {
                     .eq(ApprovalComment::getOrganizationId, orgId);
             commentMapper.selectListByLambda(wrapper).forEach(child -> ids.add(child.getId()));
         }
+        removeAttachments(attachmentMapper.selectListByLambda(new LambdaQueryWrapper<Attachment>()
+                .in(Attachment::getResourceId, ids).eq(Attachment::getOrganizationId, orgId)));
         extCommentMapper.deleteMentions(ids, orgId);
         extCommentMapper.deleteComments(ids, comment.getInstanceId(), orgId);
     }
@@ -272,9 +291,75 @@ public class ApprovalCommentService {
         Map<String, List<ApprovalCommentMentionUserResponse>> mentionUsers = extCommentMapper.selectMentionUsers(
                         comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId).stream()
                 .collect(Collectors.groupingBy(ApprovalCommentMentionUserResponse::getCommentId));
+        Map<String, List<Attachment>> attachments = attachmentMapper.selectListByLambda(
+                        new LambdaQueryWrapper<Attachment>()
+                                .in(Attachment::getResourceId, comments.stream().map(ApprovalCommentResponse::getId).toList())
+                                .eq(Attachment::getOrganizationId, orgId)).stream()
+                .collect(Collectors.groupingBy(Attachment::getResourceId));
         comments.forEach(comment -> {
             comment.setMentionUsers(mentionUsers.getOrDefault(comment.getId(), List.of()));
+            comment.setAttachments(attachments.getOrDefault(comment.getId(), List.of()).stream()
+                    .map(attachment -> BeanUtils.copyBean(new ApprovalCommentResponse.AttachmentResponse(), attachment))
+                    .toList());
             comment.setEditable(Objects.equals(comment.getCreateUser(), userId));
         });
+    }
+
+    private void saveAttachments(String commentId, List<String> attachmentIds, String userId, String orgId) {
+        if (attachmentIds == null) {
+            return;
+        }
+        List<String> ids = attachmentIds.stream().distinct().toList();
+        if (ids.stream().anyMatch(id -> id == null || !id.matches("[A-Za-z0-9_-]{1,32}"))) {
+            throw new GenericException(Translator.get("approval.comment.invalid_attachment"));
+        }
+        Set<String> existingIds = ids.isEmpty() ? Set.of() : attachmentMapper.selectByIds(ids).stream()
+                .peek(attachment -> {
+                    if (!Objects.equals(orgId, attachment.getOrganizationId())
+                            || !Objects.equals(commentId, attachment.getResourceId())) {
+                        throw new GenericException(Translator.get("approval.comment.invalid_attachment"));
+                    }
+                }).map(Attachment::getId).collect(Collectors.toSet());
+        List<String> newIds = ids.stream().filter(id -> !existingIds.contains(id)).toList();
+        newIds.forEach(id -> checkAttachmentFile(DefaultRepositoryDir.getTempFileDir(id)));
+        // 使用评论ID隔离附件，普通业务表单保存不会清理评论附件。
+        List<Attachment> currentAttachments = attachmentMapper.selectListByLambda(new LambdaQueryWrapper<Attachment>()
+                .eq(Attachment::getResourceId, commentId).eq(Attachment::getOrganizationId, orgId));
+        List<String> preservedIds = new ArrayList<>(ids);
+        currentAttachments.stream().map(Attachment::getId)
+                .filter(id -> !preservedIds.contains(id)).forEach(preservedIds::add);
+        // 新文件确认转存成功前保留旧文件，避免转存失败后丢失原附件。
+        attachmentService.processTemp(new UploadTransferRequest(orgId, commentId, userId, preservedIds));
+        // 文件服务会捕获转存异常，确认目标文件存在后才允许评论保存成功。
+        newIds.forEach(id -> checkAttachmentFile(DefaultRepositoryDir.getTransferFileDir(orgId, commentId, id)));
+        removeAttachments(currentAttachments.stream().filter(attachment -> !ids.contains(attachment.getId())).toList());
+    }
+
+    private void checkAttachmentFile(String folder) {
+        List<File> files = fileCommonService.getFolderFiles(new FileRequest(folder, StorageType.LOCAL.name(), null));
+        if (files == null || files.stream().noneMatch(File::isFile)) {
+            throw new GenericException(Translator.get("approval.comment.invalid_attachment"));
+        }
+    }
+
+    private void removeAttachments(List<Attachment> attachments) {
+        if (attachments.isEmpty()) {
+            return;
+        }
+        attachmentMapper.deleteByIds(attachments.stream().map(Attachment::getId).toList());
+        Runnable cleanup = () -> attachments.forEach(attachment -> fileCommonService.deleteFolder(new FileRequest(
+                DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(),
+                        attachment.getId()), StorageType.LOCAL.name(), null), true));
+        // 数据库提交后才删除物理文件，评论编辑失败时仍能保留原附件。
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    cleanup.run();
+                }
+            });
+        } else {
+            cleanup.run();
+        }
     }
 }

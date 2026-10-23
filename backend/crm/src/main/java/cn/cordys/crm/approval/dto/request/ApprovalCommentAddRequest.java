@@ -28,4 +28,8 @@ public class ApprovalCommentAddRequest {
     @Size(max = 100)
     @Schema(description = "被@用户ID")
     private List<@NotBlank String> mentionedUserIds;
+
+    @Size(max = 100)
+    @Schema(description = "附件ID集合")
+    private List<@NotBlank @Size(max = 32) String> attachmentIds;
 }

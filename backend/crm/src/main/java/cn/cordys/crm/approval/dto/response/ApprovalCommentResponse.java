@@ -51,6 +51,26 @@ public class ApprovalCommentResponse {
     @Schema(description = "评论中@的用户列表")
     private List<ApprovalCommentMentionUserResponse> mentionUsers = List.of();
 
+    @Schema(description = "评论附件")
+    private List<AttachmentResponse> attachments = List.of();
+
     @Schema(description = "一级评论的二级回复集合，二级评论为空列表")
     private List<ApprovalCommentResponse> replies = List.of();
+
+    @Data
+    @Schema(description = "审批评论附件")
+    public static class AttachmentResponse {
+
+        @Schema(description = "附件ID")
+        private String id;
+
+        @Schema(description = "附件名称")
+        private String name;
+
+        @Schema(description = "附件类型")
+        private String type;
+
+        @Schema(description = "附件大小，字节")
+        private Long size;
+    }
 }

@@ -22,4 +22,8 @@ public class ApprovalCommentUpdateRequest {
     @Size(max = 100)
     @Schema(description = "被@用户ID，全量替换；未传或为空时清空")
     private List<@NotBlank String> mentionedUserIds;
+
+    @Size(max = 100)
+    @Schema(description = "附件ID集合，全量替换；未传时保留，空列表时清空")
+    private List<@NotBlank @Size(max = 32) String> attachmentIds;
 }
