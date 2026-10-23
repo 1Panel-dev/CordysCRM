@@ -1,15 +1,17 @@
 <template>
   <CrmModal
     v-model:show="showModal"
-    :title="t('customer.mergeAccount')"
     :ok-loading="loading"
     :positive-text="t('customer.merge')"
     @confirm="confirmHandler"
     @cancel="cancelHandler"
   >
-    <template #titleRight>
-      <div class="ml-[8px] text-[14px] text-[var(--text-n2)]">
-        ({{ t('customer.selectedMergeAccountNumber', { number: selectedRows.length }) }})
+    <template #title>
+      <div class="flex items-center">
+        {{ t('customer.mergeAccount') }}
+        <div class="ml-[8px] flex-1 text-nowrap text-[14px] text-[var(--text-n4)]">
+          ({{ t('customer.selectedMergeAccountNumber', { number: selectedRows.length }) }})
+        </div>
       </div>
     </template>
     <n-form ref="formRef" :label-width="70" :model="form" label-placement="left" require-mark-placement="left">
@@ -102,18 +104,22 @@
   import { MergeAccountParams } from '@lib/shared/models/customer';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import renderApprovalConfirmContent from '@/components/business/crm-approval/utils/renderApprovalConfirmContent';
 
   import { mergeAccount, mergeAccountPage } from '@/api/modules';
+  import useModal from '@/hooks/useModal';
 
   import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
   import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
   const Message = useMessage();
+  const { openModal } = useModal();
 
   const { t } = useI18n();
 
   const props = defineProps<{
     selectedRows: InternalRowData[];
+    approvalTip?: string;
   }>();
 
   const showModal = defineModel<boolean>('show', {
@@ -145,23 +151,34 @@
   function confirmHandler() {
     formRef.value?.validate(async (error) => {
       if (!error) {
-        try {
-          loading.value = true;
-          const { toMergeId, ownerId } = form.value;
-          await mergeAccount({
-            mergeIds: props.selectedRows.map((e) => e.id) as string[],
-            toMergeId,
-            ownerId,
-          });
-          Message.success(t('customer.mergeSuccess'));
-          emit('saved');
-          cancelHandler();
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(e);
-        } finally {
-          loading.value = false;
-        }
+        openModal({
+          type: 'error',
+          size: 'medium',
+          title: t('customer.mergeConfirmTitle'),
+          content: renderApprovalConfirmContent(t('customer.mergeConfirmContent'), props.approvalTip || ''),
+          positiveText: t('customer.confirmMerge'),
+          negativeText: t('common.cancel'),
+          onPositiveClick: async () => {
+            try {
+              loading.value = true;
+              const { toMergeId, ownerId } = form.value;
+              await mergeAccount({
+                mergeIds: props.selectedRows.map((e) => e.id) as string[],
+                toMergeId,
+                ownerId,
+              });
+              Message.success(t('customer.mergeSuccess'));
+              emit('saved');
+              cancelHandler();
+            } catch (e) {
+              // eslint-disable-next-line no-console
+              console.log(e);
+              return false;
+            } finally {
+              loading.value = false;
+            }
+          },
+        });
       }
     });
   }

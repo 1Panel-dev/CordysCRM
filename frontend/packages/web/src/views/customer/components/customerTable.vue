@@ -136,7 +136,12 @@
     :show-approval-tip="batchEditApprovalTip"
     @refresh="() => (tableRefreshId += 1)"
   />
-  <mergeAccountModal v-model:show="showMergeModal" :selected-rows="selectedRows" @saved="() => (tableRefreshId += 1)" />
+  <mergeAccountModal
+    v-model:show="showMergeModal"
+    :selected-rows="selectedRows"
+    :approval-tip="batchMergeApprovalTip"
+    @saved="() => (tableRefreshId += 1)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -416,24 +421,7 @@
 
   const showMergeModal = ref(false);
   function handleMergeAccount() {
-    openModal({
-      type: 'error',
-      size: 'medium',
-      icon: () => {
-        return h(CrmIcon, {
-          type: 'iconicon_error_circle_filled',
-          size: 20,
-          class: 'mr-[8px] text-[var(--error-red)]',
-        });
-      },
-      title: t('customer.mergeConfirmTitle'),
-      content: renderApprovalConfirmContent(t('customer.mergeConfirmContent'), batchMergeApprovalTip.value),
-      positiveText: t('customer.confirmMerge'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        showMergeModal.value = true;
-      },
-    });
+    showMergeModal.value = true;
   }
 
   // 批量转移
