@@ -66,7 +66,10 @@
               </div>
             </div>
             <div v-else>{{ activeModuleTitle }}</div>
-            <div v-if="activeTaskType.startsWith('pending-')" class="text-[14px] leading-[24px] text-[var(--text-n4)]">
+            <div
+              v-if="activeTaskType.startsWith('pending-') && (listTotal > 0 || processedCount > 0)"
+              class="text-[14px] leading-[24px] text-[var(--text-n4)]"
+            >
               {{
                 listTotal > 0
                   ? t('taskDrawer.pendingCount', { count: listTotal })
