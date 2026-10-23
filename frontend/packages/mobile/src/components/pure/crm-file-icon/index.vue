@@ -1,20 +1,20 @@
 <template>
-  <CrmIon :name="iconType" :width="props.width" :height="props.height" />
+  <CrmIcon :name="iconType" :width="props.width" :height="props.height" />
 </template>
 
 <script setup lang="ts">
-  import { getFileIconType } from '@lib/shared/method';
+  import { getFileIcon } from '@lib/shared/method';
 
-  import CrmIon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   const props = defineProps<{
-    type: string;
+    name: string;
     width: string;
     height: string;
   }>();
 
   const iconType = computed(() => {
-    return getFileIconType(props.type);
+    return getFileIcon(props.name);
   });
 </script>
 

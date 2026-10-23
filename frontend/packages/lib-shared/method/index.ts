@@ -8,10 +8,12 @@ import { isObject } from './is';
 import { createAuthenticatedSSE, type SseConnection } from './sse';
 import { CHINA_PCD, COUNTRIES_TREE } from '@cordys/web/src/components/business/crm-city-select/config';
 import type {
-  FormCreateField,
+  AttachmentInfo,
   FormCreateFieldDateType,
 } from '@cordys/web/src/components/business/crm-form-create/types';
 import industryOptions from '@cordys/web/src/components/pure/crm-industry-select/config';
+import { UploadAcceptEnum, UploadStatus } from '../enums/uploadEnum';
+import { FileIconMap } from '@cordys/web/src/components/pure/crm-upload/iconMap';
 
 /**
  * 递归深度合并
@@ -441,7 +443,12 @@ export function findNodePathByKey<T>(
  */
 export function getCityPath(cityId: string | null, scope?: string): string {
   if (!cityId) return '';
-  const nodePathObject = findNodePathByKey(scope === 'CN' ? CHINA_PCD.children : [CHINA_PCD, ...COUNTRIES_TREE], cityId, undefined, 'value');
+  const nodePathObject = findNodePathByKey(
+    scope === 'CN' ? CHINA_PCD.children : [CHINA_PCD, ...COUNTRIES_TREE],
+    cityId,
+    undefined,
+    'value'
+  );
   const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
   return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
 }
@@ -655,14 +662,47 @@ export function abbreviateNumber(count: number | string, currency: string, decim
   return { value, unit, full };
 }
 
+/**
+ * 获取文件类型枚举
+ * @param fileType 文件类型
+ */
+export function getFileEnum(fileType?: string): keyof typeof UploadAcceptEnum {
+  if (fileType) {
+    const keys = Object.keys(UploadAcceptEnum);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i] as unknown as keyof typeof UploadAcceptEnum;
+      if (UploadAcceptEnum[key].includes(fileType)) {
+        return key;
+      }
+    }
+  }
+  return 'unknown' as keyof typeof UploadAcceptEnum;
+}
+
+/**
+ * 获取文件图标
+ * @param name 文件名
+ * @param status 文件状态
+ */
+export function getFileIcon(name: string, status?: UploadStatus) {
+  const fileType = name?.split('.').pop(); // 通过文件后缀判断文件类型
+  const _status = status;
+  if (_status === UploadStatus.done) {
+    return FileIconMap[getFileEnum(fileType)]?.[_status] ?? FileIconMap.unknown[UploadStatus.done];
+  }
+  return FileIconMap[getFileEnum(fileType)]?.[_status || UploadStatus.init] ?? FileIconMap.unknown[UploadStatus.done];
+}
+
 export function getFileIconType(type: string) {
   switch (type) {
     case 'zip':
       return 'icona-icon_file-compressed_colorful';
     case 'ppt':
+    case 'pptx':
       return 'iconicon_file-ppt_colorful';
     case 'pdf':
       return 'iconicon_file-pdf_colorful';
+    case 'doc':
     case 'docx':
       return 'iconicon_file-word_colorful';
     case 'xlsx':
@@ -737,8 +777,8 @@ export function formatThousands(
 }
 /**
  * 返回数字格式，如果数值大于max，则返回max+
- * @param count 
- * @param max 
+ * @param count
+ * @param max
  * @returns 99+
  */
 export function formatBadgeCount(count: number | string | null | undefined, max = 99) {
