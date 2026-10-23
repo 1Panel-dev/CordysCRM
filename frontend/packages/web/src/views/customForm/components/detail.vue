@@ -47,6 +47,7 @@
             :form-key="props.customFormId"
             :source-id="props.sourceId"
             :refresh-key="detailRefreshKey"
+            :approval-task-id="props.approvalTaskId"
             :approval-status="currentApprovalStatus"
             left-loading
             @saveApproval="handleSaveApproval"

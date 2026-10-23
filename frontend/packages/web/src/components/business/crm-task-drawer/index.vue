@@ -661,7 +661,13 @@
     customFormDetailVisible.value = false;
   }
 
+  const skipNextDetailRefresh = ref(false);
+
   function handleDetailRefresh() {
+    if (skipNextDetailRefresh.value) {
+      skipNextDetailRefresh.value = false;
+      return;
+    }
     initStatistic();
     taskListRef.value?.loadTaskList(true);
   }
@@ -674,6 +680,7 @@
   }
 
   function handleDetailApprovalSuccess() {
+    skipNextDetailRefresh.value = true;
     closeDetailDrawers();
     allSelect.value = false;
     selectedKeys.value = [];
