@@ -18,5 +18,7 @@ export default {
   'crmFormCreate.submitValidationProgressTitle': '校验规则执行顺序',
   'crmFormCreate.submitValidationPassed': '已通过',
   'crmFormCreate.submitValidationFailed': '未通过',
+  'crmFormCreate.submitValidationIgnore': '忽略',
+  'crmFormCreate.submitValidationIgnored': '已忽略',
   'crmFormCreate.submitValidationNotExecuted': '未执行',
 };

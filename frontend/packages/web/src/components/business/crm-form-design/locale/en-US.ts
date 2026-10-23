@@ -241,10 +241,14 @@ export default {
   'crmFormDesign.formulaUNIONDescription':
     'Concatenates non-empty subtable values without deduplication. Returns an empty string when no values remain.',
   'crmFormDesign.submitValidationUnionArgument': 'Subform.Single-line text',
+  'crmFormDesign.formulaArray': 'Arrays',
+  'crmFormDesign.formulaNumberArray': 'Number arrays',
+  'crmFormDesign.formulaTextArray': 'Text arrays',
   'crmFormDesign.submitValidationUnionExample':
     'AND(UNION(Subform.SingleLineText)!="", UNION(Subform2.SingleLineText)!="")',
   'crmFormDesign.submitValidation': 'Form submission - data validation',
   'crmFormDesign.submitValidationDescription': 'Validation rules run in order when the form is submitted.',
+  'crmFormDesign.submitValidationEmpty': 'No rules',
   'crmFormDesign.submitValidationUnnamed': 'Unnamed validation rule',
   'crmFormDesign.submitValidationClearTip': 'Clear all validation rules?',
   'crmFormDesign.addSubmitValidationRule': 'Add validation rule',

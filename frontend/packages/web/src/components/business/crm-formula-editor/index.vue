@@ -64,8 +64,12 @@
                     {{ item.name }}
                   </n-tooltip>
 
-                  <CrmTag :type="colorThemeMap[ele.type]?.type || 'default'" class="flex-shrink-0" theme="light">
-                    {{ colorThemeMap[ele.type]?.label }}
+                  <CrmTag
+                    :type="colorThemeMap[item.arrayType || ele.type]?.type || 'default'"
+                    class="flex-shrink-0"
+                    theme="light"
+                  >
+                    {{ colorThemeMap[item.arrayType || ele.type]?.label }}
                   </CrmTag>
                 </div>
               </template>
@@ -259,6 +263,7 @@
     parentId?: string;
     parentName?: string;
     inSubTable?: boolean;
+    arrayType?: 'ARRAY_NUMBER' | 'ARRAY_TEXT';
   };
 
   const props = defineProps<{
@@ -286,9 +291,13 @@
       type: 'success',
       label: t('crmFormDesign.dateTime'),
     },
-    ARRAY: {
+    ARRAY_NUMBER: {
+      type: 'info',
+      label: t('crmFormDesign.formulaNumberArray'),
+    },
+    ARRAY_TEXT: {
       type: 'warning',
-      label: t('common.array'),
+      label: t('crmFormDesign.formulaTextArray'),
     },
     TEXT: {
       type: 'primary',
@@ -385,12 +394,19 @@
         pushByType(field, numberGroup, dateGroup, textGroup);
       }
       if (field.inSubTable && allowArrayFieldType.includes(field.type)) {
-        // 生成路径字段
-        arrayGroup.push({
+        const arrayField = {
           ...field,
           id: `${field.parentId}.${resolveFieldId(field, field.inSubTable)}`,
           name: `${field.parentName}.${field.name}`,
-        });
+        };
+        if (
+          field.type === FieldTypeEnum.INPUT_NUMBER ||
+          (field.type === FieldTypeEnum.FORMULA && field.formulaResultFormat === 'number')
+        ) {
+          arrayGroup.push({ ...arrayField, arrayType: 'ARRAY_NUMBER' });
+        } else {
+          arrayGroup.push({ ...arrayField, arrayType: 'ARRAY_TEXT' });
+        }
       }
     });
 
@@ -411,7 +427,7 @@
         children: dateGroup,
       },
       {
-        name: t('common.array'),
+        name: t('crmFormDesign.formulaArray'),
         type: 'ARRAY',
         children: arrayGroup,
       },

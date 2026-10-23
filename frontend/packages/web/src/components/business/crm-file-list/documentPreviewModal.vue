@@ -36,7 +36,7 @@
 
   import { downloadAttachment } from '@/api/modules';
 
-  import type { Viewer } from 'xq-doc-viewer';
+  import type { FileType, Viewer } from 'xq-doc-viewer';
 
   const props = defineProps<{
     file: AttachmentInfo | null;
@@ -75,8 +75,8 @@
           rotate: true,
           pagination: true,
           fullscreen: true,
-          print: true,
-          download: true,
+          print: false,
+          download: false,
         },
         onError: (error: Error) => {
           errorMessage.value = error.message || t('crm.fileListModal.previewFailed');

@@ -4,6 +4,8 @@
       v-model:show="progressModalVisible"
       :rules="validationRules"
       :status-list="ruleStatusList"
+      :ignore-rule-indices="ignoreRuleIndices"
+      @ignore="handleIgnoreSubmitRule"
     />
     <n-form
       ref="formRef"
@@ -773,6 +775,20 @@
 
   const progressModalVisible = ref(false);
   const ruleStatusList = ref<FormSubmitValidationRuleStatus[]>([]);
+  const ignoreRuleIndices = ref<number[]>([]);
+  const isSubmitValidationRunning = ref(false);
+  let submitValidationCanceled = false;
+  let resolveIgnoredRules: ((shouldSubmit: boolean) => void) | null = null;
+
+  watch(progressModalVisible, (visible) => {
+    if (visible || !isSubmitValidationRunning.value) return;
+
+    submitValidationCanceled = true;
+    ignoreRuleIndices.value = [];
+    const resolve = resolveIgnoredRules;
+    resolveIgnoredRules = null;
+    resolve?.(false);
+  });
 
   const validationRules = computed(() => (formConfig.value.validationRules || []).filter((rule) => rule.enable));
 
@@ -801,41 +817,64 @@
     });
   }
 
+  function handleIgnoreSubmitRule(index: number) {
+    if (!ignoreRuleIndices.value.includes(index)) return;
+
+    ruleStatusList.value[index] = 'ignored';
+    ignoreRuleIndices.value = ignoreRuleIndices.value.filter((ruleIndex) => ruleIndex !== index);
+    if (ignoreRuleIndices.value.length === 0) {
+      const resolve = resolveIgnoredRules;
+      resolveIgnoredRules = null;
+      progressModalVisible.value = false;
+      resolve?.(true);
+    }
+  }
+
   async function validateSubmitRules(): Promise<boolean> {
+    if (isSubmitValidationRunning.value) return false;
     const rules = validationRules.value;
     if (rules.length === 0) {
       return true;
     }
-    // 顶部弹出弹窗，逐条展示校验进度
-    ruleStatusList.value = rules.map(() => 'pending' as FormSubmitValidationRuleStatus);
-    progressModalVisible.value = true;
-    let failedIndex = -1;
-    const ignoredFailureMessages: string[] = [];
-    // 逐条串行求值并展示进度（顺序执行是设计要求）
-    for (let i = 0; i < rules.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await sleep(100); // 逐条求值，让进度可见
-      const passed = evaluateSubmitRule(rules[i]);
-      ruleStatusList.value[i] = passed ? 'pass' : 'fail';
-      if (!passed && !rules[i].allowIgnore) {
-        failedIndex = i;
-        break;
+    isSubmitValidationRunning.value = true;
+    submitValidationCanceled = false;
+    try {
+      // 顶部弹出弹窗，逐条展示校验进度
+      ruleStatusList.value = rules.map(() => 'pending' as FormSubmitValidationRuleStatus);
+      ignoreRuleIndices.value = [];
+      progressModalVisible.value = true;
+      let failedIndex = -1;
+      // 逐条串行求值并展示进度（顺序执行是设计要求）
+      for (let i = 0; i < rules.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(100); // 逐条求值，让进度可见
+        if (submitValidationCanceled) return false;
+        const passed = evaluateSubmitRule(rules[i]);
+        ruleStatusList.value[i] = passed ? 'pass' : 'fail';
+        if (!passed && !rules[i].allowIgnore) {
+          failedIndex = i;
+          break;
+        }
       }
-      if (!passed) {
-        ignoredFailureMessages.push(rules[i].message);
+      if (failedIndex >= 0) {
+        // 拦截后，后续规则标记为未执行，弹窗保留供用户查看
+        ruleStatusList.value = ruleStatusList.value.map((status, index) => (index > failedIndex ? 'skipped' : status));
+        Message.error(rules[failedIndex].message);
+        return false;
       }
+      ignoreRuleIndices.value = ruleStatusList.value
+        .map((status, index) => (status === 'fail' && rules[index].allowIgnore ? index : -1))
+        .filter((index) => index >= 0);
+      if (ignoreRuleIndices.value.length) {
+        return await new Promise<boolean>((resolve) => {
+          resolveIgnoredRules = resolve;
+        });
+      }
+      progressModalVisible.value = false;
+      return true;
+    } finally {
+      isSubmitValidationRunning.value = false;
     }
-    if (failedIndex >= 0) {
-      // 拦截后，后续规则标记为未执行，弹窗保留供用户查看
-      ruleStatusList.value = ruleStatusList.value.map((status, index) => (index > failedIndex ? 'skipped' : status));
-      Message.error(rules[failedIndex].message);
-      return false;
-    }
-    progressModalVisible.value = false;
-    if (ignoredFailureMessages.length) {
-      Message.warning(ignoredFailureMessages.join('\n'));
-    }
-    return true;
   }
 
   function handleSave(isContinue = false, afterSave?: () => Promise<void>) {

@@ -31,7 +31,14 @@
       </div>
     </div>
 
+    <div
+      v-if="!rules.length"
+      class="mt-[8px] flex min-h-[88px] items-center justify-center rounded-[var(--border-radius-small)] bg-[var(--text-n9)]"
+    >
+      <n-empty :description="t('crmFormDesign.submitValidationEmpty')" />
+    </div>
     <VueDraggable
+      v-else
       v-model="rules"
       handle=".submit-validation-rule-handle"
       :animation="150"
@@ -127,13 +134,19 @@
                 class="flex-1"
                 :show-label="false"
                 :rule="[
-                  {
-                    required: true,
-                    validator: (_rule: unknown, value: string) => !!value,
-                    message: t('common.required'),
-                    trigger: ['change', 'blur'],
+                {
+                  required: true,
+                  validator: (_rule: unknown, value: any) => {
+                    try {
+                      return !!JSON.parse(value).source
+                    } catch (error) {
+                      return false
+                    }
                   },
-                ]"
+                  message: t('common.required'),
+                  trigger: ['change', 'blur'],
+                },
+              ]"
               >
                 <n-input
                   :value="getFormulaDisplay(rule.formula)"
@@ -148,13 +161,13 @@
                 class="flex-1"
                 :show-label="false"
                 :rule="[
-                  {
-                    required: true,
-                    validator: (_rule: unknown, value: string) => !!value?.trim(),
-                    message: t('common.required'),
-                    trigger: ['input', 'blur'],
-                  },
-                ]"
+                {
+                  required: true,
+                  validator: (_rule: unknown, value: string) => !!value?.trim(),
+                  message: t('common.required'),
+                  trigger: ['input', 'blur'],
+                },
+              ]"
               >
                 <n-input v-model:value="rule.message" :maxlength="200" :placeholder="t('common.pleaseInput')" />
               </n-form-item>
@@ -218,6 +231,7 @@
   import {
     type FormInst,
     NButton,
+    NEmpty,
     NForm,
     NFormItem,
     NInput,
@@ -350,12 +364,12 @@
   }
 
   function handleFormulaSave(formula?: string) {
-    if (!formula) return;
     if (editingRowIndex.value >= 0 && draftRules.value[editingRowIndex.value]) {
-      draftRules.value[editingRowIndex.value].formula = formula;
+      draftRules.value[editingRowIndex.value].formula = formula || '';
     }
     formulaFieldConfig.value.formula = formula;
     formulaModalVisible.value = false;
+    ruleFormRef.value?.restoreValidation();
   }
 
   function saveRules() {

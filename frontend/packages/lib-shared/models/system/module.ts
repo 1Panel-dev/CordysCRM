@@ -219,7 +219,7 @@ export interface FormSubmitValidationRule {
 }
 
 // 提交校验规则在进度弹窗中的执行状态
-export type FormSubmitValidationRuleStatus = 'pending' | 'pass' | 'fail' | 'skipped';
+export type FormSubmitValidationRuleStatus = 'pending' | 'pass' | 'fail' | 'ignored' | 'skipped';
 
 export interface FormConfig {
   layout: number;
