@@ -17,6 +17,12 @@
           <span v-if="hasReplyTarget" class="crm-comment-item-reply-target">{{ replyTargetText }}</span
           ><span>{{ props.comment.content }}</span>
         </div>
+
+        <CrmFileList
+          v-if="props.comment.attachments?.length"
+          :file-list="props.comment.attachments"
+          class="mt-[8px] !px-0 !pb-0"
+        />
       </div>
 
       <div class="crm-comment-item-meta">
@@ -65,6 +71,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
+  import CrmFileList from '@/components/business/crm-file-list-pop/fileList.vue';
 
   const props = withDefaults(
     defineProps<{
