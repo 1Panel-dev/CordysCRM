@@ -319,6 +319,7 @@
     sourceId: string;
     formKey: FormDesignKeyEnum | string;
     refreshKey?: number;
+    approvalTaskId?: string;
     layout?: 'horizontal' | 'vertical';
     approvalStatus: ProcessStatusEnum;
     leftLoading?: boolean;
@@ -594,10 +595,12 @@
         emit('deleteApproved');
         return;
       }
-      initApprovalDetail();
+      if (!props.approvalTaskId) {
+        initApprovalDetail();
+        emit('refresh');
+      }
       approvalOpinion.value = '';
       fileList.value = [];
-      emit('refresh');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -646,10 +649,12 @@
           });
           message.success(t('common.rejected'));
           approvalOpinionModalVisible.value = false;
-          initApprovalDetail();
+          if (!props.approvalTaskId) {
+            initApprovalDetail();
+            emit('refresh');
+          }
           approvalOpinion.value = '';
           fileList.value = [];
-          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);

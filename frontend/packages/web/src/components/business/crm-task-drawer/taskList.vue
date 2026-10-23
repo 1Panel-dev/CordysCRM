@@ -349,7 +349,7 @@
       await loadTaskList(true);
       if (!list.value.length) return;
 
-      const targetIndex = currentPosition >= list.value.length ? 0 : currentPosition;
+      const targetIndex = currentPosition >= pageNation.value.total ? 0 : currentPosition;
       while (list.value.length <= targetIndex && list.value.length < pageNation.value.total) {
         pageNation.value.current += 1;
         // Pages must be appended in order to preserve the refreshed list position.
