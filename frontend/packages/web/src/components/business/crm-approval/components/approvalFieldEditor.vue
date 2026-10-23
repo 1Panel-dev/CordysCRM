@@ -20,6 +20,7 @@
         v-else
         ref="formDescriptionRef"
         :form-key="props.descriptionFormKey || props.formKey"
+        :field-permissions="props.fieldPermissions"
         :source-id="props.sourceId"
         :column="props.column"
         :refresh-key="props.refreshKey"
@@ -40,8 +41,8 @@
       />
     </div>
     <div
-      v-if="props.fieldPermissions.length"
-      class="sticky bottom-0 z-10 flex shrink-0 justify-start border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[12px_16px]"
+      v-if="props.fieldPermissions.filter((e) => e.permissionType === 'EDIT').length"
+      class="sticky bottom-0 z-10 flex shrink-0 justify-start border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[12px_0px]"
     >
       <n-button v-if="!isEditing" type="primary" @click="startEditing">
         {{ t('common.edit') }}
@@ -84,6 +85,7 @@
       isContractTableDetail?: boolean;
       customFormId?: string;
       approvalTaskId?: string;
+      setEditing: (editing: boolean) => void;
       setLoading: (loading: boolean) => void;
     }>(),
     {
@@ -125,11 +127,13 @@
   function startEditing() {
     props.setLoading(true);
     isEditing.value = true;
+    props.setEditing(true);
   }
 
   function cancelEditing() {
     props.setLoading(true);
     isEditing.value = false;
+    props.setEditing(false);
   }
 
   function handleDescriptionInit(
@@ -144,6 +148,7 @@
 
   function handleSaved() {
     isEditing.value = false;
+    props.setEditing(false);
     emit('saved');
   }
 

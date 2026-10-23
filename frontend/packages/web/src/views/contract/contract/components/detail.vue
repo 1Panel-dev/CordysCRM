@@ -71,7 +71,7 @@
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
           >
-            <template #left="{ fieldPermissions, taskNode, setLoading }">
+            <template #left="{ fieldPermissions, taskNode, setLoading, setEditing }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
@@ -82,6 +82,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
+                :set-editing="setEditing"
                 :readonly="!hasAnyPermission(['CONTRACT:UPDATE'])"
                 :is-contract-table-detail="props.isContractTableDetail"
                 :approval-task-id="props.approvalTaskId"

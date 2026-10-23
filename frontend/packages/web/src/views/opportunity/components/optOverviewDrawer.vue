@@ -86,7 +86,7 @@
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
           >
-            <template #left="{ fieldPermissions, taskNode, setLoading }">
+            <template #left="{ fieldPermissions, taskNode, setLoading, setEditing }">
               <ApprovalFieldEditor
                 ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.BUSINESS"
@@ -95,6 +95,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :set-loading="setLoading"
+                :set-editing="setEditing"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])"
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
