@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+  import { watch } from 'vue';
   import { NButton, NDivider, NImagePreview, NTooltip, useMessage } from 'naive-ui';
   import dayjs from 'dayjs';
 
@@ -75,6 +76,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'deleteFile', id: string): void;
+    (e: 'previewStateChange', open: boolean): void;
   }>();
 
   const Message = useMessage();
@@ -90,7 +92,14 @@
   const previewSrc = ref('');
   const showDocumentPreview = ref(false);
   const documentPreviewFile = ref<AttachmentInfo | null>(null);
-  const documentExtensions = ['docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'pdf', 'wps', 'doc', 'txt'];
+
+  watch(
+    () => showPreview.value || showDocumentPreview.value,
+    (open) => emit('previewStateChange', open),
+    { flush: 'sync' }
+  );
+
+  const documentExtensions = ['docx', 'pptx', 'xls', 'xlsx', 'csv', 'pdf', 'txt'];
 
   function isDocumentFile(file: AttachmentInfo) {
     const extension = file.name.split('.').pop()?.toLowerCase();

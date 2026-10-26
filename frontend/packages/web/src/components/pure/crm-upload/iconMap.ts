@@ -15,7 +15,7 @@ export type FileIconMapping = {
 export const FileIconMap: FileIconMapping = {
   csv: {
     [UploadStatus.init]: 'iconicon_file-CSV_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-CSV_colorful1',
+    [UploadStatus.done]: 'iconicon_file-CSV_colorful',
   },
   excel: {
     [UploadStatus.init]: 'iconicon_file-excel_colorful_ash',
@@ -23,7 +23,7 @@ export const FileIconMap: FileIconMapping = {
   },
   image: {
     [UploadStatus.init]: 'iconicon_file-image_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-image_colorful1',
+    [UploadStatus.done]: 'iconicon_file-image_colorful',
   },
   jar: {
     [UploadStatus.init]: 'icona-icon_file-jar_colorful',
@@ -31,11 +31,11 @@ export const FileIconMap: FileIconMapping = {
   },
   pdf: {
     [UploadStatus.init]: 'iconicon_file-pdf_colorful_ash',
-    [UploadStatus.done]: 'icon-icon_file-pdf_colorful1',
+    [UploadStatus.done]: 'iconicon_file-pdf_colorful',
   },
   sql: {
     [UploadStatus.init]: 'iiconicon_file-sql_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-sql_colorful1',
+    [UploadStatus.done]: 'iconicon_file-sql_colorful',
   },
   // TOTO
   plain: {
@@ -44,11 +44,11 @@ export const FileIconMap: FileIconMapping = {
   },
   txt: {
     [UploadStatus.init]: 'iconicon_file-text_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-text_colorful1',
+    [UploadStatus.done]: 'iconicon_file-text_colorful',
   },
   word: {
     [UploadStatus.init]: 'iconicon_file-word_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-word_colorful1',
+    [UploadStatus.done]: 'iconicon_file-word_colorful',
   },
   video: {
     [UploadStatus.init]: 'iconicon_file-video_colorful_ash',
@@ -56,11 +56,11 @@ export const FileIconMap: FileIconMapping = {
   },
   xmind: {
     [UploadStatus.init]: 'iconicon_file-xmind_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-xmind_colorful1',
+    [UploadStatus.done]: 'iconicon_file-xmind_colorful',
   },
   zip: {
     [UploadStatus.init]: 'icona-icon_file-compressed_colorful_ash2',
-    [UploadStatus.done]: 'icona-icon_file-compressed_colorful1',
+    [UploadStatus.done]: 'icona-icon_file-compressed_colorful',
   },
   sketch: {
     [UploadStatus.init]: 'iconicon_file-sketch_colorful_ash',
@@ -68,7 +68,7 @@ export const FileIconMap: FileIconMapping = {
   },
   ppt: {
     [UploadStatus.init]: 'iconicon_file-ppt_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-ppt_colorful1',
+    [UploadStatus.done]: 'iconicon_file-ppt_colorful',
   },
   unknown: {
     [UploadStatus.init]: 'iconicon_file-unknown_colorful1',
@@ -76,7 +76,7 @@ export const FileIconMap: FileIconMapping = {
   },
   none: {
     [UploadStatus.init]: 'iconicon_file-unknown_colorful1',
-    [UploadStatus.done]: 'iconicon_file-unknown_colorful1',
+    [UploadStatus.done]: 'iconicon_file-unknown_colorful',
   },
   json: {
     [UploadStatus.init]: 'icona-icon_file-json',

@@ -1,5 +1,5 @@
 <template>
-  <n-scrollbar x-scrollable>
+  <n-scrollbar :content-style="{ maxWidth: '400px' }" x-scrollable>
     <n-timeline :icon-size="20" class="w-full min-w-[300px] gap-[4px]">
       <n-timeline-item>
         <template #icon>
@@ -82,10 +82,12 @@
                     />
                     <n-popover
                       v-if="node.backNode"
+                      :show="backAttachmentPopovers.get(node.nodeId)?.show || false"
                       trigger="click"
                       placement="left-start"
                       class="flex max-h-[70vh]"
                       content-class="relative"
+                      @update:show="handleBackAttachmentPopoverShow(node.nodeId, $event)"
                     >
                       <template #trigger>
                         <CrmIcon
@@ -108,7 +110,12 @@
                           :content-style="{ maxHeight: 'calc(100% - 20vh)' }"
                           class="flex-1"
                         >
-                          <CrmFileList :files="node.backAttachments" class="mt-[8px]" readonly />
+                          <CrmFileList
+                            :files="node.backAttachments"
+                            class="mt-[8px]"
+                            readonly
+                            @preview-state-change="setBackAttachmentPreviewOpen(node.nodeId, $event)"
+                          />
                         </n-scrollbar>
                       </div>
                     </n-popover>
@@ -151,10 +158,12 @@
                         </n-tooltip>
                         <n-popover
                           v-if="task.sign"
+                          :show="signAttachmentPopovers.get(task.taskId)?.show || false"
                           trigger="click"
                           placement="left-start"
                           class="flex max-h-[70vh]"
                           content-class="relative"
+                          @update:show="handleSignAttachmentPopoverShow(task.taskId, $event)"
                         >
                           <template #trigger>
                             <CrmTag type="info" theme="outline" tooltipDisabled @click.stop>
@@ -174,7 +183,12 @@
                               :content-style="{ maxHeight: 'calc(100% - 20vh)' }"
                               class="flex-1"
                             >
-                              <CrmFileList :files="task.signAttachments" class="mt-[8px]" readonly />
+                              <CrmFileList
+                                :files="task.signAttachments"
+                                class="mt-[8px]"
+                                readonly
+                                @preview-state-change="setSignAttachmentPreviewOpen(task.taskId, $event)"
+                              />
                             </n-scrollbar>
                           </div>
                         </n-popover>
@@ -251,6 +265,7 @@
 </template>
 
 <script setup lang="ts">
+  import { reactive } from 'vue';
   import { NCollapse, NCollapseItem, NPopover, NScrollbar, NTimeline, NTimelineItem, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
@@ -279,6 +294,38 @@
     currentRoundStartIndex?: number;
     finallyResult?: ProcessStatusEnum;
   }>();
+
+  type AttachmentPopoverState = { show: boolean; previewOpen: boolean };
+
+  const backAttachmentPopovers = reactive(new Map<string, AttachmentPopoverState>());
+  const signAttachmentPopovers = reactive(new Map<string, AttachmentPopoverState>());
+
+  function getAttachmentPopoverState(popovers: Map<string, AttachmentPopoverState>, id: string) {
+    let state = popovers.get(id);
+    if (!state) {
+      state = { show: false, previewOpen: false };
+      popovers.set(id, state);
+    }
+    return state;
+  }
+
+  function handleBackAttachmentPopoverShow(id: string, show: boolean) {
+    const state = getAttachmentPopoverState(backAttachmentPopovers, id);
+    if (show || !state.previewOpen) state.show = show;
+  }
+
+  function setBackAttachmentPreviewOpen(id: string, open: boolean) {
+    getAttachmentPopoverState(backAttachmentPopovers, id).previewOpen = open;
+  }
+
+  function handleSignAttachmentPopoverShow(id: string, show: boolean) {
+    const state = getAttachmentPopoverState(signAttachmentPopovers, id);
+    if (show || !state.previewOpen) state.show = show;
+  }
+
+  function setSignAttachmentPreviewOpen(id: string, open: boolean) {
+    getAttachmentPopoverState(signAttachmentPopovers, id).previewOpen = open;
+  }
 
   const { t } = useI18n();
 

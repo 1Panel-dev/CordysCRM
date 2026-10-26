@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+  import { UploadStatus } from '@lib/shared/enums/uploadEnum';
   import { getFileIcon } from '@lib/shared/method';
 
   import CrmIon from '@/components/pure/crm-icon-font/index.vue';
@@ -13,7 +14,7 @@
   }>();
 
   const iconType = computed(() => {
-    return getFileIcon(props.name);
+    return getFileIcon(props.name, UploadStatus.done);
   });
 </script>
 
