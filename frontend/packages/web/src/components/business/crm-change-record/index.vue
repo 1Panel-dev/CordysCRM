@@ -3,7 +3,7 @@
     <div class="min-h-full px-[24px] pt-[24px]">
       <div class="mb-[16px] flex items-center justify-between">
         <div class="font-semibold">{{ props.title || t('common.changeRecord') }}</div>
-        <n-button type="default" class="outline--secondary px-[8px]" :loading="loading" @click="loadRecords(true)">
+        <n-button type="default" class="outline--secondary px-[8px]" @click="loadRecords(true)">
           <CrmIcon type="iconicon_refresh" :size="16" />
         </n-button>
       </div>

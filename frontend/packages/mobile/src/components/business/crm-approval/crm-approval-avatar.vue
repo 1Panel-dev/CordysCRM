@@ -3,8 +3,18 @@
     class="crm-approver-avatar-list__avatar-wrap"
     :class="{ 'crm-approver-avatar-list__avatar-wrap--active': props.approver?.id === activeApproverId }"
   >
-    <van-image v-if="isShowAutoBot" round :size="props.size" class="cursor-pointer" @click="emit('toggleActive')">
-      <CrmIcon name="iconicon_bot" :size="18" class="text-[var(--text-n10)]" />
+    <van-image
+      v-if="isShowAutoBot"
+      round
+      :width="props.size"
+      :height="props.size"
+      src="no-res"
+      class="cursor-pointer"
+      @click="emit('toggleActive')"
+    >
+      <template #error>
+        <CrmIcon name="iconicon_bot" :size="18" color="var(--text-n2)" />
+      </template>
     </van-image>
     <CrmAvatar
       v-else
