@@ -1,14 +1,11 @@
 package cn.cordys.crm.approval.controller;
 
-import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
-import cn.cordys.crm.approval.dto.response.ApprovalInstanceHistoryResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
 import cn.cordys.crm.approval.service.ApprovalHistoryService;
@@ -19,7 +16,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -93,17 +96,10 @@ public class ApprovalResourceController {
         return detail;
     }
 
-    @GetMapping("/instances/{resourceId}")
-    @Operation(summary = "查询历史审批实例")
-    public List<ApprovalInstanceHistoryResponse> getHistoryInstances(@PathVariable String resourceId) {
-        return approvalHistoryService.getHistoryInstances(resourceId, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId());
-    }
-
-    @GetMapping("/instance-detail/{instanceId}")
-    @Operation(summary = "查询历史审批实例详情")
-    public ApprovalInstanceDetail getHistoryInstanceDetail(@PathVariable String instanceId) {
-        return approvalHistoryService.getHistoryInstanceDetail(instanceId, SessionUtils.getUserId(),
+    @GetMapping("/instance-detail/{resourceId}")
+    @Operation(summary = "查询历史审批详情，按轮次由远至近返回")
+    public List<ApprovalInstanceDetail> getHistoryInstanceDetail(@PathVariable String resourceId) {
+        return approvalHistoryService.getHistoryInstanceDetail(resourceId, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
     }
 }

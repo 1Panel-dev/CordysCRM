@@ -11,14 +11,6 @@
         ORDER BY ai.submit_time DESC, ai.id DESC
     </select>
 
-    <select id="selectInstanceById" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
-        SELECT ai.*
-        FROM approval_instance ai
-        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
-        WHERE ai.id = #{instanceId}
-          AND afv.organization_id = #{organizationId}
-    </select>
-
     <select id="existsApprovingInstance" resultType="boolean">
         SELECT EXISTS (
             SELECT 1
