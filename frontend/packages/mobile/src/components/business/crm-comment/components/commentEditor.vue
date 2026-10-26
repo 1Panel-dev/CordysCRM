@@ -58,7 +58,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getGenerateId } from '@lib/shared/method';
   import { filterMentionUsers, FOLLOW_COMMENT_MAX_LENGTH } from '@lib/shared/method/comment';
-  import type { FollowCommentSubmitValue, FollowCommentUser } from '@lib/shared/models/follow';
+  import type { FollowCommentItem, FollowCommentSubmitValue, FollowCommentUser } from '@lib/shared/models/follow';
   import { uploadTempAttachment } from '@/api/modules';
 
   import MentionUserSelect from './mentionUserSelect.vue';
@@ -72,6 +72,7 @@
       submitText?: string;
       maxlength?: number;
       initialMentionUsers?: FollowCommentUser[];
+      initialAttachments?: FollowCommentItem['attachments'];
       enableAttachment?: boolean;
     }>(),
     {
@@ -98,6 +99,7 @@
 
   const mentionUsers = ref<FollowCommentUser[]>([]);
   const attachments = ref<AiChatAttachment[]>([]);
+  const uploadingAttachmentIds = ref(new Set<string>());
   const fileInputRef = ref<HTMLInputElement>();
   const showMentionUserSelect = ref(false);
   const fieldRef = ref<{
@@ -124,6 +126,20 @@
       if (typeof previewUrl === 'string') URL.revokeObjectURL(previewUrl);
     });
     attachments.value = [];
+    uploadingAttachmentIds.value.clear();
+  }
+
+  function resetAttachments() {
+    clearAttachments();
+    attachments.value = (props.initialAttachments || []).map((attachment) => ({
+      id: attachment.id,
+      name: attachment.name,
+      size: attachment.size,
+      mimeType: attachment.type,
+      kind: /^(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(attachment.type) ? 'image' : 'file',
+      status: 'done',
+      metadata: { fileId: attachment.id },
+    }));
   }
 
   async function handleFileInputChange(event: Event) {
@@ -156,6 +172,7 @@
     attachments.value.push(...selected);
     await Promise.all(
       selected.map(async (item, index) => {
+        uploadingAttachmentIds.value.add(item.id);
         try {
           const result = await uploadTempAttachment(files[index]);
           const current = attachments.value.find((attachment) => attachment.id === item.id);
@@ -166,6 +183,8 @@
         } catch {
           const current = attachments.value.find((attachment) => attachment.id === item.id);
           if (current) current.status = 'error';
+        } finally {
+          uploadingAttachmentIds.value.delete(item.id);
         }
       })
     );
@@ -192,7 +211,8 @@
       props.disabled ||
       props.loading ||
       !content.value.trim() ||
-      attachments.value.some((item) => item.status !== 'done')
+      uploadingAttachmentIds.value.size > 0 ||
+      attachments.value.some((item) => item.status === 'error')
     );
   });
 
@@ -248,12 +268,7 @@
     { immediate: true }
   );
 
-  watch(
-    () => props.mode,
-    () => {
-      clearAttachments();
-    }
-  );
+  watch([() => props.mode, () => props.initialAttachments], resetAttachments, { immediate: true });
 
   function focus() {
     fieldRef.value?.focus?.();

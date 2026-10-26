@@ -20,7 +20,9 @@
         v-if="isEditing"
         v-model:value="editContent"
         :initial-mention-users="props.comment.mentionUsers"
+        :initial-attachments="props.comment.attachments"
         :loading="props.submitLoading"
+        :enable-attachment="props.enableAttachment"
         :submit-text="t('crmComment.save')"
         @submit="handleEditSubmit"
         @cancel="emit('cancelEditor')"
@@ -102,6 +104,7 @@
       canEdit?: boolean;
       canDelete?: boolean;
       submitLoading?: boolean;
+      enableAttachment?: boolean;
     }>(),
     {
       level: 1,
@@ -109,6 +112,7 @@
       canReply: true,
       canEdit: true,
       canDelete: true,
+      enableAttachment: false,
     }
   );
 
