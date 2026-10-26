@@ -108,7 +108,7 @@ class ApprovalResourceHistoryControllerTest {
         ApprovalInstanceDetail detail = new ApprovalInstanceDetail();
         detail.setId("current-instance");
         when(instanceService.getLatestApprovalInstanceDetail("resource-1", "org-1")).thenReturn(detail);
-        when(commentService.hasCommentPermission("current-instance", "user-1", "org-1")).thenReturn(true);
+        when(commentService.hasCommentPermission("resource-1", "user-1", "org-1")).thenReturn(true);
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
                 var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-1");
@@ -122,7 +122,7 @@ class ApprovalResourceHistoryControllerTest {
 
             verify(resourceService).checkViewPermission("resource-1");
             verify(instanceService).getLatestApprovalInstanceDetail("resource-1", "org-1");
-            verify(commentService).hasCommentPermission("current-instance", "user-1", "org-1");
+            verify(commentService).hasCommentPermission("resource-1", "user-1", "org-1");
             verifyNoInteractions(historyService);
         }
     }
@@ -136,7 +136,7 @@ class ApprovalResourceHistoryControllerTest {
         when(commentService.getMentionInstance("mention-1", "resource-1", "user-1", "org-1"))
                 .thenReturn(instance);
         when(instanceService.getApprovalInstanceDetail(instance, "org-1")).thenReturn(detail);
-        when(commentService.hasCommentPermission("mentioned-instance", "user-1", "org-1")).thenReturn(true);
+        when(commentService.hasCommentPermission("resource-1", "user-1", "org-1")).thenReturn(true);
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
                 var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-1");

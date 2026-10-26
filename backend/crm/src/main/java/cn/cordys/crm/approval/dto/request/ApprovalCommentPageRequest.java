@@ -12,6 +12,6 @@ import lombok.EqualsAndHashCode;
 public class ApprovalCommentPageRequest extends BasePageRequest {
 
     @NotBlank
-    @Schema(description = "审批实例ID")
-    private String instanceId;
+    @Schema(description = "业务资源ID")
+    private String resourceId;
 }

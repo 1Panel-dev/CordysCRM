@@ -32,11 +32,12 @@ class ApprovalCommentMapperTest {
     }
 
     @Test
-    void selectInstanceRequiresRequestedInstanceAndVersionOrganization() {
-        assertSql("selectInstance", Map.of("instanceId", "instance-a", "organizationId", "org-a"),
-                List.of("instance-a", "org-a"),
+    void selectLatestInstanceRequiresRequestedResourceAndVersionOrganization() {
+        assertSql("selectLatestInstance", Map.of("resourceId", "resource-a", "organizationId", "org-a"),
+                List.of("resource-a", "org-a"),
                 "join approval_flow_version afv on afv.id = ai.flow_version_id",
-                "where ai.id = ?", "and afv.organization_id = ?");
+                "where ai.resource_id = ?", "and afv.organization_id = ?",
+                "order by ai.submit_time desc, ai.id desc", "limit 1");
     }
 
     @Test
@@ -44,7 +45,9 @@ class ApprovalCommentMapperTest {
         Map<String, Object> parameters = Map.of("userId", "user-a", "organizationId", "org-a");
         assertSql("selectMentionTodos", parameters, List.of("user-a", "org-a", "org-a"),
                 "from approval_comment_mention m", "join approval_comment c on c.id = m.comment_id",
-                "join approval_instance ai on ai.id = c.instance_id",
+                "join approval_instance ai on ai.id = (", "where latest.resource_id = c.resource_id",
+                "and latest_version.organization_id = c.organization_id",
+                "order by latest.submit_time desc, latest.id desc limit 1",
                 "join approval_flow_version afv on afv.id = ai.flow_version_id",
                 "where m.user_id = ?", "and c.organization_id = ?", "and afv.organization_id = ?",
                 "m.id as commentmentionid", "c.id as commentid", "m.create_time as mentiontime",
@@ -72,18 +75,20 @@ class ApprovalCommentMapperTest {
         assertSql("selectMentionInstance", Map.of("mentionId", "mention-a", "userId", "user-a", "organizationId", "org-a"),
                 List.of("mention-a", "user-a", "org-a", "org-a"),
                 "select ai.*", "join approval_comment c on c.id = m.comment_id",
-                "join approval_instance ai on ai.id = c.instance_id",
+                "join approval_instance ai on ai.id = (", "where latest.resource_id = c.resource_id",
+                "and latest_version.organization_id = c.organization_id",
+                "order by latest.submit_time desc, latest.id desc limit 1",
                 "join approval_flow_version afv on afv.id = ai.flow_version_id",
                 "where m.id = ?", "and m.user_id = ?", "and c.organization_id = ?", "and afv.organization_id = ?");
     }
 
     @Test
-    void mentionPermissionRequiresExistingCommentInRequestedInstanceAndOrganization() {
+    void mentionPermissionRequiresExistingCommentInRequestedResourceAndOrganization() {
         assertSql("existsMention",
-                Map.of("instanceId", "instance-a", "organizationId", "org-a", "userId", "user-a"),
-                List.of("instance-a", "org-a", "user-a"),
+                Map.of("resourceId", "resource-a", "organizationId", "org-a", "userId", "user-a"),
+                List.of("resource-a", "org-a", "user-a"),
                 "from approval_comment_mention m", "join approval_comment c on c.id = m.comment_id",
-                "where c.instance_id = ?", "and c.organization_id = ?", "and m.user_id = ?");
+                "where c.resource_id = ?", "and c.organization_id = ?", "and m.user_id = ?");
     }
 
     @Test
@@ -95,29 +100,29 @@ class ApprovalCommentMapperTest {
 
     @Test
     void deletesRequireOrganizationAndExplicitCommentIds() {
-        Map<String, Object> parameters = Map.of("organizationId", "org-a", "instanceId", "instance-a",
+        Map<String, Object> parameters = Map.of("organizationId", "org-a", "resourceId", "resource-a",
                 "commentIds", List.of("comment-a", "comment-b"));
-        assertSql("deleteComments", parameters, List.of("org-a", "instance-a", "comment-a", "comment-b"),
-                "delete from approval_comment", "where organization_id = ?", "and instance_id = ?", "and id in");
+        assertSql("deleteComments", parameters, List.of("org-a", "resource-a", "comment-a", "comment-b"),
+                "delete from approval_comment", "where organization_id = ?", "and resource_id = ?", "and id in");
         assertSql("deleteMentions", parameters, List.of("org-a", "comment-a", "comment-b"),
                 "delete m from approval_comment_mention m", "join approval_comment c on c.id = m.comment_id",
                 "where c.organization_id = ?", "and m.comment_id in");
     }
 
     @Test
-    void pageAndChildrenKeepParentAndInstanceBoundariesWithScopedReplyCounts() {
-        Map<String, Object> parameters = Map.of("organizationId", "org-a", "instanceId", "instance-a",
+    void pageAndChildrenKeepParentAndResourceBoundariesWithScopedReplyCounts() {
+        Map<String, Object> parameters = Map.of("organizationId", "org-a", "resourceId", "resource-a",
                 "parentIds", List.of("comment-a", "comment-b"));
         for (String statement : List.of("selectPage", "selectChildren")) {
             boolean children = statement.equals("selectChildren");
             assertSql(statement, parameters,
-                    children ? List.of("org-a", "instance-a", "comment-a", "comment-b")
-                            : List.of("org-a", "instance-a"),
-                    "where c.organization_id = ?", "and c.instance_id = ?",
+                    children ? List.of("org-a", "resource-a", "comment-a", "comment-b")
+                            : List.of("org-a", "resource-a"),
+                    "where c.organization_id = ?", "and c.resource_id = ?",
                     children ? "and c.parent_id in" : "and c.parent_id is null",
                     "order by c.create_time desc, c.id desc",
                     "select count(1) from approval_comment reply where reply.parent_id = c.id",
-                    "and reply.instance_id = c.instance_id",
+                    "and reply.resource_id = c.resource_id",
                     "and reply.organization_id = c.organization_id) as reply_count");
         }
     }
@@ -125,13 +130,13 @@ class ApprovalCommentMapperTest {
     @Test
     void pageAndChildrenOnlySortByCreationTimeAndIdInRequestedDirection() {
         for (boolean asc : List.of(true, false)) {
-            Map<String, Object> parameters = Map.of("organizationId", "org-a", "instanceId", "instance-a",
+            Map<String, Object> parameters = Map.of("organizationId", "org-a", "resourceId", "resource-a",
                     "parentIds", List.of("comment-a"), "asc", asc, "sortBy", "content; drop table approval_comment");
             String direction = asc ? "asc" : "desc";
             for (String statement : List.of("selectPage", "selectChildren")) {
                 assertSql(statement, parameters,
-                        statement.equals("selectChildren") ? List.of("org-a", "instance-a", "comment-a")
-                                : List.of("org-a", "instance-a"),
+                        statement.equals("selectChildren") ? List.of("org-a", "resource-a", "comment-a")
+                                : List.of("org-a", "resource-a"),
                         "order by c.create_time " + direction + ", c.id " + direction);
                 String sql = configuration.getMappedStatement(ExtApprovalCommentMapper.class.getName() + "." + statement)
                         .getBoundSql(parameters).getSql().toLowerCase(Locale.ROOT);
@@ -141,15 +146,15 @@ class ApprovalCommentMapperTest {
     }
 
     @Test
-    void rootPaginationCountKeepsInstanceOrganizationAndTopLevelBoundaries() {
+    void rootPaginationCountKeepsResourceOrganizationAndTopLevelBoundaries() {
         BoundSql boundSql = configuration.getMappedStatement(ExtApprovalCommentMapper.class.getName() + ".selectPage")
-                .getBoundSql(Map.of("instanceId", "instance-a", "organizationId", "org-a", "asc", true));
+                .getBoundSql(Map.of("resourceId", "resource-a", "organizationId", "org-a", "asc", true));
         String countSql = new PageHelperCountSqlParser().getSmartCountSql(boundSql.getSql(), "0")
                 .replaceAll("\\s+", " ").trim().toLowerCase(Locale.ROOT);
 
         assertTrue(countSql.startsWith("select count("));
         assertTrue(countSql.contains("c.parent_id is null"));
-        assertTrue(countSql.contains("c.instance_id = ?"));
+        assertTrue(countSql.contains("c.resource_id = ?"));
         assertTrue(countSql.contains("c.organization_id = ?"));
         assertEquals(2L, countSql.chars().filter(character -> character == '?').count());
     }
@@ -167,6 +172,6 @@ class ApprovalCommentMapperTest {
             return boundSql.hasAdditionalParameter(property) ? boundSql.getAdditionalParameter(property)
                     : configuration.newMetaObject(parameters).getValue(property);
         }).toList();
-        assertEquals(expectedValues, actualValues, "参数应正确绑定组织、实例、用户及目标评论");
+        assertEquals(expectedValues, actualValues, "参数应正确绑定组织、资源、用户及目标评论");
     }
 }

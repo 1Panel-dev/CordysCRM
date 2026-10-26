@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full min-h-0 w-full flex-col overflow-hidden">
     <CrmSegmentedControl
-      v-if="props.approvalId"
+      v-if="props.resourceId"
       v-model="activeAnchor"
       class="mb-[12px] flex-none"
       :options="anchorOptions"
@@ -13,14 +13,17 @@
         v-model="expandedHistoryInstanceNames"
         class="mb-[16px] rounded-[var(--border-radius-small)]"
         :border="false"
-        @change="handleHistoryExpandedNames"
       >
         <van-collapse-item v-for="instance in historyInstances" :key="instance.id" :name="instance.id" :border="false">
           <template #title>
             <div class="flex items-center gap-[8px]">
               <CrmApprovalStatus :status="instance.approvalStatus" scene="approvalRecord" />
               <div class="text-[14px] font-semibold text-[var(--text-n1)]">
-                {{ t('crm.approval.previousRoundTitle', { nodeName: instance.currentNodeName }) }}
+                {{
+                  t('crm.approval.previousRoundTitle', {
+                    nodeName: getCurrentNode(instance)?.nodeName || instance.nodes.at(-1)?.nodeName || '',
+                  })
+                }}
               </div>
             </div>
           </template>
@@ -35,23 +38,20 @@
             />
           </template>
           <div class="bg-[var(--text-n10)] p-[8px]">
-            <van-loading v-if="historyLoadingIds.includes(instance.id)" class="py-[16px]" />
             <CrmApprovalLine
-              v-else-if="historyDetails[instance.id]"
-              :nodes="historyDetails[instance.id]?.nodes || []"
+              :nodes="instance.nodes"
               :submitter="{
-                submitAvatar: historyDetails[instance.id]?.submitAvatar,
-                submitter: historyDetails[instance.id]?.submitter,
-                submitTime: historyDetails[instance.id]?.submitTime,
-                submitterId: historyDetails[instance.id]?.submitterId,
-                comment: historyDetails[instance.id]?.comment,
+                submitAvatar: instance.submitAvatar,
+                submitter: instance.submitter,
+                submitTime: instance.submitTime,
+                submitterId: instance.submitterId,
+                comment: instance.comment,
               }"
-              :current-approval-node="getCurrentNode(historyDetails[instance.id])"
-              :current-approval-node-index="getCurrentNodeIndex(historyDetails[instance.id])"
-              :finally-result="historyDetails[instance.id]?.approvalStatus"
+              :current-approval-node="getCurrentNode(instance)"
+              :current-approval-node-index="getCurrentNodeIndex(instance)"
+              :finally-result="instance.approvalStatus"
               class="h-[55vh]"
             />
-            <div v-else class="h-[24px]"></div>
           </div>
         </van-collapse-item>
       </van-collapse>
@@ -238,11 +238,11 @@
           </van-collapse>
         </van-step>
       </van-steps>
-      <div v-if="props.approvalId" ref="commentAnchorRef" class="mt-[16px] rounded-[12px] bg-[var(--text-n10)]">
+      <div v-if="props.resourceId" ref="commentAnchorRef" class="mt-[16px] rounded-[12px] bg-[var(--text-n10)]">
         <CrmComment
           v-model:count="commentCount"
           type="approval"
-          :source-id="props.approvalId"
+          :source-id="props.resourceId"
           :can-create="props.commentable"
           :can-reply="props.commentable"
           enable-attachment
@@ -301,7 +301,7 @@
   import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatBadgeCount } from '@lib/shared/method';
-  import type { ApprovalDetail, ApprovalNode, ApprovalResourceInstance } from '@lib/shared/models/system/process';
+  import type { ApprovalDetail, ApprovalNode } from '@lib/shared/models/system/process';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmSegmentedControl from '@/components/pure/crm-segmented-control/index.vue';
@@ -312,7 +312,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmComment from '@/components/business/crm-comment/index.vue';
 
-  import { getApprovalResourceInstanceDetail, getApprovalResourceInstances } from '@/api/modules';
+  import { getApprovalResourceInstanceDetail } from '@/api/modules';
 
   const props = defineProps<{
     nodes: ApprovalNode[];
@@ -337,9 +337,7 @@
   const activeAnchor = ref<'record' | 'comment'>('record');
   const scrollContainerRef = ref<HTMLElement>();
   const commentAnchorRef = ref<HTMLElement>();
-  const historyInstances = ref<ApprovalResourceInstance[]>([]);
-  const historyDetails = ref<Record<string, ApprovalDetail>>({});
-  const historyLoadingIds = ref<string[]>([]);
+  const historyInstances = ref<ApprovalDetail[]>([]);
   const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
   const anchorOptions = computed(() => [
     { value: 'record' as const, label: t('crm.approval.record') },
@@ -386,10 +384,9 @@
       return;
     }
     try {
-      const instances = await getApprovalResourceInstances(resourceId);
+      const instances = await getApprovalResourceInstanceDetail(resourceId);
       if (props.resourceId !== resourceId) return;
-      historyInstances.value = instances.filter((instance) => instance.id !== props.approvalId);
-      historyDetails.value = {};
+      historyInstances.value = instances;
       expandedHistoryInstanceNames.value = [];
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -397,32 +394,6 @@
       showFailToast(t('crm.approval.historyLoadFailed'));
       historyInstances.value = [];
     }
-  }
-
-  async function handleHistoryExpandedNames(names: Array<string | number>) {
-    expandedHistoryInstanceNames.value = names;
-    const expandedIds = names.map(String);
-    const instancesToLoad = historyInstances.value.filter(
-      (instance) =>
-        expandedIds.includes(instance.id) &&
-        !historyDetails.value[instance.id] &&
-        !historyLoadingIds.value.includes(instance.id)
-    );
-
-    await Promise.all(
-      instancesToLoad.map(async (instance) => {
-        historyLoadingIds.value.push(instance.id);
-        try {
-          historyDetails.value[instance.id] = await getApprovalResourceInstanceDetail(instance.id);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-          showFailToast(t('crm.approval.historyDetailLoadFailed'));
-        } finally {
-          historyLoadingIds.value = historyLoadingIds.value.filter((id) => id !== instance.id);
-        }
-      })
-    );
   }
 
   watch(

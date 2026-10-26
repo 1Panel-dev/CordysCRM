@@ -317,13 +317,6 @@ export interface ApprovalDetail {
   nodes: ApprovalNode[];
 }
 
-export interface ApprovalResourceInstance {
-  id: string;
-  approvalStatus: ProcessStatusEnum;
-  currentNodeId: string;
-  currentNodeName: string;
-}
-
 export interface ApprovalNode {
   taskId: string;
   recordId: string;

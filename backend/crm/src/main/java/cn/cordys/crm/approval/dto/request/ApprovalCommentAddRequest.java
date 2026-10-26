@@ -11,8 +11,8 @@ import java.util.List;
 public class ApprovalCommentAddRequest {
 
     @NotBlank
-    @Schema(description = "审批实例ID")
-    private String instanceId;
+    @Schema(description = "业务资源ID")
+    private String resourceId;
 
     @Schema(description = "一级评论ID，回复时必填")
     private String parentId;

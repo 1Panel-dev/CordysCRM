@@ -3,18 +3,28 @@
 
 <mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper">
 
-    <select id="selectInstance" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
+    <select id="selectLatestInstance" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
         SELECT ai.*
         FROM approval_instance ai
         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
-        WHERE ai.id = #{instanceId}
+        WHERE ai.resource_id = #{resourceId}
           AND afv.organization_id = #{organizationId}
+        ORDER BY ai.submit_time DESC, ai.id DESC
+        LIMIT 1
     </select>
 
     <sql id="mentionInstanceJoins">
         FROM approval_comment_mention m
         INNER JOIN approval_comment c ON c.id = m.comment_id
-        INNER JOIN approval_instance ai ON ai.id = c.instance_id
+        INNER JOIN approval_instance ai ON ai.id = (
+            SELECT latest.id
+            FROM approval_instance latest
+            INNER JOIN approval_flow_version latest_version ON latest_version.id = latest.flow_version_id
+            WHERE latest.resource_id = c.resource_id
+              AND latest_version.organization_id = c.organization_id
+            ORDER BY latest.submit_time DESC, latest.id DESC
+            LIMIT 1
+        )
         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
     </sql>
 
@@ -65,7 +75,7 @@
 
     <sql id="commentColumns">
         c.id,
-        c.instance_id,
+        c.resource_id,
         c.parent_id,
         c.reply_to_user_id,
         ru.name AS reply_to_user_name,
@@ -78,7 +88,7 @@
         (SELECT COUNT(1)
          FROM approval_comment reply
          WHERE reply.parent_id = c.id
-           AND reply.instance_id = c.instance_id
+           AND reply.resource_id = c.resource_id
            AND reply.organization_id = c.organization_id) AS reply_count
     </sql>
 
@@ -101,7 +111,7 @@
         FROM approval_comment c
         <include refid="commentUserJoins"/>
         WHERE c.organization_id = #{organizationId}
-          AND c.instance_id = #{instanceId}
+          AND c.resource_id = #{resourceId}
           AND c.parent_id IS NULL
         <include refid="commentOrderBy"/>
     </select>
@@ -112,7 +122,7 @@
         FROM approval_comment c
         <include refid="commentUserJoins"/>
         WHERE c.organization_id = #{organizationId}
-          AND c.instance_id = #{instanceId}
+          AND c.resource_id = #{resourceId}
           AND c.parent_id IN
         <foreach collection="parentIds" item="parentId" open="(" separator="," close=")">
             #{parentId}
@@ -154,7 +164,7 @@
             SELECT 1
             FROM approval_comment_mention m
             INNER JOIN approval_comment c ON c.id = m.comment_id
-            WHERE c.instance_id = #{instanceId}
+            WHERE c.resource_id = #{resourceId}
               AND c.organization_id = #{organizationId}
               AND m.user_id = #{userId}
         )
@@ -174,7 +184,7 @@
     <delete id="deleteComments">
         DELETE FROM approval_comment
         WHERE organization_id = #{organizationId}
-          AND instance_id = #{instanceId}
+          AND resource_id = #{resourceId}
           AND id IN
         <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
             #{commentId}
@@ -198,7 +208,7 @@
             SELECT 1
             FROM approval_comment
             WHERE organization_id = #{organizationId}
-              AND instance_id = #{instanceId}
+              AND resource_id = #{resourceId}
               AND (id = #{parentId} OR parent_id = #{parentId})
               AND create_user = #{userId}
         )
