@@ -89,6 +89,7 @@
   );
 
   function handleConfirm() {
+    form.reason = form.reason.trim();
     formRef.value?.validate((errors) => {
       if (!errors) {
         emit('confirm');

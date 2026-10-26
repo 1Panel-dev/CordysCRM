@@ -3,7 +3,7 @@ import { useMessage } from 'naive-ui';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { safeFractionConvert } from '@lib/shared/method';
+import { getGenerateId, safeFractionConvert } from '@lib/shared/method';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
 import { getFormDesignConfig } from '@/api/modules';
@@ -37,6 +37,14 @@ export function createDefaultFormConfig(t: ReturnType<typeof useI18n>['t']): For
     ],
     optBtnPos: 'flex-row',
     viewSize: 'small',
+    detailTabs: [
+      {
+        id: getGenerateId(),
+        name: t('common.changeRecord'),
+        enable: true,
+        internalKey: 'CHANGE_LOG',
+      },
+    ],
     validationRules: [],
   };
 }
