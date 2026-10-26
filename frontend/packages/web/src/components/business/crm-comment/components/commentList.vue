@@ -8,6 +8,7 @@
           :can-edit="canEdit(comment)"
           :can-reply="props.canReply"
           :comment="comment"
+          :enable-attachment="props.enableAttachment"
           :submit-loading="props.submitLoading"
           @reply="handleReply"
           @edit="handleEdit"

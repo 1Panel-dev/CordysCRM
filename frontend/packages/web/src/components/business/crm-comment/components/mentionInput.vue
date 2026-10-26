@@ -14,6 +14,7 @@
             :max="10"
             directory-dnd
             @before-upload="beforeUpload"
+            @finish="handleAttachmentFinish"
           >
             <CrmIcon type="iconicon_link1" :size="16" class="text-[var(--text-n4)]" />
           </n-upload>
@@ -47,7 +48,12 @@
       <n-button :disabled="props.loading" secondary @click="handleCancel">
         {{ t('common.cancel') }}
       </n-button>
-      <n-button type="primary" :disabled="!content.trim()" :loading="props.loading" @click="handleSubmit">
+      <n-button
+        type="primary"
+        :disabled="!content.trim() || hasPendingAttachment"
+        :loading="props.loading"
+        @click="handleSubmit"
+      >
         {{ props.submitText || t('crmComment.reply') }}
       </n-button>
     </div>
@@ -101,6 +107,7 @@
       loading?: boolean;
       includeDisabled?: boolean;
       initialMentionUsers?: FollowCommentUser[];
+      initialAttachments?: AttachmentInfo[];
       enableAttachment?: boolean;
     }>(),
     {
@@ -129,6 +136,11 @@
   const rawUserOptions = ref<MentionOption[]>([]);
   const selectedMentionUsers = ref<FollowCommentUser[]>([]);
   const fileList = ref<UploadFileInfo[]>([]);
+  const temporaryAttachmentIds = ref<Record<string, string>>({});
+  const uploadingAttachmentIds = ref(new Set<string>());
+  const hasPendingAttachment = computed(
+    () => uploadingAttachmentIds.value.size > 0 || fileList.value.some((file) => file.status === 'error')
+  );
   const lastKeyword = ref('');
   const userRequestId = ref(0);
   const hasLoadedUsers = ref(false);
@@ -234,7 +246,18 @@
     content.value = '';
     selectedMentionUsers.value = [];
     fileList.value = [];
+    temporaryAttachmentIds.value = {};
+    uploadingAttachmentIds.value.clear();
     emit('cancel');
+  }
+
+  function resetAttachments() {
+    fileList.value = (props.initialAttachments || []).map((attachment) => ({
+      ...attachment,
+      status: 'finished' as const,
+    }));
+    temporaryAttachmentIds.value = {};
+    uploadingAttachmentIds.value.clear();
   }
 
   function handleSubmit() {
@@ -246,7 +269,7 @@
     emit('submit', {
       content: trimmedContent,
       mentionUserIds: getMentionUserIds(),
-      attachmentIds: fileList.value.map((file) => file.id),
+      attachmentIds: fileList.value.map((file) => temporaryAttachmentIds.value[file.id] || file.id),
     });
   }
 
@@ -263,19 +286,32 @@
   }
 
   async function uploadAttachment({ file, onFinish, onError }: UploadCustomRequestOptions) {
+    uploadingAttachmentIds.value.add(file.id);
     try {
       const result = await uploadTempAttachment(file.file);
-      fileList.value = fileList.value.map((item) =>
-        item.id === file.id ? { ...item, id: result.data[0], local: false } : item
-      );
+      const [temporaryAttachmentId] = result.data;
+      temporaryAttachmentIds.value[file.id] = temporaryAttachmentId;
       onFinish();
     } catch {
       onError();
+    } finally {
+      uploadingAttachmentIds.value.delete(file.id);
     }
+  }
+
+  function handleAttachmentFinish({ file }: { file: UploadFileInfo }) {
+    const temporaryId = temporaryAttachmentIds.value[file.id];
+    return temporaryId ? { ...file, id: temporaryId } : file;
   }
 
   function deleteAttachment(fileId: string) {
     fileList.value = fileList.value.filter((file) => file.id !== fileId);
+    Object.entries(temporaryAttachmentIds.value).forEach(([localId, temporaryId]) => {
+      if (localId === fileId || temporaryId === fileId) {
+        delete temporaryAttachmentIds.value[localId];
+        uploadingAttachmentIds.value.delete(localId);
+      }
+    });
   }
 
   function renderDisabledTag(option: NaiveMentionOption) {
@@ -350,6 +386,14 @@
     () => props.initialMentionUsers,
     (users) => {
       selectedMentionUsers.value = users ? [...users] : [];
+    },
+    { immediate: true }
+  );
+
+  watch(
+    () => props.initialAttachments,
+    () => {
+      resetAttachments();
     },
     { immediate: true }
   );

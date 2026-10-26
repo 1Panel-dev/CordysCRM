@@ -83,6 +83,7 @@
         v-model:value="editorContent"
         :mode="activeEditor.action"
         :initial-mention-users="initialEditorMentionUsers"
+        :initial-attachments="initialEditorAttachments"
         :reply-user-name="fixedEditorReplyUserName"
         :loading="submitLoading"
         :enable-attachment="props.enableAttachment"
@@ -207,6 +208,13 @@
       return [];
     }
     return findCommentById(activeEditor.value.commentId)?.mentionUsers || [];
+  });
+
+  const initialEditorAttachments = computed(() => {
+    if (activeEditor.value?.action !== 'edit') {
+      return [];
+    }
+    return findCommentById(activeEditor.value.commentId)?.attachments || [];
   });
 
   function setActiveEditor(editor: FollowCommentActiveEditor | null, content = '') {
