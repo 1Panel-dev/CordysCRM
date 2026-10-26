@@ -22,7 +22,10 @@
       :disabled="props.readonly || props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :readonly="props.readonly || props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :draggable="props.formKey === FormDesignKeyEnum.PRICE && props.fieldConfig.type === FieldTypeEnum.SUB_PRODUCT"
-      @change="emit('change', $event)"
+      @change="
+        (value, source, dataSourceFormFields, runtimeFormulaDataSource) =>
+          emit('change', value, source, dataSourceFormFields, runtimeFormulaDataSource)
+      "
     />
   </n-form-item>
 </template>
@@ -45,7 +48,13 @@
     readonly?: boolean;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: Record<string, any>[]): void;
+    (
+      e: 'change',
+      value: Record<string, any>[],
+      source?: Record<string, any>[],
+      dataSourceFormFields?: FormCreateField[],
+      runtimeFormulaDataSource?: Record<string, { parserName: boolean; options: Record<string, any>[] }>
+    ): void;
   }>();
 
   const value = defineModel<Record<string, any>[]>('value', {

@@ -1,6 +1,9 @@
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <div class="mb-[8px] min-h-0 flex-1">
+    <div
+      class="mb-[8px] min-h-0 flex-1"
+      :class="props.fieldPermissions.filter((e) => e.permissionType === 'EDIT').length ? 'pb-[64px]' : 'pb-[24px]'"
+    >
       <CrmFormCreate
         v-if="isEditing && props.fieldPermissions.length"
         ref="formCreateRef"
@@ -42,9 +45,9 @@
     </div>
     <div
       v-if="props.fieldPermissions.filter((e) => e.permissionType === 'EDIT').length"
-      class="sticky bottom-0 z-10 flex shrink-0 justify-start border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[12px_0px]"
+      class="absolute bottom-0 z-10 flex w-full shrink-0 justify-start border-t border-[var(--text-n8)] bg-[var(--text-n10)] py-[16px]"
     >
-      <n-button v-if="!isEditing" type="primary" @click="startEditing">
+      <n-button v-if="!isEditing" type="primary" ghost @click="startEditing">
         {{ t('common.edit') }}
       </n-button>
       <template v-else>

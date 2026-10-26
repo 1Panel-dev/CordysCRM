@@ -1,12 +1,10 @@
-import { EvaluateContext } from '../types';
+import type { EvaluateContext } from '../types';
 
-export default function UNION(_ctx: EvaluateContext, value: unknown): string {
-  if (!Array.isArray(value)) {
-    return '';
-  }
-
-  return value
-    .filter((item) => item !== null && item !== undefined && item !== '')
-    .map((item) => String(item))
+export default function UNION(_ctx: EvaluateContext, ...values: unknown[]): string {
+  return values
+    .flatMap((value) => (Array.isArray(value) ? value : [value]))
+    .map((item) =>
+      item === null || item === undefined || (typeof item === 'string' && item.trim() === '') ? '' : String(item)
+    )
     .join('');
 }

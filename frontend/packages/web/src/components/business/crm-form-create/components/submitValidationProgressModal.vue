@@ -2,7 +2,7 @@
   <CrmModal
     v-model:show="visible"
     :title="t('crmFormCreate.submitValidationProgressTitle')"
-    :width="352"
+    :width="480"
     :footer="false"
     :mask="false"
     :mask-closable="false"
@@ -89,7 +89,7 @@
     },
     ignored: {
       icon: 'iconicon_check_circle_filled',
-      color: 'var(--text-n4)',
+      color: 'var(--success-green)',
       label: 'crmFormCreate.submitValidationIgnored',
     },
     skipped: {

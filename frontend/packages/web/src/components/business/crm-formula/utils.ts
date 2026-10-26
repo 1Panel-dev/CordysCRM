@@ -81,12 +81,22 @@ export function hydrateIRNumberType(node: IRNode | any, fieldTypeMap: FieldTypeM
 export function getFormulaDataSourceDisplayValue(
   formulaDataSource: FormulaDataSourceMap,
   fieldId: string,
-  rawValue: any
+  rawValue: any,
+  initialOptions: any[] = []
 ): any {
-  const config = formulaDataSource[fieldId];
+  const directConfig = formulaDataSource[fieldId];
+  const fieldKey = fieldId.split('.').pop();
+  const matchingConfigs = Object.entries(formulaDataSource).filter(([key, value]) => {
+    return (key === fieldKey || key.split('.').pop() === fieldKey) && value.options?.length;
+  });
+  let config = directConfig;
+  if (!config?.options?.length && matchingConfigs.length === 1) {
+    const [, matchingConfig] = matchingConfigs[0];
+    config = matchingConfig;
+  }
 
   // 不是数据源映射字段，保持原值
-  if (!config?.parserName) {
+  if (!config?.parserName && initialOptions.length === 0) {
     return rawValue;
   }
 
@@ -95,7 +105,12 @@ export function getFormulaDataSourceDisplayValue(
     return [];
   }
 
-  const options = config.options ?? [];
+  const options = [...(config?.options ?? []), ...initialOptions].filter(
+    (option, index, allOptions) =>
+      allOptions.findIndex(
+        (candidate) => String(candidate.value ?? candidate.id) === String(option.value ?? option.id)
+      ) === index
+  );
 
   const values = Array.isArray(rawValue) ? rawValue : [rawValue];
 

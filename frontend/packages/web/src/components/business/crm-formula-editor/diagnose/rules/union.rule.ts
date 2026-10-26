@@ -1,3 +1,4 @@
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { FormulaErrorCode } from '../../config';
@@ -10,9 +11,29 @@ const UNION_RULE: FormulaFunctionRule = {
 
   diagnose({ fnNode, args }) {
     const diagnostics: FormulaDiagnostic[] = [];
-    const argument = args[0];
+    const textFieldTypes = [
+      FieldTypeEnum.INPUT,
+      FieldTypeEnum.TEXTAREA,
+      FieldTypeEnum.SELECT,
+      FieldTypeEnum.SELECT_MULTIPLE,
+      FieldTypeEnum.INPUT_MULTIPLE,
+      FieldTypeEnum.DATA_SOURCE,
+      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+      FieldTypeEnum.SERIAL_NUMBER,
+      FieldTypeEnum.LINK,
+      FieldTypeEnum.FORMULA,
+    ];
+    const isAllowedArgument = (argument: (typeof args)[number]) => {
+      if (argument.type === 'literal') return ['string', 'number'].includes(argument.valueType);
+      if (argument.type !== 'field') return false;
 
-    if (args.length !== 1 || argument?.type !== 'field' || !argument.fieldId.includes('.')) {
+      return (
+        [FieldTypeEnum.INPUT_NUMBER, ...textFieldTypes].includes(argument.fieldType as FieldTypeEnum) &&
+        Boolean(argument.fieldId)
+      );
+    };
+
+    if (args.length === 0 || !args.every(isAllowedArgument)) {
       diagnostics.push({
         type: 'error',
         code: FormulaErrorCode.INVALID_FUNCTION_CALL,
