@@ -14,12 +14,6 @@ public interface ExtApprovalInstanceMapper {
             @Param("organizationId") String organizationId);
 
     /**
-     * 按实例ID和组织查询审批实例。
-     */
-    ApprovalInstance selectInstanceById(@Param("instanceId") String instanceId,
-            @Param("organizationId") String organizationId);
-
-    /**
      * 判断当前组织的资源是否已有审批中的实例，跨执行时机和流程版本去重。
      */
     boolean existsApprovingInstance(@Param("organizationId") String organizationId, @Param("formKey") String formKey,
