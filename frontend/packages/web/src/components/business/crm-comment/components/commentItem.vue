@@ -10,9 +10,14 @@
 
     <div class="min-w-0 flex-1">
       <div class="mb-[4px] flex items-center gap-[8px]">
-        <div class="max-w-[160px] truncate font-semibold text-[var(--text-n1)]">
+        <n-tooltip :delay="300">
+          <template #trigger>
+            <div class="max-w-[160px] truncate font-semibold text-[var(--text-n1)]">
+              {{ props.comment.createUserName || '-' }}
+            </div>
+          </template>
           {{ props.comment.createUserName || '-' }}
-        </div>
+        </n-tooltip>
         <div class="shrink-0 text-[var(--text-n4)]">{{ formatCommentTime(props.comment.createTime) }}</div>
       </div>
 
@@ -78,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton } from 'naive-ui';
+  import { NButton, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
