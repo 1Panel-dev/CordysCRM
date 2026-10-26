@@ -78,7 +78,7 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
             BigDecimal bd = new BigDecimal(text);
             boolean illegal = checkIllegalDecimal(bd);
             if (illegal) {
-                throw new FormulaParseException("数值超出范围, 整数不超过9位, 小数不超过4位;");
+                throw new FormulaParseException("数值超出范围, 整数不超过10位, 小数不超过4位;");
             }
             return bd;
         } catch (NumberFormatException e) {
@@ -87,7 +87,7 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
     }
 
     /**
-     * 是否非法的数值范围 (整数不超过9位, 小数不超过4位)
+     * 是否非法的数值范围 (整数不超过10位, 小数不超过4位)
      *
      * @param value 数值
      * @return 是否非法
@@ -102,6 +102,6 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
         // 整数位
         int integerDigits = precision - scale;
 
-        return integerDigits > 9 || scale > 4;
+        return integerDigits > 10 || scale > 4;
     }
 }
