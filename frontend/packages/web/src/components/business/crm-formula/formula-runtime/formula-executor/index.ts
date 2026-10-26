@@ -158,6 +158,7 @@ export function executeFormFormula(ctx: FormulaExecutorContext): FormulaExecutor
 
   const runtimeIR = cloneIRIfNeeded(ir, cloneIR);
   const fieldTypeMap = buildFieldTypeMap(fields);
+  const formulaFields = new Map(flatAllFields(fields).map((field) => [field.id, field]));
   hydrateIRNumberType(runtimeIR, fieldTypeMap);
 
   const runtimeContext = getFormulaRuntimeContext(path);
@@ -185,7 +186,12 @@ export function executeFormFormula(ctx: FormulaExecutorContext): FormulaExecutor
   };
 
   const resolveFieldRuntimeValue = (fieldId: string, rawValue: any) => {
-    return getFormulaDataSourceDisplayValue(formulaDataSource, fieldId, rawValue);
+    const field = formulaFields.get(fieldId);
+    const initialOptions =
+      field && [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)
+        ? field.initialOptions
+        : undefined;
+    return getFormulaDataSourceDisplayValue(formulaDataSource, fieldId, rawValue, initialOptions);
   };
 
   const rawResult = evaluateIR(runtimeIR, {

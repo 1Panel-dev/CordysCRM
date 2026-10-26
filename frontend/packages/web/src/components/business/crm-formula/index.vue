@@ -42,6 +42,7 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    runtimeFormulaDataSource?: Record<string, { parserName: boolean; options: Record<string, any>[] }>;
   }>();
 
   const emit = defineEmits<{
@@ -104,7 +105,10 @@
       path: props.path,
       formDetail: props.formDetail,
       fields: fieldList.value ?? [],
-      formulaDataSource: formulaDataSource.value,
+      formulaDataSource: {
+        ...formulaDataSource.value,
+        ...props.runtimeFormulaDataSource,
+      },
       needInitDetail: props.needInitDetail,
       evaluationNow: evaluationNow.value,
       ...resultFormatOptions,
@@ -144,6 +148,8 @@
   );
 
   watch(() => props.formDetail, updateValue, { deep: true });
+
+  watch(() => [formulaDataSource.value, props.runtimeFormulaDataSource], updateValue, { deep: true });
 
   watch(
     value,

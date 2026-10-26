@@ -71,7 +71,13 @@
     draggable?: boolean;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: Record<string, any>[]): void;
+    (
+      e: 'change',
+      value: Record<string, any>[],
+      source?: Record<string, any>[],
+      dataSourceFormFields?: FormCreateField[],
+      runtimeFormulaDataSource?: Record<string, { parserName: boolean; options: Record<string, any>[] }>
+    ): void;
   }>();
 
   const { t } = useI18n();
@@ -362,7 +368,28 @@
     }
   }
 
-  let sumInitialOptions: Record<string, any>[] = []; // 记录子表格内数据源列的初始选项
+  let sumInitialOptions: Record<string, any>[] = []; // 记录子表格内成员列的初始选项
+  const dataSourceOptionsByField = ref<Record<string, Record<string, any>[]>>({});
+
+  const runtimeFormulaDataSource = computed(() => {
+    const result: Record<string, { parserName: boolean; options: Record<string, any>[] }> = {};
+    props.subFields.forEach((field) => {
+      if (![FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) return;
+
+      const fieldKey = field.businessKey || field.id;
+      const config = {
+        parserName: true,
+        options: mergeUniqueOptions(
+          mergeUniqueOptions(field.initialOptions || [], props.optionMap?.[fieldKey] || []),
+          dataSourceOptionsByField.value[fieldKey] || []
+        ),
+      };
+      result[fieldKey] = config;
+      result[field.id] = config;
+      result[`${props.parentId}.${fieldKey}`] = config;
+    });
+    return result;
+  });
 
   const pictureFields = computed<FormCreateField[]>(() => {
     return props.subFields.filter((field) => field.type === FieldTypeEnum.PICTURE);
@@ -510,11 +537,12 @@
         isProcessingDataSourceChangeMap.value[cellId] = false;
       });
     }
+    dataSourceOptionsByField.value[key] = mergeUniqueOptions(dataSourceOptionsByField.value[key] || [], source);
     sumInitialOptions = mergeUniqueOptions(
       sumInitialOptions,
       source.filter((s) => !sumInitialOptions.some((io) => io.id === s.id))
     );
-    emit('change', data.value);
+    emit('change', data.value, undefined, undefined, runtimeFormulaDataSource.value);
   }
 
   const renderColumns = computed<CrmDataTableColumn[]>(() => {
@@ -733,6 +761,7 @@
                 isSubTableRender: true,
                 needInitDetail: props.needInitDetail,
                 formDetail: props.formDetail,
+                runtimeFormulaDataSource: runtimeFormulaDataSource.value,
                 onChange: (val: any) => {
                   row[key] = val;
                 },
@@ -907,6 +936,7 @@
                 data.value.splice(rowIndex, 1);
                 if (data.value.length === 0) {
                   sumInitialOptions = [];
+                  dataSourceOptionsByField.value = {};
                 }
                 emit('change', data.value);
                 nextTick(() => {

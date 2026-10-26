@@ -9,7 +9,7 @@
       collapse-side="right"
     >
       <template #1>
-        <div class="relative flex h-full w-full p-[24px_8px_24px_24px]">
+        <div class="relative flex h-full w-full p-[24px_8px_0_24px]">
           <Transition name="approval-left-skeleton">
             <div
               v-if="leftSlotLoading"
@@ -45,14 +45,11 @@
         </div>
       </template>
       <template #2>
-        <div
-          v-if="noApproval"
-          class="h-full w-full flex-1 border-l border-[var(--text-n8)] px-[16px] py-[24px] pb-[32px]"
-        >
+        <div v-if="noApproval" class="h-full w-full flex-1 px-[16px] py-[24px] pb-[32px]">
           <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
           {{ t('crm.approval.historyTip') }}
         </div>
-        <div v-else class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
+        <div v-else class="flex h-full w-full flex-col overflow-hidden">
           <div class="shrink-0 px-[16px] pt-[24px]">
             <CrmTab
               v-model:active-tab="activeAnchor"

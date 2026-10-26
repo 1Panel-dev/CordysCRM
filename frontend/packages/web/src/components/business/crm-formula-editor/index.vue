@@ -192,9 +192,9 @@
               </div>
               <div v-if="activeFun?.name === 'UNION'" class="flex flex-col gap-[8px]">
                 <div class="flex flex-wrap items-center">
-                  <div :style="{ color: FUN_COLOR }">UNION</div>(<div :class="`text-[${ARRAY_COLOR}]`">
+                  <div :style="{ color: FUN_COLOR }">UNION</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
                     {{ t('crmFormDesign.submitValidationUnionArgument') }} </div
-                  >)
+                  >, ...)
                 </div>
                 <div class="function-desc-text">{{ t('crmFormDesign.submitValidationUnionExample') }}</div>
               </div>

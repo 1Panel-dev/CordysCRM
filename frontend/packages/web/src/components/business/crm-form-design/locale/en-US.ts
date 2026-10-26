@@ -239,8 +239,8 @@ export default {
   'crmFormDesign.formulaANDDescription':
     'Check if multiple conditions are met simultaneously. If all are met, return TRUE; otherwise, return FALSE',
   'crmFormDesign.formulaUNIONDescription':
-    'Concatenates non-empty subtable values without deduplication. Returns an empty string when no values remain.',
-  'crmFormDesign.submitValidationUnionArgument': 'Subform.Single-line text',
+    'Concatenates number/text values or arrays in order without deduplication. Empty values are treated as empty strings.',
+  'crmFormDesign.submitValidationUnionArgument': 'Number/text field or array',
   'crmFormDesign.formulaArray': 'Arrays',
   'crmFormDesign.formulaNumberArray': 'Number arrays',
   'crmFormDesign.formulaTextArray': 'Text arrays',

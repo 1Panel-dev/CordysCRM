@@ -36,7 +36,7 @@
                 :need-init-detail="needInitDetail"
                 :form-config="formConfig"
                 :readonly="!item.editable"
-                @change="(value: any, source: Record<string, any>[], dataSourceFormFields?: FormCreateField[]) => handleFieldChange(value, source, item, dataSourceFormFields)"
+                @change="(value: any, source: Record<string, any>[], dataSourceFormFields?: FormCreateField[], runtimeFormulaDataSource?: FormulaDataSourceMap) => handleFieldChange(value, source, item, dataSourceFormFields, runtimeFormulaDataSource)"
               />
             </div>
           </template>
@@ -658,8 +658,15 @@
     value: any,
     source: Record<string, any>[],
     item: FormCreateField,
-    dataSourceFormFields?: FormCreateField[]
+    dataSourceFormFields?: FormCreateField[],
+    runtimeFormulaDataSource?: FormulaDataSourceMap
   ) {
+    if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) && runtimeFormulaDataSource) {
+      Object.assign(formulaDataSource.value, runtimeFormulaDataSource);
+      unsaved.value = true;
+      return;
+    }
+
     // 控制显示规则
     if (item.showControlRules?.length) {
       initFormShowControl(value);
@@ -827,6 +834,11 @@
     ruleStatusList.value[index] = 'ignored';
     ignoreRuleIndices.value = ignoreRuleIndices.value.filter((ruleIndex) => ruleIndex !== index);
     if (ignoreRuleIndices.value.length === 0) {
+      const hasBlockingFailure = ruleStatusList.value.some(
+        (status, ruleIndex) => status === 'fail' && !validationRules.value[ruleIndex]?.allowIgnore
+      );
+      if (hasBlockingFailure) return;
+
       const resolve = resolveIgnoredRules;
       resolveIgnoredRules = null;
       progressModalVisible.value = false;
@@ -846,7 +858,6 @@
       // 顶部弹出弹窗，逐条展示校验进度
       ruleStatusList.value = rules.map(() => 'pending' as FormSubmitValidationRuleStatus);
       ignoreRuleIndices.value = [];
-      progressModalVisible.value = true;
       let failedIndex = -1;
       // 逐条串行求值并展示进度（顺序执行是设计要求）
       for (let i = 0; i < rules.length; i += 1) {
@@ -860,16 +871,17 @@
           break;
         }
       }
-      if (failedIndex >= 0) {
-        // 拦截后，后续规则标记为未执行，弹窗保留供用户查看
-        ruleStatusList.value = ruleStatusList.value.map((status, index) => (index > failedIndex ? 'skipped' : status));
-        Message.error(rules[failedIndex].message);
-        return false;
-      }
       ignoreRuleIndices.value = ruleStatusList.value
         .map((status, index) => (status === 'fail' && rules[index].allowIgnore ? index : -1))
         .filter((index) => index >= 0);
+      if (failedIndex >= 0) {
+        // 拦截后，后续规则标记为未执行，弹窗保留供用户查看
+        ruleStatusList.value = ruleStatusList.value.map((status, index) => (index > failedIndex ? 'skipped' : status));
+        progressModalVisible.value = true;
+        return false;
+      }
       if (ignoreRuleIndices.value.length) {
+        progressModalVisible.value = true;
         return await new Promise<boolean>((resolve) => {
           resolveIgnoredRules = resolve;
         });
