@@ -72,7 +72,7 @@ class ApprovalCommentServiceTest {
 
     private static final String ORG = "org-a";
     private static final String USER = "user-a";
-    private static final String INSTANCE = "instance-a";
+    private static final String RESOURCE = "resource-a";
     private static ApplicationContext previousContext;
     private static MessageSource previousMessageSource;
     private static DefaultUidGenerator uidGenerator;
@@ -128,8 +128,9 @@ class ApprovalCommentServiceTest {
         ReflectionTestUtils.setField(service, "attachmentService", attachmentService);
         ReflectionTestUtils.setField(service, "fileCommonService", fileCommonService);
         instance = new ApprovalInstance();
-        instance.setId(INSTANCE);
-        when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(instance);
+        instance.setId("instance-a");
+        instance.setResourceId(RESOURCE);
+        when(extCommentMapper.selectLatestInstance(RESOURCE, ORG)).thenReturn(instance);
     }
 
     @AfterEach
@@ -140,7 +141,7 @@ class ApprovalCommentServiceTest {
     @Test
     void injectsApprovalMapperWhenFollowCommentMapperIsAlsoRegistered() {
         ExtCommentMapper followCommentMapper = mock(ExtCommentMapper.class);
-        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(true);
+        when(approvalResourceService.hasViewPermission(RESOURCE, USER, ORG)).thenReturn(true);
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
             context.getBeanFactory().registerSingleton("extCommentMapper", followCommentMapper);
             context.getBeanFactory().registerSingleton("extApprovalCommentMapper", extCommentMapper);
@@ -154,9 +155,9 @@ class ApprovalCommentServiceTest {
             context.registerBean(ApprovalCommentService.class);
             context.refresh();
 
-            assertTrue(context.getBean(ApprovalCommentService.class).hasCommentPermission(INSTANCE, USER, ORG));
+            assertTrue(context.getBean(ApprovalCommentService.class).hasCommentPermission(RESOURCE, USER, ORG));
 
-            verify(extCommentMapper).selectInstance(INSTANCE, ORG);
+            verify(extCommentMapper).selectLatestInstance(RESOURCE, ORG);
             verifyNoInteractions(followCommentMapper);
         }
     }
@@ -165,38 +166,38 @@ class ApprovalCommentServiceTest {
     @CsvSource({ "false, false, false", "true, false, true", "false, true, true" })
     void returnsCommentPermissionFromBusinessOrEffectiveMentions(boolean businessOrTaskPermission,
             boolean mentioned, boolean expected) {
-        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG))
+        when(approvalResourceService.hasViewPermission(RESOURCE, USER, ORG))
                 .thenReturn(businessOrTaskPermission);
-        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(mentioned);
+        when(extCommentMapper.existsMention(RESOURCE, USER, ORG)).thenReturn(mentioned);
 
-        assertEquals(expected, service.hasCommentPermission(INSTANCE, USER, ORG));
+        assertEquals(expected, service.hasCommentPermission(RESOURCE, USER, ORG));
 
-        verify(approvalResourceService).hasInstanceViewPermission(instance, USER, ORG);
+        verify(approvalResourceService).hasViewPermission(RESOURCE, USER, ORG);
         if (!businessOrTaskPermission) {
-            verify(extCommentMapper).existsMention(INSTANCE, USER, ORG);
+            verify(extCommentMapper).existsMention(RESOURCE, USER, ORG);
         }
     }
 
     @ParameterizedTest
-    @CsvSource({ "missing-instance, org-a", "instance-a, other-org" })
-    void returnsNoCommentPermissionForUnknownInstanceOrAnotherOrganization(String instanceId, String orgId) {
-        assertFalse(service.hasCommentPermission(instanceId, USER, orgId));
+    @CsvSource({ "missing-resource, org-a", "resource-a, other-org" })
+    void returnsNoCommentPermissionForUnknownResourceOrAnotherOrganization(String resourceId, String orgId) {
+        assertFalse(service.hasCommentPermission(resourceId, USER, orgId));
 
-        verify(extCommentMapper).selectInstance(instanceId, orgId);
+        verify(extCommentMapper).selectLatestInstance(resourceId, orgId);
         verifyNoInteractions(approvalResourceService, commentMapper, mentionMapper);
         verify(extCommentMapper, never()).existsMention(anyString(), anyString(), anyString());
     }
 
     @ParameterizedTest
     @ValueSource(booleans = { false, true })
-    void rejectsUnknownInstanceOrMissingAllPermissions(boolean knownInstance) {
-        if (!knownInstance) {
-            when(extCommentMapper.selectInstance(INSTANCE, ORG)).thenReturn(null);
+    void rejectsUnknownResourceOrMissingAllPermissions(boolean knownResource) {
+        if (!knownResource) {
+            when(extCommentMapper.selectLatestInstance(RESOURCE, ORG)).thenReturn(null);
         }
 
         assertThrows(GenericException.class, () -> service.add(addRequest(), USER, ORG));
 
-        verify(extCommentMapper).selectInstance(INSTANCE, ORG);
+        verify(extCommentMapper).selectLatestInstance(RESOURCE, ORG);
         verifyNoInteractions(commentMapper, mentionMapper);
     }
 
@@ -204,17 +205,17 @@ class ApprovalCommentServiceTest {
     @ValueSource(booleans = { false, true })
     void allowsBusinessOrTaskPermissionAndEffectiveMention(boolean businessOrTaskPermission) {
         ApprovalCommentResponse detail = detail("comment-a");
-        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenReturn(List.of(detail));
-        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG))
+        when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenReturn(List.of(detail));
+        when(approvalResourceService.hasViewPermission(RESOURCE, USER, ORG))
                 .thenReturn(businessOrTaskPermission);
-        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(!businessOrTaskPermission);
+        when(extCommentMapper.existsMention(RESOURCE, USER, ORG)).thenReturn(!businessOrTaskPermission);
 
         assertEquals(List.of(detail), service.page(pageRequest(), USER, ORG).getList());
 
         assertTrue(detail.isEditable());
-        verify(approvalResourceService).hasInstanceViewPermission(instance, USER, ORG);
+        verify(approvalResourceService).hasViewPermission(RESOURCE, USER, ORG);
         if (!businessOrTaskPermission) {
-            verify(extCommentMapper).existsMention(INSTANCE, USER, ORG);
+            verify(extCommentMapper).existsMention(RESOURCE, USER, ORG);
         }
     }
 
@@ -253,7 +254,7 @@ class ApprovalCommentServiceTest {
             assertNull(PageHelper.getLocalPage());
             return 18L;
         });
-        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
+        when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenAnswer(invocation -> {
             Page<?> page = PageHelper.getLocalPage();
             assertEquals(2, page.getPageNum());
             assertEquals(1, page.getPageSize());
@@ -262,7 +263,7 @@ class ApprovalCommentServiceTest {
             PageHelper.clearPage();
             return List.of(root);
         });
-        when(extCommentMapper.selectChildren(INSTANCE, List.of(root.getId()), ORG, false))
+        when(extCommentMapper.selectChildren(RESOURCE, List.of(root.getId()), ORG, false))
                 .thenAnswer(invocation -> {
                     assertNull(PageHelper.getLocalPage());
                     return List.of(reply, anotherReply);
@@ -277,7 +278,7 @@ class ApprovalCommentServiceTest {
         assertEquals(18L, result.getCommentCount());
         ArgumentCaptor<ApprovalComment> criteria = ArgumentCaptor.forClass(ApprovalComment.class);
         verify(commentMapper).countByExample(criteria.capture());
-        assertEquals(INSTANCE, criteria.getValue().getInstanceId());
+        assertEquals(RESOURCE, criteria.getValue().getResourceId());
         assertEquals(ORG, criteria.getValue().getOrganizationId());
         assertNull(criteria.getValue().getParentId());
         assertEquals(2L, result.getCurrent());
@@ -306,7 +307,7 @@ class ApprovalCommentServiceTest {
         assertFalse(replies.getFirst().isEditable());
         assertTrue(replies.getFirst().getReplies().isEmpty());
         assertEquals(0L, replies.getFirst().getReplyCount());
-        verify(extCommentMapper).selectChildren(INSTANCE, List.of(root.getId()), ORG, false);
+        verify(extCommentMapper).selectChildren(RESOURCE, List.of(root.getId()), ORG, false);
         verify(extCommentMapper).selectMentionUsers(List.of(root.getId(), reply.getId(), anotherReply.getId()), ORG);
     }
 
@@ -323,8 +324,8 @@ class ApprovalCommentServiceTest {
         ApprovalCommentResponse secondReply = detail("reply-b");
         secondReply.setParentId(second.getId());
         List<String> parentIds = List.of(first.getId(), second.getId(), noReply.getId());
-        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenReturn(List.of(first, second, noReply));
-        when(extCommentMapper.selectChildren(INSTANCE, parentIds, ORG, false))
+        when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenReturn(List.of(first, second, noReply));
+        when(extCommentMapper.selectChildren(RESOURCE, parentIds, ORG, false))
                 .thenReturn(List.of(secondReply, firstReply, nextReply));
 
         List<ApprovalCommentResponse> comments = service.page(pageRequest(), USER, ORG).getList();
@@ -336,7 +337,38 @@ class ApprovalCommentServiceTest {
         assertEquals(1L, second.getReplyCount());
         assertTrue(noReply.getReplies().isEmpty());
         assertEquals(0L, noReply.getReplyCount());
-        verify(extCommentMapper).selectChildren(INSTANCE, parentIds, ORG, false);
+        verify(extCommentMapper).selectChildren(RESOURCE, parentIds, ORG, false);
+    }
+
+    @Test
+    void resubmissionKeepsResourceCommentsAndAllowsReplyingToPreviousRound() {
+        allowExistingPermission();
+        instance.setId("instance-resubmitted");
+        ApprovalCommentResponse latest = detail("comment-latest");
+        latest.setCreateTime(200L);
+        ApprovalCommentResponse previous = detail("comment-previous");
+        previous.setCreateTime(100L);
+        when(commentMapper.countByExample(any())).thenReturn(2L);
+        when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenReturn(List.of(latest, previous));
+
+        PagerWithCommentCount<List<ApprovalCommentResponse>> result = service.page(pageRequest(), USER, ORG);
+
+        assertEquals(List.of(latest, previous), result.getList());
+        assertEquals(2L, result.getCommentCount());
+        when(extCommentMapper.selectCommentForUpdate(previous.getId(), ORG))
+                .thenReturn(comment(previous.getId(), "previous-author"));
+        when(extCommentMapper.selectDetail(anyString(), eq(ORG)))
+                .thenAnswer(invocation -> detail(invocation.getArgument(0)));
+        ApprovalCommentAddRequest request = addRequest();
+        request.setParentId(previous.getId());
+
+        service.add(request, USER, ORG);
+
+        ArgumentCaptor<ApprovalComment> saved = ArgumentCaptor.forClass(ApprovalComment.class);
+        verify(commentMapper).insert(saved.capture());
+        assertEquals(RESOURCE, saved.getValue().getResourceId());
+        assertEquals(previous.getId(), saved.getValue().getParentId());
+        assertEquals("previous-author", saved.getValue().getReplyToUserId());
     }
 
     @ParameterizedTest
@@ -347,7 +379,7 @@ class ApprovalCommentServiceTest {
         request.setCurrent(4);
         request.setPageSize(5);
         when(commentMapper.countByExample(any())).thenReturn(commentCount);
-        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
+        when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenAnswer(invocation -> {
             Page<?> page = PageHelper.getLocalPage();
             page.setTotal(total);
             return List.of();
@@ -372,18 +404,18 @@ class ApprovalCommentServiceTest {
         ApprovalCommentPageRequest request = pageRequest();
         request.setSort(new SortRequest("createTime", direction));
         ApprovalCommentResponse root = detail("comment-a");
-        when(extCommentMapper.selectPage(INSTANCE, ORG, asc)).thenReturn(List.of(root));
+        when(extCommentMapper.selectPage(RESOURCE, ORG, asc)).thenReturn(List.of(root));
 
         service.page(request, USER, ORG);
 
-        verify(extCommentMapper).selectPage(INSTANCE, ORG, asc);
-        verify(extCommentMapper).selectChildren(INSTANCE, List.of(root.getId()), ORG, asc);
+        verify(extCommentMapper).selectPage(RESOURCE, ORG, asc);
+        verify(extCommentMapper).selectChildren(RESOURCE, List.of(root.getId()), ORG, asc);
         assertNull(PageHelper.getLocalPage());
     }
 
     @Test
     void deniedPageDoesNotStartPaginationOrReadComments() {
-        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenAnswer(invocation -> {
+        when(approvalResourceService.hasViewPermission(RESOURCE, USER, ORG)).thenAnswer(invocation -> {
             assertNull(PageHelper.getLocalPage());
             return false;
         });
@@ -399,7 +431,7 @@ class ApprovalCommentServiceTest {
     @Test
     void rootQueryFailureClearsPaginationContext() {
         allowExistingPermission();
-        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenAnswer(invocation -> {
+        when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenAnswer(invocation -> {
             assertNotNull(PageHelper.getLocalPage());
             throw new IllegalStateException("查询失败");
         });
@@ -411,10 +443,10 @@ class ApprovalCommentServiceTest {
     }
 
     @Test
-    void rejectsReplyToAnotherApprovalInstance() {
+    void rejectsReplyToAnotherResource() {
         allowExistingPermission();
         ApprovalComment parent = comment("parent-a", "other-user");
-        parent.setInstanceId("instance-b");
+        parent.setResourceId("resource-b");
         when(extCommentMapper.selectCommentForUpdate("parent-a", ORG)).thenReturn(parent);
         ApprovalCommentAddRequest request = addRequest();
         request.setParentId("parent-a");
@@ -473,7 +505,7 @@ class ApprovalCommentServiceTest {
     @Test
     void allowsFinishingOwnEditWhenItRemovesTheLastMentionGrant() {
         when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
-        when(extCommentMapper.existsMention(INSTANCE, USER, ORG)).thenReturn(true, false);
+        when(extCommentMapper.existsMention(RESOURCE, USER, ORG)).thenReturn(true, false);
         when(mentionMapper.select(any())).thenReturn(List.of(mention("mention-a", "comment-a", USER)));
         ApprovalCommentResponse detail = detail("comment-a");
         when(extCommentMapper.selectDetail("comment-a", ORG)).thenReturn(detail);
@@ -484,8 +516,8 @@ class ApprovalCommentServiceTest {
         verify(commentMapper).update(updated.capture());
         assertEquals("修改后的评论", updated.getValue().getContent());
         assertEquals(USER, updated.getValue().getUpdateUser());
-        assertFalse(service.hasCommentPermission(INSTANCE, USER, ORG));
-        verify(extCommentMapper, times(2)).existsMention(INSTANCE, USER, ORG);
+        assertFalse(service.hasCommentPermission(RESOURCE, USER, ORG));
+        verify(extCommentMapper, times(2)).existsMention(RESOURCE, USER, ORG);
         verify(mentionMapper).deleteByIds(List.of("mention-a"));
         verifyNoInteractions(approvalCommentNoticeService);
     }
@@ -498,7 +530,7 @@ class ApprovalCommentServiceTest {
         reply.setParentId("comment-a");
         when(commentMapper.selectListByLambda(any())).thenAnswer(invocation -> {
             LambdaQueryWrapper<ApprovalComment> query = invocation.getArgument(0);
-            assertTrue(query.getParams().containsValue(INSTANCE));
+            assertTrue(query.getParams().containsValue(RESOURCE));
             assertTrue(query.getParams().containsValue(ORG));
             assertTrue(query.getParams().containsValue("comment-a"));
             return List.of(reply);
@@ -507,7 +539,7 @@ class ApprovalCommentServiceTest {
         service.delete("comment-a", USER, ORG);
 
         verify(extCommentMapper).deleteMentions(List.of("comment-a", "reply-a"), ORG);
-        verify(extCommentMapper).deleteComments(List.of("comment-a", "reply-a"), INSTANCE, ORG);
+        verify(extCommentMapper).deleteComments(List.of("comment-a", "reply-a"), RESOURCE, ORG);
     }
 
     @Test
@@ -620,7 +652,7 @@ class ApprovalCommentServiceTest {
             ArgumentCaptor<ApprovalComment> comments = ArgumentCaptor.forClass(ApprovalComment.class);
             verify(commentMapper, times(2)).insert(comments.capture());
             assertNotEquals(comments.getAllValues().getFirst().getId(), comments.getAllValues().getLast().getId());
-            assertTrue(comments.getAllValues().stream().allMatch(comment -> INSTANCE.equals(comment.getInstanceId())));
+            assertTrue(comments.getAllValues().stream().allMatch(comment -> RESOURCE.equals(comment.getResourceId())));
             ArgumentCaptor<List<ApprovalCommentMention>> mentions = ArgumentCaptor.forClass((Class) List.class);
             verify(mentionMapper, times(2)).batchInsert(mentions.capture());
             for (int i = 0; i < 2; i++) {
@@ -641,7 +673,7 @@ class ApprovalCommentServiceTest {
     }
 
     @Test
-    void mentionContextReturnsTheOriginalApprovalInstance() {
+    void mentionContextReturnsTheLatestResourceApprovalInstance() {
         instance.setResourceId("resource-a");
         when(extCommentMapper.selectMentionInstance("mention-a", USER, ORG)).thenReturn(instance);
 
@@ -711,8 +743,8 @@ class ApprovalCommentServiceTest {
         ApprovalCommentResponse root = detail("comment-a");
         ApprovalCommentResponse reply = detail("reply-a");
         reply.setParentId(root.getId());
-        when(extCommentMapper.selectPage(INSTANCE, ORG, false)).thenReturn(List.of(root));
-        when(extCommentMapper.selectChildren(INSTANCE, List.of(root.getId()), ORG, false)).thenReturn(List.of(reply));
+        when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenReturn(List.of(root));
+        when(extCommentMapper.selectChildren(RESOURCE, List.of(root.getId()), ORG, false)).thenReturn(List.of(reply));
         when(attachmentMapper.selectListByLambda(any())).thenAnswer(invocation -> {
             LambdaQueryWrapper<Attachment> query = invocation.getArgument(0);
             assertEquals(Map.of("array_resource_id", List.of("comment-a", "reply-a"), "organization_id_eq", ORG),
@@ -896,12 +928,12 @@ class ApprovalCommentServiceTest {
     }
 
     private void allowExistingPermission() {
-        when(approvalResourceService.hasInstanceViewPermission(instance, USER, ORG)).thenReturn(true);
+        when(approvalResourceService.hasViewPermission(RESOURCE, USER, ORG)).thenReturn(true);
     }
 
     private ApprovalCommentPageRequest pageRequest() {
         ApprovalCommentPageRequest request = new ApprovalCommentPageRequest();
-        request.setInstanceId(INSTANCE);
+        request.setResourceId(RESOURCE);
         request.setCurrent(1);
         request.setPageSize(10);
         return request;
@@ -909,7 +941,7 @@ class ApprovalCommentServiceTest {
 
     private ApprovalCommentAddRequest addRequest() {
         ApprovalCommentAddRequest request = new ApprovalCommentAddRequest();
-        request.setInstanceId(INSTANCE);
+        request.setResourceId(RESOURCE);
         request.setContent("评论内容");
         return request;
     }
@@ -925,7 +957,7 @@ class ApprovalCommentServiceTest {
     private ApprovalComment comment(String id, String author) {
         ApprovalComment comment = new ApprovalComment();
         comment.setId(id);
-        comment.setInstanceId(INSTANCE);
+        comment.setResourceId(RESOURCE);
         comment.setOrganizationId(ORG);
         comment.setCreateUser(author);
         return comment;
@@ -934,7 +966,7 @@ class ApprovalCommentServiceTest {
     private ApprovalCommentResponse detail(String id) {
         ApprovalCommentResponse response = new ApprovalCommentResponse();
         response.setId(id);
-        response.setInstanceId(INSTANCE);
+        response.setResourceId(RESOURCE);
         response.setCreateUser(USER);
         return response;
     }

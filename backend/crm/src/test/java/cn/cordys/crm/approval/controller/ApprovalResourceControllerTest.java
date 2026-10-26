@@ -50,11 +50,11 @@ class ApprovalResourceControllerTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { false, true })
-    void recordDetailIncludesCurrentInstancesCommentPermission(boolean commentable) {
+    void recordDetailIncludesResourceCommentPermission(boolean commentable) {
         ApprovalInstanceDetail detail = new ApprovalInstanceDetail();
         detail.setId("instance-1");
         when(instanceService.getLatestApprovalInstanceDetail("resource-1", "org-1")).thenReturn(detail);
-        when(commentService.hasCommentPermission("instance-1", "user-1", "org-1")).thenReturn(commentable);
+        when(commentService.hasCommentPermission("resource-1", "user-1", "org-1")).thenReturn(commentable);
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
                 var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-1");
@@ -64,7 +64,7 @@ class ApprovalResourceControllerTest {
 
             assertEquals(commentable, detail.isCommentable());
             verify(resourceService).checkViewPermission("resource-1");
-            verify(commentService).hasCommentPermission("instance-1", "user-1", "org-1");
+            verify(commentService).hasCommentPermission("resource-1", "user-1", "org-1");
         }
     }
 
@@ -82,15 +82,15 @@ class ApprovalResourceControllerTest {
     }
 
     @Test
-    void mentionContextOpensItsHistoricalInstanceInsteadOfTheResourcesLatestInstance() {
-        ApprovalInstance historical = new ApprovalInstance();
-        historical.setId("instance-history");
-        historical.setResourceId("resource-1");
+    void mentionContextOpensResourcesLatestInstanceWithResourceCommentPermission() {
+        ApprovalInstance latest = new ApprovalInstance();
+        latest.setId("instance-latest");
+        latest.setResourceId("resource-1");
         ApprovalInstanceDetail detail = new ApprovalInstanceDetail();
-        detail.setId(historical.getId());
-        when(commentService.getMentionInstance("mention-1", "resource-1", "user-1", "org-1")).thenReturn(historical);
-        when(instanceService.getApprovalInstanceDetail(historical, "org-1")).thenReturn(detail);
-        when(commentService.hasCommentPermission(historical.getId(), "user-1", "org-1")).thenReturn(true);
+        detail.setId(latest.getId());
+        when(commentService.getMentionInstance("mention-1", "resource-1", "user-1", "org-1")).thenReturn(latest);
+        when(instanceService.getApprovalInstanceDetail(latest, "org-1")).thenReturn(detail);
+        when(commentService.hasCommentPermission("resource-1", "user-1", "org-1")).thenReturn(true);
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
              var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-1");
@@ -100,7 +100,7 @@ class ApprovalResourceControllerTest {
 
             assertTrue(detail.isCommentable());
             verify(commentService).getMentionInstance("mention-1", "resource-1", "user-1", "org-1");
-            verify(instanceService).getApprovalInstanceDetail(historical, "org-1");
+            verify(instanceService).getApprovalInstanceDetail(latest, "org-1");
             verify(instanceService, never()).getLatestApprovalInstanceDetail(anyString(), anyString());
             verifyNoInteractions(resourceService);
         }

@@ -112,7 +112,7 @@ public class ApprovalInstanceService {
         instanceDetail.setCurrentNodeId(latestInstance.getCurrentNodeId());
         instanceDetail.setComment(latestInstance.getComment());
         ApprovalComment commentCriteria = new ApprovalComment();
-        commentCriteria.setInstanceId(latestInstance.getId());
+        commentCriteria.setResourceId(latestInstance.getResourceId());
         commentCriteria.setOrganizationId(currentOrgId);
         instanceDetail.setCommentCount(approvalCommentMapper.countByExample(commentCriteria));
         return setCurrentNodeFieldPermissions(instanceDetail);

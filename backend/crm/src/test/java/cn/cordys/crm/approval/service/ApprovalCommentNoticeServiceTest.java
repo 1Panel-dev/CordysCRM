@@ -70,7 +70,7 @@ class ApprovalCommentNoticeServiceTest {
 
         verifyNoInteractions(noticeSender);
         if (configured) {
-            verify(commentMapper).selectInstance("instance-a", "org-a");
+            verify(commentMapper).selectLatestInstance("resource-a", "org-a");
         } else {
             verifyNoInteractions(commentMapper);
         }
@@ -78,7 +78,7 @@ class ApprovalCommentNoticeServiceTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void differentCommentsInSameInstanceSendSeparateNoticesIncludingSelfMentions() {
+    void differentCommentsInSameResourceSendSeparateNoticesIncludingSelfMentions() {
         enableNotice();
 
         service.sendMentionNotice(comment("comment-a"), List.of("editor"));
@@ -93,7 +93,7 @@ class ApprovalCommentNoticeServiceTest {
         assertEquals("CONTRACT", params.getValue().get("resourceType"));
         assertFalse(params.getValue().containsKey("type"));
         assertFalse(params.getValue().containsKey("state"));
-        verify(commentMapper, times(2)).selectInstance("instance-a", "org-a");
+        verify(commentMapper, times(2)).selectLatestInstance("resource-a", "org-a");
     }
 
     @ParameterizedTest
@@ -156,13 +156,13 @@ class ApprovalCommentNoticeServiceTest {
 
     private void enableNotice() {
         when(messageTaskMapper.getMessageByModuleAndEvent(MODULE, EVENT, "org-a")).thenReturn(new MessageTask());
-        when(commentMapper.selectInstance("instance-a", "org-a")).thenReturn(instance);
+        when(commentMapper.selectLatestInstance("resource-a", "org-a")).thenReturn(instance);
     }
 
     private ApprovalComment comment(String id) {
         ApprovalComment comment = new ApprovalComment();
         comment.setId(id);
-        comment.setInstanceId("instance-a");
+        comment.setResourceId("resource-a");
         comment.setOrganizationId("org-a");
         comment.setContent("请确认付款条款。");
         comment.setCreateUser("author");

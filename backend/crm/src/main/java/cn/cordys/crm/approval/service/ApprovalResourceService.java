@@ -1267,7 +1267,7 @@ public class ApprovalResourceService {
     /**
      * 校验用户是否有权限查看审批详情
      */
-    private boolean hasViewPermission(String resourceId, String userId, String orgId) {
+    public boolean hasViewPermission(String resourceId, String userId, String orgId) {
         if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(userId)) {
             return false;
         }

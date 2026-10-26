@@ -67,7 +67,6 @@
                 v-if="historicalApprovalInstances.length"
                 v-model:expanded-names="expandedHistoryInstanceNames"
                 class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
-                @update:expanded-names="handleHistoryExpandedNames"
               >
                 <template #arrow><div></div></template>
                 <n-collapse-item v-for="instance in historicalApprovalInstances" :key="instance.id" :name="instance.id">
@@ -80,31 +79,31 @@
                         class="font-normal"
                       />
                       <div class="text-[14px] font-semibold text-[var(--text-n1)]">
-                        {{ t('crm.approval.previousRoundTitle', { nodeName: instance.currentNodeName }) }}
+                        {{
+                          t('crm.approval.previousRoundTitle', {
+                            nodeName: getCurrentNode(instance)?.nodeName || instance.nodes.at(-1)?.nodeName || '',
+                          })
+                        }}
                       </div>
                     </div>
                   </template>
                   <template #header-extra="{ collapsed }">
                     <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
                   </template>
-                  <n-spin :show="historyLoadingIds.includes(instance.id)">
-                    <CrmApprovalLine
-                      v-if="historyApprovalDetails[instance.id]"
-                      :nodes="historyApprovalDetails[instance.id]?.nodes || []"
-                      :submitter="{
-                        submitAvatar: historyApprovalDetails[instance.id]?.submitAvatar,
-                        submitter: historyApprovalDetails[instance.id]?.submitter,
-                        submitTime: historyApprovalDetails[instance.id]?.submitTime,
-                        submitterId: historyApprovalDetails[instance.id]?.submitterId,
-                        comment: historyApprovalDetails[instance.id]?.comment,
-                      }"
-                      :currentApprovalNode="getCurrentNode(historyApprovalDetails[instance.id])"
-                      :currentApprovalNodeIndex="getCurrentNodeIndex(historyApprovalDetails[instance.id])"
-                      :finally-result="historyApprovalDetails[instance.id]?.approvalStatus"
-                      class="bg-[var(--text-n10)] p-[8px]"
-                    />
-                    <div v-else class="h-[24px]"></div>
-                  </n-spin>
+                  <CrmApprovalLine
+                    :nodes="instance.nodes"
+                    :submitter="{
+                      submitAvatar: instance.submitAvatar,
+                      submitter: instance.submitter,
+                      submitTime: instance.submitTime,
+                      submitterId: instance.submitterId,
+                      comment: instance.comment,
+                    }"
+                    :currentApprovalNode="getCurrentNode(instance)"
+                    :currentApprovalNodeIndex="getCurrentNodeIndex(instance)"
+                    :finally-result="instance.approvalStatus"
+                    class="bg-[var(--text-n10)] p-[8px]"
+                  />
                 </n-collapse-item>
               </n-collapse>
               <CrmApprovalLine
@@ -133,7 +132,7 @@
                 :can-reply="approvalInfo.commentable"
                 enable-attachment
                 show-time-sort
-                :source-id="approvalInfo.id"
+                :source-id="props.sourceId"
                 class="mt-[24px]"
               />
             </div>
@@ -326,7 +325,6 @@
     ApprovalNode,
     ApprovalNodeTaskNode,
     ApprovalProcessDetail,
-    ApprovalResourceInstance,
   } from '@lib/shared/models/system/process';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -350,7 +348,6 @@
     getApprovalConfigDetail,
     getApprovalResourceDetail,
     getApprovalResourceInstanceDetail,
-    getApprovalResourceInstances,
     rejectApproval,
     revokeApproval,
     revokeResource,
@@ -402,9 +399,7 @@
   const userStore = useUserStore();
 
   const approvalInfo = ref<ApprovalDetail>();
-  const historicalApprovalInstances = ref<ApprovalResourceInstance[]>([]);
-  const historyApprovalDetails = ref<Record<string, ApprovalDetail>>({});
-  const historyLoadingIds = ref<string[]>([]);
+  const historicalApprovalInstances = ref<ApprovalDetail[]>([]);
   const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
   const leftSlotLoading = ref(props.leftLoading ?? false);
@@ -620,32 +615,6 @@
     return detail?.nodes.find((node) => node.nodeId === detail.currentNodeId);
   }
 
-  async function handleHistoryExpandedNames(names: Array<string | number>) {
-    expandedHistoryInstanceNames.value = names;
-    const expandedIds = names.map(String);
-    const instancesToLoad = historicalApprovalInstances.value.filter(
-      (instance) =>
-        expandedIds.includes(instance.id) &&
-        !historyApprovalDetails.value[instance.id] &&
-        !historyLoadingIds.value.includes(instance.id)
-    );
-
-    await Promise.all(
-      instancesToLoad.map(async (instance) => {
-        historyLoadingIds.value.push(instance.id);
-        try {
-          historyApprovalDetails.value[instance.id] = await getApprovalResourceInstanceDetail(instance.id);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-          message.error(t('crm.approval.historyDetailLoadFailed'));
-        } finally {
-          historyLoadingIds.value = historyLoadingIds.value.filter((id) => id !== instance.id);
-        }
-      })
-    );
-  }
-
   async function initApprovalDetail() {
     try {
       approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
@@ -657,13 +626,13 @@
       );
       currentApprovalNode.value = approvalInfo.value?.nodes[currentApprovalNodeIndex.value];
       try {
-        const instances = await getApprovalResourceInstances(props.sourceId);
-        historicalApprovalInstances.value = instances.filter((instance) => instance.id !== approvalInfo.value?.id);
-        historyApprovalDetails.value = {};
+        historicalApprovalInstances.value = await getApprovalResourceInstanceDetail(props.sourceId);
+        expandedHistoryInstanceNames.value = [];
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
         historicalApprovalInstances.value = [];
+        message.error(t('crm.approval.historyDetailLoadFailed'));
       }
     } catch (error) {
       // eslint-disable-next-line no-console

@@ -65,19 +65,19 @@ public class ApprovalCommentService {
 
     public PagerWithCommentCount<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId,
             String orgId) {
-        String instanceId = request.getInstanceId();
-        checkPermission(instanceId, userId, orgId);
+        String resourceId = request.getResourceId();
+        checkPermission(resourceId, userId, orgId);
         ApprovalComment criteria = new ApprovalComment();
-        criteria.setInstanceId(instanceId);
+        criteria.setResourceId(resourceId);
         criteria.setOrganizationId(orgId);
         long commentCount = commentMapper.countByExample(criteria);
         boolean asc = request.getSort() != null && "asc".equals(request.getSort().getType());
         try (Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize())) {
-            List<ApprovalCommentResponse> comments = extCommentMapper.selectPage(instanceId, orgId, asc);
+            List<ApprovalCommentResponse> comments = extCommentMapper.selectPage(resourceId, orgId, asc);
             if (comments.isEmpty()) {
                 return PageUtils.setPageInfoWithCommentCount(page, comments, commentCount);
             }
-            List<ApprovalCommentResponse> children = extCommentMapper.selectChildren(instanceId,
+            List<ApprovalCommentResponse> children = extCommentMapper.selectChildren(resourceId,
                     comments.stream().map(ApprovalCommentResponse::getId).toList(), orgId, asc);
             List<ApprovalCommentResponse> allComments = new ArrayList<>(comments);
             allComments.addAll(children);
@@ -94,15 +94,15 @@ public class ApprovalCommentService {
     }
 
     public ApprovalCommentResponse add(ApprovalCommentAddRequest request, String userId, String orgId) {
-        checkPermission(request.getInstanceId(), userId, orgId);
+        checkPermission(request.getResourceId(), userId, orgId);
         String parentId = StringUtils.trimToNull(request.getParentId());
-        String replyToUserId = checkReply(request.getInstanceId(), parentId, request.getReplyToUserId(), orgId);
+        String replyToUserId = checkReply(request.getResourceId(), parentId, request.getReplyToUserId(), orgId);
         List<String> mentionedUserIds = checkMentionUsers(request.getMentionedUserIds(), orgId);
 
         long now = System.currentTimeMillis();
         ApprovalComment comment = new ApprovalComment();
         comment.setId(IDGenerator.nextStr());
-        comment.setInstanceId(request.getInstanceId());
+        comment.setResourceId(request.getResourceId());
         comment.setParentId(parentId);
         comment.setReplyToUserId(replyToUserId);
         comment.setContent(request.getContent());
@@ -151,21 +151,21 @@ public class ApprovalCommentService {
         if (comment.getParentId() == null) {
             LambdaQueryWrapper<ApprovalComment> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(ApprovalComment::getParentId, comment.getId())
-                    .eq(ApprovalComment::getInstanceId, comment.getInstanceId())
+                    .eq(ApprovalComment::getResourceId, comment.getResourceId())
                     .eq(ApprovalComment::getOrganizationId, orgId);
             commentMapper.selectListByLambda(wrapper).forEach(child -> ids.add(child.getId()));
         }
         removeAttachments(attachmentMapper.selectListByLambda(new LambdaQueryWrapper<Attachment>()
                 .in(Attachment::getResourceId, ids).eq(Attachment::getOrganizationId, orgId)));
         extCommentMapper.deleteMentions(ids, orgId);
-        extCommentMapper.deleteComments(ids, comment.getInstanceId(), orgId);
+        extCommentMapper.deleteComments(ids, comment.getResourceId(), orgId);
     }
 
     /**
-     * 判断当前用户是否具有指定审批实例的评论权限。
+     * 判断当前用户是否具有指定业务资源的评论权限。
      */
-    public boolean hasCommentPermission(String instanceId, String userId, String orgId) {
-        ApprovalInstance instance = extCommentMapper.selectInstance(instanceId, orgId);
+    public boolean hasCommentPermission(String resourceId, String userId, String orgId) {
+        ApprovalInstance instance = extCommentMapper.selectLatestInstance(resourceId, orgId);
         return instance != null && hasCommentPermission(instance, userId, orgId);
     }
 
@@ -179,12 +179,12 @@ public class ApprovalCommentService {
 
     private boolean hasCommentPermission(ApprovalInstance instance, String userId, String orgId) {
         // 评论权限: 业务审批数据的查看权限或评论被@用户
-        return approvalResourceService.hasInstanceViewPermission(instance, userId, orgId)
-                || extCommentMapper.existsMention(instance.getId(), userId, orgId);
+        return approvalResourceService.hasViewPermission(instance.getResourceId(), userId, orgId)
+                || extCommentMapper.existsMention(instance.getResourceId(), userId, orgId);
     }
 
-    private void checkPermission(String instanceId, String userId, String orgId) {
-        ApprovalInstance instance = extCommentMapper.selectInstance(instanceId, orgId);
+    private void checkPermission(String resourceId, String userId, String orgId) {
+        ApprovalInstance instance = extCommentMapper.selectLatestInstance(resourceId, orgId);
         if (instance == null) {
             throw new GenericException(Translator.get("approval.comment.instance_not_found"));
         }
@@ -198,14 +198,14 @@ public class ApprovalCommentService {
         if (comment == null || !Strings.CS.equals(comment.getOrganizationId(), orgId)) {
             throw new GenericException(Translator.get("approval.comment.not_found"));
         }
-        checkPermission(comment.getInstanceId(), userId, orgId);
+        checkPermission(comment.getResourceId(), userId, orgId);
         if (!Strings.CS.equals(comment.getCreateUser(), userId)) {
             throw new GenericException(Translator.get("approval.comment.only_creator"));
         }
         return comment;
     }
 
-    private String checkReply(String instanceId, String parentId, String replyToUserId, String orgId) {
+    private String checkReply(String resourceId, String parentId, String replyToUserId, String orgId) {
         if (parentId == null) {
             if (StringUtils.isNotBlank(replyToUserId)) {
                 throw new GenericException(Translator.get("approval.comment.invalid_reply_user"));
@@ -215,13 +215,13 @@ public class ApprovalCommentService {
         // 回复和删除一级评论共用行锁，避免删除后留下新回复。
         ApprovalComment parent = extCommentMapper.selectCommentForUpdate(parentId, orgId);
         if (parent == null || !Objects.equals(parent.getOrganizationId(), orgId)
-                || !Objects.equals(parent.getInstanceId(), instanceId) || parent.getParentId() != null) {
+                || !Objects.equals(parent.getResourceId(), resourceId) || parent.getParentId() != null) {
             throw new GenericException(Translator.get("approval.comment.invalid_parent"));
         }
         if (StringUtils.isBlank(replyToUserId)) {
             return parent.getCreateUser();
         }
-        if (!extCommentMapper.existsReplyUser(instanceId, parentId, replyToUserId, orgId)) {
+        if (!extCommentMapper.existsReplyUser(resourceId, parentId, replyToUserId, orgId)) {
             throw new GenericException(Translator.get("approval.comment.invalid_reply_user"));
         }
         return replyToUserId;

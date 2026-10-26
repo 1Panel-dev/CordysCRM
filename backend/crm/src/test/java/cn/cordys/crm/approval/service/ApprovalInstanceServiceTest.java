@@ -47,7 +47,7 @@ class ApprovalInstanceServiceTest {
     @ParameterizedTest
     @CsvSource({ "0,true", "3,true", "0,false", "3,false" })
     @SuppressWarnings("unchecked")
-    void instanceDetailCountsCommentsForRequestedOrLatestInstance(long commentCount, boolean latestInstance) {
+    void instanceDetailCountsResourceCommentsForRequestedOrLatestInstance(long commentCount, boolean latestInstance) {
         ApprovalInstanceService service = new ApprovalInstanceService();
         BaseMapper<ApprovalInstance> instanceMapper = mock(BaseMapper.class);
         BaseMapper<ApprovalComment> commentMapper = mock(BaseMapper.class);
@@ -63,11 +63,13 @@ class ApprovalInstanceServiceTest {
         ReflectionTestUtils.setField(service, "userExtendService", userExtendService);
         ApprovalInstance previous = new ApprovalInstance();
         previous.setId("instance-previous");
+        previous.setResourceId("resource-1");
         previous.setSubmitTime(1L);
         previous.setSubmitterId("submitter");
         previous.setCurrentNodeId("");
         ApprovalInstance latest = new ApprovalInstance();
         latest.setId("instance-latest");
+        latest.setResourceId("resource-1");
         latest.setSubmitTime(2L);
         latest.setSubmitterId("submitter");
         latest.setCurrentNodeId("");
@@ -83,7 +85,7 @@ class ApprovalInstanceServiceTest {
         assertEquals(commentCount, detail.getCommentCount());
         ArgumentCaptor<ApprovalComment> criteria = ArgumentCaptor.forClass(ApprovalComment.class);
         verify(commentMapper).countByExample(criteria.capture());
-        assertEquals(requested.getId(), criteria.getValue().getInstanceId());
+        assertEquals("resource-1", criteria.getValue().getResourceId());
         assertEquals("org-1", criteria.getValue().getOrganizationId());
         assertNull(criteria.getValue().getParentId());
         if (!latestInstance) {

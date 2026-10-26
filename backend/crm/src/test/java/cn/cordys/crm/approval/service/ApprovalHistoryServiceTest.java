@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.InputStream;
@@ -19,12 +20,12 @@ import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -49,8 +50,9 @@ class ApprovalHistoryServiceTest {
         ReflectionTestUtils.setField(service, "approvalCommentService", comments);
     }
 
-    @Test
-    void detailsReturnOldestFirstUsingEachInstanceVersionAndCommentPermission() {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void detailsReturnOldestFirstUsingEachInstanceVersionAndResourceCommentPermission(boolean commentable) {
         ApprovalInstance latest = instance("latest", ApprovalStatus.APPROVING, "latest-node");
         ApprovalInstance recent = instance("recent", ApprovalStatus.APPROVED, "end");
         ApprovalInstance oldest = instance("oldest", ApprovalStatus.UNAPPROVED, "old-node-SN1");
@@ -58,29 +60,29 @@ class ApprovalHistoryServiceTest {
         recentDetail.setId(recent.getId());
         ApprovalInstanceDetail oldestDetail = new ApprovalInstanceDetail();
         oldestDetail.setId(oldest.getId());
-        oldestDetail.setCommentable(true);
+        oldestDetail.setCommentable(!commentable);
         when(instanceMapper.selectInstancesByResourceId(RESOURCE, ORG))
                 .thenReturn(List.of(latest, recent, oldest));
         when(resources.hasInstanceViewPermission(recent, USER, ORG)).thenReturn(true);
         when(resources.hasInstanceViewPermission(oldest, USER, ORG)).thenReturn(true);
         when(instances.getHistoricalApprovalInstanceDetail(recent, ORG)).thenReturn(recentDetail);
         when(instances.getHistoricalApprovalInstanceDetail(oldest, ORG)).thenReturn(oldestDetail);
-        when(comments.hasCommentPermission(recent.getId(), USER, ORG)).thenReturn(true);
-        when(comments.hasCommentPermission(oldest.getId(), USER, ORG)).thenReturn(false);
+        when(comments.hasCommentPermission(RESOURCE, USER, ORG)).thenReturn(commentable);
 
         List<ApprovalInstanceDetail> result = service.getHistoryInstanceDetail(RESOURCE, USER, ORG);
 
         assertEquals(List.of("oldest", "recent"), result.stream().map(ApprovalInstanceDetail::getId).toList());
         assertSame(oldestDetail, result.getFirst());
         assertSame(recentDetail, result.getLast());
-        assertFalse(result.getFirst().isCommentable());
-        assertTrue(result.getLast().isCommentable());
+        assertEquals(commentable, result.getFirst().isCommentable());
+        assertEquals(commentable, result.getLast().isCommentable());
         assertEquals("version-recent", recent.getFlowVersionId());
         assertEquals("version-oldest", oldest.getFlowVersionId());
         verify(instances).getHistoricalApprovalInstanceDetail(recent, ORG);
         verify(instances).getHistoricalApprovalInstanceDetail(oldest, ORG);
-        verify(comments).hasCommentPermission(recent.getId(), USER, ORG);
-        verify(comments).hasCommentPermission(oldest.getId(), USER, ORG);
+        verify(comments, times(2)).hasCommentPermission(RESOURCE, USER, ORG);
+        verify(comments, never()).hasCommentPermission(recent.getId(), USER, ORG);
+        verify(comments, never()).hasCommentPermission(oldest.getId(), USER, ORG);
         verify(resources, never()).hasInstanceViewPermission(latest, USER, ORG);
     }
 

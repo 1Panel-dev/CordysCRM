@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.controller;
 import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.util.JSON;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.dto.request.ApprovalCommentAddRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalCommentPageRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalCommentResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
@@ -66,7 +67,7 @@ class ApprovalCommentControllerTest {
             organization.when(OrganizationContext::getOrganizationId).thenReturn("org-a");
 
             mvc.perform(post("/approval-comment/page").contentType(MediaType.APPLICATION_JSON)
-                            .content(JSON.toJSONString(Map.of("instanceId", "instance-a", "current", 3,
+                            .content(JSON.toJSONString(Map.of("resourceId", "resource-a", "current", 3,
                                     "pageSize", 2, "sort", Map.of("name", "createTime", "type", "asc")))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.total").value(8))
@@ -78,7 +79,7 @@ class ApprovalCommentControllerTest {
             ArgumentCaptor<ApprovalCommentPageRequest> request =
                     ArgumentCaptor.forClass(ApprovalCommentPageRequest.class);
             verify(service).page(request.capture(), eq("user-a"), eq("org-a"));
-            assertEquals("instance-a", request.getValue().getInstanceId());
+            assertEquals("resource-a", request.getValue().getResourceId());
             assertEquals(3, request.getValue().getCurrent());
             assertEquals(2, request.getValue().getPageSize());
             assertEquals("asc", request.getValue().getSort().getType());
@@ -87,11 +88,46 @@ class ApprovalCommentControllerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "'',1,20", "instance-a,0,20", "instance-a,1,0", "instance-a,1,501" })
-    void pageRejectsMissingInstanceAndInvalidPagination(String instanceId, int current, int pageSize) throws Exception {
+    @CsvSource({ "'',1,20", "resource-a,0,20", "resource-a,1,0", "resource-a,1,501" })
+    void pageRejectsMissingResourceAndInvalidPagination(String resourceId, int current, int pageSize) throws Exception {
         mvc.perform(post("/approval-comment/page").contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON.toJSONString(Map.of("instanceId", instanceId,
+                        .content(JSON.toJSONString(Map.of("resourceId", resourceId,
                                 "current", current, "pageSize", pageSize))))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void addBindsResourceAndReturnsResourceWithoutInstanceId() throws Exception {
+        ApprovalCommentResponse comment = new ApprovalCommentResponse();
+        comment.setId("comment-a");
+        comment.setResourceId("resource-a");
+        when(service.add(any(), eq("user-a"), eq("org-a"))).thenReturn(comment);
+        try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
+                var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
+            session.when(SessionUtils::getUserId).thenReturn("user-a");
+            organization.when(OrganizationContext::getOrganizationId).thenReturn("org-a");
+
+            mvc.perform(post("/approval-comment/add").contentType(MediaType.APPLICATION_JSON)
+                            .content(JSON.toJSONString(Map.of("resourceId", "resource-a", "content", "历史评论"))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.resourceId").value("resource-a"))
+                    .andExpect(jsonPath("$.instanceId").doesNotExist());
+
+            ArgumentCaptor<ApprovalCommentAddRequest> request = ArgumentCaptor.forClass(ApprovalCommentAddRequest.class);
+            verify(service).add(request.capture(), eq("user-a"), eq("org-a"));
+            assertEquals("resource-a", request.getValue().getResourceId());
+        }
+    }
+
+    @Test
+    void commentRequestsRejectLegacyInstanceIdWithoutResourceId() throws Exception {
+        mvc.perform(post("/approval-comment/page").contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON.toJSONString(Map.of("instanceId", "instance-a", "current", 1, "pageSize", 20))))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/approval-comment/add").contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON.toJSONString(Map.of("instanceId", "instance-a", "content", "历史评论"))))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(service);

@@ -33,7 +33,7 @@ public class ApprovalHistoryService {
                 .map(instance -> {
                     ApprovalInstanceDetail detail = approvalInstanceService.getHistoricalApprovalInstanceDetail(instance,
                             orgId);
-                    detail.setCommentable(approvalCommentService.hasCommentPermission(instance.getId(), userId, orgId));
+                    detail.setCommentable(approvalCommentService.hasCommentPermission(resourceId, userId, orgId));
                     return detail;
                 }).toList().reversed();
     }

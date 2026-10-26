@@ -91,7 +91,7 @@ public class ApprovalResourceController {
         }
         if (detail != null) {
             detail.setCommentable(
-                    approvalCommentService.hasCommentPermission(detail.getId(), SessionUtils.getUserId(), orgId));
+                    approvalCommentService.hasCommentPermission(resourceId, SessionUtils.getUserId(), orgId));
         }
         return detail;
     }

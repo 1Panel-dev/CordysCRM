@@ -37,7 +37,8 @@ public class ApprovalCommentNoticeService {
                     NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, comment.getOrganizationId()) == null) {
                 return;
             }
-            ApprovalInstance instance = extApprovalCommentMapper.selectInstance(comment.getInstanceId(), comment.getOrganizationId());
+            ApprovalInstance instance = extApprovalCommentMapper.selectLatestInstance(comment.getResourceId(),
+                    comment.getOrganizationId());
             if (instance == null) {
                 return;
             }

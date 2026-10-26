@@ -11,8 +11,8 @@ import lombok.EqualsAndHashCode;
 @Table(name = "approval_comment")
 public class ApprovalComment extends BaseModel {
 
-    @Schema(description = "审批实例ID")
-    private String instanceId;
+    @Schema(description = "业务资源ID")
+    private String resourceId;
 
     @Schema(description = "一级评论ID，一级评论自身为空")
     private String parentId;
