@@ -164,24 +164,20 @@
                 @select="handleMoreActionSelect"
               />
             </div>
-            <n-button v-if="!isApprover && canCancelApply" type="primary" ghost block @click="cancelApproval('apply')">
-              <template #icon>
-                <CrmIcon type="iconicon_rollfront" :size="16" />
-              </template>
-              {{ t('common.revoke') }}
-            </n-button>
-            <n-button
-              v-if="!isApprover && canCancelApproval"
-              type="primary"
-              ghost
-              block
-              @click="() => cancelApproval()"
-            >
-              <template #icon>
-                <CrmIcon type="iconicon_rollfront" :size="16" />
-              </template>
-              {{ t('crm.approval.cancelApproval') }}
-            </n-button>
+            <div v-if="!isApprover" class="flex gap-[8px]">
+              <n-button v-if="canCancelApply" type="primary" ghost class="flex-1" @click="cancelApproval('apply')">
+                <template #icon>
+                  <CrmIcon type="iconicon_rollfront" :size="16" />
+                </template>
+                {{ t('common.revoke') }}
+              </n-button>
+              <n-button v-if="canCancelApproval" type="primary" ghost class="flex-1" @click="cancelApproval()">
+                <template #icon>
+                  <CrmIcon type="iconicon_rollfront" :size="16" />
+                </template>
+                {{ t('crm.approval.cancelApproval') }}
+              </n-button>
+            </div>
           </div>
         </div>
       </template>
