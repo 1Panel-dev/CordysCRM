@@ -83,7 +83,7 @@
         :type="isRejecting ? 'danger' : 'primary'"
         class="flex-1"
         :loading="loading"
-        :disabled="isCommentRequired && !approvalForm.reason"
+        :disabled="isCommentRequired && !approvalForm.reason.trim()"
         @click="handleApprovalSave"
       >
         {{ isRejecting ? t('workbench.operation.confirmRejected') : t('workbench.operation.confirmApproved') }}
@@ -213,6 +213,7 @@
   }
 
   function handleApprovalSave() {
+    approvalForm.value.reason = approvalForm.value.reason.trim();
     if (approvalFormRef.value?.validate()) {
       if (props.selectedKeys?.length) {
         batchApproval();
