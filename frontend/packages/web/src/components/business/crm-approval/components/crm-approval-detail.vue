@@ -153,6 +153,8 @@
                 type="approval"
                 :can-create="approvalInfo.commentable"
                 :can-reply="approvalInfo.commentable"
+                :collapsible="false"
+                actions-in-more
                 enable-attachment
                 show-time-sort
                 :source-id="props.sourceId"

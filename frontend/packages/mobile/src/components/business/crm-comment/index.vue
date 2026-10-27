@@ -32,6 +32,7 @@
               :can-reply="props.canReply"
               :can-edit="canEditComment(item)"
               :can-delete="canDeleteComment(item)"
+              :actions-in-more="props.actionsInMore"
               :show-divider="hasReplies(item) || !isLastComment(item)"
               @reply="openReplyEditor"
               @edit="openEditEditor"
@@ -47,6 +48,7 @@
                 :can-reply="props.canReply"
                 :can-edit="isCommentOwner(reply)"
                 :can-delete="isCommentOwner(reply)"
+                :actions-in-more="props.actionsInMore"
                 :show-divider="shouldShowReplyDivider(item, replyIndex)"
                 @reply="openReplyEditor"
                 @edit="openEditEditor"
@@ -125,6 +127,7 @@
       embedded?: boolean; // 由外层容器统一滚动
       enableAttachment?: boolean;
       showTimeSort?: boolean;
+      actionsInMore?: boolean;
     }>(),
     {
       title: '',
@@ -134,6 +137,7 @@
       embedded: false,
       enableAttachment: false,
       showTimeSort: false,
+      actionsInMore: false,
     }
   );
 

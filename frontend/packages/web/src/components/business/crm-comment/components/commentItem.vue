@@ -9,16 +9,31 @@
     />
 
     <div class="min-w-0 flex-1">
-      <div class="mb-[4px] flex items-center gap-[8px]">
-        <n-tooltip :delay="300">
-          <template #trigger>
-            <div class="max-w-[160px] truncate font-semibold text-[var(--text-n1)]">
-              {{ props.comment.createUserName || '-' }}
-            </div>
-          </template>
-          {{ props.comment.createUserName || '-' }}
-        </n-tooltip>
-        <div class="shrink-0 text-[var(--text-n4)]">{{ formatCommentTime(props.comment.createTime) }}</div>
+      <div class="mb-[4px] flex items-center justify-between gap-[8px]">
+        <div class="flex min-w-0 items-center gap-[8px]">
+          <n-tooltip :delay="300">
+            <template #trigger>
+              <div class="max-w-[160px] truncate font-semibold text-[var(--text-n1)]">
+                {{ props.comment.createUserName || '-' }}
+              </div>
+            </template>
+            {{ props.comment.createUserName || '-' }}
+          </n-tooltip>
+          <div class="shrink-0 text-[var(--text-n4)]">{{ formatCommentTime(props.comment.createTime) }}</div>
+        </div>
+        <CrmMoreAction
+          v-if="props.actionsInMore && moreActions.length"
+          placement="bottom-end"
+          :options="moreActions"
+          trigger="click"
+          @select="handleMoreActionSelect"
+        >
+          <n-button size="small" class="p-[8px]" quaternary>
+            <template #icon>
+              <CrmIcon type="iconicon_ellipsis" class="text-[var(--text-n4)]" :size="16" />
+            </template>
+          </n-button>
+        </CrmMoreAction>
       </div>
 
       <MentionInput
@@ -47,7 +62,7 @@
         readonly
       />
 
-      <div v-if="!isEditing" class="mt-[8px] flex justify-end gap-[8px]">
+      <div v-if="!isEditing && !props.actionsInMore" class="mt-[8px] flex justify-end gap-[8px]">
         <n-button v-if="props.canReply" size="small" class="p-[8px]" quaternary @click="emit('reply', props.comment)">
           <template #icon>
             <CrmIcon type="iconicon_chat" class="text-[var(--text-n4)]" :size="14" />
@@ -94,6 +109,8 @@
     FollowCommentSubmitValue,
   } from '@lib/shared/models/follow';
 
+  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import CrmFileList from '@/components/business/crm-file-list/index.vue';
   import MentionInput from './mentionInput.vue';
@@ -110,6 +127,7 @@
       canDelete?: boolean;
       submitLoading?: boolean;
       enableAttachment?: boolean;
+      actionsInMore?: boolean;
     }>(),
     {
       level: 1,
@@ -118,6 +136,7 @@
       canEdit: true,
       canDelete: true,
       enableAttachment: false,
+      actionsInMore: false,
     }
   );
 
@@ -139,6 +158,22 @@
   const showInlineReplyEditor = computed(
     () => props.activeEditor?.action === 'reply' && props.activeEditor.commentId === props.comment.id
   );
+
+  const moreActions = computed<ActionsItem[]>(() => [
+    ...(props.canReply ? [{ key: 'reply', label: t('crmComment.reply') }] : []),
+    ...(props.canEdit ? [{ key: 'edit', label: t('crmComment.edit') }] : []),
+    ...(props.canDelete ? [{ key: 'delete', label: t('crmComment.delete'), danger: true }] : []),
+  ]);
+
+  function handleMoreActionSelect(action: ActionsItem) {
+    if (action.key === 'reply') {
+      emit('reply', props.comment);
+    } else if (action.key === 'edit') {
+      emit('edit', props.comment);
+    } else if (action.key === 'delete') {
+      emit('delete', props.comment);
+    }
+  }
 
   function formatCommentTime(time?: number) {
     if (!time) {
