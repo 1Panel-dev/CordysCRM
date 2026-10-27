@@ -18,6 +18,7 @@ import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.dto.request.ApprovalActionBatchRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalActionRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
@@ -38,6 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.MockMakers;
 import org.mockito.MockedStatic;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -160,6 +162,8 @@ class ApprovalActionServiceTest {
         instance.setResourceId("resource-1");
         when(instanceMapper.selectByPrimaryKey("instance-1")).thenReturn(instance);
         List<String> attachmentIds = List.of("attachment-1", "attachment-2");
+        List<String> savedIds = List.of("saved-1", "saved-2");
+        when(attachments.appendTemp(any())).thenReturn(savedIds);
 
         ReflectionTestUtils.invokeMethod(service, "saveInstanceAttachment", attachmentIds,
                 "instance-1", "element-1", "user-1", "org-1");
@@ -173,13 +177,66 @@ class ApprovalActionServiceTest {
         assertEquals(attachmentIds, transfer.getValue().getTempFileIds());
         ArgumentCaptor<ApprovalInstanceAttachment> relation = ArgumentCaptor.forClass(ApprovalInstanceAttachment.class);
         order.verify(relationMapper, times(2)).insert(relation.capture());
-        assertEquals(attachmentIds, relation.getAllValues().stream()
+        assertEquals(savedIds, relation.getAllValues().stream()
                 .map(ApprovalInstanceAttachment::getAttachmentId).toList());
         relation.getAllValues().forEach(attachment -> {
             assertEquals("instance-1", attachment.getInstanceId());
             assertEquals("element-1", attachment.getElementId());
         });
         order.verifyNoMoreInteractions();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    @SuppressWarnings("unchecked")
+    void batchActionsReuseTemporaryInputsAndBindResourceCopies(boolean approve) {
+        AttachmentService attachments = mock(AttachmentService.class);
+        BaseMapper<ApprovalInstanceAttachment> relationMapper = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "attachmentService", attachments);
+        ReflectionTestUtils.setField(service, "approvalInstanceAttachmentMapper", relationMapper);
+        ApprovalTask first = task("task-1", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 0);
+        ApprovalTask second = task("task-2", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 0);
+        second.setInstanceId("instance-2");
+        when(taskMapper.selectByIds(List.of("task-1", "task-2"))).thenReturn(List.of(first, second));
+        when(instanceMapper.selectByPrimaryKey(anyString())).thenAnswer(invocation -> {
+            ApprovalInstance instance = new ApprovalInstance();
+            instance.setResourceId("resource-" + invocation.<String>getArgument(0));
+            return instance;
+        });
+        when(attachments.appendTemp(any())).thenAnswer(invocation -> {
+            UploadTransferRequest transfer = invocation.getArgument(0);
+            assertEquals(List.of("temporary-file"), transfer.getTempFileIds());
+            return List.of("saved-" + transfer.getResourceId());
+        });
+        ApprovalActionService spy = spy(service);
+        Answer<Void> saveAttachments = invocation -> {
+            ApprovalActionRequest action = invocation.getArgument(0);
+            ReflectionTestUtils.invokeMethod(spy, "saveInstanceAttachment", action.getAttachmentIds(),
+                    action.getInstanceId(), action.getId(), "user-1", "org-1");
+            return null;
+        };
+        ApprovalActionBatchRequest request = new ApprovalActionBatchRequest();
+        request.setIds(List.of("task-1", "task-2"));
+        request.setAttachmentIds(List.of("temporary-file"));
+
+        if (approve) {
+            doAnswer(saveAttachments).when(spy).approve(any(), anyString(), anyString());
+            spy.batchApprove(request, "user-1", "org-1");
+        } else {
+            doAnswer(saveAttachments).when(spy).reject(any(), anyString(), anyString());
+            spy.batchReject(request, "user-1", "org-1");
+        }
+
+        ArgumentCaptor<ApprovalInstanceAttachment> relations = ArgumentCaptor
+                .forClass(ApprovalInstanceAttachment.class);
+        verify(relationMapper, times(2)).insert(relations.capture());
+        assertEquals(List.of("instance-1", "instance-2"), relations.getAllValues().stream()
+                .map(ApprovalInstanceAttachment::getInstanceId).toList());
+        assertEquals(List.of("saved-resource-instance-1", "saved-resource-instance-2"), relations.getAllValues().stream()
+                .map(ApprovalInstanceAttachment::getAttachmentId).toList());
+        assertEquals(List.of("task-1", "task-2"), relations.getAllValues().stream()
+                .map(ApprovalInstanceAttachment::getElementId).toList());
+        assertEquals(List.of("temporary-file"), request.getAttachmentIds());
     }
 
     @Test

@@ -1,6 +1,8 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.uid.impl.DefaultUidGenerator;
+import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
@@ -33,18 +35,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -82,6 +90,10 @@ class AttachmentServiceTest {
                 "context");
         ApplicationContext context = mock(ApplicationContext.class);
         when(context.getBean(LocalRepository.class)).thenReturn(repository);
+        DefaultUidGenerator generator = new DefaultUidGenerator();
+        ReflectionTestUtils.setField(generator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
+        generator.init();
+        when(context.getBean(DefaultUidGenerator.class)).thenReturn(generator);
         new CommonBeanFactory().setApplicationContext(context);
         previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
         StaticMessageSource messages = new StaticMessageSource();
@@ -191,20 +203,21 @@ class AttachmentServiceTest {
         AttachmentService proxy = (AttachmentService) asyncProcessor.postProcessAfterInitialization(service,
                 "attachmentService");
 
-        proxy.appendTemp(request(List.of("approval-gif", "approval-gif")));
+        List<String> savedIds = proxy.appendTemp(request(List.of("approval-gif", "approval-gif")));
 
         assertTrue(asyncTasks.isEmpty());
         verify(attachmentMapper).selectByIds(List.of("approval-gif"));
         ArgumentCaptor<FileCopyRequest> copyRequest = ArgumentCaptor.forClass(FileCopyRequest.class);
         verify(repository).copyFile(copyRequest.capture());
         assertEquals(DefaultRepositoryDir.getTempFileDir("approval-gif"), copyRequest.getValue().getSourceFolder());
-        assertEquals(DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, "approval-gif"),
-                copyRequest.getValue().getDestFolder());
         assertEquals(source.getFileName().toString(), copyRequest.getValue().getFileName());
         ArgumentCaptor<Attachment> inserted = ArgumentCaptor.forClass(Attachment.class);
         verify(attachmentMapper).insert(inserted.capture());
         Attachment attachment = inserted.getValue();
-        assertEquals("approval-gif", attachment.getId());
+        assertEquals(List.of(attachment.getId()), savedIds);
+        assertNotEquals("approval-gif", attachment.getId());
+        assertEquals(DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, attachment.getId()),
+                copyRequest.getValue().getDestFolder());
         assertEquals(source.getFileName().toString(), attachment.getName());
         assertEquals(extension, attachment.getType());
         assertEquals(Files.size(source), attachment.getSize());
@@ -244,21 +257,67 @@ class AttachmentServiceTest {
         verify(attachmentMapper, never()).batchInsert(any());
     }
 
-    @Test
-    void appendingSameApprovalAttachmentTwiceOnlyInsertsMetadataOnce() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { RESOURCE_ID, "another-resource" })
+    void temporaryApprovalAttachmentCreatesIndependentCopiesForEachAction(String secondResource) throws Exception {
         Path source = Files.writeString(temporaryDirectory.resolve("审批动图.gif"), "GIF89a");
         when(files.getFolderFiles(any())).thenReturn(List.of(source.toFile()));
+        Map<String, Attachment> persisted = new LinkedHashMap<>();
+        when(attachmentMapper.selectByIds(anyList())).thenAnswer(invocation -> {
+            List<String> ids = invocation.getArgument(0);
+            return ids.stream().map(persisted::get).filter(Objects::nonNull).toList();
+        });
+        doAnswer(invocation -> {
+            Attachment attachment = invocation.getArgument(0);
+            assertNull(persisted.put(attachment.getId(), attachment));
+            return 1;
+        }).when(attachmentMapper).insert(any());
+        List<String> temporaryIds = List.of("approval-gif");
 
-        service.appendTemp(request(List.of("approval-gif")));
+        List<String> firstIds = service.appendTemp(request(temporaryIds));
+        List<String> secondIds = service.appendTemp(new UploadTransferRequest(ORGANIZATION_ID, secondResource,
+                USER_ID, temporaryIds));
 
-        ArgumentCaptor<Attachment> inserted = ArgumentCaptor.forClass(Attachment.class);
-        verify(attachmentMapper).insert(inserted.capture());
-        when(attachmentMapper.selectByIds(List.of("approval-gif"))).thenReturn(List.of(inserted.getValue()));
+        assertEquals(1, firstIds.size());
+        assertEquals(1, secondIds.size());
+        assertNotEquals(firstIds, secondIds);
+        assertNotEquals(temporaryIds, firstIds);
+        assertNotEquals(temporaryIds, secondIds);
+        assertEquals(List.of("approval-gif"), temporaryIds);
+        assertEquals(List.of(firstIds.getFirst(), secondIds.getFirst()), new ArrayList<>(persisted.keySet()));
+        assertEquals(RESOURCE_ID, persisted.get(firstIds.getFirst()).getResourceId());
+        assertEquals(secondResource, persisted.get(secondIds.getFirst()).getResourceId());
+        persisted.values().forEach(attachment -> {
+            assertEquals(ORGANIZATION_ID, attachment.getOrganizationId());
+            assertEquals(USER_ID, attachment.getCreateUser());
+            assertEquals(source.getFileName().toString(), attachment.getName());
+            assertEquals(source.toFile().length(), attachment.getSize());
+        });
+        ArgumentCaptor<FileCopyRequest> copies = ArgumentCaptor.forClass(FileCopyRequest.class);
+        verify(repository, times(2)).copyFile(copies.capture());
+        assertEquals(List.of(
+                DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, firstIds.getFirst()),
+                DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, secondResource, secondIds.getFirst())),
+                copies.getAllValues().stream().map(FileCopyRequest::getDestFolder).toList());
+        copies.getAllValues().forEach(copy -> {
+            assertEquals(DefaultRepositoryDir.getTempFileDir("approval-gif"), copy.getSourceFolder());
+            assertEquals(source.getFileName().toString(), copy.getFileName());
+        });
+        verify(attachmentMapper, times(2)).insert(any());
+        verify(files, never()).deleteFolder(any(), anyBoolean());
+        verify(attachmentMapper, never()).batchInsert(any());
+    }
 
-        service.appendTemp(request(List.of("approval-gif")));
+    @Test
+    void existingApprovalAttachmentInCurrentScopeIsReusedWithoutCopying() {
+        List<String> savedIds = List.of("approval-saved");
+        when(attachmentMapper.selectByIds(savedIds)).thenReturn(List.of(attachment("approval-saved")));
 
-        verify(repository, times(2)).copyFile(any());
-        verify(attachmentMapper).insert(any());
+        assertEquals(savedIds, service.appendTemp(request(savedIds)));
+        assertEquals(savedIds, service.appendTemp(request(savedIds)));
+
+        verifyNoInteractions(files, repository);
+        verify(attachmentMapper, never()).insert(any());
         verify(attachmentMapper, never()).batchInsert(any());
     }
 

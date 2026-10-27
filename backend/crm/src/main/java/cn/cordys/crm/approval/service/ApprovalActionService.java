@@ -322,8 +322,8 @@ public class ApprovalActionService {
         // 转存成功后再保存关联，两类记录均随审批事务提交。
         UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, instance.getResourceId(), userId,
                 attachmentIds);
-        attachmentService.appendTemp(transferRequest);
-        attachmentIds.forEach(attachmentId -> {
+        List<String> savedAttachmentIds = attachmentService.appendTemp(transferRequest);
+        savedAttachmentIds.forEach(attachmentId -> {
             ApprovalInstanceAttachment attachment = new ApprovalInstanceAttachment();
             attachment.setId(IDGenerator.nextStr());
             attachment.setInstanceId(instanceId);
