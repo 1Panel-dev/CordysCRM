@@ -80,7 +80,7 @@ export const FileIconMap: FileIconMapping = {
   },
   json: {
     [UploadStatus.init]: 'icona-icon_file-json',
-    [UploadStatus.done]: 'icon-a-icon_file-json',
+    [UploadStatus.done]: 'icona-icon_file-json',
   },
   jmx: {
     [UploadStatus.init]: 'icona-icon_file-JMX',
