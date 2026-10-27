@@ -319,20 +319,18 @@ public class ApprovalActionService {
     private void saveInstanceAttachment(List<String> attachmentIds, String instanceId, String elementId, String userId,
             String orgId) {
         ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
-        List<ApprovalInstanceAttachment> attachments = new ArrayList<>();
+        // 转存成功后再保存关联，两类记录均随审批事务提交。
+        UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, instance.getResourceId(), userId,
+                attachmentIds);
+        attachmentService.appendTemp(transferRequest);
         attachmentIds.forEach(attachmentId -> {
             ApprovalInstanceAttachment attachment = new ApprovalInstanceAttachment();
             attachment.setId(IDGenerator.nextStr());
             attachment.setInstanceId(instanceId);
             attachment.setElementId(elementId);
             attachment.setAttachmentId(attachmentId);
-            attachments.add(attachment);
+            approvalInstanceAttachmentMapper.insert(attachment);
         });
-        approvalInstanceAttachmentMapper.batchInsert(attachments);
-        // 转移临时文件, 保存附件信息
-        UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, instance.getResourceId(), userId,
-                attachmentIds);
-        attachmentService.appendTemp(transferRequest);
     }
 
     /**

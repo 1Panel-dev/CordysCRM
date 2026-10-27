@@ -14,6 +14,7 @@ import cn.cordys.crm.approval.constants.ApprovalTypeEnum;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
@@ -22,6 +23,8 @@ import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.system.dto.request.UploadTransferRequest;
+import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.junit.jupiter.api.AfterAll;
@@ -47,17 +50,20 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -120,6 +126,60 @@ class ApprovalActionServiceTest {
         ReflectionTestUtils.setField(service, "extApprovalInstanceMapper", extInstanceMapper);
         ReflectionTestUtils.setField(service, "extApprovalTaskMapper", extTaskMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void attachmentTransferFailureDoesNotSaveApprovalAttachmentRelation() {
+        AttachmentService attachments = mock(AttachmentService.class);
+        BaseMapper<ApprovalInstanceAttachment> relationMapper = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "attachmentService", attachments);
+        ReflectionTestUtils.setField(service, "approvalInstanceAttachmentMapper", relationMapper);
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setResourceId("resource-1");
+        when(instanceMapper.selectByPrimaryKey("instance-1")).thenReturn(instance);
+        GenericException failure = new GenericException("附件转存失败");
+        doThrow(failure).when(attachments).appendTemp(any());
+
+        GenericException exception = assertThrows(GenericException.class,
+                () -> ReflectionTestUtils.invokeMethod(service, "saveInstanceAttachment", List.of("attachment-1"),
+                        "instance-1", "element-1", "user-1", "org-1"));
+
+        assertSame(failure, exception);
+        verifyNoInteractions(relationMapper);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void approvalAttachmentRelationsAreSavedOnlyAfterTransferCompletes() {
+        AttachmentService attachments = mock(AttachmentService.class);
+        BaseMapper<ApprovalInstanceAttachment> relationMapper = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "attachmentService", attachments);
+        ReflectionTestUtils.setField(service, "approvalInstanceAttachmentMapper", relationMapper);
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setResourceId("resource-1");
+        when(instanceMapper.selectByPrimaryKey("instance-1")).thenReturn(instance);
+        List<String> attachmentIds = List.of("attachment-1", "attachment-2");
+
+        ReflectionTestUtils.invokeMethod(service, "saveInstanceAttachment", attachmentIds,
+                "instance-1", "element-1", "user-1", "org-1");
+
+        InOrder order = inOrder(attachments, relationMapper);
+        ArgumentCaptor<UploadTransferRequest> transfer = ArgumentCaptor.forClass(UploadTransferRequest.class);
+        order.verify(attachments).appendTemp(transfer.capture());
+        assertEquals("org-1", transfer.getValue().getOrganizationId());
+        assertEquals("resource-1", transfer.getValue().getResourceId());
+        assertEquals("user-1", transfer.getValue().getOperatorUserId());
+        assertEquals(attachmentIds, transfer.getValue().getTempFileIds());
+        ArgumentCaptor<ApprovalInstanceAttachment> relation = ArgumentCaptor.forClass(ApprovalInstanceAttachment.class);
+        order.verify(relationMapper, times(2)).insert(relation.capture());
+        assertEquals(attachmentIds, relation.getAllValues().stream()
+                .map(ApprovalInstanceAttachment::getAttachmentId).toList());
+        relation.getAllValues().forEach(attachment -> {
+            assertEquals("instance-1", attachment.getInstanceId());
+            assertEquals("element-1", attachment.getElementId());
+        });
+        order.verifyNoMoreInteractions();
     }
 
     @Test

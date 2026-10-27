@@ -1,5 +1,9 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.SortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithCommentCount;
@@ -21,6 +25,7 @@ import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.FileCommonService;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.file.engine.DefaultRepositoryDir;
 import cn.cordys.file.engine.FileRequest;
 import cn.cordys.mybatis.BaseMapper;
@@ -39,6 +44,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -60,6 +66,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -86,13 +93,19 @@ class ApprovalCommentServiceTest {
     private BaseMapper<Attachment> attachmentMapper;
     private AttachmentService attachmentService;
     private FileCommonService fileCommonService;
+    private LogService logService;
     private ApprovalInstance instance;
 
     @BeforeAll
     static void initCommonUtilities() {
         previousContext = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class, "context");
         previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
-        ReflectionTestUtils.setField(Translator.class, "messageSource", new StaticMessageSource());
+        StaticMessageSource messageSource = new StaticMessageSource();
+        messageSource.addMessage("permission.add", LocaleContextHolder.getLocale(), "添加");
+        messageSource.addMessage("permission.update", LocaleContextHolder.getLocale(), "编辑");
+        messageSource.addMessage("permission.delete", LocaleContextHolder.getLocale(), "删除");
+        messageSource.addMessage("log.comment", LocaleContextHolder.getLocale(), "评论");
+        ReflectionTestUtils.setField(Translator.class, "messageSource", messageSource);
         uidGenerator = new DefaultUidGenerator();
         ReflectionTestUtils.setField(uidGenerator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
         uidGenerator.init();
@@ -119,6 +132,7 @@ class ApprovalCommentServiceTest {
         attachmentMapper = mock(BaseMapper.class);
         attachmentService = mock(AttachmentService.class);
         fileCommonService = mock(FileCommonService.class);
+        logService = mock(LogService.class);
         ReflectionTestUtils.setField(service, "commentMapper", commentMapper);
         ReflectionTestUtils.setField(service, "mentionMapper", mentionMapper);
         ReflectionTestUtils.setField(service, "extCommentMapper", extCommentMapper);
@@ -127,10 +141,13 @@ class ApprovalCommentServiceTest {
         ReflectionTestUtils.setField(service, "attachmentMapper", attachmentMapper);
         ReflectionTestUtils.setField(service, "attachmentService", attachmentService);
         ReflectionTestUtils.setField(service, "fileCommonService", fileCommonService);
+        ReflectionTestUtils.setField(service, "logService", logService);
         instance = new ApprovalInstance();
         instance.setId("instance-a");
         instance.setResourceId(RESOURCE);
+        instance.setType("contract");
         when(extCommentMapper.selectLatestInstance(RESOURCE, ORG)).thenReturn(instance);
+        when(approvalResourceService.getLogModuleOfFormKey(nullable(FormKey.class))).thenCallRealMethod();
     }
 
     @AfterEach
@@ -152,6 +169,7 @@ class ApprovalCommentServiceTest {
             context.getBeanFactory().registerSingleton("attachmentMapper", attachmentMapper);
             context.getBeanFactory().registerSingleton("attachmentService", attachmentService);
             context.getBeanFactory().registerSingleton("fileCommonService", fileCommonService);
+            context.getBeanFactory().registerSingleton("logService", logService);
             context.registerBean(ApprovalCommentService.class);
             context.refresh();
 
@@ -199,6 +217,64 @@ class ApprovalCommentServiceTest {
 
         verify(extCommentMapper).selectLatestInstance(RESOURCE, ORG);
         verifyNoInteractions(commentMapper, mentionMapper);
+        verifyNoInteractions(logService);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "clue, CLUE_MANAGEMENT_CLUE", "customer, CUSTOMER_INDEX", "opportunity, OPPORTUNITY_INDEX",
+            "quotation, OPPORTUNITY_QUOTATION", "contract, CONTRACT_INDEX", "invoice, CONTRACT_INVOICE",
+            "order, ORDER_INDEX", "custom-form-a, CUSTOM_FORM_DATA"
+    })
+    void recordsAddedCommentWithResourceModule(String formType, String module) {
+        allowExistingPermission();
+        instance.setType(formType);
+        when(extCommentMapper.selectDetail(anyString(), eq(ORG)))
+                .thenAnswer(invocation -> detail(invocation.getArgument(0)));
+
+        service.add(addRequest(), USER, ORG);
+
+        LogDTO log = assertCommentLog(module, "添加评论");
+        assertNull(log.getOriginalValue());
+        assertEquals("custom-form-a".equals(formType)
+                ? Map.of("comment", "评论内容", "customFormId", formType)
+                : Map.of("comment", "评论内容"), log.getModifiedValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "contract", "custom-form-a" })
+    void recordsEditedCommentWithOriginalAndModifiedContent(String formType) {
+        prepareOwnEdit();
+        instance.setType(formType);
+        ApprovalComment comment = comment("comment-a", USER);
+        comment.setContent("编辑前的评论");
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment);
+
+        service.update(updateRequest(), USER, ORG);
+
+        boolean customForm = "custom-form-a".equals(formType);
+        LogDTO log = assertCommentLog(customForm ? LogModule.CUSTOM_FORM_DATA : LogModule.CONTRACT_INDEX, "编辑评论");
+        assertEquals(customForm ? Map.of("comment", "编辑前的评论", "customFormId", formType)
+                : Map.of("comment", "编辑前的评论"), log.getOriginalValue());
+        assertEquals(customForm ? Map.of("comment", "修改后的评论", "customFormId", formType)
+                : Map.of("comment", "修改后的评论"), log.getModifiedValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void responseFailureDoesNotWriteCommentLog(boolean update) {
+        allowExistingPermission();
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
+
+        assertThrows(GenericException.class, () -> {
+            if (update) {
+                service.update(updateRequest(), USER, ORG);
+            } else {
+                service.add(addRequest(), USER, ORG);
+            }
+        });
+
+        verifyNoInteractions(logService);
     }
 
     @ParameterizedTest
@@ -487,6 +563,7 @@ class ApprovalCommentServiceTest {
         verifyNoInteractions(commentMapper, mentionMapper);
         verify(extCommentMapper, never()).deleteMentions(any(), anyString());
         verify(extCommentMapper, never()).deleteComments(any(), anyString(), anyString());
+        verifyNoInteractions(logService);
     }
 
     @Test
@@ -522,10 +599,14 @@ class ApprovalCommentServiceTest {
         verifyNoInteractions(approvalCommentNoticeService);
     }
 
-    @Test
-    void deletesRootAndRepliesTogetherWithTheirMentionGrants() {
+    @ParameterizedTest
+    @ValueSource(strings = { "contract", "custom-form-a" })
+    void deletesRootAndRepliesTogetherWithTheirMentionGrants(String formType) {
         allowExistingPermission();
-        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
+        instance.setType(formType);
+        ApprovalComment root = comment("comment-a", USER);
+        root.setContent("删除前的评论");
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(root);
         ApprovalComment reply = comment("reply-a", "other-user");
         reply.setParentId("comment-a");
         when(commentMapper.selectListByLambda(any())).thenAnswer(invocation -> {
@@ -540,6 +621,11 @@ class ApprovalCommentServiceTest {
 
         verify(extCommentMapper).deleteMentions(List.of("comment-a", "reply-a"), ORG);
         verify(extCommentMapper).deleteComments(List.of("comment-a", "reply-a"), RESOURCE, ORG);
+        boolean customForm = "custom-form-a".equals(formType);
+        LogDTO log = assertCommentLog(customForm ? LogModule.CUSTOM_FORM_DATA : LogModule.CONTRACT_INDEX, "删除评论");
+        assertEquals(customForm ? Map.of("comment", "删除前的评论", "customFormId", formType)
+                : Map.of("comment", "删除前的评论"), log.getOriginalValue());
+        assertNull(log.getModifiedValue());
     }
 
     @Test
@@ -567,6 +653,8 @@ class ApprovalCommentServiceTest {
         assertEquals(commentCaptor.getValue().getId(), mentionCaptor.getValue().getFirst().getCommentId());
         assertEquals(commentCaptor.getValue().getCreateTime(), mentionCaptor.getValue().getFirst().getCreateTime());
         verify(approvalCommentNoticeService).sendMentionNotice(commentCaptor.getValue(), List.of("member-a"));
+        LogDTO log = assertCommentLog(LogModule.CONTRACT_INDEX, "添加评论");
+        assertEquals(Map.of("comment", "评论内容"), log.getModifiedValue());
     }
 
     @Test
@@ -893,6 +981,19 @@ class ApprovalCommentServiceTest {
 
         verify(attachmentMapper).deleteByIds(List.of("file-root", "file-reply"));
         verify(fileCommonService, times(2)).deleteFolder(any(), eq(true));
+    }
+
+    private LogDTO assertCommentLog(String module, String resourceName) {
+        ArgumentCaptor<LogDTO> captor = ArgumentCaptor.forClass(LogDTO.class);
+        verify(logService).add(captor.capture());
+        LogDTO log = captor.getValue();
+        assertEquals(ORG, log.getOrganizationId());
+        assertEquals(RESOURCE, log.getResourceId());
+        assertEquals(USER, log.getCreateUser());
+        assertEquals(LogType.UPDATE, log.getType());
+        assertEquals(module, log.getModule());
+        assertEquals(resourceName, log.getResourceName());
+        return log;
     }
 
     private Attachment attachment(String id, String commentId, String orgId) {
