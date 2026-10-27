@@ -8,7 +8,7 @@ import org.springframework.session.web.http.HttpSessionIdResolver;
 public class SessionConfig {
 
     /**
-     * 普通 API 使用请求头恢复会话，SSO 回调额外支持专用的预登录 Cookie。
+     * 普通 API 使用请求头恢复会话，SSO 回调和文件预览分别支持各自的专用 Cookie。
      *
      * @return 会话 ID 解析器
      */

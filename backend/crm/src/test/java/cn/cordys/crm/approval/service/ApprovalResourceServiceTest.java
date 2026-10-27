@@ -306,19 +306,19 @@ class ApprovalResourceServiceTest {
 
     @Test
     void historicalInstanceParticipantGainsViewPermissionWithoutResourceCheck() {
-        when(extTaskMapper.existsResourceParticipant("resource-a", "history-approver")).thenReturn(true);
+        when(extTaskMapper.existsResourceParticipant("resource-a", "history-approver", "org-a")).thenReturn(true);
 
         Boolean permitted = ReflectionTestUtils.invokeMethod(service, "hasViewPermission",
                 "resource-a", "history-approver", "org-a");
 
         assertTrue(permitted);
-        verify(extTaskMapper).existsResourceParticipant("resource-a", "history-approver");
+        verify(extTaskMapper).existsResourceParticipant("resource-a", "history-approver", "org-a");
         verifyNoInteractions(dataScopeService, customFormDataService);
     }
 
     @Test
     void nonParticipantFallsBackToResourceViewPermission() {
-        when(extTaskMapper.existsResourceParticipant("resource-a", "reader")).thenReturn(false);
+        when(extTaskMapper.existsResourceParticipant("resource-a", "reader", "org-a")).thenReturn(false);
         ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
         when(provider.getFormType()).thenReturn("contract");
         when(provider.requiresOwner()).thenReturn(true);
@@ -344,14 +344,15 @@ class ApprovalResourceServiceTest {
     }
 
     @Test
-    void resourceParticipantQueryCoversSubmitterAndAnyHistoricalTask() throws Exception {
+    void resourceParticipantQueryScopesOrganizationAndCoversSubmitterAndAnyHistoricalTask() throws Exception {
         Configuration configuration = new Configuration();
         String resource = ExtApprovalTaskMapper.class.getName().replace('.', '/') + ".xml";
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
             assertNotNull(in, "找不到 Mapper XML：" + resource);
             new XMLMapperBuilder(in, configuration, resource, configuration.getSqlFragments()).parse();
         }
-        Map<String, Object> parameters = Map.of("resourceId", "resource-a", "userId", "user-a");
+        Map<String, Object> parameters = Map.of("resourceId", "resource-a", "userId", "user-a",
+                "organizationId", "org-a");
         BoundSql sql = configuration
                 .getMappedStatement(ExtApprovalTaskMapper.class.getName() + ".existsResourceParticipant")
                 .getBoundSql(parameters);
@@ -360,7 +361,9 @@ class ApprovalResourceServiceTest {
                 SELECT EXISTS (
                     SELECT 1
                     FROM approval_instance ai
+                    INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
                     WHERE ai.resource_id = ?
+                      AND afv.organization_id = ?
                       AND (ai.submitter_id = ?
                            OR EXISTS (
                                SELECT 1
@@ -370,8 +373,47 @@ class ApprovalResourceServiceTest {
                            ))
                 )
                 """.replaceAll("\\s+", " ").trim(), sql.getSql().replaceAll("\\s+", " ").trim());
-        assertEquals(List.of("resourceId", "userId", "userId"),
+        assertEquals(List.of("resourceId", "organizationId", "userId", "userId"),
                 sql.getParameterMappings().stream().map(mapping -> mapping.getProperty()).toList());
+        assertEquals("org-a", parameters.get(sql.getParameterMappings().get(1).getProperty()));
+    }
+
+    @Test
+    void attachmentParticipantQueryScopesAttachmentResourceOrganizationAndInstance() throws Exception {
+        Configuration configuration = new Configuration();
+        String resource = ExtApprovalTaskMapper.class.getName().replace('.', '/') + ".xml";
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+            assertNotNull(in, "找不到 Mapper XML：" + resource);
+            new XMLMapperBuilder(in, configuration, resource, configuration.getSqlFragments()).parse();
+        }
+        Map<String, Object> parameters = Map.of("attachmentId", "attachment-a", "resourceId", "resource-a",
+                "userId", "user-a", "organizationId", "org-a");
+        BoundSql sql = configuration
+                .getMappedStatement(ExtApprovalTaskMapper.class.getName() + ".existsAttachmentParticipant")
+                .getBoundSql(parameters);
+
+        assertEquals("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM approval_instance_attachment a
+                    INNER JOIN approval_instance ai ON ai.id = a.instance_id
+                    INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+                    WHERE a.attachment_id = ?
+                      AND ai.resource_id = ?
+                      AND afv.organization_id = ?
+                      AND (ai.submitter_id = ?
+                           OR EXISTS (
+                               SELECT 1
+                               FROM approval_task at
+                               WHERE at.instance_id = ai.id
+                                 AND at.approver_id = ?
+                           ))
+                )
+                """.replaceAll("\\s+", " ").trim(), sql.getSql().replaceAll("\\s+", " ").trim());
+        assertEquals(List.of("attachmentId", "resourceId", "organizationId", "userId", "userId"),
+                sql.getParameterMappings().stream().map(mapping -> mapping.getProperty()).toList());
+        assertEquals(List.of("attachment-a", "resource-a", "org-a", "user-a", "user-a"),
+                sql.getParameterMappings().stream().map(mapping -> parameters.get(mapping.getProperty())).toList());
     }
 
     private ApprovalInstance instanceForView() {

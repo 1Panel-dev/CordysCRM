@@ -14,7 +14,28 @@
         SELECT EXISTS (
             SELECT 1
             FROM approval_instance ai
+            INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
             WHERE ai.resource_id = #{resourceId}
+              AND afv.organization_id = #{organizationId}
+              AND (ai.submitter_id = #{userId}
+                   OR EXISTS (
+                       SELECT 1
+                       FROM approval_task at
+                       WHERE at.instance_id = ai.id
+                         AND at.approver_id = #{userId}
+                   ))
+        )
+    </select>
+
+    <select id="existsAttachmentParticipant" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM approval_instance_attachment a
+            INNER JOIN approval_instance ai ON ai.id = a.instance_id
+            INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+            WHERE a.attachment_id = #{attachmentId}
+              AND ai.resource_id = #{resourceId}
+              AND afv.organization_id = #{organizationId}
               AND (ai.submitter_id = #{userId}
                    OR EXISTS (
                        SELECT 1

@@ -900,7 +900,7 @@ public class ApprovalInstanceService {
                         .deleteByIds(instanceAttachments.stream().map(ApprovalInstanceAttachment::getId).toList());
                 List<String> attachmentIds = instanceAttachments.stream()
                         .map(ApprovalInstanceAttachment::getAttachmentId).toList();
-                attachmentIds.forEach(id -> attachmentService.delete(id));
+                attachmentIds.forEach(id -> attachmentService.deleteForResourceCleanup(id));
                 if (CollectionUtils.isNotEmpty(attachmentIds)) {
                     attachmentMapper.deleteByIds(attachmentIds);
                 }

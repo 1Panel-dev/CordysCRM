@@ -7,6 +7,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.SortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithCommentCount;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -68,6 +69,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -626,6 +628,21 @@ class ApprovalCommentServiceTest {
         assertEquals(customForm ? Map.of("comment", "删除前的评论", "customFormId", formType)
                 : Map.of("comment", "删除前的评论"), log.getOriginalValue());
         assertNull(log.getModifiedValue());
+    }
+
+    @Test
+    void deletingCommentCannotRemoveAttachmentsWithoutAttachmentReadPermission() {
+        allowExistingPermission();
+        when(extCommentMapper.selectCommentForUpdate("comment-a", ORG)).thenReturn(comment("comment-a", USER));
+        Attachment attachment = attachment("private-file", "comment-a", ORG);
+        when(attachmentMapper.selectListByLambda(any())).thenReturn(List.of(attachment));
+        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(attachmentService).checkPermission(attachment);
+
+        assertThrows(GenericException.class, () -> service.delete("comment-a", USER, ORG));
+
+        verify(attachmentMapper, never()).deleteByIds(any());
+        verify(extCommentMapper, never()).deleteComments(any(), anyString(), anyString());
+        verifyNoInteractions(fileCommonService, logService);
     }
 
     @Test

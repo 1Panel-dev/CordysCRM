@@ -1,8 +1,10 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
@@ -13,9 +15,13 @@ import cn.cordys.file.engine.FileRequest;
 import cn.cordys.file.engine.StorageType;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +50,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AttachmentService {
 
+    private static final String TEMP_OWNER_PREFIX = "attachment:temp:owner:";
+
     @Resource
     private BaseMapper<Attachment> attachmentMapper;
 
@@ -52,12 +61,24 @@ public class AttachmentService {
     @Resource
     private FileCommonService fileCommonService;
 
+    @Lazy
+    @Resource
+    private AttachmentPermissionService attachmentPermissionService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     /**
      * 上传临时附件
      *
      * @param files 上传附件集合
      */
     public List<String> uploadTemp(List<MultipartFile> files) {
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        if (StringUtils.isAnyBlank(userId, orgId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
         List<String> tempPicIds = new ArrayList<>();
         FileRequest tempRequest = new FileRequest(null, StorageType.LOCAL.name(), null);
         files.forEach(file -> {
@@ -65,6 +86,8 @@ public class AttachmentService {
             tempRequest.setFolder(DefaultRepositoryDir.getTempFileDir(tempPicId));
             tempRequest.setFileName(file.getOriginalFilename());
             fileCommonService.upload(file, tempRequest);
+            stringRedisTemplate.opsForValue().set(TEMP_OWNER_PREFIX + tempPicId, orgId + ":" + userId,
+                    Duration.ofDays(1));
             tempPicIds.add(tempPicId);
         });
         return tempPicIds;
@@ -76,7 +99,20 @@ public class AttachmentService {
      * @param attachmentId 附件ID
      */
     public void delete(String attachmentId) {
+        checkAttachmentId(attachmentId);
         Attachment attachment = attachmentMapper.selectByPrimaryKey(attachmentId);
+        checkPermission(attachmentId, attachment);
+        deleteFile(attachmentId, attachment);
+    }
+
+    /**
+     * 业务数据删除后清理附件，权限由调用方的业务删除校验保证。
+     */
+    public void deleteForResourceCleanup(String attachmentId) {
+        deleteFile(attachmentId, attachmentMapper.selectByPrimaryKey(attachmentId));
+    }
+
+    private void deleteFile(String attachmentId, Attachment attachment) {
         if (attachment == null) {
             // 删除临时文件目录
             fileCommonService.deleteFolder(
@@ -98,7 +134,10 @@ public class AttachmentService {
      * @return 文件流
      */
     public ResponseEntity<org.springframework.core.io.Resource> getResource(String attachmentId) {
+        checkAttachmentId(attachmentId);
         Attachment attachment = attachmentMapper.selectByPrimaryKey(attachmentId);
+        // 在文件读取的异常捕获之外校验，确保无权限时返回禁止访问。
+        checkPermission(attachmentId, attachment);
         FileRequest request;
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
         try {
@@ -144,6 +183,32 @@ public class AttachmentService {
         }
     }
 
+    public void checkPermission(Attachment attachment) {
+        attachmentPermissionService.checkPermission(attachment);
+    }
+
+    private void checkPermission(String attachmentId, Attachment attachment) {
+        if (attachment == null) {
+            checkTemporaryPermission(attachmentId, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        } else {
+            checkPermission(attachment);
+        }
+    }
+
+    private void checkTemporaryPermission(String attachmentId, String orgId, String userId) {
+        checkAttachmentId(attachmentId);
+        if (StringUtils.isAnyBlank(orgId, userId)
+                || !(orgId + ":" + userId).equals(stringRedisTemplate.opsForValue().get(TEMP_OWNER_PREFIX + attachmentId))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
+    private void checkAttachmentId(String attachmentId) {
+        if (attachmentId == null || !attachmentId.matches("[A-Za-z0-9_-]{1,32}")) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
     /**
      * 判断是否svg文件
      *
@@ -166,6 +231,9 @@ public class AttachmentService {
         queryWrapper.eq(Attachment::getOrganizationId, transferRequest.getOrganizationId());
         List<Attachment> transferredAttachments = attachmentMapper.selectListByLambda(queryWrapper);
         List<String> transferredIds = transferredAttachments.stream().map(Attachment::getId).toList();
+        transferRequest.getTempFileIds().stream().filter(id -> !transferredIds.contains(id))
+                .forEach(id -> checkTemporaryPermission(id, transferRequest.getOrganizationId(),
+                        transferRequest.getOperatorUserId()));
         // insert new attachment
         transferRequest.getTempFileIds().stream().filter(tempFileId -> !transferredIds.contains(tempFileId))
                 .forEach(tempFileId -> {
@@ -216,6 +284,9 @@ public class AttachmentService {
             removedIds = removedIds.stream().filter(id -> !approvalAttachmentIds.contains(id)).toList();
         }
         if (!CollectionUtils.isEmpty(removedIds)) {
+            Set<String> deletedIds = Set.copyOf(removedIds);
+            transferredAttachments.stream().filter(attachment -> deletedIds.contains(attachment.getId()))
+                    .forEach(this::checkPermission);
             LambdaQueryWrapper<Attachment> duplicateQueryWrapper = new LambdaQueryWrapper<>();
             duplicateQueryWrapper.in(Attachment::getId, removedIds);
             attachmentMapper.deleteByLambda(duplicateQueryWrapper);
@@ -292,7 +363,11 @@ public class AttachmentService {
                             || !Objects.equals(transferRequest.getResourceId(), attachment.getResourceId())) {
                         throw new GenericException(Translator.get("approval.attachment.save_failed"));
                     }
+                    checkPermission(attachment);
                 }).map(Attachment::getId).collect(Collectors.toSet());
+        tempFileIds.stream().filter(id -> !existingIds.contains(id))
+                .forEach(id -> checkTemporaryPermission(id, transferRequest.getOrganizationId(),
+                        transferRequest.getOperatorUserId()));
         List<Attachment> attachments = new ArrayList<>();
         List<String> savedAttachmentIds = new ArrayList<>();
         tempFileIds.forEach(tempFileId -> {
