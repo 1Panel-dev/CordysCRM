@@ -2,10 +2,10 @@
   <CrmCard hide-footer no-content-padding>
     <CrmSplitPanel
       v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
-      :size="0.7"
-      :max="0.8"
-      :min="0.4"
-      :default-size="0.7"
+      size="calc(100% - 400px)"
+      max="calc(100% - 400px)"
+      min="400px"
+      default-size="calc(100% - 400px)"
       collapse-side="right"
     >
       <template #1>
@@ -54,7 +54,7 @@
           ref="approvalHistoryPanelRef"
           class="approval-history-panel flex h-full w-full flex-col overflow-hidden bg-[var(--text-n10)]"
         >
-          <div class="shrink-0 px-[16px] pt-[24px]">
+          <div class="shrink-0 px-[24px] pt-[24px]">
             <CrmTab
               v-model:active-tab="activeAnchor"
               no-content
@@ -65,13 +65,13 @@
               @click="handleAnchorTabClick"
             />
           </div>
-          <n-scrollbar class="min-h-0 flex-1" :content-style="{ padding: '16px 24px 32px 16px' }">
+          <n-scrollbar class="min-h-0 flex-1" :content-style="{ padding: '16px 24px 32px 24px' }">
             <div ref="approvalRecordRef">
-              <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
               <n-collapse
                 v-if="latestHistoricalApproval"
                 v-model:expanded-names="expandedHistoryInstanceNames"
                 class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
+                @update:expanded-names="handleHistoryExpandedNames"
               >
                 <template #arrow><div></div></template>
                 <n-collapse-item name="history">
@@ -106,29 +106,27 @@
                   <template #header-extra="{ collapsed }">
                     <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
                   </template>
-                  <n-scrollbar class="approval-history-list" :content-style="{ maxHeight: '40cqh' }">
-                    <div
-                      v-for="(detail, index) in historicalApprovalDetails"
-                      :key="detail.id"
-                      class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[8px] last:mb-0"
-                      :class="{ 'approval-history-latest-card': index === historicalApprovalDetails.length - 1 }"
-                    >
-                      <CrmApprovalLine
-                        :nodes="detail.nodes || []"
-                        :submitter="{
-                          submitAvatar: detail.submitAvatar,
-                          submitter: detail.submitter,
-                          submitTime: detail.submitTime,
-                          submitterId: detail.submitterId,
-                          comment: detail.comment,
-                        }"
-                        :currentApprovalNode="getCurrentNode(detail)"
-                        :currentApprovalNodeIndex="getCurrentNodeIndex(detail)"
-                        :finally-result="detail.approvalStatus"
-                        is-historical
-                      />
-                    </div>
-                  </n-scrollbar>
+                  <div
+                    v-for="(detail, index) in historicalApprovalDetails"
+                    :key="detail.id"
+                    class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[8px] last:mb-0"
+                  >
+                    <CrmApprovalLine
+                      :nodes="detail.nodes || []"
+                      :submitter="{
+                        submitAvatar: detail.submitAvatar,
+                        submitter: detail.submitter,
+                        submitTime: detail.submitTime,
+                        submitterId: detail.submitterId,
+                        comment: detail.comment,
+                      }"
+                      :currentApprovalNode="getCurrentNode(detail)"
+                      :currentApprovalNodeIndex="getCurrentNodeIndex(detail)"
+                      :finally-result="detail.approvalStatus"
+                      :isLatest="index === historicalApprovalDetails.length - 1"
+                      is-historical
+                    />
+                  </div>
                 </n-collapse-item>
               </n-collapse>
               <CrmApprovalLine
@@ -448,6 +446,7 @@
     { name: 'record', tab: t('crm.approval.record') },
     { name: 'comment', tab: `${t('crmComment.title')} ${formatBadgeCount(approvalInfo.value?.commentCount || 0)}` },
   ]);
+  const approvalHistoryPanelRef = ref<HTMLElement>();
   const approvalRecordRef = ref<HTMLElement>();
   const approvalCommentRef = ref<HTMLElement>();
 
@@ -666,11 +665,17 @@
     return time ? dayjs(time).format('YYYY-MM-DD HH:mm') : '-';
   }
 
+  function scrollToLatestHistoricalApproval() {
+    const target = approvalHistoryPanelRef.value?.querySelector('.approval-history-latest-node');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   async function handleHistoryExpandedNames(names: Array<string | number>) {
     expandedHistoryInstanceNames.value = names;
-    document
-      .querySelector('.approval-history-list .approval-history-latest-card')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!names.includes('history')) return;
+    setTimeout(() => {
+      scrollToLatestHistoricalApproval();
+    }, 300);
   }
 
   async function initApprovalDetail() {
@@ -687,11 +692,8 @@
         props.sourceId,
         props.commentMentionId
       );
-      expandedHistoryInstanceNames.value = ['history'];
       await nextTick();
-      document
-        .querySelector('.approval-history-list .approval-history-latest-card')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToLatestHistoricalApproval();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

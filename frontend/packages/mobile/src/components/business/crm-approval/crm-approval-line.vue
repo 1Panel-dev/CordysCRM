@@ -19,6 +19,7 @@
         v-model="expandedHistoryInstanceNames"
         class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)]"
         :border="false"
+        @change="handleHistoryExpandedNames"
       >
         <van-collapse-item name="history" :border="false" class="approval-history-collapse-item bg-[var(--text-n9)]">
           <template #title>
@@ -54,7 +55,7 @@
               color="var(--van-cell-right-icon-color)"
             />
           </template>
-          <div class="approval-history-list bg-[var(--text-n10)]">
+          <div ref="historyListRef" class="approval-history-list bg-[var(--text-n10)]">
             <div
               v-for="(detail, index) in historyDetails"
               :key="detail.id"
@@ -112,7 +113,13 @@
             <div class="break-words text-[var(--text-n4)]">{{ props.submitter.comment }}</div>
           </div>
         </van-step>
-        <van-step v-for="(node, index) in props.nodes" :key="node.nodeId">
+        <van-step
+          v-for="(node, index) in props.nodes"
+          :key="node.nodeId"
+          :class="{
+            'approval-history-latest-node': props.isHistorical && !node.endNode && index === lastApprovalNodeIndex,
+          }"
+        >
           <template #inactive-icon>
             <div v-if="node.endNode" class="timeline-icon-wrapper" :class="getIconClass(node)">
               <CrmIcon name="iconicon_end" color="var(--text-n10)" />
@@ -363,10 +370,14 @@
   const commentCount = ref(props.commentCount || 0);
   const activeAnchor = ref<'record' | 'comment'>('record');
   const scrollContainerRef = ref<HTMLElement>();
+  const historyListRef = ref<HTMLElement>();
   const commentAnchorRef = ref<HTMLElement>();
   const historyDetails = ref<ApprovalDetail[]>([]);
   const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
   const latestHistoryDetail = computed(() => historyDetails.value.at(-1));
+  const lastApprovalNodeIndex = computed(() =>
+    props.nodes.reduce((lastIndex, node, index) => (!node.endNode ? index : lastIndex), -1)
+  );
   const anchorOptions = computed(() => [
     { value: 'record' as const, label: t('crm.approval.record') },
     { value: 'comment' as const, label: `${t('crmComment.title')} ${formatBadgeCount(commentCount.value)}` },
@@ -421,6 +432,12 @@
     return time ? dayjs(time).format('YYYY-MM-DD HH:mm') : '-';
   }
 
+  function scrollToLatestHistoricalApproval() {
+    const latestRecord = historyListRef.value?.querySelector('.approval-history-latest-card');
+    const target = latestRecord?.querySelector('.approval-history-latest-node') || latestRecord;
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   async function loadHistoryDetails(resourceId?: string) {
     if (!resourceId) {
       historyDetails.value = [];
@@ -430,12 +447,10 @@
       const details = await getApprovalResourceInstanceDetailList(resourceId, props.commentMentionId);
       if (props.resourceId !== resourceId) return;
       historyDetails.value = details;
-      expandedHistoryInstanceNames.value = details.length ? ['history'] : [];
+      expandedHistoryInstanceNames.value = [];
       if (details.length) {
         await nextTick();
-        document
-          .querySelector('.approval-history-list .approval-history-latest-card')
-          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        scrollToLatestHistoricalApproval();
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -449,9 +464,7 @@
     expandedHistoryInstanceNames.value = names;
     if (!names.includes('history')) return;
     await nextTick();
-    document
-      .querySelector('.approval-history-list .approval-history-latest-card')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollToLatestHistoricalApproval();
   }
 
   watch(
@@ -546,10 +559,6 @@
     padding: 8px;
     padding-top: 0;
     background-color: var(--text-n9);
-  }
-  .approval-history-list {
-    overflow-y: auto;
-    max-height: 40vh;
   }
   .timeline-icon-wrapper {
     @apply flex items-center justify-center;

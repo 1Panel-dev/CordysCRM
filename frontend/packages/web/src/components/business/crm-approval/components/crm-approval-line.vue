@@ -12,7 +12,7 @@
             <div class="font-semibold leading-[22px]">{{ t('crm.approval.submit') }}</div>
             <span
               v-if="!props.isHistorical"
-              class="ml-[8px] mr-auto rounded-[2px] bg-[var(--text-n8)] px-[6px] py-[2px] text-[12px] font-normal leading-[18px] text-[var(--info-blue)]"
+              class="ml-[8px] mr-auto rounded-[2px] bg-[var(--info-5)] px-[6px] py-[2px] text-[12px] font-normal leading-[18px] text-[var(--info-blue)]"
             >
               {{ t('crm.approval.currentRound') }}
             </span>
@@ -41,7 +41,14 @@
           <div class="text-[var(--text-n4)]">{{ props.submitter.comment }}</div>
         </div>
       </n-timeline-item>
-      <n-timeline-item v-for="(node, index) in props.nodes" :key="node.nodeId">
+      <n-timeline-item
+        v-for="(node, index) in props.nodes"
+        :key="node.nodeId"
+        :class="{
+          'approval-history-latest-node':
+            props.isHistorical && !node.endNode && props.isLatest && index === props.nodes.length - 1,
+        }"
+      >
         <template #icon>
           <div v-if="node.endNode" class="timeline-icon-wrapper" :class="getIconClass(node)">
             <CrmIcon type="iconicon_end" :size="14" color="var(--text-n10)" />
@@ -266,7 +273,7 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive } from 'vue';
+  import { computed, reactive } from 'vue';
   import { NCollapse, NCollapseItem, NPopover, NScrollbar, NTimeline, NTimelineItem, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
@@ -295,6 +302,7 @@
     currentRoundStartIndex?: number;
     finallyResult?: ProcessStatusEnum;
     isHistorical?: boolean;
+    isLatest?: boolean;
   }>();
 
   type AttachmentPopoverState = { show: boolean; previewOpen: boolean };
