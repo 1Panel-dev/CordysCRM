@@ -4,6 +4,7 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
+import cn.cordys.common.service.FieldSourceServiceProvider;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
@@ -37,6 +38,8 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -152,7 +155,7 @@ public class HitApprovalAspect {
                             .updateFields(updateFields)
                             .comment(comment)
                             .build();
-                    approvalResourceService.push(pushParam);
+                    pushAfterCommit(pushParam);
                 }
             }
         } catch (Exception e) {
@@ -243,8 +246,34 @@ public class HitApprovalAspect {
                         approvalResourceService.getFormKeyDisplayName(enumKey),
                         approvalResourceService.getInstanceResourceName(enumKey, resourceId)))
                 .build();
-        approvalResourceService.push(pushParam);
+        pushAfterCommit(pushParam);
         return null;
+    }
+
+    /**
+     * 业务事务提交后再提审
+     * <p>
+     * 不知为啥，当前切面被包在事务拦截器的切面里层，导致事务没有提交
+     * {@link FieldSourceServiceProvider#safeGetSimpleById} 是新的事务导致查不到新的数据，这里等事务提交之后再调用
+     *
+     * @param pushParam 提审参数
+     */
+    private void pushAfterCommit(ApprovalPushParam pushParam) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            // 无事务（或事务已提交）时直接以独立事务提审
+            approvalResourceService.pushInNewTransaction(pushParam);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    approvalResourceService.pushInNewTransaction(pushParam);
+                } catch (Exception e) {
+                    log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
+                }
+            }
+        });
     }
 
     /**
