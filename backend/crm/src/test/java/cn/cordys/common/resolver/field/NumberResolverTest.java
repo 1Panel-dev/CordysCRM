@@ -1,8 +1,12 @@
 package cn.cordys.common.resolver.field;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.dto.field.InputNumberField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import org.apache.poi.ss.formula.FormulaParseException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +53,37 @@ class NumberResolverTest {
                 () -> resolver.validate(field, new BigDecimal("100.01")));
         assertThrows(GenericException.class,
                 () -> resolver.validate(field, new BigDecimal("1.234")));
+    }
+
+    @Test
+    void validatesLegacyMinimumFromStoredFormConfiguration() {
+        ModuleFormConfigDTO config = JSON.parseObject("""
+                {"fields":[
+                    {"type":"INPUT_NUMBER","name":"合同-数字","min":-999999999,"decimalPlaces":false},
+                    {"type":"SUB_PRODUCT","subFields":[
+                        {"type":"INPUT_NUMBER","name":"子表-数字","min":-999999999,"decimalPlaces":false}
+                    ]}
+                ]}
+                """, ModuleFormConfigDTO.class);
+        InputNumberField field = (InputNumberField) config.getFields().getFirst();
+        InputNumberField subField = (InputNumberField) ((SubField) config.getFields().get(1)).getSubFields().getFirst();
+
+        for (InputNumberField numberField : new InputNumberField[] { field, subField }) {
+            assertEquals(-1000000000, numberField.getMin());
+            assertDoesNotThrow(() -> resolver.validate(numberField, -1000000000));
+            assertThrows(GenericException.class, () -> resolver.validate(numberField, -1000000001));
+            assertEquals(-1000000000, JSON.parseMap(JSON.toJSONString(numberField)).get("min"));
+        }
+    }
+
+    @Test
+    void preservesOtherConfiguredMinimums() {
+        for (Integer min : new Integer[] { null, -1000000000, -10, 0, 100 }) {
+            InputNumberField field = (InputNumberField) JSON.parseObject(
+                    "{\"type\":\"INPUT_NUMBER\",\"min\":%s}".formatted(min), BaseField.class);
+
+            assertEquals(min, field.getMin());
+        }
     }
 
     @Test

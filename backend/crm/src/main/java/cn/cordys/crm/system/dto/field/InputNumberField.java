@@ -36,6 +36,14 @@ public class InputNumberField extends BaseField {
     @Schema(description = "显示千分位")
     private Boolean showThousandsSeparator;
 
+    public void setMin(Integer min) {
+        // 兼容历史默认下限，使已有表单与数字输入框的边界一致。
+        if (min != null && min == -999999999) {
+            min = -1000000000;
+        }
+        this.min = min;
+    }
+
     public static String formatThousands(BigDecimal num) {
         if (num == null) {
             return null;
