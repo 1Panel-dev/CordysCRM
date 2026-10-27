@@ -495,20 +495,11 @@
     }
   );
 
-  async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
-    if (hasFieldPermission) {
-      formDescriptionRef.value?.handleFormChange(async () => {
-        await callback();
-        emit('approvalSuccess');
-        refreshKey.value += 1;
-        emit('refresh');
-      });
-    } else {
-      await callback();
-      emit('approvalSuccess');
-      refreshKey.value += 1;
-      emit('refresh');
-    }
+  async function handleSaveApproval(callback: () => Promise<any>, _hasFieldPermission: boolean) {
+    await callback();
+    emit('approvalSuccess');
+    refreshKey.value += 1;
+    emit('refresh');
   }
 
   function handleDeleteApproved() {

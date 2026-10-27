@@ -13,7 +13,8 @@ import {
   ReviewResourceUrl,
   RevokeResourceUrl,
   GetApprovalResourceDetailUrl,
-  GetApprovalResourceInstanceDetailUrl,
+  GetApprovalResourceInstancesUrl,
+  GetApprovalResourceInstanceDetailListUrl,
   GetApprovalCommentListUrl,
   AddApprovalCommentUrl,
   UpdateApprovalCommentUrl,
@@ -169,8 +170,8 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.get<ApprovalDetail>({ url: `${GetApprovalResourceDetailUrl}/${id}` });
   }
 
-  function getApprovalResourceInstanceDetail(resourceId: string) {
-    return CDR.get<ApprovalDetail[]>({ url: `${GetApprovalResourceInstanceDetailUrl}/${resourceId}` });
+  function getApprovalResourceInstanceDetailList(resourceId: string) {
+    return CDR.get<ApprovalDetail[]>({ url: `${GetApprovalResourceInstanceDetailListUrl}/${resourceId}` });
   }
 
   function getApprovalCommentList(data: FollowCommentListParams) {
@@ -242,7 +243,7 @@ export default function useProcessApi(CDR: CordysAxios) {
     backApproval,
     addSignApproval,
     getApprovalResourceDetail,
-    getApprovalResourceInstanceDetail,
+    getApprovalResourceInstanceDetailList,
     getApprovalCommentList,
     addApprovalComment,
     updateApprovalComment,

@@ -1,5 +1,8 @@
 <template>
-  <div class="flex h-full min-h-0 w-full flex-col overflow-hidden">
+  <div
+    class="flex w-full flex-col bg-[var(--text-n10)]"
+    :class="[props.isHistorical ? 'h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden p-[20px]']"
+  >
     <CrmSegmentedControl
       v-if="props.resourceId"
       v-model="activeAnchor"
@@ -7,51 +10,72 @@
       :options="anchorOptions"
       @select="(value) => scrollToAnchor(value as 'record' | 'comment')"
     />
-    <div ref="scrollContainerRef" class="min-h-0 flex-1 overflow-y-auto">
+    <div
+      ref="scrollContainerRef"
+      :class="props.isHistorical ? 'overflow-visible' : 'approval-scroll-container min-h-0 flex-1 overflow-y-auto'"
+    >
       <van-collapse
-        v-if="historyInstances.length"
+        v-if="latestHistoryDetail"
         v-model="expandedHistoryInstanceNames"
-        class="mb-[16px] rounded-[var(--border-radius-small)]"
+        class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)]"
         :border="false"
       >
-        <van-collapse-item v-for="instance in historyInstances" :key="instance.id" :name="instance.id" :border="false">
+        <van-collapse-item name="history" :border="false" class="approval-history-collapse-item bg-[var(--text-n9)]">
           <template #title>
             <div class="flex items-center gap-[8px]">
-              <CrmApprovalStatus :status="instance.approvalStatus" scene="approvalRecord" />
+              <CrmApprovalStatus :status="latestHistoryDetail.approvalStatus" scene="approvalRecord" />
               <div class="text-[14px] font-semibold text-[var(--text-n1)]">
-                {{
-                  t('crm.approval.previousRoundTitle', {
-                    nodeName: getCurrentNode(instance)?.nodeName || instance.nodes.at(-1)?.nodeName || '',
-                  })
-                }}
+                <template
+                  v-if="
+                    [ProcessStatusEnum.APPROVED, ProcessStatusEnum.AUTO_APPROVED].includes(
+                      latestHistoryDetail.approvalStatus
+                    )
+                  "
+                >
+                  {{ formatApprovalTime(getHistoricalApprovalTime(latestHistoryDetail)) }}
+                </template>
+                <template v-else>
+                  {{
+                    t('crm.approval.previousRoundTitle', {
+                      nodeName: getCurrentNode(latestHistoryDetail)?.nodeName || '',
+                    })
+                  }}
+                </template>
               </div>
             </div>
           </template>
           <template #right-icon>
             <CrmIcon
               :name="
-                expandedHistoryInstanceNames.includes(instance.id) ? 'iconicon_chevron_down' : 'iconicon_chevron_right'
+                expandedHistoryInstanceNames.includes('history') ? 'iconicon_chevron_down' : 'iconicon_chevron_right'
               "
               width="16px"
               height="16px"
               color="var(--van-cell-right-icon-color)"
             />
           </template>
-          <div class="bg-[var(--text-n10)] p-[8px]">
-            <CrmApprovalLine
-              :nodes="instance.nodes"
-              :submitter="{
-                submitAvatar: instance.submitAvatar,
-                submitter: instance.submitter,
-                submitTime: instance.submitTime,
-                submitterId: instance.submitterId,
-                comment: instance.comment,
-              }"
-              :current-approval-node="getCurrentNode(instance)"
-              :current-approval-node-index="getCurrentNodeIndex(instance)"
-              :finally-result="instance.approvalStatus"
-              class="h-[55vh]"
-            />
+          <div class="approval-history-list bg-[var(--text-n10)]">
+            <div
+              v-for="(detail, index) in historyDetails"
+              :key="detail.id"
+              :class="{ 'approval-history-latest-card': index === historyDetails.length - 1 }"
+              class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[8px] last:mb-0"
+            >
+              <CrmApprovalLine
+                :nodes="detail.nodes || []"
+                :submitter="{
+                  submitAvatar: detail.submitAvatar,
+                  submitter: detail.submitter,
+                  submitTime: detail.submitTime,
+                  submitterId: detail.submitterId,
+                  comment: detail.comment,
+                }"
+                :current-approval-node="getCurrentNode(detail)"
+                :current-approval-node-index="getCurrentNodeIndex(detail)"
+                :finally-result="detail.approvalStatus"
+                is-historical
+              />
+            </div>
           </div>
         </van-collapse-item>
       </van-collapse>
@@ -295,6 +319,7 @@
 </template>
 
 <script setup lang="ts">
+  import { nextTick } from 'vue';
   import dayjs from 'dayjs';
   import { showFailToast } from 'vant';
 
@@ -312,7 +337,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmComment from '@/components/business/crm-comment/index.vue';
 
-  import { getApprovalResourceInstanceDetail } from '@/api/modules';
+  import { getApprovalResourceInstanceDetailList } from '@/api/modules';
 
   const props = defineProps<{
     nodes: ApprovalNode[];
@@ -330,6 +355,7 @@
     commentCount?: number;
     commentable?: boolean;
     resourceId?: string;
+    isHistorical?: boolean;
   }>();
 
   const { t } = useI18n();
@@ -337,8 +363,9 @@
   const activeAnchor = ref<'record' | 'comment'>('record');
   const scrollContainerRef = ref<HTMLElement>();
   const commentAnchorRef = ref<HTMLElement>();
-  const historyInstances = ref<ApprovalDetail[]>([]);
+  const historyDetails = ref<ApprovalDetail[]>([]);
   const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
+  const latestHistoryDetail = computed(() => historyDetails.value.at(-1));
   const anchorOptions = computed(() => [
     { value: 'record' as const, label: t('crm.approval.record') },
     { value: 'comment' as const, label: `${t('crmComment.title')} ${formatBadgeCount(commentCount.value)}` },
@@ -348,6 +375,9 @@
     const container = scrollContainerRef.value;
     if (!container) return;
     activeAnchor.value = anchor;
+    if (anchor === 'record') {
+      expandedHistoryInstanceNames.value = [];
+    }
     const target = commentAnchorRef.value;
     const top =
       anchor === 'comment' && target
@@ -378,27 +408,54 @@
     return detail?.nodes.find((node) => node.nodeId === detail.currentNodeId);
   }
 
-  async function loadHistoryInstances(resourceId?: string) {
+  function getHistoricalApprovalTime(detail?: ApprovalDetail) {
+    const approvalTimes = detail?.nodes.flatMap((node) => [
+      node.approvalTime,
+      ...(node.taskNodes || []).map((task) => task.approvalTime),
+    ]);
+    return approvalTimes?.filter((time): time is number => Number.isFinite(time) && time > 0).sort((a, b) => b - a)[0];
+  }
+
+  function formatApprovalTime(time?: number) {
+    return time ? dayjs(time).format('YYYY-MM-DD HH:mm') : '-';
+  }
+
+  async function loadHistoryDetails(resourceId?: string) {
     if (!resourceId) {
-      historyInstances.value = [];
+      historyDetails.value = [];
       return;
     }
     try {
-      const instances = await getApprovalResourceInstanceDetail(resourceId);
+      const details = await getApprovalResourceInstanceDetailList(resourceId);
       if (props.resourceId !== resourceId) return;
-      historyInstances.value = instances;
-      expandedHistoryInstanceNames.value = [];
+      historyDetails.value = details;
+      expandedHistoryInstanceNames.value = details.length ? ['history'] : [];
+      if (details.length) {
+        await nextTick();
+        document
+          .querySelector('.approval-history-list .approval-history-latest-card')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
       showFailToast(t('crm.approval.historyLoadFailed'));
-      historyInstances.value = [];
+      historyDetails.value = [];
     }
+  }
+
+  async function handleHistoryExpandedNames(names: Array<string | number>) {
+    expandedHistoryInstanceNames.value = names;
+    if (!names.includes('history')) return;
+    await nextTick();
+    document
+      .querySelector('.approval-history-list .approval-history-latest-card')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   watch(
     () => [props.resourceId, props.approvalId],
-    () => loadHistoryInstances(props.resourceId),
+    () => loadHistoryDetails(props.resourceId),
     { immediate: true }
   );
 
@@ -480,6 +537,19 @@
 </script>
 
 <style lang="less" scoped>
+  :deep(.approval-history-collapse-item > .van-collapse-item__title) {
+    padding: 8px;
+    background-color: var(--text-n9);
+  }
+  :deep(.approval-history-collapse-item > .van-collapse-item__wrapper > .van-collapse-item__content) {
+    padding: 8px;
+    padding-top: 0;
+    background-color: var(--text-n9);
+  }
+  .approval-history-list {
+    overflow-y: auto;
+    max-height: 40vh;
+  }
   .timeline-icon-wrapper {
     @apply flex items-center justify-center;
 

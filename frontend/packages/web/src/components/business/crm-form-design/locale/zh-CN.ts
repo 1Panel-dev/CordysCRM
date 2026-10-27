@@ -234,6 +234,7 @@ export default {
   'crmFormDesign.submitValidationUnionArgument': '数字/文本字段或数组',
   'crmFormDesign.formulaArray': '数组',
   'crmFormDesign.formulaNumberArray': '数字数组',
+  'crmFormDesign.formulaDateArray': '日期数组',
   'crmFormDesign.formulaTextArray': '文本数组',
   'crmFormDesign.submitValidationUnionExample': 'AND(UNION(子表单.单行文本)!="",UNION(子表单2.单行文本)!=""',
   'crmFormDesign.submitValidation': '表单提交-校验数据',

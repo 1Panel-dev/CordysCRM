@@ -42,7 +42,7 @@
         </CrmTab>
       </CrmCard>
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
-        <div v-show="activeTab === 'customForm'" class="h-full p-[24px]">
+        <div v-show="activeTab === 'customForm'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
             :form-key="props.customFormId"
@@ -240,16 +240,7 @@
     emit('refresh');
   }
 
-  async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
-    if (hasFieldPermission) {
-      formDescriptionRef.value?.handleFormChange(async () => {
-        await callback();
-        emit('approvalSuccess');
-        handleSavedRefresh();
-      });
-      return;
-    }
-
+  async function handleSaveApproval(callback: () => Promise<any>, _hasFieldPermission: boolean) {
     await callback();
     emit('approvalSuccess');
     handleSavedRefresh();

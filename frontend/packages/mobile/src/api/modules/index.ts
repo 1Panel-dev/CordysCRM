@@ -502,7 +502,7 @@ export const {
   batchAgreeApproval,
   batchRejectApproval,
   getApprovalResourceDetail,
-  getApprovalResourceInstanceDetail,
+  getApprovalResourceInstanceDetailList,
   backApproval,
   addSignApproval,
   revokeApproval,

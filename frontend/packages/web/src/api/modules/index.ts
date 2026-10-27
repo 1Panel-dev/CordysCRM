@@ -971,7 +971,7 @@ export const {
   backApproval,
   addSignApproval,
   getApprovalResourceDetail,
-  getApprovalResourceInstanceDetail,
+  getApprovalResourceInstanceDetailList,
   getApprovalCommentList,
   addApprovalComment,
   updateApprovalComment,

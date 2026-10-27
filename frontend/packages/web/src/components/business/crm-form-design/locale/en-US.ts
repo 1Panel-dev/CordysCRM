@@ -243,6 +243,7 @@ export default {
   'crmFormDesign.submitValidationUnionArgument': 'Number/text field or array',
   'crmFormDesign.formulaArray': 'Arrays',
   'crmFormDesign.formulaNumberArray': 'Number arrays',
+  'crmFormDesign.formulaDateArray': 'Date arrays',
   'crmFormDesign.formulaTextArray': 'Text arrays',
   'crmFormDesign.submitValidationUnionExample':
     'AND(UNION(Subform.SingleLineText)!="", UNION(Subform2.SingleLineText)!="")',
