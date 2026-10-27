@@ -282,8 +282,9 @@ public class AttachmentService {
      * 同步追加临时文件，附件保存失败时回滚调用方事务。
      *
      * @param transferRequest 参数
+     * @return 转存后的正式附件ID
      */
-    public void appendTemp(UploadTransferRequest transferRequest) {
+    public List<String> appendTemp(UploadTransferRequest transferRequest) {
         List<String> tempFileIds = transferRequest.getTempFileIds().stream().distinct().toList();
         Set<String> existingIds = attachmentMapper.selectByIds(tempFileIds).stream()
                 .peek(attachment -> {
@@ -293,7 +294,12 @@ public class AttachmentService {
                     }
                 }).map(Attachment::getId).collect(Collectors.toSet());
         List<Attachment> attachments = new ArrayList<>();
+        List<String> savedAttachmentIds = new ArrayList<>();
         tempFileIds.forEach(tempFileId -> {
+            if (existingIds.contains(tempFileId)) {
+                savedAttachmentIds.add(tempFileId);
+                return;
+            }
             FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId,
                     StorageType.LOCAL.name(), null);
             List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
@@ -302,9 +308,11 @@ public class AttachmentService {
             if (tempFile == null) {
                 throw new GenericException(Translator.get("approval.attachment.save_failed"));
             }
+            // 每次转存生成独立正式ID，避免批量审批共用附件文件。
+            String attachmentId = IDGenerator.nextStr();
             FileCopyRequest copyRequest = new FileCopyRequest(DefaultRepositoryDir.getTempFileDir(tempFileId),
                     DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
-                            transferRequest.getResourceId(), tempFileId),
+                            transferRequest.getResourceId(), attachmentId),
                     tempFile.getName());
             try {
                 FileCenter.getRepository(StorageType.LOCAL.name()).copyFile(copyRequest);
@@ -312,7 +320,7 @@ public class AttachmentService {
                 throw new GenericException(Translator.get("approval.attachment.save_failed"), e);
             }
             Attachment attachment = new Attachment();
-            attachment.setId(tempFileId);
+            attachment.setId(attachmentId);
             attachment.setName(tempFile.getName());
             String type = "";
             int index = tempFile.getName().lastIndexOf('.');
@@ -329,9 +337,10 @@ public class AttachmentService {
             attachment.setUpdateTime(System.currentTimeMillis());
             attachment.setUpdateUser(transferRequest.getOperatorUserId());
             attachments.add(attachment);
+            savedAttachmentIds.add(attachmentId);
         });
         // 使用当前会话插入，使附件记录与审批关联共享事务。
-        attachments.stream().filter(attachment -> !existingIds.contains(attachment.getId()))
-                .forEach(attachmentMapper::insert);
+        attachments.forEach(attachmentMapper::insert);
+        return savedAttachmentIds;
     }
 }
