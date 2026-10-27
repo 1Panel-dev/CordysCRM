@@ -46,6 +46,8 @@ import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.domain.Contract;
+import cn.cordys.crm.contract.domain.ContractSnapshot;
+import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.*;
@@ -64,6 +66,8 @@ import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.order.domain.Order;
+import cn.cordys.crm.order.domain.OrderSnapshot;
+import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.ImportType;
@@ -185,6 +189,10 @@ public class CustomerService implements ApprovalResourceHandler {
     private ExtContractMapper extContractMapper;
     @Resource
     private ExtOrderMapper extOrderMapper;
+    @Resource
+    private BaseMapper<ContractSnapshot> contractSnapshotMapper;
+    @Resource
+    private BaseMapper<OrderSnapshot> orderSnapshotMapper;
     @Resource
     private ExtFollowUpRecordMapper extFollowUpRecordMapper;
     @Resource
@@ -1340,8 +1348,12 @@ public class CustomerService implements ApprovalResourceHandler {
             throw new GenericException(Translator.get("no.customer.merge.permission"));
         }
 
+        // 合并前先取出挂在被合并客户名下的合同/订单: 合并 SQL 会把 customer_id 改挂到目标客户,
+        // 之后再查只能查到目标客户名下的全部数据, 无法区分这次合并了哪些, 快照也就无从同步
+        List<Contract> mergeContracts = extContractMapper.getMergeContractList(request, currentOrgId);
+        List<Order> mergeOrders = extOrderMapper.getMergeOrderList(request, currentOrgId);
         // 批量合并产生的修改日志
-        List<LogDTO> mergeLogs = getMergeRelateLogs(request, currentUser, currentOrgId);
+        List<LogDTO> mergeLogs = getMergeRelateLogs(request, currentUser, currentOrgId, mergeContracts, mergeOrders);
         // 联系人需要排除重复项合并
         Map<String, Boolean> uniqueMap = customerContactService.getUniqueMap(currentOrgId);
         List<String> names = new ArrayList<>();
@@ -1360,6 +1372,8 @@ public class CustomerService implements ApprovalResourceHandler {
         // 合同/订单只存 customer_id, 客户被删除后列表里的客户名会变成空值, 必须一并改到合并后的客户
         extContractMapper.batchMerge(request, currentUser, currentOrgId);
         extOrderMapper.batchMerge(request, currentUser, currentOrgId);
+        // 详情页读的是表单快照, 只改主表的话快照里挂的仍是已被删除的旧客户, 客户字段会显示为空
+        syncMergeCustomerSnapshot(mergeContracts, mergeOrders, request.getToMergeId(), oldCustomer.getName());
         extFollowUpRecordMapper.batchMerge(request, currentUser, currentOrgId);
         extFollowUpPlanMapper.batchMerge(request, currentUser, currentOrgId);
 
@@ -1471,13 +1485,15 @@ public class CustomerService implements ApprovalResourceHandler {
     /**
      * 获取合并相关的日志
      *
-     * @param mergeRequest 合并请求参数
-     * @param currentUser  当前用户
-     * @param currentOrgId 当前组织ID
+     * @param mergeRequest    合并请求参数
+     * @param currentUser     当前用户
+     * @param currentOrgId    当前组织ID
+     * @param mergeContracts  被合并客户名下的合同(合并前查询)
+     * @param mergeOrders     被合并客户名下的订单(合并前查询)
      * @return 日志列表
      */
     private List<LogDTO> getMergeRelateLogs(CustomerMergeRequest mergeRequest, String currentUser,
-            String currentOrgId) {
+            String currentOrgId, List<Contract> mergeContracts, List<Order> mergeOrders) {
         var logs = new ArrayList<LogDTO>();
 
         List<Customer> mergeCustomers = customerMapper.selectByIds(mergeRequest.getMergeIds());
@@ -1514,7 +1530,6 @@ public class CustomerService implements ApprovalResourceHandler {
         }
 
         // 合同日志
-        List<Contract> mergeContracts = extContractMapper.getMergeContractList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeContracts)) {
             for (Contract contract : mergeContracts) {
                 LogDTO logDTO = new LogDTO(currentOrgId, contract.getId(), currentUser, LogType.UPDATE,
@@ -1529,7 +1544,6 @@ public class CustomerService implements ApprovalResourceHandler {
         }
 
         // 订单日志
-        List<Order> mergeOrders = extOrderMapper.getMergeOrderList(mergeRequest, currentOrgId);
         if (CollectionUtils.isNotEmpty(mergeOrders)) {
             for (Order order : mergeOrders) {
                 LogDTO logDTO = new LogDTO(currentOrgId, order.getId(), currentUser, LogType.UPDATE,
@@ -1574,6 +1588,67 @@ public class CustomerService implements ApprovalResourceHandler {
         }
 
         return logs;
+    }
+
+    /**
+     * 同步合并后合同/订单快照中的客户信息
+     * <p>
+     * 合同/订单详情读的是表单快照, 合并只改主表 customer_id 的话, 快照里挂的仍是即将被删除的旧客户,
+     * 详情页的客户字段会显示为空。这里把快照中的客户 id、名称以及客户字段的选项一并改到合并后的客户。
+     *
+     * @param contracts    被合并客户名下的合同(合并前查询, 此时仍按旧 customer_id 定位)
+     * @param orders       被合并客户名下的订单(合并前查询)
+     * @param customerId   合并后的客户ID
+     * @param customerName 合并后的客户名称
+     */
+    private void syncMergeCustomerSnapshot(List<Contract> contracts, List<Order> orders,
+            String customerId, String customerName) {
+        if (CollectionUtils.isNotEmpty(contracts)) {
+            List<String> contractIds = contracts.stream().map(Contract::getId).toList();
+            var contractWrapper = new LambdaQueryWrapper<ContractSnapshot>();
+            contractWrapper.in(ContractSnapshot::getContractId, contractIds);
+            contractSnapshotMapper.selectListByLambda(contractWrapper).forEach(snapshot -> {
+                ContractGetResponse response = JSON.parseObject(snapshot.getContractValue(),
+                        ContractGetResponse.class);
+                if (response == null) {
+                    return;
+                }
+                response.setCustomerId(customerId);
+                response.setCustomerName(customerName);
+                updateSnapshotCustomerOption(response.getOptionMap(),
+                        BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey(), customerId, customerName);
+                snapshot.setContractValue(JSON.toJSONString(response));
+                contractSnapshotMapper.update(snapshot);
+            });
+        }
+        if (CollectionUtils.isNotEmpty(orders)) {
+            List<String> orderIds = orders.stream().map(Order::getId).toList();
+            var orderWrapper = new LambdaQueryWrapper<OrderSnapshot>();
+            orderWrapper.in(OrderSnapshot::getOrderId, orderIds);
+            orderSnapshotMapper.selectListByLambda(orderWrapper).forEach(snapshot -> {
+                OrderGetResponse response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
+                if (response == null) {
+                    return;
+                }
+                response.setCustomerId(customerId);
+                response.setCustomerName(customerName);
+                updateSnapshotCustomerOption(response.getOptionMap(),
+                        BusinessModuleField.ORDER_CUSTOMER.getBusinessKey(), customerId, customerName);
+                snapshot.setOrderValue(JSON.toJSONString(response));
+                orderSnapshotMapper.update(snapshot);
+            });
+        }
+    }
+
+    /**
+     * 覆盖快照中客户字段的选项: 前端读取业务键对应的选项来展示客户名称
+     */
+    private void updateSnapshotCustomerOption(Map<String, List<OptionDTO>> optionMap, String businessKey,
+            String customerId, String customerName) {
+        if (optionMap == null) {
+            return;
+        }
+        optionMap.put(businessKey, List.of(new OptionDTO(customerId, customerName)));
     }
 
     public boolean checkOwner(String customerId, String userId) {
