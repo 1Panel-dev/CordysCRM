@@ -24,6 +24,7 @@
           <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
             <CrmApprovalLine
               :resource-id="sourceId"
+              :refresh-key="approvalHistoryRefreshKey"
               class="min-h-0 flex-1"
               :nodes="approvalInfo?.nodes || []"
               :submitter="{
@@ -174,9 +175,11 @@
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CUSTOMER,
   });
+  const approvalHistoryRefreshKey = ref(0);
   const refreshDetail = async () => {
     await initFormDescription();
     await initApprovalDetail();
+    approvalHistoryRefreshKey.value += 1;
   };
   const { resolveRowActions, initApprovalPermission, deleteExecute, enableApproval } = useApprovalOperation({
     formType: FormDesignKeyEnum.CUSTOMER,

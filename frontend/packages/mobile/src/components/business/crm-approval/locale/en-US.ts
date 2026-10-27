@@ -34,6 +34,7 @@ export default {
   'crm.approval.confirmCancelApproval': 'Confirm Withdraw',
   'crm.approval.cancelApprovalSuccess': 'Approval Withdrawn',
   'crm.approval.submit': 'Submit Application',
+  'crm.approval.currentRound': 'Current round',
   'crm.approval.change': 'Change',
   'crm.approval.changeDescription': 'Change Description',
   'crm.approval.confirmChange': 'Save and submit for review',

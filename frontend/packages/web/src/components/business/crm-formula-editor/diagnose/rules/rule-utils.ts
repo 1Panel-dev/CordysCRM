@@ -47,7 +47,7 @@ export function isTextNumberDateNode(node: ASTNode): boolean {
   // 函数：
   // 当前这些函数返回文本 / 数字 / 日期 / 逻辑值
   if (node.type === 'function') {
-    return ['TEXT', 'TODAY', 'NOW', 'SUM', 'DAYS', 'CONCATENATE', 'IFS', 'IF', 'AND'].includes(node.name);
+    return ['TEXT', 'TODAY', 'NOW', 'SUM', 'DAYS', 'CONCATENATE', 'IFS', 'IF', 'AND', 'UNION'].includes(node.name);
   }
 
   // 比较表达式：返回 boolean
