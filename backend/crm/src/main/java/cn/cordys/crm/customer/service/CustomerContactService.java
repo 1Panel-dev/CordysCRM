@@ -17,9 +17,11 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
@@ -61,6 +63,7 @@ import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -103,6 +106,10 @@ public class CustomerContactService {
     private BaseMapper<Customer> customerMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private DataScopeService dataScopeService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private CustomerContactFieldService customerContactFieldService;
     @Resource
@@ -224,6 +231,26 @@ public class CustomerContactService {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
         if (customerContact == null) {
             return null;
+        }
+        String orgId = OrganizationContext.getOrganizationId();
+        if (StringUtils.isBlank(orgId) || !orgId.equals(customerContact.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        String userId = SessionUtils.getUserId();
+        boolean hasContactPermission = PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+                && StringUtils.isNotBlank(customerContact.getOwner())
+                && dataScopeService.hasDataPermission(userId, orgId, customerContact.getOwner(),
+                        PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        if (!hasContactPermission) {
+            String customerId = customerContact.getCustomerId();
+            resourcePermissionService.checkResourcePermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+                    customerId, FormKeyConstants.CUSTOMER, userId, orgId);
+            DeptDataPermissionDTO dataPermission = dataScopeService.getDeptDataPermission(userId, orgId,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+            if (listByCustomerId(customerId, userId, orgId, dataPermission).getList().stream()
+                    .noneMatch(contact -> id.equals(contact.getId()))) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
         }
         CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(),
                 customerContact);
