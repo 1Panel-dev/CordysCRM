@@ -3,9 +3,13 @@ package cn.cordys.crm.customer.service;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.domain.Contract;
+import cn.cordys.crm.contract.domain.ContractSnapshot;
+import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
@@ -16,6 +20,8 @@ import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.order.domain.Order;
+import cn.cordys.crm.order.domain.OrderSnapshot;
+import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.mybatis.BaseMapper;
@@ -28,6 +34,7 @@ import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +67,10 @@ class CustomerMergeRelatedResourceTest {
     private final ExtOpportunityMapper extOpportunityMapper = mock(ExtOpportunityMapper.class);
     private final ExtContractMapper extContractMapper = mock(ExtContractMapper.class);
     private final ExtOrderMapper extOrderMapper = mock(ExtOrderMapper.class);
+    @SuppressWarnings("unchecked")
+    private final BaseMapper<ContractSnapshot> contractSnapshotMapper = mock(BaseMapper.class);
+    @SuppressWarnings("unchecked")
+    private final BaseMapper<OrderSnapshot> orderSnapshotMapper = mock(BaseMapper.class);
     private final ExtFollowUpRecordMapper extFollowUpRecordMapper = mock(ExtFollowUpRecordMapper.class);
     private final ExtFollowUpPlanMapper extFollowUpPlanMapper = mock(ExtFollowUpPlanMapper.class);
     private final LogService logService = mock(LogService.class);
@@ -78,6 +89,8 @@ class CustomerMergeRelatedResourceTest {
         ReflectionTestUtils.setField(service, "extOpportunityMapper", extOpportunityMapper);
         ReflectionTestUtils.setField(service, "extContractMapper", extContractMapper);
         ReflectionTestUtils.setField(service, "extOrderMapper", extOrderMapper);
+        ReflectionTestUtils.setField(service, "contractSnapshotMapper", contractSnapshotMapper);
+        ReflectionTestUtils.setField(service, "orderSnapshotMapper", orderSnapshotMapper);
         ReflectionTestUtils.setField(service, "extFollowUpRecordMapper", extFollowUpRecordMapper);
         ReflectionTestUtils.setField(service, "extFollowUpPlanMapper", extFollowUpPlanMapper);
         ReflectionTestUtils.setField(service, "logService", logService);
@@ -138,11 +151,70 @@ class CustomerMergeRelatedResourceTest {
         assertEquals(TARGET_ID, ((Order) orderLog.getModifiedValue()).getCustomerId());
     }
 
+    @Test
+    void contractAndOrderSnapshotsAreMovedToTheTargetCustomer() {
+        Contract contract = contract("contract-1", MERGED_ID);
+        Order order = order("order-1", MERGED_ID);
+        when(extContractMapper.getMergeContractList(any(), eq(ORG_ID))).thenReturn(List.of(contract));
+        when(extOrderMapper.getMergeOrderList(any(), eq(ORG_ID))).thenReturn(List.of(order));
+        ContractSnapshot contractSnapshot = contractSnapshot(contract.getId());
+        OrderSnapshot orderSnapshot = orderSnapshot(order.getId());
+        when(contractSnapshotMapper.selectListByLambda(any())).thenReturn(List.of(contractSnapshot));
+        when(orderSnapshotMapper.selectListByLambda(any())).thenReturn(List.of(orderSnapshot));
+
+        service.merge(request, USER_ID, ORG_ID);
+
+        ContractGetResponse contractValue = JSON.parseObject(contractSnapshot.getContractValue(),
+                ContractGetResponse.class);
+        assertEquals(TARGET_ID, contractValue.getCustomerId());
+        assertEquals(customer(TARGET_ID).getName(), contractValue.getCustomerName());
+        assertEquals(TARGET_ID,
+                contractValue.getOptionMap().get(BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey())
+                        .getFirst().getId());
+        verify(contractSnapshotMapper).update(contractSnapshot);
+
+        OrderGetResponse orderValue = JSON.parseObject(orderSnapshot.getOrderValue(), OrderGetResponse.class);
+        assertEquals(TARGET_ID, orderValue.getCustomerId());
+        assertEquals(customer(TARGET_ID).getName(), orderValue.getCustomerName());
+        assertEquals(TARGET_ID,
+                orderValue.getOptionMap().get(BusinessModuleField.ORDER_CUSTOMER.getBusinessKey())
+                        .getFirst().getId());
+        verify(orderSnapshotMapper).update(orderSnapshot);
+    }
+
     private LogDTO findLog(List<LogDTO> logs, String module, String resourceId) {
         return logs.stream()
                 .filter(log -> module.equals(log.getModule()) && resourceId.equals(log.getResourceId()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("missing log: " + module + "/" + resourceId));
+    }
+
+    private ContractSnapshot contractSnapshot(String contractId) {
+        ContractGetResponse response = new ContractGetResponse();
+        response.setCustomerId(MERGED_ID);
+        response.setCustomerName(customer(MERGED_ID).getName());
+        response.setOptionMap(new HashMap<>(Map.of(
+                BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey(),
+                new ArrayList<>(List.of(new OptionDTO(MERGED_ID, customer(MERGED_ID).getName()))))));
+        ContractSnapshot snapshot = new ContractSnapshot();
+        snapshot.setId("snapshot-" + contractId);
+        snapshot.setContractId(contractId);
+        snapshot.setContractValue(JSON.toJSONString(response));
+        return snapshot;
+    }
+
+    private OrderSnapshot orderSnapshot(String orderId) {
+        OrderGetResponse response = new OrderGetResponse();
+        response.setCustomerId(MERGED_ID);
+        response.setCustomerName(customer(MERGED_ID).getName());
+        response.setOptionMap(new HashMap<>(Map.of(
+                BusinessModuleField.ORDER_CUSTOMER.getBusinessKey(),
+                new ArrayList<>(List.of(new OptionDTO(MERGED_ID, customer(MERGED_ID).getName()))))));
+        OrderSnapshot snapshot = new OrderSnapshot();
+        snapshot.setId("snapshot-" + orderId);
+        snapshot.setOrderId(orderId);
+        snapshot.setOrderValue(JSON.toJSONString(response));
+        return snapshot;
     }
 
     private List<String> idsOf(List<Customer> customers) {
