@@ -7,6 +7,7 @@
           :can-delete="canDelete(comment)"
           :can-edit="canEdit(comment)"
           :can-reply="props.canReply"
+          :actions-in-more="props.actionsInMore"
           :comment="comment"
           :enable-attachment="props.enableAttachment"
           :submit-loading="props.submitLoading"
@@ -37,6 +38,7 @@
               :can-delete="canDelete(reply)"
               :can-edit="canEdit(reply)"
               :can-reply="props.canReply"
+              :actions-in-more="props.actionsInMore"
               :comment="reply"
               :submit-loading="props.submitLoading"
               :enable-attachment="props.enableAttachment"
@@ -115,10 +117,12 @@
       submitLoading?: boolean;
       canReply?: boolean;
       enableAttachment?: boolean;
+      actionsInMore?: boolean;
     }>(),
     {
       comments: () => [],
       activeEditor: null,
+      actionsInMore: false,
     }
   );
 

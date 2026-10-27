@@ -1,8 +1,9 @@
 <template>
   <div class="crm-comment border-b border-[var(--text-n8)]">
     <div class="crm-comment__header">
-      <div class="flex cursor-pointer items-center gap-[8px]">
+      <div class="flex items-center gap-[8px]">
         <n-button
+          v-if="props.collapsible"
           quaternary
           class="flex !px-[4px] !text-[14px]"
           size="small"
@@ -16,11 +17,15 @@
               class="mr-[8px] text-[var(--text-n4)]"
             />
           </template>
-          <div class="flex items-center gap-[8px] text-[var(--text-n1)]">
+          <div class="flex items-center gap-[8px] font-semibold text-[var(--text-n1)]">
             <CrmIcon type="iconicon_comment" :size="16" class="text-[var(--text-n1)]" />
             {{ t('crmComment.title') }}
           </div>
         </n-button>
+        <div v-else class="flex items-center gap-[8px] font-semibold text-[var(--text-n1)]">
+          <CrmIcon type="iconicon_comment" :size="16" />
+          {{ t('crmComment.title') }}
+        </div>
 
         <span class="text-[var(--text-n4)]">{{ displayCount }}</span>
       </div>
@@ -55,7 +60,7 @@
 
     <n-divider v-if="showHeaderDivider" class="crm-comment__header-divider" />
 
-    <div v-if="expanded" class="crm-comment__body">
+    <div v-if="isExpanded" class="crm-comment__body">
       <MentionInput
         v-if="activeEditor?.action === 'create'"
         class="mb-[12px]"
@@ -72,6 +77,7 @@
         :submit-loading="props.submitLoading"
         :can-reply="props.canReply"
         :enable-attachment="props.enableAttachment"
+        :actions-in-more="props.actionsInMore"
         @reply="handleReply"
         @edit="handleEdit"
         @delete="emit('delete', $event)"
@@ -118,10 +124,14 @@
       canReply?: boolean;
       enableAttachment?: boolean;
       showTimeSort?: boolean;
+      collapsible?: boolean;
+      actionsInMore?: boolean;
       sortOrder?: 'asc' | 'desc';
     }>(),
     {
       comments: () => [],
+      collapsible: true,
+      actionsInMore: false,
     }
   );
 
@@ -150,9 +160,11 @@
     return (props.commentCount || 0) > 0;
   });
 
+  const isExpanded = computed(() => !props.collapsible || expanded.value);
+
   function handleCreateCancel() {
     closeEditor();
-    if (!hasComment.value) {
+    if (props.collapsible && !hasComment.value) {
       expanded.value = false;
     }
   }
@@ -168,9 +180,12 @@
     return formatBadgeCount(props.commentCount || 0);
   });
 
-  const showHeaderDivider = computed(() => !expanded.value);
+  const showHeaderDivider = computed(() => !isExpanded.value);
 
   function toggleExpanded() {
+    if (!props.collapsible) {
+      return;
+    }
     expanded.value = !expanded.value;
     if (!expanded.value) {
       closeEditor();
@@ -244,7 +259,7 @@
   function observeReachBottom() {
     disconnectReachBottomObserver();
 
-    if (!expanded.value || !props.hasMore || !reachBottomTriggerRef.value) {
+    if (!isExpanded.value || !props.hasMore || !reachBottomTriggerRef.value) {
       return;
     }
 
@@ -262,7 +277,7 @@
   }
 
   watch(
-    () => [expanded.value, props.hasMore, props.comments.length],
+    () => [isExpanded.value, props.hasMore, props.comments.length],
     async () => {
       await nextTick();
       observeReachBottom();

@@ -282,6 +282,7 @@
           :source-id="props.resourceId"
           :can-create="props.commentable"
           :can-reply="props.commentable"
+          actions-in-more
           enable-attachment
           show-time-sort
           embedded

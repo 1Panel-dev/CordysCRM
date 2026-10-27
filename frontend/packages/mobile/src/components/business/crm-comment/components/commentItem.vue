@@ -11,6 +11,18 @@
       <div class="crm-comment-item-content">
         <div class="crm-comment-item-title">
           <div class="crm-comment-item-user">{{ props.comment.createUserName || '-' }}</div>
+          <van-popover
+            v-if="props.actionsInMore && moreActions.length"
+            placement="bottom-end"
+            :actions="moreActions"
+            @select="handleMoreActionSelect"
+          >
+            <template #reference>
+              <button type="button" class="crm-comment-item-more" :aria-label="t('common.more')">
+                <CrmIcon name="iconicon_ellipsis" width="16px" height="16px" color="var(--text-n4)" />
+              </button>
+            </template>
+          </van-popover>
         </div>
 
         <div class="crm-comment-item-text">
@@ -28,7 +40,7 @@
       <div class="crm-comment-item-meta">
         <div class="crm-comment-item-time">{{ createTimeText }}</div>
 
-        <div v-if="showActions" class="crm-comment-item-actions">
+        <div v-if="showActions && !props.actionsInMore" class="crm-comment-item-actions">
           <button
             v-if="props.canReply"
             type="button"
@@ -64,6 +76,7 @@
 </template>
 
 <script setup lang="ts">
+  import type { PopoverAction } from 'vant';
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -81,6 +94,7 @@
       canEdit?: boolean;
       canDelete?: boolean;
       showDivider?: boolean;
+      actionsInMore?: boolean;
     }>(),
     {
       level: 1,
@@ -88,6 +102,7 @@
       canEdit: true,
       canDelete: true,
       showDivider: true,
+      actionsInMore: false,
     }
   );
 
@@ -117,6 +132,22 @@
   });
 
   const showActions = computed(() => props.canReply || props.canEdit || props.canDelete);
+
+  const moreActions = computed<PopoverAction[]>(() => [
+    ...(props.canReply ? [{ name: 'reply', text: t('crmComment.reply') }] : []),
+    ...(props.canEdit ? [{ name: 'edit', text: t('crmComment.edit') }] : []),
+    ...(props.canDelete ? [{ name: 'delete', text: t('crmComment.delete'), color: 'var(--error-red)' }] : []),
+  ]);
+
+  function handleMoreActionSelect(action: PopoverAction) {
+    if (action.name === 'reply') {
+      emit('reply', props.comment);
+    } else if (action.name === 'edit') {
+      emit('edit', props.comment);
+    } else if (action.name === 'delete') {
+      emit('delete', props.comment);
+    }
+  }
 </script>
 
 <style scoped lang="less">
@@ -146,9 +177,19 @@
   }
   .crm-comment-item-title {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     min-width: 0;
     line-height: 18px;
+  }
+  .crm-comment-item-more {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    flex: none;
   }
   .crm-comment-item-user {
     overflow: hidden;

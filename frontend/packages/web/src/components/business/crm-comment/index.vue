@@ -9,6 +9,8 @@
     :can-create="props.canCreate"
     :can-reply="props.canReply"
     :enable-attachment="props.enableAttachment"
+    :collapsible="props.collapsible"
+    :actions-in-more="props.actionsInMore"
     :show-time-sort="props.showTimeSort"
     :sort-order="sortOrder"
     @create-submit="handleCreateComment"
@@ -33,11 +35,15 @@
       canReply?: boolean;
       enableAttachment?: boolean;
       showTimeSort?: boolean;
+      collapsible?: boolean;
+      actionsInMore?: boolean;
     }>(),
     {
       canCreate: true,
       canReply: true,
       showTimeSort: false,
+      collapsible: true,
+      actionsInMore: false,
     }
   );
 
