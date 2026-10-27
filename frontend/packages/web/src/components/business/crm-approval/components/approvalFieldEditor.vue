@@ -88,6 +88,7 @@
       isContractTableDetail?: boolean;
       customFormId?: string;
       approvalTaskId?: string;
+      commentMentionId?: string;
       setEditing: (editing: boolean) => void;
       setLoading: (loading: boolean) => void;
     }>(),
@@ -124,6 +125,7 @@
   const otherSaveParams = computed(() => ({
     updateType: 'approval',
     approvalTaskId: props.approvalTaskId || props.taskNode?.taskId,
+    commentMentionId: props.commentMentionId,
     ...(props.customFormId ? { customFormId: props.customFormId } : {}),
   }));
 

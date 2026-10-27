@@ -393,6 +393,7 @@
         formKey: getDetailFormKey(item),
         customFormId: formKeyMap[item.resourceType] ? undefined : item.resourceType,
         taskId: item.approvalTaskId,
+        commentMentionId: item.commentMentionId,
         approvalStatus: item.approvalOperation,
         poolId: item.poolId ? item.poolId : undefined,
       },

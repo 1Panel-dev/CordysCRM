@@ -55,6 +55,7 @@
         <div v-show="activeTab === 'contract'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -78,6 +79,7 @@
                 :readonly="!hasAnyPermission(['CONTRACT:UPDATE'])"
                 :is-contract-table-detail="props.isContractTableDetail"
                 :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 @init="handleInit"
                 @open-customer-detail="emit('showCustomerDrawer', $event)"
                 @open-opportunity-detail="openOpportunityDetail"
@@ -215,6 +217,7 @@
     sourceId: string;
     isContractTableDetail?: boolean;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;

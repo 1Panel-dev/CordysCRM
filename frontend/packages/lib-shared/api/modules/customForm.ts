@@ -120,8 +120,11 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<CustomFormItem[]>({ url: GetCustomFormListUrl });
   }
 
-  function getCustomFormDataDetail(id: string, approvalTaskId?: string) {
-    return CDR.get<CustomFormDataDetail>({ url: `${GetCustomFormDataDetailUrl}/${id}`, params: { approvalTaskId } });
+  function getCustomFormDataDetail(id: string, approvalTaskId?: string, commentMentionId?: string) {
+    return CDR.get<CustomFormDataDetail>({
+      url: `${GetCustomFormDataDetailUrl}/${id}`,
+      params: { approvalTaskId, commentMentionId },
+    });
   }
 
   function getCustomFormDataPage(data: GetCustomFormDataPageParams) {

@@ -46,6 +46,7 @@
         <div v-show="activeTab === 'cluePool'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="show"
+            :comment-mention-id="props.commentMentionId"
             :refresh-key="refreshKey"
             :form-key="FormDesignKeyEnum.CLUE"
             :source-id="sourceId"
@@ -67,6 +68,7 @@
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
                   approvalTaskId: props.approvalTaskId || taskNode?.taskId,
+                  commentMentionId: props.commentMentionId,
                 }"
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"
@@ -137,6 +139,7 @@
     poolId: string;
     hiddenColumns: string[];
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
 
   const show = defineModel<boolean>('show', {

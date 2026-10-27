@@ -166,12 +166,15 @@ export default function useProcessApi(CDR: CordysAxios) {
   }
 
   // 获取审批资源详情
-  function getApprovalResourceDetail(id: string) {
-    return CDR.get<ApprovalDetail>({ url: `${GetApprovalResourceDetailUrl}/${id}` });
+  function getApprovalResourceDetail(id: string, commentMentionId?: string) {
+    return CDR.get<ApprovalDetail>({ url: `${GetApprovalResourceDetailUrl}/${id}`, params: { commentMentionId } });
   }
 
-  function getApprovalResourceInstanceDetailList(resourceId: string) {
-    return CDR.get<ApprovalDetail[]>({ url: `${GetApprovalResourceInstanceDetailListUrl}/${resourceId}` });
+  function getApprovalResourceInstanceDetailList(resourceId: string, commentMentionId?: string) {
+    return CDR.get<ApprovalDetail[]>({
+      url: `${GetApprovalResourceInstanceDetailListUrl}/${resourceId}`,
+      params: { commentMentionId },
+    });
   }
 
   function getApprovalCommentList(data: FollowCommentListParams) {

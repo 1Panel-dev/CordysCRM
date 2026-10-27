@@ -20,6 +20,7 @@
         <div v-else class="flex h-full bg-[var(--text-n9)] p-[16px]">
           <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
             <CrmApprovalLine
+              :comment-mention-id="route.query.commentMentionId?.toString()"
               :resource-id="sourceId"
               class="min-h-0 flex-1"
               :nodes="approvalInfo?.nodes || []"
@@ -103,6 +104,7 @@
     needInitDetail: true,
     otherSaveParams: {
       approvalTaskId: route.query.taskId,
+      commentMentionId: route.query.commentMentionId?.toString(),
     },
     customFormId,
   });
@@ -180,7 +182,10 @@
 
   async function initApprovalDetail() {
     try {
-      approvalInfo.value = await getApprovalResourceDetail(route.query.id?.toString() || '');
+      approvalInfo.value = await getApprovalResourceDetail(
+        route.query.id?.toString() || '',
+        route.query.commentMentionId?.toString()
+      );
       if (!approvalInfo.value) {
         noApproval.value = true;
       }

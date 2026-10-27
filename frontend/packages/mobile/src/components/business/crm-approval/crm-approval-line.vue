@@ -355,6 +355,7 @@
     commentCount?: number;
     commentable?: boolean;
     resourceId?: string;
+    commentMentionId?: string;
     isHistorical?: boolean;
   }>();
 
@@ -426,7 +427,7 @@
       return;
     }
     try {
-      const details = await getApprovalResourceInstanceDetailList(resourceId);
+      const details = await getApprovalResourceInstanceDetailList(resourceId, props.commentMentionId);
       if (props.resourceId !== resourceId) return;
       historyDetails.value = details;
       expandedHistoryInstanceNames.value = details.length ? ['history'] : [];

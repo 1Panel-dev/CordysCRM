@@ -61,6 +61,7 @@
         <div v-show="activeTab === 'order'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.ORDER"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -80,6 +81,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="!hasAnyPermission(['ORDER:UPDATE'])"
@@ -183,6 +185,7 @@
     sourceId: string;
     readonly?: boolean;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;

@@ -243,6 +243,7 @@ export interface ApprovalTodoTableParams extends TableQueryParams {
 }
 
 export interface ApprovalTodoItem {
+  commentMentionId?: string;
   approvalTaskId: string;
   approvalNodeId: string;
   approvalInstanceId: string;

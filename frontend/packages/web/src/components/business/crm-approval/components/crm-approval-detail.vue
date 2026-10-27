@@ -389,6 +389,7 @@
     formKey: FormDesignKeyEnum | string;
     refreshKey?: number;
     approvalTaskId?: string;
+    commentMentionId?: string;
     layout?: 'horizontal' | 'vertical';
     approvalStatus: ProcessStatusEnum;
     leftLoading?: boolean;
@@ -674,7 +675,7 @@
 
   async function initApprovalDetail() {
     try {
-      approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
+      approvalInfo.value = await getApprovalResourceDetail(props.sourceId, props.commentMentionId);
       if (!approvalInfo.value) {
         noApproval.value = true;
       }
@@ -682,7 +683,10 @@
         (node) => node.nodeId === approvalInfo.value?.currentNodeId
       );
       currentApprovalNode.value = approvalInfo.value?.nodes[currentApprovalNodeIndex.value];
-      historicalApprovalDetails.value = await getApprovalResourceInstanceDetailList(props.sourceId);
+      historicalApprovalDetails.value = await getApprovalResourceInstanceDetailList(
+        props.sourceId,
+        props.commentMentionId
+      );
       expandedHistoryInstanceNames.value = ['history'];
       await nextTick();
       document

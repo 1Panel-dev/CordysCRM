@@ -46,6 +46,7 @@
         <div v-show="activeTab === 'invoice'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.INVOICE"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -65,6 +66,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="props.readonly || !hasAnyPermission(['CONTRACT_INVOICE:UPDATE'])"
@@ -139,6 +141,7 @@
     sourceId: string;
     readonly?: boolean;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;
