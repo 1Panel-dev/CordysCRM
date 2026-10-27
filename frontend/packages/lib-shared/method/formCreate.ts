@@ -292,7 +292,7 @@ export function parseFormDetailValue(item: FormCreateField, form: FormDetail, so
       if (Array.isArray(value)) {
         name = value.map(() => t('common.optionNotExist'));
       } else {
-        name = t('common.optionNotExist');
+        name = value ? t('common.optionNotExist') : ''; // 存在值但是无选项
       }
     }
     if (item.type === FieldTypeEnum.DATE_TIME) {
