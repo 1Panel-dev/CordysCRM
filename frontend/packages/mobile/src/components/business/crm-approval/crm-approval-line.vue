@@ -94,6 +94,12 @@
           </template>
           <div class="mb-[16px] flex items-center justify-between">
             <div class="font-semibold leading-[22px] text-[var(--text-n1)]">{{ t('crm.approval.submit') }}</div>
+            <span
+              v-if="!props.isHistorical"
+              class="ml-[8px] mr-auto rounded-[2px] bg-[var(--info-5)] px-[6px] py-[2px] text-[12px] font-normal leading-[18px] text-[var(--info-blue)]"
+            >
+              {{ t('crm.approval.currentRound') }}
+            </span>
             <div class="text-[var(--text-n4)]">
               {{ dayjs(props.submitter.submitTime).format('YYYY-MM-DD HH:mm') }}
             </div>
@@ -362,6 +368,7 @@
     commentCount?: number;
     commentable?: boolean;
     resourceId?: string;
+    refreshKey?: number;
     commentMentionId?: string;
     isHistorical?: boolean;
   }>();
@@ -468,7 +475,7 @@
   }
 
   watch(
-    () => [props.resourceId, props.approvalId],
+    () => [props.resourceId, props.approvalId, props.refreshKey],
     () => loadHistoryDetails(props.resourceId),
     { immediate: true }
   );

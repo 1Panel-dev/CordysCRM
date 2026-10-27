@@ -31,6 +31,7 @@ export default {
   'crm.approval.confirmCancelApproval': '确认撤回',
   'crm.approval.cancelApprovalSuccess': '已撤回',
   'crm.approval.submit': '提交申请',
+  'crm.approval.currentRound': '本轮',
   'crm.approval.change': '变更',
   'crm.approval.changeDescription': '变更说明',
   'crm.approval.confirmChange': '保存并提审',
