@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.notice;
 
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.dingtalk.service.DingTalkNoticeSender;
 import cn.cordys.crm.integration.lark.service.LarkNoticeSender;
 import cn.cordys.crm.integration.wecom.service.WeComNoticeSender;
@@ -34,6 +35,9 @@ public class NoticeSendService {
         boolean useTemplate = Boolean.parseBoolean(
                 (String) noticeModel.getParamMap().getOrDefault("useTemplate", "false"));
         String template = (String) noticeModel.getParamMap().get("template");
+        if (useTemplate && noticeModel.getParamMap().get("templateKey") instanceof String templateKey) {
+            template = Translator.get(templateKey);
+        }
         try {
             List<MessageDetailDTO> messageDetails = messageDetailService
                     .searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);

@@ -1,5 +1,6 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalComment;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
@@ -7,12 +8,22 @@ import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTask;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.NoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeModel;
+import cn.cordys.crm.system.notice.message.MessageDetailService;
+import cn.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
+import cn.cordys.crm.system.notice.sender.mail.MailNoticeSender;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContext;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -20,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,9 +52,17 @@ class ApprovalCommentNoticeServiceTest {
     private ExtMessageTaskMapper messageTaskMapper;
     private CommonNoticeSendService noticeSender;
     private ApprovalInstance instance;
+    private MessageSource previousMessageSource;
+    private LocaleContext previousLocaleContext;
 
     @BeforeEach
     void setUp() {
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        previousLocaleContext = LocaleContextHolder.getLocaleContext();
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+        messageSource.setBasename("i18n/cordys-crm");
+        messageSource.setDefaultEncoding("UTF-8");
+        ReflectionTestUtils.setField(Translator.class, "messageSource", messageSource);
         service = new ApprovalCommentNoticeService();
         commentMapper = mock(ExtApprovalCommentMapper.class);
         messageTaskMapper = mock(ExtMessageTaskMapper.class);
@@ -57,6 +75,12 @@ class ApprovalCommentNoticeServiceTest {
         instance.setType("contract");
         instance.setResourceName("合同甲");
         instance.setApprovalStatus("APPROVED");
+    }
+
+    @AfterEach
+    void tearDown() {
+        ReflectionTestUtils.setField(Translator.class, "messageSource", previousMessageSource);
+        LocaleContextHolder.setLocaleContext(previousLocaleContext);
     }
 
     @ParameterizedTest
@@ -89,7 +113,7 @@ class ApprovalCommentNoticeServiceTest {
                 eq("editor"), eq("org-a"), eq(List.of("editor")), eq(false));
         assertEquals(List.of("comment-a", "comment-b"), params.getAllValues().stream().map(map -> map.get("resourceId")).toList());
         assertEquals("合同甲", params.getValue().get("name"));
-        assertEquals("请确认付款条款。", params.getValue().get("commentSummary"));
+        assertFalse(params.getValue().containsKey("commentSummary"));
         assertEquals("CONTRACT", params.getValue().get("resourceType"));
         assertFalse(params.getValue().containsKey("type"));
         assertFalse(params.getValue().containsKey("state"));
@@ -115,33 +139,43 @@ class ApprovalCommentNoticeServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @CsvSource({
+            "zh-CN,false,【评论提醒】张三 在【合同甲】的审批记录添加了评论并@了你",
+            "zh-CN,true,【评论提醒】张三 在【合同甲】的审批记录回复了评论并@了你",
+            "en-US,false,[Comment Reminder] Zhang added a comment to the approval record for [合同甲] and @ed you as well",
+            "en-US,true,[Comment Reminder] Zhang replied to a comment on the approval record for [合同甲] and @ed you as well"
+    })
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void summaryNormalizesWhitespaceAndTruncatesWithoutSplittingEmoji(boolean longComment) {
+    void mentionTemplateMatchesCommentActionWithoutIncludingContent(String language, boolean reply, String expected) {
         enableNotice();
+        LocaleContextHolder.setLocale(Locale.forLanguageTag(language));
         ApprovalComment comment = comment("comment-a");
-        comment.setContent(longComment ? "评".repeat(99) + "😀补充" : "  请确认\n\t付款条款。  ");
+        comment.setParentId(reply ? "parent-a" : null);
+        comment.setContent("@其他成员 请确认付款条款。");
 
         service.sendMentionNotice(comment, List.of("receiver"));
 
         ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
         verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
                 eq("editor"), eq("org-a"), eq(List.of("receiver")), eq(false));
-        assertEquals(longComment ? "评".repeat(99) + "😀…" : "请确认 付款条款。", params.getValue().get("commentSummary"));
-    }
+        Map<String, Object> variables = new HashMap<>(params.getValue());
+        variables.put("OPERATOR", language.startsWith("zh") ? "张三" : "Zhang");
+        variables.put("Language", language);
+        variables.put("organizationId", "org-a");
+        assertEquals("true", variables.get("useTemplate"));
+        assertEquals(reply ? "message.approval_comment_reply_mentioned_text" : "message.approval_comment_mentioned_text",
+                variables.get("templateKey"));
+        assertFalse(variables.containsKey("commentSummary"));
 
-    @ParameterizedTest
-    @CsvSource({"zh-CN,张三在 合同甲 中提及了你: 请确认付款条款。",
-            "en-US,Zhang mentioned you in <<合同甲>>: 请确认付款条款。"})
-    void defaultMessageContainsOnlyCommenterResourceNameAndSummary(String language, String expected) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("OPERATOR", language.startsWith("zh") ? "张三" : "Zhang");
-        params.put("name", "合同甲");
-        params.put("commentSummary", "请确认付款条款。");
-        String template = ResourceBundle.getBundle("i18n.cordys-crm", Locale.forLanguageTag(language))
-                .getString("message.approval_comment_mentioned_text");
+        MessageDetailService messageDetails = mock(MessageDetailService.class);
+        NoticeSendService sender = new NoticeSendService(mock(MailNoticeSender.class), mock(InSiteNoticeSender.class),
+                messageDetails);
+        LocaleContextHolder.setLocale(language.startsWith("zh") ? Locale.US : Locale.SIMPLIFIED_CHINESE);
+        sender.sendOther(MODULE, NoticeModel.builder().event(EVENT).paramMap(variables).build(), false);
 
-        assertEquals(expected, StringSubstitutor.replace(template, params));
+        ArgumentCaptor<String> template = ArgumentCaptor.forClass(String.class);
+        verify(messageDetails).searchMessageByTypeAndOrgId(eq(MODULE), eq(true), template.capture(), eq("org-a"));
+        assertEquals(expected, StringSubstitutor.replace(template.getValue(), variables));
     }
 
     @Test
