@@ -849,7 +849,11 @@ export const showRulesMap: Partial<Record<FieldTypeEnum, FieldRuleEnum[]>> = {
 
 export const getFormConfigApiMap: Record<
   FormDesignKeyEnum,
-  (id?: string, approvalTaskId?: string) => Promise<FormDesignConfigDetailParams | CustomFormDetail>
+  (
+    id?: string,
+    approvalTaskId?: string,
+    commentMentionId?: string
+  ) => Promise<FormDesignConfigDetailParams | CustomFormDetail>
 > = {
   [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
   [FormDesignKeyEnum.BUSINESS]: getOptFormConfig,
@@ -986,7 +990,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
 };
 
 export const getFormDetailApiMap: Partial<
-  Record<FormDesignKeyEnum, (id: string, approvalTaskId?: string) => Promise<FormDetail>>
+  Record<FormDesignKeyEnum, (id: string, approvalTaskId?: string, commentMentionId?: string) => Promise<FormDetail>>
 > = {
   [FormDesignKeyEnum.CUSTOMER]: getCustomer,
   [FormDesignKeyEnum.BUSINESS]: getOpportunityDetail,

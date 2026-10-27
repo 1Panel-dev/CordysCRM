@@ -49,6 +49,7 @@
         <div v-show="activeTab === 'quotation'" class="h-full">
           <CrmApprovalDetail
             v-if="visible"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -68,6 +69,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
@@ -149,6 +151,7 @@
   const props = defineProps<{
     sourceId: string;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
 
   const emit = defineEmits<{

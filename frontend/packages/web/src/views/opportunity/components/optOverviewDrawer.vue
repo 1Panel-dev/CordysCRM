@@ -71,6 +71,7 @@
         <div v-show="activeTab === 'opportunity'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="showOptOverviewDrawer"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.BUSINESS"
             :source-id="sourceId"
             :refresh-key="refreshKey"
@@ -88,6 +89,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])"
@@ -201,6 +203,7 @@
   const props = defineProps<{
     detail?: Partial<OpportunityItem>;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
 
   const emit = defineEmits<{

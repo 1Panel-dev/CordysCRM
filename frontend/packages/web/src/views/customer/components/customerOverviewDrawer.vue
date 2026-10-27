@@ -44,6 +44,7 @@
         <div v-show="activeTab === 'customer'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="show"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.CUSTOMER"
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
@@ -61,6 +62,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
@@ -230,6 +232,7 @@
     sourceId: string;
     readonly?: boolean;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;

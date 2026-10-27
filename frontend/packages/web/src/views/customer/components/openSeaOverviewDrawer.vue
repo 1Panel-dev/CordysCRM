@@ -1,12 +1,5 @@
 <template>
-  <CrmDrawer
-    v-model:show="show"
-    resizable
-    no-padding
-    :footer="false"
-    :title="sourceName"
-    :view-size="formViewSize"
-  >
+  <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
     </template>
@@ -46,6 +39,7 @@
         <div v-show="activeTab === 'openSea'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="show"
+            :comment-mention-id="props.commentMentionId"
             :form-key="FormDesignKeyEnum.CUSTOMER"
             :source-id="props.sourceId"
             :refresh-key="refreshKey"
@@ -68,6 +62,7 @@
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
                   approvalTaskId: props.approvalTaskId || taskNode?.taskId,
+                  commentMentionId: props.commentMentionId,
                 }"
                 @init="handleDescriptionInit"
                 @refresh="emit('change')"
@@ -144,6 +139,7 @@
     hiddenColumns: string[];
     refreshDetailKey?: number;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;

@@ -446,10 +446,14 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: GetAdvancedSwitchUrl });
   }
 
-  function getDatasourceFieldConfig(type: FormDesignKeyEnum | string, approvalTaskId?: string) {
+  function getDatasourceFieldConfig(
+    type: FormDesignKeyEnum | string,
+    approvalTaskId?: string,
+    commentMentionId?: string
+  ) {
     return CDR.get<FormDesignConfigDetailParams | CustomFormDetail>({
       url: `${GetFieldConfigUrl}/${type}`,
-      params: { approvalTaskId },
+      params: { approvalTaskId, commentMentionId },
     });
   }
 

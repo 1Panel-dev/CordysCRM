@@ -40,6 +40,7 @@
         <div v-show="activeTab === 'clue'" class="h-full overflow-hidden">
           <CrmApprovalDetail
             v-if="show"
+            :comment-mention-id="props.commentMentionId"
             :refresh-key="refreshKey"
             :form-key="FormDesignKeyEnum.CLUE"
             :source-id="sourceId"
@@ -57,6 +58,7 @@
                 :field-permissions="fieldPermissions"
                 :task-node="taskNode"
                 :approval-task-id="props.approvalTaskId"
+                :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['CLUE_MANAGEMENT:UPDATE'])"
@@ -171,6 +173,7 @@
   const props = defineProps<{
     detail?: Partial<ClueListItem>;
     approvalTaskId?: string;
+    commentMentionId?: string;
   }>();
 
   const show = defineModel<boolean>('show', {
