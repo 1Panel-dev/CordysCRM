@@ -50,13 +50,11 @@ public class ApprovalCommentNoticeService {
                 case ORDER -> NotificationConstants.Module.ORDER;
                 case null, default -> NotificationConstants.Module.APPROVAL;
             };
-            String summary = StringUtils.normalizeSpace(StringUtils.defaultString(comment.getContent()));
-            if (summary.codePointCount(0, summary.length()) > 100) {
-                summary = summary.substring(0, summary.offsetByCodePoints(0, 100)) + "…";
-            }
             Map<String, Object> params = new HashMap<>();
             params.put("name", StringUtils.defaultString(instance.getResourceName()));
-            params.put("commentSummary", summary);
+            params.put("useTemplate", "true");
+            params.put("templateKey", StringUtils.isBlank(comment.getParentId())
+                    ? "message.approval_comment_mentioned_text" : "message.approval_comment_reply_mentioned_text");
             params.put("resourceType", resourceType);
             params.put("resourceId", comment.getId());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL,
