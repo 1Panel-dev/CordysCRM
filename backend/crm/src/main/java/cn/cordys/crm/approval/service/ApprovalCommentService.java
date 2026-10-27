@@ -380,6 +380,7 @@ public class ApprovalCommentService {
         if (attachments.isEmpty()) {
             return;
         }
+        attachments.forEach(attachmentService::checkPermission);
         attachmentMapper.deleteByIds(attachments.stream().map(Attachment::getId).toList());
         Runnable cleanup = () -> attachments.forEach(attachment -> fileCommonService.deleteFolder(new FileRequest(
                 DefaultRepositoryDir.getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(),

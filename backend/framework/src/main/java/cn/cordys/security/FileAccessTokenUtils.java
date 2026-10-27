@@ -57,7 +57,7 @@ public class FileAccessTokenUtils {
     /**
      * 从 Cookie 获取并解密 SessionId
      */
-    private static String getSessionId(HttpServletRequest request) {
+    public static String getSessionId(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             return null;

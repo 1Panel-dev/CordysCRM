@@ -1,5 +1,6 @@
 package cn.cordys.config;
 
+import cn.cordys.security.FileAccessTokenUtils;
 import cn.cordys.security.SessionConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,7 +19,8 @@ import java.util.List;
  * 并且只在 {@code /sso/callback/**} 范围读取该 Cookie，使回调能够恢复原 Session。
  * </p>
  * <p>
- * 专用 Cookie 不参与普通业务接口的身份认证，避免扩大基于 Cookie 的会话使用范围。
+ * 文件预览仅从文件访问 Cookie 恢复会话，以便继续校验附件所属业务数据的权限。
+ * 两类 Cookie 均不参与普通业务接口的身份认证。
  * </p>
  */
 public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
@@ -43,11 +45,16 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
      * 解析当前请求的 Session ID。
      * <p>
      * SSO 回调优先使用授权前写入的 Cookie，防止浏览器中残留的旧登录请求头覆盖本次 OAuth 会话；
-     * 其他请求始终只读取原有认证请求头。
+     * 文件预览使用文件 Cookie 对应的会话，其有效性继续由文件访问过滤器校验；其他请求只读取认证请求头。
      * </p>
      */
     @Override
     public List<String> resolveSessionIds(HttpServletRequest request) {
+        if (isFilePreviewRequest(request)) {
+            // 认证和对象授权使用同一个 Cookie 会话，避免与请求头中的其他用户身份混用。
+            String sessionId = FileAccessTokenUtils.getSessionId(request);
+            return sessionId == null ? List.of() : List.of(sessionId);
+        }
         if (isSsoCallbackRequest(request)) {
             List<String> oauthSessionIds = cookieResolver.resolveSessionIds(request);
             if (!oauthSessionIds.isEmpty()) {
@@ -84,6 +91,11 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
     private boolean isSsoCallbackRequest(HttpServletRequest request) {
         String requestPath = getRequestPath(request);
         return requestPath.equals(SSO_CALLBACK_PATH) || requestPath.startsWith(SSO_CALLBACK_PATH + "/");
+    }
+
+    private boolean isFilePreviewRequest(HttpServletRequest request) {
+        return ("GET".equals(request.getMethod()) || "HEAD".equals(request.getMethod()))
+                && getRequestPath(request).matches("/(attachment|pic)/preview/[^/]+");
     }
 
     /** 获取去除应用 Context Path 后的请求路径。 */

@@ -1287,7 +1287,7 @@ public class ApprovalResourceService {
         }
 
         // 历史任一审批实例中作为提交人或审批人/抄送人参与过, 直接放行
-        if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId)) {
+        if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)) {
             return true;
         }
 
