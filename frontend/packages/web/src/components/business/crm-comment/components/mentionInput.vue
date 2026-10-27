@@ -10,11 +10,11 @@
             v-model:file-list="fileList"
             class="crm-file-input-upload"
             :custom-request="uploadAttachment"
+            multiple
             :show-file-list="false"
             :max="10"
             directory-dnd
             @before-upload="beforeUpload"
-            @finish="handleAttachmentFinish"
           >
             <CrmIcon type="iconicon_link1" :size="16" class="text-[var(--text-n4)]" />
           </n-upload>
@@ -286,22 +286,21 @@
   }
 
   async function uploadAttachment({ file, onFinish, onError }: UploadCustomRequestOptions) {
-    uploadingAttachmentIds.value.add(file.id);
+    const localFileId = file.id;
+    uploadingAttachmentIds.value.add(localFileId);
     try {
       const result = await uploadTempAttachment(file.file);
       const [temporaryAttachmentId] = result.data;
-      temporaryAttachmentIds.value[file.id] = temporaryAttachmentId;
+      temporaryAttachmentIds.value[localFileId] = temporaryAttachmentId;
       onFinish();
+      fileList.value = fileList.value.map((item) =>
+        item.id === localFileId ? { ...item, id: temporaryAttachmentId, local: false } : item
+      );
     } catch {
       onError();
     } finally {
-      uploadingAttachmentIds.value.delete(file.id);
+      uploadingAttachmentIds.value.delete(localFileId);
     }
-  }
-
-  function handleAttachmentFinish({ file }: { file: UploadFileInfo }) {
-    const temporaryId = temporaryAttachmentIds.value[file.id];
-    return temporaryId ? { ...file, id: temporaryId } : file;
   }
 
   function deleteAttachment(fileId: string) {
