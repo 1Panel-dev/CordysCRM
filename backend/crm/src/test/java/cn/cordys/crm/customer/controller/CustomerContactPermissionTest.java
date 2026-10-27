@@ -24,13 +24,19 @@ import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
+import cn.cordys.crm.customer.domain.CustomerContact;
+import cn.cordys.crm.customer.dto.response.CustomerContactGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.service.CustomerCollaborationService;
+import cn.cordys.crm.customer.service.CustomerContactFieldService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerResourceAccessContextProvider;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.service.OpportunityResourceAccessContextProvider;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionConstants;
 import cn.cordys.security.SessionUser;
@@ -53,11 +59,13 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -67,12 +75,15 @@ import static org.mockito.Mockito.*;
  */
 class CustomerContactPermissionTest {
     private static final String READ = PermissionConstants.CUSTOMER_MANAGEMENT_READ;
+    private static final String CONTACT_READ = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ;
     private static final String USER = "reader";
     private static final String ORG = "org-example";
     private static final String CUSTOMER = "customer-example";
 
     @SuppressWarnings("unchecked")
     private final BaseMapper<Customer> customers = mock(BaseMapper.class);
+    @SuppressWarnings("unchecked")
+    private final BaseMapper<CustomerContact> contactRecords = mock(BaseMapper.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<CustomerCollaboration> collaborationMapper = mock(BaseMapper.class);
     private final CustomerResourceAccessContextProvider provider = new CustomerResourceAccessContextProvider();
@@ -85,6 +96,9 @@ class CustomerContactPermissionTest {
     private final ResourcePermissionService resourcePermissions = new ResourcePermissionService();
     private final PermissionCache permissions = mock(PermissionCache.class);
     private final CustomerContactService service = spy(new CustomerContactService());
+    private final CustomerContactFieldService contactFields = mock(CustomerContactFieldService.class);
+    private final ModuleFormCacheService formCache = mock(ModuleFormCacheService.class);
+    private final ModuleFormService forms = mock(ModuleFormService.class);
     private final DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
     private final SessionUser user = new SessionUser();
     private final Customer customer = new Customer();
@@ -139,6 +153,12 @@ class CustomerContactPermissionTest {
         ReflectionTestUtils.setField(resourcePermissions, "contextProviders", List.of(provider));
         ReflectionTestUtils.invokeMethod(resourcePermissions, "initializeProviders");
         ReflectionTestUtils.setField(service, "customerMapper", customers);
+        ReflectionTestUtils.setField(service, "customerContactMapper", contactRecords);
+        ReflectionTestUtils.setField(service, "dataScopeService", dataScope);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", resourcePermissions);
+        ReflectionTestUtils.setField(service, "customerContactFieldService", contactFields);
+        ReflectionTestUtils.setField(service, "moduleFormCacheService", formCache);
+        ReflectionTestUtils.setField(service, "moduleFormService", forms);
         ReflectionTestUtils.setField(service, "extCustomerContactMapper", contacts);
         ReflectionTestUtils.setField(service, "customerCollaborationService", collaborations);
         ReflectionTestUtils.setField(service, "baseService", base);
@@ -163,6 +183,116 @@ class CustomerContactPermissionTest {
             ThreadContext.bind(previousSubject);
         }
         new CommonBeanFactory().setApplicationContext(previousContext);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "SELF", "DEPARTMENT", "ALL" })
+    void 仅联系人查看权限可读取本人部门或全部范围的详情(String access) {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(CONTACT_READ));
+        CustomerContact record = detail("owner", "owner");
+        switch (access) {
+        case "SELF" -> record.setOwner(USER);
+        case "DEPARTMENT" -> {
+            scope.setSelf(false);
+            scope.setDeptIds(Set.of("dept-a"));
+        }
+        default -> scope.setAll(true);
+        }
+        prepareDetailDisplay();
+        assertEquals(record.getId(), controller.get(record.getId()).getId());
+        verifyNoInteractions(collaborationMapper);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "SELF", "DEPARTMENT" })
+    void 仅联系人查看权限不能读取范围外负责人的详情(String access) {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(CONTACT_READ));
+        CustomerContact record = detail("collaboration", "collaborator");
+        if ("DEPARTMENT".equals(access)) {
+            scope.setSelf(false);
+            scope.setDeptIds(Set.of("dept-a"));
+        }
+        assertDetailForbidden(record.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "SELF", "ALL", "ADMIN" })
+    void 本人全部范围及管理员均不能读取其他组织联系人详情(String access) {
+        CustomerContact record = detail("mine", USER);
+        record.setOrganizationId("foreign-org");
+        scope.setAll("ALL".equals(access));
+        if ("ADMIN".equals(access)) {
+            user.setId(InternalUser.ADMIN.getValue());
+            record.setOwner(user.getId());
+        }
+        assertDetailForbidden(record.getId());
+        verifyNoInteractions(customers, contacts);
+    }
+
+    @Test
+    void 无可用组织时拒绝联系人详情() {
+        CustomerContact record = detail("mine", USER);
+        OrganizationContext.clear();
+        user.setOrganizationIds(Set.of());
+        assertDetailForbidden(record.getId());
+        verifyNoInteractions(customers, contacts);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OWNER,owner,owner", "COLLABORATION,mine,reader", "READ_ONLY,collaboration,collaborator" })
+    void 仅客户查看权限保留本人客户和协作客户的联系人详情(String access, String id, String owner) {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(READ));
+        if ("OWNER".equals(access)) {
+            customer.setOwner(USER);
+        } else {
+            configureCollaboration(access);
+        }
+        CustomerContact record = detail(id, owner);
+        prepareDetailDisplay();
+        assertEquals(record.getId(), controller.get(record.getId()).getId());
+        verify(contacts).listByCustomerId(CUSTOMER);
+    }
+
+    @Test
+    void 仅客户查看权限不能凭本人联系人越过所属客户权限() {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(READ));
+        CustomerContact record = detail("mine", USER);
+        assertDetailForbidden(record.getId());
+        verifyNoInteractions(contacts);
+    }
+
+    @Test
+    void 客户负责人不能读取联系人列表已过滤的其他协作人详情() {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(READ));
+        customer.setOwner(USER);
+        CustomerContact record = detail("collaboration", "collaborator");
+        assertDetailForbidden(record.getId());
+        verify(contacts).listByCustomerId(CUSTOMER);
+    }
+
+    @Test
+    void 双查看权限在联系人范围不足时仍可通过客户联系人范围读取() {
+        customer.setOwner(USER);
+        CustomerContact record = detail("owner", "owner");
+        prepareDetailDisplay();
+        assertEquals(record.getId(), controller.get(record.getId()).getId());
+        verify(dataScope).hasDataPermission(USER, ORG, record.getOwner(), CONTACT_READ);
+        verify(contacts).listByCustomerId(CUSTOMER);
+    }
+
+    @Test
+    void 无查看角色权限不能读取本人联系人详情() {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of());
+        customer.setOwner(USER);
+        CustomerContact record = detail("mine", USER);
+        assertDetailForbidden(record.getId());
+        verifyNoInteractions(contacts);
+    }
+
+    @Test
+    void 不存在的联系人详情保持空结果() {
+        assertNull(controller.get("missing"));
+        verifyNoInteractions(customers, contacts, contactFields, formCache, forms);
     }
 
     @ParameterizedTest
@@ -359,6 +489,32 @@ class CustomerContactPermissionTest {
         when(collaborations.selectByCustomerId(CUSTOMER)).thenReturn("NONE".equals(type)
                 ? List.of(other, readOnly)
                 : List.of(other, readOnly, collaboration(USER, type)));
+    }
+
+    private CustomerContact detail(String id, String owner) {
+        CustomerContact record = new CustomerContact();
+        record.setId(id);
+        record.setCustomerId(CUSTOMER);
+        record.setOwner(owner);
+        record.setOrganizationId(ORG);
+        when(contactRecords.selectByPrimaryKey(id)).thenReturn(record);
+        return record;
+    }
+
+    private void prepareDetailDisplay() {
+        when(base.setCreateUpdateOwnerUserName(any(CustomerContactGetResponse.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(contactFields.setBusinessRefFieldValue(anyList(), anyList(), anyMap()))
+                .thenAnswer(invocation -> invocation.getArgument(2));
+        when(formCache.getBusinessFormConfig(anyString(), anyString())).thenReturn(new ModuleFormConfigDTO());
+        when(forms.getOptionMap(any(ModuleFormConfigDTO.class), anyList())).thenAnswer(invocation -> new HashMap<>());
+    }
+
+    private void assertDetailForbidden(String id) {
+        prepareDetailDisplay();
+        GenericException error = assertThrows(GenericException.class, () -> controller.get(id));
+        assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
+        verifyNoInteractions(contactFields, formCache, forms);
     }
 
     private void assertContacts(String expected) {
