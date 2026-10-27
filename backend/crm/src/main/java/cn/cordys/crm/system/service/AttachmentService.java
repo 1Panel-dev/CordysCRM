@@ -2,10 +2,12 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.file.engine.DefaultRepositoryDir;
+import cn.cordys.file.engine.FileCenter;
 import cn.cordys.file.engine.FileCopyRequest;
 import cn.cordys.file.engine.FileRequest;
 import cn.cordys.file.engine.StorageType;
@@ -17,7 +19,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -277,45 +279,59 @@ public class AttachmentService {
     }
 
     /**
-     * 追加临时文件
+     * 同步追加临时文件，附件保存失败时回滚调用方事务。
      *
      * @param transferRequest 参数
      */
-    @Async
     public void appendTemp(UploadTransferRequest transferRequest) {
+        List<String> tempFileIds = transferRequest.getTempFileIds().stream().distinct().toList();
+        Set<String> existingIds = attachmentMapper.selectByIds(tempFileIds).stream()
+                .peek(attachment -> {
+                    if (!Objects.equals(transferRequest.getOrganizationId(), attachment.getOrganizationId())
+                            || !Objects.equals(transferRequest.getResourceId(), attachment.getResourceId())) {
+                        throw new GenericException(Translator.get("approval.attachment.save_failed"));
+                    }
+                }).map(Attachment::getId).collect(Collectors.toSet());
         List<Attachment> attachments = new ArrayList<>();
-        // insert new attachment
-        transferRequest.getTempFileIds().forEach(tempFileId -> {
+        tempFileIds.forEach(tempFileId -> {
             FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId,
                     StorageType.LOCAL.name(), null);
             List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
-            if (!CollectionUtils.isEmpty(folderTempFiles)) {
-                File tempFile = folderTempFiles.getFirst();
-                FileCopyRequest copyRequest = new FileCopyRequest(DefaultRepositoryDir.getTempFileDir(tempFileId),
-                        DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
-                                transferRequest.getResourceId(), tempFileId),
-                        tempFile.getName());
-                fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
-                Attachment attachment = new Attachment();
-                attachment.setId(tempFileId);
-                attachment.setName(tempFile.getName());
-                String type = "";
-                int index = tempFile.getName().lastIndexOf('.');
-                if (index != -1 && index < tempFile.getName().length() - 1) {
-                    type = tempFile.getName().substring(index + 1);
-                }
-                attachment.setType(type);
-                attachment.setSize(tempFile.length());
-                attachment.setStorage(StorageType.LOCAL.name());
-                attachment.setOrganizationId(transferRequest.getOrganizationId());
-                attachment.setResourceId(transferRequest.getResourceId());
-                attachment.setCreateTime(System.currentTimeMillis());
-                attachment.setCreateUser(transferRequest.getOperatorUserId());
-                attachment.setUpdateTime(System.currentTimeMillis());
-                attachment.setUpdateUser(transferRequest.getOperatorUserId());
-                attachments.add(attachment);
+            File tempFile = folderTempFiles == null ? null
+                    : folderTempFiles.stream().filter(File::isFile).findFirst().orElse(null);
+            if (tempFile == null) {
+                throw new GenericException(Translator.get("approval.attachment.save_failed"));
             }
+            FileCopyRequest copyRequest = new FileCopyRequest(DefaultRepositoryDir.getTempFileDir(tempFileId),
+                    DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
+                            transferRequest.getResourceId(), tempFileId),
+                    tempFile.getName());
+            try {
+                FileCenter.getRepository(StorageType.LOCAL.name()).copyFile(copyRequest);
+            } catch (Exception e) {
+                throw new GenericException(Translator.get("approval.attachment.save_failed"), e);
+            }
+            Attachment attachment = new Attachment();
+            attachment.setId(tempFileId);
+            attachment.setName(tempFile.getName());
+            String type = "";
+            int index = tempFile.getName().lastIndexOf('.');
+            if (index != -1 && index < tempFile.getName().length() - 1) {
+                type = tempFile.getName().substring(index + 1);
+            }
+            attachment.setType(type);
+            attachment.setSize(tempFile.length());
+            attachment.setStorage(StorageType.LOCAL.name());
+            attachment.setOrganizationId(transferRequest.getOrganizationId());
+            attachment.setResourceId(transferRequest.getResourceId());
+            attachment.setCreateTime(System.currentTimeMillis());
+            attachment.setCreateUser(transferRequest.getOperatorUserId());
+            attachment.setUpdateTime(System.currentTimeMillis());
+            attachment.setUpdateUser(transferRequest.getOperatorUserId());
+            attachments.add(attachment);
         });
-        attachmentMapper.batchInsert(attachments);
+        // 使用当前会话插入，使附件记录与审批关联共享事务。
+        attachments.stream().filter(attachment -> !existingIds.contains(attachment.getId()))
+                .forEach(attachmentMapper::insert);
     }
 }

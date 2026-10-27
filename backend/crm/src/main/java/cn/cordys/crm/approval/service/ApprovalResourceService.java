@@ -374,7 +374,7 @@ public class ApprovalResourceService {
      * @param formKey 表单Key
      * @return 日志模块
      */
-    private String getLogModuleOfFormKey(FormKey formKey) {
+    public String getLogModuleOfFormKey(FormKey formKey) {
         if (formKey == null) {
             // 自定义表单（非 FormKey 枚举）
             return LogModule.CUSTOM_FORM_DATA;

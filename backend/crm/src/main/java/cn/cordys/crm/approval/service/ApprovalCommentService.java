@@ -1,5 +1,8 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithCommentCount;
@@ -19,6 +22,7 @@ import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.FileCommonService;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.file.engine.DefaultRepositoryDir;
 import cn.cordys.file.engine.FileRequest;
 import cn.cordys.file.engine.StorageType;
@@ -62,6 +66,8 @@ public class ApprovalCommentService {
     private AttachmentService attachmentService;
     @Resource
     private FileCommonService fileCommonService;
+    @Resource
+    private LogService logService;
 
     public PagerWithCommentCount<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId,
             String orgId) {
@@ -115,11 +121,14 @@ public class ApprovalCommentService {
         commentMapper.insert(comment);
         saveMentions(comment.getId(), mentionedUserIds, now);
         sendMentionNoticeAfterCommit(comment, mentionedUserIds);
-        return loadResponse(comment.getId(), userId, orgId);
+        ApprovalCommentResponse response = loadResponse(comment.getId(), userId, orgId);
+        writeCommentLog(comment, userId, orgId, "permission.add", null, comment.getContent());
+        return response;
     }
 
     public ApprovalCommentResponse update(ApprovalCommentUpdateRequest request, String userId, String orgId) {
         ApprovalComment comment = getOwnComment(request.getId(), userId, orgId);
+        String originalContent = StringUtils.defaultString(comment.getContent());
         List<String> mentionedUserIds = checkMentionUsers(request.getMentionedUserIds(), orgId);
         saveAttachments(comment.getId(), request.getAttachmentIds(), userId, orgId);
         comment.setContent(request.getContent());
@@ -141,7 +150,9 @@ public class ApprovalCommentService {
         saveMentions(comment.getId(), addedUserIds, comment.getUpdateTime());
         sendMentionNoticeAfterCommit(comment, addedUserIds);
         // 本次编辑可能移除操作者最后一条有效@，返回结果不再次判权。
-        return loadResponse(comment.getId(), userId, orgId);
+        ApprovalCommentResponse response = loadResponse(comment.getId(), userId, orgId);
+        writeCommentLog(comment, userId, orgId, "permission.update", originalContent, comment.getContent());
+        return response;
     }
 
     public void delete(String id, String userId, String orgId) {
@@ -159,6 +170,29 @@ public class ApprovalCommentService {
                 .in(Attachment::getResourceId, ids).eq(Attachment::getOrganizationId, orgId)));
         extCommentMapper.deleteMentions(ids, orgId);
         extCommentMapper.deleteComments(ids, comment.getResourceId(), orgId);
+        writeCommentLog(comment, userId, orgId, "permission.delete", StringUtils.defaultString(comment.getContent()),
+                null);
+    }
+
+    private void writeCommentLog(ApprovalComment comment, String userId, String orgId, String action,
+            String originalContent, String modifiedContent) {
+        ApprovalInstance instance = extCommentMapper.selectLatestInstance(comment.getResourceId(), orgId);
+        String module = approvalResourceService.getLogModuleOfFormKey(FormKey.ofKey(instance.getType()));
+        LogDTO log = new LogDTO(orgId, comment.getResourceId(), userId, LogType.UPDATE, module,
+                Translator.get(action) + Translator.get("log.comment"));
+        log.setOriginalValue(getCommentLogValue(instance.getType(), originalContent));
+        log.setModifiedValue(getCommentLogValue(instance.getType(), modifiedContent));
+        logService.add(log);
+    }
+
+    private Map<String, String> getCommentLogValue(String formType, String content) {
+        if (content == null) {
+            return null;
+        }
+        // 自定义表单日志详情通过表单ID解析字段名称。
+        return FormKey.ofKey(formType) == null
+                ? Map.of("comment", content, "customFormId", formType)
+                : Map.of("comment", content);
     }
 
     /**
