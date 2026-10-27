@@ -61,6 +61,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLEncoder;
@@ -564,6 +565,19 @@ public class ApprovalResourceService {
         approvalInstanceMapper.insert(instance);
         ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
         approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, currentUserId, null, currentOrgId);
+    }
+
+    /**
+     * 在独立事务中提审
+     * <p>
+     * 用于业务事务提交后触发提审：afterCommit 回调执行时，原事务的 Connection 仍绑定在线程上，
+     * 普通 REQUIRED 会复用已提交的连接，节点条件读取到的仍是旧数据；必须以新事务执行。
+     *
+     * @param param 提审参数
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public void pushInNewTransaction(ApprovalPushParam param) {
+        push(param);
     }
 
     private void sendFinishNotice(String currentOrgId, String currentUserId, ApprovalInstance instance) {
