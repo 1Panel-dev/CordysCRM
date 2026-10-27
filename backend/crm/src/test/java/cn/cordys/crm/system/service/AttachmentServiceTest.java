@@ -178,17 +178,37 @@ class AttachmentServiceTest {
     }
 
     @Test
-    void uploadRecordsTemporaryOwnerAndOrganization() {
+    void uploadRecordsTemporaryOwnerAndOrganization() throws Exception {
+        ReflectionTestUtils.setField(service, "fileCommonService", new FileCommonService());
+        String fileName = "原始长文件名".repeat(100) + ".gif";
+        MockMultipartFile file = new MockMultipartFile("files", fileName, "image/gif", "GIF89a".getBytes());
+        when(repository.saveFile(eq(file), any())).thenReturn("stored-file");
         try (MockedStatic<IDGenerator> ids = mockStatic(IDGenerator.class,
                 withSettings().mockMaker(MockMakers.INLINE))) {
             ids.when(IDGenerator::nextStr).thenReturn("uploaded-file");
 
-            assertEquals(List.of("uploaded-file"), service.uploadTemp(List.of(
-                    new MockMultipartFile("files", "test.txt", "text/plain", "test".getBytes()))));
+            assertEquals(List.of("uploaded-file"), service.uploadTemp(List.of(file)));
 
             verify(temporaryOwners).set("attachment:temp:owner:uploaded-file", ORGANIZATION_ID + ":" + USER_ID,
                     Duration.ofDays(1));
+            ArgumentCaptor<FileRequest> upload = ArgumentCaptor.forClass(FileRequest.class);
+            verify(repository).saveFile(eq(file), upload.capture());
+            assertEquals(fileName, upload.getValue().getFileName());
         }
+    }
+
+    @Test
+    void temporaryUploadPropagatesStorageFailureWithoutRegisteringOwner() throws Exception {
+        ReflectionTestUtils.setField(service, "fileCommonService", new FileCommonService());
+        MockMultipartFile file = new MockMultipartFile("files", "test.gif", "image/gif", "GIF89a".getBytes());
+        IOException failure = new IOException("Filename too long");
+        when(repository.saveFile(eq(file), any())).thenThrow(failure);
+
+        GenericException error = assertThrows(GenericException.class, () -> service.uploadTemp(List.of(file)));
+
+        assertSame(failure, error.getCause());
+        assertTrue(error.getMessage().contains("Filename too long"));
+        verifyNoInteractions(temporaryOwners);
     }
 
     @ParameterizedTest

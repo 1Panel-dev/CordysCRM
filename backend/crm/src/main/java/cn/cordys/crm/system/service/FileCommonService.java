@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.file.engine.FileCenter;
 import cn.cordys.file.engine.FileCopyRequest;
 import cn.cordys.file.engine.FileRequest;
@@ -46,6 +47,7 @@ public class FileCommonService {
             FileCenter.getRepository(request.getStorage()).saveFile(file, request);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw new GenericException(e);
         }
     }
 
