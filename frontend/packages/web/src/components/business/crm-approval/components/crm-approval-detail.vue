@@ -9,7 +9,7 @@
       collapse-side="right"
     >
       <template #1>
-        <div class="relative flex h-full w-full p-[24px_8px_0_24px]">
+        <div class="relative flex h-full w-full bg-[var(--text-n10)] p-[24px_8px_0_24px]">
           <Transition name="approval-left-skeleton">
             <div
               v-if="leftSlotLoading"
@@ -45,11 +45,15 @@
         </div>
       </template>
       <template #2>
-        <div v-if="noApproval" class="h-full w-full flex-1 px-[16px] py-[24px] pb-[32px]">
+        <div v-if="noApproval" class="h-full w-full flex-1 bg-[var(--text-n10)] px-[16px] py-[24px] pb-[32px]">
           <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
           {{ t('crm.approval.historyTip') }}
         </div>
-        <div v-else class="flex h-full w-full flex-col overflow-hidden">
+        <div
+          v-else
+          ref="approvalHistoryPanelRef"
+          class="approval-history-panel flex h-full w-full flex-col overflow-hidden bg-[var(--text-n10)]"
+        >
           <div class="shrink-0 px-[16px] pt-[24px]">
             <CrmTab
               v-model:active-tab="activeAnchor"
@@ -58,52 +62,73 @@
               class="approval-anchor-tab"
               :tab-list="approvalAnchorTabList"
               @change="handleAnchorTabChange"
+              @click="handleAnchorTabClick"
             />
           </div>
           <n-scrollbar class="min-h-0 flex-1" :content-style="{ padding: '16px 24px 32px 16px' }">
             <div ref="approvalRecordRef">
               <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
               <n-collapse
-                v-if="historicalApprovalInstances.length"
+                v-if="latestHistoricalApproval"
                 v-model:expanded-names="expandedHistoryInstanceNames"
                 class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
               >
                 <template #arrow><div></div></template>
-                <n-collapse-item v-for="instance in historicalApprovalInstances" :key="instance.id" :name="instance.id">
+                <n-collapse-item name="history">
                   <template #header>
                     <div class="flex items-center gap-[8px]">
                       <CrmApprovalStatus
-                        :status="instance.approvalStatus"
+                        :status="latestHistoricalApproval.approvalStatus"
                         isTag
                         scene="approvalRecord"
                         class="font-normal"
                       />
                       <div class="text-[14px] font-semibold text-[var(--text-n1)]">
-                        {{
-                          t('crm.approval.previousRoundTitle', {
-                            nodeName: getCurrentNode(instance)?.nodeName || instance.nodes.at(-1)?.nodeName || '',
-                          })
-                        }}
+                        <template
+                          v-if="
+                            [ProcessStatusEnum.APPROVED, ProcessStatusEnum.AUTO_APPROVED].includes(
+                              latestHistoricalApproval.approvalStatus
+                            )
+                          "
+                        >
+                          {{ formatApprovalTime(getHistoricalApprovalTime(latestHistoricalApproval)) }}
+                        </template>
+                        <template v-else>
+                          {{
+                            t('crm.approval.previousRoundTitle', {
+                              nodeName: getCurrentNode(latestHistoricalApproval)?.nodeName || '',
+                            })
+                          }}
+                        </template>
                       </div>
                     </div>
                   </template>
                   <template #header-extra="{ collapsed }">
                     <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
                   </template>
-                  <CrmApprovalLine
-                    :nodes="instance.nodes"
-                    :submitter="{
-                      submitAvatar: instance.submitAvatar,
-                      submitter: instance.submitter,
-                      submitTime: instance.submitTime,
-                      submitterId: instance.submitterId,
-                      comment: instance.comment,
-                    }"
-                    :currentApprovalNode="getCurrentNode(instance)"
-                    :currentApprovalNodeIndex="getCurrentNodeIndex(instance)"
-                    :finally-result="instance.approvalStatus"
-                    class="bg-[var(--text-n10)] p-[8px]"
-                  />
+                  <n-scrollbar class="approval-history-list" :content-style="{ maxHeight: '40cqh' }">
+                    <div
+                      v-for="(detail, index) in historicalApprovalDetails"
+                      :key="detail.id"
+                      class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[8px] last:mb-0"
+                      :class="{ 'approval-history-latest-card': index === historicalApprovalDetails.length - 1 }"
+                    >
+                      <CrmApprovalLine
+                        :nodes="detail.nodes || []"
+                        :submitter="{
+                          submitAvatar: detail.submitAvatar,
+                          submitter: detail.submitter,
+                          submitTime: detail.submitTime,
+                          submitterId: detail.submitterId,
+                          comment: detail.comment,
+                        }"
+                        :currentApprovalNode="getCurrentNode(detail)"
+                        :currentApprovalNodeIndex="getCurrentNodeIndex(detail)"
+                        :finally-result="detail.approvalStatus"
+                        is-historical
+                      />
+                    </div>
+                  </n-scrollbar>
                 </n-collapse-item>
               </n-collapse>
               <CrmApprovalLine
@@ -295,6 +320,7 @@
 </template>
 
 <script setup lang="ts">
+  import { nextTick } from 'vue';
   import {
     type FormInst,
     NButton,
@@ -311,6 +337,7 @@
     type UploadFileInfo,
     useMessage,
   } from 'naive-ui';
+  import dayjs from 'dayjs';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -347,7 +374,7 @@
     backApproval,
     getApprovalConfigDetail,
     getApprovalResourceDetail,
-    getApprovalResourceInstanceDetail,
+    getApprovalResourceInstanceDetailList,
     rejectApproval,
     revokeApproval,
     revokeResource,
@@ -399,8 +426,10 @@
   const userStore = useUserStore();
 
   const approvalInfo = ref<ApprovalDetail>();
-  const historicalApprovalInstances = ref<ApprovalDetail[]>([]);
+  const historicalApprovalDetails = ref<ApprovalDetail[]>([]);
   const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
+  const latestHistoricalApproval = computed(() => historicalApprovalDetails.value.at(-1));
+
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
   const leftSlotLoading = ref(props.leftLoading ?? false);
   const leftSlotEditing = ref(false);
@@ -429,7 +458,16 @@
 
   function handleAnchorTabChange(anchor: string | number) {
     if (anchor === 'record' || anchor === 'comment') {
+      if (anchor === 'record') {
+        expandedHistoryInstanceNames.value = [];
+      }
       scrollToAnchor(anchor);
+    }
+  }
+
+  function handleAnchorTabClick(event: MouseEvent) {
+    if (event.target instanceof Element && event.target.closest('[data-name="record"]')) {
+      expandedHistoryInstanceNames.value = [];
     }
   }
 
@@ -615,6 +653,25 @@
     return detail?.nodes.find((node) => node.nodeId === detail.currentNodeId);
   }
 
+  function getHistoricalApprovalTime(detail?: ApprovalDetail) {
+    const approvalTimes = detail?.nodes.flatMap((node) => [
+      node.approvalTime,
+      ...(node.taskNodes || []).map((task) => task.approvalTime),
+    ]);
+    return approvalTimes?.filter((time): time is number => Number.isFinite(time) && time > 0).sort((a, b) => b - a)[0];
+  }
+
+  function formatApprovalTime(time?: number) {
+    return time ? dayjs(time).format('YYYY-MM-DD HH:mm') : '-';
+  }
+
+  async function handleHistoryExpandedNames(names: Array<string | number>) {
+    expandedHistoryInstanceNames.value = names;
+    document
+      .querySelector('.approval-history-list .approval-history-latest-card')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   async function initApprovalDetail() {
     try {
       approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
@@ -625,18 +682,16 @@
         (node) => node.nodeId === approvalInfo.value?.currentNodeId
       );
       currentApprovalNode.value = approvalInfo.value?.nodes[currentApprovalNodeIndex.value];
-      try {
-        historicalApprovalInstances.value = await getApprovalResourceInstanceDetail(props.sourceId);
-        expandedHistoryInstanceNames.value = [];
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-        historicalApprovalInstances.value = [];
-        message.error(t('crm.approval.historyDetailLoadFailed'));
-      }
+      historicalApprovalDetails.value = await getApprovalResourceInstanceDetailList(props.sourceId);
+      expandedHistoryInstanceNames.value = ['history'];
+      await nextTick();
+      document
+        .querySelector('.approval-history-list .approval-history-latest-card')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      historicalApprovalDetails.value = [];
     }
   }
 
@@ -1004,5 +1059,23 @@
     :deep(.n-tabs-rail) {
       width: 100%;
     }
+  }
+  :deep(.n-split__resize-trigger-wrapper) {
+    transform: translateX(8px);
+    .n-split__resize-trigger {
+      border: none;
+      background-color: transparent;
+      &:hover,
+      &.n-split__resize-trigger--hover {
+        background-color: var(--primary-8);
+      }
+    }
+  }
+  :deep(.n-split--horizontal) {
+    gap: 8px;
+    background-color: var(--text-n9);
+  }
+  .approval-history-panel {
+    container-type: size;
   }
 </style>

@@ -11,6 +11,7 @@
           <div class="mb-[16px] flex items-center justify-between">
             <div class="font-semibold leading-[22px]">{{ t('crm.approval.submit') }}</div>
             <span
+              v-if="!props.isHistorical"
               class="ml-[8px] mr-auto rounded-[2px] bg-[var(--text-n8)] px-[6px] py-[2px] text-[12px] font-normal leading-[18px] text-[var(--info-blue)]"
             >
               {{ t('crm.approval.currentRound') }}
@@ -293,6 +294,7 @@
     currentApprovalNodeIndex: number;
     currentRoundStartIndex?: number;
     finallyResult?: ProcessStatusEnum;
+    isHistorical?: boolean;
   }>();
 
   type AttachmentPopoverState = { show: boolean; previewOpen: boolean };

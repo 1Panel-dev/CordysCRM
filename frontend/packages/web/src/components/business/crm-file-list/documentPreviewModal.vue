@@ -4,7 +4,7 @@
     preset="card"
     :title="props.file?.name || t('common.preview')"
     :mask-closable="false"
-    :overlay-style="{ padding: '0', height: '100vh', transform: 'none', boxSizing: 'border-box', overflow: 'hidden' }"
+    :style="{ padding: '0', height: '100vh', transform: 'none', boxSizing: 'border-box', overflow: 'hidden' }"
     class="crm-document-preview-modal crm-full-modal"
     @after-leave="clearViewer"
   >

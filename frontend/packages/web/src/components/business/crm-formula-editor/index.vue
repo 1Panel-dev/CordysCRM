@@ -263,7 +263,7 @@
     parentId?: string;
     parentName?: string;
     inSubTable?: boolean;
-    arrayType?: 'ARRAY_NUMBER' | 'ARRAY_TEXT';
+    arrayType?: 'ARRAY_NUMBER' | 'ARRAY_DATE' | 'ARRAY_TEXT';
   };
 
   const props = defineProps<{
@@ -294,6 +294,10 @@
     ARRAY_NUMBER: {
       type: 'info',
       label: t('crmFormDesign.formulaNumberArray'),
+    },
+    ARRAY_DATE: {
+      type: 'success',
+      label: t('crmFormDesign.formulaDateArray'),
     },
     ARRAY_TEXT: {
       type: 'warning',
@@ -404,6 +408,8 @@
           (field.type === FieldTypeEnum.FORMULA && field.formulaResultFormat === 'number')
         ) {
           arrayGroup.push({ ...arrayField, arrayType: 'ARRAY_NUMBER' });
+        } else if (field.type === FieldTypeEnum.DATE_TIME) {
+          arrayGroup.push({ ...arrayField, arrayType: 'ARRAY_DATE' });
         } else {
           arrayGroup.push({ ...arrayField, arrayType: 'ARRAY_TEXT' });
         }
