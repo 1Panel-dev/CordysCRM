@@ -4,7 +4,7 @@
     <div class="crm-page-content">
       <slot />
     </div>
-    <div v-if="$slots.footer" class="crm-page-footer">
+    <div v-if="props.footerVisible ?? $slots.footer" class="crm-page-footer">
       <slot name="footer" />
     </div>
   </div>
@@ -13,11 +13,18 @@
 <script setup lang="ts">
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
 
-  const props = defineProps<{
-    title: string;
-    hideBack?: boolean;
-    backRouteName?: string;
-  }>();
+  const props = defineProps({
+    title: {
+      type: String,
+      required: true,
+    },
+    hideBack: Boolean,
+    backRouteName: String,
+    footerVisible: {
+      type: Boolean,
+      default: undefined,
+    },
+  });
 </script>
 
 <style lang="less" scoped>
