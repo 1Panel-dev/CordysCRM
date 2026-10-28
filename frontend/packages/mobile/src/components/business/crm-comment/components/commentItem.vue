@@ -27,7 +27,12 @@
 
         <div class="crm-comment-item-text">
           <span v-if="hasReplyTarget" class="crm-comment-item-reply-target">{{ replyTargetText }}</span
-          ><span>{{ props.comment.content }}</span>
+          ><span
+            v-for="(segment, index) in contentSegments"
+            :key="`${segment.text}-${index}`"
+            :class="{ 'crm-comment-item-mention': segment.mention }"
+            >{{ segment.text }}</span
+          >
         </div>
 
         <CrmFileList
@@ -80,6 +85,7 @@
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { splitCommentMentions } from '@lib/shared/method/comment';
   import type { FollowCommentItem } from '@lib/shared/models/follow';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -130,6 +136,7 @@
     }
     return `${t('crmComment.replyTo')} ${props.comment.replyToUserName}：`;
   });
+  const contentSegments = computed(() => splitCommentMentions(props.comment.content, props.comment.mentionUsers));
 
   const showActions = computed(() => props.canReply || props.canEdit || props.canDelete);
 
@@ -211,9 +218,20 @@
     color: var(--text-n2);
     line-height: 22px;
     word-break: break-word;
+    overflow-wrap: anywhere;
   }
   .crm-comment-item-reply-target {
     color: var(--text-n4);
+  }
+  .crm-comment-item-mention {
+    display: inline;
+    padding: 0 4px;
+    border-radius: 2px;
+    color: var(--text-n1);
+    background: var(--text-n8);
+    box-decoration-break: clone;
+    box-decoration-break: clone;
+    word-break: break-all;
   }
   .crm-comment-item-meta {
     display: flex;

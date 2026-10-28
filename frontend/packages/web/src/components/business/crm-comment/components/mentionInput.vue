@@ -22,22 +22,52 @@
         {{ fileList.length === 10 ? t('crm.approval.fileLimitTip') : t('crmFormDesign.file') }}
       </n-tooltip>
     </div>
-    <n-mention
-      v-model:value="mentionContent"
-      type="textarea"
-      :autosize="{ minRows: 3, maxRows: 6 }"
-      :disabled="props.disabled"
-      :filter="() => true"
-      :loading="loading"
-      :options="mentionOptions"
-      :placeholder="placeholder"
-      :render-label="renderMentionLabel"
-      :class="{ 'crm-comment-mention-input__mention--with-attachment': props.enableAttachment }"
-      to="body"
-      @search="handleMentionSearch"
-      @select="handleMentionSelect"
-      @blur="syncMentionUserIds"
-    />
+    <div class="relative">
+      <div
+        ref="editorRef"
+        class="crm-comment-mention-input__editor"
+        :class="{ 'crm-comment-mention-input__editor--with-attachment': props.enableAttachment }"
+        :contenteditable="!props.disabled"
+        :data-placeholder="placeholder"
+        role="textbox"
+        aria-multiline="true"
+        @blur="handleEditorBlur"
+        @input="handleEditorInput"
+        @keydown="handleEditorKeydown"
+        @paste="handleEditorPaste"
+        @scroll="updateMentionMenuPosition"
+      ></div>
+      <div
+        v-if="showMentionMenu"
+        class="crm-comment-mention-input__menu absolute z-[2] w-[200px] overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n10)] py-[4px] shadow-[0_4px_12px_rgb(0_0_0_/_12%)]"
+        :style="mentionMenuStyle"
+        @mousedown.prevent
+      >
+        <div class="border-b border-[var(--text-n8)] px-[8px] py-[8px]">
+          <n-checkbox v-model:checked="includeDisabled" @update:checked="handleIncludeDisabledChange">
+            <span class="whitespace-nowrap text-[var(--text-n2)]">{{ t('common.showDisabledUsers') }}</span>
+          </n-checkbox>
+        </div>
+        <n-scrollbar class="max-h-[216px]">
+          <div
+            v-for="(user, index) in userOptions"
+            :key="user.id"
+            :ref="(element) => setMentionOptionRef(element, index)"
+            class="flex h-[32px] w-full items-center justify-between gap-[8px] border-0 bg-transparent px-[12px] text-left hover:bg-[var(--primary-7)]"
+            :class="{ '!bg-[var(--primary-7)]': activeMentionIndex === index }"
+            @click="handleMentionSelect(user)"
+          >
+            <span class="min-w-0 flex-1 truncate whitespace-nowrap">{{ user.name }}</span>
+            <CrmTag v-if="user.enable === false" theme="light" size="small" tooltip-disabled class="shrink-0">
+              {{ t('common.disabled') }}
+            </CrmTag>
+          </div>
+          <div v-if="!loading && userOptions.length === 0" class="px-[12px] py-[8px] text-[var(--text-n4)]">
+            {{ t('common.noData') }}
+          </div>
+        </n-scrollbar>
+      </div>
+    </div>
     <CrmFileList
       v-if="props.enableAttachment && fileList.length"
       :files="fileList as unknown as AttachmentInfo[]"
@@ -64,7 +94,7 @@
   import {
     NButton,
     NCheckbox,
-    NMention,
+    NScrollbar,
     NTooltip,
     NUpload,
     type UploadCustomRequestOptions,
@@ -83,21 +113,8 @@
 
   import { getUserOptions, uploadTempAttachment } from '@/api/modules';
 
-  import type { MentionOption as NaiveMentionOption } from 'naive-ui/es/mention/src/interface';
-
   const { t } = useI18n();
   const message = useMessage();
-
-  interface MentionOption extends NaiveMentionOption {
-    id?: string;
-    name?: string;
-    enable?: boolean;
-    value: string;
-    label: string;
-    isHeader?: boolean;
-  }
-
-  const INCLUDE_DISABLED_OPTION_VALUE = '__include_disabled_header__';
 
   const props = withDefaults(
     defineProps<{
@@ -124,17 +141,15 @@
     default: '',
   });
 
-  const mentionContent = computed({
-    get: () => content.value,
-    set: (value: string) => {
-      content.value = value.slice(0, FOLLOW_COMMENT_MAX_LENGTH);
-    },
-  });
-
   const loading = ref(false);
   const includeDisabled = ref(props.includeDisabled);
-  const rawUserOptions = ref<MentionOption[]>([]);
+  const rawUserOptions = ref<FollowCommentUser[]>([]);
   const selectedMentionUsers = ref<FollowCommentUser[]>([]);
+  const editorRef = ref<HTMLElement>();
+  const showMentionMenu = ref(false);
+  const mentionMenuStyle = ref<Record<string, string>>({ left: '36px', top: '56px' });
+  const activeMentionIndex = ref(0);
+  const mentionOptionRefs = ref<HTMLElement[]>([]);
   const fileList = ref<UploadFileInfo[]>([]);
   const temporaryAttachmentIds = ref<Record<string, string>>({});
   const uploadingAttachmentIds = ref(new Set<string>());
@@ -156,16 +171,6 @@
     });
   });
 
-  const mentionOptions = computed<MentionOption[]>(() => [
-    {
-      value: INCLUDE_DISABLED_OPTION_VALUE,
-      label: '',
-      isHeader: true,
-      disabled: true,
-    },
-    ...userOptions.value,
-  ]);
-
   const placeholder = computed(() => {
     if (props.replyUserName) {
       return t('crmComment.replyPlaceholder', { name: props.replyUserName });
@@ -173,8 +178,122 @@
     return `${t('crmComment.commentPlaceholder')}@${t('crmComment.commentPlaceholderOthers')}`;
   });
 
+  function isMentionToken(node: Node | null): node is HTMLElement {
+    return node instanceof HTMLElement && node.classList.contains('crm-comment-mention-token');
+  }
+
+  function getEditorText() {
+    return editorRef.value?.innerText.replace(/\n$/, '') || '';
+  }
+
+  function setCaretAfter(node: Node) {
+    const range = document.createRange();
+    const selection = window.getSelection();
+    range.setStartAfter(node);
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+
+  function getCaretTextOffset() {
+    const editor = editorRef.value;
+    const selection = window.getSelection();
+    const anchorNode = selection?.anchorNode;
+    if (!editor || !selection?.rangeCount || !selection.isCollapsed || !anchorNode || !editor.contains(anchorNode)) {
+      return undefined;
+    }
+
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.setEnd(anchorNode, selection.anchorOffset);
+    return range.toString().length;
+  }
+
+  function setCaretAtTextOffset(offset: number) {
+    const editor = editorRef.value;
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    const range = document.createRange();
+    let remainingOffset = offset;
+    let targetNode: Node | undefined;
+
+    Array.from(editor.childNodes).some((node) => {
+      const textLength = node.textContent?.length || 0;
+      if (remainingOffset > textLength) {
+        remainingOffset -= textLength;
+        return false;
+      }
+      targetNode = node;
+      return true;
+    });
+
+    if (targetNode) {
+      if (targetNode.nodeType === Node.TEXT_NODE) {
+        range.setStart(targetNode, remainingOffset);
+      } else {
+        range.setStartAfter(targetNode);
+      }
+    } else {
+      range.selectNodeContents(editor);
+      range.collapse(false);
+    }
+
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+
+  function createMentionToken(user: FollowCommentUser) {
+    const token = document.createElement('span');
+    token.className = 'crm-comment-mention-token';
+    token.contentEditable = 'false';
+    token.dataset.userId = user.id;
+    token.dataset.userName = user.name;
+    token.textContent = `@${user.name}`;
+    return token;
+  }
+
+  function getMatchedMention(value: string, index: number, users: FollowCommentUser[]) {
+    return users.find((user) => {
+      const mention = `@${user.name}`;
+      const nextChar = value[index + mention.length];
+      return value.startsWith(mention, index) && (!nextChar || /[@\s,，。.!！?？;；:：、]/.test(nextChar));
+    });
+  }
+
+  function renderEditorValue(value = content.value) {
+    const editor = editorRef.value;
+    if (!editor) return;
+
+    const users = [...selectedMentionUsers.value].sort((a, b) => b.name.length - a.name.length);
+    const fragment = document.createDocumentFragment();
+    let text = '';
+    let index = 0;
+    const appendText = () => {
+      if (text) {
+        fragment.appendChild(document.createTextNode(text));
+        text = '';
+      }
+    };
+
+    while (index < value.length) {
+      const user = getMatchedMention(value, index, users);
+      if (user) {
+        appendText();
+        fragment.appendChild(createMentionToken(user));
+        index += user.name.length + 1;
+      } else {
+        text += value[index];
+        index += 1;
+      }
+    }
+    appendText();
+    editor.replaceChildren(fragment);
+  }
+
   function syncMentionUserIds() {
-    selectedMentionUsers.value = filterMentionUsers(content.value, selectedMentionUsers.value);
+    selectedMentionUsers.value = filterMentionUsers(getEditorText(), selectedMentionUsers.value);
   }
 
   async function loadUsers() {
@@ -196,11 +315,7 @@
         return;
       }
 
-      rawUserOptions.value = users.map((user) => ({
-        ...user,
-        label: user.name,
-        value: user.name,
-      }));
+      rawUserOptions.value = users;
       hasLoadedUsers.value = true;
       loadedIncludeDisabled.value = needIncludeDisabled;
     } catch (error) {
@@ -213,21 +328,41 @@
     }
   }
 
-  function handleMentionSearch(keyword: string) {
-    lastKeyword.value = keyword;
-    loadUsers();
-  }
+  function getCurrentMentionKeyword() {
+    const editor = editorRef.value;
+    const selection = window.getSelection();
+    if (!editor || !selection?.rangeCount || !selection.isCollapsed || !editor.contains(selection.anchorNode)) {
+      return undefined;
+    }
 
-  function getCurrentMentionKeyword(value: string) {
-    const matched = value.match(/(?:^|\s)@([^\s@\n\r]*)$/);
+    const childNodes: Node[] = Array.from(editor.childNodes);
+    let currentNode: Node | null = selection.anchorNode === editor ? null : selection.anchorNode;
+    while (currentNode?.parentNode && currentNode.parentNode !== editor) {
+      currentNode = currentNode.parentNode;
+    }
+
+    const currentNodeIndex = currentNode ? childNodes.indexOf(currentNode) : -1;
+    const nodesBeforeCaret =
+      selection.anchorNode === editor
+        ? childNodes.slice(0, selection.anchorOffset)
+        : childNodes.slice(0, currentNodeIndex);
+    const currentText =
+      currentNode?.nodeType === Node.TEXT_NODE ? currentNode.textContent?.slice(0, selection.anchorOffset) || '' : '';
+
+    let textAfterLastMention = '';
+    [...nodesBeforeCaret, ...(currentNode ? [currentNode] : [])].forEach((node) => {
+      if (isMentionToken(node)) {
+        textAfterLastMention = '';
+        return;
+      }
+      textAfterLastMention += node === currentNode ? currentText : node.textContent || '';
+    });
+
+    const matched = textAfterLastMention.match(/@([^\s@\n\r]*)$/);
     return matched ? matched[1] : undefined;
   }
 
-  function handleMentionSelect(option: NaiveMentionOption) {
-    const user = option as MentionOption;
-    if (user.isHeader || !user.id || !user.name) {
-      return;
-    }
+  function handleMentionSelect(user: FollowCommentUser) {
     if (!selectedMentionUsers.value.some((item) => item.id === user.id)) {
       selectedMentionUsers.value.push({
         id: user.id,
@@ -235,6 +370,40 @@
         enable: user.enable,
       });
     }
+
+    const value = getEditorText();
+    const keyword = getCurrentMentionKeyword();
+    const caretOffset = getCaretTextOffset();
+    if (keyword === undefined || caretOffset === undefined) return;
+
+    const mentionStart = caretOffset - keyword.length - 1;
+    content.value = `${value.slice(0, mentionStart)}@${user.name} ${value.slice(caretOffset)}`.slice(
+      0,
+      FOLLOW_COMMENT_MAX_LENGTH
+    );
+    renderEditorValue();
+    showMentionMenu.value = false;
+    nextTick(() => {
+      editorRef.value?.focus();
+      setCaretAtTextOffset(mentionStart + user.name.length + 2);
+    });
+  }
+
+  function setMentionOptionRef(element: unknown, index: number) {
+    if (element instanceof HTMLElement) {
+      mentionOptionRefs.value[index] = element;
+    }
+  }
+
+  function scrollActiveMentionIntoView() {
+    mentionOptionRefs.value[activeMentionIndex.value]?.scrollIntoView({ block: 'nearest' });
+  }
+
+  function changeActiveMention(step: number) {
+    const count = userOptions.value.length;
+    if (!count) return;
+    activeMentionIndex.value = (activeMentionIndex.value + step + count) % count;
+    nextTick(scrollActiveMentionIntoView);
   }
 
   function getMentionUserIds() {
@@ -244,6 +413,7 @@
 
   function handleCancel() {
     content.value = '';
+    editorRef.value?.replaceChildren();
     selectedMentionUsers.value = [];
     fileList.value = [];
     temporaryAttachmentIds.value = {};
@@ -314,81 +484,193 @@
     }
   }
 
-  function renderDisabledTag(option: NaiveMentionOption) {
-    if ((option as MentionOption).enable !== false) {
-      return null;
-    }
-
-    return h(
-      CrmTag,
-      {
-        theme: 'light',
-        size: 'small',
-        tooltipDisabled: true,
-        class: 'ml-[8px] shrink-0',
-      },
-      { default: () => t('common.disabled') }
-    );
-  }
-
   function handleIncludeDisabledChange(value: boolean) {
     includeDisabled.value = value;
     loadUsers();
   }
 
-  function renderIncludeDisabledHeader() {
-    return h(
-      'div',
-      {
-        class: 'crm-comment-mention-header',
-        onMousedown: (event: MouseEvent) => {
-          event.preventDefault();
-          event.stopPropagation();
-        },
-        onClick: (event: MouseEvent) => event.stopPropagation(),
-      },
-      [
-        h(
-          NCheckbox,
-          {
-            'checked': includeDisabled.value,
-            'onUpdate:checked': handleIncludeDisabledChange,
-          },
-          {
-            default: () => h('span', { class: 'text-[var(--text-n2)]' }, t('common.showDisabledUsers')),
-          }
-        ),
-      ]
-    );
+  function getCaretPosition() {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount || !selection.isCollapsed) return undefined;
+
+    const range = selection.getRangeAt(0).cloneRange();
+    const marker = document.createElement('span');
+    marker.setAttribute('aria-hidden', 'true');
+    marker.textContent = '\u200b';
+    marker.style.cssText = 'display:inline-block;width:1px;height:1em;margin:0;padding:0;overflow:hidden;';
+    range.insertNode(marker);
+    const position = {
+      left: marker.offsetLeft,
+      top: marker.offsetTop,
+      height: marker.offsetHeight,
+    };
+    marker.parentNode?.removeChild(marker);
+
+    return position;
   }
 
-  function renderMentionLabel(option: NaiveMentionOption) {
-    if ((option as MentionOption).isHeader) {
-      return renderIncludeDisabledHeader();
-    }
+  function updateMentionMenuPosition() {
+    const editor = editorRef.value;
+    if (!editor) return;
 
-    return h('div', { class: 'flex w-full items-center justify-between' }, [
-      h('span', { class: 'one-line-text min-w-0' }, option.label as string),
-      renderDisabledTag(option),
-    ]);
+    const caretPosition = getCaretPosition();
+    const menuWidth = 200;
+    const left = Math.max(0, Math.min((caretPosition?.left ?? 36) - editor.scrollLeft, editor.clientWidth - menuWidth));
+    const top = (caretPosition?.top ?? 36) - editor.scrollTop + (caretPosition?.height ?? 16) + 4;
+
+    mentionMenuStyle.value = {
+      left: `${left}px`,
+      top: `${top}px`,
+    };
   }
 
-  watch(content, (value) => {
-    const keyword = getCurrentMentionKeyword(value);
-    if (keyword === undefined || keyword === lastKeyword.value) {
+  function handleEditorInput() {
+    const value = getEditorText();
+    if (value.length > FOLLOW_COMMENT_MAX_LENGTH) {
+      content.value = value.slice(0, FOLLOW_COMMENT_MAX_LENGTH);
+      renderEditorValue();
+      const lastNode = editorRef.value?.lastChild;
+      if (lastNode) setCaretAfter(lastNode);
       return;
     }
-    lastKeyword.value = keyword;
-    loadUsers();
-  });
+    content.value = value;
+    syncMentionUserIds();
+    const keyword = getCurrentMentionKeyword();
+    const openingMentionMenu = keyword !== undefined && !showMentionMenu.value;
+    showMentionMenu.value = keyword !== undefined;
+    if (keyword !== undefined) {
+      if (openingMentionMenu) {
+        activeMentionIndex.value = 0;
+        nextTick(scrollActiveMentionIntoView);
+      }
+      nextTick(updateMentionMenuPosition);
+    }
+    if (keyword !== undefined && (keyword !== lastKeyword.value || !hasLoadedUsers.value)) {
+      lastKeyword.value = keyword;
+      loadUsers();
+    }
+  }
+
+  function removeAdjacentMention(event: KeyboardEvent) {
+    if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
+    const selection = window.getSelection();
+    if (!selection?.rangeCount || !selection.isCollapsed || !editorRef.value?.contains(selection.anchorNode))
+      return false;
+
+    const range = selection.getRangeAt(0);
+    const { startContainer: container, startOffset: offset } = range;
+    const isTextNode = container.nodeType === Node.TEXT_NODE;
+    let target: Node | null = null;
+
+    if (isTextNode) {
+      if (event.key === 'Backspace') {
+        const textBeforeCaret = container.textContent?.slice(0, offset) || '';
+        if (offset === 0 || /^\s*$/.test(textBeforeCaret)) {
+          target = container.previousSibling;
+        }
+      } else if (offset === (container.textContent?.length || 0)) {
+        target = container.nextSibling;
+      }
+    } else if (event.key === 'Backspace') {
+      target = offset === 0 ? container.previousSibling : container.childNodes[offset - 1];
+    } else {
+      target = container.childNodes[offset] || container.nextSibling;
+    }
+    if (!isMentionToken(target)) return false;
+
+    event.preventDefault();
+    const previousNode = target.previousSibling;
+    const nextNode = target.nextSibling;
+    if (event.key === 'Backspace' && isTextNode && /^\s*$/.test(container.textContent || '')) {
+      container.parentNode?.removeChild(container);
+    } else if (event.key === 'Delete' && nextNode?.nodeType === Node.TEXT_NODE) {
+      const text = nextNode.textContent || '';
+      if (text.startsWith(' ')) {
+        nextNode.textContent = text.slice(1);
+      }
+    }
+    const caretNode = document.createTextNode('');
+    target.replaceWith(caretNode);
+    if (event.key === 'Backspace' && previousNode) {
+      setCaretAfter(previousNode);
+    } else {
+      setCaretAfter(caretNode);
+    }
+    handleEditorInput();
+    showMentionMenu.value = false;
+    return true;
+  }
+
+  function handleEditorKeydown(event: KeyboardEvent) {
+    if (showMentionMenu.value) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        changeActiveMention(1);
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        changeActiveMention(-1);
+        return;
+      }
+      if (event.key === 'Enter') {
+        const user = userOptions.value[activeMentionIndex.value];
+        if (user) {
+          event.preventDefault();
+          handleMentionSelect(user);
+        }
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        showMentionMenu.value = false;
+        return;
+      }
+    }
+    removeAdjacentMention(event);
+  }
+
+  function handleEditorPaste(event: ClipboardEvent) {
+    const text = event.clipboardData?.getData('text/plain');
+    if (!text) return;
+    event.preventDefault();
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    const textNode = document.createTextNode(text);
+    range.deleteContents();
+    range.insertNode(textNode);
+    setCaretAfter(textNode);
+    handleEditorInput();
+  }
+
+  function handleEditorBlur() {
+    syncMentionUserIds();
+    window.setTimeout(() => {
+      showMentionMenu.value = false;
+    }, 100);
+  }
 
   watch(
     () => props.initialMentionUsers,
     (users) => {
       selectedMentionUsers.value = users ? [...users] : [];
+      nextTick(renderEditorValue);
     },
     { immediate: true }
   );
+
+  watch(content, (value) => {
+    if (value !== getEditorText()) {
+      renderEditorValue(value);
+    }
+  });
+
+  watch(userOptions, () => {
+    activeMentionIndex.value = 0;
+    mentionOptionRefs.value = [];
+    nextTick(scrollActiveMentionIntoView);
+  });
 
   watch(
     () => props.initialAttachments,
@@ -400,30 +682,56 @@
 </script>
 
 <style scoped lang="less">
-  :deep(.crm-comment-mention-header) {
-    @apply flex w-full items-center;
-  }
-  // 适配 mention 组件宽度
-  :global(.n-mention-menu) {
-    width: 200px !important;
-    min-width: 200px !important;
-    max-width: 200px;
-  }
-  :deep(.n-base-select-menu) {
-    .n-base-select-option.n-base-select-option--show-checkmark {
-      padding-right: 12px;
-    }
-  }
   .crm-file-input-upload {
     :deep(.n-upload-trigger) {
       @apply flex cursor-pointer items-center;
     }
   }
-  .crm-comment-mention-input__mention--with-attachment {
-    :deep(.n-input),
-    :deep(.n-input-wrapper) {
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
+  .crm-comment-mention-input__editor {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 8px 12px;
+    min-height: 90px;
+    max-height: 180px;
+    border: 1px solid var(--text-n7);
+    border-radius: var(--border-radius-small);
+    white-space: pre-wrap;
+    color: var(--text-n1);
+    outline: none;
+    box-sizing: border-box;
+    line-height: 22px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    cursor: text;
+    &:empty::before {
+      color: var(--text-n4);
+      content: attr(data-placeholder);
+      pointer-events: none;
     }
+    &:focus {
+      border-color: var(--primary-8);
+    }
+    &[contenteditable='false'] {
+      cursor: not-allowed;
+      background: var(--text-n9);
+    }
+  }
+  .crm-comment-mention-input__editor--with-attachment {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  :global(.crm-comment-mention-token) {
+    display: inline;
+    box-sizing: border-box;
+    padding: 0 4px;
+    border-radius: 4px;
+    color: var(--text-n1);
+    background: var(--text-n8);
+    box-decoration-break: clone;
+    box-decoration-break: clone;
+    line-height: 20px;
+    word-break: break-all;
+    user-select: all;
   }
 </style>

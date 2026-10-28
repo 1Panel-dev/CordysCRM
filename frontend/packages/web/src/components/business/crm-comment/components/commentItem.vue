@@ -52,7 +52,13 @@
         <span v-if="props.comment.replyToUserName" class="text-[var(--text-n4)]">
           {{ t('crmComment.replyTo') }} {{ props.comment.replyToUserName }}：
         </span>
-        <span class="text-[var(--text-n1)]">{{ props.comment.content }}</span>
+        <span
+          v-for="(segment, index) in contentSegments"
+          :key="`${segment.text}-${index}`"
+          :class="segment.mention ? 'crm-comment-item__mention' : 'text-[var(--text-n1)]'"
+        >
+          {{ segment.text }}
+        </span>
       </div>
 
       <CrmFileList
@@ -102,6 +108,7 @@
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { splitCommentMentions } from '@lib/shared/method/comment';
   import type {
     FollowCommentActionValue,
     FollowCommentActiveEditor,
@@ -158,6 +165,7 @@
   const showInlineReplyEditor = computed(
     () => props.activeEditor?.action === 'reply' && props.activeEditor.commentId === props.comment.id
   );
+  const contentSegments = computed(() => splitCommentMentions(props.comment.content, props.comment.mentionUsers));
 
   const moreActions = computed<ActionsItem[]>(() => [
     ...(props.canReply ? [{ key: 'reply', label: t('crmComment.reply') }] : []),
@@ -222,5 +230,16 @@
     color: var(--text-n1);
     line-height: 20px;
     word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .crm-comment-item__mention {
+    display: inline;
+    padding: 0 4px;
+    border-radius: 2px;
+    color: var(--text-n1);
+    background: var(--text-n8);
+    box-decoration-break: clone;
+    box-decoration-break: clone;
+    word-break: break-all;
   }
 </style>

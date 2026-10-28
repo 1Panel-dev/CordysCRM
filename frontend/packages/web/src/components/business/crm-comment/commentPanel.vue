@@ -31,7 +31,7 @@
       </div>
 
       <div class="flex items-center gap-[8px]">
-        <CrmTag v-if="props.showTimeSort" custom-class="cursor-pointer" @click="toggleSortOrder">
+        <CrmTag v-if="props.showTimeSort" tooltipDisabled custom-class="cursor-pointer" @click="toggleSortOrder">
           <span class="flex items-center">
             {{ t('crmComment.timeSort') }}
             <span class="ml-[4px] flex flex-col">
