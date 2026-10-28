@@ -135,9 +135,8 @@ public abstract class BaseCommentService<C extends Comment> {
 
     private void sendNotifications(String resourceId, String replyToUserId, List<String> mentionedUserIds,
             String userId, String orgId) {
-        List<String> noticeMentionedUserIds = mergeNotificationUsers(mentionedUserIds, replyToUserId);
         CommentResourceInfo resourceInfo = getNoticeResource(resourceId, orgId);
-        sendNotifications(resourceInfo, resourceId, noticeMentionedUserIds, userId, orgId);
+        sendNotifications(resourceInfo, resourceId, replyToUserId, mentionedUserIds, userId, orgId);
     }
 
     public C update(CommentUpdateRequest request, String userId, String orgId) {
@@ -232,14 +231,6 @@ public abstract class BaseCommentService<C extends Comment> {
         return comment;
     }
 
-    private List<String> mergeNotificationUsers(List<String> mentionedUserIds, String replyToUserId) {
-        List<String> userIds = new ArrayList<>(mentionedUserIds == null ? List.of() : mentionedUserIds);
-        if (StringUtils.isNotBlank(replyToUserId)) {
-            userIds.add(replyToUserId);
-        }
-        return userIds;
-    }
-
     private void saveMentionUsers(String commentId, List<String> userIds) {
         List<String> distinctUserIds = userIds == null ? List.of()
                 : userIds.stream()
@@ -285,33 +276,38 @@ public abstract class BaseCommentService<C extends Comment> {
                 mentionUserMap.getOrDefault(comment.getId(), List.of())));
     }
 
-    private void sendNotifications(CommentResourceInfo resourceInfo, String resourceId, List<String> mentionedUserIds,
-            String operator, String orgId) {
+    private void sendNotifications(CommentResourceInfo resourceInfo, String resourceId, String replyToUserId,
+            List<String> mentionedUserIds, String operator, String orgId) {
         Map<String, Object> resource = new HashMap<>();
         resource.put("name", resourceInfo.name());
         resource.put("resourceId", resourceId);
         resource.put("targetType", getTargetType().name());
 
-        Set<String> mentioned = new LinkedHashSet<>(mentionedUserIds);
-        List<String> noticeUsers = new ArrayList<>();
-        String event = null;
+        Set<String> mentioned = mentionedUserIds == null ? Set.of() : mentionedUserIds.stream()
+                .filter(StringUtils::isNotBlank).collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<String> noticeUsers = new LinkedHashSet<>();
 
-        if (StringUtils.isNotBlank(resourceInfo.owner()) && !mentioned.contains(resourceInfo.owner())) {
+        if (StringUtils.isNotBlank(resourceInfo.owner())) {
             noticeUsers.add(resourceInfo.owner());
-            event = getCommentAddedEvent(resourceId);
+        }
+        if (StringUtils.isNotBlank(replyToUserId)) {
+            noticeUsers.add(replyToUserId);
+        }
+        noticeUsers.removeAll(mentioned);
+        if (!noticeUsers.isEmpty()) {
+            sendNotification(getCommentAddedEvent(resourceId), resource, operator, orgId, noticeUsers);
         }
         if (!mentioned.isEmpty()) {
-            noticeUsers.addAll(mentioned);
-            event = getCommentMentionedEvent(resourceId);
+            sendNotification(getCommentMentionedEvent(resourceId), resource, operator, orgId, mentioned);
         }
+    }
 
-        if (event != null) {
-            MessageTask messageByEvent = extMessageTaskMapper.getMessageByEvent(event, orgId);
-            if (messageByEvent == null) {
-                return;
-            }
+    private void sendNotification(String event, Map<String, Object> resource, String operator, String orgId,
+            Set<String> users) {
+        MessageTask messageByEvent = extMessageTaskMapper.getMessageByEvent(event, orgId);
+        if (messageByEvent != null) {
             commonNoticeSendService.sendNotice(messageByEvent.getTaskType(), event,
-                    resource, operator, orgId, noticeUsers, true);
+                    resource, operator, orgId, List.copyOf(users), true);
         }
     }
 
