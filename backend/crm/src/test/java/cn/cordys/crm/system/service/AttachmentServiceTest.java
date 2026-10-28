@@ -145,7 +145,7 @@ class AttachmentServiceTest {
     void formalAttachmentReadChecksPermissionBeforeOpeningFile() {
         Attachment attachment = attachment("forbidden-file");
         when(attachmentMapper.selectByPrimaryKey(attachment.getId())).thenReturn(attachment);
-        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(permissions).checkPermission(attachment);
+        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(permissions).checkReadPermission(attachment);
 
         GenericException error = assertThrows(GenericException.class, () -> service.getResource(attachment.getId()));
 
@@ -153,10 +153,11 @@ class AttachmentServiceTest {
         verifyNoInteractions(files);
     }
 
-    @Test
-    void allowedFormalAttachmentCanBeRead() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"jpg", "pdf"})
+    void allowedFormalAttachmentCanBeRead(String extension) throws Exception {
         Attachment attachment = attachment("allowed-file");
-        attachment.setName("test.txt");
+        attachment.setName("test." + extension);
         attachment.setSize(4L);
         when(attachmentMapper.selectByPrimaryKey(attachment.getId())).thenReturn(attachment);
         when(files.getFileInputStream(any())).thenReturn(new java.io.ByteArrayInputStream("test".getBytes()));
@@ -165,7 +166,8 @@ class AttachmentServiceTest {
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("test", new String(response.getBody().getInputStream().readAllBytes()));
-        verify(permissions).checkPermission(attachment);
+        verify(permissions).checkReadPermission(attachment);
+        verify(permissions, never()).checkPermission(attachment);
     }
 
     @Test
