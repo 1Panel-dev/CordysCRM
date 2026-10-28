@@ -78,11 +78,11 @@
                   </div>
                   <div class="text-[14px]">{{ t('workbench.myApply') }}</div>
                 </div>
-                <div class="task-card flex-1 gap-[8px]" @click="goTask(ApprovalListTypeEnum.APPROVAL)">
+                <div class="task-card flex-1 gap-[8px]" @click="goTask(ApprovalListTypeEnum.MENTIONED)">
                   <div class="task-icon border border-[var(--success-green)]">
-                    <CrmIcon name="iconicon_check_circle" width="14px" height="14px" color="var(--success-green)" />
+                    <CrmIcon name="iconicon_at_outlined" width="14px" height="14px" color="var(--success-green)" />
                   </div>
-                  <div class="text-[14px]">{{ t('workbench.myProcess') }}</div>
+                  <div class="text-[14px]">{{ t('workbench.mentionedMe') }}</div>
                 </div>
               </div>
             </div>

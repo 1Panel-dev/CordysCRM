@@ -77,6 +77,7 @@ export default {
   'workbench.dataOverview.myTasks': 'My tasks',
   'workbench.dataOverview.pendingApproval': 'Pending Approval',
   'workbench.dataOverview.approvedByMe': 'Approved by Me',
+  'workbench.dataOverview.mentionedMe': 'Mentioned Me',
   'workbench.dataOverview.initiatedByMe': 'Initiated by Me',
   'workbench.dataOverview.copiedToMe': 'Copied to Me',
   'workbench.smart.composerPlaceholder':

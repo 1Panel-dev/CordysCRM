@@ -2,10 +2,10 @@
   <CrmCard hide-footer no-content-padding>
     <CrmSplitPanel
       v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
-      size="calc(100% - 400px)"
-      max="calc(100% - 400px)"
-      min="400px"
-      default-size="calc(100% - 400px)"
+      size="calc(100% - 419px)"
+      :max="0.8"
+      :min="0.3"
+      default-size="calc(100% - 419px)"
       collapse-side="right"
     >
       <template #1>
