@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-[8px] px-[16px] pb-[16px]">
     <div v-for="file in props.fileList" :key="file.id" class="crm-file-item">
-      <CrmFileIcon :name="file.name" width="40px" height="40px" @click="handlePreview(file)" />
+      <CrmFileIcon :name="file.name" width="24px" height="24px" @click="handlePreview(file)" />
       <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
         <div class="flex items-center justify-between">
           <div class="one-line-text flex-1">{{ file.name }}</div>
@@ -9,10 +9,10 @@
             <CrmTextButton icon="iconicon_download" icon-size="16px" @click="handleDownloadAttachment(file)" />
           </div>
         </div>
-        <div class="text-[12px] text-[var(--text-n4)]">
+        <div class="one-line-text text-[12px] text-[var(--text-n4)]">
           {{ `${(file.size / 1024).toFixed(2)} KB` }}
         </div>
-        <div class="text-[12px] text-[var(--text-n4)]">
+        <div class="one-line-text text-[12px] text-[var(--text-n4)]">
           {{
             t('crm.fileListPop.uploadAt', {
               name: file.createUser,

@@ -458,18 +458,31 @@
     target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  function focusCurrentRoundStart() {
+    expandedHistoryInstanceNames.value = [];
+    nextTick(() => {
+      const target = approvalRecordRef.value?.querySelector('.approval-current-round-start-node');
+      (target || approvalRecordRef.value)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   function handleAnchorTabChange(anchor: string | number) {
     if (anchor === 'record' || anchor === 'comment') {
       if (anchor === 'record') {
-        expandedHistoryInstanceNames.value = [];
+        focusCurrentRoundStart();
+      } else {
+        scrollToAnchor(anchor);
       }
-      scrollToAnchor(anchor);
     }
   }
 
   function handleAnchorTabClick(event: MouseEvent) {
-    if (event.target instanceof Element && event.target.closest('[data-name="record"]')) {
-      expandedHistoryInstanceNames.value = [];
+    if (
+      activeAnchor.value === 'record' &&
+      event.target instanceof Element &&
+      event.target.closest('[data-name="record"]')
+    ) {
+      focusCurrentRoundStart();
     }
   }
 
