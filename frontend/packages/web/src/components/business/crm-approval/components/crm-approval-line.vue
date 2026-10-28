@@ -1,6 +1,6 @@
 <template>
-  <n-scrollbar :content-style="{ maxWidth: '400px' }" x-scrollable>
-    <n-timeline :icon-size="20" class="w-full min-w-[300px] gap-[4px]">
+  <n-scrollbar :content-style="{ width: '100%', minWidth: '312px' }" x-scrollable>
+    <n-timeline :icon-size="20" class="w-full min-w-[312px] gap-[4px]">
       <n-timeline-item>
         <template #icon>
           <div class="timeline-icon-wrapper bg-[var(--primary-8)]">
@@ -222,7 +222,7 @@
                     <CrmFileList
                       v-if="task.attachments?.length > 0"
                       :files="task.attachments"
-                      class="mt-[8px] max-w-[312px]"
+                      class="mt-[8px] w-full min-w-[312px]"
                       readonly
                     />
                   </n-collapse-item>
@@ -231,7 +231,7 @@
               <CrmFileList
                 v-if="node.attachments?.length > 0"
                 :files="node.attachments"
-                class="mt-[8px] max-w-[312px]"
+                class="mt-[8px] w-full min-w-[312px]"
                 readonly
               />
               <n-collapse v-if="node.ccNodes?.length">
