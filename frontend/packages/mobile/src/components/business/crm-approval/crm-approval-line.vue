@@ -123,7 +123,7 @@
           v-for="(node, index) in props.nodes"
           :key="node.nodeId"
           :class="{
-            'approval-history-latest-node': props.isHistorical && !node.endNode && index === lastApprovalNodeIndex,
+            'approval-history-latest-node': props.isHistorical && index === lastApprovalNodeIndex,
           }"
         >
           <template #inactive-icon>
@@ -383,9 +383,7 @@
   const historyDetails = ref<ApprovalDetail[]>([]);
   const expandedHistoryInstanceNames = ref<Array<string | number>>([]);
   const latestHistoryDetail = computed(() => historyDetails.value.at(-1));
-  const lastApprovalNodeIndex = computed(() =>
-    props.nodes.reduce((lastIndex, node, index) => (!node.endNode ? index : lastIndex), -1)
-  );
+  const lastApprovalNodeIndex = computed(() => props.nodes.length - 1);
   const anchorOptions = computed(() => [
     { value: 'record' as const, label: t('crm.approval.record') },
     { value: 'comment' as const, label: `${t('crmComment.title')} ${formatBadgeCount(commentCount.value)}` },
@@ -476,7 +474,7 @@
   }
 
   watch(
-    () => [props.resourceId, props.approvalId, props.refreshKey],
+    () => [props.resourceId, props.refreshKey ?? props.approvalId],
     () => loadHistoryDetails(props.resourceId),
     { immediate: true }
   );

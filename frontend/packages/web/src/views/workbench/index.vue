@@ -62,11 +62,11 @@
                       <div class="font-semibold text-[var(--primary-8)]">{{ pendingApprovalCount }}</div>
                     </div>
                   </div>
-                  <div class="task-item" @click="openTaskDrawer(ApprovalListTypeEnum.APPROVAL)">
+                  <div class="task-item" @click="openTaskDrawer(ApprovalListTypeEnum.MENTIONED)">
                     <div class="task-icon bg-[var(--success-green)]">
-                      <CrmIcon type="iconicon_check_circle" :size="16" color="var(--text-n10)" />
+                      <CrmIcon type="iconicon_at_outlined" :size="16" color="var(--text-n10)" />
                     </div>
-                    {{ t('workbench.dataOverview.approvedByMe') }}
+                    {{ t('workbench.dataOverview.mentionedMe') }}
                   </div>
                   <div class="task-item" @click="openTaskDrawer(ApprovalListTypeEnum.INITIATED)">
                     <div class="task-icon bg-[var(--primary-8)]">

@@ -180,6 +180,11 @@
       count: 0,
     },
     {
+      name: ApprovalListTypeEnum.MENTIONED,
+      title: t('workbench.mentionedMe'),
+      count: 0,
+    },
+    {
       name: ApprovalListTypeEnum.APPROVAL,
       title: t('workbench.myProcess'),
       count: 0,
@@ -192,11 +197,6 @@
     {
       name: ApprovalListTypeEnum.COPIED,
       title: t('workbench.copyToMe'),
-      count: 0,
-    },
-    {
-      name: ApprovalListTypeEnum.MENTIONED,
-      title: t('workbench.mentionedMe'),
       count: 0,
     },
   ];

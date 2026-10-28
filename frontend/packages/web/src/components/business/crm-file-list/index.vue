@@ -10,15 +10,14 @@
             </template>
             {{ file.name }}
           </n-tooltip>
-          <div class="flex items-center gap-[8px] text-[12px] text-[var(--text-n4)]">
-            {{ `${((file.size || file.file?.size || 0) / 1024).toFixed(2)} KB` }}
-            {{
-              t('crm.fileListModal.uploadAt', {
-                name: file.createUser,
-                time: dayjs(file.createTime).format('YYYY-MM-DD HH:mm:ss'),
-              })
-            }}
-          </div>
+          <n-tooltip trigger="hover" :delay="300">
+            <template #trigger>
+              <div class="min-w-0 truncate whitespace-nowrap text-[12px] text-[var(--text-n4)]">
+                {{ getFileMetadata(file) }}
+              </div>
+            </template>
+            {{ getFileMetadata(file) }}
+          </n-tooltip>
         </div>
       </div>
       <div class="flex items-center gap-[4px]">
@@ -82,6 +81,15 @@
   const Message = useMessage();
   const { t } = useI18n();
   const userStore = useUserStore();
+
+  function getFileMetadata(file: AttachmentInfo) {
+    const size = `${((file.size || file.file?.size || 0) / 1024).toFixed(2)} KB`;
+    const uploadInfo = t('crm.fileListModal.uploadAt', {
+      name: file.createUser,
+      time: dayjs(file.createTime).format('YYYY-MM-DD HH:mm:ss'),
+    });
+    return `${size} ${uploadInfo}`;
+  }
 
   async function handleDelete(file: AttachmentInfo, close: () => void) {
     close();

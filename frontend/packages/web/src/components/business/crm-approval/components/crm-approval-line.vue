@@ -45,8 +45,7 @@
         v-for="(node, index) in props.nodes"
         :key="node.nodeId"
         :class="{
-          'approval-history-latest-node':
-            props.isHistorical && !node.endNode && props.isLatest && index === props.nodes.length - 1,
+          'approval-history-latest-node': props.isHistorical && props.isLatest && index === props.nodes.length - 1,
         }"
       >
         <template #icon>
@@ -223,13 +222,18 @@
                     <CrmFileList
                       v-if="task.attachments?.length > 0"
                       :files="task.attachments"
-                      class="mt-[8px]"
+                      class="mt-[8px] max-w-[312px]"
                       readonly
                     />
                   </n-collapse-item>
                 </n-collapse>
               </div>
-              <CrmFileList v-if="node.attachments?.length > 0" :files="node.attachments" class="mt-[8px]" readonly />
+              <CrmFileList
+                v-if="node.attachments?.length > 0"
+                :files="node.attachments"
+                class="mt-[8px] max-w-[312px]"
+                readonly
+              />
               <n-collapse v-if="node.ccNodes?.length">
                 <template #arrow>
                   <div></div>
