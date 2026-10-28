@@ -41,7 +41,7 @@
 
 
     <select id="getResourceOwner" resultType="java.lang.String">
-        select owner from ${sourceTable} where id = #{id}
+        select owner from ${sourceTable} where id = #{id} and organization_id = #{organizationId}
     </select>
 
     <select id="selectApproved" resultType="java.lang.Boolean">

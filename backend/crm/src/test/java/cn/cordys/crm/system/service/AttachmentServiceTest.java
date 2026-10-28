@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockMakers;
@@ -31,7 +32,9 @@ import org.mockito.MockedStatic;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -40,6 +43,7 @@ import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcesso
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -47,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -197,18 +202,51 @@ class AttachmentServiceTest {
         }
     }
 
-    @Test
-    void temporaryUploadPropagatesStorageFailureWithoutRegisteringOwner() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void temporaryUploadPropagatesStorageFailureWithoutRegisteringOwner(boolean fileSystemFailure) throws Exception {
         ReflectionTestUtils.setField(service, "fileCommonService", new FileCommonService());
         MockMultipartFile file = new MockMultipartFile("files", "test.gif", "image/gif", "GIF89a".getBytes());
-        IOException failure = new IOException("Filename too long");
+        IOException failure = fileSystemFailure
+                ? new FileSystemException("Filename too long.gif", null, "Permission denied")
+                : new IOException("Filename too long");
         when(repository.saveFile(eq(file), any())).thenThrow(failure);
 
         GenericException error = assertThrows(GenericException.class, () -> service.uploadTemp(List.of(file)));
 
         assertSame(failure, error.getCause());
-        assertTrue(error.getMessage().contains("Filename too long"));
+        assertEquals(failure.toString(), error.getMessage());
         verifyNoInteractions(temporaryOwners);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "zh-CN,Filename too long,文件名过长，请缩短文件名后重新上传",
+            "zh-CN,File name too long,文件名过长，请缩短文件名后重新上传",
+            "en-US,Filename too long,The file name is too long. Please shorten it and upload the file again.",
+            "en-US,File name too long,The file name is too long. Please shorten it and upload the file again."
+    })
+    void temporaryUploadReportsFriendlyFilenameError(String language, String reason, String expected) throws Exception {
+        LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
+        try {
+            LocaleContextHolder.setLocale(Locale.forLanguageTag(language));
+            ResourceBundleMessageSource messages = new ResourceBundleMessageSource();
+            messages.setBasename("i18n/cordys-crm");
+            messages.setDefaultEncoding("UTF-8");
+            new Translator().setMessageSource(messages);
+            ReflectionTestUtils.setField(service, "fileCommonService", new FileCommonService());
+            MockMultipartFile file = new MockMultipartFile("files", "test.gif", "image/gif", "GIF89a".getBytes());
+            FileSystemException failure = new FileSystemException("/opt/cordys/data/files/tmp/id/test.gif", null, reason);
+            when(repository.saveFile(eq(file), any())).thenThrow(failure);
+
+            GenericException error = assertThrows(GenericException.class, () -> service.uploadTemp(List.of(file)));
+
+            assertEquals(expected, error.getMessage());
+            assertSame(failure, error.getCause());
+            verifyNoInteractions(temporaryOwners);
+        } finally {
+            LocaleContextHolder.setLocaleContext(previousLocaleContext);
+        }
     }
 
     @ParameterizedTest

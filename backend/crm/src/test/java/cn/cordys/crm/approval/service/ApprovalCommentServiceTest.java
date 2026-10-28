@@ -669,9 +669,40 @@ class ApprovalCommentServiceTest {
         assertEquals("member-a", mentionCaptor.getValue().getFirst().getUserId());
         assertEquals(commentCaptor.getValue().getId(), mentionCaptor.getValue().getFirst().getCommentId());
         assertEquals(commentCaptor.getValue().getCreateTime(), mentionCaptor.getValue().getFirst().getCreateTime());
-        verify(approvalCommentNoticeService).sendMentionNotice(commentCaptor.getValue(), List.of("member-a"));
+        verify(approvalCommentNoticeService).sendNotice(commentCaptor.getValue(), List.of("member-a"), true);
         LogDTO log = assertCommentLog(LogModule.CONTRACT_INDEX, "添加评论");
         assertEquals(Map.of("comment", "评论内容"), log.getModifiedValue());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,false", "false,true", "true,false", "true,true"})
+    void commentsWithoutMentionsNotifyOwnerOnlyAfterCommit(boolean reply, boolean commit) {
+        allowExistingPermission();
+        when(extCommentMapper.selectDetail(anyString(), eq(ORG)))
+                .thenAnswer(invocation -> detail(invocation.getArgument(0)));
+        ApprovalCommentAddRequest request = addRequest();
+        if (reply) {
+            request.setParentId("parent-a");
+            when(extCommentMapper.selectCommentForUpdate("parent-a", ORG))
+                    .thenReturn(comment("parent-a", "root-author"));
+        }
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.add(request, USER, ORG);
+
+            verifyNoInteractions(approvalCommentNoticeService);
+            if (commit) {
+                TransactionSynchronizationManager.getSynchronizations()
+                        .forEach(TransactionSynchronization::afterCommit);
+                verify(approvalCommentNoticeService).sendNotice(any(), eq(List.of()), eq(true));
+            } else {
+                TransactionSynchronizationManager.getSynchronizations().forEach(synchronization -> synchronization
+                        .afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+                verifyNoInteractions(approvalCommentNoticeService);
+            }
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
     }
 
     @Test
@@ -713,7 +744,7 @@ class ApprovalCommentServiceTest {
         assertEquals("mention-kept", kept.getId());
         assertEquals(100L, kept.getCreateTime());
         ArgumentCaptor<ApprovalComment> notifiedComment = ArgumentCaptor.forClass(ApprovalComment.class);
-        verify(approvalCommentNoticeService).sendMentionNotice(notifiedComment.capture(), eq(List.of("member-c")));
+        verify(approvalCommentNoticeService).sendNotice(notifiedComment.capture(), eq(List.of("member-c")), eq(false));
         assertEquals(notifiedComment.getValue().getUpdateTime(), created.getValue().getFirst().getCreateTime());
     }
 
@@ -736,7 +767,7 @@ class ApprovalCommentServiceTest {
         verify(mentionMapper).batchInsert(created.capture());
         assertNotEquals(removed.getId(), created.getValue().getFirst().getId());
         assertTrue(created.getValue().getFirst().getCreateTime() > removed.getCreateTime());
-        verify(approvalCommentNoticeService).sendMentionNotice(any(), eq(List.of("member-a")));
+        verify(approvalCommentNoticeService).sendNotice(any(), eq(List.of("member-a")), eq(false));
     }
 
     @ParameterizedTest
@@ -767,7 +798,7 @@ class ApprovalCommentServiceTest {
             List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
             if (commit) {
                 synchronizations.forEach(TransactionSynchronization::afterCommit);
-                verify(approvalCommentNoticeService, times(2)).sendMentionNotice(any(), eq(List.of("member-a")));
+                verify(approvalCommentNoticeService, times(2)).sendNotice(any(), eq(List.of("member-a")), eq(true));
             } else {
                 synchronizations.forEach(synchronization -> synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
                 verifyNoInteractions(approvalCommentNoticeService);

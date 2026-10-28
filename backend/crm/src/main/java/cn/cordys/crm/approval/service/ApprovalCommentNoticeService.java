@@ -4,6 +4,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.crm.approval.domain.ApprovalComment;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
@@ -14,8 +15,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -24,12 +27,14 @@ public class ApprovalCommentNoticeService {
     @Resource(name = "extApprovalCommentMapper")
     private ExtApprovalCommentMapper extApprovalCommentMapper;
     @Resource
+    private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+    @Resource
     private ExtMessageTaskMapper extMessageTaskMapper;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
 
-    public void sendMentionNotice(ApprovalComment comment, List<String> userIds) {
-        if (CollectionUtils.isEmpty(userIds)) {
+    public void sendNotice(ApprovalComment comment, List<String> userIds, boolean notifyOwner) {
+        if (!notifyOwner && CollectionUtils.isEmpty(userIds)) {
             return;
         }
         try {
@@ -40,6 +45,20 @@ public class ApprovalCommentNoticeService {
             ApprovalInstance instance = extApprovalCommentMapper.selectLatestInstance(comment.getResourceId(),
                     comment.getOrganizationId());
             if (instance == null) {
+                return;
+            }
+            Set<String> receivers = new LinkedHashSet<>(CollectionUtils.isEmpty(userIds) ? List.of() : userIds);
+            FormKey formKey = FormKey.ofKey(instance.getType());
+            // 报价单没有业务负责人，不能以创建人替代。
+            if (notifyOwner && formKey != FormKey.QUOTATION) {
+                String owner = extApprovalInstanceMapper.getResourceOwner(
+                        ApprovalResourceService.resolveApprovalTableName(formKey), comment.getResourceId(),
+                        comment.getOrganizationId());
+                if (StringUtils.isNotBlank(owner)) {
+                    receivers.add(owner);
+                }
+            }
+            if (receivers.isEmpty()) {
                 return;
             }
             String resourceType = switch (FormKey.ofKey(instance.getType())) {
@@ -59,10 +78,10 @@ public class ApprovalCommentNoticeService {
             params.put("resourceId", comment.getId());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL,
                     NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, params, comment.getUpdateUser(),
-                    comment.getOrganizationId(), userIds, false);
+                    comment.getOrganizationId(), List.copyOf(receivers), false);
         } catch (Exception e) {
             // 通知在评论提交后发送，失败不能影响已保存的评论。
-            log.warn("审批评论@通知发送失败，commentId={}", comment.getId(), e);
+            log.warn("审批评论通知发送失败，commentId={}", comment.getId(), e);
         }
     }
 }
