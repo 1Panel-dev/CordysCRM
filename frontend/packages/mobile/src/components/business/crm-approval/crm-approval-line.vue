@@ -475,7 +475,9 @@
 
   watch(
     () => [props.resourceId, props.refreshKey ?? props.approvalId],
-    () => loadHistoryDetails(props.resourceId),
+    () => {
+      loadHistoryDetails(props.resourceId);
+    },
     { immediate: true }
   );
 

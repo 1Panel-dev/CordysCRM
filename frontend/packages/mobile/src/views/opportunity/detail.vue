@@ -412,7 +412,7 @@
       recordListRef.value?.[0].loadList();
     } else if (activeTab.value === 'plan') {
       planListRef.value?.[0].loadList();
-    } else if (activeTab.value === 'info') {
+    } else if (['info', 'approval'].includes(activeTab.value)) {
       refreshDetail();
     }
   });

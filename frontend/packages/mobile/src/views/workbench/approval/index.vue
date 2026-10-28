@@ -122,7 +122,6 @@
     },
   ];
   const activeName = ref(tabList[0].name);
-
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
 

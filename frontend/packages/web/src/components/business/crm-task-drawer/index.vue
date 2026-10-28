@@ -317,6 +317,12 @@
       children: moduleItems.value.map((e) => ({ ...e, name: `mentioned-${e.name}` })),
     },
     {
+      name: 'copied',
+      title: t('workbench.dataOverview.copiedToMe'),
+      count: 0,
+      children: moduleItems.value.map((e) => ({ ...e, name: `copied-${e.name}` })),
+    },
+    {
       name: 'approved',
       title: t('workbench.dataOverview.approvedByMe'),
       count: 0,
@@ -327,12 +333,6 @@
       title: t('workbench.dataOverview.initiatedByMe'),
       count: 0,
       children: moduleItems.value.map((e) => ({ ...e, name: `initiated-${e.name}` })),
-    },
-    {
-      name: 'copied',
-      title: t('workbench.dataOverview.copiedToMe'),
-      count: 0,
-      children: moduleItems.value.map((e) => ({ ...e, name: `copied-${e.name}` })),
     },
   ]);
 

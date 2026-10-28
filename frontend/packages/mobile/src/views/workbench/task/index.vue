@@ -185,6 +185,11 @@
       count: 0,
     },
     {
+      name: ApprovalListTypeEnum.COPIED,
+      title: t('workbench.copyToMe'),
+      count: 0,
+    },
+    {
       name: ApprovalListTypeEnum.APPROVAL,
       title: t('workbench.myProcess'),
       count: 0,
@@ -192,11 +197,6 @@
     {
       name: ApprovalListTypeEnum.INITIATED,
       title: t('workbench.myApply'),
-      count: 0,
-    },
-    {
-      name: ApprovalListTypeEnum.COPIED,
-      title: t('workbench.copyToMe'),
       count: 0,
     },
   ];
