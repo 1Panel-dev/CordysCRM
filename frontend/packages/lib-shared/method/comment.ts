@@ -37,6 +37,45 @@ export function filterMentionUsers(content: string, mentionUsers: FollowCommentU
   });
 }
 
+export interface CommentContentSegment {
+  text: string;
+  mention?: boolean;
+}
+
+/** 按已选用户拆分评论文本，避免将普通同名文本误展示为 @ 提及。 */
+export function splitCommentMentions(content: string, mentionUsers: FollowCommentUser[] = []): CommentContentSegment[] {
+  const users = [...mentionUsers].sort((a, b) => b.name.length - a.name.length);
+  const segments: CommentContentSegment[] = [];
+  let text = '';
+  let index = 0;
+
+  const appendText = () => {
+    if (text) {
+      segments.push({ text });
+      text = '';
+    }
+  };
+
+  while (index < content.length) {
+    const user = users.find((item) => {
+      const mention = `@${item.name}`;
+      const nextChar = content[index + mention.length];
+      return content.startsWith(mention, index) && (!nextChar || /[@\s,，。.!！?？;；:：、]/.test(nextChar));
+    });
+    if (user) {
+      appendText();
+      segments.push({ text: `@${user.name}`, mention: true });
+      index += user.name.length + 1;
+    } else {
+      text += content[index];
+      index += 1;
+    }
+  }
+  appendText();
+
+  return segments;
+}
+
 export function buildSaveCommentParams({
   sourceId,
   value,
