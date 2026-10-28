@@ -398,7 +398,7 @@
       relationListRef.value?.[0].initList();
     } else if (activeTab.value === 'collaborator') {
       collaboratorListRef.value?.[0].initList();
-    } else if (activeTab.value === 'info') {
+    } else if (['info', 'approval'].includes(activeTab.value)) {
       refreshDetail();
     }
   });
