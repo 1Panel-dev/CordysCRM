@@ -46,6 +46,7 @@
         :key="node.nodeId"
         :class="{
           'approval-history-latest-node': props.isHistorical && props.isLatest && index === props.nodes.length - 1,
+          'approval-current-round-start-node': !props.isHistorical && index === props.currentRoundStartIndex,
         }"
       >
         <template #icon>

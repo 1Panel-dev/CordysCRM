@@ -60,7 +60,7 @@
               v-for="(detail, index) in historyDetails"
               :key="detail.id"
               :class="{ 'approval-history-latest-card': index === historyDetails.length - 1 }"
-              class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[8px] last:mb-0"
+              class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] py-[8px] last:mb-0"
             >
               <CrmApprovalLine
                 :nodes="detail.nodes || []"
@@ -104,7 +104,7 @@
               {{ dayjs(props.submitter.submitTime).format('YYYY-MM-DD HH:mm') }}
             </div>
           </div>
-          <div class="flex items-center gap-[8px] bg-[var(--text-n9)] p-[8px]">
+          <div class="flex items-center gap-[8px] bg-[var(--text-n10)] py-[8px]">
             <div class="h-[24px] w-[24px]">
               <CrmAvatar
                 :avatar="props.submitter.submitAvatar"
@@ -233,13 +233,18 @@
                     <CrmFileList
                       v-if="task.attachments?.length > 0"
                       :fileList="task.attachments"
-                      class="mt-[8px] px-0 pb-0"
+                      class="mt-[8px] !px-0 !pb-0"
                       readonly
                     />
                   </van-collapse-item>
                 </van-collapse>
               </div>
-              <CrmFileList v-if="node.attachments?.length > 0" :fileList="node.attachments" class="mt-[8px]" readonly />
+              <CrmFileList
+                v-if="node.attachments?.length > 0"
+                :fileList="node.attachments"
+                class="mt-[8px] !px-0"
+                readonly
+              />
               <van-collapse v-if="node.ccNodes?.length" v-model="expandedCCNodes" :border="false">
                 <van-collapse-item :title="t('common.copyTo')" name="copyTo" class="!ml-0">
                   <template #title>
@@ -261,7 +266,7 @@
                       />
                     </div>
                   </template>
-                  <div class="mt-[12px] flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
+                  <div class="mt-[12px] flex flex-wrap gap-[8px] bg-[var(--text-n9)] py-[8px]">
                     <div v-for="cc in node.ccNodes" :key="cc.ccUserId" class="flex items-center gap-[8px]">
                       <div class="h-[24px] w-[24px]">
                         <CrmAvatar :avatar="cc.ccUserAvatar" :word="cc.ccUserName" :is-user="false" :size="24" />
@@ -560,11 +565,11 @@
 
 <style lang="less" scoped>
   :deep(.approval-history-collapse-item > .van-collapse-item__title) {
-    padding: 8px;
+    padding: 8px 0;
     background-color: var(--text-n9);
   }
   :deep(.approval-history-collapse-item > .van-collapse-item__wrapper > .van-collapse-item__content) {
-    padding: 8px;
+    padding: 8px 0;
     padding-top: 0;
     background-color: var(--text-n9);
   }
@@ -601,7 +606,7 @@
     }
     .van-collapse-item__title,
     .van-collapse-item__content {
-      padding: 8px;
+      padding: 8px 0;
     }
   }
   :deep(.van-cell__title) {
