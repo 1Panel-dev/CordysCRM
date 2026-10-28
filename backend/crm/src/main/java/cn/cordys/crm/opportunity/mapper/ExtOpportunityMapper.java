@@ -1,6 +1,10 @@
 package cn.cordys.crm.opportunity.mapper;
 
-import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.BatchUpdateDbParam;
+import cn.cordys.common.dto.ChartAnalysisDbRequest;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;

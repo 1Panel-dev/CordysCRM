@@ -1,6 +1,10 @@
 package cn.cordys.crm.search.service.global;
 
-import cn.cordys.common.constants.*;
+import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.ModuleKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.condition.FilterCondition;
@@ -29,7 +33,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service

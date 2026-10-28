@@ -13,11 +13,19 @@ import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
 import cn.cordys.crm.form.domain.CustomFormRole;
 import cn.cordys.crm.form.domain.CustomFormRoleUser;
-import cn.cordys.crm.form.dto.request.*;
+import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
+import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
+import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
+import cn.cordys.crm.form.dto.request.CustomFormRoleUserPageRequest;
+import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
-import cn.cordys.crm.system.domain.*;
+import cn.cordys.crm.system.domain.Department;
+import cn.cordys.crm.system.domain.OrganizationUser;
+import cn.cordys.crm.system.domain.Role;
+import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.domain.UserRole;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -26,15 +34,17 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc

@@ -15,7 +15,11 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
-import cn.cordys.crm.form.domain.*;
+import cn.cordys.crm.form.domain.CustomForm;
+import cn.cordys.crm.form.domain.CustomFormAdmin;
+import cn.cordys.crm.form.domain.CustomFormRole;
+import cn.cordys.crm.form.domain.CustomFormRoleKey;
+import cn.cordys.crm.form.domain.CustomFormRoleUser;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
@@ -45,7 +49,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service

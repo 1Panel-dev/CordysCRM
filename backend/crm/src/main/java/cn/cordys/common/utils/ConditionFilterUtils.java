@@ -12,8 +12,11 @@ import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.dto.condition.FilterDBCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseResourceFieldService;
-import cn.cordys.common.uid.utils.EnumUtils;
-import cn.cordys.common.util.*;
+import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CaseFormatUtils;
+import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
@@ -32,7 +35,11 @@ import org.apache.commons.lang3.Strings;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static cn.cordys.common.utils.IndustryUtils.getIndustries;

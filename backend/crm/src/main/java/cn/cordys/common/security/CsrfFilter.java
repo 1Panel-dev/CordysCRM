@@ -18,8 +18,6 @@ import org.apache.shiro.web.util.WebUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 
-import static cn.cordys.security.SessionUser.getRandomAlphabetic;
-
 /**
  * 自定义过滤器，用于处理 CSRF 校验。
  * 该过滤器确保只有认证用户才能访问非公开资源，并对请求中的 CSRF token 和 Referer 进行校验。

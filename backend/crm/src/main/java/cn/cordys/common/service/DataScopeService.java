@@ -3,7 +3,11 @@ package cn.cordys.common.service;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.RoleDataScope;
-import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.BaseTreeNode;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.RoleDataScopeDTO;
+import cn.cordys.common.dto.RolePermissionDTO;
+import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -20,7 +24,11 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

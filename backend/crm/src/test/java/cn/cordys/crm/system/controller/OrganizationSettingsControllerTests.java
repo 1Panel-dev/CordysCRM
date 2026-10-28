@@ -8,9 +8,13 @@ import cn.cordys.crm.system.dto.response.EmailDTO;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import jakarta.annotation.Resource;
-import org.junit.jupiter.api.*;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 

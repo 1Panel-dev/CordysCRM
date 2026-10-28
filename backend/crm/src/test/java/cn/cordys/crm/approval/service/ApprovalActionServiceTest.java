@@ -16,7 +16,6 @@ import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
-import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.request.ApprovalActionBatchRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalActionRequest;

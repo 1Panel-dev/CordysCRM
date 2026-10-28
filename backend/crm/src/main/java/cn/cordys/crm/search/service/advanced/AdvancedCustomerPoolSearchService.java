@@ -1,6 +1,10 @@
 package cn.cordys.crm.search.service.advanced;
 
-import cn.cordys.common.constants.*;
+import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.ModuleKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.OptionDTO;

@@ -2,7 +2,13 @@ package cn.cordys.crm.analytics.service;
 
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.resolver.field.NumberResolver;
-import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.*;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Aggregate;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Condition;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Granularity;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Operator;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.OrderBy;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.TimeRange;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.View;
 import cn.cordys.crm.analytics.mapper.AnalyticsQueryMapper;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.system.dto.field.DatasourceMultipleField;
@@ -18,8 +24,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static cn.cordys.crm.analytics.service.AnalyticsServiceTest.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static cn.cordys.crm.analytics.service.AnalyticsServiceTest.catalog;
+import static cn.cordys.crm.analytics.service.AnalyticsServiceTest.dimension;
+import static cn.cordys.crm.analytics.service.AnalyticsServiceTest.field;
+import static cn.cordys.crm.analytics.service.AnalyticsServiceTest.lineCatalog;
+import static cn.cordys.crm.analytics.service.AnalyticsServiceTest.metric;
+import static cn.cordys.crm.analytics.service.AnalyticsServiceTest.request;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** 在原有 MySQL/Redis 集成环境验证真实迁移表结构；每个用例的合成数据随事务回滚。 */
 @Transactional

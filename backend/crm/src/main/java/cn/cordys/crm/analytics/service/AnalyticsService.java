@@ -4,11 +4,11 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Granularity;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.View;
-import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
-import cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse.Row;
 import cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse;
+import cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse.Row;
 import cn.cordys.crm.analytics.dto.response.AnalyticsSchemaResponse;
 import cn.cordys.crm.analytics.mapper.AnalyticsQueryMapper;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -22,7 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StopWatch;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static cn.cordys.crm.analytics.service.AnalyticsAccessService.invalid;
 

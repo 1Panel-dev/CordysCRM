@@ -1,15 +1,33 @@
 package cn.cordys.crm.analytics.service;
 
-import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.*;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Aggregate;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Condition;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Dimension;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Granularity;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Metric;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Operator;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.TimeRange;
 import cn.cordys.crm.analytics.service.AnalyticsAccessService.Access;
 import cn.cordys.crm.analytics.service.AnalyticsSchemaService.Catalog;
 import cn.cordys.crm.analytics.service.AnalyticsSchemaService.Field;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cn.cordys.crm.analytics.service.AnalyticsAccessService.invalid;

@@ -1,6 +1,10 @@
 package cn.cordys.crm.system.mapper;
 
-import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.BaseTree;
+import cn.cordys.common.dto.BaseTreeNode;
+import cn.cordys.common.dto.DeptUserTreeNode;
+import cn.cordys.common.dto.NodeSortQueryParam;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.system.domain.Department;
 import cn.cordys.crm.system.domain.DepartmentCommander;
 import org.apache.ibatis.annotations.Param;

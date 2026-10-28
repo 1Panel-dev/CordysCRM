@@ -8,7 +8,6 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.search.constants.DefaultSearchFieldEnum;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.search.domain.UserSearchConfig;
-import cn.cordys.crm.search.mapper.ExtUserSearchConfigMapper;
 import cn.cordys.crm.search.request.UserSearchConfigAddRequest;
 import cn.cordys.crm.search.response.SearchFieldResponse;
 import cn.cordys.crm.system.dto.field.DatasourceField;

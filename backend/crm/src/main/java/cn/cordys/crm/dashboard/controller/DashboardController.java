@@ -6,7 +6,11 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.dashboard.domain.Dashboard;
-import cn.cordys.crm.dashboard.dto.request.*;
+import cn.cordys.crm.dashboard.dto.request.DashboardAddRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardEditPosRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardPageRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardRenameRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardUpdateRequest;
 import cn.cordys.crm.dashboard.dto.response.DashboardDetailResponse;
 import cn.cordys.crm.dashboard.dto.response.DashboardPageResponse;
 import cn.cordys.crm.dashboard.service.DashboardService;
@@ -18,7 +22,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

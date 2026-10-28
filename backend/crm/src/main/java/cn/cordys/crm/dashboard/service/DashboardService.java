@@ -22,7 +22,11 @@ import cn.cordys.crm.dashboard.domain.Dashboard;
 import cn.cordys.crm.dashboard.domain.DashboardCollection;
 import cn.cordys.crm.dashboard.dto.DashboardLogDTO;
 import cn.cordys.crm.dashboard.dto.MoveNodeSortDTO;
-import cn.cordys.crm.dashboard.dto.request.*;
+import cn.cordys.crm.dashboard.dto.request.DashboardAddRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardEditPosRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardPageRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardRenameRequest;
+import cn.cordys.crm.dashboard.dto.request.DashboardUpdateRequest;
 import cn.cordys.crm.dashboard.dto.response.DashboardDetailResponse;
 import cn.cordys.crm.dashboard.dto.response.DashboardPageResponse;
 import cn.cordys.crm.dashboard.mapper.ExtDashboardCollectionMapper;
@@ -47,7 +51,12 @@ import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service

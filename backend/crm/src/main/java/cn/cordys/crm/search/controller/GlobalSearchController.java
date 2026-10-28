@@ -5,7 +5,12 @@ import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.OptionCountDTO;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.search.response.global.*;
+import cn.cordys.crm.search.response.global.GlobalCluePoolResponse;
+import cn.cordys.crm.search.response.global.GlobalClueResponse;
+import cn.cordys.crm.search.response.global.GlobalCustomerContactResponse;
+import cn.cordys.crm.search.response.global.GlobalCustomerPoolResponse;
+import cn.cordys.crm.search.response.global.GlobalCustomerResponse;
+import cn.cordys.crm.search.response.global.GlobalOpportunityResponse;
 import cn.cordys.crm.search.service.BaseSearchService;
 import cn.cordys.crm.search.service.global.GlobalSearchCountService;
 import cn.cordys.crm.search.service.global.GlobalSearchServiceFactory;
@@ -14,7 +19,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

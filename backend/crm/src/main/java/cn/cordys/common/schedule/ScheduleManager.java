@@ -4,7 +4,19 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.crm.system.domain.Schedule;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.*;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.Job;
+import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 
 /**
  * 定时任务管理器，用于管理调度任务的添加、修改、删除等操作。

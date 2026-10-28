@@ -16,7 +16,11 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.RecycleConditionUtils;
-import cn.cordys.crm.customer.domain.*;
+import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerPool;
+import cn.cordys.crm.customer.domain.CustomerPoolHiddenField;
+import cn.cordys.crm.customer.domain.CustomerPoolPickRule;
+import cn.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import cn.cordys.crm.customer.dto.CustomerPoolDTO;
 import cn.cordys.crm.customer.dto.CustomerPoolFieldConfigDTO;
 import cn.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
@@ -42,7 +46,12 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

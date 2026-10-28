@@ -1,7 +1,12 @@
 package cn.cordys.crm.approval.dto.request;
 
 import cn.cordys.common.constants.EnumValue;
-import cn.cordys.crm.approval.constants.*;
+import cn.cordys.crm.approval.constants.ApprovalTypeEnum;
+import cn.cordys.crm.approval.constants.ApproverDirectionEnum;
+import cn.cordys.crm.approval.constants.ApproverTypeEnum;
+import cn.cordys.crm.approval.constants.EmptyApproverActionEnum;
+import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
+import cn.cordys.crm.approval.constants.SameSubmitterActionEnum;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -5,7 +5,11 @@ import cn.cordys.config.MybatisInterceptorConfig;
 import cn.cordys.crm.contract.domain.ContractInvoiceSnapshot;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
-import cn.cordys.crm.system.domain.*;
+import cn.cordys.crm.system.domain.Announcement;
+import cn.cordys.crm.system.domain.MessageTask;
+import cn.cordys.crm.system.domain.Notification;
+import cn.cordys.crm.system.domain.OperationLogBlob;
+import cn.cordys.crm.system.domain.OrganizationConfigDetail;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

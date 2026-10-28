@@ -2,13 +2,11 @@ package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportHeadDTO;
-import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
-import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCapacity;
 import cn.cordys.crm.customer.domain.CustomerOwner;
@@ -31,9 +29,13 @@ import cn.cordys.crm.system.service.ExportTaskCenterService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.junit.jupiter.api.*;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -42,7 +44,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 

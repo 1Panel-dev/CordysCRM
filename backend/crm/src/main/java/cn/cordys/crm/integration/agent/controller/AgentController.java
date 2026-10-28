@@ -9,7 +9,12 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.integration.agent.domain.Agent;
 import cn.cordys.crm.integration.agent.dto.AgentOptionDTO;
-import cn.cordys.crm.integration.agent.dto.request.*;
+import cn.cordys.crm.integration.agent.dto.request.AgentAddRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentEditPosRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentPageRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentRenameRequest;
+import cn.cordys.crm.integration.agent.dto.request.AgentUpdateRequest;
+import cn.cordys.crm.integration.agent.dto.request.ScriptRequest;
 import cn.cordys.crm.integration.agent.dto.response.AgentDetailResponse;
 import cn.cordys.crm.integration.agent.dto.response.AgentPageResponse;
 import cn.cordys.crm.integration.agent.dto.response.ScriptResponse;
@@ -24,7 +29,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

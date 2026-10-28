@@ -10,7 +10,11 @@ import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.approval.service.ApprovalActionService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
-import cn.cordys.crm.system.domain.*;
+import cn.cordys.crm.system.domain.Department;
+import cn.cordys.crm.system.domain.DepartmentCommander;
+import cn.cordys.crm.system.domain.OrganizationUser;
+import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.domain.UserExtend;
 import cn.cordys.crm.system.dto.DepartmentSourceUserDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.service.DepartmentService;
@@ -20,7 +24,12 @@ import cn.cordys.crm.system.service.OrganizationUserService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DataHandleUtils {

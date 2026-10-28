@@ -1,8 +1,8 @@
 package cn.cordys.crm.analytics.controller;
 
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.View;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.View;
 import cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse;
 import cn.cordys.crm.analytics.dto.response.AnalyticsSchemaResponse;
 import cn.cordys.crm.analytics.service.AnalyticsService;
@@ -17,7 +17,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /** 登录会话与 API Key 都通过现有认证链路取得身份；各模块权限在 Service 中动态校验。 */
 @RestController

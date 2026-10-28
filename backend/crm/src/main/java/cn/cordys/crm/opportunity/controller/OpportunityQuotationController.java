@@ -12,7 +12,11 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
-import cn.cordys.crm.opportunity.dto.request.*;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationAddRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationBatchRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationBatchVoidedRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationEditRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
@@ -26,7 +30,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

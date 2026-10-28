@@ -9,7 +9,11 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.PermissionDefinitionItem;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.domain.Role;
-import cn.cordys.crm.system.dto.request.*;
+import cn.cordys.crm.system.dto.request.ModuleSortRequest;
+import cn.cordys.crm.system.dto.request.RoleAddRequest;
+import cn.cordys.crm.system.dto.request.RoleUpdateRequest;
+import cn.cordys.crm.system.dto.request.RoleUserPageRequest;
+import cn.cordys.crm.system.dto.request.RoleUserRelateRequest;
 import cn.cordys.crm.system.dto.response.RoleGetResponse;
 import cn.cordys.crm.system.dto.response.RoleListResponse;
 import cn.cordys.crm.system.dto.response.RoleUserListResponse;
@@ -25,7 +29,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

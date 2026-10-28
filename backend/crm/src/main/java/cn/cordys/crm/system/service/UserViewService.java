@@ -10,7 +10,11 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
-import cn.cordys.common.util.*;
+import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.NodeSortUtils;
+import cn.cordys.common.util.ServiceUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.UserViewConditionValueType;
 import cn.cordys.crm.system.domain.UserView;
@@ -32,7 +36,12 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service("userViewService")

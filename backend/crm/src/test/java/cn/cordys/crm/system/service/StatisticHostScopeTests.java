@@ -7,7 +7,6 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.StatisticDataScope;
 import cn.cordys.crm.system.constants.StatisticType;
-import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.StatisticFieldSourceDTO;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.StatisticField;
@@ -28,8 +27,18 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * 统计字段「写入前捕获、写入后重算」这一对动作: 变更与删除两条路径共用。

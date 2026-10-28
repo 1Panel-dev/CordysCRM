@@ -1,12 +1,27 @@
 package cn.cordys.crm.analytics.service;
 
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.*;
 import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Aggregate;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Condition;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Dimension;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Granularity;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Metric;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.Operator;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.OrderBy;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.TimeRange;
+import cn.cordys.crm.analytics.dto.request.AnalyticsQueryRequest.View;
 import cn.cordys.crm.analytics.dto.response.AnalyticsQueryResponse.Scope;
 import cn.cordys.crm.analytics.mapper.AnalyticsQueryMapper;
 import cn.cordys.crm.opportunity.service.OpportunityService;
-import cn.cordys.crm.system.dto.field.*;
+import cn.cordys.crm.system.dto.field.DatasourceField;
+import cn.cordys.crm.system.dto.field.DateTimeField;
+import cn.cordys.crm.system.dto.field.InputField;
+import cn.cordys.crm.system.dto.field.InputNumberField;
+import cn.cordys.crm.system.dto.field.MemberField;
+import cn.cordys.crm.system.dto.field.ProductSubField;
+import cn.cordys.crm.system.dto.field.SelectField;
+import cn.cordys.crm.system.dto.field.SelectMultipleField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -24,16 +39,30 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.test.util.ReflectionTestUtils;
 import tools.jackson.databind.DeserializationFeature;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class AnalyticsServiceTest {
     private static final ValidatorFactory VALIDATION = Validation.buildDefaultValidatorFactory();
