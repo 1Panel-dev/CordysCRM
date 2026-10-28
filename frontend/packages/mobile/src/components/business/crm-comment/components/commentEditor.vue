@@ -114,10 +114,15 @@
 
   function removeAttachment(id: string) {
     if (props.disabled || props.loading) return;
+    discardAttachment(id);
+  }
+
+  function discardAttachment(id: string) {
     const attachment = attachments.value.find((item) => item.id === id);
     const previewUrl = attachment?.metadata?.previewUrl;
     if (typeof previewUrl === 'string') URL.revokeObjectURL(previewUrl);
     attachments.value = attachments.value.filter((item) => item.id !== id);
+    uploadingAttachmentIds.value.delete(id);
   }
 
   function clearAttachments() {
@@ -181,8 +186,7 @@
             current.status = 'done';
           }
         } catch {
-          const current = attachments.value.find((attachment) => attachment.id === item.id);
-          if (current) current.status = 'error';
+          discardAttachment(item.id);
         } finally {
           uploadingAttachmentIds.value.delete(item.id);
         }

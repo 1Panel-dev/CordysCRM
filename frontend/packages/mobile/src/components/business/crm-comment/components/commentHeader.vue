@@ -2,7 +2,7 @@
   <div class="crm-comment-header">
     <div class="crm-comment-header__left">
       <CrmIcon name="iconicon_comment" width="16px" height="16px" color="var(--text-n1)" />
-      <div class="crm-comment-header__title">{{ titleText }}</div>
+      <div class="crm-comment-header__title shrink-0">{{ titleText }}</div>
       <CrmTag :tag="displayCount" />
     </div>
 
@@ -32,14 +32,14 @@
     </div>
     <van-button
       v-if="props.showAdd"
-      class="crm-comment-header__add"
+      class="crm-comment-header__add shrink-0"
       icon="plus"
       plain
       size="small"
       type="default"
       @click="emit('add')"
     >
-      {{ t('crmComment.addComment') }}
+      {{ t('common.add') }}
     </van-button>
   </div>
 </template>
@@ -83,10 +83,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px;
+    padding: 12px 16px;
     width: 100%;
     background: var(--text-n10);
-    gap: 12px;
+    gap: 8px;
     .half-px-border-bottom();
   }
   .crm-comment-header__left {
@@ -96,7 +96,7 @@
     min-width: 0;
     border: 0;
     background: transparent;
-    gap: 6px;
+    gap: 4px;
   }
   .crm-comment-header__title {
     font-size: 14px;

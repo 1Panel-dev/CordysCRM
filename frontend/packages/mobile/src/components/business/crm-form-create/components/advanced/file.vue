@@ -38,8 +38,6 @@
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { Result } from '@lib/shared/types/axios';
-
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 
   import { uploadTempAttachment } from '@/api/modules';
@@ -87,31 +85,34 @@
     return true;
   }
 
+  function removeFailedFile(file: UploaderFileListItem) {
+    const index = fileList.value.findIndex((item) => item === file || item.file === file.file);
+    if (index !== -1) {
+      fileList.value.splice(index, 1);
+    }
+  }
+
   async function handleAfterRead(file: UploaderFileListItem | UploaderFileListItem[]) {
     if (Array.isArray(file)) {
-      const requestArr: Promise<Result<string[]>>[] = [];
-      file.forEach((f) => {
-        if (f.file) {
-          requestArr.push(uploadTempAttachment(f.file!));
-          f.status = 'uploading';
-        }
-      });
-      try {
-        const resArr = await Promise.all(requestArr);
-        resArr.forEach((res, index) => {
-          fileKeys.value.push(...res.data);
-          file[index].status = 'done';
-          file[index].content = `${PreviewAttachmentUrl}/${res.data[0]}`;
-        });
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-        file.forEach((f) => {
-          if (f.file) {
-            f.status = 'failed';
+      await Promise.all(
+        file.map(async (item) => {
+          if (!item.file) {
+            return;
           }
-        });
-      }
+
+          try {
+            item.status = 'uploading';
+            const res = await uploadTempAttachment(item.file);
+            fileKeys.value.push(...res.data);
+            item.status = 'done';
+            item.content = `${PreviewAttachmentUrl}/${res.data[0]}`;
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+            removeFailedFile(item);
+          }
+        })
+      );
       emit('change', fileKeys.value, fileList.value);
     } else {
       try {
@@ -126,7 +127,7 @@
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
-        file.status = 'failed';
+        removeFailedFile(file);
       }
     }
   }

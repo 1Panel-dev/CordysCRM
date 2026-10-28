@@ -1,7 +1,7 @@
 <template>
   <div
     class="flex w-full flex-col bg-[var(--text-n10)]"
-    :class="[props.isHistorical ? 'h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden p-[20px]']"
+    :class="[props.isHistorical ? 'h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden p-[16px]']"
   >
     <CrmSegmentedControl
       v-if="props.resourceId"

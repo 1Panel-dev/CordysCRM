@@ -285,6 +285,16 @@
     return true;
   }
 
+  function deleteAttachment(fileId: string) {
+    fileList.value = fileList.value.filter((file) => file.id !== fileId);
+    Object.entries(temporaryAttachmentIds.value).forEach(([localId, temporaryId]) => {
+      if (localId === fileId || temporaryId === fileId) {
+        delete temporaryAttachmentIds.value[localId];
+        uploadingAttachmentIds.value.delete(localId);
+      }
+    });
+  }
+
   async function uploadAttachment({ file, onFinish, onError }: UploadCustomRequestOptions) {
     const localFileId = file.id;
     uploadingAttachmentIds.value.add(localFileId);
@@ -298,19 +308,10 @@
       );
     } catch {
       onError();
+      deleteAttachment(localFileId);
     } finally {
       uploadingAttachmentIds.value.delete(localFileId);
     }
-  }
-
-  function deleteAttachment(fileId: string) {
-    fileList.value = fileList.value.filter((file) => file.id !== fileId);
-    Object.entries(temporaryAttachmentIds.value).forEach(([localId, temporaryId]) => {
-      if (localId === fileId || temporaryId === fileId) {
-        delete temporaryAttachmentIds.value[localId];
-        uploadingAttachmentIds.value.delete(localId);
-      }
-    });
   }
 
   function renderDisabledTag(option: NaiveMentionOption) {
