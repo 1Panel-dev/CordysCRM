@@ -208,6 +208,7 @@
       clearInterval(timer as unknown as number);
       file.status = 'error';
       onError();
+      handleDeleteFile(file.id);
     }
   }
 
