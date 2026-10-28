@@ -195,6 +195,7 @@ export interface AttachmentInfo {
   storage: string;
   type: string;
   createUser: string;
+  createUserName?: string;
   createTime: number;
   file?: File;
 }

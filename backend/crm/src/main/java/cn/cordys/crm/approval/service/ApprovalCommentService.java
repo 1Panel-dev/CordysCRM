@@ -6,6 +6,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithCommentCount;
+import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
@@ -68,6 +69,8 @@ public class ApprovalCommentService {
     private FileCommonService fileCommonService;
     @Resource
     private LogService logService;
+    @Resource
+    private UserQueryService userQueryService;
 
     public PagerWithCommentCount<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId,
             String orgId) {
@@ -330,10 +333,18 @@ public class ApprovalCommentService {
                                 .in(Attachment::getResourceId, comments.stream().map(ApprovalCommentResponse::getId).toList())
                                 .eq(Attachment::getOrganizationId, orgId)).stream()
                 .collect(Collectors.groupingBy(Attachment::getResourceId));
+        Map<String, String> attachmentUserNames = userQueryService.getUserNameMap(attachments.values().stream()
+                .flatMap(List::stream).map(Attachment::getCreateUser).filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet()));
         comments.forEach(comment -> {
             comment.setMentionUsers(mentionUsers.getOrDefault(comment.getId(), List.of()));
             comment.setAttachments(attachments.getOrDefault(comment.getId(), List.of()).stream()
-                    .map(attachment -> BeanUtils.copyBean(new ApprovalCommentResponse.AttachmentResponse(), attachment))
+                    .map(attachment -> {
+                        ApprovalCommentResponse.AttachmentResponse response = BeanUtils.copyBean(
+                                new ApprovalCommentResponse.AttachmentResponse(), attachment);
+                        response.setCreateUserName(attachmentUserNames.get(attachment.getCreateUser()));
+                        return response;
+                    })
                     .toList());
             comment.setEditable(Objects.equals(comment.getCreateUser(), userId));
         });
