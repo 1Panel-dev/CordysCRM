@@ -137,7 +137,11 @@ public class AttachmentService {
         checkAttachmentId(attachmentId);
         Attachment attachment = attachmentMapper.selectByPrimaryKey(attachmentId);
         // 在文件读取的异常捕获之外校验，确保无权限时返回禁止访问。
-        checkPermission(attachmentId, attachment);
+        if (attachment == null) {
+            checkPermission(attachmentId, null);
+        } else {
+            attachmentPermissionService.checkReadPermission(attachment);
+        }
         FileRequest request;
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
         try {

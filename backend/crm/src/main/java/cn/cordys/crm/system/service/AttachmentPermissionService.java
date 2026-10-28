@@ -8,6 +8,7 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalComment;
+import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.service.PoolClueService;
@@ -40,6 +41,8 @@ public class AttachmentPermissionService {
     @Resource
     private ExtApprovalTaskMapper extApprovalTaskMapper;
     @Resource
+    private ExtApprovalCommentMapper extApprovalCommentMapper;
+    @Resource
     private List<ResourceAccessContextProvider> contextProviders;
     @Resource
     private ResourcePermissionService resourcePermissionService;
@@ -67,6 +70,17 @@ public class AttachmentPermissionService {
     private CustomFormDataService customFormDataService;
 
     public void checkPermission(Attachment attachment) {
+        checkPermission(attachment, false);
+    }
+
+    /**
+     * 预览、下载评论附件时，允许同一业务资源的有效被@用户读取。
+     */
+    public void checkReadPermission(Attachment attachment) {
+        checkPermission(attachment, true);
+    }
+
+    private void checkPermission(Attachment attachment, boolean readOnly) {
         String userId = SessionUtils.getUserId();
         String orgId = OrganizationContext.getOrganizationId();
         if (attachment == null || StringUtils.isAnyBlank(userId, orgId, attachment.getResourceId())
@@ -81,7 +95,8 @@ public class AttachmentPermissionService {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
             resourceId = comment.getResourceId();
-            if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)) {
+            if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)
+                    || (readOnly && extApprovalCommentMapper.existsMention(resourceId, userId, orgId))) {
                 return;
             }
         } else if (extApprovalTaskMapper.existsAttachmentParticipant(attachment.getId(), resourceId, userId, orgId)) {
