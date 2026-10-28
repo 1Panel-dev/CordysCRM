@@ -1,5 +1,5 @@
 <template>
-  <CrmPageWrapper :title="sourceName || ''">
+  <CrmPageWrapper :title="sourceName || ''" :footer-visible="approvalActionPermission.showActions">
     <van-tabs v-model:active="activeName" border class="approval-tabs">
       <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
         <template #title>
@@ -19,30 +19,31 @@
         </div>
         <div v-else class="flex h-full bg-[var(--text-n9)] p-[16px]">
           <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
-            <CrmApprovalLine
-              :comment-mention-id="route.query.commentMentionId?.toString()"
-              :resource-id="sourceId"
-              class="min-h-0 flex-1"
-              :nodes="approvalInfo?.nodes || []"
-              :submitter="{
-                submitAvatar: approvalInfo?.submitAvatar,
-                submitter: approvalInfo?.submitter,
-                submitTime: approvalInfo?.submitTime,
-                submitterId: approvalInfo?.submitterId,
-                comment: approvalInfo?.comment,
-              }"
-              :currentApprovalNode="currentApprovalNode"
-              :currentApprovalNodeIndex="currentApprovalNodeIndex"
-              :finally-result="approvalInfo?.approvalStatus"
-              :approval-id="approvalInfo?.id"
-              :comment-count="approvalInfo?.commentCount"
-              :commentable="approvalInfo?.commentable"
-            />
+            <div class="min-h-0 flex-1">
+              <CrmApprovalLine
+                :comment-mention-id="route.query.commentMentionId?.toString()"
+                :resource-id="sourceId"
+                :nodes="approvalInfo?.nodes || []"
+                :submitter="{
+                  submitAvatar: approvalInfo?.submitAvatar,
+                  submitter: approvalInfo?.submitter,
+                  submitTime: approvalInfo?.submitTime,
+                  submitterId: approvalInfo?.submitterId,
+                  comment: approvalInfo?.comment,
+                }"
+                :currentApprovalNode="currentApprovalNode"
+                :currentApprovalNodeIndex="currentApprovalNodeIndex"
+                :finally-result="approvalInfo?.approvalStatus"
+                :approval-id="approvalInfo?.id"
+                :comment-count="approvalInfo?.commentCount"
+                :commentable="approvalInfo?.commentable"
+              />
+            </div>
           </div>
         </div>
       </van-tab>
     </van-tabs>
-    <template v-if="approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING" #footer>
+    <template #footer>
       <CrmApprovalRecordActions
         :source-id="sourceId"
         :form-key="approvalFormKey"
@@ -77,6 +78,7 @@
   import ApprovalStatus from '@/components/business/crm-approval/crm-approval-status.vue';
   import CrmApprovalLine from '@/components/business/crm-approval/crm-approval-line.vue';
   import CrmApprovalRecordActions from '@/components/business/crm-approval/crm-approval-record-actions.vue';
+  import resolveApprovalActionPermission from '@/components/business/crm-approval/approvalActionPermission';
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -137,6 +139,15 @@
 
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
+  const approvalActionPermission = computed(() =>
+    resolveApprovalActionPermission({
+      approvalInfo: approvalInfo.value,
+      approvalConfig: approvalConfig.value,
+      currentApprovalNode: currentApprovalNode.value,
+      currentApprovalNodeIndex: currentApprovalNodeIndex.value,
+      userId: userStore.userInfo.id,
+    })
+  );
   const currentTaskNode = computed(() => {
     if (!currentApprovalNode.value) {
       return undefined;

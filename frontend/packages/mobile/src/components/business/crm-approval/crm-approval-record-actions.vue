@@ -7,10 +7,10 @@
     <van-button v-else-if="showMoreButton" plain type="primary" block @click="showMore = true">
       {{ t('common.more') }}
     </van-button>
-    <van-button v-if="isApprover" plain type="danger" block @click="openApprovalPopup(true)">
+    <van-button v-if="actionPermission.isApprover" plain type="danger" block @click="openApprovalPopup(true)">
       {{ t('workbench.operation.REJECT') }}
     </van-button>
-    <van-button v-if="isApprover" type="primary" block @click="openApprovalPopup(false)">
+    <van-button v-if="actionPermission.isApprover" type="primary" block @click="openApprovalPopup(false)">
       {{ t('workbench.operation.APPROVE') }}
     </van-button>
   </div>
@@ -54,7 +54,7 @@
 
   import { getApprovalConfigDetail, revokeApproval, revokeResource } from '@/api/modules';
   import useUserStore from '@/store/modules/user';
-  import { ApprovalTaskExecuteTimeEnum, MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ApprovalTaskExecuteTimeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
   import type {
@@ -67,6 +67,8 @@
   import AddSignPopup from '@/views/workbench/approval/addSignPopup.vue';
   import ApprovalPopup from '@/views/workbench/approval/approvalPopup.vue';
   import FallbackPopup from '@/views/workbench/approval/fallbackPopup.vue';
+
+  import resolveApprovalActionPermission from './approvalActionPermission';
 
   const props = defineProps<{
     sourceId: string;
@@ -94,7 +96,6 @@
   const showMore = ref(false);
   const showFallbackPopup = ref(false);
   const showAddSignPopup = ref(false);
-  const hasApprovalStatus = [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE];
 
   const currentTaskNode = computed(() => {
     if (!props.currentApprovalNode) {
@@ -111,103 +112,32 @@
       return undefined;
     }
     const prevMineApprovalIndex = props.currentApprovalNode.taskNodes?.findIndex(
-      (taskNode) => hasApprovalStatus.includes(taskNode.approvalStatus) && taskNode.approverId === userStore.userInfo.id
+      (taskNode) =>
+        [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE].includes(
+          taskNode.approvalStatus
+        ) && taskNode.approverId === userStore.userInfo.id
     );
     if (prevMineApprovalIndex !== -1) {
       return props.currentApprovalNode.taskNodes?.[prevMineApprovalIndex];
     }
     const prevApprovalNode = props.approvalInfo?.nodes[props.currentApprovalNodeIndex - 1];
     return prevApprovalNode?.taskNodes.find(
-      (taskNode) => hasApprovalStatus.includes(taskNode.approvalStatus) && taskNode.approverId === userStore.userInfo.id
-    );
-  });
-
-  const isApprover = computed(() => {
-    if (props.currentApprovalNode?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
-      return (
-        props.currentApprovalNode.taskNodes?.find((taskNode) => taskNode.approvalStatus === ProcessStatusEnum.APPROVING)
-          ?.approverId === userStore.userInfo.id
-      );
-    }
-    return props.currentApprovalNode?.taskNodes?.some(
       (taskNode) =>
-        taskNode.approvalStatus === ProcessStatusEnum.APPROVING && taskNode.approverId === userStore.userInfo.id
+        [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE].includes(
+          taskNode.approvalStatus
+        ) && taskNode.approverId === userStore.userInfo.id
     );
   });
 
-  const canCancelApply = computed(() => {
-    if (!props.approvalInfo || !props.currentApprovalNode) {
-      return false;
-    }
-    if (
-      !effectiveApprovalConfig.value?.submitterCanRevoke &&
-      props.approvalInfo.nodes[0].approvalStatus !== ProcessStatusEnum.APPROVING
-    ) {
-      return false;
-    }
-    if (props.currentApprovalNode.endNode) {
-      return false;
-    }
-    if (props.approvalInfo.submitterId !== userStore.userInfo.id) {
-      return false;
-    }
-    if (
-      !props.approvalInfo.nodes.some((node) =>
-        [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(node.approvalStatus)
-      )
-    ) {
-      return true;
-    }
-    return (
-      props.approvalInfo.nodes[0].approvalStatus === ProcessStatusEnum.APPROVED &&
-      effectiveApprovalConfig.value?.submitterCanRevoke
-    );
-  });
-
-  const canCancelApproval = computed(() => {
-    if (
-      !effectiveApprovalConfig.value?.allowWithdraw ||
-      !props.currentApprovalNode ||
-      props.currentApprovalNode.endNode
-    ) {
-      return false;
-    }
-    if (
-      props.currentApprovalNode.taskNodes?.findIndex(
-        (taskNode) =>
-          hasApprovalStatus.includes(taskNode.approvalStatus) && taskNode.approverId === userStore.userInfo.id
-      ) !== -1
-    ) {
-      if (props.currentApprovalNode.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
-        const currentTaskNodeIndex = props.currentApprovalNode.taskNodes?.findIndex(
-          (taskNode) => taskNode.approvalStatus === ProcessStatusEnum.APPROVING
-        );
-        return props.currentApprovalNode.taskNodes[currentTaskNodeIndex - 1]?.approverId === userStore.userInfo.id;
-      }
-      return true;
-    }
-    const prevNode = props.approvalInfo?.nodes[props.currentApprovalNodeIndex - 1];
-    if (prevNode?.taskNodes?.length === 1) {
-      return (
-        prevNode.taskNodes[0].approverId === userStore.userInfo.id &&
-        props.currentApprovalNode.taskNodes?.every((taskNode) =>
-          [ProcessStatusEnum.APPROVING, ProcessStatusEnum.PENDING].includes(taskNode.approvalStatus)
-        )
-      );
-    }
-    if (prevNode?.multiApproverMode === MultiApproverModeEnum.ANY) {
-      return (
-        prevNode.taskNodes.some(
-          (taskNode) =>
-            hasApprovalStatus.includes(taskNode.approvalStatus) && taskNode.approverId === userStore.userInfo.id
-        ) &&
-        props.currentApprovalNode.taskNodes?.every((taskNode) =>
-          [ProcessStatusEnum.APPROVING, ProcessStatusEnum.PENDING].includes(taskNode.approvalStatus)
-        )
-      );
-    }
-    return false;
-  });
+  const actionPermission = computed(() =>
+    resolveApprovalActionPermission({
+      approvalInfo: props.approvalInfo,
+      approvalConfig: effectiveApprovalConfig.value,
+      currentApprovalNode: props.currentApprovalNode,
+      currentApprovalNodeIndex: props.currentApprovalNodeIndex,
+      userId: userStore.userInfo.id,
+    })
+  );
 
   const approvingItem = computed<Partial<ApprovalTodoItem> | undefined>(() => {
     if (!props.currentApprovalNode || !currentTaskNode.value) {
@@ -237,28 +167,28 @@
 
   const moreActionList = computed(() => {
     const actions: { key: string; text: string; action: () => void }[] = [];
-    if (fallbackOptions.value.length && isApprover.value) {
+    if (actionPermission.value.canFallback && fallbackOptions.value.length) {
       actions.push({
         key: 'fallback',
         text: t('workbench.operation.BACK'),
         action: openFallbackPopup,
       });
     }
-    if (effectiveApprovalConfig.value?.allowAddSign && isApprover.value) {
+    if (actionPermission.value.canAddSign) {
       actions.push({
         key: 'addSign',
         text: t('workbench.operation.SIGN'),
         action: openAddSignPopup,
       });
     }
-    if (canCancelApproval.value) {
+    if (actionPermission.value.canCancelApproval) {
       actions.push({
         key: 'cancelApproval',
         text: t('workbench.cancelApproval'),
         action: () => cancelApproval(),
       });
     }
-    if (canCancelApply.value) {
+    if (actionPermission.value.canCancelApply) {
       actions.push({
         key: 'cancelApply',
         text: t('workbench.canApply'),
@@ -275,18 +205,14 @@
       moreActionList.value.length > 1 ||
       (moreActionList.value.length === 1 && moreActionList.value[0].key === 'addSign')
   );
-  const showActions = computed(
-    () =>
-      props.approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
-      (isApprover.value || moreActionList.value.length > 0)
-  );
+  const showActions = computed(() => actionPermission.value.showActions);
   const approvalActions = computed(() => {
     if (!showActions.value) {
       return [];
     }
 
     return [
-      ...(isApprover.value
+      ...(actionPermission.value.isApprover
         ? [
             {
               key: 'approve',
