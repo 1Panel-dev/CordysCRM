@@ -49,16 +49,14 @@ public class ApprovalCommentNoticeService {
             }
             Set<String> receivers = new LinkedHashSet<>(CollectionUtils.isEmpty(userIds) ? List.of() : userIds);
             FormKey formKey = FormKey.ofKey(instance.getType());
+            String owner = null;
             // 报价单没有业务负责人，不能以创建人替代。
             if (notifyOwner && formKey != FormKey.QUOTATION) {
-                String owner = extApprovalInstanceMapper.getResourceOwner(
+                owner = extApprovalInstanceMapper.getResourceOwner(
                         ApprovalResourceService.resolveApprovalTableName(formKey), comment.getResourceId(),
                         comment.getOrganizationId());
-                if (StringUtils.isNotBlank(owner)) {
-                    receivers.add(owner);
-                }
             }
-            if (receivers.isEmpty()) {
+            if (receivers.isEmpty() && StringUtils.isBlank(owner)) {
                 return;
             }
             String resourceType = switch (FormKey.ofKey(instance.getType())) {
@@ -76,9 +74,19 @@ public class ApprovalCommentNoticeService {
                     ? "message.approval_comment_mentioned_text" : "message.approval_comment_reply_mentioned_text");
             params.put("resourceType", resourceType);
             params.put("resourceId", comment.getId());
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL,
-                    NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, params, comment.getUpdateUser(),
-                    comment.getOrganizationId(), List.copyOf(receivers), false);
+            if (!receivers.isEmpty()) {
+                commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL,
+                        NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, params, comment.getUpdateUser(),
+                        comment.getOrganizationId(), List.copyOf(receivers), false);
+            }
+            if (StringUtils.isNotBlank(owner) && !receivers.contains(owner)) {
+                Map<String, Object> ownerParams = new HashMap<>(params);
+                ownerParams.put("templateKey", StringUtils.isBlank(comment.getParentId())
+                        ? "message.approval_comment_added_text" : "message.approval_comment_reply_added_text");
+                commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL,
+                        NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, ownerParams, comment.getUpdateUser(),
+                        comment.getOrganizationId(), List.of(owner), false);
+            }
         } catch (Exception e) {
             // 通知在评论提交后发送，失败不能影响已保存的评论。
             log.warn("审批评论通知发送失败，commentId={}", comment.getId(), e);
