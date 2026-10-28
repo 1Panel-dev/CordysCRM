@@ -51,7 +51,8 @@ public interface ExtApprovalInstanceMapper {
      */
     String selectApprovalStatus(@Param("sourceTable") String sourceTable, @Param("id") String id);
 
-    String getResourceOwner(@Param("sourceTable") String sourceTable, @Param("id") String id);
+    String getResourceOwner(@Param("sourceTable") String sourceTable, @Param("id") String id,
+                            @Param("organizationId") String organizationId);
 
     /**
      * 查询业务资源是否审批通过过

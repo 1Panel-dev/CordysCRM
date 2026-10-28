@@ -120,7 +120,7 @@ public class ApprovalCommentService {
         saveAttachments(comment.getId(), request.getAttachmentIds(), userId, orgId);
         commentMapper.insert(comment);
         saveMentions(comment.getId(), mentionedUserIds, now);
-        sendMentionNoticeAfterCommit(comment, mentionedUserIds);
+        sendNoticeAfterCommit(comment, mentionedUserIds, true);
         ApprovalCommentResponse response = loadResponse(comment.getId(), userId, orgId);
         writeCommentLog(comment, userId, orgId, "permission.add", null, comment.getContent());
         return response;
@@ -148,7 +148,7 @@ public class ApprovalCommentService {
                 .map(ApprovalCommentMention::getUserId).collect(Collectors.toSet());
         List<String> addedUserIds = mentionedUserIds.stream().filter(id -> !existingUserIds.contains(id)).toList();
         saveMentions(comment.getId(), addedUserIds, comment.getUpdateTime());
-        sendMentionNoticeAfterCommit(comment, addedUserIds);
+        sendNoticeAfterCommit(comment, addedUserIds, false);
         // 本次编辑可能移除操作者最后一条有效@，返回结果不再次判权。
         ApprovalCommentResponse response = loadResponse(comment.getId(), userId, orgId);
         writeCommentLog(comment, userId, orgId, "permission.update", originalContent, comment.getContent());
@@ -288,19 +288,19 @@ public class ApprovalCommentService {
         mentionMapper.batchInsert(mentions);
     }
 
-    private void sendMentionNoticeAfterCommit(ApprovalComment comment, List<String> userIds) {
-        if (userIds.isEmpty()) {
+    private void sendNoticeAfterCommit(ApprovalComment comment, List<String> userIds, boolean notifyOwner) {
+        if (!notifyOwner && userIds.isEmpty()) {
             return;
         }
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    approvalCommentNoticeService.sendMentionNotice(comment, userIds);
+                    approvalCommentNoticeService.sendNotice(comment, userIds, notifyOwner);
                 }
             });
         } else {
-            approvalCommentNoticeService.sendMentionNotice(comment, userIds);
+            approvalCommentNoticeService.sendNotice(comment, userIds, notifyOwner);
         }
     }
 

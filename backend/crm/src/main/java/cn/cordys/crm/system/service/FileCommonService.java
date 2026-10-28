@@ -1,10 +1,12 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.Translator;
 import cn.cordys.file.engine.FileCenter;
 import cn.cordys.file.engine.FileCopyRequest;
 import cn.cordys.file.engine.FileRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.FileSystemException;
 import java.util.List;
 
 /**
@@ -47,6 +50,10 @@ public class FileCommonService {
             FileCenter.getRepository(request.getStorage()).saveFile(file, request);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            if (e instanceof FileSystemException fileException
+                    && Strings.CI.equalsAny(fileException.getReason(), "Filename too long", "File name too long")) {
+                throw new GenericException(Translator.get("file_name_too_long"), e);
+            }
             throw new GenericException(e);
         }
     }
