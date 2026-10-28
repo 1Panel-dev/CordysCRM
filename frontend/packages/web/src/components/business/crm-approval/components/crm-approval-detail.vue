@@ -3,8 +3,8 @@
     <CrmSplitPanel
       v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
       size="calc(100% - 419px)"
-      :max="0.8"
-      :min="0.3"
+      :max="0.72"
+      :min="0.2"
       default-size="calc(100% - 419px)"
       collapse-side="right"
     >
