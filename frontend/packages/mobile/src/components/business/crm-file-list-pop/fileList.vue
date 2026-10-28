@@ -15,7 +15,7 @@
         <div class="one-line-text text-[12px] text-[var(--text-n4)]">
           {{
             t('crm.fileListPop.uploadAt', {
-              name: file.createUser,
+              name: file.createUserName || file.createUser,
               time: dayjs(file.createTime).format('YYYY-MM-DD HH:mm:ss'),
             })
           }}

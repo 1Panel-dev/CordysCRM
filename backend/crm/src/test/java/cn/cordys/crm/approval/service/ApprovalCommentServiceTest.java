@@ -8,6 +8,7 @@ import cn.cordys.common.dto.SortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -54,6 +55,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -96,6 +98,7 @@ class ApprovalCommentServiceTest {
     private AttachmentService attachmentService;
     private FileCommonService fileCommonService;
     private LogService logService;
+    private UserQueryService userQueryService;
     private ApprovalInstance instance;
 
     @BeforeAll
@@ -135,6 +138,7 @@ class ApprovalCommentServiceTest {
         attachmentService = mock(AttachmentService.class);
         fileCommonService = mock(FileCommonService.class);
         logService = mock(LogService.class);
+        userQueryService = mock(UserQueryService.class);
         ReflectionTestUtils.setField(service, "commentMapper", commentMapper);
         ReflectionTestUtils.setField(service, "mentionMapper", mentionMapper);
         ReflectionTestUtils.setField(service, "extCommentMapper", extCommentMapper);
@@ -144,6 +148,7 @@ class ApprovalCommentServiceTest {
         ReflectionTestUtils.setField(service, "attachmentService", attachmentService);
         ReflectionTestUtils.setField(service, "fileCommonService", fileCommonService);
         ReflectionTestUtils.setField(service, "logService", logService);
+        ReflectionTestUtils.setField(service, "userQueryService", userQueryService);
         instance = new ApprovalInstance();
         instance.setId("instance-a");
         instance.setResourceId(RESOURCE);
@@ -172,6 +177,7 @@ class ApprovalCommentServiceTest {
             context.getBeanFactory().registerSingleton("attachmentService", attachmentService);
             context.getBeanFactory().registerSingleton("fileCommonService", fileCommonService);
             context.getBeanFactory().registerSingleton("logService", logService);
+            context.getBeanFactory().registerSingleton("userQueryService", userQueryService);
             context.registerBean(ApprovalCommentService.class);
             context.refresh();
 
@@ -838,6 +844,7 @@ class ApprovalCommentServiceTest {
     void savesAttachmentsForCommentsAndRepliesUnderTheCommentId(boolean reply) {
         allowExistingPermission();
         allowAttachmentFiles();
+        when(userQueryService.getUserNameMap(Set.of(USER))).thenReturn(Map.of(USER, "上传甲"));
         when(extCommentMapper.selectDetail(anyString(), eq(ORG)))
                 .thenAnswer(invocation -> detail(invocation.getArgument(0)));
         ApprovalCommentAddRequest request = addRequest();
@@ -849,8 +856,11 @@ class ApprovalCommentServiceTest {
         }
         doAnswer(invocation -> {
             UploadTransferRequest transfer = invocation.getArgument(0);
+            Attachment savedAttachment = attachment("file-a", transfer.getResourceId(), ORG);
+            savedAttachment.setCreateUser(USER);
+            savedAttachment.setCreateTime(123L);
             when(attachmentMapper.selectListByLambda(any()))
-                    .thenReturn(List.of(attachment("file-a", transfer.getResourceId(), ORG)));
+                    .thenReturn(List.of(savedAttachment));
             return null;
         }).when(attachmentService).processTemp(any());
 
@@ -866,6 +876,9 @@ class ApprovalCommentServiceTest {
         assertEquals("说明.txt", response.getAttachments().getFirst().getName());
         assertEquals(12L, response.getAttachments().getFirst().getSize());
         assertEquals("txt", response.getAttachments().getFirst().getType());
+        assertEquals(USER, response.getAttachments().getFirst().getCreateUser());
+        assertEquals("上传甲", response.getAttachments().getFirst().getCreateUserName());
+        assertEquals(123L, response.getAttachments().getFirst().getCreateTime());
         ArgumentCaptor<FileRequest> fileRequests = ArgumentCaptor.forClass(FileRequest.class);
         verify(fileCommonService, times(2)).getFolderFiles(fileRequests.capture());
         assertEquals(List.of(DefaultRepositoryDir.getTempFileDir("file-a"),
@@ -879,31 +892,54 @@ class ApprovalCommentServiceTest {
         ApprovalCommentResponse root = detail("comment-a");
         ApprovalCommentResponse reply = detail("reply-a");
         reply.setParentId(root.getId());
+        Attachment rootAttachment = attachment("file-root", root.getId(), ORG);
+        rootAttachment.setCreateUser("uploader-root");
+        rootAttachment.setCreateTime(123L);
+        Attachment replyAttachment = attachment("file-reply", reply.getId(), ORG);
+        replyAttachment.setCreateUser("uploader-reply");
+        replyAttachment.setCreateTime(456L);
+        when(userQueryService.getUserNameMap(Set.of("uploader-root", "uploader-reply")))
+                .thenReturn(Map.of("uploader-root", "上传甲", "uploader-reply", "上传乙"));
         when(extCommentMapper.selectPage(RESOURCE, ORG, false)).thenReturn(List.of(root));
         when(extCommentMapper.selectChildren(RESOURCE, List.of(root.getId()), ORG, false)).thenReturn(List.of(reply));
         when(attachmentMapper.selectListByLambda(any())).thenAnswer(invocation -> {
             LambdaQueryWrapper<Attachment> query = invocation.getArgument(0);
             assertEquals(Map.of("array_resource_id", List.of("comment-a", "reply-a"), "organization_id_eq", ORG),
                     query.getParams());
-            return List.of(attachment("file-root", root.getId(), ORG), attachment("file-reply", reply.getId(), ORG));
+            return List.of(rootAttachment, replyAttachment);
         });
 
         List<ApprovalCommentResponse> comments = service.page(pageRequest(), USER, ORG).getList();
 
         assertEquals("file-root", comments.getFirst().getAttachments().getFirst().getId());
         assertEquals("file-reply", comments.getFirst().getReplies().getFirst().getAttachments().getFirst().getId());
+        assertEquals("uploader-root", root.getAttachments().getFirst().getCreateUser());
+        assertEquals("上传甲", root.getAttachments().getFirst().getCreateUserName());
+        assertEquals(123L, root.getAttachments().getFirst().getCreateTime());
+        assertEquals("uploader-reply", reply.getAttachments().getFirst().getCreateUser());
+        assertEquals("上传乙", reply.getAttachments().getFirst().getCreateUserName());
+        assertEquals(456L, reply.getAttachments().getFirst().getCreateTime());
         verify(attachmentMapper).selectListByLambda(any());
+        verify(userQueryService).getUserNameMap(Set.of("uploader-root", "uploader-reply"));
     }
 
     @Test
     void editingWithoutAttachmentIdsKeepsExistingAttachments() {
         prepareOwnEdit();
+        Attachment keptAttachment = attachment("file-kept", "comment-a", ORG);
+        keptAttachment.setCreateUser("original-uploader");
+        keptAttachment.setCreateTime(123L);
+        when(userQueryService.getUserNameMap(Set.of("original-uploader")))
+                .thenReturn(Map.of("original-uploader", "原上传人"));
         when(attachmentMapper.selectListByLambda(any()))
-                .thenReturn(List.of(attachment("file-kept", "comment-a", ORG)));
+                .thenReturn(List.of(keptAttachment));
 
         ApprovalCommentResponse response = service.update(updateRequest(), USER, ORG);
 
         assertEquals("file-kept", response.getAttachments().getFirst().getId());
+        assertEquals("original-uploader", response.getAttachments().getFirst().getCreateUser());
+        assertEquals("原上传人", response.getAttachments().getFirst().getCreateUserName());
+        assertEquals(123L, response.getAttachments().getFirst().getCreateTime());
         verifyNoInteractions(attachmentService, fileCommonService);
         verify(attachmentMapper, never()).deleteByIds(any());
     }
