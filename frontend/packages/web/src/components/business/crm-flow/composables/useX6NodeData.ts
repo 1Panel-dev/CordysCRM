@@ -9,7 +9,7 @@ export default function useX6NodeData<T extends Record<string, unknown>>(nodeRef
 
   // 从当前 node 拉取最新 data（首次渲染和 change:data 后都会调用）
   function syncNodeData() {
-    nodeData.value = (nodeRef.value?.getData?.() ?? {}) as T;
+    nodeData.value = { ...(nodeRef.value?.getData?.() ?? {}) } as T;
   }
 
   watch(

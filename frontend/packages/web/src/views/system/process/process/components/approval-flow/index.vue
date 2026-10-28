@@ -197,26 +197,56 @@
 
   // descriptionItems 只是审批人卡片的展示字段，不能直接写回正在编辑的 flowSchema。
   // 这里派生一份画布专用数据，避免右侧表单更新审批人时触发流程图深层重绘导致画布消失。
+  function createCanvasFlowNode<T extends { name: string; invalid?: boolean }>(
+    source: T,
+    overrides: Partial<T> = {}
+  ): T {
+    const canvasNode = {
+      ...source,
+      ...overrides,
+    } as T;
+
+    // X6 通过布局层注册的重命名处理器操作的是画布副本；将名称和校验状态回写到源节点，
+    // 才能使画布内的 CrmEditableText 与右侧 nodeConfig 保持同步。
+    Object.defineProperties(canvasNode, {
+      name: {
+        enumerable: true,
+        get: () => source.name,
+        set: (value: string) => {
+          source.name = value;
+        },
+      },
+      invalid: {
+        enumerable: true,
+        get: () => source.invalid,
+        set: (value: boolean | undefined) => {
+          source.invalid = value;
+        },
+      },
+    });
+
+    return canvasNode;
+  }
+
   function createCanvasFlowNodes(nodes: FlowNode[]): FlowNode[] {
     return nodes.map((node) => {
       if (node.type === 'condition-group') {
-        return {
-          ...node,
-          branches: node.branches.map((branch) => ({
-            ...branch,
-            children: createCanvasFlowNodes(branch.children),
-          })),
-        };
+        return createCanvasFlowNode(node, {
+          branches: node.branches.map((branch) =>
+            createCanvasFlowNode(branch, {
+              children: createCanvasFlowNodes(branch.children),
+            })
+          ),
+        });
       }
 
       if (isApprovalActionNode(node)) {
-        return {
-          ...node,
+        return createCanvasFlowNode(node, {
           descriptionItems: resolveApprovalActionNodeDescriptionItems(node),
-        };
+        });
       }
 
-      return { ...node };
+      return createCanvasFlowNode(node);
     });
   }
 
