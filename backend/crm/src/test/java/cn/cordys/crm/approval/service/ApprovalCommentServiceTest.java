@@ -876,8 +876,7 @@ class ApprovalCommentServiceTest {
         assertEquals("说明.txt", response.getAttachments().getFirst().getName());
         assertEquals(12L, response.getAttachments().getFirst().getSize());
         assertEquals("txt", response.getAttachments().getFirst().getType());
-        assertEquals(USER, response.getAttachments().getFirst().getCreateUser());
-        assertEquals("上传甲", response.getAttachments().getFirst().getCreateUserName());
+        assertEquals("上传甲", response.getAttachments().getFirst().getCreateUser());
         assertEquals(123L, response.getAttachments().getFirst().getCreateTime());
         ArgumentCaptor<FileRequest> fileRequests = ArgumentCaptor.forClass(FileRequest.class);
         verify(fileCommonService, times(2)).getFolderFiles(fileRequests.capture());
@@ -913,11 +912,9 @@ class ApprovalCommentServiceTest {
 
         assertEquals("file-root", comments.getFirst().getAttachments().getFirst().getId());
         assertEquals("file-reply", comments.getFirst().getReplies().getFirst().getAttachments().getFirst().getId());
-        assertEquals("uploader-root", root.getAttachments().getFirst().getCreateUser());
-        assertEquals("上传甲", root.getAttachments().getFirst().getCreateUserName());
+        assertEquals("上传甲", root.getAttachments().getFirst().getCreateUser());
         assertEquals(123L, root.getAttachments().getFirst().getCreateTime());
-        assertEquals("uploader-reply", reply.getAttachments().getFirst().getCreateUser());
-        assertEquals("上传乙", reply.getAttachments().getFirst().getCreateUserName());
+        assertEquals("上传乙", reply.getAttachments().getFirst().getCreateUser());
         assertEquals(456L, reply.getAttachments().getFirst().getCreateTime());
         verify(attachmentMapper).selectListByLambda(any());
         verify(userQueryService).getUserNameMap(Set.of("uploader-root", "uploader-reply"));
@@ -937,8 +934,7 @@ class ApprovalCommentServiceTest {
         ApprovalCommentResponse response = service.update(updateRequest(), USER, ORG);
 
         assertEquals("file-kept", response.getAttachments().getFirst().getId());
-        assertEquals("original-uploader", response.getAttachments().getFirst().getCreateUser());
-        assertEquals("原上传人", response.getAttachments().getFirst().getCreateUserName());
+        assertEquals("原上传人", response.getAttachments().getFirst().getCreateUser());
         assertEquals(123L, response.getAttachments().getFirst().getCreateTime());
         verifyNoInteractions(attachmentService, fileCommonService);
         verify(attachmentMapper, never()).deleteByIds(any());

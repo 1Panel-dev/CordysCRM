@@ -73,11 +73,8 @@ public class ApprovalCommentResponse {
         @Schema(description = "附件大小，字节")
         private Long size;
 
-        @Schema(description = "上传人ID")
-        private String createUser;
-
         @Schema(description = "上传人名称")
-        private String createUserName;
+        private String createUser;
 
         @Schema(description = "上传时间，毫秒时间戳")
         private Long createTime;

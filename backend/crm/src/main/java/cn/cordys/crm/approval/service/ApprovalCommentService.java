@@ -342,7 +342,7 @@ public class ApprovalCommentService {
                     .map(attachment -> {
                         ApprovalCommentResponse.AttachmentResponse response = BeanUtils.copyBean(
                                 new ApprovalCommentResponse.AttachmentResponse(), attachment);
-                        response.setCreateUserName(attachmentUserNames.get(attachment.getCreateUser()));
+                        response.setCreateUser(attachmentUserNames.get(attachment.getCreateUser()));
                         return response;
                     })
                     .toList());
