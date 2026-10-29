@@ -1,211 +1,216 @@
 <template>
   <CrmCard hide-footer no-content-padding>
-    <CrmSplitPanel
+    <div
       v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
-      size="calc(100% - 419px)"
-      :max="0.72"
-      :min="0.2"
-      default-size="calc(100% - 419px)"
-      collapse-side="right"
+      ref="splitContainerRef"
+      class="h-full w-full"
     >
-      <template #1>
-        <div class="relative flex h-full w-full bg-[var(--text-n10)] p-[24px_8px_0_24px]">
-          <Transition name="approval-left-skeleton">
-            <div
-              v-if="leftSlotLoading"
-              class="absolute inset-0 z-10 bg-[var(--text-n10)] p-[24px_16px_24px_24px]"
-              aria-hidden="true"
-            >
-              <div class="mb-[20px] flex items-center gap-[12px]">
-                <n-skeleton circle :width="36" :height="36" />
-                <div class="flex flex-1 flex-col gap-[8px]">
-                  <n-skeleton :width="160" />
-                  <n-skeleton :width="96" />
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-x-[24px] gap-y-[28px]">
-                <div v-for="item in 8" :key="item" class="flex flex-col gap-[10px]">
-                  <n-skeleton :width="88" />
-                  <n-skeleton class="w-full" :height="34" />
-                </div>
-              </div>
-            </div>
-          </Transition>
-          <div class="h-full min-h-0 w-full" :class="{ 'opacity-0': leftSlotLoading }">
-            <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
-              <slot
-                name="left"
-                :fieldPermissions="filedPermission"
-                :taskNode="currentTaskNode"
-                :setLoading="setLeftSlotLoading"
-                :setEditing="setLeftEditing"
-              ></slot>
-            </n-scrollbar>
-          </div>
-        </div>
-      </template>
-      <template #2>
-        <div v-if="noApproval" class="h-full w-full flex-1 bg-[var(--text-n10)] px-[16px] py-[24px] pb-[32px]">
-          <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
-          {{ t('crm.approval.historyTip') }}
-        </div>
-        <div
-          v-else
-          ref="approvalHistoryPanelRef"
-          class="approval-history-panel flex h-full w-full flex-col overflow-hidden bg-[var(--text-n10)]"
-        >
-          <div class="shrink-0 px-[24px] pt-[24px]">
-            <CrmTab
-              v-model:active-tab="activeAnchor"
-              no-content
-              type="segment"
-              class="approval-anchor-tab"
-              :tab-list="approvalAnchorTabList"
-              @change="handleAnchorTabChange"
-              @click="handleAnchorTabClick"
-            />
-          </div>
-          <n-scrollbar class="min-h-0 flex-1" :content-style="{ padding: '16px 24px 32px 24px' }">
-            <div ref="approvalRecordRef">
-              <n-collapse
-                v-if="latestHistoricalApproval"
-                v-model:expanded-names="expandedHistoryInstanceNames"
-                class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
-                @update:expanded-names="handleHistoryExpandedNames"
+      <CrmSplitPanel
+        size="calc(100% - 422px)"
+        :max="maxSplitSize"
+        :min="0.2"
+        default-size="calc(100% - 422px)"
+        collapse-side="right"
+      >
+        <template #1>
+          <div class="relative flex h-full w-full bg-[var(--text-n10)] p-[24px_8px_0_24px]">
+            <Transition name="approval-left-skeleton">
+              <div
+                v-if="leftSlotLoading"
+                class="absolute inset-0 z-10 bg-[var(--text-n10)] p-[24px_16px_24px_24px]"
+                aria-hidden="true"
               >
-                <template #arrow><div></div></template>
-                <n-collapse-item name="history">
-                  <template #header>
-                    <div class="flex items-center gap-[8px]">
-                      <CrmApprovalStatus
-                        :status="latestHistoricalApproval.approvalStatus"
-                        isTag
-                        scene="approvalRecord"
-                        class="font-normal"
-                      />
-                      <div class="text-[14px] font-semibold text-[var(--text-n1)]">
-                        <template
-                          v-if="
-                            [ProcessStatusEnum.APPROVED, ProcessStatusEnum.AUTO_APPROVED].includes(
-                              latestHistoricalApproval.approvalStatus
-                            )
-                          "
-                        >
-                          {{ formatApprovalTime(getHistoricalApprovalTime(latestHistoricalApproval)) }}
-                        </template>
-                        <template v-else>
-                          {{
-                            t('crm.approval.previousRoundTitle', {
-                              nodeName: getCurrentNode(latestHistoricalApproval)?.nodeName || '',
-                            })
-                          }}
-                        </template>
-                      </div>
-                    </div>
-                  </template>
-                  <template #header-extra="{ collapsed }">
-                    <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
-                  </template>
-                  <div
-                    v-for="(detail, index) in historicalApprovalDetails"
-                    :key="detail.id"
-                    class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[8px] last:mb-0"
-                  >
-                    <CrmApprovalLine
-                      :nodes="detail.nodes || []"
-                      :submitter="{
-                        submitAvatar: detail.submitAvatar,
-                        submitter: detail.submitter,
-                        submitTime: detail.submitTime,
-                        submitterId: detail.submitterId,
-                        comment: detail.comment,
-                      }"
-                      :currentApprovalNode="getCurrentNode(detail)"
-                      :currentApprovalNodeIndex="getCurrentNodeIndex(detail)"
-                      :finally-result="detail.approvalStatus"
-                      :isLatest="index === historicalApprovalDetails.length - 1"
-                      is-historical
-                    />
+                <div class="mb-[20px] flex items-center gap-[12px]">
+                  <n-skeleton circle :width="36" :height="36" />
+                  <div class="flex flex-1 flex-col gap-[8px]">
+                    <n-skeleton :width="160" />
+                    <n-skeleton :width="96" />
                   </div>
-                </n-collapse-item>
-              </n-collapse>
-              <CrmApprovalLine
-                :nodes="approvalInfo?.nodes || []"
-                :submitter="{
-                  submitAvatar: approvalInfo?.submitAvatar,
-                  submitter: approvalInfo?.submitter,
-                  submitTime: approvalInfo?.submitTime,
-                  submitterId: approvalInfo?.submitterId,
-                  comment: approvalInfo?.comment,
-                }"
-                :currentApprovalNode="currentApprovalNode"
-                :currentApprovalNodeIndex="currentApprovalNodeIndex"
-                :current-round-start-index="currentRoundStartIndex"
-                :finally-result="approvalInfo?.approvalStatus"
-                class="pr-[8px]"
-              />
-            </div>
-            <div ref="approvalCommentRef">
-              <CrmComment
-                v-if="approvalInfo?.id"
-                v-model:expanded="commentExpanded"
-                v-model:count="approvalInfo.commentCount"
-                type="approval"
-                :can-create="approvalInfo.commentable"
-                :can-reply="approvalInfo.commentable"
-                :collapsible="false"
-                actions-in-more
-                enable-attachment
-                show-time-sort
-                :source-id="props.sourceId"
-                class="mt-[24px]"
-              />
-            </div>
-          </n-scrollbar>
-          <div
-            v-if="
-              !leftSlotEditing &&
-              approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
-              (isApprover || canCancelApply || canCancelApproval)
-            "
-            class="sticky bottom-0 flex max-h-full flex-col border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[16px]"
-          >
-            <div v-if="isApprover" class="flex shrink-0 justify-between gap-[12px]">
-              <div v-if="isApprover">
-                <n-button type="primary" :loading="approvalLoading" @click="openApprovalOpinion('approve')">
-                  {{ t('common.approve') }}
-                </n-button>
-                <n-button type="error" class="ml-[8px]" ghost @click="openApprovalOpinion('reject')">{{
-                  t('common.reject')
-                }}</n-button>
+                </div>
+                <div class="grid grid-cols-2 gap-x-[24px] gap-y-[28px]">
+                  <div v-for="item in 8" :key="item" class="flex flex-col gap-[10px]">
+                    <n-skeleton :width="88" />
+                    <n-skeleton class="w-full" :height="34" />
+                  </div>
+                </div>
               </div>
-              <CrmMoreAction
-                v-if="moreActions.length"
-                :class="!isApprover ? 'ml-auto' : ''"
-                :options="moreActions"
-                trigger="click"
-                size="medium"
-                @select="handleMoreActionSelect"
-              />
-            </div>
-            <div v-if="!isApprover" class="flex gap-[8px]">
-              <n-button v-if="canCancelApply" type="primary" ghost class="flex-1" @click="cancelApproval('apply')">
-                <template #icon>
-                  <CrmIcon type="iconicon_rollfront" :size="16" />
-                </template>
-                {{ t('common.revoke') }}
-              </n-button>
-              <n-button v-if="canCancelApproval" type="primary" ghost class="flex-1" @click="cancelApproval()">
-                <template #icon>
-                  <CrmIcon type="iconicon_rollfront" :size="16" />
-                </template>
-                {{ t('crm.approval.cancelApproval') }}
-              </n-button>
+            </Transition>
+            <div class="h-full min-h-0 w-full" :class="{ 'opacity-0': leftSlotLoading }">
+              <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
+                <slot
+                  name="left"
+                  :fieldPermissions="filedPermission"
+                  :taskNode="currentTaskNode"
+                  :setLoading="setLeftSlotLoading"
+                  :setEditing="setLeftEditing"
+                ></slot>
+              </n-scrollbar>
             </div>
           </div>
-        </div>
-      </template>
-    </CrmSplitPanel>
+        </template>
+        <template #2>
+          <div v-if="noApproval" class="h-full w-full flex-1 bg-[var(--text-n10)] px-[16px] py-[24px] pb-[32px]">
+            <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
+            {{ t('crm.approval.historyTip') }}
+          </div>
+          <div
+            v-else
+            ref="approvalHistoryPanelRef"
+            class="approval-history-panel flex h-full w-full flex-col overflow-hidden bg-[var(--text-n10)]"
+          >
+            <div class="shrink-0 px-[24px] pt-[24px]">
+              <CrmTab
+                v-model:active-tab="activeAnchor"
+                no-content
+                type="segment"
+                class="approval-anchor-tab"
+                :tab-list="approvalAnchorTabList"
+                @change="handleAnchorTabChange"
+                @click="handleAnchorTabClick"
+              />
+            </div>
+            <n-scrollbar class="min-h-0 flex-1" :content-style="{ padding: '16px 24px 32px 24px' }">
+              <div ref="approvalRecordRef">
+                <n-collapse
+                  v-if="latestHistoricalApproval"
+                  v-model:expanded-names="expandedHistoryInstanceNames"
+                  class="mb-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
+                  @update:expanded-names="handleHistoryExpandedNames"
+                >
+                  <template #arrow><div></div></template>
+                  <n-collapse-item name="history">
+                    <template #header>
+                      <div class="flex items-center gap-[8px]">
+                        <CrmApprovalStatus
+                          :status="latestHistoricalApproval.approvalStatus"
+                          isTag
+                          scene="approvalRecord"
+                          class="font-normal"
+                        />
+                        <div class="text-[14px] font-semibold text-[var(--text-n1)]">
+                          <template
+                            v-if="
+                              [ProcessStatusEnum.APPROVED, ProcessStatusEnum.AUTO_APPROVED].includes(
+                                latestHistoricalApproval.approvalStatus
+                              )
+                            "
+                          >
+                            {{ formatApprovalTime(getHistoricalApprovalTime(latestHistoricalApproval)) }}
+                          </template>
+                          <template v-else>
+                            {{
+                              t('crm.approval.previousRoundTitle', {
+                                nodeName: getCurrentNode(latestHistoricalApproval)?.nodeName || '',
+                              })
+                            }}
+                          </template>
+                        </div>
+                      </div>
+                    </template>
+                    <template #header-extra="{ collapsed }">
+                      <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
+                    </template>
+                    <div
+                      v-for="(detail, index) in historicalApprovalDetails"
+                      :key="detail.id"
+                      class="mb-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[8px] last:mb-0"
+                    >
+                      <CrmApprovalLine
+                        :nodes="detail.nodes || []"
+                        :submitter="{
+                          submitAvatar: detail.submitAvatar,
+                          submitter: detail.submitter,
+                          submitTime: detail.submitTime,
+                          submitterId: detail.submitterId,
+                          comment: detail.comment,
+                        }"
+                        :currentApprovalNode="getCurrentNode(detail)"
+                        :currentApprovalNodeIndex="getCurrentNodeIndex(detail)"
+                        :finally-result="detail.approvalStatus"
+                        :isLatest="index === historicalApprovalDetails.length - 1"
+                        is-historical
+                      />
+                    </div>
+                  </n-collapse-item>
+                </n-collapse>
+                <CrmApprovalLine
+                  :nodes="approvalInfo?.nodes || []"
+                  :submitter="{
+                    submitAvatar: approvalInfo?.submitAvatar,
+                    submitter: approvalInfo?.submitter,
+                    submitTime: approvalInfo?.submitTime,
+                    submitterId: approvalInfo?.submitterId,
+                    comment: approvalInfo?.comment,
+                  }"
+                  :currentApprovalNode="currentApprovalNode"
+                  :currentApprovalNodeIndex="currentApprovalNodeIndex"
+                  :current-round-start-index="currentRoundStartIndex"
+                  :finally-result="approvalInfo?.approvalStatus"
+                  class="pr-[8px]"
+                />
+              </div>
+              <div ref="approvalCommentRef">
+                <CrmComment
+                  v-if="approvalInfo?.id"
+                  v-model:expanded="commentExpanded"
+                  v-model:count="approvalInfo.commentCount"
+                  type="approval"
+                  :can-create="approvalInfo.commentable"
+                  :can-reply="approvalInfo.commentable"
+                  :collapsible="false"
+                  actions-in-more
+                  enable-attachment
+                  show-time-sort
+                  :source-id="props.sourceId"
+                  class="mt-[24px]"
+                />
+              </div>
+            </n-scrollbar>
+            <div
+              v-if="
+                !leftSlotEditing &&
+                approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
+                (isApprover || canCancelApply || canCancelApproval)
+              "
+              class="sticky bottom-0 flex max-h-full flex-col border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[16px]"
+            >
+              <div v-if="isApprover" class="flex shrink-0 justify-between gap-[12px]">
+                <div v-if="isApprover">
+                  <n-button type="primary" :loading="approvalLoading" @click="openApprovalOpinion('approve')">
+                    {{ t('common.approve') }}
+                  </n-button>
+                  <n-button type="error" class="ml-[8px]" ghost @click="openApprovalOpinion('reject')">{{
+                    t('common.reject')
+                  }}</n-button>
+                </div>
+                <CrmMoreAction
+                  v-if="moreActions.length"
+                  :class="!isApprover ? 'ml-auto' : ''"
+                  :options="moreActions"
+                  trigger="click"
+                  size="medium"
+                  @select="handleMoreActionSelect"
+                />
+              </div>
+              <div v-if="!isApprover" class="flex gap-[8px]">
+                <n-button v-if="canCancelApply" type="primary" ghost class="flex-1" @click="cancelApproval('apply')">
+                  <template #icon>
+                    <CrmIcon type="iconicon_rollfront" :size="16" />
+                  </template>
+                  {{ t('common.revoke') }}
+                </n-button>
+                <n-button v-if="canCancelApproval" type="primary" ghost class="flex-1" @click="cancelApproval()">
+                  <template #icon>
+                    <CrmIcon type="iconicon_rollfront" :size="16" />
+                  </template>
+                  {{ t('crm.approval.cancelApproval') }}
+                </n-button>
+              </div>
+            </div>
+          </div>
+        </template>
+      </CrmSplitPanel>
+    </div>
     <div v-else class="flex h-full w-full p-[24px_16px_24px_24px]">
       <n-scrollbar x-scrollable>
         <slot
@@ -320,7 +325,7 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick } from 'vue';
+  import { nextTick, onBeforeUnmount, onMounted } from 'vue';
   import {
     type FormInst,
     NButton,
@@ -394,6 +399,20 @@
     approvalStatus: ProcessStatusEnum;
     leftLoading?: boolean;
   }>();
+  const splitContainerRef = ref<HTMLElement>();
+  const maxSplitSize = ref<number | string>(0.63);
+  let splitResizeObserver: ResizeObserver | undefined;
+
+  onMounted(() => {
+    if (!splitContainerRef.value) return;
+    splitResizeObserver = new ResizeObserver(([entry]) => {
+      maxSplitSize.value = `${Math.max(0, entry.contentRect.width - 422)}px`;
+    });
+    splitResizeObserver.observe(splitContainerRef.value);
+  });
+
+  onBeforeUnmount(() => splitResizeObserver?.disconnect());
+
   defineSlots<{
     left(props: {
       fieldPermissions: ApprovalFieldPermission[];
