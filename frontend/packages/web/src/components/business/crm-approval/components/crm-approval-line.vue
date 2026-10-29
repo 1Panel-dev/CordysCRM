@@ -5,7 +5,7 @@
       class="w-full min-w-[312px] gap-[4px]"
       :class="props.isHistorical ? '!min-w-[280px]' : ''"
     >
-      <n-timeline-item>
+      <n-timeline-item :class="{ 'approval-current-round-start-node': !props.isHistorical }">
         <template #icon>
           <div class="timeline-icon-wrapper bg-[var(--primary-8)]">
             <CrmIcon type="iconicon_add" :size="14" color="var(--text-n10)" />
@@ -50,7 +50,6 @@
         :key="node.nodeId"
         :class="{
           'approval-history-latest-node': props.isHistorical && props.isLatest && index === props.nodes.length - 1,
-          'approval-current-round-start-node': !props.isHistorical && index === props.currentRoundStartIndex,
         }"
       >
         <template #icon>

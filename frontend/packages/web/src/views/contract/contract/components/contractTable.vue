@@ -788,7 +788,9 @@
   }
 
   const showStatisticInfo = computed(
-    () => propsRes.value.columns.find((item) => item.key === 'amount') || activeShowType.value === 'billboard'
+    () =>
+      !props.hideBoard &&
+      (!!propsRes.value.columns.find((item) => item.key === 'amount') || activeShowType.value === 'billboard')
   );
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>

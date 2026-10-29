@@ -479,10 +479,10 @@
 
   function focusCurrentRoundStart() {
     expandedHistoryInstanceNames.value = [];
-    nextTick(() => {
+    setTimeout(() => {
       const target = approvalRecordRef.value?.querySelector('.approval-current-round-start-node');
-      (target || approvalRecordRef.value)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+      (target || approvalRecordRef.value)?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 300); // 折叠面板动画时间结束后再定位
   }
 
   function handleAnchorTabChange(anchor: string | number) {
