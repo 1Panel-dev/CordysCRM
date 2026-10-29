@@ -86,10 +86,20 @@
   const emit = defineEmits<{
     (e: 'confirm'): void;
     (e: 'deleteTag'): void;
+    (e: 'selectDrawerVisibleChange', visible: boolean): void;
   }>();
 
   const showSelectDrawer = ref(false);
   const resolvedMaxTagCount = computed(() => (props.maxTagCount === false ? 'responsive' : props.maxTagCount));
+
+  watch(
+    showSelectDrawer,
+    (visible) => {
+      emit('selectDrawerVisibleChange', visible);
+    },
+    { flush: 'sync' }
+  );
+
   function handleShowSelectDrawer() {
     if (props.disabled) return;
     showSelectDrawer.value = true;
