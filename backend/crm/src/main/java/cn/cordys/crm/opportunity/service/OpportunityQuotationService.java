@@ -368,6 +368,10 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         ModuleFormConfigDTO quotationFormConf = getFormConfig(opportunityQuotation.getOrganizationId());
         List<BaseModuleFieldValue> fvs = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
         moduleFormService.processBusinessFieldValues(response, fvs, quotationFormConf);
+        // 部门信息
+        if (response.getCreateUser() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(opportunityQuotation.getCreateUser(), opportunityQuotation.getOrganizationId()));
+        }
         return response;
     }
 

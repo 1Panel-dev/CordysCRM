@@ -344,6 +344,10 @@ public class OrderService implements ApprovalResourceHandler {
         List<BaseModuleFieldValue> fvs = orderFieldService.getModuleFieldValuesByResourceId(id);
         ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
         moduleFormService.processBusinessFieldValues(response, fvs, orderFormConfig);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), order.getOrganizationId()));
+        }
         return response;
     }
 

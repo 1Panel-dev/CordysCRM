@@ -372,6 +372,10 @@ public class ContractPaymentRecordService {
                 paymentRecord);
         List<BaseModuleFieldValue> fvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fvs);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), paymentRecord.getOrganizationId()));
+        }
         return response;
     }
 
