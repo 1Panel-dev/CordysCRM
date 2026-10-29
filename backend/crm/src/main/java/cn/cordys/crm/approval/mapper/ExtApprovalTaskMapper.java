@@ -57,6 +57,11 @@ public interface ExtApprovalTaskMapper {
     void updateTaskById(@Param("approvalTask") ApprovalTask approvalTask);
 
     /**
+     * 仅同意仍处于审批中且审批人未变更的任务，返回实际更新行数。
+     */
+    int approvePendingTask(@Param("approvalTask") ApprovalTask approvalTask);
+
+    /**
      * 移动加签的根节点
      *
      * @param oldRootId 旧的根节点ID

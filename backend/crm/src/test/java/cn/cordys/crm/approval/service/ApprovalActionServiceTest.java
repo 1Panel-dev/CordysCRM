@@ -16,10 +16,12 @@ import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
+import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.request.ApprovalActionBatchRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalActionRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
+import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
@@ -44,6 +46,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -93,6 +98,8 @@ class ApprovalActionServiceTest {
         messageSource.addMessage("no.back.auto.approval", LocaleContextHolder.getLocale(), "自动节点无法退回!");
         messageSource.addMessage("no.revoke.approval", LocaleContextHolder.getLocale(), "无法撤销");
         messageSource.addMessage("no.revoke.approval.next.sign", LocaleContextHolder.getLocale(), "后续为加签节点，无法撤销");
+        messageSource.addMessage("approval.task.already.processed", LocaleContextHolder.getLocale(),
+                "审批任务已处理或已失效，请刷新后重试");
         ReflectionTestUtils.setField(Translator.class, "messageSource", messageSource);
         DefaultUidGenerator generator = new DefaultUidGenerator();
         ReflectionTestUtils.setField(generator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
@@ -127,6 +134,206 @@ class ApprovalActionServiceTest {
         ReflectionTestUtils.setField(service, "extApprovalInstanceMapper", extInstanceMapper);
         ReflectionTestUtils.setField(service, "extApprovalTaskMapper", extTaskMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "APPROVED", "AUTO_APPROVED", "UNAPPROVED", "AUTO_UNAPPROVED", "NONE", "PENDING", "REVOKED" })
+    void approveRejectsTasksThatAreNotPending(String status) {
+        ApprovalTask task = task("task-1", ApprovalTaskType.NL, ApprovalStatus.valueOf(status), 1);
+        prepareApproval(task, false);
+
+        GenericException exception = assertThrows(GenericException.class,
+                () -> service.approve(ApprovalActionRequest.builder().id(task.getId()).build(),
+                        task.getApproverId(), "org-1"));
+
+        assertEquals("审批任务已处理或已失效，请刷新后重试", exception.getMessage());
+        assertEquals(status, task.getStatus());
+        verifyNoInteractions(extTaskMapper, instanceMapper, approvalFlowService);
+        verify(taskMapper, never()).updateById(any());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void concurrentApprovalLosingTheConditionalUpdateDoesNotSaveRecordsOrAdvance() {
+        ApprovalTask task = task("task-1", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1);
+        prepareApproval(task, false);
+        when(extTaskMapper.approvePendingTask(any())).thenReturn(0);
+        BaseMapper<ApprovalRecord> records = mock(BaseMapper.class);
+        AttachmentService attachments = mock(AttachmentService.class);
+        ReflectionTestUtils.setField(service, "approvalRecordMapper", records);
+        ReflectionTestUtils.setField(service, "attachmentService", attachments);
+
+        assertThrows(GenericException.class,
+                () -> service.approve(ApprovalActionRequest.builder().id(task.getId())
+                                .comment("同意").attachmentIds(List.of("attachment-1")).build(),
+                        task.getApproverId(), "org-1"));
+
+        verify(extTaskMapper).approvePendingTask(task);
+        verifyNoInteractions(records, attachments, instanceMapper, approvalFlowService);
+        verify(taskMapper, never()).updateById(any());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void repeatedApprovalDoesNotCreateAnotherRoundOfTheNextNode() {
+        ApprovalTask task = task("legal-task", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1);
+        ApprovalInstance instance = prepareApproval(task, true);
+        when(taskMapper.selectListByLambda(any())).thenReturn(List.of(task));
+        when(extTaskMapper.approvePendingTask(any())).thenReturn(1);
+        BaseMapper<ApprovalRecord> records = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "approvalRecordMapper", records);
+        ApprovalNodeApproverResponse sales = new ApprovalNodeApproverResponse();
+        sales.setId("SALES001");
+        sales.setNodeType("APPROVER");
+        sales.setApproverList(List.of("sales-approver"));
+        sales.setAutoSkipUserIds(List.of());
+        sales.setSameSubmitterAction("SKIP");
+        sales.setMultiApproverMode("ALL");
+        when(approvalFlowService.getTaskNextNode(any(), any(), anyString())).thenReturn(sales);
+        when(extInstanceMapper.getNextNodeRound(instance.getId(), sales.getId())).thenReturn(1);
+        ApprovalActionRequest request = ApprovalActionRequest.builder().id(task.getId()).build();
+
+        service.approve(request, task.getApproverId(), "org-1");
+        assertThrows(GenericException.class, () -> service.approve(request, task.getApproverId(), "org-1"));
+
+        ArgumentCaptor<List<ApprovalTask>> nextTasks = ArgumentCaptor.forClass((Class) List.class);
+        verify(taskMapper).batchInsert(nextTasks.capture());
+        assertEquals(1, nextTasks.getValue().size());
+        assertEquals(1, nextTasks.getValue().getFirst().getNodeRound());
+        assertEquals(ApprovalStatus.APPROVING.name(), nextTasks.getValue().getFirst().getStatus());
+        assertEquals("SALES001", instance.getCurrentNodeId());
+        verify(extTaskMapper).approvePendingTask(task);
+        verify(records).insert(any());
+        verify(approvalFlowService).getTaskNextNode(task, instance, "org-1");
+        verify(approvalFlowService).updateApprovalPostField(instance, "NODE001", ApprovalAction.APPROVE,
+                task.getApproverId());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void otherApproversNewRoundsAndSignTasksCanStillApprove() {
+        BaseMapper<ApprovalRecord> records = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "approvalRecordMapper", records);
+        when(extTaskMapper.approvePendingTask(any())).thenReturn(1);
+        List<ApprovalTask> tasks = List.of(
+                task("first-approver", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1),
+                task("second-approver", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1),
+                task("returned-task", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 2),
+                task("sign-task", ApprovalTaskType.SN, ApprovalStatus.APPROVING, 2));
+
+        for (ApprovalTask task : tasks) {
+            when(taskMapper.selectByPrimaryKey(task.getId())).thenReturn(task);
+            ReflectionTestUtils.invokeMethod(service, "saveActionTask",
+                    ApprovalActionRequest.builder().id(task.getId()).build(), ApprovalAction.APPROVE,
+                    task.getApproverId(), "org-1", null);
+            assertEquals(ApprovalStatus.APPROVED.name(), task.getStatus());
+            verify(extTaskMapper).approvePendingTask(task);
+        }
+
+        verify(records, times(tasks.size())).insert(any());
+        verify(taskMapper, never()).updateById(any());
+    }
+
+    @Test
+    void approveAndBatchApproveKeepOneReadCommittedTransaction() throws Exception {
+        AnnotationTransactionAttributeSource attributes = new AnnotationTransactionAttributeSource();
+        for (var method : List.of(
+                ApprovalActionService.class.getMethod("approve", ApprovalActionRequest.class, String.class, String.class),
+                ApprovalActionService.class.getMethod("batchApprove", ApprovalActionBatchRequest.class,
+                        String.class, String.class))) {
+            var transaction = attributes.getTransactionAttribute(method, ApprovalActionService.class);
+            assertEquals(TransactionDefinition.ISOLATION_READ_COMMITTED, transaction.getIsolationLevel());
+            assertEquals(TransactionDefinition.PROPAGATION_REQUIRED, transaction.getPropagationBehavior());
+            assertTrue(transaction.rollbackOn(new Exception()));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "FINISHED_INSTANCE", "OTHER_NODE", "OLD_ROUND", "CLEARED_ROUND", "OLD_SIGN_NODE" })
+    void approveRejectsTasksOutsideTheCurrentNodeOrRound(String scenario) {
+        ApprovalTask task = task("task-1", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1);
+        ApprovalInstance instance = prepareApproval(task, false);
+        switch (scenario) {
+        case "FINISHED_INSTANCE" -> instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
+        case "OTHER_NODE" -> instance.setCurrentNodeId("NEXT001");
+        case "OLD_ROUND" -> when(extInstanceMapper.getNodeRound(instance.getId(), task.getNodeId())).thenReturn(2);
+        case "CLEARED_ROUND" -> task.setNodeRound(-1);
+        case "OLD_SIGN_NODE" -> {
+            task.setType(ApprovalTaskType.SN.name());
+            instance.setCurrentNodeId("NEXT001");
+        }
+        default -> throw new AssertionError(scenario);
+        }
+
+        assertThrows(GenericException.class,
+                () -> service.approve(ApprovalActionRequest.builder().id(task.getId()).build(),
+                        task.getApproverId(), "org-1"));
+
+        assertEquals(ApprovalStatus.APPROVING.name(), task.getStatus());
+        verifyNoInteractions(extTaskMapper, instanceMapper, approvalFlowService);
+        verify(taskMapper, never()).updateById(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "NL", "SN" })
+    @SuppressWarnings("unchecked")
+    void approveLocksTheInstanceBeforeCompletingAValidTask(String type) {
+        ApprovalTask task = task("task-1", ApprovalTaskType.valueOf(type), ApprovalStatus.APPROVING, 2);
+        ApprovalInstance instance = prepareApproval(task, false);
+        BaseMapper<ApprovalRecord> records = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(service, "approvalRecordMapper", records);
+        when(extTaskMapper.approvePendingTask(any())).thenReturn(1);
+
+        service.approve(ApprovalActionRequest.builder().id(task.getId()).build(), task.getApproverId(), "org-1");
+
+        InOrder order = inOrder(extInstanceMapper, taskMapper, extTaskMapper);
+        order.verify(extInstanceMapper).selectByTaskIdForUpdate(task.getId());
+        order.verify(taskMapper, times(2)).selectByPrimaryKey(task.getId());
+        order.verify(extTaskMapper).approvePendingTask(task);
+        assertEquals(ApprovalStatus.APPROVED.name(), task.getStatus());
+        assertEquals("END001", instance.getCurrentNodeId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "SINGLE", "ALL", "SEQUENTIAL" })
+    void expiredRoundDoesNotBlockTheCurrentNodeCompletion(String mode) {
+        ApprovalInstance instance = prepareAnyNode(!"SINGLE".equals(mode));
+        ApprovalNodeApprover node = new ApprovalNodeApprover();
+        node.setMultiApproverMode("SINGLE".equals(mode) ? "ANY" : mode);
+        node.setSameSubmitterAction("ALLOW");
+        when(nodeApproverMapper.selectByPrimaryKey("NODE001")).thenReturn(node);
+        ApprovalTask expired = task("old-task", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1);
+        ApprovalTask current = task("current-task", ApprovalTaskType.NL, ApprovalStatus.APPROVED, 2);
+        mockTaskQuery(List.of(expired, current));
+        when(extInstanceMapper.getNodeRound(instance.getId(), "NODE001")).thenReturn(2);
+        when(approvalFlowService.getCurrentNodeApproverList(instance, "NODE001", "org-1"))
+                .thenReturn(List.of(current.getApproverId()));
+
+        ReflectionTestUtils.invokeMethod(service, "approvedProcess", instance, current, current.getApproverId(),
+                "org-1", "示例客户");
+
+        assertEquals("END001", instance.getCurrentNodeId());
+        assertEquals(ApprovalStatus.APPROVED.name(), instance.getApprovalStatus());
+        assertEquals(ApprovalStatus.APPROVING.name(), expired.getStatus());
+    }
+
+    @Test
+    void batchApproveLocksInstancesInAStableOrder() {
+        ApprovalTask first = task("task-a", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1);
+        ApprovalTask second = task("task-b", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1);
+        second.setInstanceId("instance-2");
+        ApprovalActionBatchRequest request = new ApprovalActionBatchRequest();
+        request.setIds(List.of(second.getId(), first.getId()));
+        when(taskMapper.selectByIds(request.getIds())).thenReturn(List.of(second, first));
+        ApprovalActionService spy = spy(service);
+        doNothing().when(spy).approve(any(), anyString(), anyString());
+
+        spy.batchApprove(request, "user-1", "org-1");
+
+        ArgumentCaptor<ApprovalActionRequest> actions = ArgumentCaptor.forClass(ApprovalActionRequest.class);
+        verify(spy, times(2)).approve(actions.capture(), anyString(), anyString());
+        assertEquals(List.of(first.getId(), second.getId()),
+                actions.getAllValues().stream().map(ApprovalActionRequest::getId).toList());
     }
 
     @Test
@@ -678,6 +885,14 @@ class ApprovalActionServiceTest {
         when(approvalFlowService.getTaskNextNode(any(), any(), anyString())).thenReturn(end);
         when(approvalFlowService.getCurrentNodeCcList("NODE001", "submitter", "org-1")).thenReturn(List.of());
         when(extInstanceMapper.getNodeRound("instance-1", "NODE001")).thenReturn(1);
+        return instance;
+    }
+
+    private ApprovalInstance prepareApproval(ApprovalTask task, boolean multiApprover) {
+        ApprovalInstance instance = prepareAnyNode(multiApprover);
+        when(taskMapper.selectByPrimaryKey(task.getId())).thenReturn(task);
+        when(extInstanceMapper.selectByTaskIdForUpdate(task.getId())).thenReturn(instance);
+        when(extInstanceMapper.getNodeRound(instance.getId(), task.getNodeId())).thenReturn(task.getNodeRound());
         return instance;
     }
 

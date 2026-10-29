@@ -233,6 +233,16 @@
         </where>
     </update>
 
+    <update id="approvePendingTask">
+        UPDATE approval_task
+        SET status = 'APPROVED', action = 'APPROVE',
+            update_time = #{approvalTask.updateTime}, update_user = #{approvalTask.updateUser}
+        WHERE id = #{approvalTask.id}
+          AND approver_id = #{approvalTask.updateUser}
+          AND status = 'APPROVING'
+          AND type != 'CC'
+    </update>
+
     <update id="moveAddSignRoot" parameterType="java.lang.String">
         update approval_add_sign_task
         set root_task_id = #{newRootId}

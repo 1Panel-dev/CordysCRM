@@ -2,6 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper">
+    <select id="selectByTaskIdForUpdate" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
+        SELECT ai.*
+        FROM approval_instance ai
+        WHERE ai.id = (SELECT instance_id FROM approval_task WHERE id = #{taskId})
+        FOR UPDATE
+    </select>
+
     <select id="selectInstancesByResourceId" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
         SELECT ai.*
         FROM approval_instance ai

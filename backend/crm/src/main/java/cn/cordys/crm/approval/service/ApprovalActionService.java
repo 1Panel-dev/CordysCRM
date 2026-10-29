@@ -60,9 +60,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -213,9 +215,22 @@ public class ApprovalActionService {
      * @param currentUserId 当前用户
      * @param currentOrgId  当前组织
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void approve(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
+        // 先锁实例，再处理任务；读已提交可避免批量审批沿用等待锁前的旧快照。
+        ApprovalInstance instance = extApprovalInstanceMapper.selectByTaskIdForUpdate(request.getId());
+        if (instance == null) {
+            throw new GenericException("审批任务不存在!");
+        }
+        ApprovalTask task = getTaskById(request.getId());
+        if (!ApprovalStatus.APPROVING.name().equals(instance.getApprovalStatus())
+                || !Strings.CS.equals(task.getNodeId(), instance.getCurrentNodeId())
+                || task.getNodeRound() < 0
+                || !Objects.equals(task.getNodeRound(),
+                        extApprovalInstanceMapper.getNodeRound(instance.getId(), task.getNodeId()))) {
+            throw new GenericException(Translator.get("approval.task.already.processed"));
+        }
         ApprovalTask currentTask = saveActionTask(request, ApprovalAction.APPROVE, currentUserId, currentOrgId, null);
-        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
         String resourceName = getResourceName(instance);
         approvedProcess(instance, currentTask, currentUserId, currentOrgId, resourceName);
         saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE, resourceName);
@@ -284,14 +299,19 @@ public class ApprovalActionService {
      * @param userId         用户ID
      * @param organizationId 组织ID
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void batchApprove(ApprovalActionBatchRequest request, String userId, String organizationId) {
         List<ApprovalTask> approvalTasks = approvalTaskMapper.selectByIds(request.getIds());
-        approvalTasks.forEach(approvalTask -> approve(
-                ApprovalActionRequest.builder().id(approvalTask.getId()).instanceId(approvalTask.getInstanceId())
-                        .nodeId(approvalTask.getNodeId()).approverId(approvalTask.getApproverId())
-                        .comment(request.getComment()).attachmentIds(request.getAttachmentIds())
-                        .build(),
-                userId, organizationId));
+        // 批量按固定顺序取得实例锁，避免不同批次反向持锁。
+        approvalTasks.stream()
+                .sorted(Comparator.comparing(ApprovalTask::getInstanceId).thenComparing(ApprovalTask::getId))
+                .forEach(approvalTask -> approve(
+                        ApprovalActionRequest.builder().id(approvalTask.getId())
+                                .instanceId(approvalTask.getInstanceId())
+                                .nodeId(approvalTask.getNodeId()).approverId(approvalTask.getApproverId())
+                                .comment(request.getComment()).attachmentIds(request.getAttachmentIds())
+                                .build(),
+                        userId, organizationId));
     }
 
     /**
@@ -571,6 +591,7 @@ public class ApprovalActionService {
             LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(ApprovalTask::getNodeId, currentTask.getNodeId())
                     .eq(ApprovalTask::getInstanceId, currentTask.getInstanceId())
+                    .eq(ApprovalTask::getNodeRound, currentTask.getNodeRound())
                     .eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING.name())
                     .nq(ApprovalTask::getType, ApprovalTaskType.CC);
             List<ApprovalTask> approvingTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
@@ -621,9 +642,10 @@ public class ApprovalActionService {
         boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(currentTask.getNodeId(),
                 instance.getSubmitterId(), currentOrgId);
         if (multiApprover
-                ? isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())
+                ? isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId(),
+                        currentTask.getNodeRound())
                 : isCurrentSingleNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId(),
-                        instance.getSubmitterId(), currentOrgId)) {
+                        instance.getSubmitterId(), currentOrgId, currentTask.getNodeRound())) {
             approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE,
                     currentUserId);
             // 单人审批或者多人审批但节点流转通过
@@ -670,6 +692,10 @@ public class ApprovalActionService {
         if (!Strings.CI.equals(currentTask.getApproverId(), currentUserId)) {
             throw new GenericException(Translator.get("not.approval.task.owner"));
         }
+        if (action == ApprovalAction.APPROVE
+                && !ApprovalStatus.APPROVING.name().equals(currentTask.getStatus())) {
+            throw new GenericException(Translator.get("approval.task.already.processed"));
+        }
         switch (action) {
         case APPROVE -> {
             currentTask.setAction(ApprovalAction.APPROVE.name());
@@ -697,7 +723,14 @@ public class ApprovalActionService {
         }
         currentTask.setUpdateUser(currentUserId);
         currentTask.setUpdateTime(System.currentTimeMillis());
-        approvalTaskMapper.updateById(currentTask);
+        if (action == ApprovalAction.APPROVE) {
+            // 数据库原子校验任务状态，避免并发重复同意再次产生记录和后续待办。
+            if (extApprovalTaskMapper.approvePendingTask(currentTask) != 1) {
+                throw new GenericException(Translator.get("approval.task.already.processed"));
+            }
+        } else {
+            approvalTaskMapper.updateById(currentTask);
+        }
 
         // 退回, 之前加签操作不产生执行记录
         if (action != ApprovalAction.BACK && signType != ApprovalAddSignType.BEFORE) {
@@ -907,11 +940,12 @@ public class ApprovalActionService {
      * @return 单人节点且审批通过
      */
     private boolean isCurrentSingleNodeApproved(String currentNodeId, String instanceId, String submitter,
-            String currentOrgId) {
+            String currentOrgId, Integer nodeRound) {
         boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(currentNodeId, submitter, currentOrgId);
         LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
                 .eq(ApprovalTask::getInstanceId, instanceId)
+                .eq(ApprovalTask::getNodeRound, nodeRound)
                 .eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING).nq(ApprovalTask::getType, ApprovalTaskType.CC);
         List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
         return !multiApprover && approvalTasks.isEmpty();
@@ -923,10 +957,11 @@ public class ApprovalActionService {
      * @param currentNodeId 当前节点ID
      * @return 是否通过
      */
-    private boolean isCurrentMultiNodeApproved(String currentNodeId, String instanceId) {
+    private boolean isCurrentMultiNodeApproved(String currentNodeId, String instanceId, Integer nodeRound) {
         LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
-                .eq(ApprovalTask::getInstanceId, instanceId).nq(ApprovalTask::getType, ApprovalTaskType.CC);
+                .eq(ApprovalTask::getInstanceId, instanceId)
+                .eq(ApprovalTask::getNodeRound, nodeRound).nq(ApprovalTask::getType, ApprovalTaskType.CC);
         List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
         ApprovalNodeApprover nodeApprover = getNodeApprover(currentNodeId);
         if (MultiApproverModeEnum.valueOf(nodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
