@@ -291,6 +291,7 @@
           enable-attachment
           show-time-sort
           embedded
+          @submitted="handleCommentSubmitted"
         />
       </div>
     </div>
@@ -407,6 +408,19 @@
         ? target.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop
         : 0;
     container.scrollTo({ top, behavior: 'smooth' });
+  }
+
+  async function handleCommentSubmitted(commentId: string) {
+    await nextTick();
+
+    const container = scrollContainerRef.value;
+    const comment = Array.from(commentAnchorRef.value?.querySelectorAll<HTMLElement>('[data-comment-id]') || []).find(
+      (element) => element.dataset.commentId === commentId
+    );
+    if (container && comment) {
+      const top = comment.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+      container.scrollTo({ top: Math.max(top - 12, 0), behavior: 'smooth' });
+    }
   }
 
   watch(
