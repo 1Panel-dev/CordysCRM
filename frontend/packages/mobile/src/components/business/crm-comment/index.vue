@@ -26,7 +26,7 @@
         @update:model-value="handleCommentsUpdate"
       >
         <template #item="{ item }">
-          <div class="crm-comment-list-item">
+          <div :data-comment-id="item.id" class="crm-comment-list-item">
             <CommentItem
               :comment="item"
               :can-reply="props.canReply"
@@ -143,6 +143,7 @@
 
   const emit = defineEmits<{
     (e: 'changeEditor', editor: FollowCommentActiveEditor | null): void;
+    (e: 'submitted', commentId: string): void;
   }>();
 
   const { t } = useI18n();
@@ -345,9 +346,19 @@
         return;
       }
 
+      const existingCommentIds = new Set(comments.value.map((comment) => comment.id));
       await createComment(value);
       await reloadComments();
       closeEditor();
+      const submittedComment = comments.value.find(
+        (comment) =>
+          !existingCommentIds.has(comment.id) &&
+          comment.createUser === userStore.userInfo.id &&
+          comment.content === value.content
+      );
+      if (submittedComment) {
+        emit('submitted', submittedComment.id);
+      }
       return;
     }
 
