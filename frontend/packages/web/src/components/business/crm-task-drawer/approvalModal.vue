@@ -10,7 +10,7 @@
     @cancel="handleApprovalCancel"
   >
     <template #title>
-      <div class="flex items-center gap-[8px]">
+      <div class="flex items-center gap-[8px] overflow-hidden">
         <div class="whitespace-nowrap font-medium">
           {{ t('common.approval') }}
         </div>
@@ -22,7 +22,7 @@
         </div>
         <n-tooltip v-else flip :delay="300" trigger="hover">
           <template #trigger>
-            <div class="crm-modal-title one-line-text !text-[var(--text-n4)]">
+            <div class="crm-modal-title one-line-text w-full !text-[var(--text-n4)]">
               ({{ props.approvalItem?.resourceName }})
             </div>
           </template>

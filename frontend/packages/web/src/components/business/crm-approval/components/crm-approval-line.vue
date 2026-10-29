@@ -1,6 +1,10 @@
 <template>
-  <n-scrollbar :content-style="{ width: '100%', minWidth: '312px' }" x-scrollable>
-    <n-timeline :icon-size="20" class="w-full min-w-[312px] gap-[4px]">
+  <n-scrollbar :content-style="{ width: '100%', minWidth: props.isHistorical ? '280px' : '312px' }" x-scrollable>
+    <n-timeline
+      :icon-size="20"
+      class="w-full min-w-[312px] gap-[4px]"
+      :class="props.isHistorical ? '!min-w-[280px]' : ''"
+    >
       <n-timeline-item>
         <template #icon>
           <div class="timeline-icon-wrapper bg-[var(--primary-8)]">
@@ -224,6 +228,7 @@
                       v-if="task.attachments?.length > 0"
                       :files="task.attachments"
                       class="mt-[8px] w-full min-w-[312px]"
+                      :class="props.isHistorical ? '!min-w-[280px]' : ''"
                       readonly
                     />
                   </n-collapse-item>
@@ -233,6 +238,7 @@
                 v-if="node.attachments?.length > 0"
                 :files="node.attachments"
                 class="mt-[8px] w-full min-w-[312px]"
+                :class="props.isHistorical ? '!min-w-[280px]' : ''"
                 readonly
               />
               <n-collapse v-if="node.ccNodes?.length">
