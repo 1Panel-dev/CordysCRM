@@ -363,6 +363,10 @@ public class ContractService implements ApprovalResourceHandler {
         List<BaseModuleFieldValue> fvs = contractFieldService.getModuleFieldValuesByResourceId(id);
         ModuleFormConfigDTO contractFormConfig = getFormConfig(contract.getOrganizationId());
         moduleFormService.processBusinessFieldValues(response, fvs, contractFormConfig);
+        // 部门信息
+        if (response.getOwner() != null) {
+            response.setDepartmentId(baseService.getDeptIdByUserId(response.getOwner(), contract.getOrganizationId()));
+        }
         return response;
     }
 

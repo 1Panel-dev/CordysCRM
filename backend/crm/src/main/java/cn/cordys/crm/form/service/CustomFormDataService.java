@@ -355,6 +355,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 customFormData.getCustomFormId(),
                 () -> customFormDataFieldService.getModuleFieldValuesByResourceId(id));
         customFormDataGetResponse.setModuleFields(customFormDataFields);
+        // 部门信息
+        if (customFormDataGetResponse.getOwner() != null) {
+            customFormDataGetResponse.setDepartmentId(baseService.getDeptIdByUserId(customFormData.getOwner(), customFormData.getOrganizationId()));
+        }
         return customFormDataGetResponse;
     }
 
