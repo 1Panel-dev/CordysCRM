@@ -812,7 +812,9 @@
   });
 
   const showStatisticInfo = computed(
-    () => propsRes.value.columns.find((i) => i.key === 'amount') || activeShowType.value === 'billboard'
+    () =>
+      !props.hideBoard &&
+      (!!propsRes.value.columns.find((i) => i.key === 'amount') || activeShowType.value === 'billboard')
   );
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
