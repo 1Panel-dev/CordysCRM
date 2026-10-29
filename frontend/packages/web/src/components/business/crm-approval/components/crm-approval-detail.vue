@@ -267,7 +267,7 @@
             message: t('common.notNull', {
               value: t('crm.approval.addSignApprover'),
             }),
-            trigger: 'change',
+            trigger: addSignReviewerDrawerVisible ? [] : 'change',
           },
         ]"
       >
@@ -281,6 +281,7 @@
               value: MemberSelectTypeEnum.ORG,
             },
           ]"
+          @select-drawer-visible-change="(visible) => (addSignReviewerDrawerVisible = visible)"
         />
       </n-form-item>
       <n-form-item path="reason" :label="t('crm.approval.addSignOpinion')">
@@ -837,6 +838,7 @@
 
   const addSignModalVisible = ref(false);
   const addSignLoading = ref(false);
+  const addSignReviewerDrawerVisible = ref(false);
   const addSignForm = ref({
     type: 'BEFORE',
     reviewer: undefined,
@@ -857,6 +859,7 @@
 
   watch(addSignModalVisible, (visible) => {
     if (!visible) {
+      addSignReviewerDrawerVisible.value = false;
       resetAddSignForm();
     }
   });
