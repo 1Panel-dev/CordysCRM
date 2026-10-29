@@ -21,7 +21,11 @@
         :border="false"
         @change="handleHistoryExpandedNames"
       >
-        <van-collapse-item name="history" :border="false" class="approval-history-collapse-item bg-[var(--text-n9)]">
+        <van-collapse-item
+          name="history"
+          :border="false"
+          class="approval-history-collapse-item bg-[var(--text-n9)] px-[8px]"
+        >
           <template #title>
             <div class="flex items-center gap-[8px]">
               <CrmApprovalStatus :status="latestHistoryDetail.approvalStatus" scene="approvalRecord" />
@@ -53,6 +57,7 @@
               width="16px"
               height="16px"
               color="var(--van-cell-right-icon-color)"
+              class="mt-[4px]"
             />
           </template>
           <div ref="historyListRef" class="approval-history-list bg-[var(--text-n10)]">
@@ -359,6 +364,8 @@
 
   import { getApprovalResourceInstanceDetailList } from '@/api/modules';
 
+  const COLLAPSE_TRANSITION_DURATION = 300;
+
   const props = defineProps<{
     nodes: ApprovalNode[];
     submitter: {
@@ -395,12 +402,17 @@
     { value: 'comment' as const, label: `${t('crmComment.title')} ${formatBadgeCount(commentCount.value)}` },
   ]);
 
-  function scrollToAnchor(anchor: 'record' | 'comment') {
+  async function scrollToAnchor(anchor: 'record' | 'comment') {
     const container = scrollContainerRef.value;
     if (!container) return;
     activeAnchor.value = anchor;
     if (anchor === 'record') {
+      const historyExpanded = expandedHistoryInstanceNames.value.includes('history');
       expandedHistoryInstanceNames.value = [];
+      if (historyExpanded) {
+        await nextTick();
+        await new Promise((resolve) => setTimeout(resolve, COLLAPSE_TRANSITION_DURATION));
+      }
     }
     const target = commentAnchorRef.value;
     const top =
@@ -489,6 +501,7 @@
     expandedHistoryInstanceNames.value = names;
     if (!names.includes('history')) return;
     await nextTick();
+    await new Promise((resolve) => setTimeout(resolve, COLLAPSE_TRANSITION_DURATION));
     scrollToLatestHistoricalApproval();
   }
 
