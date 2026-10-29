@@ -8,6 +8,11 @@ import java.util.List;
 public interface ExtApprovalInstanceMapper {
 
     /**
+     * 根据任务锁定所属实例，使同一实例的审批推进按顺序执行。
+     */
+    ApprovalInstance selectByTaskIdForUpdate(@Param("taskId") String taskId);
+
+    /**
      * 查询当前组织业务的全部审批实例，按提审时间和实例ID倒序。
      */
     List<ApprovalInstance> selectInstancesByResourceId(@Param("resourceId") String resourceId,
