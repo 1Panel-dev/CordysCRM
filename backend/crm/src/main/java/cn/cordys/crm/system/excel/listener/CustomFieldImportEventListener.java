@@ -460,8 +460,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             return customFieldResolver.textToValue(field, text);
         } catch (Exception e) {
             log.error("解析字段[{}]错误, [{}]不能被转换; 原因: {}", field.getName(), text, e.getMessage(), e);
+            throw new GenericException(
+                    Translator.getWithArgs("field.parse.error", field.getName(), text, e.getMessage()), e);
         }
-        return null;
     }
 
     /**
