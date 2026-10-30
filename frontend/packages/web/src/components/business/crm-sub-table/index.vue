@@ -69,6 +69,7 @@
     optionMap?: Record<string, any[]>;
     disabled?: boolean;
     draggable?: boolean;
+    isFormDescription?: boolean;
   }>();
   const emit = defineEmits<{
     (
@@ -588,8 +589,18 @@
                     NTooltip,
                     { trigger: 'hover' },
                     {
-                      default: () => initFieldValueText(field, key, row[key]),
-                      trigger: () => h('div', { class: '' }, initFieldValueText(field, key, row[key])),
+                      default: () =>
+                        field.resourceFieldId && !props.isFormDescription
+                          ? row[key]
+                          : initFieldValueText(field, key, row[key]),
+                      trigger: () =>
+                        h(
+                          'div',
+                          { class: '' },
+                          field.resourceFieldId && !props.isFormDescription
+                            ? row[key]
+                            : initFieldValueText(field, key, row[key])
+                        ),
                     }
                   ),
             filedType: field.type,
