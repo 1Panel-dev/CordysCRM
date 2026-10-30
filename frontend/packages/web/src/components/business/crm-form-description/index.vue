@@ -207,6 +207,7 @@
             :sum-columns="item.fieldInfo?.sumColumns"
             :optionMap="item.optionMap"
             readonly
+            isFormDescription
           />
         </div>
       </template>
@@ -223,6 +224,7 @@
             :sum-columns="item.fieldInfo?.sumColumns"
             :optionMap="item.optionMap"
             readonly
+            isFormDescription
           />
         </div>
       </template>
