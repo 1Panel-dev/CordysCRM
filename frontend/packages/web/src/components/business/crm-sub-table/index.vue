@@ -124,7 +124,7 @@
   }
 
   function initFieldValueText(field: FormCreateField, id: string, value: any): string {
-    const options = props.optionMap?.[id];
+    const options = field.initialOptions || props.optionMap?.[id];
     let name: string | string[] = '';
     // 区分未选择空值和选项不存在
     if (
