@@ -182,7 +182,7 @@ public class CustomFormService {
 
     public CustomFormGetResponse get(String id, String userId, String orgId) {
         if (!resourcePermissionService.hasApprovalCommentMentionFormPermission(id, userId, orgId)) {
-        checkFormAccess(id, userId, orgId);
+            checkFormAccess(id, userId, orgId);
         }
 
         CustomForm form = customFormMapper.selectByPrimaryKey(id);

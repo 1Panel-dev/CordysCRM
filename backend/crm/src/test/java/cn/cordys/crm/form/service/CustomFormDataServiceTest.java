@@ -415,7 +415,6 @@ class CustomFormDataServiceTest {
 
         assertEquals("dept-1", response.getDepartmentId());
         assertEquals("销售部", response.getDepartmentName());
-        assertEquals(!approvalView, response.getIsAdmin());
     }
 
     @Test

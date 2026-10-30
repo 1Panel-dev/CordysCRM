@@ -184,10 +184,12 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         // 提审人仅存在于审批中的表单数据, 非审批中状态无需查询审批实例, 统一返回空
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
         try {
+
+            CustomFormRoleKey manageDataScope = getManageDataScope(formId, userId, orgId);
             list = buildList(list, formId, orgId);
             Map<String, List<OptionDTO>> optionMap = buildOptionMap(formId, orgId, list);
             list.forEach(item -> {
-                item.setIsAdmin(isAdminUser(dataScope, userId, item.getOwner()));
+                item.setIsAdmin(isAdminUser(manageDataScope, userId, item.getOwner()));
                 item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
                 item.setSubmitterId(submitterIdMap.get(item.getId()));
             });
@@ -294,8 +296,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             }
         }
 
+        CustomFormRoleKey manageDataScope = getManageDataScope(data.getCustomFormId(), userId, orgId);
         CustomFormDataGetResponse resp = BeanUtils.copyBean(new CustomFormDataGetResponse(), data);
-        resp.setIsAdmin(isAdminUser(dataScope, userId, data.getOwner()));
+        resp.setIsAdmin(isAdminUser(manageDataScope, userId, data.getOwner()));
 
         Map<String, String> userNameMap = baseService.getUserNameMap(
                 List.of(data.getOwner(), data.getCreateUser(), data.getUpdateUser()));
