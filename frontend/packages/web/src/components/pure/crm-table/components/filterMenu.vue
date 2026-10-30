@@ -1,6 +1,6 @@
 <template>
   <div class="crm-table-filter-menu min-h-[80px]">
-    <n-scrollbar content-class="p-[8px] max-w-[160px]" style="max-height: 400px">
+    <n-scrollbar content-class="p-[8px] max-w-[250px]" style="max-height: 400px">
       <n-checkbox-group v-model:value="filterConditionMap[props.columnKey]">
         <div
           v-for="(item, index) of displayFilterOptions"
@@ -10,7 +10,7 @@
           <n-tooltip to="body" :delay="300" flip>
             <template #trigger>
               <n-checkbox :value="item.value" label="" class="crm-table-filter-checkbox">
-                <div class="one-line-text max-w-[116px]">{{ item.label }}</div>
+                <div class="one-line-text max-w-[206px]">{{ item.label }}</div>
               </n-checkbox>
             </template>
             {{ item.label }}
