@@ -149,6 +149,10 @@
       } else {
         name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
       }
+      if (field.dataSourceType === FieldDataSourceTypeEnum.PRICE && Array.isArray(name)) {
+        // 价格表在子表格内是特殊的，第一个选项才是价格表名称，后面的id是价格表的子表格内的某一行，所以这里不显示后面的
+        return name[0];
+      }
       return Array.isArray(name) ? name.join(', ') : name;
     }
     if (
