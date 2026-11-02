@@ -4,8 +4,8 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
@@ -21,6 +21,7 @@ import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractPaymentRecordService;
@@ -35,6 +36,7 @@ import cn.cordys.crm.follow.service.FollowUpPlanService;
 import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationPageRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunitySearchStatisticRequest;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
@@ -134,6 +136,64 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         case FOLLOW_RECORD -> followRecords(context);
         case FOLLOW_PLAN -> followPlans(context);
         };
+    }
+
+    @Override
+    public Object statistic(DetailTabQueryContext context) {
+        FormKey relatedForm = FormKey.ofKey(context.tab().getRelatedForm().getIdAsString());
+        return switch (relatedForm) {
+        case OPPORTUNITY -> opportunityStatistic(context);
+        case CONTRACT -> contractStatistic(context);
+        case ORDER -> orderStatistic(context);
+        case CONTRACT_PAYMENT_RECORD -> paymentRecordStatistic(context);
+        default -> throw new GenericException(Translator.get("module.tab.statistic.not_support"));
+        };
+    }
+
+    /**
+     * 商机金额统计，口径与商机主列表 /opportunity/statistic 一致。
+     */
+    private Object opportunityStatistic(DetailTabQueryContext context) {
+        replaceSearchBusinessKey(context);
+        checkPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        OpportunitySearchStatisticRequest request = prepare(new OpportunitySearchStatisticRequest(), FormKey.OPPORTUNITY,
+                context);
+        return opportunityService.searchStatistic(request, context.userId(), context.organizationId(),
+                dataPermission(context, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ));
+    }
+
+    /**
+     * 合同金额统计，口径与合同主列表 /contract/statistic 一致。
+     */
+    private Object contractStatistic(DetailTabQueryContext context) {
+        replaceSearchBusinessKey(context);
+        checkPermission(PermissionConstants.CONTRACT_READ);
+        BaseCondition request = prepare(new BaseCondition(), FormKey.CONTRACT, context);
+        return contractService.searchStatistic(request, context.userId(), context.organizationId(),
+                dataPermission(context, PermissionConstants.CONTRACT_READ));
+    }
+
+    /**
+     * 订单金额统计，口径与订单主列表 /order/statistic 一致。
+     */
+    private Object orderStatistic(DetailTabQueryContext context) {
+        replaceSearchBusinessKey(context);
+        checkPermission(PermissionConstants.ORDER_READ);
+        BaseCondition request = prepare(new BaseCondition(), FormKey.ORDER, context);
+        return orderService.searchStatistic(request, context.userId(), context.organizationId(),
+                dataPermission(context, PermissionConstants.ORDER_READ));
+    }
+
+    /**
+     * 回款记录金额统计，口径与回款记录主列表 /contract/payment-record/statistic 一致。
+     */
+    private Object paymentRecordStatistic(DetailTabQueryContext context) {
+        replaceSearchBusinessKey(context);
+        checkPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        ContractPaymentRecordStatisticRequest request = prepare(new ContractPaymentRecordStatisticRequest(),
+                FormKey.CONTRACT_PAYMENT_RECORD, context);
+        return contractPaymentRecordService.searchStatistic(request, context.userId(), context.organizationId(),
+                dataPermission(context, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ));
     }
 
     private PagerWithOption<?> followRecords(DetailTabQueryContext context) {
@@ -276,7 +336,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
                 dataPermission(context, PermissionConstants.ORDER_READ), false);
     }
 
-    private <T extends BasePageRequest> T prepare(T target, FormKey relatedForm, DetailTabQueryContext context) {
+    private <T extends BaseCondition> T prepare(T target, FormKey relatedForm, DetailTabQueryContext context) {
         T request = BeanUtils.copyBean(target, context.request());
         request.setViewId(InternalUserView.ALL.name());
         request.setFilters(new ArrayList<>(context.request().getFilters()));

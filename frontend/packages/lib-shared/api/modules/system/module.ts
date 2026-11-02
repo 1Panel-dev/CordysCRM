@@ -283,6 +283,14 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<T>>({ url: `${GetFormDetailTabPageUrl}/${formKey}/${resourceId}/page`, data });
   }
 
+  // 详情关联标签金额统计（商机、合同、订单、回款记录标签支持），查询条件与标签分页接口保持一致。
+  function getFormDetailTabStatistic(formKey: string, resourceId: string, data: FormDetailTabPageQuery) {
+    return CDR.post<{ amount: number; averageAmount: number }>({
+      url: `${GetFormDetailTabPageUrl}/${formKey}/${resourceId}/statistic`,
+      data,
+    });
+  }
+
   function getFieldDeptUerTree(params?: { includeDisabled?: boolean }) {
     return CDR.get<DeptUserTreeNode[]>({ url: GetFieldDeptUerTreeUrl, params });
   }
@@ -489,6 +497,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getFormDesignConfig,
     getFormDetailTabOptions,
     getFormDetailTabPage,
+    getFormDetailTabStatistic,
     getFieldDeptUerTree,
     getFieldDeptTree,
     getFieldClueList,
