@@ -6,6 +6,24 @@
         SELECT ai.*
         FROM approval_instance ai
         WHERE ai.id = (SELECT instance_id FROM approval_task WHERE id = #{taskId})
+          AND EXISTS (
+              SELECT 1 FROM approval_flow_version afv
+              WHERE afv.id = ai.flow_version_id AND afv.organization_id = #{organizationId}
+          )
+        FOR UPDATE
+    </select>
+
+    <select id="selectLatestByResourceIdForUpdate" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
+        SELECT ai.*
+        FROM approval_instance ai
+        WHERE ai.resource_id = #{resourceId}
+          AND ai.type = #{formKey}
+          AND EXISTS (
+              SELECT 1 FROM approval_flow_version afv
+              WHERE afv.id = ai.flow_version_id AND afv.organization_id = #{organizationId}
+          )
+        ORDER BY ai.submit_time DESC, ai.id DESC
+        LIMIT 1
         FOR UPDATE
     </select>
 
@@ -18,16 +36,19 @@
         ORDER BY ai.submit_time DESC, ai.id DESC
     </select>
 
-    <select id="existsApprovingInstance" resultType="boolean">
-        SELECT EXISTS (
-            SELECT 1
-            FROM approval_instance ai
-            INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
-            WHERE afv.organization_id = #{organizationId}
-              AND ai.type = #{formKey}
-              AND ai.resource_id = #{resourceId}
-              AND ai.approval_status = 'APPROVING'
-        )
+    <select id="selectResourceForUpdate" resultType="cn.cordys.crm.approval.dto.ApprovalResourceState"
+            flushCache="true" useCache="false">
+        SELECT approval_status AS approvalStatus, approved, create_user AS createUser,
+        <choose>
+            <when test="sourceTable == 'opportunity_quotation'">NULL AS owner</when>
+            <otherwise>owner</otherwise>
+        </choose>
+        FROM ${sourceTable}
+        WHERE id = #{id} AND organization_id = #{organizationId}
+        <if test="sourceTable == 'custom_form_data'">
+            AND custom_form_id = #{formKey}
+        </if>
+        FOR UPDATE
     </select>
 
     <select id="updateApprovalStatus" resultType="java.lang.String">
@@ -42,13 +63,17 @@
         select name from ${sourceTable} where id = #{id}
     </select>
 
-    <select id="selectApprovalStatus" resultType="java.lang.String">
-        select approval_status from ${sourceTable} where id = #{id}
+    <select id="selectApprovalStatusForUpdate" resultType="java.lang.String" flushCache="true" useCache="false">
+        SELECT approval_status FROM ${sourceTable} WHERE id = #{id} FOR UPDATE
     </select>
 
 
     <select id="getResourceOwner" resultType="java.lang.String">
         select owner from ${sourceTable} where id = #{id} and organization_id = #{organizationId}
+    </select>
+
+    <select id="selectResourceOrganizationId" resultType="java.lang.String">
+        SELECT organization_id FROM ${sourceTable} WHERE id = #{id}
     </select>
 
     <select id="selectApproved" resultType="java.lang.Boolean">

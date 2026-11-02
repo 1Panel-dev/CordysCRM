@@ -4,6 +4,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
+import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
@@ -46,6 +47,22 @@ class ApprovalResourceControllerTest {
         ReflectionTestUtils.setField(controller, "approvalResourceService", resourceService);
         ReflectionTestUtils.setField(controller, "approvalInstanceService", instanceService);
         ReflectionTestUtils.setField(controller, "approvalCommentService", commentService);
+    }
+
+    @Test
+    void pushUsesTheAuthorizedManualEntryWithSessionIdentity() {
+        ApprovalResourceBaseParam param = new ApprovalResourceBaseParam();
+        param.setResourceId("resource-1");
+        param.setFormKey("contract");
+        try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
+                var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
+            session.when(SessionUtils::getUserId).thenReturn("user-1");
+            organization.when(OrganizationContext::getOrganizationId).thenReturn("org-1");
+
+            controller.push(param);
+
+            verify(resourceService).manualPush(param, "user-1", "org-1");
+        }
     }
 
     @ParameterizedTest

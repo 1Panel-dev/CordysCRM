@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.mapper;
 
 import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.dto.ApprovalResourceState;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -10,7 +11,14 @@ public interface ExtApprovalInstanceMapper {
     /**
      * 根据任务锁定所属实例，使同一实例的审批推进按顺序执行。
      */
-    ApprovalInstance selectByTaskIdForUpdate(@Param("taskId") String taskId);
+    ApprovalInstance selectByTaskIdForUpdate(@Param("taskId") String taskId,
+            @Param("organizationId") String organizationId);
+
+    /**
+     * 锁定当前组织资源的最新审批实例，与审批操作共用实例行锁。
+     */
+    ApprovalInstance selectLatestByResourceIdForUpdate(@Param("resourceId") String resourceId,
+            @Param("formKey") String formKey, @Param("organizationId") String organizationId);
 
     /**
      * 查询当前组织业务的全部审批实例，按提审时间和实例ID倒序。
@@ -19,10 +27,10 @@ public interface ExtApprovalInstanceMapper {
             @Param("organizationId") String organizationId);
 
     /**
-     * 判断当前组织的资源是否已有审批中的实例，跨执行时机和流程版本去重。
+     * 锁定当前组织和表单的业务资源，用当前状态串行化同一资源的提审。
      */
-    boolean existsApprovingInstance(@Param("organizationId") String organizationId, @Param("formKey") String formKey,
-            @Param("resourceId") String resourceId);
+    ApprovalResourceState selectResourceForUpdate(@Param("sourceTable") String sourceTable, @Param("id") String id,
+            @Param("organizationId") String organizationId, @Param("formKey") String formKey);
 
     /**
      * 更新业务表的审批状态
@@ -48,16 +56,14 @@ public interface ExtApprovalInstanceMapper {
     String selectBusinessName(@Param("sourceTable") String sourceTable, @Param("id") String id);
 
     /**
-     * 查询业务表的审批状态
-     *
-     * @param sourceTable 主业务表
-     * @param id          资源ID
-     * @return 审批状态
+     * 当前读业务审批状态，避免外层可重复读事务使用旧快照跳过状态更新。
      */
-    String selectApprovalStatus(@Param("sourceTable") String sourceTable, @Param("id") String id);
+    String selectApprovalStatusForUpdate(@Param("sourceTable") String sourceTable, @Param("id") String id);
 
     String getResourceOwner(@Param("sourceTable") String sourceTable, @Param("id") String id,
                             @Param("organizationId") String organizationId);
+
+    String selectResourceOrganizationId(@Param("sourceTable") String sourceTable, @Param("id") String id);
 
     /**
      * 查询业务资源是否审批通过过
