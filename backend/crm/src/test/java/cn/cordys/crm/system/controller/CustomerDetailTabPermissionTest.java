@@ -2,9 +2,9 @@ package cn.cordys.crm.system.controller;
 
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
@@ -14,6 +14,7 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.controller.CustomerCollaborationController;
 import cn.cordys.crm.customer.controller.CustomerRelationController;
@@ -22,17 +23,28 @@ import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.CustomerRelationService;
 import cn.cordys.crm.customer.service.CustomerResourceAccessContextProvider;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordStatisticRequest;
+import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse;
+import cn.cordys.crm.contract.dto.response.ContractStatisticResponse;
+import cn.cordys.crm.contract.service.ContractPaymentRecordService;
+import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunitySearchStatisticRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
+import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.form.FormDetailTab;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.request.DetailTabPageRequest;
+import cn.cordys.crm.system.dto.request.DetailTabQueryRequest;
+import cn.cordys.crm.system.dto.request.DetailTabStatisticRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.DetailTabDataService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -54,11 +66,16 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContext;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -96,6 +113,9 @@ class CustomerDetailTabPermissionTest {
     private final CustomerRelationService relations = mock(CustomerRelationService.class);
     private final CustomerCollaborationService collaborations = mock(CustomerCollaborationService.class);
     private final OpportunityService opportunities = mock(OpportunityService.class);
+    private final ContractService contracts = mock(ContractService.class);
+    private final OrderService orderService = mock(OrderService.class);
+    private final ContractPaymentRecordService paymentRecords = mock(ContractPaymentRecordService.class);
     private final CustomFormDataService customData = mock(CustomFormDataService.class);
     private final ModuleFormCacheService forms = mock(ModuleFormCacheService.class);
     private final PermissionCache permissions = mock(PermissionCache.class);
@@ -111,12 +131,21 @@ class CustomerDetailTabPermissionTest {
     private ApplicationContext previousContext;
     private Subject previousSubject;
     private String previousOrg;
+    private MessageSource previousMessageSource;
+    private LocaleContext previousLocaleContext;
 
     @BeforeEach
     void 配置真实权限切面与已保存标签() {
         previousContext = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class, "context");
         previousSubject = ThreadContext.getSubject();
         previousOrg = OrganizationContext.getOrganizationId();
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        previousLocaleContext = LocaleContextHolder.getLocaleContext();
+        ResourceBundleMessageSource messages = new ResourceBundleMessageSource();
+        messages.setBasename("i18n/cordys-crm");
+        messages.setDefaultEncoding("UTF-8");
+        new Translator().setMessageSource(messages);
+        LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
         ApplicationContext context = mock(ApplicationContext.class);
         when(context.getBean(PermissionCache.class)).thenReturn(permissions);
         when(context.getBean(ModuleFormCacheService.class)).thenReturn(forms);
@@ -165,6 +194,9 @@ class CustomerDetailTabPermissionTest {
         ReflectionTestUtils.setField(standard, "resourcePermissionService", resourcePermissions);
         ReflectionTestUtils.setField(standard, "dataScopeService", dataScope);
         ReflectionTestUtils.setField(standard, "opportunityService", opportunities);
+        ReflectionTestUtils.setField(standard, "contractService", contracts);
+        ReflectionTestUtils.setField(standard, "orderService", orderService);
+        ReflectionTestUtils.setField(standard, "contractPaymentRecordService", paymentRecords);
         ReflectionTestUtils.setField(standard, "moduleFieldBaseMapper", fields);
         CustomRelatedDetailTabDataHandler custom = new CustomRelatedDetailTabDataHandler();
         ReflectionTestUtils.setField(custom, "resourcePermissionService", resourcePermissions);
@@ -192,6 +224,8 @@ class CustomerDetailTabPermissionTest {
             ThreadContext.bind(previousSubject);
         }
         new CommonBeanFactory().setApplicationContext(previousContext);
+        new Translator().setMessageSource(previousMessageSource);
+        LocaleContextHolder.setLocaleContext(previousLocaleContext);
     }
 
     @ParameterizedTest
@@ -222,7 +256,7 @@ class CustomerDetailTabPermissionTest {
     @Test
     void 客户协作不能替代关联商机查看权限() {
         granted.remove(RELATED_READ);
-        assertForbidden(() -> tabController.customerPage(CUSTOMER, request("opportunity")));
+        assertForbidden(() -> tabController.customerPage(CUSTOMER, pageRequest("opportunity")));
         verifyNoInteractions(opportunities);
     }
 
@@ -230,19 +264,100 @@ class CustomerDetailTabPermissionTest {
     void 标准标签保留关联模块范围与固定父客户过滤() {
         PagerWithOption<List<OpportunityListResponse>> result = new PagerWithOption<>();
         when(opportunities.list(any(), eq(USER), eq(ORG), same(relatedScope), eq(false))).thenReturn(result);
-        assertSame(result, tabController.customerPage(CUSTOMER, request("opportunity")));
+        assertSame(result, tabController.customerPage(CUSTOMER, pageRequest("opportunity")));
         ArgumentCaptor<OpportunityPageRequest> query = ArgumentCaptor.forClass(OpportunityPageRequest.class);
         verify(opportunities).list(query.capture(), eq(USER), eq(ORG), same(relatedScope), eq(false));
         assertEquals("ALL", query.getValue().getViewId());
+        assertEquals(2, query.getValue().getCurrent());
+        assertEquals(20, query.getValue().getPageSize());
         assertFixedRelation(query.getValue());
         verify(forms).getConfig(FormKeyConstants.CUSTOMER, ORG);
+    }
+
+    @Test
+    void 商机标签统计沿用主列表口径与固定父客户过滤() {
+        OpportunitySearchStatisticResponse statistic = new OpportunitySearchStatisticResponse();
+        when(opportunities.searchStatistic(any(), eq(USER), eq(ORG), same(relatedScope))).thenReturn(statistic);
+        assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("opportunity")));
+        ArgumentCaptor<OpportunitySearchStatisticRequest> query =
+                ArgumentCaptor.forClass(OpportunitySearchStatisticRequest.class);
+        verify(opportunities).searchStatistic(query.capture(), eq(USER), eq(ORG), same(relatedScope));
+        assertEquals("ALL", query.getValue().getViewId());
+        assertFixedRelation(query.getValue());
+    }
+
+    @Test
+    void 合同标签统计沿用合同数据范围与固定父客户过滤() {
+        savedTab("contract");
+        granted.add(PermissionConstants.CONTRACT_READ);
+        DeptDataPermissionDTO contractScope = new DeptDataPermissionDTO();
+        contractScope.setSelf(true);
+        doReturn(contractScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL",
+                PermissionConstants.CONTRACT_READ);
+        ContractStatisticResponse statistic = new ContractStatisticResponse();
+        doReturn(statistic).when(contracts).searchStatistic(any(), eq(USER), eq(ORG), same(contractScope));
+        assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("contract")));
+        ArgumentCaptor<BaseCondition> query = ArgumentCaptor.forClass(BaseCondition.class);
+        verify(contracts).searchStatistic(query.capture(), eq(USER), eq(ORG), same(contractScope));
+        assertEquals("ALL", query.getValue().getViewId());
+        assertFixedRelation(query.getValue());
+    }
+
+    @Test
+    void 客户协作不能替代关联商机金额统计权限() {
+        granted.remove(RELATED_READ);
+        assertForbidden(() -> tabController.customerStatistic(CUSTOMER, statisticRequest("opportunity")));
+        verifyNoInteractions(opportunities);
+    }
+
+    @Test
+    void 订单标签统计沿用订单数据范围与固定父客户过滤() {
+        savedTab("order");
+        granted.add(PermissionConstants.ORDER_READ);
+        DeptDataPermissionDTO orderScope = new DeptDataPermissionDTO();
+        orderScope.setSelf(true);
+        doReturn(orderScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL", PermissionConstants.ORDER_READ);
+        OrderStatisticResponse statistic = new OrderStatisticResponse();
+        doReturn(statistic).when(orderService).searchStatistic(any(), eq(USER), eq(ORG), same(orderScope));
+        assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("order")));
+        ArgumentCaptor<BaseCondition> query = ArgumentCaptor.forClass(BaseCondition.class);
+        verify(orderService).searchStatistic(query.capture(), eq(USER), eq(ORG), same(orderScope));
+        assertEquals("ALL", query.getValue().getViewId());
+        assertFixedRelation(query.getValue());
+    }
+
+    @Test
+    void 回款记录标签统计沿用回款数据范围与固定父客户过滤() {
+        savedTab("contractPaymentRecord");
+        granted.add(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        DeptDataPermissionDTO paymentScope = new DeptDataPermissionDTO();
+        paymentScope.setSelf(true);
+        doReturn(paymentScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL",
+                PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        ContractPaymentRecordStatisticResponse statistic = new ContractPaymentRecordStatisticResponse();
+        doReturn(statistic).when(paymentRecords).searchStatistic(any(), eq(USER), eq(ORG), same(paymentScope));
+        assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("contractPaymentRecord")));
+        ArgumentCaptor<ContractPaymentRecordStatisticRequest> query =
+                ArgumentCaptor.forClass(ContractPaymentRecordStatisticRequest.class);
+        verify(paymentRecords).searchStatistic(query.capture(), eq(USER), eq(ORG), same(paymentScope));
+        assertEquals("ALL", query.getValue().getViewId());
+        assertNull(query.getValue().getContractId());
+        assertFixedRelation(query.getValue());
+    }
+
+    @Test
+    void 未配置金额统计的关联表单拒绝统计() {
+        savedTab(CUSTOM_FORM);
+        assertThrows(GenericException.class,
+                () -> tabController.customerStatistic(CUSTOMER, statisticRequest(CUSTOM_FORM)));
+        verifyNoInteractions(customData);
     }
 
     @Test
     void 客户协作不能替代自定义表单查看权限() {
         savedTab(CUSTOM_FORM);
         granted.remove(PermissionConstants.CUSTOM_FORM_READ);
-        assertForbidden(() -> tabController.customerPage(CUSTOMER, request(CUSTOM_FORM)));
+        assertForbidden(() -> tabController.customerPage(CUSTOMER, pageRequest(CUSTOM_FORM)));
         verifyNoInteractions(customData);
     }
 
@@ -254,9 +369,9 @@ class CustomerDetailTabPermissionTest {
         if (formRoleDenied) {
             when(customData.page(any(), eq(USER), eq(ORG), eq(false)))
                     .thenThrow(new GenericException(CrmHttpResultCode.FORBIDDEN));
-            assertForbidden(() -> tabController.customerPage(CUSTOMER, request(CUSTOM_FORM)));
+            assertForbidden(() -> tabController.customerPage(CUSTOMER, pageRequest(CUSTOM_FORM)));
         } else {
-            assertDoesNotThrow(() -> tabController.customerPage(CUSTOMER, request(CUSTOM_FORM)));
+            assertDoesNotThrow(() -> tabController.customerPage(CUSTOMER, pageRequest(CUSTOM_FORM)));
         }
         ArgumentCaptor<CustomFormDataPageRequest> query = ArgumentCaptor.forClass(CustomFormDataPageRequest.class);
         verify(customData).page(query.capture(), eq(USER), eq(ORG), eq(false));
@@ -269,7 +384,7 @@ class CustomerDetailTabPermissionTest {
         return switch (entry) {
         case "RELATION" -> relationController.list(CUSTOMER);
         case "COLLABORATION" -> collaborationController.list(CUSTOMER);
-        default -> tabController.customerPage(CUSTOMER, request("opportunity"));
+        default -> tabController.customerPage(CUSTOMER, pageRequest("opportunity"));
         };
     }
 
@@ -293,12 +408,20 @@ class CustomerDetailTabPermissionTest {
         when(forms.getBusinessFormConfig(relatedForm, ORG)).thenReturn(config);
     }
 
-    private DetailTabPageRequest request(String relatedForm) {
-        DetailTabPageRequest request = new DetailTabPageRequest();
-        request.setRelatedFormId(relatedForm);
-        request.setRelatedFieldId(LINK);
+    private DetailTabPageRequest pageRequest(String relatedForm) {
+        DetailTabPageRequest request = buildRequest(new DetailTabPageRequest(), relatedForm);
         request.setCurrent(2);
         request.setPageSize(20);
+        return request;
+    }
+
+    private DetailTabStatisticRequest statisticRequest(String relatedForm) {
+        return buildRequest(new DetailTabStatisticRequest(), relatedForm);
+    }
+
+    private <T extends BaseCondition & DetailTabQueryRequest> T buildRequest(T request, String relatedForm) {
+        request.setRelatedFormId(relatedForm);
+        request.setRelatedFieldId(LINK);
         request.setViewId("ALL");
         request.setKeyword("搜索词");
         FilterCondition filter = new FilterCondition();
@@ -309,9 +432,7 @@ class CustomerDetailTabPermissionTest {
         return request;
     }
 
-    private void assertFixedRelation(BasePageRequest query) {
-        assertEquals(2, query.getCurrent());
-        assertEquals(20, query.getPageSize());
+    private void assertFixedRelation(BaseCondition query) {
         assertEquals("搜索词", query.getKeyword());
         assertEquals(List.of("client-filter", LINK),
                 query.getFilters().stream().map(FilterCondition::getName).toList());

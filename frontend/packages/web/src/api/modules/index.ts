@@ -781,6 +781,7 @@ export const {
   getFormDesignConfig,
   getFormDetailTabOptions,
   getFormDetailTabPage,
+  getFormDetailTabStatistic,
   getFieldDeptUerTree,
   getFieldContactList,
   getFieldProductList,

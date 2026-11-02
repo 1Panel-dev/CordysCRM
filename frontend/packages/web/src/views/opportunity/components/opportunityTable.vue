@@ -218,7 +218,14 @@
   import OptOverviewDrawer from './optOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
-  import { batchDeleteOpt, deleteOpt, getOpportunityStageConfig, getOptStatistic, transferOpt } from '@/api/modules';
+  import {
+    batchDeleteOpt,
+    deleteOpt,
+    getFormDetailTabStatistic,
+    getOpportunityStageConfig,
+    getOptStatistic,
+    transferOpt,
+  } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, getOptHomeConditions } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
@@ -811,14 +818,28 @@
     };
   });
 
-  const showStatisticInfo = computed(
-    () =>
-      !props.hideBoard &&
-      (!!propsRes.value.columns.find((i) => i.key === 'amount') || activeShowType.value === 'billboard')
-  );
+  const showStatisticInfo = computed(() => {
+    const hasAmountColumn = !!propsRes.value.columns.find((i) => i.key === 'amount');
+    if (props.detailTabResourceId) {
+      // 详情标签没有看板模式，只要展示金额列就显示统计。
+      return hasAmountColumn;
+    }
+    return !props.hideBoard && (hasAmountColumn || activeShowType.value === 'billboard');
+  });
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
     try {
+      if (props.detailTabResourceId) {
+        // 详情标签统计走专用接口，由后端按标签配置追加固定关联条件并校验数据范围。
+        if (!props.detailTabPageFormId || !props.detailTabQuery) return;
+        statisticInfo.value = await getFormDetailTabStatistic(props.detailTabPageFormId, props.detailTabResourceId, {
+          keyword: _keyword ?? keyword.value,
+          combineSearch: advanceFilter,
+          filters: filterItem.value,
+          ...props.detailTabQuery,
+        });
+        return;
+      }
       const res = await getOptStatistic({
         keyword: _keyword ?? keyword.value,
         viewId: activeTab.value,

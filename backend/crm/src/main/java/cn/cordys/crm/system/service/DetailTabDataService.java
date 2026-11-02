@@ -5,6 +5,8 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.crm.system.dto.form.FormDetailTab;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.request.DetailTabPageRequest;
+import cn.cordys.crm.system.dto.request.DetailTabQueryRequest;
+import cn.cordys.crm.system.dto.request.DetailTabStatisticRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.detailtab.DetailTabDataHandler;
 import cn.cordys.crm.system.service.detailtab.DetailTabQueryContext;
@@ -44,7 +46,21 @@ public class DetailTabDataService {
         return handler.page(context);
     }
 
-    private FormDetailTab resolveEnabledTab(String formKey, DetailTabPageRequest request, String organizationId) {
+    public Object statistic(String formKey, String resourceId, DetailTabStatisticRequest request,
+            String userId, String organizationId) {
+        FormDetailTab tab = resolveEnabledTab(formKey, request, organizationId);
+        DetailTabQueryContext context = new DetailTabQueryContext(
+                formKey, resourceId, tab, request, userId, organizationId);
+
+        DetailTabDataHandler handler = handlers.stream()
+                .filter(item -> item.supports(context))
+                .findFirst()
+                .orElseThrow(() -> new GenericException("当前标签暂不支持数据查询"));
+
+        return handler.statistic(context);
+    }
+
+    private FormDetailTab resolveEnabledTab(String formKey, DetailTabQueryRequest request, String organizationId) {
         ModuleFormConfigDTO config = moduleFormCacheService.getConfig(formKey, organizationId);
         FormProp formProp = config == null ? null : config.getFormProp();
         List<FormDetailTab> tabs = formProp == null ? null : formProp.getDetailTabs();
@@ -63,7 +79,7 @@ public class DetailTabDataService {
                 .orElseThrow(() -> new GenericException("详情页标签不存在或未启用"));
     }
 
-    private boolean matchesTab(FormDetailTab tab, DetailTabPageRequest request) {
+    private boolean matchesTab(FormDetailTab tab, DetailTabQueryRequest request) {
         // 独立内置标签没有关联表单，related 接口会以 internalKey 作为其稳定 ID 返回。
         String relatedFormId = tab.getRelatedForm() == null
                 ? tab.getInternalKey()

@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class DetailTabPageRequest extends BasePageRequest {
+public class DetailTabPageRequest extends BasePageRequest implements DetailTabQueryRequest {
 
     @Schema(description = "关联表单 ID；独立内置标签传其稳定标识")
     private String relatedFormId;
