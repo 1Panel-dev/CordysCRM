@@ -49,6 +49,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
@@ -177,6 +178,8 @@ public class ContractService implements ApprovalResourceHandler {
     private ExtContractStageConfigMapper extContractStageConfigMapper;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
     @Resource
     private LogService logService;
     @Resource
@@ -558,6 +561,8 @@ public class ContractService implements ApprovalResourceHandler {
                 FormKey.CONTRACT.getKey(), deleteIds, orgId);
         contractFieldService.deleteByResourceIds(deleteIds);
         contractMapper.deleteByIds(deleteIds);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(deleteIds);
         LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(ContractSnapshot::getContractId, deleteIds);
         snapshotBaseMapper.deleteByLambda(wrapper);
@@ -591,6 +596,8 @@ public class ContractService implements ApprovalResourceHandler {
                 FormKey.CONTRACT.getKey(), List.of(id), orgId);
         contractFieldService.deleteByResourceId(id);
         contractMapper.deleteByPrimaryKey(id);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(List.of(id));
 
         //删除快照
         LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();

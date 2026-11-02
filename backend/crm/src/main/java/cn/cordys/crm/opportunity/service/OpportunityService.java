@@ -51,6 +51,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
@@ -197,6 +198,8 @@ public class OpportunityService implements ApprovalResourceHandler {
     private StageAdvancedConfigService stageAdvancedConfigService;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId,
             String orgId,
@@ -502,6 +505,8 @@ public class OpportunityService implements ApprovalResourceHandler {
         Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
             opportunityMapper.deleteByPrimaryKey(opportunity.getId());
             opportunityFieldService.deleteByResourceId(opportunity.getId());
+            // 清理审批待办
+            approvalTodoService.deletePendingTasksByResourceIds(List.of(opportunity.getId()));
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
@@ -673,6 +678,8 @@ public class OpportunityService implements ApprovalResourceHandler {
                 FormKey.OPPORTUNITY.getKey(), deleteIds, orgId);
         opportunityMapper.deleteByIds(deleteIds);
         opportunityFieldService.deleteByResourceIds(deleteIds);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(deleteIds);
         // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         List<LogDTO> logs = new ArrayList<>();

@@ -8,6 +8,7 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormRoleKey;
@@ -251,6 +252,7 @@ class CustomFormDataServiceTest {
         CustomFormDataService service = serviceWithPermission(CustomFormRoleKey.MANAGE_OWN);
         ReflectionTestUtils.setField(service, "customFormDataMapper", dataMapper);
         ReflectionTestUtils.setField(service, "customFormDataFieldService", fieldService);
+        ReflectionTestUtils.setField(service, "approvalTodoService", mock(ApprovalTodoService.class));
 
         CustomFormData transferred = record("record-1", "form-1", "org-1", "owner-2");
         transferred.setCreateUser("owner-1");

@@ -44,6 +44,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.domain.BusinessTitle;
 import cn.cordys.crm.contract.domain.Contract;
@@ -145,6 +146,8 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
     private DictService dictService;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
     @Resource
     private BaseMapper<ContractInvoiceField> invoiceFieldMapper;
     @Resource
@@ -364,6 +367,8 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                 FormKey.INVOICE.getKey(), List.of(id), orgId);
         invoiceFieldService.deleteByResourceId(id);
         invoiceMapper.deleteByPrimaryKey(id);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(List.of(id));
 
         //删除快照
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
@@ -684,6 +689,8 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.INVOICE.getKey(), deleteIds, orgId);
         contractInvoiceMapper.deleteByIds(deleteIds);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(deleteIds);
         // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 

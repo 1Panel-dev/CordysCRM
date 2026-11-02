@@ -6,6 +6,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
@@ -59,6 +60,7 @@ class PoolClueApprovalTest {
     private final BaseMapper<Clue> clueMapper = mock(BaseMapper.class);
     private final ClueFieldService clueFieldService = mock(ClueFieldService.class);
     private final ApprovalFlowService approvalFlowService = mock(ApprovalFlowService.class);
+    private final ApprovalTodoService approvalTodoService = mock(ApprovalTodoService.class);
     private final ApprovalResourceService approvalResourceService = mock(ApprovalResourceService.class);
     private final StatisticFieldService statisticFieldService = mock(StatisticFieldService.class);
     private final LogService logService = mock(LogService.class);
@@ -73,6 +75,7 @@ class PoolClueApprovalTest {
         ReflectionTestUtils.setField(service, "clueFieldService", clueFieldService);
         ReflectionTestUtils.setField(service, "extClueMapper", extClueMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+        ReflectionTestUtils.setField(service, "approvalTodoService", approvalTodoService);
         ReflectionTestUtils.setField(service, "statisticFieldService", statisticFieldService);
         ReflectionTestUtils.setField(service, "logService", logService);
     }
@@ -287,6 +290,7 @@ class PoolClueApprovalTest {
         ReflectionTestUtils.setField(clueService, "clueOwnerHistoryService", ownerHistoryService);
         ReflectionTestUtils.setField(clueService, "followUpRecordService", followUpRecordService);
         ReflectionTestUtils.setField(clueService, "followUpPlanService", followUpPlanService);
+        ReflectionTestUtils.setField(clueService, "approvalTodoService", approvalTodoService);
         ReflectionTestUtils.setField(clueService, "commonNoticeSendService", noticeSendService);
         when(clueMapper.selectByPrimaryKey("clue-1")).thenReturn(clue("clue-1"));
 

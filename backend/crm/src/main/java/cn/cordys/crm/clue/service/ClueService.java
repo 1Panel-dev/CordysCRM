@@ -52,6 +52,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.domain.ClueField;
@@ -253,6 +254,8 @@ public class ClueService implements ApprovalResourceHandler {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
             DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -825,6 +828,8 @@ public class ClueService implements ApprovalResourceHandler {
         followUpRecordService.deleteByClueIds(List.of(id));
         // 删除跟进计划
         followUpPlanService.deleteByClueIds(List.of(id));
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(List.of(id));
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 设置操作对象
@@ -994,6 +999,8 @@ public class ClueService implements ApprovalResourceHandler {
         followUpRecordService.deleteByClueIds(deleteIds);
         // 删除跟进计划
         followUpPlanService.deleteByClueIds(deleteIds);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(deleteIds);
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 消息通知

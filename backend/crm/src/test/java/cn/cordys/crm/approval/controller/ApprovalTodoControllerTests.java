@@ -167,4 +167,25 @@ class ApprovalTodoControllerTests extends BaseTest {
                 .in(ApprovalTask::getInstanceId, List.of("todo_list_inst_contract", "todo_list_inst_quote")));
         Assertions.assertTrue(remain.isEmpty());
     }
+
+    @Sql(scripts = {
+            "/dml/init_approval_todo_resource_cleanup_test.sql" }, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED), executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    @Order(9)
+    void testDeletePendingTasksByResourceIds() {
+        approvalTodoService.deletePendingTasksByResourceIds(List.of("todo_cleanup_resource"));
+
+        // 待处理任务被删除
+        List<ApprovalTask> pendingRemain = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
+                .eq(ApprovalTask::getId, "todo_cleanup_task_pending"));
+        Assertions.assertTrue(pendingRemain.isEmpty());
+        // 已处理任务保留
+        List<ApprovalTask> processedRemain = approvalTaskMapper.selectListByLambda(
+                new LambdaQueryWrapper<ApprovalTask>().eq(ApprovalTask::getId, "todo_cleanup_task_processed"));
+        Assertions.assertEquals(1, processedRemain.size());
+        // 抄送等其他任务保留
+        List<ApprovalTask> ccRemain = approvalTaskMapper.selectListByLambda(
+                new LambdaQueryWrapper<ApprovalTask>().eq(ApprovalTask::getId, "todo_cleanup_task_cc"));
+        Assertions.assertEquals(1, ccRemain.size());
+    }
 }
