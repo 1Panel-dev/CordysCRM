@@ -51,6 +51,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
@@ -236,6 +237,8 @@ public class CustomerService implements ApprovalResourceHandler {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
     @Resource
     private ResourcePermissionService resourcePermissionService;
 
@@ -932,6 +935,8 @@ public class CustomerService implements ApprovalResourceHandler {
                 FormKey.CUSTOMER.getKey(), ids, OrganizationContext.getOrganizationId());
         // 删除客户
         customerMapper.deleteByIds(ids);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(ids);
         // 删除客户模块字段
         customerFieldService.deleteByResourceIds(ids);
         // 删除客户协作人

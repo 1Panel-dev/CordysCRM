@@ -42,6 +42,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormDataField;
@@ -154,6 +155,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     private ResourcePermissionService resourcePermissionService;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId,
             String orgId, boolean catchPermissionException) {
@@ -523,6 +526,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
         customFormDataFieldService.deleteByResourceId(id);
         customFormDataMapper.deleteByPrimaryKey(id);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(List.of(id));
 
         // 设置操作对象
         OperationLogContext.setResourceName(data.getName());
@@ -801,6 +806,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
         customFormDataFieldService.deleteByResourceIds(deleteIds);
         customFormDataMapper.deleteByIds(deleteIds);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(deleteIds);
 
         List<LogDTO> logs = permittedDataList.stream()
                 .filter(data -> deleteIds.contains(data.getId()))

@@ -29,6 +29,7 @@ import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.domain.ClueField;
@@ -150,6 +151,8 @@ public class PoolClueService {
     private BaseService baseService;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
 
     /**
      * 获取当前用户线索池选项
@@ -313,6 +316,8 @@ public class PoolClueService {
         LambdaQueryWrapper<Clue> clueWrapper = new LambdaQueryWrapper<>();
         clueWrapper.eq(Clue::getId, id);
         clueMapper.deleteByLambda(clueWrapper);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(List.of(id));
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 设置操作对象
@@ -403,6 +408,8 @@ public class PoolClueService {
             LambdaQueryWrapper<Clue> clueWrapper = new LambdaQueryWrapper<>();
             clueWrapper.in(Clue::getId, deleteIds);
             clueMapper.deleteByLambda(clueWrapper);
+            // 清理审批待办
+            approvalTodoService.deletePendingTasksByResourceIds(deleteIds);
             statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
             List<LogDTO> logs = clues.stream()

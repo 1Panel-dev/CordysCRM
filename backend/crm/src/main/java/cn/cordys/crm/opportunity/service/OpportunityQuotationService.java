@@ -41,6 +41,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -144,6 +145,8 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
     private DictService dictService;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalTodoService approvalTodoService;
 
     private static final ObjectMapper mapper = JsonMapper.builderWithJackson2Defaults().build();
 
@@ -791,6 +794,8 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
                 FormKey.QUOTATION.getKey(), List.of(id), organizationId);
         opportunityQuotationFieldService.deleteByResourceId(id);
         opportunityQuotationMapper.deleteByPrimaryKey(id);
+        // 清理审批待办
+        approvalTodoService.deletePendingTasksByResourceIds(List.of(id));
         // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 

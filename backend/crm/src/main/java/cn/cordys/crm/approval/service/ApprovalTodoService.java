@@ -6,6 +6,8 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
@@ -250,6 +252,41 @@ public class ApprovalTodoService {
         }
         approvalTaskMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalTask>()
                 .in(ApprovalTask::getInstanceId, validInstanceIds));
+    }
+
+    /**
+     * 资源被删除后, 清理其对应的审批待办。
+     * <p>
+     * 只删除待处理的任务(状态为审批中且非抄送), 已处理任务和抄送等其他记录保留作为审批历史;
+     * 与待办列表 {@link #getTodoPage} 的口径一致。
+     *
+     * @param resourceIds 被删除的资源ID集合
+     */
+    public void deletePendingTasksByResourceIds(List<String> resourceIds) {
+        // 资源ID集合为空时不执行删除。
+        List<String> validResourceIds = resourceIds == null ? List.of()
+                : resourceIds.stream().filter(StringUtils::isNotBlank).distinct().toList();
+        if (validResourceIds.isEmpty()) {
+            return;
+        }
+        // 资源通过审批实例间接关联审批任务, 先按资源ID反查审批实例。
+        List<String> instanceIds = approvalInstanceMapper
+                .selectListByLambda(new LambdaQueryWrapper<ApprovalInstance>()
+                        .in(ApprovalInstance::getResourceId, validResourceIds))
+                .stream()
+                .map(ApprovalInstance::getId)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        if (instanceIds.isEmpty()) {
+            return;
+        }
+        // 只删除待处理的任务, 已处理和抄送等其他任务保留。
+        LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<ApprovalTask>()
+                .in(ApprovalTask::getInstanceId, instanceIds)
+                .eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING);
+        taskWrapper.nq(ApprovalTask::getType, ApprovalTaskType.CC);
+        approvalTaskMapper.deleteByLambda(taskWrapper);
     }
 
     private Map<String, String> loadSubmitterNameMap(List<ApprovalInstance> instances) {
