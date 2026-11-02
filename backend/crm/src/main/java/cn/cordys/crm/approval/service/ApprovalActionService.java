@@ -23,12 +23,15 @@ import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
+import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
 import cn.cordys.crm.approval.domain.ApprovalReturnBackRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.AddSignSortInfo;
+import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
+import cn.cordys.crm.approval.dto.ApprovalRecordNode;
 import cn.cordys.crm.approval.dto.request.ApprovalActionBatchRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalActionRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalAddSignRequest;
@@ -66,10 +69,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,6 +98,8 @@ public class ApprovalActionService {
     private BaseMapper<ApprovalAddSignTask> approvalAddSignTaskMapper;
     @Resource
     private BaseMapper<ApprovalNodeApprover> approvalNodeApproverMapper;
+    @Resource
+    private BaseMapper<ApprovalNode> approvalNodeMapper;
     @Resource
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
     @Resource
@@ -127,8 +134,9 @@ public class ApprovalActionService {
      * @param userId  当前用户
      * @param orgId   当前组织
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void sign(ApprovalAddSignRequest request, String userId, String orgId) {
-        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
+        ApprovalInstance instance = lockApprovingInstance(request.getId(), orgId);
         // 审批流是否允许加签
         ApprovalFlow approvalFlow = approvalFlowService.selectApprovalFlowByFormType(instance.getType(), orgId);
         if (approvalFlow == null || !approvalFlow.getAllowAddSign()) {
@@ -144,7 +152,7 @@ public class ApprovalActionService {
         ApprovalAddSignTask addSignTask = saveAddSignTask(request, appendActionTask.getId());
         // 之后加签(多人或签), 需要刷新实例当前审批节点
         if (ApprovalAddSignType.valueOf(request.getType()) == ApprovalAddSignType.AFTER
-                && isMultiAnyMode(appendActionTask.getNodeId(), userId, orgId)) {
+                && isMultiAnyMode(appendActionTask.getNodeId(), instance.getSubmitterId(), orgId)) {
             approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE,
                     userId);
             ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(appendActionTask, instance, orgId);
@@ -167,13 +175,17 @@ public class ApprovalActionService {
      * @param userId  当前用户
      * @param orgId   当前组织
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void back(ApprovalReturnBackRequest request, String userId, String orgId) {
-        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
+        ApprovalInstance instance = lockApprovingInstance(request.getId(), orgId);
+        ApprovalTask currentTask = getTaskById(request.getId());
+        checkActionTask(request, currentTask, userId);
+        checkBackTarget(request, instance, currentTask, orgId);
+        // 先保存当前操作，后续清理和新轮次创建都在同一实例锁内完成。
+        saveActionTask(request, ApprovalAction.BACK, userId, orgId, null);
         // 追加退回操作的待办任务 && 保存退回记录
         backProcess(instance, request, orgId);
         ApprovalReturnBackRecord backRecord = saveBackRecord(request, instance.getId(), userId);
-        // 保存执行任务
-        saveActionTask(request, ApprovalAction.BACK, userId, orgId, null);
         instance.setCurrentNodeId(request.getReturnToFlowNodeId());
         approvalInstanceMapper.updateById(instance);
         // 保存退回附件
@@ -191,13 +203,20 @@ public class ApprovalActionService {
      * @param currentUserId 当前用户
      * @param orgId         当前组织
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void revoke(ApprovalRevokeRequest request, String currentUserId, String orgId) {
+        ApprovalInstance instance = lockInstance(request.getId(), orgId);
         ApprovalTask currentTask = getTaskById(request.getId());
         // 校验当前用户是否是该任务的审批人，防止越权操作
         if (!Strings.CI.equals(currentTask.getApproverId(), currentUserId)) {
             throw new GenericException(Translator.get("not.approval.task.owner"));
         }
-        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
+        if (!ApprovalStatus.APPROVING.name().equals(instance.getApprovalStatus())
+                || !ApprovalStatus.APPROVED.name().equals(currentTask.getStatus())
+                || ApprovalTaskType.CC.name().equals(currentTask.getType())
+                || !isLatestTaskRound(currentTask)) {
+            throw new GenericException(Translator.get("no.revoke.approval"));
+        }
         // 审批流是否允许撤回
         ApprovalFlow approvalFlow = approvalFlowService.selectApprovalFlowByFormType(instance.getType(), orgId);
         if (approvalFlow == null || !approvalFlow.getAllowWithdraw()) {
@@ -217,19 +236,7 @@ public class ApprovalActionService {
      */
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void approve(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
-        // 先锁实例，再处理任务；读已提交可避免批量审批沿用等待锁前的旧快照。
-        ApprovalInstance instance = extApprovalInstanceMapper.selectByTaskIdForUpdate(request.getId());
-        if (instance == null) {
-            throw new GenericException("审批任务不存在!");
-        }
-        ApprovalTask task = getTaskById(request.getId());
-        if (!ApprovalStatus.APPROVING.name().equals(instance.getApprovalStatus())
-                || !Strings.CS.equals(task.getNodeId(), instance.getCurrentNodeId())
-                || task.getNodeRound() < 0
-                || !Objects.equals(task.getNodeRound(),
-                        extApprovalInstanceMapper.getNodeRound(instance.getId(), task.getNodeId()))) {
-            throw new GenericException(Translator.get("approval.task.already.processed"));
-        }
+        ApprovalInstance instance = lockApprovingInstance(request.getId(), currentOrgId);
         ApprovalTask currentTask = saveActionTask(request, ApprovalAction.APPROVE, currentUserId, currentOrgId, null);
         String resourceName = getResourceName(instance);
         approvedProcess(instance, currentTask, currentUserId, currentOrgId, resourceName);
@@ -243,9 +250,10 @@ public class ApprovalActionService {
      * @param currentUserId 当前用户
      * @param currentOrgId  当前组织
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void reject(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
+        ApprovalInstance instance = lockApprovingInstance(request.getId(), currentOrgId);
         ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
-        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
         // 任一审批任务驳回即驳回整个节点
         approvalInstanceService.rejectApprovalInstance(instance, currentUserId);
         ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
@@ -321,14 +329,21 @@ public class ApprovalActionService {
      * @param userId  当前用户ID
      * @param orgId   当前组织ID
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void batchReject(ApprovalActionBatchRequest request, String userId, String orgId) {
         List<ApprovalTask> approvalTasks = approvalTaskMapper.selectByIds(request.getIds());
-        approvalTasks.forEach(approvalTask -> reject(
-                ApprovalActionRequest.builder().id(approvalTask.getId()).nodeId(approvalTask.getNodeId())
-                        .instanceId(approvalTask.getInstanceId())
-                        .approverId(approvalTask.getApproverId()).comment(request.getComment())
-                        .attachmentIds(request.getAttachmentIds()).build(),
-                userId, orgId));
+        Set<String> rejectedInstances = new HashSet<>();
+        approvalTasks.stream()
+                .sorted(Comparator.comparing(ApprovalTask::getInstanceId).thenComparing(ApprovalTask::getId))
+                .forEach(approvalTask -> {
+                    // 同一实例可能同时选中普通审批和加签任务，只需驳回一次。
+                    if (rejectedInstances.add(approvalTask.getInstanceId())) {
+                        reject(ApprovalActionRequest.builder().id(approvalTask.getId())
+                                .nodeId(approvalTask.getNodeId()).instanceId(approvalTask.getInstanceId())
+                                .approverId(approvalTask.getApproverId()).comment(request.getComment())
+                                .attachmentIds(request.getAttachmentIds()).build(), userId, orgId);
+                    }
+                });
     }
 
     /**
@@ -572,6 +587,74 @@ public class ApprovalActionService {
         return currentTask;
     }
 
+    private ApprovalInstance lockInstance(String taskId, String orgId) {
+        // 先锁实例，再处理任务；读已提交可避免批量审批沿用等待锁前的旧快照。
+        ApprovalInstance instance = extApprovalInstanceMapper.selectByTaskIdForUpdate(taskId, orgId);
+        if (instance == null) {
+            throw new GenericException("审批任务不存在!");
+        }
+        return instance;
+    }
+
+    private ApprovalInstance lockApprovingInstance(String taskId, String orgId) {
+        ApprovalInstance instance = lockInstance(taskId, orgId);
+        ApprovalTask task = getTaskById(taskId);
+        if (!ApprovalStatus.APPROVING.name().equals(instance.getApprovalStatus())
+                || !Strings.CS.equals(task.getNodeId(), instance.getCurrentNodeId())
+                || !isLatestTaskRound(task)) {
+            throw new GenericException(Translator.get("approval.task.already.processed"));
+        }
+        return instance;
+    }
+
+    private boolean isLatestTaskRound(ApprovalTask task) {
+        return task.getNodeRound() != null && task.getNodeRound() >= 0
+                && Objects.equals(task.getNodeRound(),
+                        extApprovalInstanceMapper.getNodeRound(task.getInstanceId(), task.getNodeId()));
+    }
+
+    private void checkActionTask(ApprovalActionRequest request, ApprovalTask task, String userId) {
+        if (!Strings.CI.equals(task.getApproverId(), userId)
+                || !Objects.equals(request.getInstanceId(), task.getInstanceId())
+                || !Objects.equals(request.getNodeId(), task.getNodeId())
+                || !Strings.CI.equals(request.getApproverId(), task.getApproverId())) {
+            throw new GenericException(Translator.get("not.approval.task.owner"));
+        }
+        if (!ApprovalStatus.APPROVING.name().equals(task.getStatus())
+                || ApprovalTaskType.CC.name().equals(task.getType())) {
+            throw new GenericException(Translator.get("approval.task.already.processed"));
+        }
+    }
+
+    private void checkBackTarget(ApprovalReturnBackRequest request, ApprovalInstance instance, ApprovalTask currentTask,
+            String orgId) {
+        ApprovalNode target = approvalNodeMapper.selectByPrimaryKey(request.getReturnToFlowNodeId());
+        if (target == null || !Objects.equals(target.getFlowVersionId(), instance.getFlowVersionId())
+                || !ApprovalNodeTypeEnum.APPROVER.name().equals(target.getNodeType())) {
+            throw new GenericException(Translator.get("no.back.approval"));
+        }
+        // 沿用详情中的实际执行顺序，兼容同一真实节点内的前置加签；详情会改写展示节点，必须使用副本。
+        ApprovalInstanceDetail detail = approvalInstanceService.getApprovalInstanceDetail(
+                BeanUtils.copyBean(new ApprovalInstance(), instance), orgId);
+        boolean precedingTarget = false;
+        for (ApprovalRecordNode node : detail.getNodes()) {
+            if (CollectionUtils.isNotEmpty(node.getTaskNodes()) && node.getTaskNodes().stream()
+                    .anyMatch(task -> Objects.equals(task.getTaskId(), currentTask.getId()))) {
+                if (precedingTarget) {
+                    return;
+                }
+                break;
+            }
+            if (Objects.equals(node.getNodeId(), request.getReturnToNodeId())) {
+                precedingTarget = request.getReturnToNodeId().contains(ApprovalInstanceService.SIGN_SPILT)
+                        ? CollectionUtils.isNotEmpty(node.getTaskNodes()) && node.getTaskNodes().stream().anyMatch(task ->
+                                Objects.equals(task.getTaskId(), request.getReturnToTaskId()))
+                        : StringUtils.isBlank(request.getReturnToTaskId());
+            }
+        }
+        throw new GenericException(Translator.get("no.back.approval"));
+    }
+
     /**
      * 同意操作执行
      *
@@ -688,14 +771,8 @@ public class ApprovalActionService {
             String currentOrgId, ApprovalAddSignType signType) {
         // 保存执行的任务及记录
         ApprovalTask currentTask = getTaskById(request.getId());
-        // 校验当前用户是否是该任务的审批人，防止越权操作
-        if (!Strings.CI.equals(currentTask.getApproverId(), currentUserId)) {
-            throw new GenericException(Translator.get("not.approval.task.owner"));
-        }
-        if (action == ApprovalAction.APPROVE
-                && !ApprovalStatus.APPROVING.name().equals(currentTask.getStatus())) {
-            throw new GenericException(Translator.get("approval.task.already.processed"));
-        }
+        checkActionTask(request, currentTask, currentUserId);
+        boolean completesTask = action == ApprovalAction.APPROVE || action == ApprovalAction.REJECT;
         switch (action) {
         case APPROVE -> {
             currentTask.setAction(ApprovalAction.APPROVE.name());
@@ -723,9 +800,12 @@ public class ApprovalActionService {
         }
         currentTask.setUpdateUser(currentUserId);
         currentTask.setUpdateTime(System.currentTimeMillis());
-        if (action == ApprovalAction.APPROVE) {
-            // 数据库原子校验任务状态，避免并发重复同意再次产生记录和后续待办。
-            if (extApprovalTaskMapper.approvePendingTask(currentTask) != 1) {
+        if (completesTask) {
+            // 数据库原子校验任务状态，避免同意或驳回重复执行。
+            int updated = action == ApprovalAction.APPROVE
+                    ? extApprovalTaskMapper.approvePendingTask(currentTask)
+                    : extApprovalTaskMapper.rejectPendingTask(currentTask);
+            if (updated != 1) {
                 throw new GenericException(Translator.get("approval.task.already.processed"));
             }
         } else {
@@ -770,55 +850,34 @@ public class ApprovalActionService {
      * @return 包含 rootTaskId, sort 的计算结果
      */
     private AddSignSortInfo calculateAddSignSort(String sourceTaskId, String addSignType) {
-        // 查询被加签任务是否有加签记录
         ApprovalAddSignTask signCriteria = new ApprovalAddSignTask();
         signCriteria.setTaskId(sourceTaskId);
         ApprovalAddSignTask sourceAddSignTask = approvalAddSignTaskMapper.selectOne(signCriteria);
-
-        AddSignSortInfo signInfo = new AddSignSortInfo();
-        if (sourceAddSignTask == null) {
-            /*
-             * 普通任务上加签，rootTaskId就是被加签的任务ID
-             */
-            signInfo.setRootTaskId(sourceTaskId);
-            signInfo.setSort(DEFAULT_SIGN_SORT_STEP);
-        } else {
-            /*
-             * 加签任务上再加签, rootTaskId继承父加签的rootTaskId
-             */
-            signInfo.setRootTaskId(sourceAddSignTask.getRootTaskId());
-
-            // 继承父加签任务的sort
-            long parentSort = sourceAddSignTask.getSort() != null ? sourceAddSignTask.getSort() : 0L;
-            if (ApprovalAddSignType.BEFORE.name().equalsIgnoreCase(addSignType)) {
-                // BEFORE: 插在父节点之前
-                signInfo.setSort(parentSort - 100);
-            } else {
-                // AFTER: 插在父节点之后, 需要比父节点大但比下一个任务小
-                Long nextSort = getNextSortByRootTask(sourceAddSignTask.getRootTaskId(), parentSort);
-                if (nextSort != null) {
-                    // 有下一个任务，插在中间：(parentSort + nextSort) / 2
-                    signInfo.setSort((parentSort + nextSort) / 2);
-                } else {
-                    // 没有下一个任务，直接 +100
-                    signInfo.setSort(parentSort + 100);
+        String rootTaskId = sourceAddSignTask == null ? sourceTaskId : sourceAddSignTask.getRootTaskId();
+        LambdaQueryWrapper<ApprovalAddSignTask> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ApprovalAddSignTask::getRootTaskId, rootTaskId).orderByAsc(ApprovalAddSignTask::getSort);
+        queryWrapper.orderByAsc(ApprovalAddSignTask::getId);
+        List<ApprovalAddSignTask> signTasks = approvalAddSignTaskMapper.selectListByLambda(queryWrapper);
+        int insertIndex = signTasks.size();
+        if (sourceAddSignTask != null) {
+            for (int i = 0; i < signTasks.size(); i++) {
+                if (Objects.equals(signTasks.get(i).getTaskId(), sourceTaskId)) {
+                    insertIndex = i + (ApprovalAddSignType.BEFORE.name().equalsIgnoreCase(addSignType) ? 0 : 1);
+                    break;
                 }
             }
         }
-
-        return signInfo;
-    }
-
-    /**
-     * 获取指定根任务节点下，比当前排序值大的最小排序值（即下一个任务排序值）
-     */
-    private Long getNextSortByRootTask(String rootTaskId, Long currentSort) {
-        LambdaQueryWrapper<ApprovalAddSignTask> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ApprovalAddSignTask::getRootTaskId, rootTaskId)
-                .gt(ApprovalAddSignTask::getSort, currentSort)
-                .orderByAsc(ApprovalAddSignTask::getSort);
-        List<ApprovalAddSignTask> approvalAddSignTasks = approvalAddSignTaskMapper.selectListByLambda(queryWrapper);
-        return CollectionUtils.isEmpty(approvalAddSignTasks) ? null : approvalAddSignTasks.getFirst().getSort();
+        // ponytail: 每次加签按链长重排；长链写入成为瓶颈时再使用间隔排序。
+        for (int i = 0; i < signTasks.size(); i++) {
+            ApprovalAddSignTask signTask = signTasks.get(i);
+            long sort = DEFAULT_SIGN_SORT_STEP * (i < insertIndex ? i + 1L : i + 2L);
+            if (!Objects.equals(signTask.getSort(), sort)) {
+                signTask.setSort(sort);
+                approvalAddSignTaskMapper.updateById(signTask);
+            }
+        }
+        return AddSignSortInfo.builder().rootTaskId(rootTaskId)
+                .sort(DEFAULT_SIGN_SORT_STEP * (insertIndex + 1L)).build();
     }
 
     /**

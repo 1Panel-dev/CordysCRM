@@ -33,6 +33,7 @@ import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.ApprovalResourceState;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
@@ -69,6 +70,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
@@ -117,7 +119,7 @@ public class ApprovalResourceService {
     @Resource
     private ApprovalFlowService approvalFlowService;
     @Resource
-    private ApprovalInstanceService instanceService;
+    private ApprovalResourceQueryService approvalResourceQueryService;
     @Resource
     private ApprovalActionService approvalActionService;
     @Resource
@@ -334,8 +336,8 @@ public class ApprovalResourceService {
         if (StringUtils.isBlank(tableName)) {
             throw new GenericException(Translator.get("module.form.illegal"));
         }
-        // 查询旧的审批状态用于日志记录
-        String oldApprovalStatus = extApprovalInstanceMapper.selectApprovalStatus(tableName, resourceId);
+        // 当前读避免外层事务的旧快照导致状态更新被错误跳过。
+        String oldApprovalStatus = extApprovalInstanceMapper.selectApprovalStatusForUpdate(tableName, resourceId);
         if (Strings.CS.equals(approvalStatus, oldApprovalStatus)) {
             return;
         }
@@ -536,16 +538,38 @@ public class ApprovalResourceService {
     }
 
     /**
-     * 手动提审
-     *
-     * @param param 提审参数
+     * 手动提审仅用于尚未通过审批的新增资源。
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
+    public void manualPush(ApprovalResourceBaseParam param, String userId, String orgId) {
+        if (StringUtils.isBlank(userId)) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+        ApprovalResourceState state = lockResource(param, orgId);
+        if (!userId.equals(state.getCreateUser()) && !userId.equals(state.getOwner())) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+        if (ApprovalStatus.APPROVING.name().equals(state.getApprovalStatus())) {
+            return;
+        }
+        ApprovalFlow flow = approvalFlowService.getEnabledFlow(param.getFormKey(), orgId);
+        if (flow == null || !Boolean.TRUE.equals(flow.getCreateExecute()) || Boolean.TRUE.equals(state.getApproved())
+                || !Strings.CS.equalsAny(state.getApprovalStatus(), ApprovalStatus.PENDING.name(),
+                        ApprovalStatus.UNAPPROVED.name(), ApprovalStatus.REVOKED.name())) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+        executePush(ApprovalPushParam.builder().resourceId(param.getResourceId()).formKey(param.getFormKey())
+                .orgId(orgId).userId(userId).executeTimingEnum(ExecuteTimingEnum.CREATE).build(), flow);
+    }
+
+    /**
+     * 业务操作提审，资源行锁同时保护自动和手动入口。
      */
     public void push(ApprovalPushParam param) {
         String currentOrgId = param.getOrgId();
-        String currentUserId = param.getUserId();
-        // 自动提审后再次手动提审时，复用审批中的实例，不重复生成待办。
-        if (extApprovalInstanceMapper.existsApprovingInstance(currentOrgId, param.getFormKey(),
-                param.getResourceId())) {
+        ApprovalResourceState state = lockResource(param, currentOrgId);
+        // 锁定读取最新状态，不依赖外层可重复读事务已经建立的快照。
+        if (ApprovalStatus.APPROVING.name().equals(state.getApprovalStatus())) {
             return;
         }
 
@@ -553,6 +577,28 @@ public class ApprovalResourceService {
         if (approvalFlow == null) {
             throw new GenericException(Translator.get("approval_flow.not.exist"));
         }
+        executePush(param, approvalFlow);
+    }
+
+    private ApprovalResourceState lockResource(ApprovalResourceBaseParam param, String orgId) {
+        if (param == null || StringUtils.isAnyBlank(param.getResourceId(), param.getFormKey(), orgId)) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        String tableName = resolveApprovalTableName(resolveApprovalFormKey(param.getFormKey()));
+        if (StringUtils.isBlank(tableName)) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        ApprovalResourceState state = extApprovalInstanceMapper.selectResourceForUpdate(tableName,
+                param.getResourceId(), orgId, param.getFormKey());
+        if (state == null) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+        return state;
+    }
+
+    private void executePush(ApprovalPushParam param, ApprovalFlow approvalFlow) {
+        String currentOrgId = param.getOrgId();
+        String currentUserId = param.getUserId();
         // 初始化审批实例
         ApprovalInstance instance = initInstance(approvalFlow, param);
         // 获取第一个节点
@@ -635,18 +681,57 @@ public class ApprovalResourceService {
      * @param currentUserId 当前用户ID
      * @param currentOrgId  当前组织ID
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void revoke(ApprovalResourceBaseParam param, String currentUserId, String currentOrgId) {
-        // 更新业务资源审批状态
-        updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(),
-                ApprovalStatus.REVOKED.name(), currentUserId, currentOrgId);
-        // 更新审批实例状态
-        ApprovalInstance instance = instanceService.getLatestInstance(param.getResourceId());
-        if (instance == null) {
-            throw new GenericException(Translator.get("no.approval.instance"));
+        if (param == null || StringUtils.isAnyBlank(param.getResourceId(), param.getFormKey(), currentUserId,
+                currentOrgId)) {
+            throw new GenericException(Translator.get("no.revoke.approval"));
         }
+        ApprovalInstance instance = extApprovalInstanceMapper.selectLatestByResourceIdForUpdate(param.getResourceId(),
+                param.getFormKey(), currentOrgId);
+        if (instance == null || !ApprovalStatus.APPROVING.name().equals(instance.getApprovalStatus())
+                || !param.getResourceId().equals(instance.getResourceId())
+                || !param.getFormKey().equals(instance.getType())) {
+            throw new GenericException(Translator.get("no.revoke.approval"));
+        }
+        FormKey formKey = resolveApprovalFormKey(instance.getType());
+        ResourceAccessContext context;
+        if (formKey == null) {
+            CustomFormData data = customFormDataMapper.selectByPrimaryKey(instance.getResourceId());
+            if (data == null || !currentOrgId.equals(data.getOrganizationId())
+                    || !instance.getType().equals(data.getCustomFormId())) {
+                throw new GenericException(Translator.get("no.revoke.approval"));
+            }
+            context = new ResourceAccessContext();
+            context.setOwnerId(data.getOwner());
+            context.setApprovalStatus(data.getApprovalStatus());
+        } else {
+            String tableName = resolveApprovalTableName(formKey);
+            if (StringUtils.isBlank(tableName) || !currentOrgId.equals(extApprovalInstanceMapper
+                    .selectResourceOrganizationId(tableName, instance.getResourceId()))) {
+                throw new GenericException(Translator.get("no.revoke.approval"));
+            }
+            ResourceAccessContextProvider provider = getResourceAccessContextProvider(instance.getType());
+            context = provider != null ? provider.getAccessContext(instance.getResourceId(), currentOrgId) : null;
+        }
+        // 报价的访问上下文以创建人代替负责人，只能按实际提交人授权撤销。
+        if (context == null || !ApprovalStatus.APPROVING.name().equals(context.getApprovalStatus())
+                || (!currentUserId.equals(instance.getSubmitterId())
+                        && (formKey == FormKey.QUOTATION || !currentUserId.equals(context.getOwnerId())))) {
+            throw new GenericException(Translator.get("no.revoke.approval"));
+        }
+        ApprovalFlow flow = approvalFlowService.selectApprovalFlowByFormType(instance.getType(), currentOrgId);
+        if (flow == null || (!Boolean.TRUE.equals(flow.getSubmitterCanRevoke())
+                && !Boolean.FALSE.equals(approvalResourceQueryService
+                        .getApprovingResourceFirstNodeApproved(List.of(instance.getResourceId()), currentOrgId)
+                        .get(instance.getResourceId())))) {
+            throw new GenericException(Translator.get("no.revoke.approval"));
+        }
+        updateResourceApprovalStatus(formKey, instance.getResourceId(), ApprovalStatus.REVOKED.name(), currentUserId,
+                currentOrgId);
         // 撤回时从快照还原业务数据
-        approvalActionService.revertFromSnapshot(resolveApprovalFormKey(param.getFormKey()), instance.getExecuteTime(),
-                param.getResourceId(), currentUserId, currentOrgId);
+        approvalActionService.revertFromSnapshot(formKey, instance.getExecuteTime(), instance.getResourceId(),
+                currentUserId, currentOrgId);
 
         instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
         instance.setApprovalTime(System.currentTimeMillis());

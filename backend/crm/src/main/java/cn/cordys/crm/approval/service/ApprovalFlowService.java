@@ -2008,12 +2008,10 @@ public class ApprovalFlowService {
      * @return 是否支持多人审批
      */
     public boolean isCurrentNodeMultiApprover(String currentNodeId, String submitterId, String currentOrgId) {
-        ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-        List<User> approvers = resolveApprovers(submitterId, currentOrgId,
-                ApproverTypeEnum.valueOf(nodeApprover.getApproverType()),
-                JSON.parseArray(nodeApprover.getApproverList(), String.class),
-                getApproverDirection(nodeApprover.getApproverDirection()));
-        return approvers.size() > 1;
+        // 按替换、去重后的最终接收人判断，避免实际单人节点仍被当成多人或签。
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setSubmitterId(submitterId);
+        return getCurrentNodeApproverList(instance, currentNodeId, currentOrgId).size() > 1;
     }
 
     /**
@@ -2060,10 +2058,11 @@ public class ApprovalFlowService {
                 return approvers.stream()
                         .map(approver -> Strings.CS.equals(approver.getId(), instance.getSubmitterId()) ? supervisorId
                                 : approver.getId())
+                        .distinct()
                         .collect(Collectors.toList());
             }
         }
-        return approvers.stream().map(User::getId).toList();
+        return approvers.stream().map(User::getId).distinct().toList();
     }
 
     /**
@@ -2316,6 +2315,7 @@ public class ApprovalFlowService {
                     List<String> newApproverList = nextApproverNode.getApproverList().stream()
                             .map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId
                                     : approver)
+                            .distinct()
                             .collect(Collectors.toList());
                     nextApproverNode.setApproverList(newApproverList);
                 } else if (nextApproverNode.getApproverList().size() == 1
@@ -2455,6 +2455,7 @@ public class ApprovalFlowService {
                 List<String> newApproverList = nextApproverNode.getApproverList().stream()
                         .map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId
                                 : approver)
+                        .distinct()
                         .collect(Collectors.toList());
                 nextApproverNode.setApproverList(newApproverList);
             }

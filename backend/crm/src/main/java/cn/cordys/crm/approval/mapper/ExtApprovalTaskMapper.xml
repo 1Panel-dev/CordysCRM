@@ -243,6 +243,16 @@
           AND type != 'CC'
     </update>
 
+    <update id="rejectPendingTask">
+        UPDATE approval_task
+        SET status = 'UNAPPROVED', action = 'REJECT',
+            update_time = #{approvalTask.updateTime}, update_user = #{approvalTask.updateUser}
+        WHERE id = #{approvalTask.id}
+          AND approver_id = #{approvalTask.updateUser}
+          AND status = 'APPROVING'
+          AND type != 'CC'
+    </update>
+
     <update id="moveAddSignRoot" parameterType="java.lang.String">
         update approval_add_sign_task
         set root_task_id = #{newRootId}

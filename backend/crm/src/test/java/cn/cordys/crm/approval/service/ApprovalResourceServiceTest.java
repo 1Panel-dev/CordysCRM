@@ -1,26 +1,34 @@
 package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
+import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.ApprovalResourceState;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,7 +37,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import org.mockito.MockMakers;
 import org.mockito.MockedStatic;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 import java.util.List;
@@ -42,9 +55,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -52,6 +67,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 class ApprovalResourceServiceTest {
+
+    private static MessageSource previousMessageSource;
 
     private ApprovalResourceService service;
     private BaseMapper<ApprovalTask> taskMapper;
@@ -63,6 +80,21 @@ class ApprovalResourceServiceTest {
     private ApprovalActionService actionService;
     private DataScopeService dataScopeService;
     private CustomFormDataService customFormDataService;
+    private BaseMapper<CustomFormData> customFormDataMapper;
+    private ApprovalResourceQueryService resourceQueryService;
+
+    @BeforeAll
+    static void initMessageSource() {
+        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        StaticMessageSource messageSource = new StaticMessageSource();
+        messageSource.addMessage("no.revoke.approval", LocaleContextHolder.getLocale(), "无法撤销");
+        ReflectionTestUtils.setField(Translator.class, "messageSource", messageSource);
+    }
+
+    @AfterAll
+    static void restoreMessageSource() {
+        ReflectionTestUtils.setField(Translator.class, "messageSource", previousMessageSource);
+    }
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -77,6 +109,8 @@ class ApprovalResourceServiceTest {
         actionService = mock(ApprovalActionService.class);
         dataScopeService = mock(DataScopeService.class);
         customFormDataService = mock(CustomFormDataService.class);
+        customFormDataMapper = mock(BaseMapper.class);
+        resourceQueryService = mock(ApprovalResourceQueryService.class);
         ReflectionTestUtils.setField(service, "approvalTaskMapper", taskMapper);
         ReflectionTestUtils.setField(service, "approvalInstanceMapper", instanceMapper);
         ReflectionTestUtils.setField(service, "approvalFlowVersionMapper", flowVersionMapper);
@@ -86,17 +120,246 @@ class ApprovalResourceServiceTest {
         ReflectionTestUtils.setField(service, "approvalActionService", actionService);
         ReflectionTestUtils.setField(service, "dataScopeService", dataScopeService);
         ReflectionTestUtils.setField(service, "customFormDataService", customFormDataService);
+        ReflectionTestUtils.setField(service, "customFormDataMapper", customFormDataMapper);
+        ReflectionTestUtils.setField(service, "approvalResourceQueryService", resourceQueryService);
+    }
+
+    @Test
+    void revokeLocksLatestInstanceWithinResourceFormAndOrganization() throws Exception {
+        Configuration configuration = new Configuration();
+        String resource = ExtApprovalInstanceMapper.class.getName().replace('.', '/') + ".xml";
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+            assertNotNull(in);
+            new XMLMapperBuilder(in, configuration, resource, configuration.getSqlFragments()).parse();
+        }
+        BoundSql sql = configuration
+                .getMappedStatement(ExtApprovalInstanceMapper.class.getName() + ".selectLatestByResourceIdForUpdate")
+                .getBoundSql(Map.of("resourceId", "resource-a", "formKey", "contract", "organizationId", "org-a"));
+        assertEquals("""
+                SELECT ai.* FROM approval_instance ai
+                WHERE ai.resource_id = ? AND ai.type = ?
+                AND EXISTS ( SELECT 1 FROM approval_flow_version afv
+                WHERE afv.id = ai.flow_version_id AND afv.organization_id = ? )
+                ORDER BY ai.submit_time DESC, ai.id DESC LIMIT 1 FOR UPDATE
+                """.replaceAll("\\s+", " ").trim(), sql.getSql().replaceAll("\\s+", " ").trim());
+        assertEquals(List.of("resourceId", "formKey", "organizationId"),
+                sql.getParameterMappings().stream().map(mapping -> mapping.getProperty()).toList());
+        Transactional transaction = ApprovalResourceService.class
+                .getMethod("revoke", ApprovalResourceBaseParam.class, String.class, String.class)
+                .getAnnotation(Transactional.class);
+        assertEquals(Isolation.READ_COMMITTED, transaction.isolation());
+    }
+
+    @Test
+    void revokeRejectsMissingInstanceBeforeWritingResource() {
+        assertThrows(GenericException.class, () -> service.revoke(revokeParam(), "submitter", "org-a"));
+        verify(extInstanceMapper).selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a");
+        verifyNoMoreInteractions(extInstanceMapper);
+        verifyNoInteractions(instanceMapper, actionService, flowService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ApprovalStatus.class, names = "APPROVING", mode = EnumSource.Mode.EXCLUDE)
+    void revokeRejectsInactiveInstanceBeforeWritingResource(ApprovalStatus status) {
+        ApprovalInstance instance = revokeInstance();
+        instance.setApprovalStatus(status.name());
+        assertThrows(GenericException.class, () -> service.revoke(revokeParam(), "submitter", "org-a"));
+        verify(extInstanceMapper).selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a");
+        verifyNoMoreInteractions(extInstanceMapper);
+        verifyNoInteractions(instanceMapper, actionService, flowService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "resource", "form" })
+    void revokeRejectsInstanceThatDoesNotMatchRequest(String mismatch) {
+        ApprovalInstance instance = revokeInstance();
+        if ("resource".equals(mismatch)) {
+            instance.setResourceId("resource-b");
+        } else {
+            instance.setType("order");
+        }
+        assertThrows(GenericException.class, () -> service.revoke(revokeParam(), "submitter", "org-a"));
+        verify(extInstanceMapper).selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a");
+        verifyNoMoreInteractions(extInstanceMapper);
+        verifyNoInteractions(instanceMapper, actionService, flowService);
+    }
+
+    @Test
+    void revokeRejectsBusinessResourceInAnotherOrganization() {
+        revokeInstance();
+        when(extInstanceMapper.selectResourceOrganizationId("contract", "resource-a")).thenReturn("org-b");
+        assertThrows(GenericException.class, () -> service.revoke(revokeParam(), "submitter", "org-a"));
+        verifyNoInteractions(instanceMapper, actionService, flowService);
+    }
+
+    @Test
+    void quotationCreatorDoesNotGainSubmitterRevokePermission() {
+        ApprovalInstance instance = revokeInstance();
+        instance.setType("quotation");
+        when(extInstanceMapper.selectLatestByResourceIdForUpdate("resource-a", "quotation", "org-a"))
+                .thenReturn(instance);
+        when(extInstanceMapper.selectResourceOrganizationId("opportunity_quotation", "resource-a"))
+                .thenReturn("org-a");
+        ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
+        when(provider.getFormType()).thenReturn("quotation");
+        ResourceAccessContext context = new ResourceAccessContext();
+        context.setOwnerId("creator");
+        context.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        when(provider.getAccessContext("resource-a", "org-a")).thenReturn(context);
+        ApprovalResourceBaseParam param = revokeParam();
+        param.setFormKey("quotation");
+        try (MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                withSettings().mockMaker(MockMakers.INLINE))) {
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("quotation", provider));
+            assertThrows(GenericException.class, () -> service.revoke(param, "creator", "org-a"));
+        }
+        verifyNoInteractions(instanceMapper, actionService, flowService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "submitter", "resource-owner" })
+    void revokeAllowsSubmitterOrCurrentOwnerOnlyAfterLockAndValidation(String userId) {
+        ApprovalInstance instance = revokeInstance();
+        ResourceAccessContextProvider provider = revokeProvider();
+        ApprovalFlow flow = new ApprovalFlow();
+        flow.setSubmitterCanRevoke(true);
+        when(flowService.selectApprovalFlowByFormType("contract", "org-a")).thenReturn(flow);
+        service = spy(service);
+        doNothing().when(service).updateResourceApprovalStatus(any(), any(), any(), any(), any());
+        try (MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                withSettings().mockMaker(MockMakers.INLINE))) {
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("contract", provider));
+            service.revoke(revokeParam(), userId, "org-a");
+        }
+        InOrder order = inOrder(extInstanceMapper, provider, flowService, service, actionService, instanceMapper);
+        order.verify(service).revoke(any(), any(), any());
+        order.verify(extInstanceMapper).selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a");
+        order.verify(extInstanceMapper).selectResourceOrganizationId("contract", "resource-a");
+        order.verify(provider).getAccessContext("resource-a", "org-a");
+        order.verify(flowService).selectApprovalFlowByFormType("contract", "org-a");
+        order.verify(service).updateResourceApprovalStatus(any(), any(), any(), any(), any());
+        order.verify(actionService).revertFromSnapshot(any(), any(), any(), any(), any());
+        order.verify(instanceMapper).updateById(instance);
+        order.verify(actionService).loseCurrentNode("instance-a", "node-a");
+        assertEquals(ApprovalStatus.REVOKED.name(), instance.getApprovalStatus());
+        verifyNoInteractions(resourceQueryService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "unrelated-user", "missing-resource", "inactive-resource" })
+    void revokeRejectsUnauthorizedOrInvalidBusinessResource(String scenario) {
+        revokeInstance();
+        ResourceAccessContextProvider provider = revokeProvider();
+        if ("missing-resource".equals(scenario)) {
+            when(provider.getAccessContext("resource-a", "org-a")).thenReturn(null);
+        } else if ("inactive-resource".equals(scenario)) {
+            ResourceAccessContext context = new ResourceAccessContext();
+            context.setApprovalStatus(ApprovalStatus.APPROVED.name());
+            when(provider.getAccessContext("resource-a", "org-a")).thenReturn(context);
+        }
+        try (MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                withSettings().mockMaker(MockMakers.INLINE))) {
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("contract", provider));
+            assertThrows(GenericException.class, () -> service.revoke(revokeParam(),
+                    "unrelated-user".equals(scenario) ? scenario : "submitter", "org-a"));
+        }
+        verify(extInstanceMapper).selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a");
+        verify(extInstanceMapper).selectResourceOrganizationId("contract", "resource-a");
+        verifyNoMoreInteractions(extInstanceMapper);
+        verifyNoInteractions(instanceMapper, actionService, flowService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void revokeHonorsFirstNodeRestrictionWhenSubmitterRevokeIsDisabled(boolean firstApproved) {
+        revokeInstance();
+        ResourceAccessContextProvider provider = revokeProvider();
+        ApprovalFlow flow = new ApprovalFlow();
+        flow.setSubmitterCanRevoke(false);
+        when(flowService.selectApprovalFlowByFormType("contract", "org-a")).thenReturn(flow);
+        when(resourceQueryService.getApprovingResourceFirstNodeApproved(List.of("resource-a"), "org-a"))
+                .thenReturn(Map.of("resource-a", firstApproved));
+        service = spy(service);
+        doNothing().when(service).updateResourceApprovalStatus(any(), any(), any(), any(), any());
+        try (MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                withSettings().mockMaker(MockMakers.INLINE))) {
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("contract", provider));
+            if (firstApproved) {
+                assertThrows(GenericException.class, () -> service.revoke(revokeParam(), "submitter", "org-a"));
+                verifyNoInteractions(instanceMapper, actionService);
+            } else {
+                service.revoke(revokeParam(), "submitter", "org-a");
+                verify(actionService).loseCurrentNode("instance-a", "node-a");
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "other-organization", "other-form", "missing-resource" })
+    void revokeRejectsCustomResourceOutsideInstanceFormAndOrganization(String scenario) {
+        ApprovalInstance instance = revokeInstance();
+        instance.setType("custom-form-a");
+        when(extInstanceMapper.selectLatestByResourceIdForUpdate("resource-a", "custom-form-a", "org-a"))
+                .thenReturn(instance);
+        CustomFormData data = new CustomFormData();
+        data.setOrganizationId("other-organization".equals(scenario) ? "org-b" : "org-a");
+        data.setCustomFormId("other-form".equals(scenario) ? "custom-form-b" : "custom-form-a");
+        when(customFormDataMapper.selectByPrimaryKey("resource-a"))
+                .thenReturn("missing-resource".equals(scenario) ? null : data);
+        ApprovalResourceBaseParam param = revokeParam();
+        param.setFormKey("custom-form-a");
+        assertThrows(GenericException.class, () -> service.revoke(param, "submitter", "org-a"));
+        verifyNoInteractions(instanceMapper, actionService, flowService);
+    }
+
+    private ApprovalResourceBaseParam revokeParam() {
+        ApprovalResourceBaseParam param = new ApprovalResourceBaseParam();
+        param.setResourceId("resource-a");
+        param.setFormKey("contract");
+        return param;
+    }
+
+    private ApprovalInstance revokeInstance() {
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setId("instance-a");
+        instance.setType("contract");
+        instance.setResourceId("resource-a");
+        instance.setSubmitterId("submitter");
+        instance.setCurrentNodeId("node-a");
+        instance.setExecuteTime(ExecuteTimingEnum.CREATE.name());
+        instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        when(extInstanceMapper.selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a"))
+                .thenReturn(instance);
+        return instance;
+    }
+
+    private ResourceAccessContextProvider revokeProvider() {
+        when(extInstanceMapper.selectResourceOrganizationId("contract", "resource-a")).thenReturn("org-a");
+        ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
+        when(provider.getFormType()).thenReturn("contract");
+        ResourceAccessContext context = new ResourceAccessContext();
+        context.setOwnerId("resource-owner");
+        context.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        when(provider.getAccessContext("resource-a", "org-a")).thenReturn(context);
+        return provider;
     }
 
     @ParameterizedTest
     @EnumSource(ExecuteTimingEnum.class)
     void existingApprovingInstanceSkipsPushForEveryExecuteTiming(ExecuteTimingEnum timing) {
         ApprovalPushParam param = pushParam(timing);
-        when(extInstanceMapper.existsApprovingInstance("org-a", "opportunity", "resource-a")).thenReturn(true);
+        ApprovalResourceState state = new ApprovalResourceState();
+        state.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        when(extInstanceMapper.selectResourceForUpdate("opportunity", "resource-a", "org-a", "opportunity"))
+                .thenReturn(state);
 
         service.push(param);
 
-        verify(extInstanceMapper).existsApprovingInstance("org-a", "opportunity", "resource-a");
+        verify(extInstanceMapper).selectResourceForUpdate("opportunity", "resource-a", "org-a", "opportunity");
         verifyNoMoreInteractions(extInstanceMapper);
         verifyNoInteractions(flowService, instanceMapper, taskMapper, actionService);
     }
@@ -104,48 +367,53 @@ class ApprovalResourceServiceTest {
     @Test
     void noApprovingInstanceContinuesToExistingFlowLookup() {
         ApprovalPushParam param = pushParam(ExecuteTimingEnum.UPDATE);
-        when(extInstanceMapper.existsApprovingInstance("org-a", "opportunity", "resource-a")).thenReturn(false);
+        ApprovalResourceState state = new ApprovalResourceState();
+        state.setApprovalStatus(ApprovalStatus.APPROVED.name());
+        when(extInstanceMapper.selectResourceForUpdate("opportunity", "resource-a", "org-a", "opportunity"))
+                .thenReturn(state);
         IllegalStateException flowLookupReached = new IllegalStateException("已进入原审批流查询");
         when(flowService.getEnabledFlow("opportunity", "org-a")).thenThrow(flowLookupReached);
 
         assertSame(flowLookupReached, assertThrows(IllegalStateException.class, () -> service.push(param)));
 
         InOrder order = inOrder(extInstanceMapper, flowService);
-        order.verify(extInstanceMapper).existsApprovingInstance("org-a", "opportunity", "resource-a");
+        order.verify(extInstanceMapper).selectResourceForUpdate("opportunity", "resource-a", "org-a", "opportunity");
         order.verify(flowService).getEnabledFlow("opportunity", "org-a");
         order.verifyNoMoreInteractions();
         verifyNoInteractions(instanceMapper, taskMapper, actionService);
     }
 
-    @Test
-    void approvingInstanceQueryScopesOrganizationFormAndResourceAcrossTimingsAndVersions() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "contract", "custom_form_data", "opportunity_quotation" })
+    void resourceLockScopesOrganizationAndCustomFormAndReadsCurrentState(String table) throws Exception {
         Configuration configuration = new Configuration();
         String resource = ExtApprovalInstanceMapper.class.getName().replace('.', '/') + ".xml";
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
             assertNotNull(in, "找不到 Mapper XML：" + resource);
             new XMLMapperBuilder(in, configuration, resource, configuration.getSqlFragments()).parse();
         }
-        Map<String, Object> parameters = Map.of(
-                "organizationId", "org-a", "formKey", "opportunity", "resourceId", "resource-a");
-        BoundSql sql = configuration
-                .getMappedStatement(ExtApprovalInstanceMapper.class.getName() + ".existsApprovingInstance")
-                .getBoundSql(parameters);
+        Map<String, Object> parameters = Map.of("sourceTable", table, "organizationId", "org-a",
+                "formKey", "form-a", "id", "resource-a");
+        var statement = configuration
+                .getMappedStatement(ExtApprovalInstanceMapper.class.getName() + ".selectResourceForUpdate");
+        BoundSql sql = statement.getBoundSql(parameters);
+        String owner = "opportunity_quotation".equals(table) ? "NULL AS owner" : "owner";
+        String customForm = "custom_form_data".equals(table) ? " AND custom_form_id = ?" : "";
 
-        assertEquals("""
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM approval_instance ai
-                    INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
-                    WHERE afv.organization_id = ?
-                      AND ai.type = ?
-                      AND ai.resource_id = ?
-                      AND ai.approval_status = 'APPROVING'
-                )
-                """.replaceAll("\\s+", " ").trim(), sql.getSql().replaceAll("\\s+", " ").trim());
-        assertEquals(List.of("organizationId", "formKey", "resourceId"),
+        assertEquals("SELECT approval_status AS approvalStatus, approved, create_user AS createUser, " + owner
+                        + " FROM " + table + " WHERE id = ? AND organization_id = ?" + customForm + " FOR UPDATE",
+                sql.getSql().replaceAll("\\s+", " ").trim());
+        assertEquals("custom_form_data".equals(table) ? List.of("id", "organizationId", "formKey")
+                        : List.of("id", "organizationId"),
                 sql.getParameterMappings().stream().map(mapping -> mapping.getProperty()).toList());
-        assertEquals(List.of("org-a", "opportunity", "resource-a"),
-                sql.getParameterMappings().stream().map(mapping -> parameters.get(mapping.getProperty())).toList());
+        assertTrue(statement.isFlushCacheRequired());
+        assertFalse(statement.isUseCache());
+        var statusStatement = configuration
+                .getMappedStatement(ExtApprovalInstanceMapper.class.getName() + ".selectApprovalStatusForUpdate");
+        assertEquals("SELECT approval_status FROM " + table + " WHERE id = ? FOR UPDATE",
+                statusStatement.getBoundSql(parameters).getSql().replaceAll("\\s+", " ").trim());
+        assertTrue(statusStatement.isFlushCacheRequired());
+        assertFalse(statusStatement.isUseCache());
     }
 
     private ApprovalPushParam pushParam(ExecuteTimingEnum timing) {

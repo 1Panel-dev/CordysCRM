@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -184,7 +185,7 @@ class ApprovalAutoPassFlowTest {
                             || ((List<?>) params.get("array_status")).contains(task.getStatus()))
                     .toList();
         });
-        when(extInstanceMapper.selectApprovalStatus("opportunity", "opportunity-1"))
+        when(extInstanceMapper.selectApprovalStatusForUpdate("opportunity", "opportunity-1"))
                 .thenAnswer(invocation -> resourceStatus.get());
         doAnswer(invocation -> {
             resourceStatus.set(invocation.getArgument(2));
@@ -371,6 +372,55 @@ class ApprovalAutoPassFlowTest {
         }
 
         assertTrue(tasks.stream().noneMatch(task -> "submitter".equals(task.getApproverId())));
+        assertCompleted();
+    }
+
+    @ParameterizedTest
+    @EnumSource(MultiApproverModeEnum.class)
+    void supervisorReplacementKeepsUniqueApproversInOriginalOrder(MultiApproverModeEnum mode) {
+        List<String> original = List.of("supervisor", "submitter", "approver-b");
+        enterNodeWithSubmitter(mode, original, "supervisor");
+
+        List<String> expected = List.of("supervisor", "approver-b");
+        assertEquals(expected, nodes.get("NODE003").getApproverList());
+        assertEquals(expected, flowService.getCurrentNodeApproverList(instance, "NODE003", "org-1"));
+        ApprovalNodeApproverResponse preview = new ApprovalNodeApproverResponse();
+        preview.setApprovalType(ApprovalTypeEnum.MANUAL.name());
+        preview.setApproverType(ApproverTypeEnum.MEMBER.name());
+        preview.setApproverList(original);
+        preview.setCcList(List.of());
+        preview.setSameSubmitterAction(SameSubmitterActionEnum.ASSIGN_SUPERIOR.name());
+        preview.setMultiApproverMode(mode.name());
+        ReflectionTestUtils.invokeMethod(flowService, "previewNextApproverNodeWithExceptionHandler", instance,
+                preview, "org-1");
+        assertEquals(expected, preview.getApproverList());
+
+        for (String approver : mode == MultiApproverModeEnum.ANY ? List.of("supervisor") : expected) {
+            ApprovalTask pending = tasks.stream()
+                    .filter(task -> "NODE003".equals(task.getNodeId()) && approver.equals(task.getApproverId())
+                            && ApprovalStatus.APPROVING.name().equals(task.getStatus()))
+                    .findFirst().orElseThrow();
+            pending.setStatus(ApprovalStatus.APPROVED.name());
+            process(pending);
+        }
+        assertEquals(expected, tasks.stream().filter(task -> "NODE003".equals(task.getNodeId()))
+                .map(ApprovalTask::getApproverId).toList());
+        assertCompleted();
+    }
+
+    @ParameterizedTest
+    @EnumSource(MultiApproverModeEnum.class)
+    void supervisorReplacementWithOnlyOneRecipientCreatesOneTaskAndUsesSingleApproverRules(
+            MultiApproverModeEnum mode) {
+        enterNodeWithSubmitter(mode, List.of("submitter", "supervisor"), "supervisor");
+        doCallRealMethod().when(flowService).isCurrentNodeMultiApprover(anyString(), anyString(), anyString());
+
+        List<ApprovalTask> targetTasks = tasks.stream().filter(task -> "NODE003".equals(task.getNodeId())).toList();
+        assertEquals(1, targetTasks.size());
+        assertEquals("supervisor", targetTasks.getFirst().getApproverId());
+        assertFalse(flowService.isCurrentNodeMultiApprover("NODE003", "submitter", "org-1"));
+        targetTasks.getFirst().setStatus(ApprovalStatus.APPROVED.name());
+        process(targetTasks.getFirst());
         assertCompleted();
     }
 
