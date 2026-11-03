@@ -32,6 +32,7 @@ export default {
   'process.process.processName': '流程名称',
   'process.process.basic.businessType': '业务类型',
   'process.process.basic.executionTiming': '执行时机',
+  'process.process.basic.createExecuteTip': '数据新增保存后，提交审批时触发审批流',
   'process.process.basic.updateExecuteTip': '编辑专项审批仅作用于已通过单据',
   'process.process.basic.description': '描述信息',
   'process.process.flow.approver': '审批人',
