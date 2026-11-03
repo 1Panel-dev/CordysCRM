@@ -39,6 +39,7 @@ import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalRevokeRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalResubmitNodeResponse;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper;
@@ -70,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -253,7 +255,14 @@ public class ApprovalActionService {
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void reject(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
         ApprovalInstance instance = lockApprovingInstance(request.getId(), currentOrgId);
+        String startNodeNumber = StringUtils.trimToNull(request.getResubmitStartNodeNumber());
+        if (startNodeNumber != null) {
+            checkActionTask(request, getTaskById(request.getId()), currentUserId);
+            checkResubmitStartNode(instance, request.getId(), startNodeNumber, currentOrgId);
+        }
         ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
+        // 通用更新会忽略 null，空字符串用于清除已有重审起点。
+        instance.setResubmitStartNodeNumber(StringUtils.defaultString(startNodeNumber));
         // 任一审批任务驳回即驳回整个节点
         approvalInstanceService.rejectApprovalInstance(instance, currentUserId);
         ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
@@ -624,6 +633,48 @@ public class ApprovalActionService {
                 || ApprovalTaskType.CC.name().equals(task.getType())) {
             throw new GenericException(Translator.get("approval.task.already.processed"));
         }
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
+    public List<ApprovalResubmitNodeResponse> getResubmitNodes(String taskId, String userId, String orgId) {
+        ApprovalInstance instance = lockApprovingInstance(taskId, orgId);
+        ApprovalTask task = getTaskById(taskId);
+        if (StringUtils.isBlank(userId) || !Strings.CI.equals(task.getApproverId(), userId)) {
+            throw new GenericException(Translator.get("not.approval.task.owner"));
+        }
+        if (!ApprovalStatus.APPROVING.name().equals(task.getStatus())
+                || ApprovalTaskType.CC.name().equals(task.getType())) {
+            throw new GenericException(Translator.get("approval.task.already.processed"));
+        }
+        return buildResubmitNodes(instance, taskId, orgId);
+    }
+
+    private void checkResubmitStartNode(ApprovalInstance instance, String taskId, String number, String orgId) {
+        if (buildResubmitNodes(instance, taskId, orgId).stream()
+                .noneMatch(node -> Objects.equals(number, node.getNodeNumber()))) {
+            throw new GenericException(Translator.get("approval.resubmit.node.invalid"));
+        }
+    }
+
+    private List<ApprovalResubmitNodeResponse> buildResubmitNodes(ApprovalInstance instance, String taskId,
+            String orgId) {
+        // 按实际执行顺序校验；当前加签允许映射宿主，历史加签行不能作为候选。
+        ApprovalInstanceDetail detail = approvalInstanceService.getHistoricalApprovalInstanceDetail(
+                BeanUtils.copyBean(new ApprovalInstance(), instance), orgId);
+        Map<String, ApprovalResubmitNodeResponse> nodes = new LinkedHashMap<>();
+        for (ApprovalRecordNode node : detail.getNodes()) {
+            boolean current = CollectionUtils.isNotEmpty(node.getTaskNodes()) && node.getTaskNodes().stream()
+                    .anyMatch(task -> Objects.equals(task.getTaskId(), taskId));
+            if (!node.isEndNode() && StringUtils.isNotBlank(node.getNodeNumber())
+                    && (current || !node.getNodeId().contains(ApprovalInstanceService.SIGN_SPILT))) {
+                nodes.putIfAbsent(node.getNodeNumber(),
+                        new ApprovalResubmitNodeResponse(node.getNodeNumber(), node.getNodeName()));
+            }
+            if (current) {
+                return List.copyOf(nodes.values());
+            }
+        }
+        throw new GenericException(Translator.get("approval.resubmit.node.invalid"));
     }
 
     private void checkBackTarget(ApprovalReturnBackRequest request, ApprovalInstance instance, ApprovalTask currentTask,
@@ -1393,6 +1444,7 @@ public class ApprovalActionService {
         }
         if (ApprovalNodeTypeEnum.valueOf(node.getNodeType()) == ApprovalNodeTypeEnum.EXCEPTION) {
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
+            instance.setResubmitStartNodeNumber("");
             instance.setApprovalTime(System.currentTimeMillis());
         }
         approvalInstanceMapper.updateById(instance);

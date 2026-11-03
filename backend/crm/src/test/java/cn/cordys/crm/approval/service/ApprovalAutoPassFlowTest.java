@@ -6,6 +6,7 @@ import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalAction;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
@@ -16,7 +17,9 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
 import cn.cordys.crm.approval.constants.SameSubmitterActionEnum;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
+import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
@@ -24,6 +27,7 @@ import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -36,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
@@ -51,6 +56,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -65,6 +71,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -217,6 +224,89 @@ class ApprovalAutoPassFlowTest {
         pending.setStatus(ApprovalStatus.APPROVED.name());
         process(pending);
         assertCompleted();
+    }
+
+    @Test
+    void resubmitStartsAtMatchedNodeItselfAndScopesNumberByVersionAndTiming() {
+        BaseMapper<ApprovalNode> baseNodeMapper = prepareResubmitNode(ApprovalTypeEnum.MANUAL);
+
+        ApprovalNodeApproverResponse result = (ApprovalNodeApproverResponse) flowService
+                .getResourceApprovalInstanceResubmitNode(instance, "PN052", "org-1");
+
+        assertEquals("NODE003", result.getId());
+        assertEquals(List.of("approver-b"), result.getApproverList());
+        assertEquals(List.of(), result.getAutoSkipUserIds());
+        ArgumentCaptor<ApprovalNode> criteria = ArgumentCaptor.forClass(ApprovalNode.class);
+        verify(baseNodeMapper).select(criteria.capture());
+        assertEquals("version-1", criteria.getValue().getFlowVersionId());
+        assertEquals("CREATE", criteria.getValue().getExecuteTime());
+        assertEquals("PN052", criteria.getValue().getNumber());
+        assertEquals("APPROVER", criteria.getValue().getNodeType());
+        verifyNoInteractions(taskMapper);
+        verify(flowService, never()).getNextNode(anyString(), anyList(), anySet());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 2 })
+    void resubmitDoesNotChooseMissingOrAmbiguousNode(int matches) {
+        BaseMapper<ApprovalNode> baseNodeMapper = prepareResubmitNode(ApprovalTypeEnum.MANUAL);
+        when(baseNodeMapper.select(any(ApprovalNode.class))).thenReturn(matches == 0 ? List.of()
+                : List.of(new ApprovalNode(), new ApprovalNode()));
+
+        assertNull(flowService.getResourceApprovalInstanceResubmitNode(instance, "PN052", "org-1"));
+
+        verifyNoInteractions(taskMapper);
+        verify(flowService, never()).getNextNode(anyString(), anyList(), anySet());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ApprovalTypeEnum.class, names = { "AUTO_PASS", "AUTO_REJECT" })
+    @SuppressWarnings("unchecked")
+    void resubmitRunsAutomaticStartNodeAndRecordsOnlyThisRound(ApprovalTypeEnum type) {
+        prepareResubmitNode(type);
+        ApplicationContext context = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class,
+                "context");
+        when(context.getBean(ApprovalActionService.class)).thenReturn(actionService);
+
+        ApprovalNodeResponse result = flowService.getResourceApprovalInstanceResubmitNode(instance, "PN052", "org-1");
+
+        boolean passed = type == ApprovalTypeEnum.AUTO_PASS;
+        assertEquals(passed ? "END" : "EXCEPTION", result.getNodeType());
+        BaseMapper<ApprovalRecord> records = (BaseMapper<ApprovalRecord>) ReflectionTestUtils.getField(flowService,
+                "approvalRecordMapper");
+        ArgumentCaptor<ApprovalRecord> record = ArgumentCaptor.forClass(ApprovalRecord.class);
+        verify(records).insert(record.capture());
+        assertEquals("instance-1", record.getValue().getInstanceId());
+        assertEquals("NODE003", record.getValue().getNodeId());
+        assertEquals(passed ? "AUTO_APPROVED" : "AUTO_UNAPPROVED", record.getValue().getResult());
+        verify(flowService).updateApprovalPostField(eq(instance), eq("NODE003"),
+                eq(passed ? ApprovalAction.APPROVE : ApprovalAction.REJECT), anyString());
+        verify(flowService, never()).getNextNode(eq("NODE001"), anyList(), anySet());
+        verifyNoInteractions(taskMapper);
+    }
+
+    @SuppressWarnings("unchecked")
+    private BaseMapper<ApprovalNode> prepareResubmitNode(ApprovalTypeEnum type) {
+        node("NODE003", MultiApproverModeEnum.ANY, List.of("approver-b"));
+        ApprovalNodeApprover config = nodeMapper.selectByPrimaryKey("NODE003");
+        config.setId("NODE003");
+        config.setFlowVersionId("version-1");
+        config.setApprovalType(type.name());
+        config.setApproverType(ApproverTypeEnum.MEMBER.name());
+        config.setApproverList(JSON.toJSONString(List.of("approver-b")));
+        config.setCcList("[]");
+        ReflectionTestUtils.setField(flowService, "approvalNodeApproverMapper", nodeMapper);
+        ReflectionTestUtils.setField(flowService, "extUserMapper", mock(ExtUserMapper.class));
+        ApprovalNode node = new ApprovalNode();
+        node.setId("NODE003");
+        node.setFlowVersionId("version-1");
+        node.setNumber("PN052");
+        node.setNodeType("APPROVER");
+        node.setExecuteTime("CREATE");
+        BaseMapper<ApprovalNode> baseNodeMapper = mock(BaseMapper.class);
+        when(baseNodeMapper.select(any(ApprovalNode.class))).thenReturn(List.of(node));
+        ReflectionTestUtils.setField(flowService, "approvalNodeMapper", baseNodeMapper);
+        return baseNodeMapper;
     }
 
     @Test

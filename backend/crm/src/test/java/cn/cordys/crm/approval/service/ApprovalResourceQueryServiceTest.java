@@ -114,6 +114,63 @@ class ApprovalResourceQueryServiceTest {
         verifyNoInteractions(flows, instanceMapper);
     }
 
+    @ParameterizedTest
+    @CsvSource({ "resume, false, 0, false", "resume, true, 2, false", "resume, false, 2, true",
+            "later, false, 0, true" })
+    void resubmissionUsesItsOwnFirstNodeAndPreservesSignApprovalChecks(String currentNodeId,
+            boolean multiApprover, int signRound, boolean expected) {
+        ApprovalInstance instance = instance("resource-1", currentNodeId);
+        instance.setExecuteTime("CREATE");
+        instance.setResubmitStartNodeNumber("PN052");
+        ApprovalNode resume = node("resume", ApprovalNodeTypeEnum.APPROVER);
+        resume.setFlowVersionId("version-1");
+        resume.setExecuteTime("CREATE");
+        resume.setNumber("PN052");
+        ApprovalNode later = node("later", ApprovalNodeTypeEnum.APPROVER);
+        later.setFlowVersionId("version-1");
+        later.setExecuteTime("CREATE");
+        later.setNumber("PN053");
+        when(instances.getLatestInstances(List.of("resource-1"))).thenReturn(List.of(instance));
+        when(nodes.selectListByLambda(any())).thenReturn(List.of(
+                node("first", ApprovalNodeTypeEnum.APPROVER), resume, later));
+        when(links.selectListByLambda(any())).thenReturn(List.of(link("first", "resume"), link("resume", "later")));
+        ApprovalTask signed = new ApprovalTask();
+        signed.setInstanceId(instance.getId());
+        signed.setNodeId("resume");
+        signed.setNodeRound(signRound);
+        signed.setType(ApprovalTaskType.SN.name());
+        signed.setStatus(ApprovalStatus.APPROVED.name());
+        when(tasks.selectListByLambda(any())).thenReturn(List.of(signed));
+        when(flows.isCurrentNodeMultiApprover("resume", "submitter", "org-1")).thenReturn(multiApprover);
+        when(instanceMapper.getNodeRound(instance.getId(), "resume")).thenReturn(2);
+
+        assertEquals(Map.of("resource-1", expected),
+                service.getApprovingResourceFirstNodeApproved(List.of("resource-1"), "org-1"));
+        if ("later".equals(currentNodeId)) {
+            verifyNoInteractions(flows, instanceMapper);
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "version-other, CREATE", "version-1, UPDATE" })
+    void resubmissionDoesNotMatchANumberFromAnotherVersionOrExecutionTime(String versionId, String executeTime) {
+        ApprovalInstance instance = instance("resource-1", "resume");
+        instance.setExecuteTime("CREATE");
+        instance.setResubmitStartNodeNumber("PN052");
+        ApprovalNode resume = node("resume", ApprovalNodeTypeEnum.APPROVER);
+        resume.setFlowVersionId(versionId);
+        resume.setExecuteTime(executeTime);
+        resume.setNumber("PN052");
+        when(instances.getLatestInstances(List.of("resource-1"))).thenReturn(List.of(instance));
+        when(nodes.selectListByLambda(any())).thenReturn(List.of(resume));
+        when(links.selectListByLambda(any())).thenReturn(List.of());
+        when(tasks.selectListByLambda(any())).thenReturn(List.of());
+
+        assertEquals(Map.of("resource-1", true),
+                service.getApprovingResourceFirstNodeApproved(List.of("resource-1"), "org-1"));
+        verifyNoInteractions(flows, instanceMapper);
+    }
+
     @Test
     void cyclicConditionNodesStillTerminate() {
         when(instances.getLatestInstances(List.of("resource-1")))

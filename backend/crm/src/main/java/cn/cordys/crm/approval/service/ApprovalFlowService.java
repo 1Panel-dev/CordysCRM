@@ -2139,6 +2139,33 @@ public class ApprovalFlowService {
     }
 
     /**
+     * 按跨版本保留的节点编码进入重审节点；节点缺失或不唯一时由调用方整单重审。
+     */
+    public ApprovalNodeResponse getResourceApprovalInstanceResubmitNode(ApprovalInstance instance, String nodeNumber,
+            String currentOrgId) {
+        ApprovalNode criteria = new ApprovalNode();
+        criteria.setFlowVersionId(instance.getFlowVersionId());
+        criteria.setExecuteTime(StringUtils.defaultIfBlank(instance.getExecuteTime(), ExecuteTimingEnum.CREATE.name()));
+        criteria.setNumber(nodeNumber);
+        criteria.setNodeType(ApprovalNodeTypeEnum.APPROVER.name());
+        List<ApprovalNode> nodes = approvalNodeMapper.select(criteria);
+        if (nodes.size() != 1) {
+            return null;
+        }
+        ApprovalNode node = nodes.getFirst();
+        ApprovalNodeApprover approver = approvalNodeApproverMapper.selectByPrimaryKey(node.getId());
+        if (approver == null) {
+            return null;
+        }
+        ApprovalNodeApproverResponse response = BeanUtils.copyBean(new ApprovalNodeApproverResponse(), node);
+        BeanUtils.copyBean(response, approver);
+        parseApproverNodeFields(approver, response);
+        List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(),
+                instance.getResourceId());
+        return handleNextApproverNodeWithExceptionHandler(instance, response, resourceFvs, currentOrgId, List.of());
+    }
+
+    /**
      * 获取当前待办任务下一个节点
      *
      * @param currentTask 待办任务

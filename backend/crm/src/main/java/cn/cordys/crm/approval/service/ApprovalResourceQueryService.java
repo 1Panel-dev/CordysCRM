@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.service;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeLink;
@@ -77,7 +78,17 @@ public class ApprovalResourceQueryService {
                 .collect(Collectors.groupingBy(ApprovalNodeLink::getToNodeId,
                         Collectors.mapping(ApprovalNodeLink::getFromNodeId, Collectors.toList())));
         latestInstances.forEach(latestInstance -> {
-            if (isFirstApproverNode(nodeLinkMap, nodeTypeMap, latestInstance.getCurrentNodeId())) {
+            // 续审实例以本轮重审起点作为首节点，不能按原流程前驱误判已完成。
+            boolean currentIsFirst = StringUtils.isBlank(latestInstance.getResubmitStartNodeNumber())
+                    ? isFirstApproverNode(nodeLinkMap, nodeTypeMap, latestInstance.getCurrentNodeId())
+                    : allNodes.stream().anyMatch(node ->
+                            Strings.CS.equals(node.getId(), latestInstance.getCurrentNodeId())
+                            && Strings.CS.equals(node.getFlowVersionId(), latestInstance.getFlowVersionId())
+                            && Strings.CS.equals(node.getNumber(), latestInstance.getResubmitStartNodeNumber())
+                            && Strings.CS.equals(StringUtils.defaultIfBlank(node.getExecuteTime(),
+                                    ExecuteTimingEnum.CREATE.name()), StringUtils.defaultIfBlank(
+                                            latestInstance.getExecuteTime(), ExecuteTimingEnum.CREATE.name())));
+            if (currentIsFirst) {
                 // 当前审批实例处于第一个审批节点, 所以第一个节点为审批中
                 boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(
                         latestInstance.getCurrentNodeId(), latestInstance.getSubmitterId(), currentOrgId);

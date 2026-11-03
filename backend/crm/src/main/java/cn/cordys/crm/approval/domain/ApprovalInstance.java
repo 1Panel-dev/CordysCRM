@@ -32,6 +32,9 @@ public class ApprovalInstance extends BaseModel {
     @Schema(description = "当前节点ID")
     private String currentNodeId;
 
+    @Schema(description = "重审起始审批节点编号，驳回后为下一次提审起点")
+    private String resubmitStartNodeNumber;
+
     @Schema(description = "审批状态")
     private String approvalStatus;
 
