@@ -1,18 +1,20 @@
 <template>
-  <CrmTag
-    v-if="props.isTag && currentStatus?.label"
-    :color="{
-      textColor: currentStatus.tagColor,
-      color: currentStatus.tagBgColor,
-    }"
-  >
-    {{ currentStatus.label }}
-  </CrmTag>
-  <div v-else-if="currentStatus?.label" class="flex items-center gap-[8px]">
-    <CrmIcon :type="currentStatus.icon" :size="16" :class="`text-[${currentStatus.color}]`" />
-    {{ currentStatus.label }}
-  </div>
-  <div v-else>-</div>
+  <template v-if="shouldRenderStatus">
+    <CrmTag
+      v-if="props.isTag && currentStatus?.label"
+      :color="{
+        textColor: currentStatus.tagColor,
+        color: currentStatus.tagBgColor,
+      }"
+    >
+      {{ currentStatus.label }}
+    </CrmTag>
+    <div v-else-if="currentStatus?.label" class="flex items-center gap-[8px]">
+      <CrmIcon :type="currentStatus.icon" :size="16" :class="`text-[${currentStatus.color}]`" />
+      {{ currentStatus.label }}
+    </div>
+    <div v-else>-</div>
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -26,6 +28,7 @@
     status: ProcessStatusEnum;
     isTag?: boolean;
     scene?: 'process' | 'approvalRecord';
+    hideIfNoStatus?: boolean;
   }>();
 
   export type StatusInfo = { label: string; icon: string; color: string; tagBgColor: string; tagColor: string };
@@ -34,6 +37,9 @@
     const currentMap = props.scene === 'approvalRecord' ? approvalRecordStatusMap : processStatusMap;
     return currentMap[props.status as keyof typeof currentMap];
   });
+  const shouldRenderStatus = computed(
+    () => !props.hideIfNoStatus || Boolean(currentStatus.value?.label && currentStatus.value.label !== '-')
+  );
 </script>
 
 <style scoped></style>

@@ -1,5 +1,6 @@
 <template>
   <n-tabs
+    :key="props.noContent ? tabOrderKey : undefined"
     v-model:value="activeTab"
     :type="props.type"
     :size="props.size"
@@ -56,6 +57,7 @@
       return true;
     });
   });
+  const tabOrderKey = computed(() => showTabs.value.map((item) => String(item.name)).join('|'));
 
   function handleChange(value: string | number) {
     emit('change', value);

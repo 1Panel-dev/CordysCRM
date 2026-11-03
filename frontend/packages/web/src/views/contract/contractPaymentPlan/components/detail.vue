@@ -140,9 +140,10 @@
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
     formConfig,
     staticTabList,
-    availableDetailTabIds
+    availableDetailTabIds,
+    { name: 'paymentPlan', tab: t('module.paymentPlan'), enable: true, permission: ['CONTRACT_PAYMENT_PLAN:READ'] }
   );
-  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
@@ -151,15 +152,9 @@
     })
   );
   const settingTabList = ref<TabContentItem[]>([]);
-  const tabList = computed<TabContentItem[]>(() => [
-    {
-      name: 'paymentPlan',
-      tab: t('module.paymentPlan'),
-      enable: true,
-      permission: ['CONTRACT_PAYMENT_PLAN:READ'],
-    },
-    ...settingTabList.value,
-  ]);
+  const tabList = computed<TabContentItem[]>(() =>
+    settingTabList.value.length ? settingTabList.value : enabledDetailTabList.value
+  );
 
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;

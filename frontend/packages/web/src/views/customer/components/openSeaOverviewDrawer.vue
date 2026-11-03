@@ -1,7 +1,7 @@
 <template>
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -289,6 +289,7 @@
 
   const activeTab = ref('openSea');
   const settingTabOptions: TabContentItem[] = [
+    { name: 'openSea', tab: t('crmFormDesign.customer'), enable: true, switchDisabled: true },
     {
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
@@ -301,14 +302,7 @@
     },
   ];
   const settingTabList = ref<TabContentItem[]>(settingTabOptions);
-  const tabList = computed<TabContentItem[]>(() => [
-    {
-      name: 'openSea',
-      tab: t('crmFormDesign.customer'),
-      enable: true,
-    },
-    ...settingTabList.value,
-  ]);
+  const tabList = computed<TabContentItem[]>(() => settingTabList.value);
 
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;

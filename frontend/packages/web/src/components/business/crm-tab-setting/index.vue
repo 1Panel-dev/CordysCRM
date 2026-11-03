@@ -35,7 +35,7 @@
             </div>
             <n-switch
               v-model:value="element.enable"
-              :disabled="element.disabled"
+              :disabled="element.disabled || element.switchDisabled"
               size="small"
               :rubber-band="false"
               @update:value="handleChange"
@@ -128,14 +128,18 @@
         .filter((tab) => currentTabMap.has(tab.name))
         .map((localTab) => ({
           ...currentTabMap.get(localTab.name)!,
-          enable: localTab.enable,
+          enable: currentTabMap.get(localTab.name)!.switchDisabled ? true : localTab.enable,
         }));
       const retainedNames = new Set(retainedTabs.map((tab) => tab.name));
       // 新增标签，以及表单配置“关闭后重新开启”的标签，均默认在个人配置中开启。
       const addedTabs = currentTabList
         .filter((tab) => !retainedNames.has(tab.name))
         .map((tab) => ({ ...tab, enable: true }));
-      const finalTabs = [...retainedTabs, ...addedTabs];
+      const finalTabs = [
+        ...addedTabs.filter((tab) => tab.switchDisabled),
+        ...retainedTabs,
+        ...addedTabs.filter((tab) => !tab.switchDisabled),
+      ];
 
       cachedData.value = finalTabs;
       if (!isArraysEqualWithOrder(localTabs, finalTabs)) {

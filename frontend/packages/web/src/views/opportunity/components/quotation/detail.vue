@@ -10,7 +10,11 @@
   >
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
-        <CrmApprovalStatus v-if="isShowApprovalStatus" :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+        <CrmApprovalStatus
+          v-if="isShowApprovalStatus"
+          :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+          hide-if-no-status
+        />
         <CrmTag theme="light" :type="detailInfo?.invalid ? 'default' : 'info'">
           {{ detailInfo?.invalid ? t('common.voided') : t('common.normal') }}
         </CrmTag>
@@ -188,9 +192,10 @@
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
     formConfig,
     staticTabList,
-    availableDetailTabIds
+    availableDetailTabIds,
+    { name: 'quotation', tab: t('opportunity.quotation'), enable: true, permission: ['OPPORTUNITY_QUOTATION:READ'] }
   );
-  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
@@ -199,15 +204,9 @@
     })
   );
   const settingTabList = ref<TabContentItem[]>([]);
-  const tabList = computed<TabContentItem[]>(() => [
-    {
-      name: 'quotation',
-      tab: t('opportunity.quotation'),
-      enable: true,
-      permission: ['OPPORTUNITY_QUOTATION:READ'],
-    },
-    ...settingTabList.value,
-  ]);
+  const tabList = computed<TabContentItem[]>(() =>
+    settingTabList.value.length ? settingTabList.value : enabledDetailTabList.value
+  );
 
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;
