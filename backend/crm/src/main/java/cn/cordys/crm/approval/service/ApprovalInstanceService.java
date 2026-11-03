@@ -371,6 +371,7 @@ public class ApprovalInstanceService {
             }
             if (approvalNode != null) {
                 node.setNodeName(approvalNode.getName());
+                node.setNodeNumber(approvalNode.getNumber());
                 node.setSort(approvalNode.getSort());
                 if (ApprovalNodeTypeEnum.valueOf(approvalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
                     node.setEndNode(true);

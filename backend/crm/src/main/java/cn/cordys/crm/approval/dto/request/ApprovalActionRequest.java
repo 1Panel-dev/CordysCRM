@@ -2,6 +2,7 @@ package cn.cordys.crm.approval.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,6 +37,10 @@ public class ApprovalActionRequest {
 
     @Schema(description = "附件ID集合")
     private List<String> attachmentIds;
+
+    @Size(max = 50)
+    @Schema(description = "驳回后重审起始审批节点编号，空表示整单重审")
+    private String resubmitStartNodeNumber;
 
     public String getNodeId() {
         if (nodeId.contains("-SN")) {
