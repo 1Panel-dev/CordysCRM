@@ -91,8 +91,13 @@
 
   const activeTab = ref('product');
   const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.PRODUCT);
-  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
-  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds, {
+    name: 'product',
+    tab: t('crmFormDesign.product'),
+    enable: true,
+    permission: ['PRODUCT_MANAGEMENT:READ'],
+  });
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
@@ -101,15 +106,9 @@
     })
   );
   const settingTabList = ref<TabContentItem[]>([]);
-  const tabList = computed<TabContentItem[]>(() => [
-    {
-      name: 'product',
-      tab: t('crmFormDesign.product'),
-      enable: true,
-      permission: ['PRODUCT_MANAGEMENT:READ'],
-    },
-    ...settingTabList.value,
-  ]);
+  const tabList = computed<TabContentItem[]>(() =>
+    settingTabList.value.length ? settingTabList.value : enabledDetailTabList.value
+  );
 
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;

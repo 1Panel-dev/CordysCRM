@@ -14,7 +14,8 @@ export interface FormDetailTabItem extends TabContentItem {
 export default function useFormDetailTabs(
   formConfig: MaybeRef<FormConfig | undefined>,
   staticTabList: MaybeRef<TabContentItem[]> = [],
-  availableDetailTabIds?: MaybeRef<Set<string> | undefined>
+  availableDetailTabIds?: MaybeRef<Set<string> | undefined>,
+  basicInfoTab?: TabContentItem
 ) {
   const isDetailTabAvailabilityReady = computed(
     () => !availableDetailTabIds || unref(availableDetailTabIds) !== undefined
@@ -75,6 +76,7 @@ export default function useFormDetailTabs(
   });
 
   const detailTabList = computed<FormDetailTabItem[]>(() => [
+    ...(basicInfoTab ? [{ ...basicInfoTab, switchDisabled: true }] : []),
     ...systemDetailTabList.value,
     ...customDetailTabList.value,
   ]);

@@ -1,7 +1,7 @@
 <template>
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -394,9 +394,10 @@
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
     formConfig,
     staticTabList,
-    availableDetailTabIds
+    availableDetailTabIds,
+    { name: 'clue', tab: t('crmFormDesign.clue'), enable: true }
   );
-  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
@@ -405,14 +406,9 @@
     })
   );
   const settingTabList = ref<TabContentItem[]>([]);
-  const tabList = computed<TabContentItem[]>(() => [
-    {
-      name: 'clue',
-      tab: t('crmFormDesign.clue'),
-      enable: true,
-    },
-    ...settingTabList.value,
-  ]);
+  const tabList = computed<TabContentItem[]>(() =>
+    settingTabList.value.length ? settingTabList.value : enabledDetailTabList.value
+  );
 
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;

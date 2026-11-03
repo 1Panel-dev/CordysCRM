@@ -9,7 +9,7 @@
     :view-size="formViewSize"
   >
     <template #titleLeft>
-      <CrmApprovalStatus :status="currentApprovalStatus" />
+      <CrmApprovalStatus :status="currentApprovalStatus" hide-if-no-status />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -265,9 +265,10 @@
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
     formConfig,
     staticTabList,
-    availableDetailTabIds
+    availableDetailTabIds,
+    { name: 'customForm', tab: t('module.customForm'), enable: true, permission: ['CUSTOM_FORM:READ'] }
   );
-  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const isChangeRecordEnabled = computed(() => enabledDetailTabList.value.some((tab) => tab.name === 'changeRecord'));
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
@@ -277,15 +278,9 @@
     })
   );
   const settingTabList = ref<TabContentItem[]>([]);
-  const tabList = computed<TabContentItem[]>(() => [
-    {
-      name: 'customForm',
-      tab: t('module.customForm'),
-      enable: true,
-      permission: ['CUSTOM_FORM:READ'],
-    },
-    ...settingTabList.value,
-  ]);
+  const tabList = computed<TabContentItem[]>(() =>
+    settingTabList.value.length ? settingTabList.value : enabledDetailTabList.value
+  );
 
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;

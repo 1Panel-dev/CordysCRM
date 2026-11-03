@@ -10,7 +10,7 @@
   >
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
+        <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" hide-if-no-status />
       </div>
     </template>
     <template v-if="!props.readonly" #titleRight>
@@ -176,9 +176,10 @@
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
     detailTabConfig,
     staticTabList,
-    availableDetailTabIds
+    availableDetailTabIds,
+    { name: 'invoice', tab: t('module.invoice'), enable: true, permission: ['CONTRACT_INVOICE:READ'] }
   );
-  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
@@ -187,15 +188,9 @@
     })
   );
   const settingTabList = ref<TabContentItem[]>([]);
-  const tabList = computed<TabContentItem[]>(() => [
-    {
-      name: 'invoice',
-      tab: t('module.invoice'),
-      enable: true,
-      permission: ['CONTRACT_INVOICE:READ'],
-    },
-    ...settingTabList.value,
-  ]);
+  const tabList = computed<TabContentItem[]>(() =>
+    settingTabList.value.length ? settingTabList.value : enabledDetailTabList.value
+  );
 
   function initTabList(list: TabContentItem[]) {
     settingTabList.value = list;
