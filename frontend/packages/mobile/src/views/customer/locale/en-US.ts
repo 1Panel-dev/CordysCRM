@@ -26,6 +26,7 @@ export default {
   'customer.readOnly': 'Read only',
   'customer.cooperation': 'Cooperation',
   'customer.moveToOpenSea': 'Move to Open Sea',
+  'customer.moveToSeaOrPool': 'Move to Sea/Pool',
   'customer.batchMoveContentTip': 'After moving, the account will have no owner. Please proceed with caution!',
   'customer.recycleReason': 'Recycle reason',
   'customer.lastFollowUpDate': 'Latest follow-up date',

@@ -27,6 +27,7 @@ export default {
   'customer.readOnly': '只读',
   'customer.cooperation': '协作',
   'customer.moveToOpenSea': '移入公海',
+  'customer.moveToSeaOrPool': '移入公海/线索池',
   'customer.batchMoveContentTip': '移入后，客户将无负责人，请谨慎操作！',
   'customer.recycleReason': '回收原因',
   'customer.lastFollowUpDate': '最新跟进时间',

@@ -44,6 +44,12 @@
           :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
         />
         <collaborator v-else-if="tab.name === 'collaborator'" ref="collaboratorListRef" :source-id="sourceId" />
+        <CrmChangeRecord
+          v-else-if="tab.name === 'changeRecord'"
+          :source-id="sourceId"
+          :form-key="FormDesignKeyEnum.CUSTOMER"
+          :title="tab.title"
+        />
         <div v-else-if="tab.name === 'approval'" class="flex h-full bg-[var(--text-n9)] p-[16px]">
           <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
             <CrmApprovalLine
@@ -124,6 +130,7 @@
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import collaborator from './components/collaborator.vue';
   import relation from './components/relation.vue';
 
@@ -143,12 +150,14 @@
   const { t } = useI18n();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
-  const { sourceName, descriptions, collaborationType, detail, initFormConfig, initFormDescription } = useFormCreateApi(
-    {
+  const { sourceName, descriptions, collaborationType, detail, formConfig, initFormConfig, initFormDescription } =
+    useFormCreateApi({
       formKey: FormDesignKeyEnum.CUSTOMER,
       sourceId,
       needInitDetail: true,
-    }
+    });
+  const changeRecordTab = computed(() =>
+    formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
   );
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CUSTOMER,
@@ -202,6 +211,14 @@
             {
               name: 'approval',
               title: t('workbench.approval.record'),
+            },
+          ]
+        : []),
+      ...(changeRecordTab.value
+        ? [
+            {
+              name: 'changeRecord',
+              title: changeRecordTab.value.name || t('common.changeRecord'),
             },
           ]
         : []),

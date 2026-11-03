@@ -1,8 +1,23 @@
 <template>
   <CrmPageWrapper :title="route.query.name?.toString() || ''">
-    <div class="relative h-full bg-[var(--text-n9)] pt-[16px]">
-      <CrmDescription :description="descriptions" :source-id="route.query.id?.toString() || ''" />
-    </div>
+    <van-tabs v-model:active="activeTab" border class="detail-tabs">
+      <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
+        <template #title>
+          <div class="text-[16px]" :class="activeTab === tab.name ? 'text-[var(--primary-8)]' : ''">
+            {{ tab.title }}
+          </div>
+        </template>
+        <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
+          <CrmDescription :description="descriptions" :source-id="sourceId" />
+        </div>
+        <CrmChangeRecord
+          v-else-if="tab.name === 'changeRecord'"
+          :source-id="sourceId"
+          :form-key="FormDesignKeyEnum.CONTACT"
+          :title="tab.title"
+        />
+      </van-tab>
+    </van-tabs>
     <template v-if="route.query.readonly?.toString() === 'N'" #footer>
       <CrmActionButtons
         :show-edit-button="hasAllPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])"
@@ -23,6 +38,7 @@
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
 
   import { deleteCustomerContact } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -34,11 +50,30 @@
   const router = useRouter();
   const { t } = useI18n();
 
-  const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
+  const sourceId = computed(() => route.query.id?.toString() || '');
+  const activeTab = ref('info');
+  const { descriptions, formConfig, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER_CONTACT,
-    sourceId: ref(route.query.id?.toString() || ''),
+    sourceId,
     needInitDetail: true,
   });
+  const changeRecordTab = computed(() =>
+    formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
+  );
+  const tabList = computed(() => [
+    {
+      name: 'info',
+      title: t('common.detail'),
+    },
+    ...(changeRecordTab.value
+      ? [
+          {
+            name: 'changeRecord',
+            title: changeRecordTab.value.name || t('common.changeRecord'),
+          },
+        ]
+      : []),
+  ]);
   const loading = ref(false);
 
   function handleDelete() {
@@ -109,4 +144,17 @@
   });
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  :deep(.crm-page-content) {
+    @apply !overflow-hidden;
+  }
+  .detail-tabs {
+    @apply flex-1 overflow-hidden;
+    :deep(.van-tabs__content) {
+      height: calc(100% - var(--van-tabs-line-height));
+      .van-tab__panel {
+        @apply h-full;
+      }
+    }
+  }
+</style>
