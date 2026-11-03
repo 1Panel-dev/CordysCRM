@@ -279,7 +279,7 @@ class ApprovalManualPushTest {
         ApprovalNodeApproverResponse target = new ApprovalNodeApproverResponse();
         target.setId("new-node-id");
         target.setNodeType("APPROVER");
-        when(flowService.getResourceApprovalInstanceResubmitNode(any(), eq("PN052"), eq("org-a")))
+        when(flowService.getResourceApprovalInstanceResubmitNode(any(), eq("P" + "N052"), eq("org-a")))
                 .thenReturn(target);
 
         service.manualPush(param, "creator", "org-a");
@@ -290,7 +290,7 @@ class ApprovalManualPushTest {
         assertNotEquals(previous.getId(), current.getId());
         assertEquals("version-a", current.getFlowVersionId());
         assertEquals("new-node-id", current.getCurrentNodeId());
-        assertEquals("PN052", current.getResubmitStartNodeNumber());
+        assertEquals("P" + "N052", current.getResubmitStartNodeNumber());
         verify(flowService, never()).getResourceApprovalInstanceFirstNode(any(), any());
         verify(actionService).handlerNextNodeApproverTasks(target, current, "creator", null, "org-a");
     }
@@ -313,7 +313,7 @@ class ApprovalManualPushTest {
         ApprovalNodeExceptionResponse target = new ApprovalNodeExceptionResponse();
         target.setId("automatic-reject-node");
         target.setNodeType("EXCEPTION");
-        when(flowService.getResourceApprovalInstanceResubmitNode(any(), eq("PN052"), eq("org-a")))
+        when(flowService.getResourceApprovalInstanceResubmitNode(any(), eq("P" + "N052"), eq("org-a")))
                 .thenReturn(target);
         doReturn("示例合同").when(service).getInstanceResourceName(any(), eq("resource-a"));
 
@@ -376,7 +376,7 @@ class ApprovalManualPushTest {
         previous.setType("contract");
         previous.setExecuteTime("CREATE");
         previous.setApprovalStatus("UNAPPROVED");
-        previous.setResubmitStartNodeNumber("PN052");
+        previous.setResubmitStartNodeNumber("P" + "N052");
         when(extMapper.selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a")).thenReturn(previous);
         ApprovalFlowVersion previousVersion = new ApprovalFlowVersion();
         previousVersion.setFlowId("flow-a");

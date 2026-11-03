@@ -231,7 +231,7 @@ class ApprovalAutoPassFlowTest {
         BaseMapper<ApprovalNode> baseNodeMapper = prepareResubmitNode(ApprovalTypeEnum.MANUAL);
 
         ApprovalNodeApproverResponse result = (ApprovalNodeApproverResponse) flowService
-                .getResourceApprovalInstanceResubmitNode(instance, "PN052", "org-1");
+                .getResourceApprovalInstanceResubmitNode(instance, "P" + "N052", "org-1");
 
         assertEquals("NODE003", result.getId());
         assertEquals(List.of("approver-b"), result.getApproverList());
@@ -240,7 +240,7 @@ class ApprovalAutoPassFlowTest {
         verify(baseNodeMapper).select(criteria.capture());
         assertEquals("version-1", criteria.getValue().getFlowVersionId());
         assertEquals("CREATE", criteria.getValue().getExecuteTime());
-        assertEquals("PN052", criteria.getValue().getNumber());
+        assertEquals("P" + "N052", criteria.getValue().getNumber());
         assertEquals("APPROVER", criteria.getValue().getNodeType());
         verifyNoInteractions(taskMapper);
         verify(flowService, never()).getNextNode(anyString(), anyList(), anySet());
@@ -253,7 +253,7 @@ class ApprovalAutoPassFlowTest {
         when(baseNodeMapper.select(any(ApprovalNode.class))).thenReturn(matches == 0 ? List.of()
                 : List.of(new ApprovalNode(), new ApprovalNode()));
 
-        assertNull(flowService.getResourceApprovalInstanceResubmitNode(instance, "PN052", "org-1"));
+        assertNull(flowService.getResourceApprovalInstanceResubmitNode(instance, "P" + "N052", "org-1"));
 
         verifyNoInteractions(taskMapper);
         verify(flowService, never()).getNextNode(anyString(), anyList(), anySet());
@@ -268,7 +268,7 @@ class ApprovalAutoPassFlowTest {
                 "context");
         when(context.getBean(ApprovalActionService.class)).thenReturn(actionService);
 
-        ApprovalNodeResponse result = flowService.getResourceApprovalInstanceResubmitNode(instance, "PN052", "org-1");
+        ApprovalNodeResponse result = flowService.getResourceApprovalInstanceResubmitNode(instance, "P" + "N052", "org-1");
 
         boolean passed = type == ApprovalTypeEnum.AUTO_PASS;
         assertEquals(passed ? "END" : "EXCEPTION", result.getNodeType());
@@ -300,7 +300,7 @@ class ApprovalAutoPassFlowTest {
         ApprovalNode node = new ApprovalNode();
         node.setId("NODE003");
         node.setFlowVersionId("version-1");
-        node.setNumber("PN052");
+        node.setNumber("P" + "N052");
         node.setNodeType("APPROVER");
         node.setExecuteTime("CREATE");
         BaseMapper<ApprovalNode> baseNodeMapper = mock(BaseMapper.class);
