@@ -1,16 +1,10 @@
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { IRNodeType } from '@lib/shared/enums/formula';
 
-import {
-  EvaluateContext,
-  IRBinaryNode,
-  IRLiteralNode,
-  IRNode,
-} from '@/components/business/crm-formula/formula-runtime/types';
-
 import { functionRegistry } from '../function-registry';
 import { localDateToExcelSerial } from '../runtime/excel-date';
 import { excelCompare, normalizeSerialToSecond, toNumber } from '../runtime/excel-runtime';
+import { EvaluateContext, IRBinaryNode, IRLiteralNode, IRNode } from '../types';
 
 /**
  * Excel 日期计算的基准时间戳

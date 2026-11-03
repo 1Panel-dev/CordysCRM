@@ -1,7 +1,7 @@
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { IRNodeType } from '@lib/shared/enums/formula';
 
-import { FormCreateField } from '@/components/business/crm-form-create/types';
+import { FormCreateField } from '../../crm-form-create/types';
 
 export interface ResolveContext {
   /** 是否允许出现列字段 */
