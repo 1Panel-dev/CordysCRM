@@ -11,6 +11,7 @@ import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.ApprovalResourceBatchParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceState;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeExceptionResponse;
@@ -30,6 +31,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -41,6 +45,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -382,6 +387,51 @@ class ApprovalManualPushTest {
         previousVersion.setFlowId("flow-a");
         when(versionMapper.selectByPrimaryKey("old-version")).thenReturn(previousVersion);
         return previous;
+    }
+
+    @Test
+    void batchManualPushSubmitsEachEligibleResource() {
+        ApprovalResourceState stateB = new ApprovalResourceState();
+        stateB.setApprovalStatus("PENDING");
+        stateB.setApproved(false);
+        stateB.setCreateUser("creator");
+        stateB.setOwner("owner");
+        when(extMapper.selectResourceForUpdate("contract", "resource-b", "org-a", "contract")).thenReturn(stateB);
+
+        ApprovalResourceBatchParam batchParam = new ApprovalResourceBatchParam();
+        batchParam.setFormKey("contract");
+        batchParam.setResourceIds(List.of("resource-a", "resource-b"));
+
+        service.batchManualPush(batchParam, "creator", "org-a");
+
+        ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
+        verify(instanceMapper, times(2)).insert(inserted.capture());
+        assertEquals(List.of("resource-a", "resource-b"),
+                inserted.getAllValues().stream().map(ApprovalInstance::getResourceId).toList());
+    }
+
+    @Test
+    void batchManualPushRejectsEmptyResourceIdsBeforeAnyReadOrWrite() {
+        ApprovalResourceBatchParam batchParam = new ApprovalResourceBatchParam();
+        batchParam.setFormKey("contract");
+        batchParam.setResourceIds(Collections.emptyList());
+
+        assertThrows(GenericException.class, () -> service.batchManualPush(batchParam, "creator", "org-a"));
+
+        verifyNoInteractions(extMapper, flowService, instanceMapper, actionService);
+    }
+
+    @Test
+    void batchManualPushRejectsIneligibleResourceWithoutSubmittingTheRest() {
+        state.setApprovalStatus("APPROVED");
+
+        ApprovalResourceBatchParam batchParam = new ApprovalResourceBatchParam();
+        batchParam.setFormKey("contract");
+        batchParam.setResourceIds(List.of("resource-a", "resource-b"));
+
+        assertThrows(GenericException.class, () -> service.batchManualPush(batchParam, "creator", "org-a"));
+
+        assertNoWrites();
     }
 
     private void verifyInsertedInstance(String formKey, String userId, ExecuteTimingEnum timing) {
