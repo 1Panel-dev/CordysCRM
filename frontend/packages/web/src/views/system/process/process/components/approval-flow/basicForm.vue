@@ -53,11 +53,21 @@
             v-for="item of executionTimingList"
             :key="item.value"
             v-model:checked="form[item.value as keyof BasicFormParams]"
-            :disabled="readonly"
+            :disabled="readonly || item.value === 'createExecute'"
           >
             <div class="flex items-center gap-[8px]">
               {{ item.label }}
-              <n-tooltip v-if="item.value === 'updateExecute'" trigger="hover" :delay="300">
+              <n-tooltip v-if="item.value === 'createExecute'" trigger="hover" :delay="300">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    :size="16"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{ t('process.process.basic.createExecuteTip') }}
+              </n-tooltip>
+              <n-tooltip v-else-if="item.value === 'updateExecute'" trigger="hover" :delay="300">
                 <template #trigger>
                   <CrmIcon
                     type="iconicon_help_circle"
@@ -119,6 +129,16 @@
   const selectBusinessTypeOptions = computed(() => props.businessTypeOptions as SelectOption[]);
 
   const formRef = ref<FormInst | null>(null);
+
+  watch(
+    () => form.value.createExecute,
+    (createExecute) => {
+      if (!createExecute) {
+        form.value.createExecute = true;
+      }
+    },
+    { immediate: true }
+  );
 
   async function validate(cb?: () => void) {
     try {
