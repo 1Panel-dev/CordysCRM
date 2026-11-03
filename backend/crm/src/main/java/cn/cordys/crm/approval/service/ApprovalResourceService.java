@@ -33,6 +33,7 @@ import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.ApprovalResourceBatchParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceState;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
@@ -560,6 +561,23 @@ public class ApprovalResourceService {
         }
         executePush(ApprovalPushParam.builder().resourceId(param.getResourceId()).formKey(param.getFormKey())
                 .orgId(orgId).userId(userId).executeTimingEnum(ExecuteTimingEnum.CREATE).build(), flow);
+    }
+
+    /**
+     * 批量手动提审, 逐个资源执行 {@link #manualPush}, 与批量同意/驳回一致在单事务内顺序处理,
+     * 任一资源不满足提审条件则整批回滚。
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
+    public void batchManualPush(ApprovalResourceBatchParam param, String userId, String orgId) {
+        if (param == null || CollectionUtils.isEmpty(param.getResourceIds())) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        for (String resourceId : param.getResourceIds()) {
+            ApprovalResourceBaseParam baseParam = new ApprovalResourceBaseParam();
+            baseParam.setResourceId(resourceId);
+            baseParam.setFormKey(param.getFormKey());
+            manualPush(baseParam, userId, orgId);
+        }
     }
 
     /**
