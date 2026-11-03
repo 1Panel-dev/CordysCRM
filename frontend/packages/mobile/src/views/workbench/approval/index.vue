@@ -17,7 +17,7 @@
             </template>
           </CrmDescription>
         </div>
-        <div v-else class="flex h-full bg-[var(--text-n9)] p-[16px]">
+        <div v-else-if="tab.name === 'record'" class="flex h-full bg-[var(--text-n9)] p-[16px]">
           <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
             <div class="min-h-0 flex-1">
               <CrmApprovalLine
@@ -41,6 +41,12 @@
             </div>
           </div>
         </div>
+        <CrmChangeRecord
+          v-else-if="tab.name === 'changeRecord'"
+          :source-id="sourceId"
+          :form-key="approvalFormKey"
+          :title="tab.title"
+        />
       </van-tab>
     </van-tabs>
     <template #footer>
@@ -78,6 +84,7 @@
   import ApprovalStatus from '@/components/business/crm-approval/crm-approval-status.vue';
   import CrmApprovalLine from '@/components/business/crm-approval/crm-approval-line.vue';
   import CrmApprovalRecordActions from '@/components/business/crm-approval/crm-approval-record-actions.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import resolveApprovalActionPermission from '@/components/business/crm-approval/approvalActionPermission';
 
   const { t } = useI18n();
@@ -100,7 +107,7 @@
     }
   });
 
-  const { sourceName, descriptions, detail, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, detail, formConfig, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: routeFormKey.value,
     sourceId,
     needInitDetail: true,
@@ -111,7 +118,10 @@
     customFormId,
   });
 
-  const tabList = [
+  const changeRecordTab = computed(() =>
+    formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
+  );
+  const tabList = computed(() => [
     {
       name: 'detail',
       title: t('common.detail'),
@@ -120,8 +130,17 @@
       name: 'record',
       title: t('workbench.approval.record'),
     },
-  ];
-  const activeName = ref(tabList[0].name);
+    ...(changeRecordTab.value
+      ? [
+          {
+            name: 'changeRecord',
+            title: changeRecordTab.value.name || t('common.changeRecord'),
+          },
+        ]
+      : []),
+  ]);
+  const activeName = ref('detail');
+
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
 

@@ -13,6 +13,7 @@ import useOrderApi from '@lib/shared/api/modules/order';
 import useProductApi from '@lib/shared/api/modules/product';
 import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
 import useBusinessApi from '@lib/shared/api/modules/system/business';
+import useChangeLogApi from '@lib/shared/api/modules/system/changeLog';
 import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
@@ -42,6 +43,9 @@ const orderApi = useOrderApi(CDR);
 const agentApi = useAgentApi(CDR);
 const aiApi = useAiApi(CDR);
 const processApi = useProcess(CDR);
+const changeLogApi = useChangeLogApi(CDR);
+
+export const { getChangeLogPage } = changeLogApi;
 
 export const {
   getFollowPlanDetail,
