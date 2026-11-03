@@ -37,6 +37,8 @@ export default {
   'process.process.processName': 'Process Name',
   'process.process.basic.businessType': 'Business Type',
   'process.process.basic.executionTiming': 'Execution timing',
+  'process.process.basic.createExecuteTip':
+    'The approval flow is triggered when new data is submitted for approval after saving.',
   'process.process.basic.updateExecuteTip': 'Edit approval only applies to approved records.',
   'process.process.basic.description': 'Description',
   'process.process.flow.approver': 'Approver',
