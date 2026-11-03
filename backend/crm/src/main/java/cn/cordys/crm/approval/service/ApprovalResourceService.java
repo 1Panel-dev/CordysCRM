@@ -599,11 +599,30 @@ public class ApprovalResourceService {
     private void executePush(ApprovalPushParam param, ApprovalFlow approvalFlow) {
         String currentOrgId = param.getOrgId();
         String currentUserId = param.getUserId();
+        ApprovalInstance previousInstance = extApprovalInstanceMapper.selectLatestByResourceIdForUpdate(
+                param.getResourceId(), param.getFormKey(), currentOrgId);
         // 初始化审批实例
         ApprovalInstance instance = initInstance(approvalFlow, param);
-        // 获取第一个节点
-        ApprovalNodeResponse firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance,
-                currentOrgId);
+        ApprovalNodeResponse firstApprovalNode = null;
+        if (previousInstance != null
+                && ApprovalStatus.UNAPPROVED.name().equals(previousInstance.getApprovalStatus())
+                && Strings.CS.equals(previousInstance.getType(), instance.getType())
+                && Strings.CS.equals(StringUtils.defaultIfBlank(previousInstance.getExecuteTime(),
+                        ExecuteTimingEnum.CREATE.name()), instance.getExecuteTime())
+                && StringUtils.isNotBlank(previousInstance.getResubmitStartNodeNumber())) {
+            ApprovalFlowVersion previousVersion = approvalFlowVersionMapper
+                    .selectByPrimaryKey(previousInstance.getFlowVersionId());
+            if (previousVersion != null && Strings.CS.equals(previousVersion.getFlowId(), approvalFlow.getId())) {
+                firstApprovalNode = approvalFlowService.getResourceApprovalInstanceResubmitNode(instance,
+                        previousInstance.getResubmitStartNodeNumber(), currentOrgId);
+                if (firstApprovalNode != null) {
+                    instance.setResubmitStartNodeNumber(previousInstance.getResubmitStartNodeNumber());
+                }
+            }
+        }
+        if (firstApprovalNode == null) {
+            firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
+        }
         if (firstApprovalNode == null) {
             throw new GenericException(Translator.get("approval_first_node.not.exist"));
         }
@@ -615,6 +634,7 @@ public class ApprovalResourceService {
             approvalActionService.revertFromSnapshot(resolveApprovalFormKey(param.getFormKey()),
                     instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
+            instance.setResubmitStartNodeNumber(null);
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
 

@@ -7,11 +7,13 @@ import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
+import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceState;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalNodeExceptionResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterAll;
@@ -29,10 +31,13 @@ import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -48,6 +53,7 @@ class ApprovalManualPushTest {
     private ApprovalResourceService service;
     private ExtApprovalInstanceMapper extMapper;
     private BaseMapper<ApprovalInstance> instanceMapper;
+    private BaseMapper<ApprovalFlowVersion> versionMapper;
     private ApprovalFlowService flowService;
     private ApprovalActionService actionService;
     private ApprovalResourceBaseParam param;
@@ -81,10 +87,12 @@ class ApprovalManualPushTest {
         service = spy(new ApprovalResourceService());
         extMapper = mock(ExtApprovalInstanceMapper.class);
         instanceMapper = mock(BaseMapper.class);
+        versionMapper = mock(BaseMapper.class);
         flowService = mock(ApprovalFlowService.class);
         actionService = mock(ApprovalActionService.class);
         ReflectionTestUtils.setField(service, "extApprovalInstanceMapper", extMapper);
         ReflectionTestUtils.setField(service, "approvalInstanceMapper", instanceMapper);
+        ReflectionTestUtils.setField(service, "approvalFlowVersionMapper", versionMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", flowService);
         ReflectionTestUtils.setField(service, "approvalActionService", actionService);
         doNothing().when(service).updateResourceApprovalStatus(any(), any(), any(), any(), any());
@@ -98,6 +106,7 @@ class ApprovalManualPushTest {
         state.setOwner("owner");
         when(extMapper.selectResourceForUpdate("contract", "resource-a", "org-a", "contract")).thenReturn(state);
         flow = new ApprovalFlow();
+        flow.setId("flow-a");
         flow.setCurrentVersionId("version-a");
         flow.setCreateExecute(true);
         when(flowService.getEnabledFlow("contract", "org-a")).thenReturn(flow);
@@ -261,6 +270,118 @@ class ApprovalManualPushTest {
 
         verifyInsertedInstance("contract", "automatic-operator", timing);
         verify(service, never()).manualPush(any(), any(), any());
+    }
+
+    @Test
+    void rejectedInstanceResubmitsAtSameNumberInNewVersionWithoutCopyingItsTasks() {
+        ApprovalInstance previous = rejectedInstance();
+        previous.setCurrentNodeId("old-node-id");
+        ApprovalNodeApproverResponse target = new ApprovalNodeApproverResponse();
+        target.setId("new-node-id");
+        target.setNodeType("APPROVER");
+        when(flowService.getResourceApprovalInstanceResubmitNode(any(), eq("P" + "N052"), eq("org-a")))
+                .thenReturn(target);
+
+        service.manualPush(param, "creator", "org-a");
+
+        ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
+        verify(instanceMapper).insert(inserted.capture());
+        ApprovalInstance current = inserted.getValue();
+        assertNotEquals(previous.getId(), current.getId());
+        assertEquals("version-a", current.getFlowVersionId());
+        assertEquals("new-node-id", current.getCurrentNodeId());
+        assertEquals("P" + "N052", current.getResubmitStartNodeNumber());
+        verify(flowService, never()).getResourceApprovalInstanceFirstNode(any(), any());
+        verify(actionService).handlerNextNodeApproverTasks(target, current, "creator", null, "org-a");
+    }
+
+    @Test
+    void missingResubmitNodeFallsBackToBeginning() {
+        rejectedInstance();
+
+        service.manualPush(param, "creator", "org-a");
+
+        verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE);
+        ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
+        verify(instanceMapper).insert(inserted.capture());
+        assertNull(inserted.getValue().getResubmitStartNodeNumber());
+    }
+
+    @Test
+    void automaticRejectionDoesNotReuseThisRoundsStartAsNextResubmitChoice() {
+        rejectedInstance();
+        ApprovalNodeExceptionResponse target = new ApprovalNodeExceptionResponse();
+        target.setId("automatic-reject-node");
+        target.setNodeType("EXCEPTION");
+        when(flowService.getResourceApprovalInstanceResubmitNode(any(), eq("P" + "N052"), eq("org-a")))
+                .thenReturn(target);
+        doReturn("示例合同").when(service).getInstanceResourceName(any(), eq("resource-a"));
+
+        service.manualPush(param, "creator", "org-a");
+
+        ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
+        verify(instanceMapper).insert(inserted.capture());
+        ApprovalInstance current = inserted.getValue();
+        assertEquals("UNAPPROVED", current.getApprovalStatus());
+        assertEquals("automatic-reject-node", current.getCurrentNodeId());
+        assertNull(current.getResubmitStartNodeNumber());
+        verify(actionService).sendFinishNotice(current, "示例合同", "ADMIN", "org-a");
+        verify(flowService, never()).getResourceApprovalInstanceFirstNode(any(), any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "APPROVED", "REVOKED" })
+    void resubmitChoiceIsOnlyAppliedAfterRejection(String status) {
+        ApprovalInstance previous = rejectedInstance();
+        previous.setApprovalStatus(status);
+
+        service.manualPush(param, "creator", "org-a");
+
+        verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE);
+        verify(flowService, never()).getResourceApprovalInstanceResubmitNode(any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "invoice,CREATE", "contract,UPDATE", "contract,DELETE" })
+    void resubmitChoiceDoesNotCrossFormOrExecutionTiming(String formType, String timing) {
+        ApprovalInstance previous = rejectedInstance();
+        previous.setType(formType);
+        previous.setExecuteTime(timing);
+
+        service.manualPush(param, "creator", "org-a");
+
+        verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE);
+        verify(flowService, never()).getResourceApprovalInstanceResubmitNode(any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void deletedOrReplacedFlowDoesNotReuseAnotherFlowsNodeNumber(boolean deleted) {
+        rejectedInstance();
+        ApprovalFlowVersion previousVersion = new ApprovalFlowVersion();
+        previousVersion.setFlowId("another-flow");
+        when(versionMapper.selectByPrimaryKey("old-version")).thenReturn(deleted ? null : previousVersion);
+
+        service.manualPush(param, "creator", "org-a");
+
+        verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE);
+        verify(flowService, never()).getResourceApprovalInstanceResubmitNode(any(), any(), any());
+    }
+
+    private ApprovalInstance rejectedInstance() {
+        state.setApprovalStatus("UNAPPROVED");
+        ApprovalInstance previous = new ApprovalInstance();
+        previous.setId("previous-instance");
+        previous.setFlowVersionId("old-version");
+        previous.setType("contract");
+        previous.setExecuteTime("CREATE");
+        previous.setApprovalStatus("UNAPPROVED");
+        previous.setResubmitStartNodeNumber("P" + "N052");
+        when(extMapper.selectLatestByResourceIdForUpdate("resource-a", "contract", "org-a")).thenReturn(previous);
+        ApprovalFlowVersion previousVersion = new ApprovalFlowVersion();
+        previousVersion.setFlowId("flow-a");
+        when(versionMapper.selectByPrimaryKey("old-version")).thenReturn(previousVersion);
+        return previous;
     }
 
     private void verifyInsertedInstance(String formKey, String userId, ExecuteTimingEnum timing) {

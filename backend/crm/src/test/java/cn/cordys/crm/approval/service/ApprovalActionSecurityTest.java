@@ -1,5 +1,6 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
@@ -25,11 +26,15 @@ import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalRevokeRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalResubmitNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.EntityTableMapper;
+import org.apache.ibatis.scripting.xmltags.XMLLanguageDriver;
+import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,12 +48,14 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -255,6 +262,186 @@ class ApprovalActionSecurityTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = { "ORDINARY", "BEFORE_SIGN", "AFTER_SIGN", "MULTI_SIGN" })
+    void resubmitOptionsOnlyIncludeThisRoundsRegularPrefixAndCurrentHost(String scenario) {
+        List<ApprovalRecordNode> nodes = new ArrayList<>();
+        ApprovalRecordNode prior = recordNode("node-1", "old-task");
+        prior.setNodeNumber("P" + "N001");
+        prior.setNodeName("主管审核");
+        if (!"BEFORE_SIGN".equals(scenario)) {
+            nodes.add(prior);
+        }
+        ApprovalRecordNode historicalSign = recordNode("node-1-SN0", "historical-sign");
+        historicalSign.setNodeNumber("P" + "N099");
+        nodes.add(historicalSign);
+        ApprovalRecordNode current = recordNode(task.getNodeId(), task.getId());
+        current.setNodeNumber("P" + "N002");
+        current.setNodeName("法务审核");
+        if ("BEFORE_SIGN".equals(scenario) || "AFTER_SIGN".equals(scenario)) {
+            task.setType(ApprovalTaskType.SN.name());
+            current.setNodeId(task.getNodeId() + "-SN1");
+        }
+        if ("AFTER_SIGN".equals(scenario)) {
+            ApprovalRecordNode host = recordNode(task.getNodeId(), "approved-host-task");
+            host.setNodeNumber("P" + "N002");
+            host.setNodeName("法务审核");
+            nodes.add(host);
+        }
+        if ("MULTI_SIGN".equals(scenario)) {
+            task.setType(ApprovalTaskType.SN.name());
+            current.setTaskNodes(List.of(ApprovalTaskNode.builder().taskId("host-task").build(),
+                    ApprovalTaskNode.builder().taskId(task.getId()).build()));
+        }
+        nodes.add(current);
+        ApprovalRecordNode future = recordNode("node-3", "future-task");
+        future.setNodeNumber("P" + "N003");
+        nodes.add(future);
+        prepareBackTarget("node-1", nodes);
+
+        List<ApprovalResubmitNodeResponse> options = service.getResubmitNodes(task.getId(), task.getApproverId(),
+                "org-1");
+
+        assertEquals("BEFORE_SIGN".equals(scenario) ? List.of("P" + "N002") : List.of("P" + "N001", "P" + "N002"),
+                options.stream().map(ApprovalResubmitNodeResponse::getNodeNumber).toList());
+        assertEquals("法务审核", options.getLast().getNodeName());
+        ArgumentCaptor<ApprovalInstance> copy = ArgumentCaptor.forClass(ApprovalInstance.class);
+        verify(instanceService).getHistoricalApprovalInstanceDetail(copy.capture(), eq("org-1"));
+        assertNotSame(instance, copy.getValue());
+        assertEquals("node-2", instance.getCurrentNodeId());
+        assertUnchanged();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "OTHER_USER", "OTHER_ORG", "NO_USER", "PENDING", "APPROVED", "UNAPPROVED", "CC",
+            "OLD_ROUND", "CLEARED_ROUND", "OTHER_NODE", "FINISHED" })
+    void resubmitOptionsRejectUnauthorizedAndInactiveTasks(String scenario) {
+        switch (scenario) {
+        case "NO_USER" -> task.setApproverId(null);
+        case "CC" -> task.setType(ApprovalTaskType.CC.name());
+        case "OLD_ROUND" -> task.setNodeRound(1);
+        case "CLEARED_ROUND" -> task.setNodeRound(-1);
+        case "OTHER_NODE" -> instance.setCurrentNodeId("other-node");
+        case "FINISHED" -> instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
+        case "PENDING", "APPROVED", "UNAPPROVED" -> task.setStatus(scenario);
+        default -> {
+        }
+        }
+
+        assertThrows(GenericException.class, () -> service.getResubmitNodes(task.getId(),
+                "OTHER_USER".equals(scenario) ? "other-user" : task.getApproverId(),
+                "OTHER_ORG".equals(scenario) ? "other-org" : "org-1"));
+
+        verifyNoInteractions(instanceService);
+        assertUnchanged();
+    }
+
+    @Test
+    void resubmitOptionsDoNotReturnAPrefixWhenCurrentTaskIsMissing() {
+        ApprovalRecordNode prior = recordNode("node-1", "old-task");
+        prior.setNodeNumber("P" + "N001");
+        prepareBackTarget("node-1", List.of(prior));
+
+        assertThrows(GenericException.class,
+                () -> service.getResubmitNodes(task.getId(), task.getApproverId(), "org-1"));
+
+        assertUnchanged();
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "NL,P" + "N001", "NL,P" + "N002", "SN,P" + "N001", "SN,P" + "N002" })
+    void rejectSavesRegularStartNodeAndMapsCurrentSignToItsHost(String type, String number) {
+        task.setType(type);
+        ApprovalRecordNode prior = recordNode("node-1", "old-task");
+        prior.setNodeNumber("P" + "N001");
+        ApprovalRecordNode current = recordNode(task.getNodeId() + ("SN".equals(type) ? "-SN0" : ""), task.getId());
+        current.setNodeNumber("P" + "N002");
+        prepareBackTarget("node-1", List.of(prior, current));
+        prepareReject();
+        ApprovalActionRequest request = rejectRequest(number);
+
+        service.reject(request, task.getApproverId(), "org-1");
+
+        assertEquals(number, instance.getResubmitStartNodeNumber());
+        assertEquals("node-2", instance.getCurrentNodeId());
+        verify(instanceService).rejectApprovalInstance(instance, task.getApproverId());
+        verify(recordMapper).insert(any());
+        verify(taskMapper, never()).insert(any());
+        verify(taskMapper, never()).batchInsert(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "FUTURE", "SIGN_ONLY", "MISSING" })
+    void rejectRefusesFutureAndHistoricalSignTargetsBeforeWriting(String scenario) {
+        ApprovalRecordNode current = recordNode(task.getNodeId(), task.getId());
+        current.setNodeNumber("P" + "N002");
+        ApprovalRecordNode target = recordNode("node-1", "old-task");
+        target.setNodeNumber("P" + "N001");
+        List<ApprovalRecordNode> nodes;
+        if ("FUTURE".equals(scenario)) {
+            nodes = List.of(current, target);
+        } else if ("SIGN_ONLY".equals(scenario)) {
+            target.setNodeId("node-1-SN0");
+            nodes = List.of(target, current);
+        } else {
+            nodes = List.of(current);
+        }
+        prepareBackTarget("node-1", nodes);
+
+        assertThrows(GenericException.class,
+                () -> service.reject(rejectRequest("P" + "N001"), task.getApproverId(), "org-1"));
+
+        assertEquals(ApprovalStatus.APPROVING.name(), task.getStatus());
+        assertUnchanged();
+        verify(extTaskMapper, never()).rejectPendingTask(any());
+    }
+
+    @Test
+    void rejectWithDefaultPathClearsThePreviousResubmitMarker() {
+        instance.setResubmitStartNodeNumber("P" + "N001");
+        prepareReject();
+
+        service.reject(rejectRequest(null), task.getApproverId(), "org-1");
+
+        assertEquals("", instance.getResubmitStartNodeNumber());
+        verify(instanceService, never()).getApprovalInstanceDetail(any(ApprovalInstance.class), any());
+        BaseMapper.UpdateSqlProvider provider = new BaseMapper.UpdateSqlProvider();
+        ReflectionTestUtils.setField(provider, "table", EntityTableMapper.extractTableInfo(ApprovalInstance.class));
+        var sql = new XMLLanguageDriver().createSqlSource(new Configuration(), provider.updateSQL(),
+                ApprovalInstance.class).getBoundSql(instance);
+        assertTrue(sql.getSql().contains("resubmit_start_node_number"));
+    }
+
+    private ApprovalActionRequest rejectRequest(String number) {
+        return ApprovalActionRequest.builder().id(task.getId()).instanceId(instance.getId())
+                .nodeId(task.getNodeId()).approverId(task.getApproverId()).resubmitStartNodeNumber(number).build();
+    }
+
+    @Test
+    void automaticRejectDoesNotReuseThisRoundsStartAsANewResubmitChoice() {
+        instance.setResubmitStartNodeNumber("P" + "N002");
+        ApprovalNodeResponse rejected = new ApprovalNodeResponse();
+        rejected.setId("auto-reject");
+        rejected.setNodeType("EXCEPTION");
+
+        ReflectionTestUtils.invokeMethod(service, "handleNextApprovalNode", rejected, instance,
+                task.getApproverId(), "org-1");
+
+        assertEquals(ApprovalStatus.UNAPPROVED.name(), instance.getApprovalStatus());
+        assertEquals("", instance.getResubmitStartNodeNumber());
+        verify(instanceMapper).updateById(instance);
+    }
+
+    private void prepareReject() {
+        instance.setResourceId("resource-1");
+        instance.setExecuteTime("CREATE");
+        when(extTaskMapper.rejectPendingTask(task)).thenReturn(1);
+        doNothing().when(service).loseCurrentNode(instance.getId(), task.getNodeId());
+        doNothing().when(service).revertFromSnapshot(FormKey.CONTRACT, "CREATE", "resource-1", task.getApproverId(),
+                "org-1");
+        doNothing().when(service).saveLogAndNotice(instance, task.getApproverId(), "org-1", ApprovalAction.REJECT);
+    }
+
+    @ParameterizedTest
     @ValueSource(ints = { -1, 1 })
     void revokeRejectsHistoricalRoundBeforeClearingFollowingTasks(int round) {
         task.setStatus(ApprovalStatus.APPROVED.name());
@@ -456,6 +643,8 @@ class ApprovalActionSecurityTest {
         ApprovalInstanceDetail detail = new ApprovalInstanceDetail();
         detail.setNodes(records);
         when(instanceService.getApprovalInstanceDetail(any(ApprovalInstance.class), eq("org-1"))).thenReturn(detail);
+        when(instanceService.getHistoricalApprovalInstanceDetail(any(ApprovalInstance.class), eq("org-1")))
+                .thenReturn(detail);
     }
 
     private ApprovalRecordNode recordNode(String nodeId, String taskId) {

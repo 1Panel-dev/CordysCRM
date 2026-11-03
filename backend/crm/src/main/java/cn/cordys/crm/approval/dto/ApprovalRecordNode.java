@@ -19,6 +19,9 @@ public class ApprovalRecordNode {
     @Schema(description = "节点ID")
     private String nodeId;
 
+    @Schema(description = "普通审批节点编号，加签节点返回宿主节点编号")
+    private String nodeNumber;
+
     @Schema(description = "节点名称")
     private String nodeName;
 
