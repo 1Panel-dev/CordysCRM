@@ -1,5 +1,4 @@
-import type { FormCreateField } from '@/components/business/crm-form-create/types';
-
+import type { FormCreateField } from '../crm-form-create/types';
 import { defaultFormulaConfig } from './config';
 import { FormulaDiagnostic } from './types';
 

@@ -76,6 +76,7 @@
     getFieldItemId,
     specialBusinessKeyMap,
   } from '@lib/shared/method/formCreate';
+  import { safeParseFormula } from '@cordys/web/src/components/business/crm-formula-editor/utils';
 
   const route = useRoute();
   const router = useRouter();
@@ -119,6 +120,15 @@
   const mobileFieldList = computed(() => {
     return fieldList.value.filter((item) => item.mobile !== false);
   });
+  const formulaDataSource = ref<Record<string, { parserName: boolean; options: Record<string, any>[] }>>({});
+  const evaluationNow = ref<Date | null>(new Date());
+  const formulaFormContext = computed(() => ({
+    fields: fieldList.value,
+    formulaDataSource: formulaDataSource.value,
+    evaluationNow: evaluationNow.value,
+  }));
+
+  provide('formFieldsProvider', readonly(formulaFormContext));
   const showChangeDescription = ref(false);
 
   function getItemComponent(item: FormCreateField) {
@@ -128,6 +138,9 @@
     }
     if (type === FieldTypeEnum.TEXTAREA) {
       return CrmFormCreateComponents.basicComponents.textarea;
+    }
+    if (type === FieldTypeEnum.FORMULA) {
+      return CrmFormCreateComponents.advancedComponents.formula;
     }
     if (type === FieldTypeEnum.INPUT_NUMBER) {
       return CrmFormCreateComponents.basicComponents.inputNumber;
@@ -211,18 +224,29 @@
         FieldTypeEnum.DEPARTMENT_MULTIPLE,
         FieldTypeEnum.DATA_SOURCE,
         FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        FieldTypeEnum.FORMULA,
         FieldTypeEnum.STATISTIC,
       ].includes(item.type)
     ) {
       extraProps.needInitDetail = route.query.needInitDetail === 'Y';
     }
 
-    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE, FieldTypeEnum.STATISTIC].includes(item.type)) {
+    if (
+      [
+        FieldTypeEnum.DATA_SOURCE,
+        FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        FieldTypeEnum.FORMULA,
+        FieldTypeEnum.STATISTIC,
+      ].includes(item.type)
+    ) {
       extraProps.formDetail = formDetail.value;
     }
 
-    if (item.type === FieldTypeEnum.STATISTIC) {
+    if ([FieldTypeEnum.FORMULA, FieldTypeEnum.STATISTIC].includes(item.type)) {
       extraProps.path = item.id;
+    }
+
+    if (item.type === FieldTypeEnum.STATISTIC) {
       extraProps.sourceId = route.query.id;
     }
 
@@ -235,6 +259,13 @@
     item: FormCreateField,
     dataSourceFormFields?: FormCreateField[]
   ) {
+    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
+      formulaDataSource.value[item.id] = {
+        parserName: true,
+        options: source,
+      };
+    }
+
     // 控制显示规则
     if (item.showControlRules?.length) {
       initFormShowControl();
@@ -254,6 +285,34 @@
             : getDisplayFieldText(field, fieldValue);
       });
     }
+  }
+
+  function initFormulaDataSourceRemark() {
+    formulaDataSource.value = {};
+    const fieldMap = new Map(fieldList.value.map((item) => [item.id, item]));
+
+    fieldList.value.forEach((item) => {
+      if (![FieldTypeEnum.FORMULA, FieldTypeEnum.INPUT, FieldTypeEnum.SERIAL_NUMBER].includes(item.type)) return;
+
+      const { fields } = safeParseFormula(item.formula ?? '');
+      fields?.forEach((formulaField: { fieldId: string; fieldType: FieldTypeEnum }) => {
+        const targetField = fieldMap.get(formulaField.fieldId);
+        let options: Record<string, any>[] | undefined;
+
+        if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(formulaField.fieldType)) {
+          options = isEdit.value ? targetField?.initialOptions ?? [] : [];
+        } else if (formulaField.fieldType === FieldTypeEnum.SELECT) {
+          options = targetField?.options ?? [];
+        }
+
+        if (options) {
+          formulaDataSource.value[formulaField.fieldId] = {
+            parserName: true,
+            options,
+          };
+        }
+      });
+    });
   }
 
   function buildSavePayload() {
@@ -324,9 +383,11 @@
   onBeforeMount(async () => {
     initApprovalReviewConfig();
     await initFormConfig();
+    initFormulaDataSourceRemark();
     if (route.query.id && route.query.needInitDetail === 'Y') {
       // 编辑页需要等详情和 originFormDetail 初始化完成，否则保存校验可能拿不到旧值而误触发 repeat 接口。
       await initFormDetail();
+      initFormulaDataSourceRemark();
     }
   });
 

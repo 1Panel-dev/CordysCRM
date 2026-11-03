@@ -1,8 +1,7 @@
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
-import { FormCreateField } from '@/components/business/crm-form-create/types';
-import { safeParseFormula } from '@/components/business/crm-formula-editor/utils';
-
+import { FormCreateField } from '../../../crm-form-create/types';
+import { safeParseFormula } from '../../../crm-formula-editor/utils';
 import { flatAllFields, getFormulaDataSourceDisplayValue, hydrateIRNumberType, keepDecimal } from '../../utils';
 import registerBuiltinFunctions from '../functions';
 import { FieldMeta, FieldTypeMap, FormulaExecutorContext, FormulaExecutorResult, ValueType } from '../types';

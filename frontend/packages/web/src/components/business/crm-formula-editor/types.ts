@@ -1,4 +1,4 @@
-import { IRNode } from '@/components/business/crm-formula/formula-runtime/types';
+import { IRNode } from '../crm-formula/formula-runtime/types';
 
 // ----token类型----
 export type TokenType =

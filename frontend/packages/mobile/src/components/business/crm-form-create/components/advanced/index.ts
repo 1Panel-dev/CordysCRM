@@ -1,5 +1,6 @@
 import dataSource from './dataSource.vue';
 import file from './file.vue';
+import formula from './formula.vue';
 import industry from './industry.vue';
 import link from './link.vue';
 import location from './location.vue';
@@ -13,6 +14,7 @@ export default {
   serialNumber,
   location,
   dataSource,
+  formula,
   upload,
   link,
   file,
