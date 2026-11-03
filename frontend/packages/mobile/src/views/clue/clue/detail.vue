@@ -32,6 +32,12 @@
         />
         <CrmHeaderList v-else-if="tab.name === 'header'" :load-list-api="getClueHeaderList" :source-id="sourceId" />
         <transitionRecord v-else-if="tab.name === 'transitionRecord'" :source-id="sourceId" />
+        <CrmChangeRecord
+          v-else-if="tab.name === 'changeRecord'"
+          :source-id="sourceId"
+          :form-key="FormDesignKeyEnum.CLUE"
+          :title="tab.title"
+        />
         <div v-else-if="tab.name === 'approval'" class="flex h-full bg-[var(--text-n9)] p-[16px]">
           <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
             <CrmApprovalLine
@@ -111,6 +117,7 @@
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import transitionRecord from './transitionRecord.vue';
 
   import { deleteClue, getApprovalResourceDetail, getClueHeaderList } from '@/api/modules';
@@ -158,15 +165,26 @@
           },
         ]
       : []),
+    ...(changeRecordTab.value
+      ? [
+          {
+            name: 'changeRecord',
+            title: changeRecordTab.value.name || t('common.changeRecord'),
+          },
+        ]
+      : []),
   ]);
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { sourceName, descriptions, detail, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, detail, formConfig, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CLUE,
     sourceId,
     needInitDetail: true,
   });
+  const changeRecordTab = computed(() =>
+    formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
+  );
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CLUE,
   });

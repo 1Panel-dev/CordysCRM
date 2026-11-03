@@ -55,6 +55,12 @@
           :readonly="readonly"
           :initial-source-name="initialSourceName"
         />
+        <CrmChangeRecord
+          v-else-if="tab.name === 'changeRecord'"
+          :source-id="sourceId"
+          :form-key="FormDesignKeyEnum.BUSINESS"
+          :title="tab.title"
+        />
         <div v-else-if="tab.name === 'approval'" class="flex h-full bg-[var(--text-n9)] p-[16px]">
           <div class="flex h-full min-h-0 w-full flex-col gap-[12px]">
             <CrmApprovalLine
@@ -135,6 +141,7 @@
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
+  import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
 
   import { deleteOpt, getApprovalResourceDetail, getOpportunityStageConfig } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
@@ -177,6 +184,14 @@
           },
         ]
       : []),
+    ...(changeRecordTab.value
+      ? [
+          {
+            name: 'changeRecord',
+            title: changeRecordTab.value.name || t('common.changeRecord'),
+          },
+        ]
+      : []),
   ]);
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
@@ -189,11 +204,14 @@
       console.log(error);
     }
   }
-  const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+  const { descriptions, formConfig, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: FormDesignKeyEnum.BUSINESS,
     sourceId,
     needInitDetail: true,
   });
+  const changeRecordTab = computed(() =>
+    formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
+  );
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.BUSINESS,
   });
