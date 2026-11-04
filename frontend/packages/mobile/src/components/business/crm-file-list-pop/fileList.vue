@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-[8px] px-[16px] pb-[16px]">
+  <div class="flex flex-col gap-[8px]" :class="props.embedded ? '' : 'px-[16px] pb-[16px]'">
     <div v-for="file in props.fileList" :key="file.id" class="crm-file-item">
       <CrmFileIcon :name="file.name" width="24px" height="24px" @click="handlePreview(file)" />
       <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
@@ -42,6 +42,7 @@
 
   const props = defineProps<{
     fileList: AttachmentInfo[];
+    embedded?: boolean;
   }>();
 
   const { t } = useI18n();

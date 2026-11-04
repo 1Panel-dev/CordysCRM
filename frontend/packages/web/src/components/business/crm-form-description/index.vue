@@ -184,13 +184,17 @@
         </div>
       </template>
       <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
-        <div class="field-line flex w-full items-center">
-          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+        <div class="field-line flex w-full items-start">
+          <div class="mr-[16px] shrink-0 text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
-          <n-button v-if="item.value.length > 0" type="primary" text @click="openFileListModal(item)">
-            {{ t('crm.formDescription.attachmentTip', { count: item.value.length }) }}
-          </n-button>
+          <CrmFileList
+            v-if="Array.isArray(item.value) && item.value.length"
+            class="flex-1 overflow-hidden"
+            :files="item.value as AttachmentInfo[]"
+            :readonly="props.readonly"
+            @delete-file="handleDeleteFile(item, $event)"
+          />
           <div v-else>-</div>
         </div>
       </template>
@@ -257,12 +261,6 @@
       </template>
     </CrmDescription>
   </n-spin>
-  <CrmFileListModal
-    v-model:show="showFileListModal"
-    :readonly="props.readonly"
-    :files="activeFileList"
-    @delete-file="handleDeleteFile"
-  />
   <businessTitleDrawer
     v-if="isInitBusinessTitleDetail"
     v-model:visible="showBusinessTitleDetail"
@@ -287,10 +285,10 @@
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
-  import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
+  import CrmFileList from '@/components/business/crm-file-list/index.vue';
   import CrmDateTime from '@/components/business/crm-form-create/components/basic/dateTime.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
-  import { AttachmentInfo, type FormCreateField } from '@/components/business/crm-form-create/types';
+  import type { AttachmentInfo, FormCreateField } from '@/components/business/crm-form-create/types';
   import type { FormulaDataSourceMap } from '@/components/business/crm-formula/formula-runtime/types.js';
   import { safeParseFormula } from '@/components/business/crm-formula-editor/utils.js';
   import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
@@ -407,9 +405,13 @@
         // 独占一行
         if (
           item.fieldInfo &&
-          [FieldTypeEnum.TEXTAREA, FieldTypeEnum.DIVIDER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
-            item.fieldInfo?.type
-          )
+          [
+            FieldTypeEnum.TEXTAREA,
+            FieldTypeEnum.DIVIDER,
+            FieldTypeEnum.ATTACHMENT,
+            FieldTypeEnum.SUB_PRICE,
+            FieldTypeEnum.SUB_PRODUCT,
+          ].includes(item.fieldInfo?.type)
         ) {
           const extraClass = props.column && props.column > 1 ? '!w-full' : '';
           return {
@@ -611,25 +613,11 @@
     }
   }
 
-  const showFileListModal = ref(false);
-  const activeFileList = ref<AttachmentInfo[]>([]);
-  const activeDescItem = ref<Description>();
-  function openFileListModal(item: Description) {
-    showFileListModal.value = true;
-    activeFileList.value = (item.value as AttachmentInfo[]) || [];
-    activeDescItem.value = item;
-  }
-
-  function handleDeleteFile(id: string) {
-    activeFileList.value = activeFileList.value.filter((file) => file.id !== id);
-    if (activeDescItem.value) {
-      activeDescItem.value.value = (activeDescItem.value?.value as AttachmentInfo[])?.filter(
-        (file: AttachmentInfo) => file.id !== id
-      );
-    }
-    formDetail.value[activeDescItem.value?.fieldInfo?.id || ''] = formDetail.value[
-      activeDescItem.value?.fieldInfo?.id || ''
-    ].filter((e: string) => e !== id);
+  function handleDeleteFile(item: Description, id: string) {
+    item.value = (item.value as AttachmentInfo[]).filter((file) => file.id !== id);
+    const fieldId = item.fieldInfo?.id;
+    if (!fieldId) return;
+    formDetail.value[fieldId] = formDetail.value[fieldId].filter((attachmentId: string) => attachmentId !== id);
     handleFormChange();
   }
 
