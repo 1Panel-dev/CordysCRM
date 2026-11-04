@@ -32,7 +32,7 @@ public class ApprovalActionController {
     private ApprovalActionService approvalActionService;
 
     @GetMapping("/resubmit-nodes/{taskId}")
-    @Operation(summary = "查询本轮可指定的重审节点")
+    @Operation(summary = "查询本轮可指定的重审节点", description = "首项 nodeName 为本轮审批实例提交人的姓名，nodeNumber 为空字符串；选择该项时 resubmitStartNodeNumber 传空字符串，表示整单重审")
     public List<ApprovalResubmitNodeResponse> getResubmitNodes(
             @Parameter(description = "当前审批任务ID", required = true)
             @PathVariable String taskId) {
