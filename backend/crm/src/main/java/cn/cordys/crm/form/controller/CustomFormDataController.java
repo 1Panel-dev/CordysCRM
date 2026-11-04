@@ -160,13 +160,16 @@ public class CustomFormDataController {
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入预检查")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public ImportResponse importPreCheck(@Validated @RequestPart("request") CustomerFormImportRequest request,
             @RequestPart(value = "file") MultipartFile file) {
-        return customFormDataService.importPreCheck(file, request, OrganizationContext.getOrganizationId());
+        return customFormDataService.importPreCheck(file, request, OrganizationContext.getOrganizationId(),
+                SessionUtils.getUserId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入表单数据")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public ImportResponse realImport(@Validated @RequestPart("request") CustomerFormImportRequest request,
             @RequestPart(value = "file") MultipartFile file) {
         return customFormDataService.realImport(file, request,

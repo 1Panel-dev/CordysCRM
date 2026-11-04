@@ -817,11 +817,15 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         logService.batchAdd(logs);
     }
 
-    private void checkWritePermission(CustomFormRoleKey dataScope, String owner, String currentUserId) {
+    private boolean hasWritePermission(CustomFormRoleKey dataScope, String owner, String currentUserId) {
         if (dataScope == CustomFormRoleKey.VIEW_ALL) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            return false;
         }
-        if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(owner, currentUserId)) {
+        return dataScope != CustomFormRoleKey.MANAGE_OWN || StringUtils.equals(owner, currentUserId);
+    }
+
+    private void checkWritePermission(CustomFormRoleKey dataScope, String owner, String currentUserId) {
+        if (!hasWritePermission(dataScope, owner, currentUserId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
     }
@@ -962,15 +966,28 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     /**
      * 导入预检查
      *
-     * @param file  导入文件
-     * @param orgId 组织ID
+     * @param file   导入文件
+     * @param orgId  组织ID
+     * @param userId 用户ID
      * @return 导入检查信息
      */
-    public ImportResponse importPreCheck(MultipartFile file, CustomerFormImportRequest request, String orgId) {
+    public ImportResponse importPreCheck(MultipartFile file, CustomerFormImportRequest request, String orgId,
+            String userId) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));
         }
+        checkImportPermission(request, userId, orgId);
         return checkImportExcel(file, request, orgId);
+    }
+
+    /**
+     * 导入权限校验: 仅表单成员可导入, 新建导入需要创建权限
+     */
+    private void checkImportPermission(CustomerFormImportRequest request, String userId, String orgId) {
+        CustomFormRoleKey dataScope = getManageDataScope(request.getCustomFormId(), userId, orgId);
+        if (Strings.CI.equals(request.getImportType(), ImportType.ADD.name())) {
+            checkCreatePermission(dataScope);
+        }
     }
 
     /**
@@ -984,6 +1001,11 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, CustomerFormImportRequest request, String orgId,
             String userId) {
+        // 导入权限: 仅表单成员可导入, 新建导入需要创建权限
+        CustomFormRoleKey importDataScope = getManageDataScope(request.getCustomFormId(), userId, orgId);
+        if (Strings.CI.equals(request.getImportType(), ImportType.ADD.name())) {
+            checkCreatePermission(importDataScope);
+        }
         try {
             CustomFormDataFieldService.setFormKey(request.getCustomFormId());
             List<BaseField> fields = moduleFormService.getAllFields(request.getCustomFormId(), orgId);
@@ -1041,10 +1063,26 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                     if (CollectionUtils.isEmpty(originList)) {
                         break;
                     }
+                    // 只更新有写权限的记录, 无权限的直接跳过
+                    Set<String> permittedIds = originList.stream()
+                            .filter(origin -> hasWritePermission(importDataScope, origin.getOwner(), userId))
+                            .map(CustomFormData::getId)
+                            .collect(Collectors.toSet());
+                    if (CollectionUtils.isEmpty(permittedIds)) {
+                        break;
+                    }
+                    List<String> permittedIdList = new ArrayList<>(permittedIds);
+                    List<CustomFormData> updateDataList = dataList.stream()
+                            .filter(data -> permittedIds.contains(data.getId())).toList();
+                    List<BaseResourceSubField> updateFieldList = fieldList.stream()
+                            .filter(field -> permittedIds.contains(field.getResourceId())).toList();
+                    List<BaseResourceSubField> updateFieldBlobList = fieldBlobList.stream()
+                            .filter(field -> permittedIds.contains(field.getResourceId())).toList();
                     Map<String, CustomFormData> originMaps = originList.stream()
+                            .filter(origin -> permittedIds.contains(origin.getId()))
                             .collect(Collectors.toMap(CustomFormData::getId, Function.identity()));
                     Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customFormDataFieldService
-                            .getResourceFieldMap(ids, true);
+                            .getResourceFieldMap(permittedIdList, true);
 
                     List<CustomFormDataField> insertField = new ArrayList<>();
                     List<CustomFormDataFieldBlob> insertFieldBlob = new ArrayList<>();
@@ -1052,8 +1090,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                     ExtCustomFormDataMapper batchMapper = sqlSession.getMapper(ExtCustomFormDataMapper.class);
                     CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
                     //更新
-                    if (CollectionUtils.isNotEmpty(dataList)) {
-                        dataList.forEach(data -> {
+                    if (CollectionUtils.isNotEmpty(updateDataList)) {
+                        updateDataList.forEach(data -> {
                             data.setCustomFormId(request.getCustomFormId());
                             data.setOrganizationId(orgId);
                             if (StringUtils.isBlank(data.getOwner())) {
@@ -1063,12 +1101,12 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                         });
                     }
 
-                    if (CollectionUtils.isNotEmpty(fieldList)) {
+                    if (CollectionUtils.isNotEmpty(updateFieldList)) {
                         List<CustomFormDataField> formFieldList = customFormDataFieldMapper
-                                .selectByIds(fieldList.stream().map(BaseResourceSubField::getId).toList());
+                                .selectByIds(updateFieldList.stream().map(BaseResourceSubField::getId).toList());
                         Map<String, CustomFormDataField> fieldMap = formFieldList.stream()
                                 .collect(Collectors.toMap(CustomFormDataField::getId, Function.identity()));
-                        fieldList.forEach(field -> {
+                        updateFieldList.forEach(field -> {
                             if (fieldMap.containsKey(field.getId())) {
                                 commonMapper.updateCustomerField("custom_form_data_field", field);
                             } else {
@@ -1077,12 +1115,12 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                         });
                     }
 
-                    if (CollectionUtils.isNotEmpty(fieldBlobList)) {
+                    if (CollectionUtils.isNotEmpty(updateFieldBlobList)) {
                         List<CustomFormDataFieldBlob> blobList = customFormDataFieldBlobMapper
-                                .selectByIds(fieldBlobList.stream().map(BaseResourceSubField::getId).toList());
+                                .selectByIds(updateFieldBlobList.stream().map(BaseResourceSubField::getId).toList());
                         Map<String, CustomFormDataFieldBlob> blobMap = blobList.stream()
                                 .collect(Collectors.toMap(CustomFormDataFieldBlob::getId, Function.identity()));
-                        fieldBlobList.forEach(fieldBlob -> {
+                        updateFieldBlobList.forEach(fieldBlob -> {
                             if (blobMap.containsKey(fieldBlob.getId())) {
                                 commonMapper.updateCustomerField("custom_form_data_field_blob", fieldBlob);
                             } else {
@@ -1094,23 +1132,23 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                     sqlSession.flushStatements();
                     SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
 
-                    if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(insertField)) {
+                    if (CollectionUtils.isNotEmpty(insertField)) {
                         customFormDataFieldMapper.batchInsert(insertField);
                     }
-                    if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
                         customFormDataFieldBlobMapper.batchInsert(insertFieldBlob);
                     }
 
                     SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
                     currentSession.clearCache();
 
-                    Map<String, CustomFormData> modifiedMaps = customFormDataMapper.selectByIds(ids).stream()
+                    Map<String, CustomFormData> modifiedMaps = customFormDataMapper.selectByIds(permittedIdList).stream()
                             .collect(Collectors.toMap(CustomFormData::getId, Function.identity()));
                     Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customFormDataFieldService
-                            .getResourceFieldMap(ids, true);
+                            .getResourceFieldMap(permittedIdList, true);
 
                     //日志
-                    ids.forEach(id -> {
+                    permittedIdList.forEach(id -> {
                         CustomFormData originDate = originMaps.get(id);
                         CustomFormData modifiedDate = modifiedMaps.get(id);
                         baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
