@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
@@ -301,12 +302,16 @@ class ApprovalActionSecurityTest {
         List<ApprovalResubmitNodeResponse> options = service.getResubmitNodes(task.getId(), task.getApproverId(),
                 "org-1");
 
-        assertEquals("BEFORE_SIGN".equals(scenario) ? List.of("P" + "N002") : List.of("P" + "N001", "P" + "N002"),
+        assertEquals("BEFORE_SIGN".equals(scenario)
+                        ? List.of("", "P" + "N002") : List.of("", "P" + "N001", "P" + "N002"),
                 options.stream().map(ApprovalResubmitNodeResponse::getNodeNumber).toList());
+        assertEquals("张三", options.getFirst().getNodeName());
         assertEquals("法务审核", options.getLast().getNodeName());
         ArgumentCaptor<ApprovalInstance> copy = ArgumentCaptor.forClass(ApprovalInstance.class);
         verify(instanceService).getHistoricalApprovalInstanceDetail(copy.capture(), eq("org-1"));
         assertNotSame(instance, copy.getValue());
+        assertEquals(instance.getId(), copy.getValue().getId());
+        assertEquals(instance.getSubmitterId(), copy.getValue().getSubmitterId());
         assertEquals("node-2", instance.getCurrentNodeId());
         assertUnchanged();
     }
@@ -395,15 +400,17 @@ class ApprovalActionSecurityTest {
         verify(extTaskMapper, never()).rejectPendingTask(any());
     }
 
-    @Test
-    void rejectWithDefaultPathClearsThePreviousResubmitMarker() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    void rejectWithDefaultPathClearsThePreviousResubmitMarker(String number) {
         instance.setResubmitStartNodeNumber("P" + "N001");
         prepareReject();
 
-        service.reject(rejectRequest(null), task.getApproverId(), "org-1");
+        service.reject(rejectRequest(number), task.getApproverId(), "org-1");
 
         assertEquals("", instance.getResubmitStartNodeNumber());
-        verify(instanceService, never()).getApprovalInstanceDetail(any(ApprovalInstance.class), any());
+        verify(instanceService, never()).getHistoricalApprovalInstanceDetail(any(ApprovalInstance.class), any());
         BaseMapper.UpdateSqlProvider provider = new BaseMapper.UpdateSqlProvider();
         ReflectionTestUtils.setField(provider, "table", EntityTableMapper.extractTableInfo(ApprovalInstance.class));
         var sql = new XMLLanguageDriver().createSqlSource(new Configuration(), provider.updateSQL(),
@@ -641,6 +648,7 @@ class ApprovalActionSecurityTest {
         node.setNodeType("APPROVER");
         when(nodeMapper.selectByPrimaryKey(nodeId)).thenReturn(node);
         ApprovalInstanceDetail detail = new ApprovalInstanceDetail();
+        detail.setSubmitter("张三");
         detail.setNodes(records);
         when(instanceService.getApprovalInstanceDetail(any(ApprovalInstance.class), eq("org-1"))).thenReturn(detail);
         when(instanceService.getHistoricalApprovalInstanceDetail(any(ApprovalInstance.class), eq("org-1")))

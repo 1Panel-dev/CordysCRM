@@ -662,6 +662,7 @@ public class ApprovalActionService {
         ApprovalInstanceDetail detail = approvalInstanceService.getHistoricalApprovalInstanceDetail(
                 BeanUtils.copyBean(new ApprovalInstance(), instance), orgId);
         Map<String, ApprovalResubmitNodeResponse> nodes = new LinkedHashMap<>();
+        nodes.put("", new ApprovalResubmitNodeResponse("", detail.getSubmitter()));
         for (ApprovalRecordNode node : detail.getNodes()) {
             boolean current = CollectionUtils.isNotEmpty(node.getTaskNodes()) && node.getTaskNodes().stream()
                     .anyMatch(task -> Objects.equals(task.getTaskId(), taskId));

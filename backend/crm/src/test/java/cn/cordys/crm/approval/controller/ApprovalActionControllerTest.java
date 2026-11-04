@@ -30,7 +30,8 @@ class ApprovalActionControllerTest {
         ReflectionTestUtils.setField(controller, "approvalActionService", service);
         MockMvc mvc = MockMvcBuilders.standaloneSetup(controller).build();
         when(service.getResubmitNodes("task-1", "user-1", "org-1"))
-                .thenReturn(List.of(new ApprovalResubmitNodeResponse("P" + "N052", "法务审核")));
+                .thenReturn(List.of(new ApprovalResubmitNodeResponse("", "张三"),
+                        new ApprovalResubmitNodeResponse("P" + "N052", "法务审核")));
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
                 var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-1");
@@ -38,9 +39,11 @@ class ApprovalActionControllerTest {
 
             mvc.perform(get("/approval-action/resubmit-nodes/task-1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.length()").value(1))
-                    .andExpect(jsonPath("$[0].nodeNumber").value("P" + "N052"))
-                    .andExpect(jsonPath("$[0].nodeName").value("法务审核"));
+                    .andExpect(jsonPath("$.length()").value(2))
+                    .andExpect(jsonPath("$[0].nodeNumber").value(""))
+                    .andExpect(jsonPath("$[0].nodeName").value("张三"))
+                    .andExpect(jsonPath("$[1].nodeNumber").value("P" + "N052"))
+                    .andExpect(jsonPath("$[1].nodeName").value("法务审核"));
 
             verify(service).getResubmitNodes("task-1", "user-1", "org-1");
         }
