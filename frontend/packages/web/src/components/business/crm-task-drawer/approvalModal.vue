@@ -42,7 +42,7 @@
   import { NTooltip, type UploadFileInfo, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalDetail, ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
+  import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
 
   import ApprovalOpinionModal from '@/components/business/crm-approval/components/approvalOpinionModal.vue';
 
@@ -51,7 +51,6 @@
     batchAgreeApproval,
     batchRejectApproval,
     getApprovalConfigDetail,
-    getApprovalResourceDetail,
     getApprovalResubmitNodes,
     rejectApproval,
   } from '@/api/modules/index';
@@ -205,31 +204,11 @@
   async function loadResubmitNodeOptions(taskId: string) {
     try {
       const nodes = await getApprovalResubmitNodes(taskId);
-      let approvalDetail: ApprovalDetail | undefined;
-      try {
-        if (props.approvalItem?.resourceId) {
-          approvalDetail = await getApprovalResourceDetail(
-            props.approvalItem.resourceId,
-            props.approvalItem.commentMentionId
-          );
-        }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-      }
-
-      resubmitNodeOptions.value = nodes.map((node) => {
-        const approvalNode = approvalDetail?.nodes.find((item) => item.nodeName === node.nodeName);
+      resubmitNodeOptions.value = nodes.map((node, index) => {
         let tag: 'current' | 'submitter' | undefined;
-        if (
-          node.nodeNumber === props.approvalItem?.approvalNodeNumber ||
-          approvalNode?.nodeId === approvalDetail?.currentNodeId
-        ) {
+        if (node.nodeNumber && node.nodeNumber === props.approvalItem?.approvalNodeNumber) {
           tag = 'current';
-        } else if (
-          approvalNode?.approverId === approvalDetail?.submitterId ||
-          approvalNode?.taskNodes?.some((taskNode) => taskNode.approverId === approvalDetail?.submitterId)
-        ) {
+        } else if (index === 0 && !node.nodeNumber) {
           tag = 'submitter';
         }
         return { label: node.nodeName, value: node.nodeNumber, tag };
