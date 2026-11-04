@@ -58,6 +58,8 @@
         ai.approval_status AS dataResult,
         at.id AS approvalTaskId,
         at.node_id AS approvalNodeId,
+        an.name AS approvalNodeName,
+        an.number AS approvalNodeNumber,
         at.instance_id AS approvalInstanceId,
         at.approver_id AS approvalId,
         afv.flow_id AS approvalFlowId,
@@ -65,6 +67,7 @@
         FROM approval_task at
         INNER JOIN approval_instance ai ON ai.id = at.instance_id
         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+        LEFT JOIN approval_node an ON an.id = at.node_id AND an.flow_version_id = ai.flow_version_id
         LEFT JOIN sys_user u ON u.id = ai.submitter_id
         WHERE at.approver_id = #{approverId}
         AND at.status = #{pendingStatus}

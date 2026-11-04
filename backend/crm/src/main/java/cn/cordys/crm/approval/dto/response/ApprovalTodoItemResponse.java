@@ -48,6 +48,12 @@ public class ApprovalTodoItemResponse {
     @Schema(description = "审批节点ID")
     private String approvalNodeId;
 
+    @Schema(description = "审批任务所属节点名称，加签任务返回宿主节点名称，仅待我审批列表返回")
+    private String approvalNodeName;
+
+    @Schema(description = "审批任务所属节点编号，加签任务返回宿主节点编号，仅待我审批列表返回")
+    private String approvalNodeNumber;
+
     @Schema(description = "审批实例ID")
     private String approvalInstanceId;
 
