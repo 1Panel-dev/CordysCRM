@@ -14,6 +14,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,7 +73,7 @@ public class OpportunityStageController {
     @PostMapping("/sort")
     @Operation(summary = "商机阶段排序")
     @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-    public void sort(@RequestBody List<String> ids) {
+    public void sort(@RequestBody @NotEmpty List<String> ids) {
         opportunityStageService.sort(ids, OrganizationContext.getOrganizationId());
     }
 

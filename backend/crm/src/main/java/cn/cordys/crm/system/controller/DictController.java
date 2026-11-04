@@ -46,14 +46,14 @@ public class DictController {
     @PostMapping("/add")
     @Operation(summary = "添加字典值")
     @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
-    public void addDict(@RequestBody DictAddRequest request) {
+    public void addDict(@Validated @RequestBody DictAddRequest request) {
         dictService.addDict(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "修改字典值")
     @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
-    public void updateDict(@RequestBody DictUpdateRequest request) {
+    public void updateDict(@Validated @RequestBody DictUpdateRequest request) {
         dictService.updateDict(request, SessionUtils.getUserId());
     }
 
@@ -67,7 +67,7 @@ public class DictController {
     @PostMapping("/switch")
     @Operation(summary = "字典开启关闭")
     @RequiresPermissions(value = { PermissionConstants.MODULE_SETTING_UPDATE })
-    public void switchDict(@RequestBody DictSwitchRequest request) {
+    public void switchDict(@Validated @RequestBody DictSwitchRequest request) {
         dictService.switchDict(request, OrganizationContext.getOrganizationId());
     }
 

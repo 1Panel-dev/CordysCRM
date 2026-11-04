@@ -131,7 +131,7 @@ public class OpportunityController {
     @PostMapping("/batch/transfer")
     @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "批量转移商机")
-    public BatchAffectReasonResponse batchTransfer(@RequestBody OpportunityBatchTransferRequest request) {
+    public BatchAffectReasonResponse batchTransfer(@Validated @RequestBody OpportunityBatchTransferRequest request) {
         return opportunityService.batchTransfer(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
     }

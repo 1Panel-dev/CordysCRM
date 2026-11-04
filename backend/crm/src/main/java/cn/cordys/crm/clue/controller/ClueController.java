@@ -50,7 +50,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -148,7 +148,7 @@ public class ClueController {
     @PostMapping("/batch/transfer")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "批量转移线索")
-    public BatchAffectReasonResponse batchTransfer(@RequestBody ClueBatchTransferRequest request) {
+    public BatchAffectReasonResponse batchTransfer(@Validated @RequestBody ClueBatchTransferRequest request) {
         return clueService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -175,14 +175,14 @@ public class ClueController {
     @PostMapping("/batch/delete")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "批量删除线索")
-    public void batchDelete(@RequestBody @NotNull List<String> ids) {
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
         clueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/to-pool")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_RECYCLE, resourceId = "{#request.ids}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "批量移入线索池")
-    public BatchAffectResponse batchToPool(@RequestBody BatchPoolReasonRequest request) {
+    public BatchAffectResponse batchToPool(@Validated @RequestBody BatchPoolReasonRequest request) {
         return clueService.batchToPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

@@ -26,6 +26,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -109,7 +110,7 @@ public class CustomFormDataController {
     @PostMapping("/batch/delete")
     @Operation(summary = "批量删除表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public void batchDelete(@RequestBody List<String> ids) {
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
         customFormDataService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

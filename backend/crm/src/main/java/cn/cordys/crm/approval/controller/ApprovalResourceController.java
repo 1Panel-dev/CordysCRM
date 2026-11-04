@@ -45,7 +45,7 @@ public class ApprovalResourceController {
 
     @PostMapping("/push")
     @Operation(summary = "提审")
-    public void push(@RequestBody ApprovalResourceBaseParam param) {
+    public void push(@Validated @RequestBody ApprovalResourceBaseParam param) {
         approvalResourceService.manualPush(param, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -58,7 +58,7 @@ public class ApprovalResourceController {
 
     @PostMapping("/revoke")
     @Operation(summary = "撤销")
-    public void revoke(@RequestBody ApprovalResourceBaseParam param) {
+    public void revoke(@Validated @RequestBody ApprovalResourceBaseParam param) {
         approvalResourceService.revoke(param, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
