@@ -554,7 +554,10 @@ public class ApprovalResourceService {
             return;
         }
         ApprovalFlow flow = approvalFlowService.getEnabledFlow(param.getFormKey(), orgId);
-        if (flow == null || !Boolean.TRUE.equals(flow.getCreateExecute()) || Boolean.TRUE.equals(state.getApproved())
+        if (flow == null) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        if (!Boolean.TRUE.equals(flow.getCreateExecute()) || Boolean.TRUE.equals(state.getApproved())
                 || !Strings.CS.equalsAny(state.getApprovalStatus(), ApprovalStatus.PENDING.name(),
                         ApprovalStatus.UNAPPROVED.name(), ApprovalStatus.REVOKED.name())) {
             throw new GenericException(Translator.get("no.operation.permission"));
