@@ -1,6 +1,12 @@
 <template>
   <CrmPageWrapper :title="route.query.name?.toString() || ''">
-    <van-tabs v-model:active="activeTab" border class="detail-tabs">
+    <van-tabs
+      v-model:active="activeTab"
+      border
+      :ellipsis="false"
+      class="detail-tabs"
+      :class="{ 'detail-tabs--single': tabList.length === 1 }"
+    >
       <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
         <template #title>
           <div class="text-[16px]" :class="activeTab === tab.name ? 'text-[var(--primary-8)]' : ''">
@@ -150,6 +156,14 @@
   }
   .detail-tabs {
     @apply flex-1 overflow-hidden;
+    &.detail-tabs--single {
+      :deep(.van-tabs__wrap) {
+        display: none;
+      }
+      :deep(.van-tabs__content) {
+        height: 100%;
+      }
+    }
     :deep(.van-tabs__content) {
       height: calc(100% - var(--van-tabs-line-height));
       .van-tab__panel {

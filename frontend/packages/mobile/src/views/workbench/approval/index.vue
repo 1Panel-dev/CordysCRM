@@ -71,6 +71,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ApprovalFieldPermissionModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { FormConfig } from '@lib/shared/models/system/module';
   import type {
     ApprovalDetail,
     ApprovalFieldPermission,
@@ -86,6 +87,8 @@
   import CrmApprovalRecordActions from '@/components/business/crm-approval/crm-approval-record-actions.vue';
   import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import resolveApprovalActionPermission from '@/components/business/crm-approval/approvalActionPermission';
+
+  import { getFormConfigApiMap } from '@cordys/web/src/components/business/crm-form-create/config';
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -107,7 +110,7 @@
     }
   });
 
-  const { sourceName, descriptions, detail, formConfig, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, detail, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: routeFormKey.value,
     sourceId,
     needInitDetail: true,
@@ -118,8 +121,9 @@
     customFormId,
   });
 
+  const detailTabFormConfig = ref<FormConfig>();
   const changeRecordTab = computed(() =>
-    formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
+    detailTabFormConfig.value?.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
   );
   const tabList = computed(() => [
     {
@@ -149,6 +153,18 @@
       if (approvalFormKey.value) {
         approvalConfig.value = await getApprovalConfigDetail(approvalFormKey.value);
       }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function initDetailTabConfig() {
+    const api = getFormConfigApiMap[approvalFormKey.value as FormDesignKeyEnum];
+    if (!api) return;
+    try {
+      const config = await api();
+      detailTabFormConfig.value = config.formProp;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -230,6 +246,7 @@
 
   function refresh() {
     initApprovalConfig();
+    initDetailTabConfig();
     initFormDescription();
     initApprovalDetail();
   }
@@ -237,6 +254,7 @@
   onBeforeMount(async () => {
     initApprovalConfig();
     await initFormConfig();
+    await initDetailTabConfig();
     initFormDescription();
     initApprovalDetail();
   });
