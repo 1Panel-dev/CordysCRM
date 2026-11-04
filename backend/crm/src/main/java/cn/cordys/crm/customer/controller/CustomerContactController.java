@@ -38,7 +38,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -163,7 +163,7 @@ public class CustomerContactController {
     @PostMapping("/batch/delete")
     @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CONTACT)
     @Operation(summary = "批量删除客户联系人")
-    public void batchDelete(@RequestBody @NotNull List<String> ids) {
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
         customerContactService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

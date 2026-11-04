@@ -13,6 +13,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -65,7 +66,7 @@ public class CustomerCollaborationController {
     @PostMapping("/batch/delete")
     @Operation(summary = "批量删除客户协作人")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
-    public void batchDelete(@RequestBody List<String> ids) {
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
         customerCollaborationService.batchDelete(ids);
     }
 }
