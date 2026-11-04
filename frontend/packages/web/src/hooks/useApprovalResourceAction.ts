@@ -39,11 +39,15 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
     try {
       reviewPendingResourceIds.add(resourceId);
       reviewLoading.value = true;
-      await reviewResource({
+      const result = await reviewResource({
         resourceId,
         formKey: unref(options.formKey),
       });
-      Message.success(t('common.reviewSuccess'));
+      if (result && typeof result === 'object' && 'resubmitFallback' in result && result.resubmitFallback) {
+        Message.warning(t('crm.approval.resubmitNodeMissing'));
+      } else {
+        Message.success(t('common.reviewSuccess'));
+      }
       await callback?.onSuccess?.(resourceId);
     } catch (error) {
       await callback?.onError?.(error);

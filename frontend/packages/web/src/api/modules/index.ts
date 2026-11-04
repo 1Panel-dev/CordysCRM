@@ -969,6 +969,7 @@ export const {
   getCcApprovalList,
   getMentionedApprovalList,
   rejectApproval,
+  getApprovalResubmitNodes,
   backApproval,
   addSignApproval,
   getApprovalResourceDetail,

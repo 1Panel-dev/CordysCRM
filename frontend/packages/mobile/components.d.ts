@@ -33,6 +33,7 @@ declare module 'vue' {
     CrmApprovalRecordActions: typeof import('./src/components/business/crm-approval/crm-approval-record-actions.vue')['default'];
     CrmApprovalStatus: typeof import('./src/components/business/crm-approval/crm-approval-status.vue')['default'];
     CrmAvatar: typeof import('./src/components/business/crm-avatar/index.vue')['default'];
+    CrmChangeRecord: typeof import('./src/components/business/crm-change-record/index.vue')['default'];
     CrmComment: typeof import('./src/components/business/crm-comment/index.vue')['default'];
     CrmContactList: typeof import('./src/components/business/crm-contact-list/index.vue')['default'];
     CrmDatasource: typeof import('./src/components/business/crm-datasource/index.vue')['default'];

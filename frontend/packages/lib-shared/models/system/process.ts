@@ -246,6 +246,8 @@ export interface ApprovalTodoItem {
   commentMentionId?: string;
   approvalTaskId: string;
   approvalNodeId: string;
+  approvalNodeName: string;
+  approvalNodeNumber: string;
   approvalInstanceId: string;
   approvalId: string;
   approvalFlowId: string;
@@ -268,6 +270,16 @@ export interface ApprovalOperationParams {
   customFormId?: string;
   comment?: string;
   attachmentIds: string[];
+}
+
+export interface ApprovalRejectParams extends ApprovalOperationParams {
+  resubmitMode?: 'SUBMITTER' | 'CURRENT_NODE' | 'SPECIFIED_NODE';
+  resubmitStartNodeNumber?: string;
+}
+
+export interface ApprovalResubmitNode {
+  nodeNumber: string;
+  nodeName: string;
 }
 
 export interface ApprovalBackParams extends ApprovalOperationParams {
@@ -322,6 +334,7 @@ export interface ApprovalNode {
   taskId: string;
   recordId: string;
   nodeId: string;
+  nodeNumber?: string;
   nodeName: string;
   endNode: boolean;
   approverId: string;

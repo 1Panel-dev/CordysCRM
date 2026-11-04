@@ -25,6 +25,7 @@ export const GetCCStatisticUrl = '/approval-todo/cc/count'; // 获取抄送统�
 
 // 审批
 export const RejectApprovalUrl = '/approval-action/reject'; // 驳回
+export const GetApprovalResubmitNodesUrl = '/approval-action/resubmit-nodes'; // 获取可选重审节点
 export const BackApprovalUrl = '/approval-action/back'; // 回退
 export const AddSignApprovalUrl = '/approval-action/sign'; // 加签
 export const RevokeApprovalUrl = '/approval-action/revoke'; // 撤回
