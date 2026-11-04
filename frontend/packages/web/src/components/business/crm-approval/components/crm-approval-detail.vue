@@ -543,15 +543,11 @@
     try {
       const nodes = await getApprovalResubmitNodes(taskId);
       const currentNode = approvalInfo.value?.nodes.find((item) => item.nodeId === approvalInfo.value?.currentNodeId);
-      resubmitNodeOptions.value = nodes.map((node) => {
-        const approvalNode = approvalInfo.value?.nodes.find((item) => item.nodeNumber === node.nodeNumber);
+      resubmitNodeOptions.value = nodes.map((node, index) => {
         let tag: 'current' | 'submitter' | undefined;
-        if (currentNode?.nodeNumber === node.nodeNumber) {
+        if (node.nodeNumber && currentNode?.nodeNumber === node.nodeNumber) {
           tag = 'current';
-        } else if (
-          approvalNode?.approverId === approvalInfo.value?.submitterId ||
-          approvalNode?.taskNodes?.some((taskNode) => taskNode.approverId === approvalInfo.value?.submitterId)
-        ) {
+        } else if (index === 0 && !node.nodeNumber) {
           tag = 'submitter';
         }
         return { label: node.nodeName, value: node.nodeNumber, tag };
