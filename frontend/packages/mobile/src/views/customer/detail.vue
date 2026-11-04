@@ -1,6 +1,6 @@
 <template>
   <CrmPageWrapper :title="route.query.name?.toString() || ''">
-    <van-tabs v-model:active="activeTab" border class="detail-tabs">
+    <van-tabs v-model:active="activeTab" border :ellipsis="false" class="detail-tabs">
       <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
         <template #title>
           <div class="text-[16px]" :class="activeTab === tab.name ? 'text-[var(--primary-8)]' : ''">
