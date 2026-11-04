@@ -36,7 +36,7 @@
               </div>
             </Transition>
             <div class="h-full min-h-0 w-full" :class="{ 'opacity-0': leftSlotLoading }">
-              <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
+              <n-scrollbar :content-style="{ width: '100%', minWidth: 0, paddingRight: '8px' }" x-scrollable>
                 <slot
                   name="left"
                   :fieldPermissions="filedPermission"
@@ -212,7 +212,7 @@
       </CrmSplitPanel>
     </div>
     <div v-else class="flex h-full w-full p-[24px_16px_24px_24px]">
-      <n-scrollbar x-scrollable>
+      <n-scrollbar :content-style="{ width: '100%', minWidth: 0 }" x-scrollable>
         <slot
           name="left"
           :fieldPermissions="[]"

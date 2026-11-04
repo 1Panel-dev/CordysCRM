@@ -54,13 +54,11 @@
                     />
                   </template>
                 </template>
-                <div
+                <CrmFileList
                   v-else-if="item.isAttachment && (item.value as any[])?.length"
-                  class="text-[var(--primary-8)]"
-                  @click="handleAttachmentClick(item)"
-                >
-                  {{ t('crm.description.attachment', { count: (item.value as any[])?.length }) }}
-                </div>
+                  embedded
+                  :file-list="item.value as AttachmentInfo[]"
+                />
                 <div v-else-if="item.isLink" class="text-[var(--primary-8)]" @click="openLink(item)">
                   {{ item.value }}
                 </div>
@@ -73,7 +71,6 @@
       </div>
     </div>
   </van-cell-group>
-  <CrmFileListPop v-model:show="showFileListPop" :file-list="activeFileList" @delete-file="handleDeleteFile" />
 </template>
 
 <script setup lang="ts">
@@ -85,9 +82,9 @@
 
   import CrmSubTable from '@/components/pure/crm-sub-table/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import CrmFileListPop from '@/components/business/crm-file-list-pop/index.vue';
+  import CrmFileList from '@/components/business/crm-file-list-pop/fileList.vue';
 
-  import { AttachmentInfo, type FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+  import type { AttachmentInfo, FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
   import { refreshStatistic } from '@/api/modules';
   import { formatNumberValueToString } from '@lib/shared/method/formCreate';
 
@@ -124,17 +121,6 @@
     } else {
       window.open(item.value, '_blank');
     }
-  }
-
-  const showFileListPop = ref(false);
-  const activeFileList = ref<AttachmentInfo[]>([]);
-  function handleAttachmentClick(item: CrmDescriptionItem) {
-    activeFileList.value = item.value as AttachmentInfo[];
-    showFileListPop.value = true;
-  }
-
-  function handleDeleteFile(id: string) {
-    activeFileList.value = activeFileList.value.filter((file) => file.id !== id);
   }
 
   function handleReCalculation(item: CrmDescriptionItem) {
@@ -181,13 +167,15 @@
       color: var(--text-n1);
     }
     .crm-description-label {
+      @apply shrink-0;
+
       word-break: break-all;
       width: 20%;
       font-size: 14px;
       color: var(--text-n2);
     }
     .crm-description-value {
-      @apply flex-1;
+      @apply min-w-0 flex-1;
 
       font-size: 14px;
       text-align: justify;
