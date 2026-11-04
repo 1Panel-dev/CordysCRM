@@ -503,6 +503,7 @@ export const {
   getApprovalConfigDetail,
   agreeApproval,
   rejectApproval,
+  getApprovalResubmitNodes,
   batchAgreeApproval,
   batchRejectApproval,
   getApprovalResourceDetail,

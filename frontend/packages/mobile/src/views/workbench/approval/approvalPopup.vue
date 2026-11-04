@@ -65,6 +65,52 @@
               limitSize: '50MB',
             }"
           />
+          <section v-if="isRejecting && !props.selectedKeys?.length" class="resubmit-section">
+            <div class="resubmit-section-title">{{ t('workbench.resubmitPath') }}</div>
+            <div class="resubmit-options" role="radiogroup" :aria-label="t('workbench.resubmitPath')">
+              <div
+                v-for="option of resubmitOptions"
+                :key="option.value"
+                class="resubmit-option"
+                :class="{
+                  'resubmit-option--selected': resubmitMode === option.value,
+                  'resubmit-option--disabled': option.disabled,
+                }"
+                role="radio"
+                :aria-checked="resubmitMode === option.value"
+                :aria-disabled="option.disabled"
+                @click="selectResubmitMode(option.value)"
+              >
+                <span class="resubmit-option-radio" aria-hidden="true"></span>
+                <span class="resubmit-option-copy">
+                  <span class="resubmit-option-title">{{ option.label }}</span>
+                  <span class="resubmit-option-description">{{ option.description }}</span>
+                </span>
+              </div>
+            </div>
+            <div v-if="resubmitMode === 'SPECIFIED_NODE'" class="resubmit-node-field">
+              <van-field
+                name="resubmitStartNodeNumber"
+                :model-value="selectedNodeLabel"
+                is-link
+                readonly
+                label-align="left"
+                input-align="right"
+                :label="t('workbench.resubmitSpecifiedNode')"
+                :placeholder="t('common.pleaseSelect')"
+                required
+                :rules="[
+                  {
+                    required: true,
+                    message: t('common.pleaseSelect'),
+                  },
+                ]"
+                class="!px-0"
+                :border="false"
+                @click="showNodePicker = true"
+              />
+            </div>
+          </section>
         </van-form>
       </div>
     </div>
@@ -89,6 +135,49 @@
         {{ isRejecting ? t('workbench.operation.confirmRejected') : t('workbench.operation.confirmApproved') }}
       </van-button>
     </div>
+    <van-popup
+      v-model:show="showNodePicker"
+      position="bottom"
+      round
+      :style="{ height: '70vh', maxHeight: '85vh' }"
+      safe-area-inset-bottom
+    >
+      <div class="flex h-full flex-col bg-[var(--text-n10)]">
+        <div class="relative shrink-0 p-[16px] text-center">
+          <CrmTextButton
+            icon="iconicon_chevron_left"
+            icon-size="24px"
+            color="var(--text-n1)"
+            class="absolute left-[12px] top-[16px]"
+            @click="showNodePicker = false"
+          />
+          <div class="text-[16px] font-semibold">{{ t('workbench.resubmitSpecifiedNode') }}</div>
+        </div>
+        <div class="min-h-0 flex-1 overflow-y-auto px-[24px]">
+          <div
+            v-for="option of resubmitNodeOptions"
+            :key="option.value"
+            class="resubmit-node-option"
+            :class="{ 'resubmit-node-option--selected': selectedResubmitStartNodeNumber === option.value }"
+            role="radio"
+            :aria-checked="selectedResubmitStartNodeNumber === option.value"
+            @click="selectResubmitNode(option.value)"
+          >
+            <span class="resubmit-node-radio" aria-hidden="true"></span>
+            <span class="resubmit-node-name">{{ option.label }}</span>
+            <span
+              v-if="option.tag"
+              class="resubmit-node-tag"
+              :class="option.tag === 'current' ? 'resubmit-node-tag--current' : 'resubmit-node-tag--submitter'"
+            >
+              {{
+                option.tag === 'current' ? t('workbench.resubmitCurrentNodeTag') : t('workbench.resubmitSubmitterTag')
+              }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </van-popup>
   </van-popup>
 </template>
 <script setup lang="ts">
@@ -101,10 +190,14 @@
     batchAgreeApproval,
     batchRejectApproval,
     getApprovalConfigDetail,
+    getApprovalResubmitNodes,
+    getApprovalResourceDetail,
     rejectApproval,
   } from '@/api/modules';
   import { showToast, type FormInstance } from 'vant';
-  import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
+  import type { ApprovalDetail, ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
+
+  type ResubmitMode = 'SUBMITTER' | 'CURRENT_NODE' | 'SPECIFIED_NODE';
 
   const props = defineProps<{
     approvingItem?: Partial<ApprovalTodoItem>;
@@ -112,6 +205,7 @@
     isRejecting: boolean;
     selectedKeys?: string[];
     resourceType: string;
+    approvalInfo?: ApprovalDetail;
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
@@ -129,6 +223,107 @@
   const uploadKey = ref(0);
   const loading = ref(false);
   const approvalFormRef = ref<FormInstance>();
+  const approvalInfo = ref<ApprovalDetail>();
+  const approvalDetailLoading = ref(false);
+  const resubmitMode = ref<ResubmitMode>('SUBMITTER');
+  const selectedResubmitStartNodeNumber = ref<string | null>(null);
+  const showNodePicker = ref(false);
+
+  const currentApprovalNode = computed(() =>
+    approvalInfo.value?.nodes.find((node) => node.nodeId === approvalInfo.value?.currentNodeId)
+  );
+  const currentNodeIsSign = computed(
+    () =>
+      currentApprovalNode.value?.taskNodes?.find((taskNode) => taskNode.taskId === props.approvingItem?.approvalTaskId)
+        ?.sign
+  );
+  const resubmitNodeOptions = ref<Array<{ label: string; value: string; tag?: 'submitter' | 'current' }>>([]);
+  const selectedNodeLabel = computed(
+    () =>
+      resubmitNodeOptions.value.find((option) => option.value === selectedResubmitStartNodeNumber.value)?.label || ''
+  );
+  const currentNodeDescription = computed(() => {
+    const key = currentNodeIsSign.value ? 'workbench.resubmitCurrentSignNodeDesc' : 'workbench.resubmitCurrentNodeDesc';
+    return t(key, { nodeName: currentApprovalNode.value?.nodeName || '' });
+  });
+  const resubmitOptions = computed(() => [
+    {
+      value: 'SUBMITTER' as const,
+      label: t('workbench.resubmitFromSubmitter'),
+      description: t('workbench.resubmitFromSubmitterDesc'),
+    },
+    {
+      value: 'CURRENT_NODE' as const,
+      label: t('workbench.resubmitFromCurrentNode'),
+      description: currentNodeDescription.value,
+      disabled: !currentApprovalNode.value,
+    },
+    {
+      value: 'SPECIFIED_NODE' as const,
+      label: t('workbench.resubmitFromSpecifiedNode'),
+      description: t('workbench.resubmitFromSpecifiedNodeDesc'),
+      disabled: !resubmitNodeOptions.value.length,
+    },
+  ]);
+
+  function selectResubmitMode(mode: ResubmitMode) {
+    const option = resubmitOptions.value.find((item) => item.value === mode);
+    if (option?.disabled) return;
+    resubmitMode.value = mode;
+    if (mode !== 'SPECIFIED_NODE') {
+      selectedResubmitStartNodeNumber.value = null;
+    }
+  }
+
+  function selectResubmitNode(nodeNumber: string) {
+    selectedResubmitStartNodeNumber.value = nodeNumber;
+    showNodePicker.value = false;
+  }
+
+  async function initResubmitNodeOptions(taskId: string) {
+    try {
+      const nodes = await getApprovalResubmitNodes(taskId);
+      const currentNode = approvalInfo.value?.nodes.find((item) => item.nodeId === approvalInfo.value?.currentNodeId);
+      resubmitNodeOptions.value = nodes.map((node) => {
+        const approvalNode = approvalInfo.value?.nodes.find((item) => item.nodeNumber === node.nodeNumber);
+        let tag: 'current' | 'submitter' | undefined;
+        if (
+          node.nodeNumber === props.approvingItem?.approvalNodeNumber ||
+          currentNode?.nodeNumber === node.nodeNumber
+        ) {
+          tag = 'current';
+        } else if (
+          approvalNode?.approverId === approvalInfo.value?.submitterId ||
+          approvalNode?.taskNodes?.some((taskNode) => taskNode.approverId === approvalInfo.value?.submitterId)
+        ) {
+          tag = 'submitter';
+        }
+        return { label: node.nodeName, value: node.nodeNumber, tag };
+      });
+    } catch (error) {
+      resubmitNodeOptions.value = [];
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function initApprovalInfo() {
+    approvalInfo.value = props.approvalInfo;
+    if (approvalInfo.value || !props.approvingItem?.resourceId) return;
+
+    try {
+      approvalDetailLoading.value = true;
+      approvalInfo.value = await getApprovalResourceDetail(
+        props.approvingItem.resourceId,
+        props.approvingItem.commentMentionId
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      approvalDetailLoading.value = false;
+    }
+  }
 
   function resetApprovalForm() {
     approvalForm.value = {
@@ -137,6 +332,10 @@
     };
     approvalFormRef.value?.resetValidation();
     uploadKey.value += 1;
+    resubmitMode.value = 'SUBMITTER';
+    selectedResubmitStartNodeNumber.value = null;
+    resubmitNodeOptions.value = [];
+    showNodePicker.value = false;
   }
 
   async function approval() {
@@ -153,6 +352,13 @@
           attachmentIds: approvalForm.value.fileList,
           approverId: props.approvingItem?.approvalId!,
           comment: approvalForm.value.reason,
+          resubmitMode: resubmitMode.value,
+          resubmitStartNodeNumber:
+            resubmitMode.value === 'SPECIFIED_NODE'
+              ? selectedResubmitStartNodeNumber.value || undefined
+              : resubmitMode.value === 'CURRENT_NODE'
+              ? resubmitNodeOptions.value.find((option) => option.tag === 'current')?.value
+              : undefined,
         });
       } else {
         await agreeApproval({
@@ -244,12 +450,145 @@
 
   watch(
     () => showApprovalPopup.value,
-    (val) => {
+    async (val) => {
       if (val) {
         resetApprovalForm();
         initApprovalConfig();
+        if (props.isRejecting && !props.selectedKeys?.length) {
+          await initApprovalInfo();
+          if (props.approvingItem?.approvalTaskId) {
+            await initResubmitNodeOptions(props.approvingItem.approvalTaskId);
+          }
+        } else {
+          approvalInfo.value = props.approvalInfo;
+          resubmitNodeOptions.value = [];
+        }
       }
     }
   );
 </script>
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .resubmit-section {
+    padding: 16px 16px 0;
+  }
+  .resubmit-section-title {
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--text-n1);
+  }
+  .resubmit-node-field {
+    position: relative;
+    &::after {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 1px;
+      background: var(--text-n8);
+      content: '';
+      pointer-events: none;
+      transform: scaleY(0.5);
+      transform-origin: 0 100%;
+    }
+  }
+  .resubmit-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .resubmit-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    border: 1px solid var(--text-n7);
+    border-radius: 6px;
+    background: var(--text-n10);
+    gap: 10px;
+  }
+  .resubmit-option--selected {
+    border-color: var(--primary-8);
+    background: var(--primary-10, #f0fbfb);
+    .resubmit-option-radio {
+      border-color: var(--primary-8);
+      &::after {
+        transform: scale(1);
+      }
+    }
+  }
+  .resubmit-option--disabled {
+    opacity: 0.5;
+  }
+  .resubmit-option-radio,
+  .resubmit-node-radio {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--text-n6);
+    border-radius: 50%;
+    flex: 0 0 20px;
+    &::after {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary-8);
+      content: '';
+      transform: scale(0);
+      transition: transform 120ms ease;
+    }
+  }
+  .resubmit-option-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .resubmit-option-title {
+    color: var(--text-n1);
+    line-height: 22px;
+  }
+  .resubmit-option-description {
+    font-size: 12px;
+    color: var(--text-n4);
+    line-height: 18px;
+  }
+  .resubmit-node-option {
+    display: flex;
+    align-items: center;
+    min-height: 58px;
+    border-bottom: 1px solid var(--text-n8);
+    gap: 12px;
+  }
+  .resubmit-node-option--selected {
+    .resubmit-node-radio {
+      border-color: var(--primary-8);
+      &::after {
+        transform: scale(1);
+      }
+    }
+  }
+  .resubmit-node-name {
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-n1);
+    flex: 1;
+  }
+  .resubmit-node-tag {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 3px;
+    white-space: nowrap;
+    line-height: 18px;
+  }
+  .resubmit-node-tag--submitter {
+    color: var(--text-n2);
+    background: var(--text-n8);
+  }
+  .resubmit-node-tag--current {
+    color: var(--primary-8);
+    background: var(--primary-7);
+  }
+</style>

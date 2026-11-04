@@ -25,6 +25,7 @@ import {
   GetCcApprovalTodosUrl,
   GetMentionedApprovalTodosUrl,
   RejectApprovalUrl,
+  GetApprovalResubmitNodesUrl,
   BackApprovalUrl,
   AddSignApprovalUrl,
   GetTodoStatisticUrl,
@@ -47,6 +48,8 @@ import {
   type ApprovalBackParams,
   type ApprovalDetail,
   type ApprovalOperationParams,
+  type ApprovalRejectParams,
+  type ApprovalResubmitNode,
   type ApprovalTodoItem,
   type ApprovalTodoTableParams,
   type BatchApprovalParams,
@@ -131,8 +134,12 @@ export default function useProcessApi(CDR: CordysAxios) {
   }
 
   // 驳回
-  function rejectApproval(data: ApprovalOperationParams) {
+  function rejectApproval(data: ApprovalRejectParams) {
     return CDR.post({ url: RejectApprovalUrl, data });
+  }
+
+  function getApprovalResubmitNodes(taskId: string) {
+    return CDR.get<ApprovalResubmitNode[]>({ url: `${GetApprovalResubmitNodesUrl}/${taskId}` });
   }
 
   // 退回
@@ -243,6 +250,7 @@ export default function useProcessApi(CDR: CordysAxios) {
     getCcApprovalList,
     getMentionedApprovalList,
     rejectApproval,
+    getApprovalResubmitNodes,
     backApproval,
     addSignApproval,
     getApprovalResourceDetail,

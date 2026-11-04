@@ -3,9 +3,14 @@
     v-model:show="show"
     v-model:opinion="approvalForm.reason"
     v-model:file-list="fileList"
+    v-model:resubmit-mode="resubmitMode"
+    v-model:resubmit-start-node-number="resubmitStartNodeNumber"
     :approval-type="props.approvalType"
     :loading="loading"
     :required="isCommentRequired"
+    :show-resubmit-path="!props.approvalItemKeys?.length"
+    :current-node-name="props.approvalItem?.approvalNodeName"
+    :resubmit-node-options="resubmitNodeOptions"
     @confirm="handleApprovalSave"
     @cancel="handleApprovalCancel"
   >
@@ -37,7 +42,7 @@
   import { NTooltip, type UploadFileInfo, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
+  import type { ApprovalDetail, ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
 
   import ApprovalOpinionModal from '@/components/business/crm-approval/components/approvalOpinionModal.vue';
 
@@ -46,6 +51,8 @@
     batchAgreeApproval,
     batchRejectApproval,
     getApprovalConfigDetail,
+    getApprovalResourceDetail,
+    getApprovalResubmitNodes,
     rejectApproval,
   } from '@/api/modules/index';
 
@@ -73,18 +80,35 @@
     reason: '',
   });
   const fileList = ref<UploadFileInfo[]>([]);
+  const resubmitMode = ref<'SUBMITTER' | 'CURRENT_NODE' | 'SPECIFIED_NODE'>('SUBMITTER');
+  const resubmitStartNodeNumber = ref<string | null>(null);
+  const resubmitNodeOptions = ref<Array<{ label: string; value: string }>>([]);
 
   function reset() {
     approvalForm.value = {
       reason: '',
     };
     fileList.value = [];
+    resubmitMode.value = 'SUBMITTER';
+    resubmitStartNodeNumber.value = null;
+    resubmitNodeOptions.value = [];
     show.value = false;
   }
 
   function handleApprovalCancel() {
     reset();
     emit('approvalCancel');
+  }
+
+  function getResubmitStartNodeNumber() {
+    switch (resubmitMode.value) {
+      case 'CURRENT_NODE':
+        return props.approvalItem?.approvalNodeNumber || undefined;
+      case 'SPECIFIED_NODE':
+        return resubmitStartNodeNumber.value || undefined;
+      default:
+        return undefined;
+    }
   }
 
   async function approval() {
@@ -101,6 +125,8 @@
           attachmentIds: fileList.value.map((e) => e.id),
           approverId: props.approvalItem.approvalId,
           comment: approvalForm.value.reason,
+          resubmitMode: resubmitMode.value,
+          resubmitStartNodeNumber: getResubmitStartNodeNumber(),
         });
       } else {
         await agreeApproval({
@@ -176,6 +202,45 @@
     }
   }
 
+  async function loadResubmitNodeOptions(taskId: string) {
+    try {
+      const nodes = await getApprovalResubmitNodes(taskId);
+      let approvalDetail: ApprovalDetail | undefined;
+      try {
+        if (props.approvalItem?.resourceId) {
+          approvalDetail = await getApprovalResourceDetail(
+            props.approvalItem.resourceId,
+            props.approvalItem.commentMentionId
+          );
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+
+      resubmitNodeOptions.value = nodes.map((node) => {
+        const approvalNode = approvalDetail?.nodes.find((item) => item.nodeName === node.nodeName);
+        let tag: 'current' | 'submitter' | undefined;
+        if (
+          node.nodeNumber === props.approvalItem?.approvalNodeNumber ||
+          approvalNode?.nodeId === approvalDetail?.currentNodeId
+        ) {
+          tag = 'current';
+        } else if (
+          approvalNode?.approverId === approvalDetail?.submitterId ||
+          approvalNode?.taskNodes?.some((taskNode) => taskNode.approverId === approvalDetail?.submitterId)
+        ) {
+          tag = 'submitter';
+        }
+        return { label: node.nodeName, value: node.nodeNumber, tag };
+      });
+    } catch (error) {
+      resubmitNodeOptions.value = [];
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => show.value,
     (val) => {
@@ -184,8 +249,14 @@
           reason: '',
         };
         fileList.value = [];
+        resubmitMode.value = 'SUBMITTER';
+        resubmitStartNodeNumber.value = null;
+        resubmitNodeOptions.value = [];
       } else {
         initApprovalConfig();
+        if (props.approvalType === 'reject' && !props.approvalItemKeys?.length && props.approvalItem?.approvalTaskId) {
+          loadResubmitNodeOptions(props.approvalItem.approvalTaskId);
+        }
       }
     },
     {

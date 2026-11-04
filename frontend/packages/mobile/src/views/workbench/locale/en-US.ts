@@ -66,6 +66,20 @@ export default {
   'workbench.approval.quickOpinion.approve2': 'Verified and approved',
   'workbench.approval.quickOpinion.reject1': 'Information is incomplete. Please supplement it.',
   'workbench.approval.quickOpinion.reject2': 'Please provide the relevant attachments.',
+  'workbench.resubmitPath': 'Resubmission path',
+  'workbench.resubmitFromSubmitter': 'Restart from the submitter',
+  'workbench.resubmitFromSubmitterDesc':
+    'Returned to the submitter; after editing, the request restarts from the first node',
+  'workbench.resubmitFromCurrentNode': 'Restart from the current node',
+  'workbench.resubmitCurrentNodeDesc':
+    'Current node: "{nodeName}". After resubmission, approval starts from the current node; previously approved nodes are retained',
+  'workbench.resubmitCurrentSignNodeDesc':
+    'Current node is a countersign node of "{nodeName}". After resubmission, approval starts from "{nodeName}"; previously approved nodes are retained',
+  'workbench.resubmitFromSpecifiedNode': 'Restart from a specified node',
+  'workbench.resubmitFromSpecifiedNodeDesc': 'After resubmission, approval starts at the selected node',
+  'workbench.resubmitSpecifiedNode': 'Specified node',
+  'workbench.resubmitSubmitterTag': 'Submitter',
+  'workbench.resubmitCurrentNodeTag': 'Current node',
   'workbench.approval': 'Approval',
   'workbench.cancelApproval': 'Withdraw',
   'workbench.canApply': 'Cancel',

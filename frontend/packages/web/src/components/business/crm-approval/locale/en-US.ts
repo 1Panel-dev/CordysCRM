@@ -2,6 +2,24 @@ export default {
   'crm.approval.record': 'Approval Record',
   'crm.approval.opinion': 'Approval Opinion',
   'crm.approval.suggestion': 'Approval Suggestion',
+  'crm.approval.resubmitPath': 'Resubmission path',
+  'crm.approval.resubmitFromSubmitter': 'Restart from the submitter',
+  'crm.approval.resubmitFromSubmitterDesc':
+    'Returned to the submitter; after editing, the request restarts from the first node',
+  'crm.approval.resubmitFromCurrentNode': 'Restart from the current node',
+  'crm.approval.resubmitCurrentNodeDesc':
+    'Current node: "{nodeName}". After resubmission, approval starts from the current node; previously approved nodes are retained',
+  'crm.approval.resubmitCurrentSignNodeDesc':
+    'Current node is a countersign node of "{nodeName}". After resubmission, approval starts from "{nodeName}"; previously approved nodes are retained',
+  'crm.approval.resubmitFromSpecifiedNode': 'Restart from a specified node',
+  'crm.approval.resubmitFromSpecifiedNodeDesc': 'After resubmission, approval starts at the selected node',
+  'crm.approval.resubmitSpecifiedNode': 'Specified node',
+  'crm.approval.resubmitSubmitterTag': 'Submitter',
+  'crm.approval.resubmitCurrentNodeTag': 'Current node',
+  'crm.approval.reject': 'Rejected',
+  'crm.approval.resubmitSelectNode': 'Select a resubmission node',
+  'crm.approval.resubmitNodeMissing':
+    'The resubmission node no longer exists. This request will restart from the beginning.',
   'crm.approval.approve': 'Approved',
   'crm.approval.quickOpinion.approve1': 'Approved, meets the requirements',
   'crm.approval.quickOpinion.approve2': 'Verified and approved',

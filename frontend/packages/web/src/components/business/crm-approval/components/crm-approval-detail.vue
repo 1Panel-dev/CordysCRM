@@ -227,10 +227,15 @@
     v-model:show="approvalOpinionModalVisible"
     v-model:opinion="approvalOpinion"
     v-model:file-list="fileList"
+    v-model:resubmit-mode="resubmitMode"
+    v-model:resubmit-start-node-number="resubmitStartNodeNumber"
     :title="t('crm.approval.suggestion')"
     :approval-type="approvalAction"
     :loading="approvalLoading"
     :required="isCommentRequired"
+    :current-node-name="currentApprovalNode?.nodeName"
+    :current-node-is-sign="currentTaskNode?.sign"
+    :resubmit-node-options="resubmitNodeOptions"
     @confirm="submitApprovalOpinion"
   />
   <CrmModal
@@ -381,6 +386,7 @@
     getApprovalConfigDetail,
     getApprovalResourceDetail,
     getApprovalResourceInstanceDetailList,
+    getApprovalResubmitNodes,
     rejectApproval,
     revokeApproval,
     revokeResource,
@@ -521,6 +527,8 @@
 
   const approvalOpinion = ref('');
   const fileList = ref<UploadFileInfo[]>([]);
+  const resubmitMode = ref<'SUBMITTER' | 'CURRENT_NODE' | 'SPECIFIED_NODE'>('SUBMITTER');
+  const resubmitStartNodeNumber = ref<string | null>(null);
   const approvalOpinionModalVisible = ref(false);
   const approvalAction = ref<'approve' | 'reject'>('approve');
   const isCommentRequired = computed(() =>
@@ -530,6 +538,30 @@
   );
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
+  const resubmitNodeOptions = ref<Array<{ label: string; value: string; tag?: 'submitter' | 'current' }>>([]);
+  async function loadResubmitNodeOptions(taskId: string) {
+    try {
+      const nodes = await getApprovalResubmitNodes(taskId);
+      const currentNode = approvalInfo.value?.nodes.find((item) => item.nodeId === approvalInfo.value?.currentNodeId);
+      resubmitNodeOptions.value = nodes.map((node) => {
+        const approvalNode = approvalInfo.value?.nodes.find((item) => item.nodeNumber === node.nodeNumber);
+        let tag: 'current' | 'submitter' | undefined;
+        if (currentNode?.nodeNumber === node.nodeNumber) {
+          tag = 'current';
+        } else if (
+          approvalNode?.approverId === approvalInfo.value?.submitterId ||
+          approvalNode?.taskNodes?.some((taskNode) => taskNode.approverId === approvalInfo.value?.submitterId)
+        ) {
+          tag = 'submitter';
+        }
+        return { label: node.nodeName, value: node.nodeNumber, tag };
+      });
+    } catch (error) {
+      resubmitNodeOptions.value = [];
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
   const currentRoundStartIndex = computed(() => {
     if (!currentApprovalNode.value || !approvalInfo.value) return -1;
     return approvalInfo.value.nodes.findIndex((node) => node.nodeRound === currentApprovalNode.value?.nodeRound);
@@ -746,7 +778,7 @@
       await agreeApproval({
         id: currentTaskNode.value.taskId,
         nodeId: currentApprovalNode.value.nodeId,
-        instanceId: approvalConfig.value?.id || '',
+        instanceId: approvalInfo.value?.id || '',
         attachmentIds: fileList.value.map((e) => e.id),
         approverId: currentTaskNode.value.approverId,
         comment: approvalOpinion.value,
@@ -775,7 +807,14 @@
     approvalAction.value = action;
     approvalOpinion.value = '';
     fileList.value = [];
+    resubmitMode.value = 'SUBMITTER';
+    resubmitStartNodeNumber.value = null;
+    resubmitNodeOptions.value = [];
     approvalOpinionModalVisible.value = true;
+    const taskId = props.approvalTaskId || currentTaskNode.value?.taskId;
+    if (action === 'reject' && taskId) {
+      loadResubmitNodeOptions(taskId);
+    }
   }
 
   async function handleApprove() {
@@ -787,6 +826,17 @@
       approvalAgree,
       filedPermission.value.some((e) => e.permissionType === 'EDIT')
     );
+  }
+
+  function getResubmitStartNodeNumber() {
+    switch (resubmitMode.value) {
+      case 'CURRENT_NODE':
+        return resubmitNodeOptions.value.find((option) => option.tag === 'current')?.value;
+      case 'SPECIFIED_NODE':
+        return resubmitStartNodeNumber.value || undefined;
+      default:
+        return undefined;
+    }
   }
 
   function handleReject() {
@@ -804,10 +854,12 @@
           await rejectApproval({
             id: currentTaskNode.value.taskId,
             nodeId: currentApprovalNode.value.nodeId,
-            instanceId: approvalConfig.value?.id || '',
+            instanceId: approvalInfo.value?.id || '',
             attachmentIds: fileList.value.map((e) => e.id),
             approverId: currentTaskNode.value.approverId,
             comment: approvalOpinion.value,
+            resubmitMode: resubmitMode.value,
+            resubmitStartNodeNumber: getResubmitStartNodeNumber(),
           });
           message.success(t('common.rejected'));
           approvalOpinionModalVisible.value = false;

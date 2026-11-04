@@ -19,6 +19,7 @@
     :approving-item="approvingItem"
     :is-rejecting="isRejecting"
     :resource-type="props.formKey"
+    :approval-info="props.approvalInfo"
     @refresh="handleApprovalSuccess"
   />
   <FallbackPopup
