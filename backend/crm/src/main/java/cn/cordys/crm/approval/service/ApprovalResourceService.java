@@ -41,6 +41,7 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalPushResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
@@ -542,7 +543,7 @@ public class ApprovalResourceService {
      * 手动提审仅用于尚未通过审批的新增资源。
      */
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
-    public void manualPush(ApprovalResourceBaseParam param, String userId, String orgId) {
+    public ApprovalPushResponse manualPush(ApprovalResourceBaseParam param, String userId, String orgId) {
         if (StringUtils.isBlank(userId)) {
             throw new GenericException(Translator.get("no.operation.permission"));
         }
@@ -551,7 +552,7 @@ public class ApprovalResourceService {
             throw new GenericException(Translator.get("no.operation.permission"));
         }
         if (ApprovalStatus.APPROVING.name().equals(state.getApprovalStatus())) {
-            return;
+            return new ApprovalPushResponse();
         }
         ApprovalFlow flow = approvalFlowService.getEnabledFlow(param.getFormKey(), orgId);
         if (flow == null) {
@@ -562,7 +563,7 @@ public class ApprovalResourceService {
                         ApprovalStatus.UNAPPROVED.name(), ApprovalStatus.REVOKED.name())) {
             throw new GenericException(Translator.get("no.operation.permission"));
         }
-        executePush(ApprovalPushParam.builder().resourceId(param.getResourceId()).formKey(param.getFormKey())
+        return executePush(ApprovalPushParam.builder().resourceId(param.getResourceId()).formKey(param.getFormKey())
                 .orgId(orgId).userId(userId).executeTimingEnum(ExecuteTimingEnum.CREATE).build(), flow);
     }
 
@@ -617,13 +618,14 @@ public class ApprovalResourceService {
         return state;
     }
 
-    private void executePush(ApprovalPushParam param, ApprovalFlow approvalFlow) {
+    private ApprovalPushResponse executePush(ApprovalPushParam param, ApprovalFlow approvalFlow) {
         String currentOrgId = param.getOrgId();
         String currentUserId = param.getUserId();
         ApprovalInstance previousInstance = extApprovalInstanceMapper.selectLatestByResourceIdForUpdate(
                 param.getResourceId(), param.getFormKey(), currentOrgId);
         // 初始化审批实例
         ApprovalInstance instance = initInstance(approvalFlow, param);
+        ApprovalPushResponse response = new ApprovalPushResponse();
         ApprovalNodeResponse firstApprovalNode = null;
         if (previousInstance != null
                 && ApprovalStatus.UNAPPROVED.name().equals(previousInstance.getApprovalStatus())
@@ -640,6 +642,7 @@ public class ApprovalResourceService {
                     instance.setResubmitStartNodeNumber(previousInstance.getResubmitStartNodeNumber());
                 }
             }
+            response.setResubmitNodeInvalid(firstApprovalNode == null);
         }
         if (firstApprovalNode == null) {
             firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
@@ -660,7 +663,7 @@ public class ApprovalResourceService {
             approvalInstanceMapper.insert(instance);
 
             sendFinishNotice(currentOrgId, currentUserId, instance);
-            return;
+            return response;
         }
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
             // 直接结束
@@ -675,7 +678,7 @@ public class ApprovalResourceService {
             }
 
             sendFinishNotice(currentOrgId, currentUserId, instance);
-            return;
+            return response;
         }
         /*
          * 正常审批流程
@@ -687,6 +690,7 @@ public class ApprovalResourceService {
         approvalInstanceMapper.insert(instance);
         ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
         approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, currentUserId, null, currentOrgId);
+        return response;
     }
 
     /**

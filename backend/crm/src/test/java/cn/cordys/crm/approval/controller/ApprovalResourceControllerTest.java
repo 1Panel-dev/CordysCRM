@@ -1,10 +1,12 @@
 package cn.cordys.crm.approval.controller;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.handler.ResultResponseBodyAdvice;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.response.ApprovalPushResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
@@ -15,7 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockMakers;
+import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -30,6 +34,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ApprovalResourceControllerTest {
 
@@ -49,17 +56,28 @@ class ApprovalResourceControllerTest {
         ReflectionTestUtils.setField(controller, "approvalCommentService", commentService);
     }
 
-    @Test
-    void pushUsesTheAuthorizedManualEntryWithSessionIdentity() {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void pushReturnsResubmitNodeValidityWithSessionIdentity(boolean invalid) throws Exception {
         ApprovalResourceBaseParam param = new ApprovalResourceBaseParam();
         param.setResourceId("resource-1");
         param.setFormKey("contract");
+        ApprovalPushResponse response = new ApprovalPushResponse();
+        response.setResubmitNodeInvalid(invalid);
+        when(resourceService.manualPush(param, "user-1", "org-1")).thenReturn(response);
+        var mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new ResultResponseBodyAdvice()).build();
         try (var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
                 var organization = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
             session.when(SessionUtils::getUserId).thenReturn("user-1");
             organization.when(OrganizationContext::getOrganizationId).thenReturn("org-1");
 
-            controller.push(param);
+            mvc.perform(post("/approval-resource/push").contentType(MediaType.APPLICATION_JSON).content("""
+                    {"resourceId":"resource-1","formKey":"contract"}
+                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.resubmitNodeInvalid").isBoolean())
+                    .andExpect(jsonPath("$.data.resubmitNodeInvalid").value(invalid));
 
             verify(resourceService).manualPush(param, "user-1", "org-1");
         }

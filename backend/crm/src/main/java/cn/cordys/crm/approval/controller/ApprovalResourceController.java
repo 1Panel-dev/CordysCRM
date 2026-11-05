@@ -5,6 +5,7 @@ import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBatchParam;
+import cn.cordys.crm.approval.dto.response.ApprovalPushResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalCommentService;
 import cn.cordys.crm.approval.service.ApprovalHistoryService;
@@ -45,8 +46,9 @@ public class ApprovalResourceController {
 
     @PostMapping("/push")
     @Operation(summary = "提审")
-    public void push(@Validated @RequestBody ApprovalResourceBaseParam param) {
-        approvalResourceService.manualPush(param, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public ApprovalPushResponse push(@Validated @RequestBody ApprovalResourceBaseParam param) {
+        return approvalResourceService.manualPush(param, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/push")
