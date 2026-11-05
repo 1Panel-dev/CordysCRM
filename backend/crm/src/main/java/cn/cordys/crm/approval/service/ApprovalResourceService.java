@@ -547,16 +547,20 @@ public class ApprovalResourceService {
         if (StringUtils.isBlank(userId)) {
             throw new GenericException(Translator.get("no.operation.permission"));
         }
+        // 标识先行校验（与 lockResource 一致）, 避免非法入参在提审配置查询处 NPE 或产生多余查询。
+        if (param == null || StringUtils.isAnyBlank(param.getResourceId(), param.getFormKey(), orgId)) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        ApprovalFlow flow = approvalFlowService.getEnabledFlow(param.getFormKey(), orgId);
+        if (flow == null) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
         ApprovalResourceState state = lockResource(param, orgId);
         if (!userId.equals(state.getCreateUser()) && !userId.equals(state.getOwner())) {
             throw new GenericException(Translator.get("no.operation.permission"));
         }
         if (ApprovalStatus.APPROVING.name().equals(state.getApprovalStatus())) {
             return new ApprovalPushResponse();
-        }
-        ApprovalFlow flow = approvalFlowService.getEnabledFlow(param.getFormKey(), orgId);
-        if (flow == null) {
-            throw new GenericException(Translator.get("module.form.illegal"));
         }
         if (!Boolean.TRUE.equals(flow.getCreateExecute()) || Boolean.TRUE.equals(state.getApproved())
                 || !Strings.CS.equalsAny(state.getApprovalStatus(), ApprovalStatus.PENDING.name(),
