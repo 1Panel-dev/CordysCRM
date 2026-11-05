@@ -43,7 +43,7 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
         resourceId,
         formKey: unref(options.formKey),
       });
-      if (result && typeof result === 'object' && 'resubmitFallback' in result && result.resubmitFallback) {
+      if (result?.resubmitNodeInvalid) {
         Message.warning(t('crm.approval.resubmitNodeMissing'));
       } else {
         Message.success(t('common.reviewSuccess'));

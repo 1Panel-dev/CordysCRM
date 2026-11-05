@@ -237,6 +237,10 @@ export interface CommonApprovalActionParams {
   formKey: string;
 }
 
+export interface ReviewResourceResult {
+  resubmitNodeInvalid?: boolean;
+}
+
 export interface ApprovalTodoTableParams extends TableQueryParams {
   resourceName?: string;
   resourceType: string;
