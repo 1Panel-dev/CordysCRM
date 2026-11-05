@@ -26,7 +26,6 @@ async function createI18nOptions(): Promise<I18nOptions> {
     locale,
     fallbackLocale: 'zh-CN',
     legacy: false,
-    allowComposition: true,
     messages: {
       [locale]: message,
     },
