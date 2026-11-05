@@ -148,24 +148,26 @@ class ApprovalManualPushTest {
             "custom-form-a,custom_form_data" })
     void manualPushScopesResourceLockToActualFormAndOrganization(String formKey, String tableName) {
         param.setFormKey(formKey);
+        when(flowService.getEnabledFlow(formKey, "other-org")).thenReturn(flow);
         when(extMapper.selectResourceForUpdate(tableName, "resource-a", "other-org", formKey)).thenReturn(null);
 
         assertThrows(GenericException.class, () -> service.manualPush(param, "creator", "other-org"));
 
         verify(extMapper).selectResourceForUpdate(tableName, "resource-a", "other-org", formKey);
         assertNoWrites();
-        verifyNoInteractions(flowService);
+        verifyNoMoreFlowLookups(formKey, "other-org");
     }
 
     @Test
     void manualPushRejectsCustomResourceThatDoesNotBelongToRequestedForm() {
         param.setFormKey("other-custom-form");
+        when(flowService.getEnabledFlow("other-custom-form", "org-a")).thenReturn(flow);
 
         assertThrows(GenericException.class, () -> service.manualPush(param, "creator", "org-a"));
 
         verify(extMapper).selectResourceForUpdate("custom_form_data", "resource-a", "org-a", "other-custom-form");
         assertNoWrites();
-        verifyNoInteractions(flowService);
+        verifyNoMoreFlowLookups("other-custom-form", "org-a");
     }
 
     @ParameterizedTest
@@ -176,7 +178,7 @@ class ApprovalManualPushTest {
         assertThrows(GenericException.class, () -> service.manualPush(param, "unrelated-user", "org-a"));
 
         assertNoWrites();
-        verifyNoInteractions(flowService);
+        verifyNoMoreFlowLookups("contract", "org-a");
     }
 
     @ParameterizedTest
@@ -224,7 +226,7 @@ class ApprovalManualPushTest {
 
         verify(extMapper).selectResourceForUpdate("contract", "resource-a", "org-a", "contract");
         assertNoWrites();
-        verifyNoInteractions(flowService);
+        verifyNoMoreFlowLookups("contract", "org-a");
     }
 
     @ParameterizedTest
@@ -490,5 +492,14 @@ class ApprovalManualPushTest {
     private void assertNoWrites() {
         verifyNoInteractions(instanceMapper, actionService);
         verify(service, never()).updateResourceApprovalStatus(any(), any(), any(), any(), any());
+    }
+
+    /**
+     * 提审配置查询（getEnabledFlow）已前移到资源锁之前, 故仅校验未继续解析审批节点。
+     */
+    private void verifyNoMoreFlowLookups(String formKey, String orgId) {
+        verify(flowService).getEnabledFlow(formKey, orgId);
+        verify(flowService, never()).getResourceApprovalInstanceFirstNode(any(), any());
+        verify(flowService, never()).getResourceApprovalInstanceResubmitNode(any(), any(), any());
     }
 }
