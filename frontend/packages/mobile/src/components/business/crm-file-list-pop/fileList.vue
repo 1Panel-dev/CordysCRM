@@ -7,6 +7,13 @@
           <div class="one-line-text flex-1">{{ file.name }}</div>
           <div class="flex items-center gap-[16px]">
             <CrmTextButton icon="iconicon_download" icon-size="16px" @click="handleDownloadAttachment(file)" />
+            <CrmTextButton
+              v-if="!props.readonly"
+              icon="iconicon_delete"
+              icon-size="16px"
+              color="var(--error-red)"
+              @click="handleDelete(file)"
+            />
           </div>
         </div>
         <div class="one-line-text text-[12px] text-[var(--text-n4)]">
@@ -25,7 +32,7 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { showImagePreview, showToast } from 'vant';
+  import { showConfirmDialog, showImagePreview, showToast } from 'vant';
   import dayjs from 'dayjs';
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
@@ -43,6 +50,10 @@
   const props = defineProps<{
     fileList: AttachmentInfo[];
     embedded?: boolean;
+    readonly?: boolean;
+  }>();
+  const emit = defineEmits<{
+    (e: 'deleteFile', id: string): void;
   }>();
 
   const { t } = useI18n();
@@ -63,6 +74,21 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function handleDelete(file: AttachmentInfo) {
+    try {
+      await showConfirmDialog({
+        title: t('crm.fileListPop.deleteTipTitle'),
+        message: t('crm.fileListPop.deleteTipContent'),
+        confirmButtonText: t('common.confirm'),
+        confirmButtonColor: 'var(--error-red)',
+      });
+      emit('deleteFile', file.id);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

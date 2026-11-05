@@ -890,7 +890,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         } else {
           params.moduleFields.push({
             fieldId: item.id,
-            fieldValue: form[item.id],
+            fieldValue: getNormalFieldValue(item, form[item.id]),
           });
         }
       });
@@ -923,6 +923,50 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  async function removeAttachment(fieldId: string, fileId: string) {
+    await initFormDetail();
+    const description = descriptions.value.find((item) => item.fieldInfo?.id === fieldId);
+    const displayedAttachmentIds = Array.isArray(description?.value)
+      ? (description.value as Record<string, any>[]).map((file) => file.id)
+      : [];
+    const value = formDetail.value[fieldId];
+    let attachmentIds = Array.isArray(value) ? value : displayedAttachmentIds;
+
+    if (typeof value === 'string' && value) {
+      try {
+        const parsedValue = JSON.parse(value);
+        attachmentIds = Array.isArray(parsedValue) ? parsedValue : [value];
+      } catch {
+        attachmentIds = [value];
+      }
+    }
+
+    formDetail.value[fieldId] = attachmentIds.filter((id: string) => id !== fileId);
+    fieldList.value.forEach((field) => {
+      if (
+        [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(field.type) &&
+        Array.isArray(formDetail.value[field.id])
+      ) {
+        const [fieldValue] = formDetail.value[field.id];
+        formDetail.value[field.id] = fieldValue;
+      }
+      if (field.subFields?.length && Array.isArray(formDetail.value[field.id])) {
+        formDetail.value[field.id].forEach((subItem: Record<string, any>) => {
+          field.subFields?.forEach((subField) => {
+            if (subField.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(subItem[subField.id])) {
+              const [subFieldValue] = subItem[subField.id];
+              subItem[subField.id] = subFieldValue;
+            }
+          });
+        });
+      }
+    });
+    if (description && Array.isArray(description.value)) {
+      description.value = (description.value as Record<string, any>[]).filter((file) => file.id !== fileId);
+    }
+    await saveForm(formDetail.value, undefined, true);
+  }
+
   const formCreateTitle = computed(() => {
     if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
       return t('common.convertToCustomer');
@@ -948,6 +992,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     saveForm,
     initFormShowControl,
     fillLinkFormFieldValue,
+    removeAttachment,
     detail,
   };
 }

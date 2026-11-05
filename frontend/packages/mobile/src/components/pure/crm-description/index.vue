@@ -58,6 +58,8 @@
                   v-else-if="item.isAttachment && (item.value as any[])?.length"
                   embedded
                   :file-list="item.value as AttachmentInfo[]"
+                  :readonly="props.readonly"
+                  @delete-file="handleDeleteFile(item, $event)"
                 />
                 <div v-else-if="item.isLink" class="text-[var(--primary-8)]" @click="openLink(item)">
                   {{ item.value }}
@@ -107,6 +109,10 @@
   const props = defineProps<{
     sourceId: string;
     description: CrmDescriptionItem[];
+    readonly?: boolean;
+  }>();
+  const emit = defineEmits<{
+    (e: 'deleteFile', fieldId: string, fileId: string): void;
   }>();
 
   const getDisplayValue = (val?: string | number | (string | number)[]) => {
@@ -120,6 +126,12 @@
       window.location.href = item.value;
     } else {
       window.open(item.value, '_blank');
+    }
+  }
+
+  function handleDeleteFile(item: CrmDescriptionItem, fileId: string) {
+    if (item.fieldInfo?.id) {
+      emit('deleteFile', item.fieldInfo.id, fileId);
     }
   }
 

@@ -1,7 +1,12 @@
 <template>
   <CrmPageWrapper :title="t('common.detail')">
     <div class="bg-[var(--text-n9)] py-[16px]">
-      <CrmDescription :description="descriptions" :source-id="sourceId" />
+      <CrmDescription
+        :description="descriptions"
+        :source-id="sourceId"
+        :readonly="!canEditDetail"
+        @delete-file="removeAttachment"
+      />
     </div>
     <div class="bg-[var(--text-n9)] px-[16px] pt-0">
       <div class="bg-[var(--text-n10)] p-[16px]">
@@ -79,7 +84,7 @@
   const canComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
   const commentEditing = ref(false);
 
-  const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+  const { descriptions, initFormConfig, initFormDescription, detail, removeAttachment } = useFormCreateApi({
     formKey: formKey.value,
     sourceId,
     needInitDetail: route.query.needInitDetail === 'Y',

@@ -8,7 +8,12 @@
           </div>
         </template>
         <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
-          <CrmDescription :description="renderDescriptions" :source-id="sourceId">
+          <CrmDescription
+            :description="renderDescriptions"
+            :source-id="sourceId"
+            :readonly="!showEditButton"
+            @delete-file="removeAttachment"
+          >
             <template #approvalStatus>
               <ApprovalStatus :status="approvalStatus" />
             </template>
@@ -150,12 +155,20 @@
   const { t } = useI18n();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
-  const { sourceName, descriptions, collaborationType, detail, formConfig, initFormConfig, initFormDescription } =
-    useFormCreateApi({
-      formKey: FormDesignKeyEnum.CUSTOMER,
-      sourceId,
-      needInitDetail: true,
-    });
+  const {
+    sourceName,
+    descriptions,
+    collaborationType,
+    detail,
+    formConfig,
+    initFormConfig,
+    initFormDescription,
+    removeAttachment,
+  } = useFormCreateApi({
+    formKey: FormDesignKeyEnum.CUSTOMER,
+    sourceId,
+    needInitDetail: true,
+  });
   const changeRecordTab = computed(() =>
     formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
   );
