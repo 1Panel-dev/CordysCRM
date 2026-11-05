@@ -38,7 +38,8 @@
           v-if="reviewAction.visible"
           type="primary"
           class="!rounded-[var(--border-radius-small)] !text-[16px]"
-          :loading="loading || reviewLoading"
+          :disabled="loading"
+          :loading="reviewLoading"
           block
           @click="handleReview"
         >
