@@ -36,6 +36,7 @@ export default {
   'crm.approval.changeDescription': '变更说明',
   'crm.approval.confirmChange': '保存并提审',
   'crm.approval.confirmAndSubmitReview': '确认并提审',
+  'crm.approval.resubmitNodeMissing': '因重审节点不存在，本次提交需整单重审',
   'crm.approval.approver': '审批人',
   'crm.approval.addSign': '加签',
   'crm.approval.addSignSuccess': '加签成功',

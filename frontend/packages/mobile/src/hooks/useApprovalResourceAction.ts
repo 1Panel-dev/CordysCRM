@@ -1,5 +1,5 @@
 import { type MaybeRef, unref } from 'vue';
-import { showConfirmDialog, showSuccessToast } from 'vant';
+import { showConfirmDialog, showSuccessToast, showToast } from 'vant';
 
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -35,11 +35,15 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
     try {
       reviewPendingResourceIds.add(resourceId);
       reviewLoading.value = true;
-      await reviewResource({
+      const result = await reviewResource({
         resourceId,
         formKey: unref(options.formKey),
       });
-      showSuccessToast(t('common.reviewSuccess'));
+      if (result?.resubmitNodeInvalid) {
+        showToast(t('crm.approval.resubmitNodeMissing'));
+      } else {
+        showSuccessToast(t('common.reviewSuccess'));
+      }
       await callback?.onSuccess?.(resourceId);
     } catch (error) {
       await callback?.onError?.(error);

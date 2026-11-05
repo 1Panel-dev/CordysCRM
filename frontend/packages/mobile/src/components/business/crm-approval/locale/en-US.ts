@@ -39,6 +39,8 @@ export default {
   'crm.approval.changeDescription': 'Change Description',
   'crm.approval.confirmChange': 'Save and submit for review',
   'crm.approval.confirmAndSubmitReview': 'Confirm and Submit',
+  'crm.approval.resubmitNodeMissing':
+    'The resubmission node no longer exists. This request will restart from the beginning.',
   'crm.approval.approver': 'Approver',
   'crm.approval.addSign': 'Add Signature',
   'crm.approval.addSignSuccess': 'Add Signature Successful',

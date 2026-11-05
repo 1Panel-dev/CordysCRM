@@ -43,6 +43,7 @@ import {
   ApprovalProcessItem,
   ApprovalWebhookConfig,
   CommonApprovalActionParams,
+  ReviewResourceResult,
   UpdateApprovalProcessParams,
   type ApprovalAddSignParams,
   type ApprovalBackParams,
@@ -218,7 +219,7 @@ export default function useProcessApi(CDR: CordysAxios) {
 
   // 提审
   function reviewResource(data: CommonApprovalActionParams) {
-    return CDR.post({ url: ReviewResourceUrl, data });
+    return CDR.post<ReviewResourceResult>({ url: ReviewResourceUrl, data });
   }
 
   // 撤销
