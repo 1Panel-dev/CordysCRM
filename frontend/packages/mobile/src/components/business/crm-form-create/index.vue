@@ -231,6 +231,12 @@
       extraProps.needInitDetail = route.query.needInitDetail === 'Y';
     }
 
+    if (item.type === FieldTypeEnum.INPUT && item.defaultValueType === 'formula') {
+      extraProps.needInitDetail = route.query.needInitDetail === 'Y';
+      extraProps.formDetail = formDetail.value;
+      extraProps.path = item.id;
+    }
+
     if (
       [
         FieldTypeEnum.DATA_SOURCE,

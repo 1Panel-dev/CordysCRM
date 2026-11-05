@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full">
+  <div ref="formContainerRef" class="h-full">
     <SubmitValidationProgressModal
       v-model:show="progressModalVisible"
       :rules="validationRules"
@@ -149,6 +149,7 @@
   });
 
   const formRef = ref<FormInst>();
+  const formContainerRef = ref<HTMLElement>();
   const {
     needInitDetail,
     formKey,
@@ -762,7 +763,16 @@
     const firstErrorId = errors[0]?.[0]?.field;
     if (firstErrorId) {
       const fieldElement = document.getElementById(firstErrorId);
-      fieldElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (fieldElement) {
+        fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      nextTick(() => {
+        const errorElement = formContainerRef.value?.querySelector('.n-form-item-blank--error');
+        const errorFormItem = errorElement?.closest('.n-form-item');
+        errorFormItem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     }
   }
 

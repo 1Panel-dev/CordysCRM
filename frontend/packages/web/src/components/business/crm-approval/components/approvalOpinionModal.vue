@@ -79,7 +79,7 @@
             {
               required: true,
               message: t('common.pleaseSelect'),
-              trigger: 'change',
+              trigger: 'blur',
             },
           ]"
           class="resubmit-node-field"

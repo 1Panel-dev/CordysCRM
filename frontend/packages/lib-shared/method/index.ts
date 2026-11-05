@@ -614,7 +614,7 @@ export function isLarkBrowser(): boolean {
  * @param currency 货币单位
  */
 export function abbreviateNumber(count: number | string, currency: string, decimals = 2) {
-  if (typeof count !== 'number') {
+  if (typeof count !== 'number' || isNaN(count)) {
     return { value: '-', unit: '', full: '-' };
   }
 
