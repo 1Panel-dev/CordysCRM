@@ -16,6 +16,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "type:check": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
     "lint-staged": "npx lint-staged"
   },
   "keywords": [],
