@@ -27,7 +27,12 @@
               @load-detail="() => initStage(true)"
             />
           </div>
-          <CrmDescription :description="renderDescriptions" :source-id="sourceId">
+          <CrmDescription
+            :description="renderDescriptions"
+            :source-id="sourceId"
+            :readonly="!canUpdateOpportunity"
+            @delete-file="removeAttachment"
+          >
             <template #approvalStatus>
               <ApprovalStatus :status="approvalStatus" />
             </template>
@@ -204,7 +209,7 @@
       console.log(error);
     }
   }
-  const { descriptions, formConfig, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+  const { descriptions, formConfig, initFormConfig, initFormDescription, detail, removeAttachment } = useFormCreateApi({
     formKey: FormDesignKeyEnum.BUSINESS,
     sourceId,
     needInitDetail: true,

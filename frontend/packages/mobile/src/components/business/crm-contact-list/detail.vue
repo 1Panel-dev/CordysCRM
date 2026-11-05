@@ -14,7 +14,14 @@
           </div>
         </template>
         <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
-          <CrmDescription :description="descriptions" :source-id="sourceId" />
+          <CrmDescription
+            :description="descriptions"
+            :source-id="sourceId"
+            :readonly="
+              route.query.readonly?.toString() !== 'N' || !hasAllPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])
+            "
+            @delete-file="removeAttachment"
+          />
         </div>
         <CrmChangeRecord
           v-else-if="tab.name === 'changeRecord'"
@@ -58,7 +65,7 @@
 
   const sourceId = computed(() => route.query.id?.toString() || '');
   const activeTab = ref('info');
-  const { descriptions, formConfig, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { descriptions, formConfig, initFormConfig, initFormDescription, removeAttachment } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER_CONTACT,
     sourceId,
     needInitDetail: true,

@@ -8,7 +8,7 @@
           </div>
         </template>
         <div v-if="tab.name === 'detail'" class="relative h-full overflow-auto bg-[var(--text-n9)] py-[16px]">
-          <CrmDescription :description="renderDescriptions" :source-id="sourceId">
+          <CrmDescription :description="renderDescriptions" :source-id="sourceId" readonly>
             <template #approvalStatus>
               <ApprovalStatus v-if="approvalInfo" :status="approvalInfo?.approvalStatus" />
             </template>
