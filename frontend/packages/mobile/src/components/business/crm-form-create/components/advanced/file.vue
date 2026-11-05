@@ -146,7 +146,9 @@
       fileList.value =
         (arr?.map((e) => ({
           ...e,
-          status: 'finished',
+          // Vant 的非图片附件名称取自 file.name；仅传 url 会把预览地址展示为文件名。
+          file: e.file || new File([], e.name, { type: e.type }),
+          status: 'done',
           url: `${PreviewAttachmentUrl}/${e.id}`,
           content: `${PreviewAttachmentUrl}/${e.id}`,
           isImage: /(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(e.type),
