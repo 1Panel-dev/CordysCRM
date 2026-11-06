@@ -3,6 +3,7 @@ package cn.cordys.crm.customer.service;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.mybatis.BaseMapper;
@@ -38,6 +39,11 @@ public class CustomerContactLogService extends BaseModuleLogService {
             if (Strings.CS.equals(column, BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey())) {
                 differ.setOldValueName(getCustomerName(differ.getOldValue()));
                 differ.setNewValueName(getCustomerName(differ.getNewValue()));
+            }
+
+            if (Strings.CS.equals(differ.getColumn(), "enable")) {
+                differ.setOldValueName(Translator.get("log.enable." + differ.getOldValue()));
+                differ.setNewValueName(Translator.get("log.enable." + differ.getNewValue()));
             }
         }
 
