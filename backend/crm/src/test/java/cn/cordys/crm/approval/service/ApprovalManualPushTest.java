@@ -338,14 +338,22 @@ class ApprovalManualPushTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "UNAPPROVED", "REVOKED" })
-    void missingResubmitNodeFallsBackToBeginning(String status) {
-        rejectedInstance().setApprovalStatus(status);
+    @CsvSource({ "UNAPPROVED,CREATE", "REVOKED,CREATE", "UNAPPROVED,UPDATE", "REVOKED,UPDATE" })
+    void missingResubmitNodeFallsBackToBeginning(String status, ExecuteTimingEnum timing) {
+        ApprovalInstance previous = rejectedInstance();
+        previous.setApprovalStatus(status);
+        previous.setExecuteTime(timing.name());
         state.setApprovalStatus(status);
 
-        assertTrue(service.manualPush(param, "creator", "org-a").isResubmitNodeInvalid());
+        if (timing == ExecuteTimingEnum.CREATE) {
+            assertTrue(service.manualPush(param, "creator", "org-a").isResubmitNodeInvalid());
+        } else {
+            ApprovalPushParam automatic = ApprovalPushParam.builder().resourceId("resource-a").formKey("contract")
+                    .orgId("org-a").userId("creator").executeTimingEnum(timing).build();
+            assertTrue(service.pushInNewTransaction(automatic).isResubmitNodeInvalid());
+        }
 
-        verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE);
+        verifyInsertedInstance("contract", "creator", timing);
         ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
         verify(instanceMapper).insert(inserted.capture());
         assertNull(inserted.getValue().getResubmitStartNodeNumber());

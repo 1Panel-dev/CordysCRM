@@ -594,19 +594,19 @@ public class ApprovalResourceService {
     /**
      * 业务操作提审，资源行锁同时保护自动和手动入口。
      */
-    public void push(ApprovalPushParam param) {
+    public ApprovalPushResponse push(ApprovalPushParam param) {
         String currentOrgId = param.getOrgId();
         ApprovalResourceState state = lockResource(param, currentOrgId);
         // 锁定读取最新状态，不依赖外层可重复读事务已经建立的快照。
         if (ApprovalStatus.APPROVING.name().equals(state.getApprovalStatus())) {
-            return;
+            return new ApprovalPushResponse();
         }
 
         ApprovalFlow approvalFlow = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
         if (approvalFlow == null) {
             throw new GenericException(Translator.get("approval_flow.not.exist"));
         }
-        executePush(param, approvalFlow);
+        return executePush(param, approvalFlow);
     }
 
     private ApprovalResourceState lockResource(ApprovalResourceBaseParam param, String orgId) {
@@ -718,8 +718,8 @@ public class ApprovalResourceService {
      * @param param 提审参数
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public void pushInNewTransaction(ApprovalPushParam param) {
-        push(param);
+    public ApprovalPushResponse pushInNewTransaction(ApprovalPushParam param) {
+        return push(param);
     }
 
     private void sendFinishNotice(String currentOrgId, String currentUserId, ApprovalInstance instance) {
