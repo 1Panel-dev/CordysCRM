@@ -26,6 +26,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -291,16 +293,46 @@ public class AttachmentService {
             Set<String> deletedIds = Set.copyOf(removedIds);
             transferredAttachments.stream().filter(attachment -> deletedIds.contains(attachment.getId()))
                     .forEach(this::checkPermission);
-            LambdaQueryWrapper<Attachment> duplicateQueryWrapper = new LambdaQueryWrapper<>();
-            duplicateQueryWrapper.in(Attachment::getId, removedIds);
-            attachmentMapper.deleteByLambda(duplicateQueryWrapper);
-            removedIds.forEach(removeId -> {
-                FileRequest request = new FileRequest(
-                        DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
-                                transferRequest.getResourceId(), removeId),
-                        StorageType.LOCAL.name(), null);
-                fileCommonService.deleteFolder(request, true);
+            deleteRemovedAttachments(transferRequest, removedIds);
+        }
+    }
+
+    /**
+     * 删除已移除的附件。
+     * <p>
+     * 事务中把附件记录删除延迟到提交前、物理文件删除延迟到提交后: 更新接口会先保存字段值(触发本方法)
+     * 再在同一事务内记录操作日志并解析附件名称, 若立即删除附件记录, 日志将查不到名称。
+     * 无事务上下文时直接删除。
+     * </p>
+     */
+    private void deleteRemovedAttachments(UploadTransferRequest transferRequest, List<String> removedIds) {
+        Runnable deleteRecords = () -> {
+            LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(Attachment::getId, removedIds);
+            attachmentMapper.deleteByLambda(queryWrapper);
+        };
+        Runnable deleteFiles = () -> removedIds.forEach(removeId -> {
+            FileRequest request = new FileRequest(
+                    DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
+                            transferRequest.getResourceId(), removeId),
+                    StorageType.LOCAL.name(), null);
+            fileCommonService.deleteFolder(request, true);
+        });
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void beforeCommit(boolean readOnly) {
+                    deleteRecords.run();
+                }
+
+                @Override
+                public void afterCommit() {
+                    deleteFiles.run();
+                }
             });
+        } else {
+            deleteRecords.run();
+            deleteFiles.run();
         }
     }
 
