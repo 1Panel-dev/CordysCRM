@@ -41,7 +41,7 @@
                 theme="light"
                 size="small"
                 tooltip-disabled
-                class="cursor-pointer"
+                class="approval-opinion-quick-tag cursor-pointer"
                 @click="form.reason = quickOpinion"
               >
                 {{ quickOpinion }}
@@ -283,6 +283,9 @@
 </script>
 
 <style lang="less" scoped>
+  :deep(.approval-opinion-quick-tag .n-tag__content) {
+    max-width: none !important;
+  }
   .approval-opinion-field {
     margin-bottom: 16px;
   }
