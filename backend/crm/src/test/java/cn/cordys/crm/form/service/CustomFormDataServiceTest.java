@@ -28,8 +28,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -49,8 +49,10 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -383,15 +385,20 @@ class CustomFormDataServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @CsvSource({ "false,", "true,", "true,FORBIDDEN", "false,FORBIDDEN", "true,NOT_FOUND", "true,FAILED" })
     @SuppressWarnings("unchecked")
-    void getFillsDepartmentAndKeepsApprovalViewReadOnly(boolean approvalView) {
+    void getFillsDepartmentAndKeepsApprovalViewAndManagementPermissionSeparate(boolean approvalView,
+            CrmHttpResultCode scopeError) {
         BaseMapper<CustomFormData> dataMapper = mock(BaseMapper.class);
         CustomFormDataFieldService fieldService = mock(CustomFormDataFieldService.class);
         ModuleFormCacheService formCacheService = mock(ModuleFormCacheService.class);
         BaseService baseService = mock(BaseService.class);
         ModuleFormService moduleFormService = mock(ModuleFormService.class);
-        CustomFormDataService service = serviceWithManageAllPermission();
+        CustomFormDataService service = spy(serviceWithManageAllPermission());
+        GenericException failure = scopeError == null ? null : new GenericException(scopeError);
+        if (failure != null) {
+            doThrow(failure).when(service).getManageDataScope("form-1", "owner-1", "org-1");
+        }
         ReflectionTestUtils.setField(service, "customFormDataMapper", dataMapper);
         ReflectionTestUtils.setField(service, "customFormDataFieldService", fieldService);
         ReflectionTestUtils.setField(service, "moduleFormCacheService", formCacheService);
@@ -413,8 +420,14 @@ class CustomFormDataServiceTest {
         when(moduleFormService.getOptionMap(any(), anyList()))
                 .thenReturn(new HashMap<>());
 
+        if (failure != null && (!approvalView || scopeError != CrmHttpResultCode.FORBIDDEN)) {
+            assertSame(failure,
+                    assertThrows(GenericException.class, () -> service.get("record-1", "owner-1", "org-1")));
+            return;
+        }
         CustomFormDataGetResponse response = service.get("record-1", "owner-1", "org-1");
 
+        assertEquals(scopeError == null, response.getIsAdmin());
         assertEquals("dept-1", response.getDepartmentId());
         assertEquals("销售部", response.getDepartmentName());
     }

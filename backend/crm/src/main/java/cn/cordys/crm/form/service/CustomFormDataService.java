@@ -290,7 +290,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
         CustomFormRoleKey dataScope = null;
         // 先校验是否是审批资源
-        if (!resourcePermissionService.hasApprovalViewPermission(id, userId, orgId, data.getCustomFormId())) {
+        boolean approvalView = resourcePermissionService.hasApprovalViewPermission(id, userId, orgId,
+                data.getCustomFormId());
+        if (!approvalView) {
             checkCurrentOrganization(data, orgId);
             // 获取并校验权限
             dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
@@ -299,7 +301,15 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             }
         }
 
-        CustomFormRoleKey manageDataScope = getManageDataScope(data.getCustomFormId(), userId, orgId);
+        CustomFormRoleKey manageDataScope = null;
+        try {
+            manageDataScope = getManageDataScope(data.getCustomFormId(), userId, orgId);
+        } catch (GenericException e) {
+            // 审批临时查看不要求普通表单管理权限，权限不足时仅关闭管理操作。
+            if (!approvalView || e.getErrorCode() != CrmHttpResultCode.FORBIDDEN) {
+                throw e;
+            }
+        }
         CustomFormDataGetResponse resp = BeanUtils.copyBean(new CustomFormDataGetResponse(), data);
         resp.setIsAdmin(isAdminUser(manageDataScope, userId, data.getOwner()));
 
