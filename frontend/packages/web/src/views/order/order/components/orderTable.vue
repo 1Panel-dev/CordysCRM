@@ -250,6 +250,9 @@
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
+    // 内置订单标签（合同/客户详情）统计走详情标签专用接口：父表单 Key 与标签的关联表单、关联字段。
+    detailTabStatisticFormKey?: string;
+    detailTabStatisticQuery?: FormDetailTabQuery;
     tableKey?: string;
     hideOperationColumn?: boolean;
     hideBoard?: boolean;
@@ -748,6 +751,16 @@
           combineSearch: advanceFilter,
           filters: filterItem.value,
           ...props.detailTabQuery,
+        });
+        return;
+      }
+      if (props.detailTabStatisticFormKey && props.detailTabStatisticQuery && props.sourceId) {
+        // 内置订单标签统计同样走专用接口，保持与主列表一致的金额口径与数据范围。
+        statisticInfo.value = await getFormDetailTabStatistic(props.detailTabStatisticFormKey, props.sourceId, {
+          keyword: _keyword ?? keyword.value,
+          combineSearch: advanceFilter,
+          filters: filterItem.value,
+          ...props.detailTabStatisticQuery,
         });
         return;
       }

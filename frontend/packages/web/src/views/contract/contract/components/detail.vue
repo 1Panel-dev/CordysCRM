@@ -121,6 +121,8 @@
             :sourceId="props.sourceId"
             :sourceName="title"
             is-contract-tab
+            :detail-tab-statistic-form-key="FormDesignKeyEnum.CONTRACT"
+            :detail-tab-statistic-query="orderTabStatisticQuery"
             @open-customer-drawer="emit('showCustomerDrawer', $event)"
           />
         </div>
@@ -280,6 +282,12 @@
   );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
+  // 内置订单标签的关联表单、关联字段取自已保存表单配置，金额统计走详情标签专用接口。
+  const orderTabStatisticQuery = computed(() => {
+    const tab = detailTabConfig.value?.detailTabs?.find((item) => item.internalKey === 'CONTRACT_ORDER');
+    if (!tab?.relatedForm?.id || !tab.relatedField?.id) return undefined;
+    return { relatedFormId: tab.relatedForm.id, relatedFieldId: tab.relatedField.id };
+  });
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
       const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.CONTRACT);
