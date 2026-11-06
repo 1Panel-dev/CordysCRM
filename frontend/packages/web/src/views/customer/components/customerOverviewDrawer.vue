@@ -65,7 +65,11 @@
                 :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="!hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
+                :readonly="
+                  props.readonly ||
+                  collaborationType === 'READ_ONLY' ||
+                  !hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])
+                "
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"
                 @saved="handleSaved"
