@@ -388,6 +388,8 @@ public class ApprovalInstanceService {
             for (int i = 0; i < nodes.size(); i++) {
                 if (ApprovalStatus.UNAPPROVED.name().equals(nodes.get(i).getApprovalStatus())
                         || ApprovalStatus.AUTO_UNAPPROVED.name().equals(nodes.get(i).getApprovalStatus())) {
+                    // 历史入口按展示节点ID定位，避免加签驳回后找不到节点。
+                    instance.setCurrentNodeId(nodes.get(i).getNodeId());
                     return new ArrayList<>(nodes.subList(0, i + 1));
                 }
             }

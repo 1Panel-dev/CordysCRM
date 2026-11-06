@@ -20,6 +20,8 @@ import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -111,6 +113,7 @@ class ApprovalHistoricalInstanceDetailTest {
         ApprovalInstanceDetail detail = service.getHistoricalApprovalInstanceDetail(instance, "org-1");
 
         assertEquals(instance.getId(), detail.getId());
+        assertEquals("NODE002", detail.getCurrentNodeId());
         assertEquals(List.of("NODE001", "NODE002"), detail.getNodes().stream()
                 .map(ApprovalRecordNode::getNodeId).toList());
         ApprovalRecordNode rejectNode = detail.getNodes().getLast();
@@ -146,6 +149,7 @@ class ApprovalHistoricalInstanceDetailTest {
         assertEquals(List.of("NODE001", "NODE002", end.getId()), detail.getNodes().stream()
                 .map(ApprovalRecordNode::getNodeId).toList());
         assertTrue(detail.getNodes().getLast().isEndNode());
+        assertEquals("NODE002", detail.getCurrentNodeId());
         assertEquals(end.getName(), detail.getNodes().getLast().getNodeName());
         ArgumentCaptor<ApprovalNode> criteria = ArgumentCaptor.forClass(ApprovalNode.class);
         verify(nodeMapper).selectOne(criteria.capture());
@@ -173,17 +177,20 @@ class ApprovalHistoricalInstanceDetailTest {
         verifyNoInteractions(flowService);
     }
 
-    @Test
-    void rejectedBeforeSignStopsBeforeUnprocessedRootAndFollowingSigns() {
+    @ParameterizedTest
+    @EnumSource(ApprovalAddSignType.class)
+    void rejectedSignPointsToActualRejectionAndStopsBeforeFollowingTasks(ApprovalAddSignType signType) {
         instance.setCurrentNodeId("NODE001");
-        ApprovalTask root = task("root", "NODE001", ApprovalTaskType.NL, ApprovalStatus.PENDING, 10L);
+        boolean before = signType == ApprovalAddSignType.BEFORE;
+        ApprovalTask root = task("root", "NODE001", ApprovalTaskType.NL,
+                before ? ApprovalStatus.PENDING : ApprovalStatus.APPROVED, 10L);
         ApprovalTask previous = task("previous", "NODE001-SN", ApprovalTaskType.SN, ApprovalStatus.APPROVED, 20L);
         ApprovalTask rejected = task("rejected", "NODE001-SN", ApprovalTaskType.SN, ApprovalStatus.UNAPPROVED, 30L);
         ApprovalTask following = task("following", "NODE001-SN", ApprovalTaskType.SN, ApprovalStatus.PENDING, 40L);
         when(taskMapper.selectListByLambda(any())).thenReturn(List.of(root, previous, rejected, following));
         when(signMapper.selectListByLambda(any())).thenReturn(List.of(
-                sign(previous, root, ApprovalAddSignType.BEFORE, 1L),
-                sign(rejected, root, ApprovalAddSignType.BEFORE, 2L),
+                sign(previous, root, signType, 1L),
+                sign(rejected, root, signType, 2L),
                 sign(following, root, ApprovalAddSignType.AFTER, 3L)));
         when(nodeMapper.selectByIds(anyList())).thenAnswer(invocation -> {
             List<String> ids = invocation.getArgument(0);
@@ -196,9 +203,16 @@ class ApprovalHistoricalInstanceDetailTest {
 
         ApprovalInstanceDetail detail = service.getHistoricalApprovalInstanceDetail(instance, "org-1");
 
-        assertEquals(List.of(previous.getId(), rejected.getId()), detail.getNodes().stream()
+        List<String> expectedTaskIds = before ? List.of(previous.getId(), rejected.getId())
+                : List.of(root.getId(), previous.getId(), rejected.getId());
+        assertEquals(expectedTaskIds, detail.getNodes().stream()
                 .flatMap(node -> node.getTaskNodes().stream()).map(ApprovalTaskNode::getTaskId).toList());
         assertEquals(ApprovalStatus.UNAPPROVED.name(), detail.getNodes().getLast().getApprovalStatus());
+        assertEquals(detail.getNodes().getLast().getNodeId(), detail.getCurrentNodeId());
+        ApprovalRecordNode currentNode = detail.getNodes().stream()
+                .filter(node -> node.getNodeId().equals(detail.getCurrentNodeId())).findFirst().orElseThrow();
+        assertEquals(rejected.getId(), currentNode.getTaskNodes().getFirst().getTaskId());
+        assertEquals("旧版单人审批", currentNode.getNodeName());
         assertTrue(detail.getNodes().stream().allMatch(node -> "旧版单人审批".equals(node.getNodeName())));
         verifyNoInteractions(flowService);
     }
