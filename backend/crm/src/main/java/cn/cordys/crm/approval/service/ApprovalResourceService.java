@@ -28,6 +28,7 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
 import cn.cordys.crm.approval.domain.ApprovalTask;
@@ -104,6 +105,8 @@ public class ApprovalResourceService {
     private BaseMapper<ApprovalInstance> approvalInstanceMapper;
     @Resource
     private BaseMapper<ApprovalFlowVersion> approvalFlowVersionMapper;
+    @Resource
+    private BaseMapper<ApprovalNode> approvalNodeMapper;
     @Resource
     private BaseMapper<ApprovalTask> approvalTaskMapper;
     @Resource
@@ -631,8 +634,17 @@ public class ApprovalResourceService {
         ApprovalInstance instance = initInstance(approvalFlow, param);
         ApprovalPushResponse response = new ApprovalPushResponse();
         ApprovalNodeResponse firstApprovalNode = null;
+        // 撤销后仅在尚未离开本轮重审起点时沿用，兼容已有撤销实例。
+        boolean resumeRevokedInstance = false;
+        if (previousInstance != null && ApprovalStatus.REVOKED.name().equals(previousInstance.getApprovalStatus())
+                && StringUtils.isNotBlank(previousInstance.getResubmitStartNodeNumber())) {
+            ApprovalNode currentNode = approvalNodeMapper.selectByPrimaryKey(previousInstance.getCurrentNodeId());
+            resumeRevokedInstance = currentNode != null
+                    && Strings.CS.equals(currentNode.getNumber(), previousInstance.getResubmitStartNodeNumber());
+        }
         if (previousInstance != null
-                && ApprovalStatus.UNAPPROVED.name().equals(previousInstance.getApprovalStatus())
+                && (ApprovalStatus.UNAPPROVED.name().equals(previousInstance.getApprovalStatus())
+                        || resumeRevokedInstance)
                 && Strings.CS.equals(previousInstance.getType(), instance.getType())
                 && Strings.CS.equals(StringUtils.defaultIfBlank(previousInstance.getExecuteTime(),
                         ExecuteTimingEnum.CREATE.name()), instance.getExecuteTime())
