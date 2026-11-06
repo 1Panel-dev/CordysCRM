@@ -286,6 +286,7 @@
               value: MemberSelectTypeEnum.ORG,
             },
           ]"
+          :disabledNodeTypes="[DeptNodeTypeEnum.ORG]"
           @select-drawer-visible-change="(visible) => (addSignReviewerDrawerVisible = visible)"
         />
       </n-form-item>
@@ -353,6 +354,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { ApprovalTaskExecuteTimeEnum, MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum.js';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatBadgeCount } from '@lib/shared/method';
   import type { CollaborationType } from '@lib/shared/models/customer';
