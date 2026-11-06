@@ -831,7 +831,7 @@
       case 'CURRENT_NODE':
         return resubmitNodeOptions.value.find((option) => option.tag === 'current')?.value;
       case 'SPECIFIED_NODE':
-        return resubmitStartNodeNumber.value || undefined;
+        return resubmitStartNodeNumber.value ?? undefined;
       default:
         return undefined;
     }

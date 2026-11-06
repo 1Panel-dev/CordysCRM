@@ -104,7 +104,7 @@
       case 'CURRENT_NODE':
         return props.approvalItem?.approvalNodeNumber || undefined;
       case 'SPECIFIED_NODE':
-        return resubmitStartNodeNumber.value || undefined;
+        return resubmitStartNodeNumber.value ?? undefined;
       default:
         return undefined;
     }

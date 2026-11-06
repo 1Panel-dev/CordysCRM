@@ -77,12 +77,13 @@
           :label="t('crm.approval.resubmitSpecifiedNode')"
           :rule="[
             {
-              required: true,
+              validator: (_rule, value) => value !== null && value !== undefined,
               message: t('common.pleaseSelect'),
               trigger: 'blur',
             },
           ]"
           class="resubmit-node-field"
+          required
         >
           <n-select
             v-model:value="form.resubmitStartNodeNumber"
