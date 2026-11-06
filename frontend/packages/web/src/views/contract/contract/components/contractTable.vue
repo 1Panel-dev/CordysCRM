@@ -781,8 +781,10 @@
   const totalAmountInfo = computed(() => {
     if (checkedRowKeys.value.length > 0) {
       const amount = propsRes.value.data
-        .filter((item: ContractItem) => checkedRowKeys.value.includes(item.id))
-        .reduce((total: number, item: ContractItem) => total + (item.amount || 0), 0);
+        .filter((item: ContractItem) => checkedRowKeys.value.includes(item.id) && item.amount.toString() !== '-')
+        .reduce((total: number, item: ContractItem) => {
+          return Number(total) + Number(item.amount.toString().replace(/,/g, '') || 0);
+        }, 0);
       return {
         averageAmount: amount / checkedRowKeys.value.length,
         amount,
