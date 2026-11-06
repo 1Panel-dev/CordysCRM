@@ -101,7 +101,7 @@
                 required
                 :rules="[
                   {
-                    required: true,
+                    validator: () => selectedResubmitStartNodeNumber !== null,
                     message: t('common.pleaseSelect'),
                   },
                 ]"
@@ -351,7 +351,7 @@
           resubmitMode: resubmitMode.value,
           resubmitStartNodeNumber:
             resubmitMode.value === 'SPECIFIED_NODE'
-              ? selectedResubmitStartNodeNumber.value || undefined
+              ? selectedResubmitStartNodeNumber.value ?? undefined
               : resubmitMode.value === 'CURRENT_NODE'
               ? resubmitNodeOptions.value.find((option) => option.tag === 'current')?.value
               : undefined,
