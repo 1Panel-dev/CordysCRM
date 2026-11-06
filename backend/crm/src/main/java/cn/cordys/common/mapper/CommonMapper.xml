@@ -275,6 +275,10 @@
                     OR ${column} IS NULL
                 </when>
 
+                <when test="${condition}.operator == 'EQUALS'">
+                    ${column} = #{condition.value}
+                </when>
+
                 <!-- EMPTY / NOT_EMPTY -->
                 <when test="${condition}.operator == 'EMPTY'">
                     (${column} IS NULL OR ${column} = '')

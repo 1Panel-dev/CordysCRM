@@ -104,14 +104,15 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private FollowUpPlanService followUpPlanService;
 
     /**
-     * 处理非内置 tab 中的 内置表单的查询
-     * (内置的 tab 走原来的接口逻辑)
+     * 处理关联表单是标准表单的标签查询（含带关联表单/字段的内置标签）。
+     * <p>
+     * 独立内置标签（无关联表单，如变更记录）和自定义表单标签不在此处理：
+     * 前者仍走原有专用接口，后者由 {@link CustomRelatedDetailTabDataHandler} 处理。
+     * </p>
      */
     @Override
     public boolean supports(DetailTabQueryContext context) {
-        if (StringUtils.isNotBlank(context.tab().getInternalKey())
-                || context.tab().getRelatedForm() == null
-                || context.tab().getRelatedField() == null) {
+        if (context.tab().getRelatedForm() == null || context.tab().getRelatedField() == null) {
             return false;
         }
         return FormKey.ofKey(context.tab().getRelatedForm().getIdAsString()) != null;

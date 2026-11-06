@@ -327,6 +327,22 @@ class CustomerDetailTabPermissionTest {
     }
 
     @Test
+    void 内置订单标签统计同样走标准关联处理() {
+        savedTab("order", "CONTRACT_ORDER");
+        granted.add(PermissionConstants.ORDER_READ);
+        DeptDataPermissionDTO orderScope = new DeptDataPermissionDTO();
+        orderScope.setSelf(true);
+        doReturn(orderScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL", PermissionConstants.ORDER_READ);
+        OrderStatisticResponse statistic = new OrderStatisticResponse();
+        doReturn(statistic).when(orderService).searchStatistic(any(), eq(USER), eq(ORG), same(orderScope));
+        assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("order")));
+        ArgumentCaptor<BaseCondition> query = ArgumentCaptor.forClass(BaseCondition.class);
+        verify(orderService).searchStatistic(query.capture(), eq(USER), eq(ORG), same(orderScope));
+        assertEquals("ALL", query.getValue().getViewId());
+        assertFixedRelation(query.getValue());
+    }
+
+    @Test
     void 回款记录标签统计沿用回款数据范围与固定父客户过滤() {
         savedTab("contractPaymentRecord");
         granted.add(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
@@ -389,8 +405,13 @@ class CustomerDetailTabPermissionTest {
     }
 
     private void savedTab(String relatedForm) {
+        savedTab(relatedForm, null);
+    }
+
+    private void savedTab(String relatedForm, String internalKey) {
         FormDetailTab tab = new FormDetailTab();
         tab.setEnable(true);
+        tab.setInternalKey(internalKey);
         tab.setRelatedForm(new OptionDTO(relatedForm, "关联表单"));
         tab.setRelatedField(new OptionDTO(LINK, "关联客户"));
         FormProp prop = new FormProp();
