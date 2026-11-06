@@ -549,8 +549,12 @@
   const totalAmountInfo = computed(() => {
     if (checkedRowKeys.value.length > 0) {
       const amount = propsRes.value.data
-        .filter((item: PaymentRecordItem) => checkedRowKeys.value.includes(item.id))
-        .reduce((total: number, item: PaymentRecordItem) => total + (item.amount || 0), 0);
+        .filter(
+          (item: PaymentRecordItem) => checkedRowKeys.value.includes(item.id) && item.recordAmount.toString() !== '-'
+        )
+        .reduce((total: number, item: PaymentRecordItem) => {
+          return Number(total) + Number(item.recordAmount.toString().replace(/,/g, '') || 0);
+        }, 0);
       return {
         averageAmount: amount / checkedRowKeys.value.length,
         amount,

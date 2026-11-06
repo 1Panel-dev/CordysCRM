@@ -106,7 +106,7 @@ export interface PaymentRecordItem {
   name: string;
   contractId: string;
   owner: string;
-  amount: number;
+  recordAmount: number;
   invoiceType: string;
   taxRate: number;
   businessTitleId: string;
