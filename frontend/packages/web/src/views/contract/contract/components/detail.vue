@@ -76,7 +76,7 @@
                 :task-node="taskNode"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="!hasAnyPermission(['CONTRACT:UPDATE'])"
+                :readonly="!canUpdateStage"
                 :is-contract-table-detail="props.isContractTableDetail"
                 :approval-task-id="props.approvalTaskId"
                 :comment-mention-id="props.commentMentionId"
@@ -211,7 +211,6 @@
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;

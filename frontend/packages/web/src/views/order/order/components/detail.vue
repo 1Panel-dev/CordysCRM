@@ -84,7 +84,7 @@
                 :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="!hasAnyPermission(['ORDER:UPDATE'])"
+                :readonly="!canUpdateStage"
                 @init="handleInit"
                 @open-contract-detail="handleOpenContractDrawer"
                 @open-customer-detail="handleOpenCustomerDrawer"

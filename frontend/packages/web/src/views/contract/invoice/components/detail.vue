@@ -69,7 +69,7 @@
                 :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="props.readonly || !hasAnyPermission(['CONTRACT_INVOICE:UPDATE'])"
+                :readonly="!hasApprovalScopedPermission(detailInfo, ['CONTRACT_INVOICE:UPDATE'])"
                 @init="handleInit"
                 @open-contract-detail="emit('openContractDrawer', $event)"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
@@ -135,7 +135,6 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;
@@ -219,14 +218,15 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, deleteExecute } = useApprovalOperation<ContractInvoiceItem>({
-    formType: FormDesignKeyEnum.INVOICE,
-    dataActionMap: invoiceDetailDataActionMap,
-    isDetail: true,
-    identityResolver: {
-      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-    },
-  });
+  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+    useApprovalOperation<ContractInvoiceItem>({
+      formType: FormDesignKeyEnum.INVOICE,
+      dataActionMap: invoiceDetailDataActionMap,
+      isDetail: true,
+      identityResolver: {
+        isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+      },
+    });
 
   const detailActions = computed<{
     groupList: ActionsItem[];
