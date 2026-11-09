@@ -45,6 +45,21 @@ public class SSRFValidator {
      * </ul>
      */
     public void validate(String url) {
+        validate(url, false);
+    }
+
+    /**
+     * 校验允许私网部署的集成地址，仍禁止回环和链路本地等地址。
+     * TCP 连接应直接使用返回的地址，避免再次解析域名。
+     *
+     * @param url 集成服务地址
+     * @return 已校验的连接地址
+     */
+    public InetAddress validateIntegrationUrl(String url) {
+        return validate(url, true);
+    }
+
+    private InetAddress validate(String url, boolean allowPrivate) {
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("URL 不能为空");
         }
@@ -72,8 +87,9 @@ public class SSRFValidator {
 
         // 4. 解析并检查 IP
         InetAddress inetAddress = resolveHost(host);
-        validateIpAddress(inetAddress);
+        validateIpAddress(inetAddress, allowPrivate);
         log.info("SSRF validation passed for {} -> {}", host, inetAddress.getHostAddress());
+        return inetAddress;
     }
 
     // ==================== public helpers ====================
@@ -101,7 +117,10 @@ public class SSRFValidator {
      */
     private String extractHost(URI uri) {
         String host = uri.getHost();
-        if (host != null && host.startsWith("[") && host.endsWith("]")) {
+        if (host == null) {
+            return null;
+        }
+        if (host.startsWith("[") && host.endsWith("]")) {
             host = host.substring(1, host.length() - 1);
         }
         // 移除 zone id (e.g. fe80::1%eth0 -> fe80::1)
@@ -113,6 +132,10 @@ public class SSRFValidator {
     }
 
     private void validateIpAddress(InetAddress addr) {
+        validateIpAddress(addr, false);
+    }
+
+    private void validateIpAddress(InetAddress addr, boolean allowPrivate) {
         // 0.0.0.0 / ::
         if (addr.isAnyLocalAddress()) {
             throw new IllegalArgumentException("禁止访问任意本地地址");
@@ -129,7 +152,7 @@ public class SSRFValidator {
         }
 
         // 站点本地（私有）: IPv4 site-local, IPv6 deprecated site-local fec0::/10
-        if (addr.isSiteLocalAddress()) {
+        if (!allowPrivate && addr.isSiteLocalAddress()) {
             throw new IllegalArgumentException("禁止访问内网地址");
         }
 
@@ -143,33 +166,33 @@ public class SSRFValidator {
             InetAddress embedded = getEmbeddedIPv4Address(ipv6Address);
             if (embedded != null) {
                 // 递归校验内嵌的 IPv4 地址
-                validateIpAddress(embedded);
+                validateIpAddress(embedded, allowPrivate);
                 return; // 无需再检查 IPv6 特有段
             }
 
             // NAT64: 64:ff9b::/96
             embedded = extractIPv4FromNAT64(ipv6Address);
             if (embedded != null) {
-                validateIpAddress(embedded);
+                validateIpAddress(embedded, allowPrivate);
                 return;
             }
 
             // 6to4: 2002::/16
             embedded = extractIPv4From6to4(ipv6Address);
             if (embedded != null) {
-                validateIpAddress(embedded);
+                validateIpAddress(embedded, allowPrivate);
                 return;
             }
 
             // Teredo: 2001::/32
             embedded = extractIPv4FromTeredo(ipv6Address);
             if (embedded != null) {
-                validateIpAddress(embedded);
+                validateIpAddress(embedded, allowPrivate);
                 return;
             }
 
             // IPv6 ULA (fc00::/7)
-            if (isIPv6ULA(ipv6Address)) {
+            if (!allowPrivate && isIPv6ULA(ipv6Address)) {
                 throw new IllegalArgumentException("禁止访问 IPv6 唯一本地地址 (ULA)");
             }
         }
@@ -218,9 +241,9 @@ public class SSRFValidator {
         if (bytes.length != 16) {
             return null;
         }
-        // 前缀: 64 ff 9b，后面9个字节（从索引3到11）必须为0
-        if (bytes[0] == 0x64 && bytes[1] == (byte) 0xff && bytes[2] == (byte) 0x9b) {
-            for (int i = 3; i < 12; i++) {
+        // 64:ff9b::/96 的前四字节为 00 64 ff 9b。
+        if (bytes[0] == 0 && bytes[1] == 0x64 && bytes[2] == (byte) 0xff && bytes[3] == (byte) 0x9b) {
+            for (int i = 4; i < 12; i++) {
                 if (bytes[i] != 0) {
                     return null;
                 }
