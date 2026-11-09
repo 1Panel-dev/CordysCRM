@@ -82,6 +82,7 @@
         <CrmChangeRecord
           v-if="activeTab === 'changeRecord' && isChangeRecordEnabled"
           :source-id="props.sourceId"
+          :approval-task-id="props.approvalTaskId"
           :fetcher="(params) => getChangeLogPage(props.customFormId, params)"
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
@@ -266,7 +267,7 @@
     formConfig,
     staticTabList,
     availableDetailTabIds,
-    { name: 'customForm', tab: t('module.customForm'), enable: true, permission: ['CUSTOM_FORM:READ'] }
+    { name: 'customForm', tab: t('module.customForm'), enable: true }
   );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const isChangeRecordEnabled = computed(() => enabledDetailTabList.value.some((tab) => tab.name === 'changeRecord'));

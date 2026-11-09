@@ -87,6 +87,7 @@
         <CrmChangeRecord
           v-if="activeTab === 'changeRecord'"
           :source-id="props.sourceId"
+          :approval-task-id="props.approvalTaskId"
           :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.OPPORTUNITY_QUOTATION, params)"
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
@@ -193,7 +194,7 @@
     formConfig,
     staticTabList,
     availableDetailTabIds,
-    { name: 'quotation', tab: t('opportunity.quotation'), enable: true, permission: ['OPPORTUNITY_QUOTATION:READ'] }
+    { name: 'quotation', tab: t('opportunity.quotation'), enable: true }
   );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
