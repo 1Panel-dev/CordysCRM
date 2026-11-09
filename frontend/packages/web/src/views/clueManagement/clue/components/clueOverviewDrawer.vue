@@ -93,6 +93,7 @@
         <CrmChangeRecord
           v-else-if="activeTab === 'changeRecord'"
           :source-id="sourceId"
+          :approval-task-id="props.approvalTaskId"
           :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.CLUE, params)"
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">

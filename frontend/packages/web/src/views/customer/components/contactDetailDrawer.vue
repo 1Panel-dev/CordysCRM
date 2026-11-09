@@ -105,7 +105,7 @@
     formConfig,
     staticTabList,
     availableDetailTabIds,
-    { name: 'contact', tab: t('crmFormDesign.contact'), enable: true, permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'] }
+    { name: 'contact', tab: t('crmFormDesign.contact'), enable: true }
   );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();

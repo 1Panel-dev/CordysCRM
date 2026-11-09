@@ -83,6 +83,7 @@
     sourceId: string;
     fetcher: ChangeRecordFetcher;
     title?: string;
+    approvalTaskId?: string;
   }>();
 
   const { t } = useI18n();
@@ -100,7 +101,12 @@
     const current = refresh ? 1 : pageNation.value.current + 1;
     loading.value = true;
     try {
-      const page = await props.fetcher({ sourceId: props.sourceId, current, pageSize });
+      const page = await props.fetcher({
+        sourceId: props.sourceId,
+        current,
+        pageSize,
+        approvalTaskId: props.approvalTaskId,
+      });
       records.value = refresh ? page.list : [...records.value, ...page.list];
       pageNation.value = {
         current: page.current,

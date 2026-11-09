@@ -97,6 +97,7 @@
         <CrmChangeRecord
           v-if="activeTab === 'changeRecord'"
           :source-id="props.sourceId"
+          :approval-task-id="props.approvalTaskId"
           :fetcher="(params) => getChangeLogPage(FormDesignKeyEnum.ORDER, params)"
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
@@ -258,7 +259,7 @@
     detailTabConfig,
     staticTabList,
     availableDetailTabIds,
-    { name: 'order', tab: t('module.order'), enable: true, permission: ['ORDER:READ'] }
+    { name: 'order', tab: t('module.order'), enable: true }
   );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();

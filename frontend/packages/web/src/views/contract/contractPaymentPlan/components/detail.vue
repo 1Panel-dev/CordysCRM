@@ -141,7 +141,7 @@
     formConfig,
     staticTabList,
     availableDetailTabIds,
-    { name: 'paymentPlan', tab: t('module.paymentPlan'), enable: true, permission: ['CONTRACT_PAYMENT_PLAN:READ'] }
+    { name: 'paymentPlan', tab: t('module.paymentPlan'), enable: true }
   );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
