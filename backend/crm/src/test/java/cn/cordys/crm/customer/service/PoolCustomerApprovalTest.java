@@ -1,6 +1,7 @@
 package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
@@ -23,6 +24,8 @@ import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.MockedStatic;
@@ -47,6 +50,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -107,6 +111,10 @@ class PoolCustomerApprovalTest {
     void singleDeleteChecksResourceRefBeforeHandingToTheApprovalEntry() {
         PoolCustomerService spy = spy(service);
         doNothing().when(spy).delete(anyString());
+        when(customerMapper.selectByPrimaryKey("customer-1")).thenReturn(customer("customer-1"));
+        when(approvalFlowService.filterResourcesWithPermission(
+                anyString(), anyList(), anyString(), anyString(), any(), any(), anyString()))
+                .thenReturn(List.of("customer-1"));
 
         try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
             beanFactory.when(() -> CommonBeanFactory.getBean(CustomerService.class)).thenReturn(customerService);
@@ -115,7 +123,10 @@ class PoolCustomerApprovalTest {
         }
 
         // 校验先跑, 再委托
-        InOrder inOrder = inOrder(customerService, spy);
+        InOrder inOrder = inOrder(approvalFlowService, customerService, spy);
+        inOrder.verify(approvalFlowService).filterResourcesWithPermission(
+                eq(FormKey.CUSTOMER.getKey()), anyList(), eq(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE),
+                eq(ORG_ID), any(), any(), eq(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE));
         inOrder.verify(customerService).checkResourceRef(List.of("customer-1"));
         inOrder.verify(spy).deleteTriggerApproval("customer-1", USER_ID, ORG_ID);
     }
@@ -123,6 +134,10 @@ class PoolCustomerApprovalTest {
     @Test
     void singleDeleteAbortsBeforeApprovalWhenTheCustomerIsStillReferenced() {
         PoolCustomerService spy = spy(service);
+        when(customerMapper.selectByPrimaryKey("customer-1")).thenReturn(customer("customer-1"));
+        when(approvalFlowService.filterResourcesWithPermission(
+                anyString(), anyList(), anyString(), anyString(), any(), any(), anyString()))
+                .thenReturn(List.of("customer-1"));
         doThrow(new GenericException(CustomerResultCode.CUSTOMER_RESOURCE_REF))
                 .when(customerService).checkResourceRef(List.of("customer-1"));
 
@@ -135,6 +150,46 @@ class PoolCustomerApprovalTest {
 
         verify(spy, never()).deleteTriggerApproval(anyString(), anyString(), anyString());
         verify(spy, never()).delete(anyString());
+    }
+
+    @Test
+    void singleDeleteRejectsDisabledStatusPermissionBeforeApproval() {
+        PoolCustomerService spy = spy(service);
+        when(customerMapper.selectByPrimaryKey("customer-1")).thenReturn(customer("customer-1"));
+        when(approvalFlowService.filterResourcesWithPermission(
+                anyString(), anyList(), anyString(), anyString(), any(), any(), anyString()))
+                .thenReturn(List.of());
+
+        try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
+            beanFactory.when(() -> CommonBeanFactory.getBean(CustomerService.class)).thenReturn(customerService);
+            beanFactory.when(() -> CommonBeanFactory.getBean(PoolCustomerService.class)).thenReturn(spy);
+            assertThrows(GenericException.class, () -> spy.deleteWithApprovalCheck("customer-1", USER_ID, ORG_ID));
+        }
+
+        verify(approvalFlowService).filterResourcesWithPermission(
+                eq(FormKey.CUSTOMER.getKey()), anyList(), eq(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE),
+                eq(ORG_ID), any(), any(), eq(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE));
+        verifyNoInteractions(customerService, approvalResourceService);
+        verify(spy, never()).deleteTriggerApproval(anyString(), anyString(), anyString());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "another-org,true", "test-org,false", "test-org," })
+    void singleDeleteRejectsCustomerOutsideCurrentPoolBeforeApproval(String orgId, Boolean inSharedPool) {
+        PoolCustomerService spy = spy(service);
+        Customer foreignCustomer = customer("customer-1");
+        foreignCustomer.setOrganizationId(orgId);
+        foreignCustomer.setInSharedPool(inSharedPool);
+        when(customerMapper.selectByPrimaryKey(foreignCustomer.getId())).thenReturn(foreignCustomer);
+
+        try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
+            beanFactory.when(() -> CommonBeanFactory.getBean(CustomerService.class)).thenReturn(customerService);
+            beanFactory.when(() -> CommonBeanFactory.getBean(PoolCustomerService.class)).thenReturn(spy);
+            assertThrows(GenericException.class, () -> spy.deleteWithApprovalCheck("customer-1", USER_ID, ORG_ID));
+        }
+
+        verifyNoInteractions(approvalFlowService, customerService, approvalResourceService);
+        verify(spy, never()).deleteTriggerApproval(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -297,6 +352,22 @@ class PoolCustomerApprovalTest {
         assertEquals("no.operation.permission", response.getErrorMessages());
     }
 
+    @ParameterizedTest
+    @CsvSource({ "another-org,true", "test-org,false", "test-org," })
+    void batchDeleteRejectsCustomerOutsideCurrentPoolBeforeAnyWrite(String orgId, Boolean inSharedPool) {
+        Customer foreignCustomer = customer("customer-2");
+        foreignCustomer.setOrganizationId(orgId);
+        foreignCustomer.setInSharedPool(inSharedPool);
+        when(customerMapper.selectByIds(anyList())).thenReturn(List.of(customer("customer-1"), foreignCustomer));
+        when(approvalFlowService.filterResourcesWithPermission(
+                anyString(), anyList(), anyString(), anyString(), any(), any(), anyString()))
+                .thenReturn(List.of("customer-1", "customer-2"));
+
+        assertThrows(GenericException.class, () -> runDelete(List.of("customer-1", "customer-2")));
+
+        verifyNoInteractions(approvalFlowService, customerService, approvalResourceService);
+    }
+
     /**
      * 审批通过后的删除由框架落到 {@link CustomerService#delete}, 公海客户没有负责人,
      * 通知的收件人不能是 List.of(null)。
@@ -352,6 +423,9 @@ class PoolCustomerApprovalTest {
         Customer customer = new Customer();
         customer.setId(id);
         customer.setName("customer-" + id);
+        customer.setOrganizationId(ORG_ID);
+        customer.setInSharedPool(true);
+        customer.setPoolId("local-pool");
         return customer;
     }
 }

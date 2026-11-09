@@ -4,6 +4,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
@@ -88,6 +89,7 @@ class CustomerMergeRelatedResourceTest {
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
         ReflectionTestUtils.setField(service, "customerMapper", customerMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", mock(ResourcePermissionService.class));
         ReflectionTestUtils.setField(service, "customerContactService", customerContactService);
         ReflectionTestUtils.setField(service, "customerContactMapper", customerContactMapper);
         ReflectionTestUtils.setField(service, "customerCollaborationMapper", customerCollaborationMapper);
