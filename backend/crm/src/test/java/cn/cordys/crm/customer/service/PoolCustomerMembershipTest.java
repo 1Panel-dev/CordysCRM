@@ -1,5 +1,7 @@
 package cn.cordys.crm.customer.service;
 
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.CustomerPool;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
@@ -7,6 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -14,7 +19,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -65,6 +72,16 @@ class PoolCustomerMembershipTest {
     void missingOrganizationHasNoAccess() {
         assertFalse(service.hasPoolMember(pool.getId(), "admin", null));
         assertFalse(service.hasPoolMember(pool.getId(), "admin", ""));
+        verifyNoInteractions(userExtendService);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = "another-org")
+    void memberCheckRejectsForeignOrMissingOrganizationEvenForAdministrator(String orgId) {
+        try (MockedStatic<Translator> translator = mockStatic(Translator.class)) {
+            assertThrows(GenericException.class, () -> service.checkPoolMember(pool.getId(), "admin", orgId));
+        }
         verifyNoInteractions(userExtendService);
     }
 

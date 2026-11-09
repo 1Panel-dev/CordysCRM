@@ -307,6 +307,15 @@ public class PoolCustomerService {
      * @param orgId  组织ID
      */
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        Customer customer = getPoolCustomer(id, orgId);
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CUSTOMER.getValue(), List.of(customer),
+                PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, orgId,
+                Customer::getId, Customer::getApprovalStatus,
+                PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE);
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
         Objects.requireNonNull(CommonBeanFactory.getBean(CustomerService.class)).checkResourceRef(List.of(id));
         // 自调用不走代理, 需从容器取代理对象才能命中审批切面
         Objects.requireNonNull(CommonBeanFactory.getBean(PoolCustomerService.class)).deleteTriggerApproval(id, userId,
@@ -394,6 +403,11 @@ public class PoolCustomerService {
         if (CollectionUtils.isEmpty(customers)) {
             return BatchAffectReasonResponse.builder().success(0).fail(ids.size()).skip(0)
                     .errorMessages(Translator.get("customer.not.exist")).build();
+        }
+        if (StringUtils.isBlank(orgId) || customers.stream()
+                .anyMatch(customer -> !orgId.equals(customer.getOrganizationId())
+                        || !Boolean.TRUE.equals(customer.getInSharedPool()))) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer.not.exist"));
         }
         // 状态权限校验: 与客户批量删除一致, 过滤出当前用户有权删除的客户。
         // 审批流的状态权限配置里登记的是 CUSTOMER_MANAGEMENT:*, 公海权限是另一个分组, 故按资源查客户权限、按角色校验公海权限
@@ -636,7 +650,7 @@ public class PoolCustomerService {
      */
     public void checkPoolMember(String poolId, String userId, String orgId) {
         CustomerPool pool = poolMapper.selectByPrimaryKey(poolId);
-        if (pool == null) {
+        if (pool == null || StringUtils.isBlank(orgId) || !orgId.equals(pool.getOrganizationId())) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer_pool_not_exist"));
         }
         if (!isPoolMember(pool, userId, orgId)) {
@@ -683,7 +697,7 @@ public class PoolCustomerService {
 
     private Customer getPoolCustomer(String id, String orgId) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
-        if (customer == null || !Objects.equals(customer.getOrganizationId(), orgId)) {
+        if (customer == null || StringUtils.isBlank(orgId) || !orgId.equals(customer.getOrganizationId())) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer.not.exist"));
         }
         if (!Boolean.TRUE.equals(customer.getInSharedPool())) {

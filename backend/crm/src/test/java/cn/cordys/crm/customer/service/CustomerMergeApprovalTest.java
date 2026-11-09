@@ -2,7 +2,11 @@ package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
@@ -21,14 +25,22 @@ import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.MockedStatic;
+import org.mockito.MockMakers;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +54,9 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.withSettings;
 import static org.mockito.Mockito.when;
 
 /**
@@ -54,13 +68,16 @@ class CustomerMergeApprovalTest {
     private static final String USER_ID = "operator";
     private static final String ORG_ID = "test-org";
     private static final String TARGET_ID = "customer-target";
-    private static final String OWNER = "owner-1";
+    private static final String OWNER = USER_ID;
     private static final List<String> MERGE_IDS = List.of("customer-1", "customer-2");
 
     private final CustomerService service = new CustomerService();
     @SuppressWarnings("unchecked")
     private final BaseMapper<Customer> customerMapper = mock(BaseMapper.class);
     private final ApprovalFlowService approvalFlowService = mock(ApprovalFlowService.class);
+    private final ResourcePermissionService resourcePermissionService = new ResourcePermissionService();
+    private final DataScopeService dataScopeService = spy(new DataScopeService());
+    private final Map<String, Customer> customers = new HashMap<>();
     private final CustomerContactService customerContactService = mock(CustomerContactService.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<CustomerContact> customerContactMapper = mock(BaseMapper.class);
@@ -76,13 +93,27 @@ class CustomerMergeApprovalTest {
     private final LogService logService = mock(LogService.class);
     private final CustomerMergeRequest request = new CustomerMergeRequest();
     private MockedStatic<Translator> translator;
+    private MockedStatic<PermissionUtils> permissions;
 
     @BeforeEach
     void setUp() {
         // 合并日志与错误提示要取翻译, 单测里没有 Spring 上下文, 直接回显 key
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
+        permissions = mockStatic(PermissionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
+        permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE))
+                .thenReturn(true);
         ReflectionTestUtils.setField(service, "customerMapper", customerMapper);
         ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", resourcePermissionService);
+        CustomerResourceAccessContextProvider provider = new CustomerResourceAccessContextProvider();
+        ReflectionTestUtils.setField(provider, "customerMapper", customerMapper);
+        ReflectionTestUtils.setField(resourcePermissionService, "contextProviders", List.of(provider));
+        ReflectionTestUtils.setField(resourcePermissionService, "dataScopeService", dataScopeService);
+        ReflectionTestUtils.invokeMethod(resourcePermissionService, "initializeProviders");
+        DeptDataPermissionDTO self = new DeptDataPermissionDTO();
+        self.setSelf(true);
+        doReturn(self).when(dataScopeService).getDeptDataPermission(USER_ID, ORG_ID,
+                PermissionConstants.CUSTOMER_MANAGEMENT_MERGE);
         ReflectionTestUtils.setField(service, "customerContactService", customerContactService);
         ReflectionTestUtils.setField(service, "customerContactMapper", customerContactMapper);
         ReflectionTestUtils.setField(service, "customerCollaborationMapper", customerCollaborationMapper);
@@ -100,10 +131,13 @@ class CustomerMergeApprovalTest {
         request.setToMergeId(TARGET_ID);
         request.setOwnerId(OWNER);
 
-        when(customerMapper.selectByPrimaryKey(TARGET_ID)).thenReturn(customer(TARGET_ID));
+        customers.put(TARGET_ID, customer(TARGET_ID));
+        MERGE_IDS.forEach(id -> customers.put(id, customer(id)));
+        when(customerMapper.selectByPrimaryKey(anyString())).thenAnswer(invocation ->
+                customers.get(invocation.getArgument(0)));
         when(customerMapper.selectByIds(anyList())).thenAnswer(invocation -> {
             List<String> ids = invocation.getArgument(0);
-            return ids.stream().map(this::customer).toList();
+            return ids.stream().distinct().map(customers::get).filter(Objects::nonNull).toList();
         });
         // 姓名与电话都没开查重, 联系人全并过去
         when(customerContactService.getUniqueMap(ORG_ID)).thenReturn(Map.of(
@@ -116,7 +150,94 @@ class CustomerMergeApprovalTest {
 
     @AfterEach
     void tearDown() {
+        RequestContextHolder.resetRequestAttributes();
+        permissions.close();
         translator.close();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "source-owner", "target-owner", "source-org", "target-org", "missing-source",
+        "missing-target", "no-role", "source-pool", "target-pool", "blank-source" })
+    void mergeRejectsAnyUnauthorizedOrMissingCustomerBeforeWriting(String deniedReason) {
+        switch (deniedReason) {
+        case "source-owner" -> customers.get("customer-1").setOwner("other-owner");
+        case "target-owner" -> customers.get(TARGET_ID).setOwner("other-owner");
+        case "source-org" -> customers.get("customer-1").setOrganizationId("other-org");
+        case "target-org" -> customers.get(TARGET_ID).setOrganizationId("other-org");
+        case "missing-source" -> customers.remove("customer-1");
+        case "missing-target" -> customers.remove(TARGET_ID);
+        case "no-role" -> permissions.when(() ->
+                PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE)).thenReturn(false);
+        case "source-pool" -> customers.get("customer-1").setInSharedPool(true);
+        case "target-pool" -> customers.get(TARGET_ID).setInSharedPool(true);
+        case "blank-source" -> request.getMergeIds().add(" ");
+        }
+
+        assertMergeDenied();
+    }
+
+    @Test
+    void approvalTaskHeaderCannotGrantMergePermission() {
+        MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+        httpRequest.addHeader("Approval-Task-Id", "approval-task");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(httpRequest));
+        customers.get("customer-1").setOwner("other-owner");
+
+        assertMergeDenied();
+    }
+
+    @Test
+    void allScopeStillRejectsForeignCustomers() {
+        DeptDataPermissionDTO all = new DeptDataPermissionDTO();
+        all.setAll(true);
+        doReturn(all).when(dataScopeService).getDeptDataPermission(USER_ID, ORG_ID,
+                PermissionConstants.CUSTOMER_MANAGEMENT_MERGE);
+        customers.get("customer-1").setOrganizationId("other-org");
+
+        assertMergeDenied();
+    }
+
+    @Test
+    void allScopeAllowsOtherOwnersInTheSameOrganization() {
+        DeptDataPermissionDTO all = new DeptDataPermissionDTO();
+        all.setAll(true);
+        doReturn(all).when(dataScopeService).getDeptDataPermission(USER_ID, ORG_ID,
+                PermissionConstants.CUSTOMER_MANAGEMENT_MERGE);
+        customers.get("customer-1").setOwner("other-owner");
+
+        assertDoesNotThrow(() -> service.merge(request, USER_ID, ORG_ID));
+
+        verify(customerMapper).deleteByIds(MERGE_IDS);
+    }
+
+    @Test
+    void duplicateSourcesAndTargetsAreNormalizedBeforeDeletingSources() {
+        request.setMergeIds(new ArrayList<>(List.of(TARGET_ID, "customer-1", TARGET_ID,
+                "customer-1", "customer-2")));
+
+        service.merge(request, USER_ID, ORG_ID);
+
+        assertEquals(MERGE_IDS, request.getMergeIds());
+        verify(customerMapper).deleteByIds(MERGE_IDS);
+    }
+
+    @Test
+    void repeatedTargetsWithoutAnySourceCannotDeleteTheTarget() {
+        request.setMergeIds(new ArrayList<>(List.of(TARGET_ID, TARGET_ID)));
+
+        assertMergeDenied();
+    }
+
+    private void assertMergeDenied() {
+        assertThrows(GenericException.class, () -> service.merge(request, USER_ID, ORG_ID));
+        verify(customerMapper, never()).deleteByIds(anyList());
+        verify(extCustomerContactMapper, never()).batchMerge(any(), anyString(), anyString(), any(), any());
+        verify(extOpportunityMapper, never()).batchMerge(any(), anyString(), anyString());
+        verify(extContractMapper, never()).batchMerge(any(), anyString(), anyString());
+        verify(extOrderMapper, never()).batchMerge(any(), anyString(), anyString());
+        verify(extFollowUpRecordMapper, never()).batchMerge(any(), anyString(), anyString());
+        verify(extFollowUpPlanMapper, never()).batchMerge(any(), anyString(), anyString());
+        verify(logService, never()).batchAdd(anyList());
     }
 
     @Test
@@ -175,6 +296,9 @@ class CustomerMergeApprovalTest {
         customer.setId(id);
         customer.setName("customer-" + id);
         customer.setOwner(OWNER);
+        customer.setOrganizationId(ORG_ID);
+        customer.setInSharedPool(false);
+        customer.setApprovalStatus("NONE");
         return customer;
     }
 }
