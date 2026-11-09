@@ -2,9 +2,11 @@ FROM --platform=${BUILDPLATFORM} node:22-slim AS frontend
 
 WORKDIR /frontend
 COPY frontend /frontend
+# 镜像内由 Spring Boot 动态 gzip 压缩，不保留前端预压缩副本。
 RUN npm install -g pnpm@10.4.1 && \
     pnpm install && \
-    pnpm run build
+    pnpm run build && \
+    find packages/web/dist packages/mobile/dist -type f -name '*.gz' -delete
 
 
 FROM node:24-alpine AS cockpit-runtime

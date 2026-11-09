@@ -1,5 +1,10 @@
+.git/
+.idea/
+.vscode/
+**/.DS_Store
 **/node_modules/
 **/.node/
 **/dist/
+**/target/
 **/pnpm-lock.yaml
-
+backend/app/src/main/resources/static/
