@@ -9,14 +9,17 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.HttpMethodConstants;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.UserKey;
 import cn.cordys.crm.system.dto.request.UserKeyUpdateRequest;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -100,12 +103,16 @@ public class UserKeyService {
     }
 
     /**
-     * 校验 API 密钥是否存在
+     * 校验 API 密钥是否存在且属于当前用户
      */
     private UserKey validateAndGetUserKey(String id) {
         UserKey userKey = userKeyMapper.selectByPrimaryKey(id);
         if (userKey == null) {
             throw new GenericException(Translator.get("api_key_not_exist"));
+        }
+        String userId = SessionUtils.getUserId();
+        if (StringUtils.isBlank(userId) || !userId.equals(userKey.getCreateUser())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
         return userKey;
     }
