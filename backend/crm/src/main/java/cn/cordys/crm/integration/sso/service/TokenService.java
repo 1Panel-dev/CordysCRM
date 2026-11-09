@@ -39,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
@@ -177,15 +179,15 @@ public class TokenService {
             // 禁用系统代理设置
             System.setProperty("java.net.useSystemProxies", "false");
 
+            InetAddress address = ssrfValidator.validateIntegrationUrl(fullUrl);
             URL url = URI.create(fullUrl).toURL();
-            String host = url.getHost();
             // 根据协议选择默认端口
             int defaultPort = "https".equalsIgnoreCase(url.getProtocol()) ? 443 : 80;
             int port = url.getPort() != -1 ? url.getPort() : defaultPort;
 
             // 直接测试连接
             try (Socket socket = new Socket()) {
-                socket.connect(new java.net.InetSocketAddress(host, port), 3000);
+                socket.connect(new InetSocketAddress(address, port), 3000);
             }
         } catch (Exception e) {
             log.error("de embedded url connect error: {}", e.getMessage());
@@ -288,14 +290,10 @@ public class TokenService {
      */
     public Boolean getMaxKBToken(String mkAddress, String apiKey) {
         String urlTransfer = HttpClientUtils.urlTransfer(mkAddress.concat(MaxKBApiPaths.APPLICATION), "default");
-        ssrfValidator.validate(urlTransfer);
-
-        String body = qrCodeClient.exchange(
-                urlTransfer,
-                "Bearer " + apiKey,
-                HttpHeaders.AUTHORIZATION,
-                MediaType.APPLICATION_JSON,
-                MediaType.APPLICATION_JSON);
+        String body = HttpClientUtils.sendGetRequest(urlTransfer,
+                Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey,
+                        HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE,
+                        HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE), 1);
         MaxKBResponseEntity entity = JSON.parseObject(body, MaxKBResponseEntity.class);
         return entity != null && entity.getCode() == 200;
     }

@@ -2,6 +2,8 @@ package cn.cordys.crm.integration.dataease;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.security.validator.SSRFValidator;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.dto.PageDTO;
@@ -33,12 +35,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +53,16 @@ import java.util.UUID;
 @Slf4j
 public class DataEaseClient {
 
-    protected static final RestTemplate restTemplate = new RestTemplate();
+    protected static final RestTemplate restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory() {
+        @Override
+        protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
+            CommonBeanFactory.getBean(SSRFValidator.class).validateIntegrationUrl(connection.getURL().toString());
+            // shortcut: 沿用客户端的 DNS 解析；完整防护 DNS 重绑定时需绑定已校验的连接地址。
+            super.prepareConnection(connection, httpMethod);
+            // 跳转目标未经过校验，禁止自动跟随。
+            connection.setInstanceFollowRedirects(false);
+        }
+    });
 
     private final String accessKey;
     private final String secretKey;
@@ -143,10 +158,8 @@ public class DataEaseClient {
             String... uriVars) {
         var url = getUrl(path);
         var response = restTemplate
-                .exchange(url, HttpMethod.POST, getHttpEntity(body), responseClass, (Object[]) uriVars)
-                .getBody();
-        validateResponse(response);
-        return response;
+                .exchange(url, HttpMethod.POST, getHttpEntity(body), responseClass, (Object[]) uriVars);
+        return validateResponse(response);
     }
 
     // ---------- get wrappers ----------
@@ -157,16 +170,19 @@ public class DataEaseClient {
 
     public <V extends DataEaseBaseResponse> V get(String path, Class<V> responseClass, Object... uriVars) {
         var url = getUrl(path);
-        var response = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), responseClass, uriVars)
-                .getBody();
-        validateResponse(response);
-        return response;
+        var response = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), responseClass, uriVars);
+        return validateResponse(response);
     }
 
-    private <T extends DataEaseBaseResponse> void validateResponse(T resp) {
+    private <T extends DataEaseBaseResponse> T validateResponse(ResponseEntity<T> response) {
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new GenericException("DataEase HTTP error: " + response.getStatusCode().value());
+        }
+        T resp = response.getBody();
         if (resp != null && resp.getCode() != 0) {
             throw new GenericException(resp.getMsg());
         }
+        return resp;
     }
 
     public void editUser(UserUpdateRequest request) {
