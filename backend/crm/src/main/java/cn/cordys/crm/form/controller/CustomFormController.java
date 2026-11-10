@@ -3,7 +3,6 @@ package cn.cordys.crm.form.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.permission.CsPermission;
-import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -35,8 +35,6 @@ public class CustomFormController {
 
     @Resource
     private CustomFormService customFormService;
-    @Resource
-    private ResourcePermissionService resourcePermissionService;
 
     @GetMapping("/list")
     @Operation(summary = "自定义表单列表")
@@ -60,13 +58,10 @@ public class CustomFormController {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "自定义表单详情")
-    public CustomFormGetResponse get(@PathVariable String id) {
+    public CustomFormGetResponse get(@PathVariable String id, @RequestParam(required = false) String resourceId) {
         String userId = SessionUtils.getUserId();
         String orgId = OrganizationContext.getOrganizationId();
-        if (!resourcePermissionService.hasApprovalCommentMentionFormPermission(id, userId, orgId)) {
-            resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
-        }
-        return customFormService.get(id, userId, orgId);
+        return customFormService.get(id, userId, orgId, resourceId);
     }
 
     @PostMapping("/add")

@@ -482,7 +482,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (plan == null) {
             throw new GenericException(Translator.get("plan_not_found"));
         }
-        checkRecordPermission(BeanUtils.copyBean(new FollowUpRecord(), plan), orgId, userId, isRead);
+        checkRecordPermission(BeanUtils.copyBean(new FollowUpRecord(), plan), orgId, userId, isRead, FormKey.FOLLOW_PLAN);
     }
 
     public void checkUpdatePermission(String id, String userId) {

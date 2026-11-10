@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.service;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.common.service.DataScopeService;
@@ -119,6 +120,8 @@ class ApprovalResourceServiceTest {
         ReflectionTestUtils.setField(service, "approvalFlowService", flowService);
         ReflectionTestUtils.setField(service, "approvalActionService", actionService);
         ReflectionTestUtils.setField(service, "dataScopeService", dataScopeService);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService",
+                mock(RelatedResourcePermissionService.class));
         ReflectionTestUtils.setField(service, "customFormDataService", customFormDataService);
         ReflectionTestUtils.setField(service, "customFormDataMapper", customFormDataMapper);
         ReflectionTestUtils.setField(service, "approvalResourceQueryService", resourceQueryService);

@@ -83,7 +83,7 @@ public class ProductController {
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
+    @CsPermission(value = PermissionConstants.PRODUCT_MANAGEMENT_READ, resourceId = "{#id}", formType = "product")
     @Operation(summary = "产品详情")
     public ProductGetResponse get(@PathVariable String id) {
         return productService.get(id);

@@ -28,6 +28,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
@@ -135,6 +136,8 @@ public class CustomerContactService {
     private DataScopeService dataScopeService;
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
     @Resource
     private CustomerContactFieldService customerContactFieldService;
     @Resource
@@ -262,11 +265,13 @@ public class CustomerContactService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
         String userId = SessionUtils.getUserId();
+        relatedResourcePermissionService.checkIsolatedData(FormKey.CONTACT.getKey(), id, userId, orgId);
         boolean hasContactPermission = PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
                 && StringUtils.isNotBlank(customerContact.getOwner())
                 && dataScopeService.hasDataPermission(userId, orgId, customerContact.getOwner(),
                         PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        if (!hasContactPermission) {
+        if (!hasContactPermission && !relatedResourcePermissionService.hasRelatedReadPermission(
+                FormKey.CONTACT.getKey(), id, userId, orgId)) {
             String customerId = customerContact.getCustomerId();
             resourcePermissionService.checkResourcePermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ,
                     customerId, FormKeyConstants.CUSTOMER, userId, orgId);
@@ -565,9 +570,14 @@ public class CustomerContactService {
         }
 
         CustomerContactListAllResponse response = new CustomerContactListAllResponse();
-        if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
-            // 全部数据权限，直接返回
+        boolean isCustomerOwner = Strings.CS.equals(customer.getOwner(), userId);
+        if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue()) || isCustomerOwner) {
             List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId);
+            if (isCustomerOwner) {
+                Set<String> isolatedOwnerIds = relatedResourcePermissionService.getIsolatedOwnerIds(customerId, userId,
+                        orgId);
+                list = list.stream().filter(item -> !isolatedOwnerIds.contains(item.getOwner())).toList();
+            }
             list = buildListData(list, orgId);
             Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
             response.setList(list);
@@ -587,7 +597,6 @@ public class CustomerContactService {
                 .map(CustomerCollaboration::getUserId)
                 .collect(Collectors.toSet());
 
-        boolean isCustomerOwner = Strings.CS.equals(customer.getOwner(), userId);
         boolean isCollaborationUser = collaborationUserIds.contains(userId);
 
         // 部门数据权限
@@ -623,13 +632,7 @@ public class CustomerContactService {
 
         if (deptDataPermission.getSelf()) {
             list = extCustomerContactMapper.listByCustomerId(customerId);
-            if (isCustomerOwner) {
-                // 本人数据权限，则过滤协作人的联系人
-                list = list.stream()
-                        .filter(item -> !collaborationUserIds.contains(item.getOwner())
-                                || Strings.CS.equals(item.getOwner(), userId))
-                        .toList();
-            } else if (isCollaborationUser) {
+            if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
                 list = list.stream()
                         .filter(item -> Strings.CS.equals(item.getOwner(), userId))
@@ -657,7 +660,10 @@ public class CustomerContactService {
 
     public CustomerContactListAllResponse getOpportunityContactList(String contactId, String orgId) {
         CustomerContactListAllResponse response = new CustomerContactListAllResponse();
-        List<CustomerContactListResponse> list = extCustomerContactMapper.getById(contactId);
+        List<CustomerContactListResponse> list = extCustomerContactMapper.getById(contactId).stream()
+                .filter(item -> !relatedResourcePermissionService.isIsolatedData(FormKey.CONTACT.getKey(), item.getId(),
+                        SessionUtils.getUserId(), orgId))
+                .toList();
         list = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
         response.setList(list);

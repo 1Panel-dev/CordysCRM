@@ -91,31 +91,20 @@
             <if test="request.keyword != null and request.keyword != ''">
                 AND fur.content like concat('%', #{request.keyword},'%')
             </if>
-            <!-- 协作人数据隔离：协作人只能看到自己创建的，非协作者看不到协作人创建的 -->
+            <!-- 仅客户信息成员按负责人隔离，全部只读成员的数据可由客户负责人接收。 -->
             <if test="resourceType == 'CUSTOMER'">
+                <bind name="isolatedCollaborationType"
+                      value="@cn.cordys.common.permission.RelatedResourcePermissionService@isolatedCollaborationType()"/>
                 AND (
-                    -- 协作人只能看到自己创建的
-                    (
-                        EXISTS (
-                            SELECT 1 FROM customer_collaboration cc
-                            WHERE cc.customer_id = fur.customer_id
-                            AND cc.user_id = #{userId}
-                        )
-                        AND fur.create_user = #{userId}
-                    )
-                    OR
-                    -- 非协作者看不到协作人创建的
-                    (
-                        NOT EXISTS (
-                            SELECT 1 FROM customer_collaboration cc
-                            WHERE cc.customer_id = fur.customer_id
-                            AND cc.user_id = #{userId}
-                        )
-                        AND NOT EXISTS (
-                            SELECT 1 FROM customer_collaboration cc
-                            WHERE cc.customer_id = fur.customer_id
-                            AND cc.user_id = fur.create_user
-                        )
+                    fur.owner = #{userId}
+                    OR NOT EXISTS (
+                        SELECT 1 FROM customer_collaboration cc
+                        INNER JOIN customer privacy_customer ON privacy_customer.id = cc.customer_id
+                        WHERE cc.customer_id = fur.customer_id
+                        AND privacy_customer.organization_id = #{orgId}
+                        AND cc.collaboration_type = #{isolatedCollaborationType}
+                        AND cc.user_id != COALESCE(privacy_customer.owner, '')
+                        AND cc.user_id IN (fur.owner, #{userId})
                     )
                 )
             </if>

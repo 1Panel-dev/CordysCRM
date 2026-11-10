@@ -26,13 +26,15 @@ import java.util.Map;
 /**
  * 资源权限校验服务
  * <p>
- * 校验逻辑：(角色权限位 &amp;&amp; 角色数据权限 &amp;&amp; 审批状态权限)
+ * 校验角色及数据权限，关联宿主负责人可补充只读授权，审批状态权限继续生效。
  */
 @Service
 public class ResourcePermissionService {
 
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
     @Resource
     private ApprovalFlowService approvalFlowService;
     @Resource
@@ -86,6 +88,7 @@ public class ResourcePermissionService {
         // 评论@只授权当前GET请求读取该实例对应的业务数据。
         if (permission != null && permission.endsWith(":READ")
                 && hasApprovalCommentMentionPermission(resourceId, userId, orgId, formType)) {
+            relatedResourcePermissionService.checkIsolatedData(formType, resourceId, userId, orgId);
             return;
         }
 
@@ -99,6 +102,7 @@ public class ResourcePermissionService {
             // 审批待办只能替代审批过程中查看、编辑资源的权限;
             // 删除、转移等业务操作仍须按角色权限位和数据权限校验
             if (isApprovalTaskReviewPermission(permission)) {
+                relatedResourcePermissionService.checkIsolatedData(formType, resourceId, userId, orgId);
                 return;
             }
         }
@@ -273,11 +277,15 @@ public class ResourcePermissionService {
     }
 
     /**
-     * 校验角色权限位 + 数据权限 + 审批状态权限：(1 &amp;&amp; 2 &amp;&amp; 3)
+     * 校验普通资源权限或关联宿主只读授权，再校验审批状态权限。
      */
     private boolean checkRoleAndDataAndStatusPermission(String permission, String resourceId, String formType,
             String userId, String orgId, ResourceAccessContext context,
             ResourceAccessContextProvider provider) {
+        if (permission != null && permission.endsWith(":READ")
+                && relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)) {
+            return false;
+        }
         boolean requiresOwner = provider == null || provider.requiresOwner();
         // 资源必须存在；只有明确声明为组织共享的资源才允许没有负责人。
         if (StringUtils.isNotBlank(formType)
@@ -287,14 +295,15 @@ public class ResourcePermissionService {
         String ownerId = context != null ? context.getOwnerId() : null;
         String approvalStatus = context != null ? context.getApprovalStatus() : null;
 
-        // Check 1: 角色权限位
-        if (!PermissionUtils.hasPermission(permission)) {
-            return false;
-        }
-
-        // 数据范围不足时允许资源提供者补充授权，后续仍须校验审批状态。
-        if (requiresOwner && ownerId != null && !dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)
-                && (provider == null || !provider.hasAdditionalDataPermission(permission, resourceId, userId))) {
+        // 关联数据仅补充读取授权，写操作仍按原角色和数据范围校验。
+        boolean roleAndDataPermitted = PermissionUtils.hasPermission(permission)
+                && (!requiresOwner || ownerId == null
+                        || dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)
+                        || (provider != null && provider.hasAdditionalDataPermission(permission, resourceId, userId)));
+        if (!roleAndDataPermitted
+                && !(permission != null && permission.endsWith(":READ")
+                        && relatedResourcePermissionService.hasRelatedReadPermission(
+                        formType, resourceId, userId, orgId))) {
             return false;
         }
 

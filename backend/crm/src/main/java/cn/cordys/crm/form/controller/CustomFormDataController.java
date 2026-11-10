@@ -64,7 +64,6 @@ public class CustomFormDataController {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "表单数据详情")
-    @CsPermission(value = PermissionConstants.CUSTOM_FORM_READ, resourceId = "#id")
     public CustomFormDataGetResponse get(@PathVariable String id) {
         return customFormDataService.get(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }

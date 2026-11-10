@@ -39,6 +39,12 @@
         </if>
 
         where cpp.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="cpp.owner"/>
+            <property name="customerColumn" value="c.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.self">
             and cpp.owner = #{userId}
@@ -120,6 +126,12 @@
         </if>
 
         where cpp.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="cpp.owner"/>
+            <property name="customerColumn" value="c.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
         and c.customer_id = #{customerId}
 
         <if test="dataPermission != null and dataPermission.self">

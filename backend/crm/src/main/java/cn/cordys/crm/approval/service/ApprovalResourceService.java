@@ -10,6 +10,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
@@ -135,6 +136,8 @@ public class ApprovalResourceService {
     private DataScopeService dataScopeService;
     @Resource
     private CustomFormDataService customFormDataService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
 
     @Resource
     private List<ApprovalResourceHandler> approvalResourceHandlers;
@@ -1436,7 +1439,13 @@ public class ApprovalResourceService {
      * 校验用户是否有权限查看审批详情
      */
     public void checkViewPermission(String resourceId) {
-        if (!hasViewPermission(resourceId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId())) {
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        if (hasViewPermission(resourceId, userId, orgId)) {
+            return;
+        }
+        ApprovalInstance instance = extApprovalTaskMapper.selectLatestInstanceByResourceId(resourceId);
+        if (!hasInstanceViewPermission(instance, userId, orgId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN, Translator.get("no.view.permission"));
         }
     }
@@ -1448,10 +1457,10 @@ public class ApprovalResourceService {
         if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(userId)) {
             return false;
         }
-
         // 历史任一审批实例中作为提交人或审批人/抄送人参与过, 直接放行
         if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)) {
-            return true;
+            return !relatedResourcePermissionService.isIsolatedData(getFormTypeByResourceId(resourceId), resourceId,
+                    userId, orgId);
         }
 
         // 未参与过任何审批实例时，再校验资源权限
@@ -1469,8 +1478,16 @@ public class ApprovalResourceService {
         if (version == null || !orgId.equals(version.getOrganizationId())) {
             return false;
         }
+        if (relatedResourcePermissionService.isIsolatedData(instance.getType(), instance.getResourceId(),
+                userId, orgId)) {
+            return false;
+        }
         if (userId.equals(instance.getSubmitterId()) || hasApprovalTaskPermission(instance, userId)) {
             // 审批流程实例的经办人放行 (提审人, 当前或历史节点的审批人, 抄送人;)
+            return true;
+        }
+        if (relatedResourcePermissionService.hasRelatedReadPermission(instance.getType(), instance.getResourceId(),
+                userId, orgId)) {
             return true;
         }
 
@@ -1529,6 +1546,9 @@ public class ApprovalResourceService {
             }
         }
 
+        if (relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)) {
+            return false;
+        }
         String readPermission = getReadPermissionByFormType(formType);
         if (StringUtils.isBlank(readPermission) || !PermissionUtils.hasPermission(readPermission)) {
             return false;

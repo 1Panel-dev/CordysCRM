@@ -60,6 +60,12 @@
             )
         </if>
         where ct.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="ct.owner"/>
+            <property name="customerColumn" value="ct.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="request.customerId != null and request.customerId != ''">
             and ct.customer_id = #{request.customerId}
@@ -492,6 +498,12 @@
             )
         </if>
         where ct.organization_id = #{orgId} and ct.customer_id = #{customerId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="ct.owner"/>
+            <property name="customerColumn" value="ct.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
         <if test="dataPermission != null and dataPermission.self">
             and ct.owner = #{userId}
         </if>
@@ -609,6 +621,12 @@
         </if>
 
         where ct.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="ct.owner"/>
+            <property name="customerColumn" value="ct.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.self">
             and ct.owner = #{userId}

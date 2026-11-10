@@ -10,6 +10,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermissionAspect;
 import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
@@ -121,6 +122,7 @@ class CustomerDetailTabPermissionTest {
     private final PermissionCache permissions = mock(PermissionCache.class);
     private final DataScopeService dataScope = spy(new DataScopeService());
     private final ResourcePermissionService resourcePermissions = new ResourcePermissionService();
+    private final RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
     private final DeptDataPermissionDTO relatedScope = new DeptDataPermissionDTO();
     private final Set<String> granted = new HashSet<>(Set.of(READ, RELATED_READ, PermissionConstants.CUSTOM_FORM_READ));
     private final Customer customer = new Customer();
@@ -184,6 +186,7 @@ class CustomerDetailTabPermissionTest {
         ReflectionTestUtils.setField(provider, "customerMapper", customers);
         ReflectionTestUtils.setField(provider, "collaborationMapper", collaborationMapper);
         ReflectionTestUtils.setField(resourcePermissions, "dataScopeService", dataScope);
+        ReflectionTestUtils.setField(resourcePermissions, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(resourcePermissions, "contextProviders", List.of(provider));
         ReflectionTestUtils.invokeMethod(resourcePermissions, "initializeProviders");
 
@@ -192,6 +195,7 @@ class CustomerDetailTabPermissionTest {
         when(fields.selectByPrimaryKey(LINK)).thenReturn(linkField);
         StandardRelatedDetailTabDataHandler standard = new StandardRelatedDetailTabDataHandler();
         ReflectionTestUtils.setField(standard, "resourcePermissionService", resourcePermissions);
+        ReflectionTestUtils.setField(standard, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(standard, "dataScopeService", dataScope);
         ReflectionTestUtils.setField(standard, "opportunityService", opportunities);
         ReflectionTestUtils.setField(standard, "contractService", contracts);
@@ -200,6 +204,7 @@ class CustomerDetailTabPermissionTest {
         ReflectionTestUtils.setField(standard, "moduleFieldBaseMapper", fields);
         CustomRelatedDetailTabDataHandler custom = new CustomRelatedDetailTabDataHandler();
         ReflectionTestUtils.setField(custom, "resourcePermissionService", resourcePermissions);
+        ReflectionTestUtils.setField(custom, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(custom, "customFormDataService", customData);
         ReflectionTestUtils.setField(custom, "moduleFieldBaseMapper", fields);
         DetailTabDataService tabs = new DetailTabDataService(forms, List.of(standard, custom));

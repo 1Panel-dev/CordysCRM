@@ -925,4 +925,20 @@
             <property name="mainTableAlias" value="c"/>
         </include>
     </select>
+    <!-- 客户负责人读取关联业务时，排除配置为隔离的协作人负责的数据。 -->
+    <sql id="isolatedBusinessRead">
+        <bind name="isolatedCollaborationType"
+              value="@cn.cordys.common.permission.RelatedResourcePermissionService@isolatedCollaborationType()"/>
+        AND NOT EXISTS (
+            SELECT 1
+            FROM customer_collaboration isolated_member
+            INNER JOIN customer isolated_customer ON isolated_customer.id = isolated_member.customer_id
+            WHERE isolated_member.customer_id = ${customerColumn}
+              AND isolated_customer.organization_id = #{${orgParameter}}
+              AND isolated_customer.owner = #{${userParameter}}
+              AND isolated_member.collaboration_type = #{isolatedCollaborationType}
+              AND isolated_member.user_id = ${ownerColumn}
+              AND isolated_member.user_id != #{${userParameter}}
+        )
+    </sql>
 </mapper>

@@ -1,11 +1,13 @@
 package cn.cordys.crm.follow.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
@@ -56,6 +58,8 @@ public class BaseFollowUpService {
     private PoolCustomerService poolCustomerService;
     @Resource
     private PoolClueService poolClueService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
 
     public CustomerDataDTO getCustomerPermission(String userId, String sourceId, String permission) {
         CustomerDataDTO customerDataDTO = new CustomerDataDTO();
@@ -195,10 +199,23 @@ public class BaseFollowUpService {
      * @param orgId  组织ID
      */
     public void checkRecordPermission(FollowUpRecord record, String orgId, String userId, boolean isRead) {
+        checkRecordPermission(record, orgId, userId, isRead, FormKey.FOLLOW_RECORD);
+    }
+
+    protected void checkRecordPermission(FollowUpRecord record, String orgId, String userId, boolean isRead,
+            FormKey formKey) {
         if (record == null) {
             throw new GenericException(Translator.get("plan_not_found"));
         }
+        if (isRead && StringUtils.isNotBlank(record.getId())) {
+            relatedResourcePermissionService.checkIsolatedData(formKey.getKey(), record.getId(), userId, orgId);
+        }
         if (Strings.CS.equals(record.getOwner(), userId)) {
+            return;
+        }
+        if (isRead && StringUtils.isNotBlank(record.getId())
+                && relatedResourcePermissionService.hasRelatedReadPermission(formKey.getKey(), record.getId(), userId,
+                        orgId)) {
             return;
         }
         String permission;

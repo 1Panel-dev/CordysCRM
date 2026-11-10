@@ -25,6 +25,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
@@ -241,6 +242,8 @@ public class CustomerService implements ApprovalResourceHandler {
     private ApprovalTodoService approvalTodoService;
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId,
             DeptDataPermissionDTO deptDataPermission) {
@@ -411,7 +414,9 @@ public class CustomerService implements ApprovalResourceHandler {
             return getResponse;
         }
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(),
-                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+                PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+                || relatedResourcePermissionService.hasRelatedReadPermission(
+                        FormKey.CUSTOMER.getKey(), id, userId, orgId);
         if (!hasPermission) {
             List<CustomerCollaboration> collaborations = customerCollaborationService
                     .selectByCustomerIdAndUserId(getResponse.getId(), userId);

@@ -112,8 +112,6 @@ public class CustomerContactController {
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(value = { PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ }, logical = Logical.OR)
     @Operation(summary = "客户联系人详情")
     public CustomerContactGetResponse get(@PathVariable String id) {
         return customerContactService.get(id);
