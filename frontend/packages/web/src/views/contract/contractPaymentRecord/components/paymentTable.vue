@@ -55,7 +55,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isContractTab && !props.detailTabResourceId"
+        v-if="!props.isContractTab && !props.detailTabResourceId && !props.customerId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -65,7 +65,7 @@
         @refresh-table-data="searchData"
       />
     </template>
-    <template #totalRight>
+    <template v-if="!props.customerId" #totalRight>
       <div class="ml-[24px]">
         {{ t('opportunity.averageAmount') }}
         <span class="ml-[4px]">
@@ -159,6 +159,7 @@
   import {
     batchDeletePaymentRecord,
     deletePaymentRecord,
+    getAccountPaymentRecord,
     getFormDetailTabStatistic,
     getPaymentRecordStatistic,
   } from '@/api/modules';
@@ -180,6 +181,7 @@
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
     isContractTab?: boolean;
+    customerId?: string;
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
@@ -424,6 +426,7 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    listApi: props.customerId ? getAccountPaymentRecord : undefined,
     readonly: props.readonly,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
@@ -522,6 +525,7 @@
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
     try {
+      if (props.customerId) return;
       if (props.detailTabResourceId) {
         // 详情标签统计走专用接口，由后端按标签配置追加固定关联条件并校验数据范围。
         if (!props.detailTabPageFormId || !props.detailTabQuery) return;
@@ -587,7 +591,7 @@
     setLoadListParams({
       keyword: val ?? keyword.value,
       ...(props.detailTabResourceId ? {} : { viewId: props.isContractTab ? 'ALL' : activeTab.value }),
-      contractId: props.sourceId,
+      ...(props.customerId ? { customerId: props.customerId } : { contractId: props.sourceId }),
     });
     loadList(false, refreshId);
     getStatistic();
@@ -638,7 +642,7 @@
   );
 
   onBeforeMount(() => {
-    if (props.isContractTab) {
+    if (props.isContractTab || props.customerId) {
       searchData();
     }
     if (route.query.recordId) {

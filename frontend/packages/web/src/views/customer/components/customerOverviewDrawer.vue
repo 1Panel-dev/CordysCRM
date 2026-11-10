@@ -65,11 +65,7 @@
                 :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="
-                  props.readonly ||
-                  collaborationType === 'READ_ONLY' ||
-                  !hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])
-                "
+                :readonly="props.readonly || !hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"
                 @saved="handleSaved"
@@ -82,7 +78,7 @@
             :refresh-key="refreshKey"
             :source-id="props.sourceId"
             :initial-source-name="sourceName"
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :readonly="props.readonly"
             :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
           />
         </div>
@@ -95,12 +91,8 @@
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
           :initial-source-name="sourceName"
-          :show-add="
-            collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly
-          "
-          :show-action="
-            collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly
-          "
+          :show-add="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly"
+          :show-action="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly"
           :parentFormKey="FormDesignKeyEnum.CUSTOMER"
         />
         <div v-if="activeTab === 'headRecord'" class="h-full px-[24px] pt-[24px]">
@@ -111,10 +103,7 @@
           />
         </div>
         <div v-if="activeTab === 'relation'" class="h-full px-[24px] pt-[24px]">
-          <customerRelation
-            :source-id="props.sourceId"
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
-          />
+          <customerRelation :source-id="props.sourceId" :readonly="props.readonly" />
         </div>
         <div v-if="activeTab === 'opportunityInfo'" class="h-full px-[24px] pt-[24px]">
           <opportunityTable
@@ -122,24 +111,24 @@
             :customer-name="sourceName"
             is-customer-tab
             :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :readonly="props.readonly"
             hideBoard
           />
         </div>
         <div v-if="activeTab === 'collaborator'" class="h-full px-[24px] pt-[24px]">
-          <collaborator :source-id="props.sourceId" :readonly="collaborationType === 'READ_ONLY' || props.readonly" />
+          <collaborator :source-id="props.sourceId" :readonly="props.readonly" />
         </div>
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
-          <ContractTimeline :form-key="FormDesignKeyEnum.CONTRACT" :source-id="props.sourceId" />
+          <ContractTable :customer-id="props.sourceId" hide-board />
         </div>
         <div v-if="activeTab === 'contractPayment'" class="h-full p-[24px]">
-          <ContractTimeline :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT" :source-id="props.sourceId" />
+          <PaymentTable :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT" :customer-id="props.sourceId" />
         </div>
         <div v-if="activeTab === 'contractPaymentRecord'" class="h-full p-[24px]">
-          <ContractTimeline :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD" :source-id="props.sourceId" />
+          <PaymentRecordTable :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD" :customer-id="props.sourceId" />
         </div>
         <div v-if="activeTab === 'invoice'" class="h-full p-[24px]">
-          <ContractTimeline :form-key="FormDesignKeyEnum.INVOICE" :source-id="props.sourceId" />
+          <InvoiceTable :customer-id="props.sourceId" />
         </div>
         <div v-if="activeTab === 'order'" class="h-full px-[24px] pt-[24px]">
           <OrderTable
@@ -148,7 +137,7 @@
             isCustomerTab
             :detail-tab-statistic-form-key="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-statistic-query="orderTabStatisticQuery"
-            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :readonly="props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
@@ -218,8 +207,11 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
-  import ContractTimeline from '@/views/contract/contract/components/contractTimeline.vue';
+  import ContractTable from '@/views/contract/contract/components/contractTable.vue';
   import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
+  import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
+  import PaymentRecordTable from '@/views/contract/contractPaymentRecord/components/paymentTable.vue';
+  import InvoiceTable from '@/views/contract/invoice/components/invoiceTable.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 

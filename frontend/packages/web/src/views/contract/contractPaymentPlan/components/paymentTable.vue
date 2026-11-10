@@ -55,7 +55,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isContractTab && !props.detailTabResourceId"
+        v-if="!props.isContractTab && !props.detailTabResourceId && !props.customerId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CONTRACT_PAYMENT"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -139,7 +139,7 @@
   import ContractStatus from './contractPaymentStatus.vue';
   import DetailDrawer from './detail.vue';
 
-  import { batchDeletePaymentPlan, deletePaymentPlan, updatePaymentPlan } from '@/api/modules';
+  import { batchDeletePaymentPlan, deletePaymentPlan, getAccountPayment, updatePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -161,6 +161,7 @@
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
     isContractTab?: boolean;
+    customerId?: string;
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
@@ -419,6 +420,7 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    listApi: props.customerId ? getAccountPayment : undefined,
     readonly: props.readonly,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
@@ -515,7 +517,7 @@
     setLoadListParams({
       keyword: val ?? keyword.value,
       ...(props.detailTabResourceId ? {} : { viewId: props.isContractTab ? 'ALL' : activeTab.value }),
-      contractId: props.sourceId,
+      ...(props.customerId ? { customerId: props.customerId } : { contractId: props.sourceId }),
     });
     loadList(false, refreshId);
     if (!refreshId) {
@@ -532,7 +534,7 @@
   );
 
   onBeforeMount(() => {
-    if (props.isContractTab) {
+    if (props.isContractTab || props.customerId) {
       searchData();
     }
   });

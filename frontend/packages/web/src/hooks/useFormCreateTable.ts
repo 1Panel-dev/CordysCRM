@@ -61,6 +61,7 @@ export type FormKey =
 
 export interface FormCreateTableProps {
   formKey: FormKey;
+  listApi?: (data: any) => Promise<any>;
   containerClass: string; // 容器元素类名
   disabledSelection?: (row: any) => boolean;
   operationColumn?: CrmDataTableColumn;
@@ -591,7 +592,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { detailTabResourceId, detailTabPageFormId } = props;
   const listApi = (() => {
     if (!detailTabResourceId) {
-      return getFormListApiMap[props.formKey];
+      return props.listApi || getFormListApiMap[props.formKey];
     }
 
     if (!detailTabPageFormId) {

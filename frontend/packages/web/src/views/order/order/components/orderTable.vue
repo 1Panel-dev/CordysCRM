@@ -20,23 +20,18 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <div class="flex items-center gap-[12px]">
-          <n-button
-            v-if="!props.readonly && !props.isCustomerTab"
-            v-permission="['ORDER:ADD']"
-            type="primary"
-            @click="handleNewClick"
-          >
+          <n-button v-if="!props.readonly" v-permission="['ORDER:ADD']" type="primary" @click="handleNewClick">
             {{ t('order.new') }}
           </n-button>
 
           <CrmImportButton
-            v-if="hasAnyPermission(['ORDER:IMPORT']) && !props.readonly && !props.isContractTab && !props.isCustomerTab"
+            v-if="hasAnyPermission(['ORDER:IMPORT']) && !props.readonly && !props.isContractTab"
             :api-type="FormDesignKeyEnum.ORDER"
             :title="t('module.order')"
             @import-success="() => searchData()"
           />
           <n-button
-            v-if="!props.readonly && !props.isContractTab && !props.isCustomerTab"
+            v-if="!props.readonly && !props.isContractTab"
             v-permission="['ORDER:EXPORT']"
             type="primary"
             ghost
