@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -30,6 +31,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -128,6 +130,36 @@ class ApprovalHistoricalInstanceDetailTest {
         assertEquals(List.of(attachment), rejectedTask.getAttachments());
         assertFalse(detail.getNodes().stream().anyMatch(ApprovalRecordNode::isEndNode));
         verifyNoInteractions(flowService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void historicalAndCurrentDetailsKeepTheirOwnResubmitFallbackFlags(boolean invalid) {
+        instance.setResubmitNodeInvalid(invalid);
+        ApprovalInstance latest = new ApprovalInstance();
+        latest.setId("instance-latest");
+        latest.setFlowVersionId("version-latest");
+        latest.setSubmitterId("submitter");
+        latest.setCurrentNodeId("NODE-LATEST");
+        latest.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
+        latest.setResubmitNodeInvalid(!invalid);
+
+        ApprovalInstanceDetail historicalDetail = service.getHistoricalApprovalInstanceDetail(instance, "org-1");
+        ApprovalInstanceDetail currentDetail = service.getApprovalInstanceDetail(latest, "org-1");
+
+        assertEquals(instance.getId(), historicalDetail.getId());
+        assertEquals(invalid, historicalDetail.isResubmitNodeInvalid());
+        assertEquals(latest.getId(), currentDetail.getId());
+        assertEquals(!invalid, currentDetail.isResubmitNodeInvalid());
+    }
+
+    @Test
+    void historicalDetailTreatsMissingStoredFallbackFlagAsFalse() {
+        assertNull(instance.getResubmitNodeInvalid());
+
+        ApprovalInstanceDetail detail = service.getHistoricalApprovalInstanceDetail(instance, "org-1");
+
+        assertFalse(detail.isResubmitNodeInvalid());
     }
 
     @Test

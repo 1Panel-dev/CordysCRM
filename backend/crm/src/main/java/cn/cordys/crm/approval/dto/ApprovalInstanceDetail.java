@@ -23,6 +23,9 @@ public class ApprovalInstanceDetail {
     @Schema(description = "提交时间")
     private Long submitTime;
 
+    @Schema(description = "本轮提审是否因重审起始节点失效而回退整单重审")
+    private boolean resubmitNodeInvalid;
+
     @Schema(description = "变更说明")
     private String comment;
 

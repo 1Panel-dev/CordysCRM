@@ -319,6 +319,7 @@ export interface TodoStatistic {
 
 export interface ApprovalDetail {
   id: string;
+  resubmitNodeInvalid?: boolean;
   submitterId: string;
   submitAvatar: string;
   submitter: string;

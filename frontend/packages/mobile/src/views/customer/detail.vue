@@ -68,6 +68,7 @@
                 submitTime: approvalInfo?.submitTime,
                 submitterId: approvalInfo?.submitterId,
                 comment: approvalInfo?.comment,
+                resubmitNodeInvalid: approvalInfo?.resubmitNodeInvalid,
               }"
               :currentApprovalNode="currentApprovalNode"
               :currentApprovalNodeIndex="currentApprovalNodeIndex"

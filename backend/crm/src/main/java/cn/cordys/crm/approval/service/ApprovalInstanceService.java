@@ -122,7 +122,9 @@ public class ApprovalInstanceService {
     private ApprovalInstanceDetail getApprovalInstanceDetail(ApprovalInstance latestInstance, String currentOrgId,
             boolean historical) {
         Map<String, UserSimple> simpleUserMap = userExtendService.getAllUserSimpleMap();
-        ApprovalInstanceDetail instanceDetail = BeanUtils.copyBean(new ApprovalInstanceDetail(), latestInstance);
+        ApprovalInstanceDetail instanceDetail = BeanUtils.copyBean(new ApprovalInstanceDetail(), latestInstance,
+                "resubmitNodeInvalid");
+        instanceDetail.setResubmitNodeInvalid(Boolean.TRUE.equals(latestInstance.getResubmitNodeInvalid()));
         if (simpleUserMap.containsKey(instanceDetail.getSubmitterId())) {
             instanceDetail.setSubmitAvatar(simpleUserMap.get(instanceDetail.getSubmitterId()).getAvatar());
             instanceDetail.setSubmitter(simpleUserMap.get(instanceDetail.getSubmitterId()).getName());

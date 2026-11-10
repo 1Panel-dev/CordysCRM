@@ -192,7 +192,13 @@ class ApprovalManualPushTest {
 
         assertFalse(service.manualPush(param, userId, "org-a").isResubmitNodeInvalid());
 
-        verifyInsertedInstance("contract", userId, ExecuteTimingEnum.CREATE);
+        assertEquals(Boolean.FALSE,
+                verifyInsertedInstance("contract", userId, ExecuteTimingEnum.CREATE).getResubmitNodeInvalid());
+    }
+
+    @Test
+    void instanceCriteriaDoesNotFilterByResubmitFallbackByDefault() {
+        assertNull(new ApprovalInstance().getResubmitNodeInvalid());
     }
 
     @Test
@@ -291,6 +297,7 @@ class ApprovalManualPushTest {
     void rejectedOrRevokedInstanceResubmitsAtSameNumberInNewVersionWithoutCopyingItsTasks(String status) {
         ApprovalInstance previous = rejectedInstance();
         previous.setApprovalStatus(status);
+        previous.setResubmitNodeInvalid(true);
         state.setApprovalStatus(status);
         if ("UNAPPROVED".equals(status)) {
             previous.setCurrentNodeId("rejected-later-node-id");
@@ -310,6 +317,7 @@ class ApprovalManualPushTest {
         assertEquals("version-a", current.getFlowVersionId());
         assertEquals("new-node-id", current.getCurrentNodeId());
         assertEquals("P" + "N052", current.getResubmitStartNodeNumber());
+        assertEquals(Boolean.FALSE, current.getResubmitNodeInvalid());
         verify(flowService, never()).getResourceApprovalInstanceFirstNode(any(), any());
         verify(actionService).handlerNextNodeApproverTasks(target, current, "creator", null, "org-a");
         if ("UNAPPROVED".equals(status)) {
@@ -334,6 +342,7 @@ class ApprovalManualPushTest {
         ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
         verify(instanceMapper).insert(inserted.capture());
         assertNull(inserted.getValue().getResubmitStartNodeNumber());
+        assertEquals(Boolean.FALSE, inserted.getValue().getResubmitNodeInvalid());
         verify(flowService, never()).getResourceApprovalInstanceResubmitNode(any(), any(), any());
     }
 
@@ -357,6 +366,7 @@ class ApprovalManualPushTest {
         ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
         verify(instanceMapper).insert(inserted.capture());
         assertNull(inserted.getValue().getResubmitStartNodeNumber());
+        assertEquals(Boolean.TRUE, inserted.getValue().getResubmitNodeInvalid());
     }
 
     @ParameterizedTest
@@ -365,11 +375,13 @@ class ApprovalManualPushTest {
         ApprovalInstance previous = rejectedInstance();
         previous.setApprovalStatus(status);
         previous.setResubmitStartNodeNumber(nodeNumber);
+        previous.setResubmitNodeInvalid(true);
         state.setApprovalStatus(status);
 
         assertFalse(service.manualPush(param, "creator", "org-a").isResubmitNodeInvalid());
 
-        verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE);
+        assertEquals(Boolean.FALSE,
+                verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE).getResubmitNodeInvalid());
         verify(flowService, never()).getResourceApprovalInstanceResubmitNode(any(), any(), any());
     }
 
@@ -391,6 +403,7 @@ class ApprovalManualPushTest {
         assertEquals(status, current.getApprovalStatus());
         assertEquals("first-node", current.getCurrentNodeId());
         assertNull(current.getResubmitStartNodeNumber());
+        assertEquals(Boolean.TRUE, current.getResubmitNodeInvalid());
         verify(actionService).sendFinishNotice(current, "示例合同", "ADMIN", "org-a");
         verify(actionService, never()).handlerNextNodeApproverTasks(any(), any(), any(), any(), any());
     }
@@ -413,6 +426,7 @@ class ApprovalManualPushTest {
         assertEquals("UNAPPROVED", current.getApprovalStatus());
         assertEquals("automatic-reject-node", current.getCurrentNodeId());
         assertNull(current.getResubmitStartNodeNumber());
+        assertEquals(Boolean.FALSE, current.getResubmitNodeInvalid());
         verify(actionService).sendFinishNotice(current, "示例合同", "ADMIN", "org-a");
         verify(flowService, never()).getResourceApprovalInstanceFirstNode(any(), any());
     }
@@ -451,7 +465,8 @@ class ApprovalManualPushTest {
 
         assertTrue(service.manualPush(param, "creator", "org-a").isResubmitNodeInvalid());
 
-        verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE);
+        assertEquals(Boolean.TRUE,
+                verifyInsertedInstance("contract", "creator", ExecuteTimingEnum.CREATE).getResubmitNodeInvalid());
         verify(flowService, never()).getResourceApprovalInstanceResubmitNode(any(), any(), any());
     }
 
@@ -520,7 +535,7 @@ class ApprovalManualPushTest {
         assertNoWrites();
     }
 
-    private void verifyInsertedInstance(String formKey, String userId, ExecuteTimingEnum timing) {
+    private ApprovalInstance verifyInsertedInstance(String formKey, String userId, ExecuteTimingEnum timing) {
         ArgumentCaptor<ApprovalInstance> inserted = ArgumentCaptor.forClass(ApprovalInstance.class);
         verify(instanceMapper).insert(inserted.capture());
         ApprovalInstance instance = inserted.getValue();
@@ -533,6 +548,7 @@ class ApprovalManualPushTest {
         assertEquals("node-a", instance.getCurrentNodeId());
         verify(service).updateResourceApprovalStatus(any(), eq("resource-a"), eq("APPROVING"), eq(userId), eq("org-a"));
         verify(actionService).handlerNextNodeApproverTasks(any(), eq(instance), eq(userId), eq(null), eq("org-a"));
+        return instance;
     }
 
     private void assertNoWrites() {

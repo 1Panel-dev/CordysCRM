@@ -123,6 +123,7 @@
                           submitTime: detail.submitTime,
                           submitterId: detail.submitterId,
                           comment: detail.comment,
+                          resubmitNodeInvalid: detail.resubmitNodeInvalid,
                         }"
                         :currentApprovalNode="getCurrentNode(detail)"
                         :currentApprovalNodeIndex="getCurrentNodeIndex(detail)"
@@ -141,6 +142,7 @@
                     submitTime: approvalInfo?.submitTime,
                     submitterId: approvalInfo?.submitterId,
                     comment: approvalInfo?.comment,
+                    resubmitNodeInvalid: approvalInfo?.resubmitNodeInvalid,
                   }"
                   :currentApprovalNode="currentApprovalNode"
                   :currentApprovalNodeIndex="currentApprovalNodeIndex"

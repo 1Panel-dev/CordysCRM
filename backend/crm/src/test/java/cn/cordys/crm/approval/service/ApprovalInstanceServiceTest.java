@@ -45,9 +45,10 @@ import static org.mockito.Mockito.when;
 class ApprovalInstanceServiceTest {
 
     @ParameterizedTest
-    @CsvSource({ "0,true", "3,true", "0,false", "3,false" })
+    @CsvSource({ "0,true,false", "3,true,false", "0,false,false", "3,false,false",
+            "0,true,true", "3,true,true", "0,false,true", "3,false,true" })
     @SuppressWarnings("unchecked")
-    void instanceDetailCountsResourceCommentsForRequestedOrLatestInstance(long commentCount, boolean latestInstance) {
+    void instanceDetailUsesRequestedRoundsMetadata(long commentCount, boolean latestInstance, boolean invalid) {
         ApprovalInstanceService service = new ApprovalInstanceService();
         BaseMapper<ApprovalInstance> instanceMapper = mock(BaseMapper.class);
         BaseMapper<ApprovalComment> commentMapper = mock(BaseMapper.class);
@@ -67,12 +68,14 @@ class ApprovalInstanceServiceTest {
         previous.setSubmitTime(1L);
         previous.setSubmitterId("submitter");
         previous.setCurrentNodeId("");
+        previous.setResubmitNodeInvalid(!invalid);
         ApprovalInstance latest = new ApprovalInstance();
         latest.setId("instance-latest");
         latest.setResourceId("resource-1");
         latest.setSubmitTime(2L);
         latest.setSubmitterId("submitter");
         latest.setCurrentNodeId("");
+        latest.setResubmitNodeInvalid(invalid);
         when(instanceMapper.selectListByLambda(any())).thenReturn(List.of(latest, previous));
         when(userExtendService.getAllUserSimpleMap()).thenReturn(Map.of());
         when(commentMapper.countByExample(any())).thenReturn(commentCount);
@@ -83,6 +86,7 @@ class ApprovalInstanceServiceTest {
 
         assertEquals(requested.getId(), detail.getId());
         assertEquals(commentCount, detail.getCommentCount());
+        assertEquals(Boolean.TRUE.equals(requested.getResubmitNodeInvalid()), detail.isResubmitNodeInvalid());
         ArgumentCaptor<ApprovalComment> criteria = ArgumentCaptor.forClass(ApprovalComment.class);
         verify(commentMapper).countByExample(criteria.capture());
         assertEquals("resource-1", criteria.getValue().getResourceId());
