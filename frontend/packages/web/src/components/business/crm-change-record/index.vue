@@ -1,6 +1,6 @@
 <template>
   <n-scrollbar class="h-full" @scroll="handleReachBottom">
-    <div class="min-h-full px-[24px] pt-[24px]">
+    <div class="min-h-full p-[24px]">
       <div class="mb-[16px] flex items-center justify-between">
         <div class="font-semibold">{{ props.title || t('common.changeRecord') }}</div>
         <n-button type="default" class="outline--secondary px-[8px]" @click="loadRecords(true)">

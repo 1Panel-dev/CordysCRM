@@ -8,7 +8,9 @@ export default function useChangeLogApi(CDR: CordysAxios) {
   function getChangeLogPage(formKey: string, data: ChangeRecordQueryParams) {
     const { sourceId, ...params } = data;
     return CDR.post<CommonList<OperationLogDetail>>({
-      url: `${ChangeLogPageUrl}/${formKey}/${sourceId}/page?approvalTaskId=${data.approvalTaskId}`,
+      url: `${ChangeLogPageUrl}/${formKey}/${sourceId}/page?${
+        data.approvalTaskId ? `approvalTaskId=${data.approvalTaskId}` : ''
+      }`,
       data: params,
     });
   }
