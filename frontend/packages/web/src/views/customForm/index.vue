@@ -28,6 +28,7 @@
             v-model:focus-item-key="focusItemKey"
             virtual-scroll-height="calc(100% - 40px)"
             key-field="id"
+            :draggable="!keyword"
             :item-more-actions="getFormAction"
             item-class="gap-[8px] px-[4px]"
             activeItemClass="bg-[var(--text-n9)]"
@@ -93,11 +94,14 @@
   import formTable from './components/formTable.vue';
 
   import { deleteCustomForm, disableCustomForm, enableCustomForm, getCustomFormList } from '@/api/modules/index.js';
+  import useLocalForage from '@/hooks/useLocalForage.js';
   import useModal from '@/hooks/useModal.js';
 
   const { t } = useI18n();
   const Message = useMessage();
   const { openModal } = useModal();
+  const { getItem, setItem } = useLocalForage();
+  const CUSTOM_FORM_LIST_ORDER_KEY = 'custom-form-list-order';
 
   const formList = ref<CustomFormItem[]>([]);
   const formListBackup = ref<CustomFormItem[]>([]);
@@ -113,10 +117,29 @@
       formList.value.find((e) => e.id === activeForm.value)?.hasCreateDataPermission
   );
 
+  function applyFormListOrder(items: CustomFormItem[], orderedIds: string[]) {
+    const itemById = new Map(items.map((item) => [item.id, item]));
+    const orderedItems = orderedIds
+      .map((id) => itemById.get(id))
+      .filter((item): item is CustomFormItem => item !== undefined);
+    const orderedItemIds = new Set(orderedItems.map((item) => item.id));
+    return [...orderedItems, ...items.filter((item) => !orderedItemIds.has(item.id))];
+  }
+
   async function loadFormList() {
     try {
       loading.value = true;
-      formList.value = await getCustomFormList();
+      const [items, savedOrder] = await Promise.all([getCustomFormList(), getItem<string>(CUSTOM_FORM_LIST_ORDER_KEY)]);
+      let orderedIds: string[] = [];
+      try {
+        const parsedOrder = savedOrder ? JSON.parse(savedOrder) : [];
+        if (Array.isArray(parsedOrder)) {
+          orderedIds = parsedOrder.filter((id): id is string => typeof id === 'string');
+        }
+      } catch {
+        orderedIds = [];
+      }
+      formList.value = applyFormListOrder(items, orderedIds);
       formListBackup.value = cloneDeep(formList.value);
       if (activeForm.value === '') {
         activeForm.value = formList.value[0]?.id || '';
@@ -130,6 +153,15 @@
       finished.value = true;
     }
   }
+
+  watch(
+    () => formList.value.map((item) => item.id),
+    async (orderedIds) => {
+      if (keyword.value) return;
+      formListBackup.value = cloneDeep(formList.value);
+      await setItem(CUSTOM_FORM_LIST_ORDER_KEY, JSON.stringify(orderedIds));
+    }
+  );
 
   function searchList(_keyword: string) {
     formList.value = formListBackup.value.filter((e) =>

@@ -1,6 +1,67 @@
 <template>
   <n-spin :show="props.loading" class="h-full" content-class="h-full">
+    <VueDraggable
+      v-if="props.draggable"
+      ref="draggableListRef"
+      v-model="listData"
+      tag="div"
+      :class="['crm-list', 'crm-list-draggable', containerStatusClass, props.class]"
+      :style="{ height: props.virtualScrollHeight }"
+      handle=".crm-list-drag-icon"
+      ghost-class="crm-list-ghost"
+      :animation="150"
+      @scroll="handleScroll"
+      @wheel="handleWheel"
+    >
+      <template v-for="item of listData" :key="item[props.keyField]">
+        <slot name="item" :item="item">
+          <div
+            :class="[
+              'crm-list-item',
+              props.noHover ? 'crm-list-item--no-hover' : '',
+              props.itemBorder ? 'crm-list-item--bordered' : '',
+              props.itemClass,
+              innerFocusItemKey === item[keyField] ? 'crm-list-item--focus' : '',
+              innerActiveItemKey === item[keyField] ? props.activeItemClass : '',
+            ]"
+            :style="{ height: `${props.itemHeight}px` }"
+            @click="emit('itemClick', item)"
+          >
+            <span class="crm-list-drag-icon cursor-move">
+              <CrmIcon type="iconicon_move" class="text-[var(--text-n4)]" />
+            </span>
+            <slot name="titleLeft" :item="item"></slot>
+            <div class="flex-1 overflow-x-hidden">
+              <slot name="title" :item="item"></slot>
+            </div>
+            <div class="flex items-center gap-[4px]">
+              <div
+                v-if="
+                  $slots['itemAction'] || (props.itemMoreActions && props.itemMoreActions.length > 0 && !props.disabled)
+                "
+                class="crm-list-item-actions"
+              >
+                <slot name="itemAction" :item="item"></slot>
+                <CrmMoreAction
+                  v-if="props.itemMoreActions && props.itemMoreActions.length > 0"
+                  :options="
+                    typeof props.itemMoreActions === 'function' ? props.itemMoreActions(item) : props.itemMoreActions
+                  "
+                  trigger="click"
+                  @select="handleMoreActionSelect($event, item)"
+                  @close="handleMoreActionClose"
+                  @click.stop="handleClickMore(item)"
+                >
+                </CrmMoreAction>
+              </div>
+              <slot name="itemRight" :item="item"></slot>
+            </div>
+          </div>
+        </slot>
+      </template>
+    </VueDraggable>
     <n-virtual-list
+      v-else
       v-bind="props"
       ref="listRef"
       :class="['crm-list', containerStatusClass, props.class]"
@@ -65,8 +126,9 @@
 
 <script setup lang="ts">
   import { NSpin, NVirtualList } from 'naive-ui';
-  import { useDraggable } from 'vue-draggable-plus';
+  import { VueDraggable } from 'vue-draggable-plus';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 
@@ -146,33 +208,17 @@
   }
 
   const listRef: Ref = ref(null);
-  // TODO 暂时还未做拖拽
-  watch(
-    listData.value,
-    () => {
-      if (listData.value.length > 0 && !isInitListener.value) {
-        // 如果数据不为空，且没有初始化容器的滚动监听器
-        if (props.draggable) {
-          // 如果开启拖拽
-          if (props.virtualScrollHeight) {
-            // 如果开启虚拟滚动，需要将拖拽的容器设置为虚拟滚动的容器
-            useDraggable('.crm-list .v-vl', listData, {
-              ghostClass: 'crm-list-ghost',
-            });
-          } else {
-            // 否则直接设置为列表容器
-            useDraggable('.v-vl', listData, {
-              ghostClass: 'crm-list-ghost',
-            });
-          }
-        }
-        nextTick(() => {
-          const listContent = listRef.value?.$el.querySelector('.v-vl');
+  const draggableListRef = ref();
 
-          setContainer(listContent);
-          initScrollListener();
-        });
-      }
+  watch(
+    () => [listData.value.length, props.draggable],
+    () => {
+      nextTick(() => {
+        const listContent = props.draggable ? draggableListRef.value?.$el : listRef.value?.$el.querySelector('.v-vl');
+        if (!listContent) return;
+        setContainer(listContent);
+        initScrollListener();
+      });
     },
     {
       immediate: true,
@@ -264,6 +310,9 @@
     .crm-list-item--active {
       color: var(--primary-8);
     }
+  }
+  .crm-list-draggable {
+    overflow-y: auto;
   }
   .crm-list-ghost {
     opacity: 0.5;

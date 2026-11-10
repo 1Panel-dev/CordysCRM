@@ -25,12 +25,6 @@ export default function useContainerShadow(options: ContainerShadowOptions) {
   const isInitListener = ref(false);
   const containerRef = ref<Ref<HTMLElement> | undefined>(options.content);
 
-  function setContainer(dom: HTMLElement) {
-    if (dom) {
-      containerRef.value = dom;
-    }
-  }
-
   function calculateArrivedPosition(listContent: HTMLElement) {
     const { scrollTop, scrollHeight, clientHeight } = listContent;
     const scrollBottom = scrollHeight - clientHeight - scrollTop;
@@ -46,6 +40,20 @@ export default function useContainerShadow(options: ContainerShadowOptions) {
     if (event.target) {
       const listContent = event.target as HTMLElement;
       calculateArrivedPosition(listContent);
+    }
+  }
+
+  function setContainer(dom: HTMLElement) {
+    if (containerRef.value === dom) return;
+    if (isInitListener.value && containerRef.value) {
+      containerRef.value.removeEventListener('scroll', listenScroll);
+    }
+    if (dom) {
+      containerRef.value = dom;
+      if (isInitListener.value) {
+        containerRef.value.addEventListener('scroll', listenScroll);
+        calculateArrivedPosition(containerRef.value);
+      }
     }
   }
 
