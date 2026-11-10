@@ -5,6 +5,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JsonDifferenceUtils;
@@ -178,6 +179,7 @@ public class SysOperationLogService {
                 .filter(differ -> !Strings.CS.equalsAny(differ.getColumn(),
                         "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName",
                         "supervisorName", "lastStage", "pos", "approved"))
+                .filter(f -> !f.getColumn().contains(BaseResourceFieldService.REF_UNDERLINE))
                 .collect(Collectors.toList());
         return differences;
     }
