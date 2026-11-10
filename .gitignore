@@ -33,7 +33,7 @@ pnpm-error.log*
 .idea/*
 !.idea/icon.png
 **/*.iml
-.lithe
+.openidea
 
 # Eclipse
 .settings
