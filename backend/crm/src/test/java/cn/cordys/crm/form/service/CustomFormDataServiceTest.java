@@ -3,6 +3,7 @@ package cn.cordys.crm.form.service;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
@@ -488,7 +489,7 @@ class CustomFormDataServiceTest {
     }
 
     private CustomFormDataService serviceWithPermission(CustomFormRoleKey permission) {
-        return new CustomFormDataService() {
+        CustomFormDataService service = new CustomFormDataService() {
             @Override
             CustomFormRoleKey getManageDataScope(String formId, String userId, String orgId) {
                 return permission;
@@ -499,5 +500,8 @@ class CustomFormDataServiceTest {
                 return permission;
             }
         };
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService",
+                mock(RelatedResourcePermissionService.class));
+        return service;
     }
 }

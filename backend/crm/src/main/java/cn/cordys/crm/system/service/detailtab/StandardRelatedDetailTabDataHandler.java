@@ -9,6 +9,7 @@ import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.BeanUtils;
@@ -70,6 +71,8 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
     @Resource
     private DataScopeService dataScopeService;
     @Resource
@@ -156,7 +159,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
      */
     private Object opportunityStatistic(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        checkPermission(context, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         OpportunitySearchStatisticRequest request = prepare(new OpportunitySearchStatisticRequest(), FormKey.OPPORTUNITY,
                 context);
         return opportunityService.searchStatistic(request, context.userId(), context.organizationId(),
@@ -168,7 +171,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
      */
     private Object contractStatistic(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CONTRACT_READ);
+        checkPermission(context, PermissionConstants.CONTRACT_READ);
         BaseCondition request = prepare(new BaseCondition(), FormKey.CONTRACT, context);
         return contractService.searchStatistic(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CONTRACT_READ));
@@ -179,7 +182,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
      */
     private Object orderStatistic(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.ORDER_READ);
+        checkPermission(context, PermissionConstants.ORDER_READ);
         BaseCondition request = prepare(new BaseCondition(), FormKey.ORDER, context);
         return orderService.searchStatistic(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.ORDER_READ));
@@ -190,7 +193,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
      */
     private Object paymentRecordStatistic(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        checkPermission(context, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
         ContractPaymentRecordStatisticRequest request = prepare(new ContractPaymentRecordStatisticRequest(),
                 FormKey.CONTRACT_PAYMENT_RECORD, context);
         return contractPaymentRecordService.searchStatistic(request, context.userId(), context.organizationId(),
@@ -200,10 +203,8 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private PagerWithOption<?> followRecords(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         RecordHomePageRequest request = prepare(new RecordHomePageRequest(), FormKey.FOLLOW_RECORD, context);
-        DeptDataPermissionDTO clueDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(),
+        DeptDataPermissionDTO clueDataPermission = dataPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ);
+        DeptDataPermissionDTO customerDataPermission = dataPermission(context,
                 PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return followUpRecordService.totalList(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
@@ -212,10 +213,8 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private PagerWithOption<?> followPlans(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         PlanHomePageRequest request = prepare(new PlanHomePageRequest(), FormKey.FOLLOW_PLAN, context);
-        DeptDataPermissionDTO clueDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(),
+        DeptDataPermissionDTO clueDataPermission = dataPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ);
+        DeptDataPermissionDTO customerDataPermission = dataPermission(context,
                 PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
                 clueDataPermission, customerDataPermission);
@@ -242,7 +241,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> clues(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CLUE_MANAGEMENT_READ);
+        checkPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ);
         CluePageRequest request = prepare(new CluePageRequest(), FormKey.CLUE, context);
         return clueService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ), false);
@@ -250,7 +249,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> customers(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        checkPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         CustomerPageRequest request = prepare(new CustomerPageRequest(), FormKey.CUSTOMER, context);
         return customerService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
@@ -258,7 +257,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> contacts(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        checkPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         CustomerContactPageRequest request = prepare(new CustomerContactPageRequest(), FormKey.CONTACT, context);
         return customerContactService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ));
@@ -266,7 +265,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> opportunities(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        checkPermission(context, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         OpportunityPageRequest request = prepare(new OpportunityPageRequest(), FormKey.OPPORTUNITY, context);
         return opportunityService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ), false);
@@ -274,21 +273,21 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> products(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.PRODUCT_MANAGEMENT_READ);
+        checkPermission(context, PermissionConstants.PRODUCT_MANAGEMENT_READ);
         ProductPageRequest request = prepare(new ProductPageRequest(), FormKey.PRODUCT, context);
         return productService.list(request, context.organizationId());
     }
 
     private PagerWithOption<?> prices(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.PRICE_READ);
+        checkPermission(context, PermissionConstants.PRICE_READ);
         ProductPricePageRequest request = prepare(new ProductPricePageRequest(), FormKey.PRICE, context);
         return productPriceService.list(request, context.organizationId());
     }
 
     private PagerWithOption<?> quotations(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.OPPORTUNITY_QUOTATION_READ);
+        checkPermission(context, PermissionConstants.OPPORTUNITY_QUOTATION_READ);
         OpportunityQuotationPageRequest request = prepare(new OpportunityQuotationPageRequest(), FormKey.QUOTATION,
                 context);
         return opportunityQuotationService.list(request, context.organizationId(), context.userId(),
@@ -297,7 +296,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> contracts(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CONTRACT_READ);
+        checkPermission(context, PermissionConstants.CONTRACT_READ);
         ContractPageRequest request = prepare(new ContractPageRequest(), FormKey.CONTRACT, context);
         return contractService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CONTRACT_READ), false);
@@ -305,7 +304,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> invoices(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CONTRACT_INVOICE_READ);
+        checkPermission(context, PermissionConstants.CONTRACT_INVOICE_READ);
         ContractInvoicePageRequest request = prepare(new ContractInvoicePageRequest(), FormKey.INVOICE, context);
         return contractInvoiceService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.CONTRACT_INVOICE_READ));
@@ -313,7 +312,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> paymentPlans(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        checkPermission(context, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         ContractPaymentPlanPageRequest request = prepare(new ContractPaymentPlanPageRequest(),
                 FormKey.CONTRACT_PAYMENT_PLAN, context);
         return contractPaymentPlanService.list(request, context.userId(), context.organizationId(),
@@ -322,7 +321,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> paymentRecords(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        checkPermission(context, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
         ContractPaymentRecordPageRequest request = prepare(new ContractPaymentRecordPageRequest(),
                 FormKey.CONTRACT_PAYMENT_RECORD, context);
         return contractPaymentRecordService.list(request, context.userId(), context.organizationId(),
@@ -331,7 +330,7 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
 
     private PagerWithOption<?> orders(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
-        checkPermission(PermissionConstants.ORDER_READ);
+        checkPermission(context, PermissionConstants.ORDER_READ);
         OrderPageRequest request = prepare(new OrderPageRequest(), FormKey.ORDER, context);
         return orderService.list(request, context.userId(), context.organizationId(),
                 dataPermission(context, PermissionConstants.ORDER_READ), false);
@@ -348,17 +347,39 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         relation.setValue(context.resourceId());
         List<FilterCondition> filters = request.getFilters();
         filters.add(relation);
+        if (FormKey.CUSTOMER.getKey().equals(context.formKey())
+                && relatedForm != FormKey.CUSTOMER && relatedForm != FormKey.PRODUCT && relatedForm != FormKey.PRICE) {
+            String ownerField = relatedForm == FormKey.QUOTATION ? "createUser" : "owner";
+            List<String> isolatedOwners = new ArrayList<>(relatedResourcePermissionService.getIsolatedOwnerIds(
+                    context.resourceId(), context.userId(), context.organizationId()));
+            if (!isolatedOwners.isEmpty()) {
+                FilterCondition isolation = new FilterCondition();
+                isolation.setName(ownerField);
+                isolation.setOperator(FilterCondition.CombineConditionOperator.NOT_IN.name());
+                isolation.setValue(isolatedOwners);
+                filters.add(isolation);
+            }
+        }
         request.setFilters(filters);
 
         ConditionFilterUtils.parseCondition(request, relatedForm.getKey());
         return request;
     }
 
-    private void checkPermission(String permission) {
-        resourcePermissionService.checkPermission(permission);
+    private void checkPermission(DetailTabQueryContext context, String permission) {
+        if (!relatedResourcePermissionService.isOwner(context.formKey(), context.resourceId(), context.userId(),
+                context.organizationId())) {
+            resourcePermissionService.checkPermission(permission);
+        }
     }
 
     private DeptDataPermissionDTO dataPermission(DetailTabQueryContext context, String permission) {
+        if (relatedResourcePermissionService.isOwner(context.formKey(), context.resourceId(), context.userId(),
+                context.organizationId())) {
+            DeptDataPermissionDTO all = new DeptDataPermissionDTO();
+            all.setAll(true);
+            return all;
+        }
         return dataScopeService.getDeptDataPermission(context.userId(), context.organizationId(),
                 InternalUserView.ALL.name(), permission);
     }

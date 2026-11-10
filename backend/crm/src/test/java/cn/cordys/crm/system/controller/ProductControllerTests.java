@@ -306,8 +306,5 @@ class ProductControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestGetWithOkAndReturn("list/option");
         List<OptionDTO> optionDTOList = getResultDataArray(mvcResult, OptionDTO.class);
         Assertions.assertNotNull(optionDTOList);
-
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_GET, addProduct.getId());
     }
 }

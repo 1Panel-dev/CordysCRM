@@ -464,6 +464,17 @@ class CustomerControllerTests extends BaseTest {
         mergeRequest.setToMergeId(targetCustomer.getId());
         this.requestPostWithOk(MERGE, mergeRequest);
         Assertions.assertNull(customerMapper.selectByPrimaryKey(sourceCustomer.getId()));
+
+        // 每次权限请求使用独立来源，避免合并删除来源后影响后续校验。
+        Customer permissionSource = addMergeCustomer("merge-permission-source");
+        Customer deniedSource = addMergeCustomer("merge-denied-source");
+        var permissionSourceIterator = List.of(permissionSource.getId(), deniedSource.getId()).iterator();
+        requestPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE, MERGE, () -> {
+            mergeRequest.setMergeIds(List.of(permissionSourceIterator.next()));
+            return getPermissionPostRequestBuilder(MERGE, mergeRequest);
+        });
+        Assertions.assertNull(customerMapper.selectByPrimaryKey(permissionSource.getId()));
+        Assertions.assertNotNull(customerMapper.selectByPrimaryKey(deniedSource.getId()));
     }
 
     private Customer addMergeCustomer(String name) throws Exception {

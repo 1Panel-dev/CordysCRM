@@ -676,7 +676,10 @@ public class ClueService implements ApprovalResourceHandler {
             return response;
         }
         CustomerListResponse item = new CustomerListResponse();
-        boolean hasPermission = hasTransitionCustomerPermission(customer, item, userId, orgId);
+        boolean hasPermission = hasTransitionCustomerPermission(customer, item, userId, orgId)
+                || (!BooleanUtils.isTrue(clue.getInSharedPool()) && Strings.CS.equals(clue.getOwner(), userId)
+                        && !BooleanUtils.isTrue(customer.getInSharedPool())
+                        && PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_READ));
         List<CustomerListResponse> list = List.of(item);
         if (hasPermission) {
             BeanUtils.copyBean(item, customer);

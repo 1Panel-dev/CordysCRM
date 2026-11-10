@@ -54,6 +54,12 @@
             )
         </if>
         where so.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="so.owner"/>
+            <property name="customerColumn" value="so.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="request.customerId != null and request.customerId != ''">
             and so.customer_id = #{request.customerId}
@@ -519,6 +525,12 @@
         </if>
 
         where so.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="so.owner"/>
+            <property name="customerColumn" value="so.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.self">
             and so.owner = #{userId}

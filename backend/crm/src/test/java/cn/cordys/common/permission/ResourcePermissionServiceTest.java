@@ -86,6 +86,7 @@ import static org.mockito.Mockito.withSettings;
 
 class ResourcePermissionServiceTest {
     private final ResourcePermissionService service = new ResourcePermissionService();
+    private final RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
     private final DataScopeService dataScope = spy(new DataScopeService());
     private final OpportunityResourceAccessContextProvider opportunities =
             new OpportunityResourceAccessContextProvider();
@@ -115,6 +116,7 @@ class ResourcePermissionServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(service, "dataScopeService", dataScope);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(service, "extApprovalCommentMapper", commentMentions);
         ReflectionTestUtils.setField(opportunities, "opportunityMapper", opportunityMapper);
         ReflectionTestUtils.setField(quotations, "quotationMapper", quotationMapper);

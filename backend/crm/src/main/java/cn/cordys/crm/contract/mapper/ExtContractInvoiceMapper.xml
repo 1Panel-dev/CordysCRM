@@ -52,6 +52,12 @@
             )
         </if>
         where ci.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="ci.owner"/>
+            <property name="customerColumn" value="c.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="request.contractId != null and request.contractId != ''">
             and ci.contract_id = #{request.contractId}
@@ -454,6 +460,12 @@
         where
             c.customer_id = #{customerId}
             and ci.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="ci.owner"/>
+            <property name="customerColumn" value="c.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
         <if test="approved">
             and ci.approval_status = 'APPROVED'
         </if>

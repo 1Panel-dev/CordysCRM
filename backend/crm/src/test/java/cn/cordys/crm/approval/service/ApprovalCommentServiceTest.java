@@ -7,6 +7,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.SortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithCommentCount;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
@@ -93,6 +94,7 @@ class ApprovalCommentServiceTest {
     private BaseMapper<ApprovalCommentMention> mentionMapper;
     private ExtApprovalCommentMapper extCommentMapper;
     private ApprovalResourceService approvalResourceService;
+    private RelatedResourcePermissionService relatedResourcePermissionService;
     private ApprovalCommentNoticeService approvalCommentNoticeService;
     private BaseMapper<Attachment> attachmentMapper;
     private AttachmentService attachmentService;
@@ -133,6 +135,7 @@ class ApprovalCommentServiceTest {
         mentionMapper = mock(BaseMapper.class);
         extCommentMapper = mock(ExtApprovalCommentMapper.class);
         approvalResourceService = mock(ApprovalResourceService.class);
+        relatedResourcePermissionService = mock(RelatedResourcePermissionService.class);
         approvalCommentNoticeService = mock(ApprovalCommentNoticeService.class);
         attachmentMapper = mock(BaseMapper.class);
         attachmentService = mock(AttachmentService.class);
@@ -143,6 +146,7 @@ class ApprovalCommentServiceTest {
         ReflectionTestUtils.setField(service, "mentionMapper", mentionMapper);
         ReflectionTestUtils.setField(service, "extCommentMapper", extCommentMapper);
         ReflectionTestUtils.setField(service, "approvalResourceService", approvalResourceService);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedResourcePermissionService);
         ReflectionTestUtils.setField(service, "approvalCommentNoticeService", approvalCommentNoticeService);
         ReflectionTestUtils.setField(service, "attachmentMapper", attachmentMapper);
         ReflectionTestUtils.setField(service, "attachmentService", attachmentService);
@@ -172,6 +176,8 @@ class ApprovalCommentServiceTest {
             context.getBeanFactory().registerSingleton("commentMapper", commentMapper);
             context.getBeanFactory().registerSingleton("mentionMapper", mentionMapper);
             context.getBeanFactory().registerSingleton("approvalResourceService", approvalResourceService);
+            context.getBeanFactory().registerSingleton("relatedResourcePermissionService",
+                    relatedResourcePermissionService);
             context.getBeanFactory().registerSingleton("approvalCommentNoticeService", approvalCommentNoticeService);
             context.getBeanFactory().registerSingleton("attachmentMapper", attachmentMapper);
             context.getBeanFactory().registerSingleton("attachmentService", attachmentService);

@@ -80,6 +80,12 @@
             )
         </if>
         where oq.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="oq.create_user"/>
+            <property name="customerColumn" value="o.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.self">
             and oq.create_user = #{userId}

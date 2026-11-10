@@ -6,9 +6,11 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -89,6 +91,8 @@ public class CustomFormService {
     private ApprovalFlowService approvalFlowService;
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
@@ -181,8 +185,23 @@ public class CustomFormService {
     }
 
     public CustomFormGetResponse get(String id, String userId, String orgId) {
+        return get(id, userId, orgId, null);
+    }
+
+    public CustomFormGetResponse get(String id, String userId, String orgId, String resourceId) {
+        boolean relatedView = false;
         if (!resourcePermissionService.hasApprovalCommentMentionFormPermission(id, userId, orgId)) {
-            checkFormAccess(id, userId, orgId);
+            try {
+                resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+                checkFormAccess(id, userId, orgId);
+            } catch (GenericException e) {
+                if (e.getErrorCode() != CrmHttpResultCode.FORBIDDEN || StringUtils.isBlank(resourceId)
+                        || !relatedResourcePermissionService.hasRelatedReadPermission(id, resourceId, userId, orgId)) {
+                    throw e;
+                }
+                checkRelatedReadForm(id, orgId);
+                relatedView = true;
+            }
         }
 
         CustomForm form = customFormMapper.selectByPrimaryKey(id);
@@ -201,8 +220,18 @@ public class CustomFormService {
             resp.setFormProp(businessFormConfig.getFormProp());
         }
 
-        resp.setIsAdmin(isFormAdminUser(form.getId(), userId, orgId));
+        resp.setIsAdmin(!relatedView && isFormAdminUser(form.getId(), userId, orgId));
         return resp;
+    }
+
+    void checkRelatedReadForm(String formId, String orgId) {
+        CustomForm form = customFormMapper.selectByPrimaryKey(formId);
+        if (form == null || !StringUtils.equals(form.getOrganizationId(), orgId)) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
+        if (BooleanUtils.isFalse(form.getEnable())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
     }
 
     private OptionDTO getUserOption(String userId) {

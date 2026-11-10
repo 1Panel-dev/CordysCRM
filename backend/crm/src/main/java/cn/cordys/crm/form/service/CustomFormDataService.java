@@ -20,6 +20,7 @@ import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -154,15 +155,27 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     @Resource
     private ResourcePermissionService resourcePermissionService;
     @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
     private ApprovalFlowService approvalFlowService;
     @Resource
     private ApprovalTodoService approvalTodoService;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId,
             String orgId, boolean catchPermissionException) {
+        return page(request, userId, orgId, catchPermissionException, false);
+    }
+
+    /**
+     * 已固定关联条件的详情标签允许宿主负责人只读访问。
+     */
+    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId,
+            String orgId, boolean catchPermissionException, boolean relatedOwner) {
         String formId = request.getCustomFormId();
-        CustomFormRoleKey dataScope;
-        if (catchPermissionException) {
+        CustomFormRoleKey dataScope = null;
+        if (relatedOwner) {
+            customFormService.checkRelatedReadForm(formId, orgId);
+        } else if (catchPermissionException) {
             try {
                 dataScope = getDataScope(formId, userId, orgId);
             } catch (Exception e) {
@@ -174,7 +187,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         } else {
             dataScope = getDataScope(formId, userId, orgId);
         }
-        boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
+        boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN && !relatedOwner;
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
@@ -188,7 +201,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
         try {
 
-            CustomFormRoleKey manageDataScope = getManageDataScope(formId, userId, orgId);
+            CustomFormRoleKey manageDataScope = relatedOwner ? null : getManageDataScope(formId, userId, orgId);
             list = buildList(list, formId, orgId);
             Map<String, List<OptionDTO>> optionMap = buildOptionMap(formId, orgId, list);
             list.forEach(item -> {
@@ -273,7 +286,23 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         }
         try {
             CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
-            return dataScope != CustomFormRoleKey.MANAGE_OWN || userId.equals(data.getOwner());
+            if (dataScope != CustomFormRoleKey.MANAGE_OWN || userId.equals(data.getOwner())) {
+                return true;
+            }
+        } catch (GenericException e) {
+            if (e.getErrorCode() == CrmHttpResultCode.NOT_FOUND) {
+                return false;
+            }
+            if (e.getErrorCode() != CrmHttpResultCode.FORBIDDEN) {
+                throw e;
+            }
+        }
+        if (!relatedResourcePermissionService.hasRelatedReadPermission(data.getCustomFormId(), id, userId, orgId)) {
+            return false;
+        }
+        try {
+            customFormService.checkRelatedReadForm(data.getCustomFormId(), orgId);
+            return true;
         } catch (GenericException e) {
             if (e.getErrorCode() == CrmHttpResultCode.FORBIDDEN || e.getErrorCode() == CrmHttpResultCode.NOT_FOUND) {
                 return false;
@@ -288,22 +317,34 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
-        CustomFormRoleKey dataScope = null;
         // 先校验是否是审批资源
         boolean approvalView = resourcePermissionService.hasApprovalViewPermission(id, userId, orgId,
                 data.getCustomFormId());
+        boolean relatedView = false;
         if (!approvalView) {
             checkCurrentOrganization(data, orgId);
-            // 获取并校验权限
-            dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
-            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getOwner(), userId)) {
-                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            try {
+                resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+                CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
+                if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getOwner(), userId)) {
+                    throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+                }
+            } catch (GenericException e) {
+                if (e.getErrorCode() != CrmHttpResultCode.FORBIDDEN
+                        || !relatedResourcePermissionService.hasRelatedReadPermission(
+                                data.getCustomFormId(), id, userId, orgId)) {
+                    throw e;
+                }
+                customFormService.checkRelatedReadForm(data.getCustomFormId(), orgId);
+                relatedView = true;
             }
         }
 
         CustomFormRoleKey manageDataScope = null;
         try {
-            manageDataScope = getManageDataScope(data.getCustomFormId(), userId, orgId);
+            if (!relatedView) {
+                manageDataScope = getManageDataScope(data.getCustomFormId(), userId, orgId);
+            }
         } catch (GenericException e) {
             // 审批临时查看不要求普通表单管理权限，权限不足时仅关闭管理操作。
             if (!approvalView || e.getErrorCode() != CrmHttpResultCode.FORBIDDEN) {

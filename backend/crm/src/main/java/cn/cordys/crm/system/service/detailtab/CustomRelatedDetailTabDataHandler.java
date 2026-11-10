@@ -5,6 +5,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
@@ -19,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 客户、商机详情下自定义关联表单的数据查询。
@@ -33,6 +35,8 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
 
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
     @Resource
     private CustomFormDataService customFormDataService;
     @Resource
@@ -54,7 +58,11 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
 
     @Override
     public PagerWithOption<?> page(DetailTabQueryContext context) {
-        resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+        boolean relatedOwner = relatedResourcePermissionService.isOwner(context.formKey(), context.resourceId(),
+                context.userId(), context.organizationId());
+        if (!relatedOwner) {
+            resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+        }
 
         String relatedFormId = context.tab().getRelatedForm().getIdAsString();
         String relatedFieldId = context.tab().getRelatedField().getIdAsString();
@@ -68,10 +76,24 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
         request.setViewId(null);
         List<FilterCondition> filters = context.request().getFilters();
         filters.add(buildRelationFilter(relatedFieldId, context.resourceId()));
+        if (relatedOwner && FormKey.CUSTOMER.getKey().equals(context.formKey())) {
+            Set<String> isolatedOwners = relatedResourcePermissionService.getIsolatedOwnerIds(context.resourceId(),
+                    context.userId(), context.organizationId());
+            if (!isolatedOwners.isEmpty()) {
+                FilterCondition condition = new FilterCondition();
+                condition.setName("owner");
+                condition.setOperator(FilterCondition.CombineConditionOperator.NOT_IN.name());
+                condition.setValue(List.copyOf(isolatedOwners));
+                filters.add(condition);
+            }
+        }
         request.setFilters(filters);
         ConditionFilterUtils.parseCondition(request, relatedFormId);
 
-        // false 表示无自定义表单角色时明确返回 403，而不是伪装成空列表。
+        // 宿主负责人只读关联数据，其他用户仍须具备关联表单权限。
+        if (relatedOwner) {
+            return customFormDataService.page(request, context.userId(), context.organizationId(), false, true);
+        }
         return customFormDataService.page(request, context.userId(), context.organizationId(), false);
     }
 

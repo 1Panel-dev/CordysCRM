@@ -8,6 +8,7 @@ import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.CsPermissionAspect;
 import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
@@ -105,6 +106,7 @@ class CustomerContactPermissionTest {
     private final DataScopeService dataScope = spy(new DataScopeService());
     private final ApprovalFlowService approvals = mock(ApprovalFlowService.class);
     private final ResourcePermissionService resourcePermissions = new ResourcePermissionService();
+    private final RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
     private final PermissionCache permissions = mock(PermissionCache.class);
     private final CustomerContactService service = spy(new CustomerContactService());
     private final CustomerContactFieldService contactFields = mock(CustomerContactFieldService.class);
@@ -160,6 +162,7 @@ class CustomerContactPermissionTest {
         ReflectionTestUtils.setField(provider, "customerMapper", customers);
         ReflectionTestUtils.setField(provider, "collaborationMapper", collaborationMapper);
         ReflectionTestUtils.setField(resourcePermissions, "dataScopeService", dataScope);
+        ReflectionTestUtils.setField(resourcePermissions, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(resourcePermissions, "approvalFlowService", approvals);
         ReflectionTestUtils.setField(resourcePermissions, "contextProviders", List.of(provider));
         ReflectionTestUtils.invokeMethod(resourcePermissions, "initializeProviders");
@@ -167,6 +170,7 @@ class CustomerContactPermissionTest {
         ReflectionTestUtils.setField(service, "customerContactMapper", contactRecords);
         ReflectionTestUtils.setField(service, "dataScopeService", dataScope);
         ReflectionTestUtils.setField(service, "resourcePermissionService", resourcePermissions);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(service, "customerContactFieldService", contactFields);
         ReflectionTestUtils.setField(service, "moduleFormCacheService", formCache);
         ReflectionTestUtils.setField(service, "moduleFormService", forms);
@@ -500,6 +504,7 @@ class CustomerContactPermissionTest {
         when(collaborations.selectByCustomerId(CUSTOMER)).thenReturn("NONE".equals(type)
                 ? List.of(other, readOnly)
                 : List.of(other, readOnly, collaboration(USER, type)));
+        when(relatedPermissions.getIsolatedOwnerIds(CUSTOMER, USER, ORG)).thenReturn(Set.of("collaborator"));
     }
 
     private CustomerContact detail(String id, String owner) {

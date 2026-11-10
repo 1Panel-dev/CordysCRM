@@ -7,6 +7,8 @@ import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.product.domain.ProductPrice;
@@ -58,6 +60,10 @@ public class ProductPriceController {
     private ProductPriceExportService priceExportService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
@@ -96,9 +102,12 @@ public class ProductPriceController {
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.PRICE_READ)
     @Operation(summary = "价格表详情")
     public ProductPriceGetResponse get(@PathVariable String id) {
+        if (!relatedResourcePermissionService.hasRelatedReadPermission(FormKey.PRICE.getKey(), id,
+                SessionUtils.getUserId(), OrganizationContext.getOrganizationId())) {
+            resourcePermissionService.checkPermission(PermissionConstants.PRICE_READ);
+        }
         return priceService.get(id);
     }
 

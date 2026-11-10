@@ -38,6 +38,12 @@
         </if>
 
         where cpr.organization_id = #{currentOrg}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="cpr.owner"/>
+            <property name="customerColumn" value="c.customer_id"/>
+            <property name="userParameter" value="currentUser"/>
+            <property name="orgParameter" value="currentOrg"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.self">
             and cpr.owner = #{currentUser}
@@ -121,6 +127,12 @@
                 )
             </if>
             where cpr.organization_id = #{orgId}
+            <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+                <property name="ownerColumn" value="cpr.owner"/>
+                <property name="customerColumn" value="(SELECT isolation_contract.customer_id FROM contract isolation_contract WHERE isolation_contract.id = cpr.contract_id AND isolation_contract.organization_id = #{orgId})"/>
+                <property name="userParameter" value="userId"/>
+                <property name="orgParameter" value="orgId"/>
+            </include>
             <if test="dataPermission != null and dataPermission.self">
                 and cpr.owner = #{userId}
             </if>
@@ -128,6 +140,12 @@
         ) cpr_sum on c.id = cpr_sum.contract_id
 
         where c.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="c.owner"/>
+            <property name="customerColumn" value="c.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
         and c.customer_id = #{customerId}
     </select>
 
@@ -407,6 +425,12 @@
         </if>
 
         where cpr.organization_id = #{orgId}
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+            <property name="ownerColumn" value="cpr.owner"/>
+            <property name="customerColumn" value="c.customer_id"/>
+            <property name="userParameter" value="userId"/>
+            <property name="orgParameter" value="orgId"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.self">
             and cpr.owner = #{userId}

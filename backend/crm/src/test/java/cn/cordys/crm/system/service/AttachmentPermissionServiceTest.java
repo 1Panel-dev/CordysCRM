@@ -3,6 +3,7 @@ package cn.cordys.crm.system.service;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.common.permission.ResourcePermissionService;
@@ -81,6 +82,8 @@ class AttachmentPermissionServiceTest {
         ReflectionTestUtils.setField(service, "extApprovalCommentMapper", mentions);
         ReflectionTestUtils.setField(service, "contextProviders", List.of(provider));
         ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService",
+                mock(RelatedResourcePermissionService.class));
         ReflectionTestUtils.setField(service, "customerMapper", customers);
         ReflectionTestUtils.setField(service, "clueMapper", clues);
         ReflectionTestUtils.setField(service, "followUpRecordMapper", records);

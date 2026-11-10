@@ -3,6 +3,7 @@ package cn.cordys.crm.system.service;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -46,6 +47,8 @@ public class AttachmentPermissionService {
     private List<ResourceAccessContextProvider> contextProviders;
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
     @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
@@ -142,12 +145,18 @@ public class AttachmentPermissionService {
             if (!orgId.equals(price.getOrganizationId())) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-            resourcePermissionService.checkPermission(PermissionConstants.PRICE_READ);
+            if (!relatedResourcePermissionService.hasRelatedReadPermission(
+                    FormKey.PRICE.getKey(), resourceId, userId, orgId)) {
+                resourcePermissionService.checkPermission(PermissionConstants.PRICE_READ);
+            }
             return;
         }
         CustomFormData data = customFormDataMapper.selectByPrimaryKey(resourceId);
         if (data != null && orgId.equals(data.getOrganizationId())) {
-            resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+            if (!relatedResourcePermissionService.hasRelatedReadPermission(
+                    data.getCustomFormId(), resourceId, userId, orgId)) {
+                resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+            }
             if (customFormDataService.hasViewPermission(resourceId, userId, orgId)) {
                 return;
             }

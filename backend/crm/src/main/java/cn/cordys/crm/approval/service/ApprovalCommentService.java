@@ -6,6 +6,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithCommentCount;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -60,6 +61,8 @@ public class ApprovalCommentService {
     @Resource
     private ApprovalResourceService approvalResourceService;
     @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
     private ApprovalCommentNoticeService approvalCommentNoticeService;
     @Resource
     private BaseMapper<Attachment> attachmentMapper;
@@ -75,7 +78,7 @@ public class ApprovalCommentService {
     public PagerWithCommentCount<List<ApprovalCommentResponse>> page(ApprovalCommentPageRequest request, String userId,
             String orgId) {
         String resourceId = request.getResourceId();
-        checkPermission(resourceId, userId, orgId);
+        checkPermission(resourceId, userId, orgId, true);
         ApprovalComment criteria = new ApprovalComment();
         criteria.setResourceId(resourceId);
         criteria.setOrganizationId(orgId);
@@ -221,11 +224,18 @@ public class ApprovalCommentService {
     }
 
     private void checkPermission(String resourceId, String userId, String orgId) {
+        checkPermission(resourceId, userId, orgId, false);
+    }
+
+    private void checkPermission(String resourceId, String userId, String orgId, boolean readOnly) {
         ApprovalInstance instance = extCommentMapper.selectLatestInstance(resourceId, orgId);
         if (instance == null) {
             throw new GenericException(Translator.get("approval.comment.instance_not_found"));
         }
-        if (!hasCommentPermission(instance, userId, orgId)) {
+        relatedResourcePermissionService.checkIsolatedData(instance.getType(), resourceId, userId, orgId);
+        if (!hasCommentPermission(instance, userId, orgId)
+                && !(readOnly && relatedResourcePermissionService.hasRelatedReadPermission(instance.getType(),
+                        resourceId, userId, orgId))) {
             throw new GenericException(Translator.get("approval.comment.no_permission"));
         }
     }

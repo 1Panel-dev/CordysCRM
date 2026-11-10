@@ -5,9 +5,13 @@ import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -50,6 +54,8 @@ public class OpportunityQuotationController {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
 
     @GetMapping("/module/form")
     @Operation(summary = "获取表单配置")
@@ -59,14 +65,23 @@ public class OpportunityQuotationController {
     }
 
     @PostMapping("/page")
-    @CsPermission(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "报价单列表")
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(
             @Validated @RequestBody OpportunityQuotationPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.QUOTATION.getKey());
+        boolean parentOwner = relatedResourcePermissionService.isOwner(FormKey.OPPORTUNITY.getKey(),
+                request.getOpportunityId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId())
+                && PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        if (!parentOwner && !PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_QUOTATION_READ)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(),
                 PermissionConstants.OPPORTUNITY_QUOTATION_READ);
+        if (parentOwner) {
+            deptDataPermission = new DeptDataPermissionDTO();
+            deptDataPermission.setAll(true);
+        }
         return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(),
                 SessionUtils.getUserId(), deptDataPermission, false);
     }
