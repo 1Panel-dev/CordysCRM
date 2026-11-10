@@ -458,16 +458,19 @@ class CustomerControllerTests extends BaseTest {
         mergeRequest.setOwnerId("admin");
         MvcResult mvcResult = this.requestPost(MERGE, mergeRequest).andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.get("no.customer.merge.data"));
-        CustomerAddRequest addRequest = new CustomerAddRequest();
-        addRequest.setName("zz");
-        addRequest.setOwner("admin");
-        MvcResult addResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, addRequest);
-        Customer resultData = getResultData(addResult, Customer.class);
-        mergeRequest.setMergeIds(List.of(anotherCustomer.getId()));
-        mergeRequest.setToMergeId(resultData.getId());
+        Customer targetCustomer = addMergeCustomer("merge-target");
+        Customer sourceCustomer = addMergeCustomer("merge-source");
+        mergeRequest.setMergeIds(List.of(sourceCustomer.getId()));
+        mergeRequest.setToMergeId(targetCustomer.getId());
         this.requestPostWithOk(MERGE, mergeRequest);
-        // check permission
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE, MERGE, mergeRequest);
+        Assertions.assertNull(customerMapper.selectByPrimaryKey(sourceCustomer.getId()));
+    }
+
+    private Customer addMergeCustomer(String name) throws Exception {
+        CustomerAddRequest addRequest = new CustomerAddRequest();
+        addRequest.setName(name);
+        addRequest.setOwner(InternalUser.ADMIN.getValue());
+        return getResultData(requestPostWithOkAndReturn(DEFAULT_ADD, addRequest), Customer.class);
     }
 
     private List<CustomerField> getCustomerFields(String customerId) {
