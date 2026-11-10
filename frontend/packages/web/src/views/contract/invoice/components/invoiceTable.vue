@@ -55,7 +55,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isContractTab && !props.detailTabResourceId"
+        v-if="!props.isContractTab && !props.detailTabResourceId && !props.customerId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.INVOICE"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -128,7 +128,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { batchDeleteInvoiced, deleteInvoiced } from '@/api/modules';
+  import { batchDeleteInvoiced, deleteInvoiced, getCustomerInvoiceList } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { deleteInvoiceContentMap } from '@/config/contract';
   import { processStatusOptions } from '@/config/process';
@@ -145,6 +145,7 @@
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
     isContractTab?: boolean;
+    customerId?: string;
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
@@ -412,6 +413,7 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
+    listApi: props.customerId ? getCustomerInvoiceList : undefined,
     readonly: props.readonly,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
@@ -563,8 +565,8 @@
   function searchData(val?: string, refreshId?: string) {
     setLoadListParams({
       keyword: val ?? keyword.value,
-      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
-      contractId: props.sourceId,
+      ...(props.detailTabResourceId || props.customerId ? {} : { viewId: activeTab.value }),
+      ...(props.customerId ? { customerId: props.customerId } : { contractId: props.sourceId }),
     });
     loadList(false, refreshId);
     if (!refreshId) {
@@ -573,7 +575,7 @@
   }
 
   onMounted(() => {
-    if (props.detailTabResourceId) {
+    if (props.detailTabResourceId || props.customerId) {
       searchData();
     }
   });

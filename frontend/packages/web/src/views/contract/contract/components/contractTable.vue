@@ -60,7 +60,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.detailTabResourceId && !props.hideBoard"
+        v-if="!props.detailTabResourceId && !props.hideBoard && !props.customerId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CONTRACT"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -227,6 +227,7 @@
     batchDeleteContract,
     changeContractStatus,
     deleteContract,
+    getAccountContract,
     getContractStatistic,
     getContractStatusConfig,
     getFormDetailTabStatistic,
@@ -248,6 +249,7 @@
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
     readonly?: boolean;
+    customerId?: string;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -632,6 +634,7 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT,
+    listApi: props.customerId ? getAccountContract : undefined,
     readonly: props.readonly,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
@@ -754,6 +757,7 @@
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
     try {
+      if (props.customerId) return;
       if (props.detailTabResourceId) {
         // 详情标签统计走专用接口，由后端按标签配置追加固定关联条件并校验数据范围。
         if (!props.detailTabPageFormId || !props.detailTabQuery) return;
@@ -918,10 +922,11 @@
   }
 
   function searchData(val?: string, refreshId?: string) {
-    if (!activeTab.value && !props.detailTabResourceId) return;
+    if (!activeTab.value && !props.detailTabResourceId && !props.customerId) return;
     setLoadListParams({
       keyword: val ?? keyword.value,
-      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
+      ...(props.detailTabResourceId || props.customerId ? {} : { viewId: activeTab.value }),
+      ...(props.customerId ? { customerId: props.customerId } : {}),
     });
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
@@ -1046,6 +1051,11 @@
   );
 
   onMounted(async () => {
+    if (props.customerId) {
+      activeShowType.value = 'table';
+      searchData();
+      return;
+    }
     if (props.detailTabResourceId) {
       activeShowType.value = 'table';
       searchData();
