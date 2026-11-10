@@ -35,6 +35,9 @@ public class ApprovalInstance extends BaseModel {
     @Schema(description = "重审起始审批节点编号，驳回后为下一次提审起点")
     private String resubmitStartNodeNumber;
 
+    @Schema(description = "本轮提审是否因重审起始节点失效而回退整单重审")
+    private Boolean resubmitNodeInvalid;
+
     @Schema(description = "审批状态")
     private String approvalStatus;
 

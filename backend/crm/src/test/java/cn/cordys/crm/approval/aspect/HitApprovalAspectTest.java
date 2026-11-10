@@ -17,7 +17,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -51,7 +50,7 @@ class HitApprovalAspectTest {
 
     @ParameterizedTest
     @CsvSource({ "false,false", "false,true", "true,false", "true,true" })
-    void updateResubmissionReportsFallbackOnlyAfterSuccessfulPush(boolean transactionActive, boolean invalid) {
+    void updateResubmissionPushesAfterCommitWithoutAddingHttpResponseFlag(boolean transactionActive, boolean invalid) {
         ApprovalPushResponse result = new ApprovalPushResponse();
         result.setResubmitNodeInvalid(invalid);
         when(resourceService.pushInNewTransaction(param)).thenReturn(result);
@@ -67,7 +66,7 @@ class HitApprovalAspectTest {
             TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
         }
         verify(resourceService).pushInNewTransaction(param);
-        assertSame(invalid ? result : null, request.getAttribute(ApprovalPushResponse.class.getName()));
+        assertNull(request.getAttribute(ApprovalPushResponse.class.getName()));
     }
 
     @Test

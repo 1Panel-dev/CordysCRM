@@ -44,6 +44,9 @@
         <div v-if="props.submitter.comment" class="mt-[8px] bg-[var(--text-n9)] p-[8px]">
           <div class="text-[var(--text-n4)]">{{ props.submitter.comment }}</div>
         </div>
+        <div v-if="props.submitter.resubmitNodeInvalid" class="mt-[8px] break-words text-[var(--text-n4)]">
+          {{ t('crm.approval.resubmitNodeMissing') }}
+        </div>
       </n-timeline-item>
       <n-timeline-item
         v-for="(node, index) in props.nodes"
@@ -305,6 +308,7 @@
       submitter?: string;
       submitTime?: number;
       comment?: string;
+      resubmitNodeInvalid?: boolean;
     };
     currentApprovalNode?: ApprovalNode;
     currentApprovalNodeIndex: number;

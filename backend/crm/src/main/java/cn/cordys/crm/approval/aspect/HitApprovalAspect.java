@@ -14,7 +14,6 @@ import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
-import cn.cordys.crm.approval.dto.response.ApprovalPushResponse;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
@@ -41,9 +40,6 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -263,14 +259,7 @@ public class HitApprovalAspect {
      * @param pushParam 提审参数
      */
     private void pushAfterCommit(ApprovalPushParam pushParam) {
-        Runnable push = () -> {
-            ApprovalPushResponse result = approvalResourceService.pushInNewTransaction(pushParam);
-            // 编辑提审在业务事务提交后完成，保留回退结果供正常响应返回。
-            if (pushParam.getExecuteTimingEnum() == ExecuteTimingEnum.UPDATE && result.isResubmitNodeInvalid()
-                    && RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
-                attributes.setAttribute(ApprovalPushResponse.class.getName(), result, RequestAttributes.SCOPE_REQUEST);
-            }
-        };
+        Runnable push = () -> approvalResourceService.pushInNewTransaction(pushParam);
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             // 无事务（或事务已提交）时直接以独立事务提审
             push.run();

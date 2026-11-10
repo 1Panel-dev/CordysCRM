@@ -660,6 +660,7 @@ public class ApprovalResourceService {
             }
             response.setResubmitNodeInvalid(firstApprovalNode == null);
         }
+        instance.setResubmitNodeInvalid(response.isResubmitNodeInvalid());
         if (firstApprovalNode == null) {
             firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
         }

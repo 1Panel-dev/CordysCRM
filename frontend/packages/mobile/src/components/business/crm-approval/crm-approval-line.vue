@@ -75,6 +75,7 @@
                   submitTime: detail.submitTime,
                   submitterId: detail.submitterId,
                   comment: detail.comment,
+                  resubmitNodeInvalid: detail.resubmitNodeInvalid,
                 }"
                 :current-approval-node="getCurrentNode(detail)"
                 :current-approval-node-index="getCurrentNodeIndex(detail)"
@@ -122,6 +123,9 @@
           </div>
           <div v-if="props.submitter.comment" class="mt-[8px] bg-[var(--text-n9)] p-[8px]">
             <div class="break-words text-[var(--text-n4)]">{{ props.submitter.comment }}</div>
+          </div>
+          <div v-if="props.submitter.resubmitNodeInvalid" class="mt-[8px] break-words text-[var(--text-n4)]">
+            {{ t('crm.approval.resubmitNodeMissing') }}
           </div>
         </van-step>
         <van-step
@@ -374,6 +378,7 @@
       submitter?: string;
       submitTime?: number;
       comment?: string;
+      resubmitNodeInvalid?: boolean;
     };
     currentApprovalNode?: ApprovalNode;
     currentApprovalNodeIndex: number;
