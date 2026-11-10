@@ -123,9 +123,9 @@ public class OrganizationLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), "syncCycle")) {
                 differ.setColumnName(Translator.get("syn_cycle"));
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(differ.getOldValue().toString());
+                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
                 }
-                differ.setNewValueName(differ.getNewValue().toString());
+                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
             }
         });
 
