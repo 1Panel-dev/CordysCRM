@@ -22,4 +22,7 @@ public interface ExtUserViewMapper {
 
     //根据userIds删除视图
     void deleteUserViewByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+
+    //根据resourceType删除视图
+    void deleteByResourceType(@Param("resourceType") String resourceType);
 }

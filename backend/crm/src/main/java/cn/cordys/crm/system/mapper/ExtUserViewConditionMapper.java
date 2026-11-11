@@ -13,4 +13,7 @@ public interface ExtUserViewConditionMapper {
 
     //根据userIds删除视图条件
     void deleteByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+
+    //根据视图类型删除视图条件
+    void deleteByResourceType(@Param("resourceType") String resourceType);
 }

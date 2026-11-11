@@ -36,6 +36,8 @@ import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigLogDTO;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
+import cn.cordys.crm.system.mapper.ExtUserViewConditionMapper;
+import cn.cordys.crm.system.mapper.ExtUserViewMapper;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -93,6 +95,10 @@ public class CustomFormService {
     private ResourcePermissionService resourcePermissionService;
     @Resource
     private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
+    private ExtUserViewMapper extUserViewMapper;
+    @Resource
+    private ExtUserViewConditionMapper extUserViewConditionMapper;
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
@@ -437,6 +443,10 @@ public class CustomFormService {
 
         // 业务表单与 Schema 同事务清理，同时驱逐组织内两层表单缓存。
         moduleFormCacheService.delete(id, orgId);
+
+        // 删除该表单下的用户视图（自定义表单以表单ID作为视图的 resource_type）
+        extUserViewConditionMapper.deleteByResourceType(id);
+        extUserViewMapper.deleteByResourceType(id);
 
         // 删除表单
         customFormMapper.deleteByIds(List.of(id));

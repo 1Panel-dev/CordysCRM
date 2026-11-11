@@ -183,6 +183,22 @@ public class UserViewService {
     }
 
     /**
+     * 校验视图归属当前用户、组织及指定视图类型
+     *
+     * @param resourceType 视图类型, 自定义表单为表单ID, 为空时不校验
+     */
+    public void checkView(String userId, String id, String orgId, String resourceType) {
+        checkView(userId, id, orgId);
+        if (StringUtils.isBlank(resourceType)) {
+            return;
+        }
+        UserView userView = userViewMapper.selectByPrimaryKey(id);
+        if (userView == null || !Strings.CS.equals(userView.getResourceType(), resourceType)) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("view_blank"));
+        }
+    }
+
+    /**
      * 删除视图
      */
     public void delete(String id, String userId, String orgId) {

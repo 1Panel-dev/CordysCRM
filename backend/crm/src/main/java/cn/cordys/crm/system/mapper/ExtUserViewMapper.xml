@@ -10,6 +10,10 @@
         </foreach>
     </delete>
 
+    <delete id="deleteByResourceType">
+        delete from sys_user_view where resource_type = #{resourceType}
+    </delete>
+
     <select id="getNextPos" resultType="java.lang.Long">
         SELECT max(pos)
         FROM sys_user_view

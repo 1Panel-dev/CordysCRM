@@ -10,6 +10,7 @@ import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
+import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.crm.form.service.CustomFormService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +36,8 @@ public class CustomFormController {
 
     @Resource
     private CustomFormService customFormService;
+    @Resource
+    private CustomFormDataService customFormDataService;
 
     @GetMapping("/list")
     @Operation(summary = "自定义表单列表")
@@ -112,5 +115,13 @@ public class CustomFormController {
     public List<OptionDTO> getAdmins(@PathVariable String customFormId) {
         return customFormService.getAdmins(customFormId, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/data-scope/{customFormId}")
+    @Operation(summary = "查询当前用户在当前表单的数据范围")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public String getDataScope(@PathVariable String customFormId) {
+        return customFormDataService.getDataScope(customFormId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId()).getKey();
     }
 }

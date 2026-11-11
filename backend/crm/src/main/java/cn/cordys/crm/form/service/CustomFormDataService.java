@@ -893,7 +893,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         }
     }
 
-    CustomFormRoleKey getDataScope(String formId, String userId, String orgId) {
+    public CustomFormRoleKey getDataScope(String formId, String userId, String orgId) {
         return getDataScope(formId, userId, orgId, true, false);
     }
 

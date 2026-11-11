@@ -496,7 +496,7 @@ class CustomFormDataServiceTest {
             }
 
             @Override
-            CustomFormRoleKey getDataScope(String formId, String userId, String orgId) {
+            public CustomFormRoleKey getDataScope(String formId, String userId, String orgId) {
                 return permission;
             }
         };

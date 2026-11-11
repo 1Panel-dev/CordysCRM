@@ -133,14 +133,22 @@ public class ConditionFilterUtils {
         parseCondition(baseCondition, null);
     }
 
+    /**
+     * 将视图查询条件转成数据库查询条件。
+     * <p>
+     * 调用方可先把 {@link BaseCondition#setViewCombineSearch} 预置为服务端注入的条件(如自定义表单内置视图),
+     * 此时不再按 viewId 从视图表解析, 只统一做一次字段映射转换, 避免重复解析与覆盖。
+     */
     public static void parseCondition(BaseCondition baseCondition, String formKey) {
         ModuleFormCacheService moduleFormCacheService = CommonBeanFactory.getBean(ModuleFormCacheService.class);
         ModuleFormConfigDTO businessFormConfig = Objects.requireNonNull(moduleFormCacheService)
                 .getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
         List<BaseField> fields = businessFormConfig.getFields();
 
-        // 处理视图查询条件
-        baseCondition.setViewCombineSearch(getViewCondition(baseCondition.getViewId()));
+        if (baseCondition.getViewCombineSearch() == null) {
+            // 处理用户自定义视图的查询条件
+            baseCondition.setViewCombineSearch(getViewCondition(baseCondition.getViewId()));
+        }
 
         CombineSearch combineSearch = baseCondition.getCombineSearch();
         CombineSearch viewCombineSearch = baseCondition.getViewCombineSearch();
