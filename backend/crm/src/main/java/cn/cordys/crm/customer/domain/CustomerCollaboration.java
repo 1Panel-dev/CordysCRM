@@ -22,4 +22,7 @@ public class CustomerCollaboration extends BaseModel {
 
     @Schema(description = "协作类型(只读/协作)")
     private String collaborationType;
+
+    /** 有效期截止时间，null 表示长期有效 */
+    private Long expireTime;
 }

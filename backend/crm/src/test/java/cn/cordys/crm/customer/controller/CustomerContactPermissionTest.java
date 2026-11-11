@@ -423,7 +423,11 @@ class CustomerContactPermissionTest {
                 resourcePermissions.checkResourcePermission(permission, CUSTOMER, FormKeyConstants.CUSTOMER, USER, ORG);
             }
         });
-        verifyNoInteractions(collaborationMapper);
+        if (!batch && PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE.equals(permission)) {
+            verify(collaborationMapper).select(any(CustomerCollaboration.class));
+        } else {
+            verifyNoInteractions(collaborationMapper);
+        }
     }
 
     @ParameterizedTest
@@ -501,6 +505,12 @@ class CustomerContactPermissionTest {
             assertEquals(USER, query.getUserId(), "协作授权必须绑定当前用户");
             return "NONE".equals(type) ? 0L : 1L;
         }).when(collaborationMapper).countByExample(any(CustomerCollaboration.class));
+        doAnswer(invocation -> {
+            CustomerCollaboration query = invocation.getArgument(0);
+            assertEquals(CUSTOMER, query.getCustomerId(), "协作授权必须绑定当前客户");
+            assertEquals(USER, query.getUserId(), "协作授权必须绑定当前用户");
+            return "NONE".equals(type) ? List.of() : List.of(collaboration(USER, type));
+        }).when(collaborationMapper).select(any(CustomerCollaboration.class));
         when(collaborations.selectByCustomerId(CUSTOMER)).thenReturn("NONE".equals(type)
                 ? List.of(other, readOnly)
                 : List.of(other, readOnly, collaboration(USER, type)));

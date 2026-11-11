@@ -123,7 +123,10 @@ import useUserStore from '@/store/modules/user';
 
 const userStore = useUserStore();
 
-export const nonFixedInternalViewIds = new Set<string>([CustomerSearchTypeEnum.CLUE_TRANSITION]);
+export const nonFixedInternalViewIds = new Set<string>([
+  CustomerSearchTypeEnum.CLUE_TRANSITION,
+  CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
+]);
 
 export const nonCopyableInternalViewIds = new Set<string>([
   CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,

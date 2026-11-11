@@ -590,10 +590,25 @@ public class CustomerContactService {
         // 查询协作人信息
         List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(customerId);
 
+        boolean fullDataCollaborator = collaborations.stream()
+                .anyMatch(item -> Strings.CS.equals(item.getUserId(), userId)
+                        && Strings.CS.equalsAny(item.getCollaborationType(),
+                                CustomerCollaborationType.READ_ONLY.name(),
+                                CustomerCollaborationType.JOINT_FOLLOW.name()));
+        if (fullDataCollaborator) {
+            List<CustomerContactListResponse> all = buildListData(
+                    extCustomerContactMapper.listByCustomerId(customerId), orgId);
+            response.setList(all);
+            response.setOptionMap(getListOptionMap(orgId, all));
+            return response;
+        }
+
         // 获取协作类型的协作的联系人
         Set<String> collaborationUserIds = collaborations.stream()
                 .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(),
-                        CustomerCollaborationType.COLLABORATION.name()))
+                        CustomerCollaborationType.COLLABORATION.name())
+                        || Strings.CS.equals(collaboration.getCollaborationType(),
+                                CustomerCollaborationType.JOINT_FOLLOW.name()))
                 .map(CustomerCollaboration::getUserId)
                 .collect(Collectors.toSet());
 

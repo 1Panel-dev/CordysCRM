@@ -5,11 +5,13 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
 import cn.cordys.crm.customer.dto.request.CustomerCollaborationUpdateRequest;
 import cn.cordys.crm.customer.dto.response.CustomerCollaborationListResponse;
+import cn.cordys.crm.customer.mapper.ExtCustomerCollaborationMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.mybatis.BaseMapper;
@@ -39,6 +41,8 @@ public class CustomerCollaborationService {
     @Resource
     private BaseMapper<CustomerCollaboration> customerCollaborationMapper;
     @Resource
+    private ExtCustomerCollaborationMapper extCustomerCollaborationMapper;
+    @Resource
     private BaseService baseService;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
@@ -49,20 +53,31 @@ public class CustomerCollaborationService {
         CustomerCollaboration example = new CustomerCollaboration();
         example.setCustomerId(customerId);
         List<CustomerCollaboration> collaborations = customerCollaborationMapper.select(example);
-        return buildListData(orgId, collaborations);
+        return buildListData(orgId, effective(collaborations));
     }
 
     public List<CustomerCollaboration> selectByCustomerIdAndUserId(String customerId, String userId) {
         CustomerCollaboration example = new CustomerCollaboration();
         example.setCustomerId(customerId);
         example.setUserId(userId);
-        return customerCollaborationMapper.select(example);
+        return effective(customerCollaborationMapper.select(example));
     }
 
     public List<CustomerCollaboration> selectByCustomerId(String customerId) {
         CustomerCollaboration example = new CustomerCollaboration();
         example.setCustomerId(customerId);
-        return customerCollaborationMapper.select(example);
+        return effective(customerCollaborationMapper.select(example));
+    }
+
+    private List<CustomerCollaboration> effective(List<CustomerCollaboration> collaborations) {
+        long now = System.currentTimeMillis();
+        return collaborations.stream().map(item -> {
+            if (CustomerCollaborationType.JOINT_FOLLOW.name().equals(item.getCollaborationType())
+                    && item.getExpireTime() != null && item.getExpireTime() <= now) {
+                item.setCollaborationType(CustomerCollaborationType.COLLABORATION.name());
+            }
+            return item;
+        }).toList();
     }
 
     private List<CustomerCollaborationListResponse> buildListData(String orgId,
@@ -130,11 +145,9 @@ public class CustomerCollaborationService {
 
     public CustomerCollaboration update(CustomerCollaborationUpdateRequest request, String userId) {
         associationPermissionService.checkCollaborations(List.of(request.getId()));
-        CustomerCollaboration customerCollaboration = BeanUtils.copyBean(new CustomerCollaboration(), request);
-        customerCollaboration.setUpdateTime(System.currentTimeMillis());
-        customerCollaboration.setUpdateUser(userId);
-        customerCollaborationMapper.update(customerCollaboration);
-        return customerCollaborationMapper.selectByPrimaryKey(customerCollaboration.getId());
+        extCustomerCollaborationMapper.updatePermission(request.getId(), request.getCollaborationType(),
+                request.getExpireTime(), userId, System.currentTimeMillis());
+        return customerCollaborationMapper.selectByPrimaryKey(request.getId());
     }
 
     public void delete(String id) {
@@ -164,7 +177,7 @@ public class CustomerCollaborationService {
         CustomerCollaboration example = new CustomerCollaboration();
         example.setUserId(userId);
         example.setCustomerId(customerId);
-        return customerCollaborationMapper.countByExample(example) > 0;
+        return !customerCollaborationMapper.select(example).isEmpty();
     }
 
     /**
