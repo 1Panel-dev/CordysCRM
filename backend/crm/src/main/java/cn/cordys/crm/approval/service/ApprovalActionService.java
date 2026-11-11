@@ -188,8 +188,6 @@ public class ApprovalActionService {
         // 追加退回操作的待办任务 && 保存退回记录
         backProcess(instance, request, orgId);
         ApprovalReturnBackRecord backRecord = saveBackRecord(request, instance.getId(), userId);
-        instance.setCurrentNodeId(request.getReturnToFlowNodeId());
-        approvalInstanceMapper.updateById(instance);
         // 保存退回附件
         if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
             saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId,
@@ -432,8 +430,8 @@ public class ApprovalActionService {
      * @param userId       当前用户
      * @param currentOrgId 当前组织ID
      */
-    private void appendBackTasks(ApprovalReturnBackRequest backRequest, String userId, String currentOrgId) {
-        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(backRequest.getInstanceId());
+    private void appendBackTasks(ApprovalReturnBackRequest backRequest, ApprovalInstance instance, String userId,
+            String currentOrgId) {
         String returnToNodeId = backRequest.getReturnToFlowNodeId();
         ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(returnToNodeId);
         if (approvalNodeApprover != null && Strings.CI.equalsAny(approvalNodeApprover.getApprovalType(),
@@ -451,8 +449,11 @@ public class ApprovalActionService {
                 instance, userId, ApprovalTaskType.NL.name(), currentOrgId);
         if (CollectionUtils.isNotEmpty(approvalTasks)) {
             approvalTaskMapper.batchInsert(approvalTasks);
-            // 发送待办消息通知
-            sendApprovalTaskNotice(approvalTasks, instance, currentOrgId);
+            if (approvalTasks.stream().allMatch(task -> ApprovalStatus.AUTO_APPROVED.name().equals(task.getStatus()))) {
+                approvedProcess(instance, approvalTasks.getLast(), userId, currentOrgId, getResourceName(instance));
+            } else {
+                sendApprovalTaskNotice(approvalTasks, instance, currentOrgId);
+            }
         }
     }
 
@@ -1141,10 +1142,12 @@ public class ApprovalActionService {
             // 非审批中, 无法进行节点退回
             throw new GenericException(Translator.get("no.back.approval"));
         }
-        // 追加退回节点的待办
-        appendBackTasks(request, instance.getSubmitterId(), orgId);
         // 清理后续所有执行过的节点待办轮次
         clearBackToCurrentNode(request.getReturnToFlowNodeId(), request.getNodeId(), instance, orgId);
+        instance.setCurrentNodeId(request.getReturnToFlowNodeId());
+        approvalInstanceMapper.updateById(instance);
+        // 追加退回节点的待办
+        appendBackTasks(request, instance, instance.getSubmitterId(), orgId);
     }
 
     /**

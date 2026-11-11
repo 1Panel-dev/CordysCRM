@@ -44,6 +44,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
@@ -60,9 +61,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -554,6 +557,68 @@ class ApprovalActionSecurityTest {
         assertNotSame(instance, copy.getValue());
         assertEquals("node-2", copy.getValue().getCurrentNodeId());
         verify(instanceMapper).updateById(instance);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "SKIP", "ASSIGN_SUPERIOR" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void backToAutomaticallyApprovedNodeKeepsNextTaskOperable(String sameSubmitterAction) {
+        ApprovalReturnBackRequest request = (ApprovalReturnBackRequest) request("BACK");
+        prepareBackTarget("node-1", List.of(recordNode("node-1", "old-task"),
+                recordNode(task.getNodeId(), task.getId())));
+        ApprovalNodeApprover config = new ApprovalNodeApprover();
+        config.setApprovalType("MANUAL");
+        config.setSameSubmitterAction(sameSubmitterAction);
+        config.setMultiApproverMode("ALL");
+        when(nodeApproverMapper.selectByPrimaryKey("node-1")).thenReturn(config);
+        when(nodeApproverMapper.selectByPrimaryKey(task.getNodeId())).thenReturn(config);
+        when(flowService.getCurrentNodeApproverList(instance, "node-1", "org-1"))
+                .thenReturn(List.of(instance.getSubmitterId()));
+        when(extInstanceMapper.getNextNodeRound(instance.getId(), "node-1")).thenReturn(3);
+        when(extInstanceMapper.getNextNodeRound(instance.getId(), task.getNodeId())).thenReturn(3);
+        ApprovalNodeApproverResponse next = new ApprovalNodeApproverResponse();
+        next.setId(task.getNodeId());
+        next.setNodeType("APPROVER");
+        next.setSameSubmitterAction("ALLOW");
+        next.setMultiApproverMode("ALL");
+        next.setApproverList(List.of(task.getApproverId()));
+        next.setAutoSkipUserIds(List.of());
+        when(flowService.getCurrentNextNode("node-1", instance, "org-1")).thenReturn(next);
+        when(flowService.getTaskNextNode(any(), eq(instance), eq("org-1"))).thenReturn(next);
+        doNothing().when(service).saveLogAndNotice(instance, task.getApproverId(), "org-1", ApprovalAction.BACK);
+
+        service.back(request, task.getApproverId(), "org-1");
+
+        ArgumentCaptor<List<ApprovalTask>> batches = ArgumentCaptor.forClass((Class) List.class);
+        verify(taskMapper, times(2)).batchInsert(batches.capture());
+        ApprovalTask returned = batches.getAllValues().getFirst().getFirst();
+        ApprovalTask pending = batches.getAllValues().getLast().getFirst();
+        assertEquals(ApprovalStatus.AUTO_APPROVED.name(), returned.getStatus());
+        assertEquals(task.getNodeId(), instance.getCurrentNodeId());
+        assertEquals(task.getNodeId(), pending.getNodeId());
+        assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
+        assertEquals(3, pending.getNodeRound());
+        InOrder order = inOrder(service, taskMapper);
+        order.verify(service).clearExpiredNode(instance.getId(), task.getNodeId());
+        order.verify(taskMapper).batchInsert(batches.getAllValues().getFirst());
+        verify(service).clearExpiredNode(instance.getId(), task.getNodeId());
+
+        when(taskMapper.selectByPrimaryKey(pending.getId())).thenReturn(pending);
+        when(extInstanceMapper.selectByTaskIdForUpdate(pending.getId(), "org-1")).thenReturn(instance);
+        when(extInstanceMapper.getNodeRound(instance.getId(), pending.getNodeId())).thenReturn(3);
+        when(extTaskMapper.approvePendingTask(pending)).thenReturn(1);
+        ApprovalNodeResponse end = new ApprovalNodeResponse();
+        end.setId("end");
+        end.setNodeType("END");
+        when(flowService.getTaskNextNode(pending, instance, "org-1")).thenReturn(end);
+        ApprovalActionRequest approve = ApprovalActionRequest.builder().id(pending.getId())
+                .instanceId(instance.getId()).nodeId(pending.getNodeId()).approverId(pending.getApproverId()).build();
+
+        service.approve(approve, pending.getApproverId(), "org-1");
+
+        assertEquals(ApprovalStatus.APPROVED.name(), pending.getStatus());
+        assertEquals(ApprovalStatus.APPROVED.name(), instance.getApprovalStatus());
+        assertEquals("end", instance.getCurrentNodeId());
     }
 
     @Test

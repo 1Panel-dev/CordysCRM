@@ -581,7 +581,8 @@ class ApprovalActionServiceTest {
         for (ApprovalTypeEnum type : List.of(ApprovalTypeEnum.AUTO_PASS, ApprovalTypeEnum.AUTO_REJECT)) {
             nodeApprover.setApprovalType(type.name());
             GenericException exception = assertThrows(GenericException.class,
-                    () -> ReflectionTestUtils.invokeMethod(service, "appendBackTasks", request, "submitter", "org-1"));
+                    () -> ReflectionTestUtils.invokeMethod(service, "appendBackTasks", request, instance, "submitter",
+                            "org-1"));
             assertEquals("自动节点无法退回!", exception.getMessage());
         }
         verifyNoInteractions(approvalFlowService);
@@ -628,7 +629,7 @@ class ApprovalActionServiceTest {
         request.setReturnToNodeId("NODE001-SN0");
         request.setReturnToTaskId("sign-old");
         assertEquals("NODE001", request.getReturnToFlowNodeId());
-        ReflectionTestUtils.invokeMethod(service, "appendBackTasks", request, "submitter", "org-1");
+        ReflectionTestUtils.invokeMethod(service, "appendBackTasks", request, instance, "submitter", "org-1");
 
         ArgumentCaptor<List<ApprovalTask>> taskCaptor = ArgumentCaptor.forClass((Class) List.class);
         verify(taskMapper).batchInsert(taskCaptor.capture());
