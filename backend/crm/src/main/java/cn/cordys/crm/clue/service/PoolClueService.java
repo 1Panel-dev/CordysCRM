@@ -46,6 +46,7 @@ import cn.cordys.crm.clue.dto.request.CluePoolImportRequest;
 import cn.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import cn.cordys.crm.clue.mapper.ExtClueCapacityMapper;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
+import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
@@ -589,6 +590,14 @@ public class PoolClueService {
                     NotificationConstants.Event.CLUE_DISTRIBUTED,
                     clue.getName(), operateUserId, currentOrgId, List.of(clue.getOwner()), true);
         }
+    }
+
+    public void checkPoolPermissionByClueId(String clueId, String userId, String orgId) {
+        Clue clue = clueMapper.selectByPrimaryKey(clueId);
+        if (!clue.getInSharedPool() || StringUtils.isBlank(clue.getPoolId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        checkPoolMember(clue.getPoolId(), userId, orgId);
     }
 
     /**

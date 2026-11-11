@@ -252,4 +252,22 @@ public class PermissionConstants {
     public static final String CUSTOM_FORM_READ = "CUSTOM_FORM:READ";
     public static final String CUSTOM_FORM_ADD = "CUSTOM_FORM:ADD";
     /*------ end: CUSTOM_FORM ------*/
+
+    /*------ start: FOLLOW_PLAN ------*/
+    public static final String FOLLOW_PLAN_READ = "FOLLOW_PLAN:READ";
+    public static final String FOLLOW_PLAN_ADD = "FOLLOW_PLAN:ADD";
+    public static final String FOLLOW_PLAN_UPDATE = "FOLLOW_PLAN:UPDATE";
+    public static final String FOLLOW_PLAN_DELETE = "FOLLOW_PLAN:DELETE";
+    public static final String FOLLOW_PLAN_IMPORT = "FOLLOW_PLAN:IMPORT";
+    public static final String FOLLOW_PLAN_EXPORT = "FOLLOW_PLAN:EXPORT";
+    /*------ end: FOLLOW_PLAN ------*/
+
+    /*------ start: FOLLOW_RECORD ------*/
+    public static final String FOLLOW_RECORD_READ = "FOLLOW_RECORD:READ";
+    public static final String FOLLOW_RECORD_ADD = "FOLLOW_RECORD:ADD";
+    public static final String FOLLOW_RECORD_UPDATE = "FOLLOW_RECORD:UPDATE";
+    public static final String FOLLOW_RECORD_DELETE = "FOLLOW_RECORD:DELETE";
+    public static final String FOLLOW_RECORD_IMPORT = "FOLLOW_RECORD:IMPORT";
+    public static final String FOLLOW_RECORD_EXPORT = "FOLLOW_RECORD:EXPORT";
+    /*------ end: FOLLOW_RECORD ------*/
 }

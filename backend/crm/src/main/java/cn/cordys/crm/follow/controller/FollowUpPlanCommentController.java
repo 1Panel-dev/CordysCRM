@@ -1,6 +1,9 @@
 package cn.cordys.crm.follow.controller;
 
+import cn.cordys.common.constants.FormKeyConstants;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithCommentCount;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlanComment;
 import cn.cordys.crm.follow.dto.request.CommentAddRequest;
@@ -34,18 +37,16 @@ public class FollowUpPlanCommentController {
     private FollowUpPlanService followUpPlanService;
 
     @PostMapping("/page")
+    @CsPermission(value = PermissionConstants.FOLLOW_PLAN_READ, resourceId = "{#request.resourceId}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "分页查询跟进计划顶层评论")
     public PagerWithCommentCount<List<CommentResponse>> page(@Validated @RequestBody CommentPageRequest request) {
-        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(),
-                SessionUtils.getUserId(), true);
         return commentService.page(request, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
+    @CsPermission(value = PermissionConstants.FOLLOW_PLAN_UPDATE, resourceId = "{#request.resourceId}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "添加跟进计划评论")
     public FollowUpPlanComment add(@Validated @RequestBody CommentAddRequest request) {
-        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(),
-                SessionUtils.getUserId(), true);
         return commentService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

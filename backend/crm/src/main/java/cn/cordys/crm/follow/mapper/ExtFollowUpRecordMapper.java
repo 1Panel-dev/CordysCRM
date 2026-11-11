@@ -31,14 +31,12 @@ public interface ExtFollowUpRecordMapper extends StatisticSqlMapper {
      * @param request                请求参数
      * @param userId                 用户ID
      * @param orgId                  组织ID
-     * @param clueDataPermission     线索业务数据权限
-     * @param customerDataPermission 客户业务数据权限
+     * @param dataPermission 跟进记录数据权限
      * @return 记录列表
      */
     List<FollowUpRecordListResponse> selectTotalList(@Param("request") RecordHomePageRequest request,
             @Param("userId") String userId, @Param("orgId") String orgId,
-            @Param("clueDataPermission") DeptDataPermissionDTO clueDataPermission,
-            @Param("customerDataPermission") DeptDataPermissionDTO customerDataPermission);
+            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     FollowUpRecord selectRecord(@Param("customerId") String customerId, @Param("opportunityId") String opportunityId,
             @Param("clueId") String clueId, @Param("orgId") String orgId, @Param("type") String type);

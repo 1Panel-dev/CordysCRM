@@ -28,14 +28,12 @@ public interface ExtFollowUpPlanMapper extends StatisticSqlMapper {
      * @param request                请求参数
      * @param userId                 用户ID
      * @param orgId                  组织ID
-     * @param clueDataPermission     线索数据权限
-     * @param customerDataPermission 客户数据权限
+     * @param dataPermission 跟进计划数据权限
      * @return 记录列表
      */
     List<FollowUpPlanListResponse> selectTotalList(@Param("request") PlanHomePageRequest request,
             @Param("userId") String userId, @Param("orgId") String orgId,
-            @Param("clueDataPermission") DeptDataPermissionDTO clueDataPermission,
-            @Param("customerDataPermission") DeptDataPermissionDTO customerDataPermission);
+            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     List<FollowUpPlan> selectPlanByTimestamp(@Param("timestamp") long timestamp);
 

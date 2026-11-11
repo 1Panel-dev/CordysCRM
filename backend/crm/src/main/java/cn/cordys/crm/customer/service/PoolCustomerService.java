@@ -672,6 +672,13 @@ public class PoolCustomerService {
                 && isPoolMember(pool, userId, orgId);
     }
 
+    public void checkPoolPermissionByCustomerId(String customerId, String userId, String orgId) {
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (!customer.getInSharedPool() || StringUtils.isBlank(customer.getPoolId()) || !hasPoolMember(customer.getPoolId(), userId, orgId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
     private boolean isPoolMember(CustomerPool pool, String userId, String orgId) {
         List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class),
                 orgId);

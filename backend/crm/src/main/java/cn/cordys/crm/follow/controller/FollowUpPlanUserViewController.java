@@ -15,7 +15,6 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +35,7 @@ public class FollowUpPlanUserViewController {
     private UserViewService userViewService;
 
     @PostMapping("/add")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     @Operation(summary = "添加计划视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
         return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
@@ -45,24 +43,21 @@ public class FollowUpPlanUserViewController {
     }
 
     @PostMapping("/update")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     @Operation(summary = "编辑计划视图")
     public UserView update(@Validated @RequestBody UserViewUpdateRequest request) {
         return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     @Operation(summary = "删除计划视图")
     public void delete(@PathVariable String id) {
         userViewService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/detail/{id}")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     @Operation(summary = "计划视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
         return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
@@ -70,8 +65,7 @@ public class FollowUpPlanUserViewController {
     }
 
     @GetMapping("/list")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     @Operation(summary = "计划视图列表")
     public List<UserViewListResponse> queryList() {
         return userViewService.list(UserViewResourceType.FOLLOW_PLAN.name(), SessionUtils.getUserId(),
@@ -79,8 +73,7 @@ public class FollowUpPlanUserViewController {
     }
 
     @GetMapping("/fixed/{id}")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     @Operation(summary = "计划视图固定/取消固定")
     public void fixed(@PathVariable String id) {
         userViewService.fixed(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -88,15 +81,13 @@ public class FollowUpPlanUserViewController {
 
     @PostMapping("/edit/pos")
     @Operation(summary = "计划视图-拖拽排序")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
         userViewService.editPos(request, SessionUtils.getUserId(), UserViewResourceType.FOLLOW_PLAN.name());
     }
 
     @GetMapping("/enable/{id}")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ }, logical = Logical.OR)
+    @RequiresPermissions(PermissionConstants.FOLLOW_PLAN_READ)
     @Operation(summary = "计划视图-启用/禁用")
     public void enable(@PathVariable String id) {
         userViewService.enable(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

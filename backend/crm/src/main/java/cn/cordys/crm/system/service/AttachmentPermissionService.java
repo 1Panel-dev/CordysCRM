@@ -120,20 +120,8 @@ public class AttachmentPermissionService {
             switch (formKey) {
             case CUSTOMER -> checkCustomer(resourceId, userId, orgId);
             case CLUE -> checkClue(resourceId, userId, orgId);
-            case FOLLOW_RECORD -> {
-                FollowUpRecord record = followUpRecordMapper.selectByPrimaryKey(resourceId);
-                if (record == null || !orgId.equals(record.getOrganizationId())) {
-                    throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-                }
-                followUpRecordService.checkRecordPermission(resourceId, orgId, userId, true);
-            }
-            case FOLLOW_PLAN -> {
-                FollowUpPlan plan = followUpPlanMapper.selectByPrimaryKey(resourceId);
-                if (plan == null || !orgId.equals(plan.getOrganizationId())) {
-                    throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-                }
-                followUpPlanService.checkPlanPermission(resourceId, orgId, userId, true);
-            }
+            case FOLLOW_RECORD -> checkFollowRecord(resourceId, userId, orgId);
+            case FOLLOW_PLAN -> checkFollowPlan(resourceId, userId, orgId);
             default -> resourcePermissionService.checkResourcePermissionWithoutApprovalTask(
                     getReadPermission(formKey), resourceId, provider.getFormType(), userId, orgId);
             }
@@ -162,6 +150,24 @@ public class AttachmentPermissionService {
             }
         }
         throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+    }
+
+    private void checkFollowPlan(String resourceId, String userId, String orgId) {
+        FollowUpPlan plan = followUpPlanMapper.selectByPrimaryKey(resourceId);
+        if (plan == null || !orgId.equals(plan.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        resourcePermissionService.checkResourcePermissionWithoutApprovalTask(
+                PermissionConstants.FOLLOW_PLAN_READ, resourceId, FormKey.FOLLOW_PLAN.getKey(), userId, orgId);
+    }
+
+    private void checkFollowRecord(String resourceId, String userId, String orgId) {
+        FollowUpRecord record = followUpRecordMapper.selectByPrimaryKey(resourceId);
+        if (record == null || !orgId.equals(record.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        resourcePermissionService.checkResourcePermissionWithoutApprovalTask(
+                PermissionConstants.FOLLOW_RECORD_READ, resourceId, FormKey.FOLLOW_RECORD.getKey(), userId, orgId);
     }
 
     private void checkCustomer(String resourceId, String userId, String orgId) {

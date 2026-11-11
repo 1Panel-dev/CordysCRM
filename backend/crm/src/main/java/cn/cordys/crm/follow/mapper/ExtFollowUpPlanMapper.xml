@@ -184,8 +184,7 @@
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
-        <if test=" (clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0) or
-                    (customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0) ">
+        <if test="dataPermission.deptIds != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user souu on fup.owner = souu.user_id
         </if>
         WHERE fup.organization_id = #{orgId} and (c.transition_type is null or c.transition_type != 'CUSTOMER')
@@ -197,19 +196,19 @@
                 <if test="request.keyword != null and request.keyword != ''">
                     AND c.name like concat('%', #{request.keyword},'%')
                 </if>
-                <if test="clueDataPermission != null and clueDataPermission.self">
+                <if test="dataPermission != null and dataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
-                <if test="clueDataPermission != null and clueDataPermission.invisible">
+                <if test="dataPermission != null and dataPermission.invisible">
                     AND 0
                 </if>
-                <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0">
+                <if test="dataPermission.deptIds != null and dataPermission.deptIds.size() > 0">
                     AND (
                         souu.department_id IN
-                        <foreach collection="clueDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                        <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                             #{deptId}
                         </foreach>
-                        <if test="clueDataPermission.viewId == 'ALL'">
+                        <if test="dataPermission.viewId == 'ALL'">
                             OR fup.owner = #{userId}
                         </if>
                     )
@@ -222,19 +221,19 @@
                 <if test="request.keyword != null and request.keyword != ''">
                     AND cu.name like concat('%', #{request.keyword},'%')
                 </if>
-                <if test="customerDataPermission != null and customerDataPermission.self">
+                <if test="dataPermission != null and dataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
-                <if test="customerDataPermission != null and customerDataPermission.invisible">
+                <if test="dataPermission != null and dataPermission.invisible">
                     AND 0
                 </if>
-                <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0">
+                <if test="dataPermission.deptIds != null and dataPermission.deptIds.size() > 0">
                     AND (
                         souu.department_id IN
-                        <foreach collection="customerDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                        <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                             #{deptId}
                         </foreach>
-                        <if test="customerDataPermission.viewId == 'ALL'">
+                        <if test="dataPermission.viewId == 'ALL'">
                             OR fup.owner = #{userId}
                         </if>
                     )

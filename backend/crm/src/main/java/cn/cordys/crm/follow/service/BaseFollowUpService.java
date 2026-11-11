@@ -1,16 +1,13 @@
 package cn.cordys.crm.follow.service;
 
-import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.InternalUser;
-import cn.cordys.common.constants.ModuleKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
-import cn.cordys.common.permission.RelatedResourcePermissionService;
+import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.Translator;
-import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.service.PoolClueService;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
@@ -19,12 +16,7 @@ import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
-import cn.cordys.crm.follow.dto.CustomerDataDTO;
-import cn.cordys.crm.opportunity.domain.Opportunity;
-import cn.cordys.crm.system.domain.OrganizationUser;
-import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -33,10 +25,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -47,111 +36,15 @@ public class BaseFollowUpService {
     @Resource
     private DataScopeService dataScopeService;
     @Resource
-    private ExtOrganizationUserMapper extOrganizationUserMapper;
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private BaseMapper<Customer> customerMapper;
-    @Resource
-    private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private BaseMapper<Clue> clueMapper;
     @Resource
     private PoolCustomerService poolCustomerService;
     @Resource
     private PoolClueService poolClueService;
-    @Resource
-    private RelatedResourcePermissionService relatedResourcePermissionService;
-
-    public CustomerDataDTO getCustomerPermission(String userId, String sourceId, String permission) {
-        CustomerDataDTO customerDataDTO = new CustomerDataDTO();
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), permission);
-
-        // 全部数据
-        if (deptDataPermission.getAll() || Strings.CI.equalsAny(userId, InternalUser.ADMIN.getValue())) {
-            customerDataDTO.setAll(true);
-            return customerDataDTO;
-        }
-
-        // 查询协作人信息
-        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(sourceId);
-
-        List<CustomerCollaboration> userList = collaborations.stream()
-                .filter(collaboration -> Strings.CS.equals(collaboration.getUserId(), userId))
-                .toList();
-
-        if (CollectionUtils.isNotEmpty(userList)) {
-            CustomerCollaboration first = userList.getFirst();
-            if (Strings.CS.equalsAny(first.getCollaborationType(), CustomerCollaborationType.READ_ONLY.name(),
-                    CustomerCollaborationType.JOINT_FOLLOW.name())) {
-                customerDataDTO.setOwner(true);
-            }
-        } else {
-            // 不是协作人
-            customerDataDTO.setOwner(true);
-        }
-
-        // 获取协作类型的协作的联系人
-        Set<String> collaborationUserIds = collaborations.stream()
-                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(),
-                        CustomerCollaborationType.COLLABORATION.name()))
-                .map(CustomerCollaboration::getUserId)
-                .collect(Collectors.toSet());
-
-        // 部门数据权限
-        if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
-            List<OrganizationUser> users = new ArrayList<>();
-            if (CollectionUtils.isNotEmpty(collaborationUserIds)) {
-                users = extOrganizationUserMapper.selectUserByUserIds(new ArrayList<>(collaborationUserIds));
-            }
-            List<OrganizationUser> currentUser = extOrganizationUserMapper.selectUserByUserIds(List.of(userId));
-            if (customerDataDTO.isOwner()) {
-                List<OrganizationUser> depUsers = users.stream()
-                        .filter(user -> !deptDataPermission.getDeptIds().contains(user.getDepartmentId()))
-                        .toList();
-                if (CollectionUtils.isNotEmpty(depUsers)) {
-                    customerDataDTO.setUserIds(depUsers.stream().map(OrganizationUser::getUserId).toList());
-                }
-            } else {
-                List<OrganizationUser> depUsers = users.stream()
-                        .filter(user -> !deptDataPermission.getDeptIds().contains(user.getDepartmentId()))
-                        .toList();
-                List<String> ids = depUsers.stream().map(OrganizationUser::getUserId).toList();
-                List<String> userIds = new ArrayList<>();
-                if (!deptDataPermission.getDeptIds().contains(currentUser.getFirst().getDepartmentId())) {
-                    userIds.add(currentUser.getFirst().getUserId());
-                }
-                userIds.addAll(ids);
-                customerDataDTO.setUserIds(userIds);
-            }
-        }
-
-        if (deptDataPermission.getSelf()) {
-            if (customerDataDTO.isOwner()) {
-                customerDataDTO.setUserIds(new ArrayList<>(collaborationUserIds));
-            } else {
-                customerDataDTO.setSelf(true);
-            }
-        }
-
-        return customerDataDTO;
-    }
-
-    public CustomerDataDTO getOpportunityPermission(String userId, String permission) {
-        CustomerDataDTO customerDataDTO = new CustomerDataDTO();
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), permission);
-
-        // 全部数据
-        if (deptDataPermission.getAll() || Strings.CI.equalsAny(userId, InternalUser.ADMIN.getValue())) {
-            customerDataDTO.setAll(true);
-            return customerDataDTO;
-        }
-
-        if (deptDataPermission.getSelf()) {
-            customerDataDTO.setSelf(true);
-        }
-        return customerDataDTO;
-    }
 
     public void checkPermission(String orgId, String userId, String permission, String owner) {
         if (!PermissionUtils.hasPermission(permission)
@@ -195,80 +88,69 @@ public class BaseFollowUpService {
     }
 
     /**
-     * 拦截跟进记录的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
-     *
-     * @param record 记录
-     * @param orgId  组织ID
+     * 详情可由跟进自身或任一关联业务资源的数据权限读取；两者均不满足时拒绝访问。
      */
-    public void checkRecordPermission(FollowUpRecord record, String orgId, String userId, boolean isRead) {
-        checkRecordPermission(record, orgId, userId, isRead, FormKey.FOLLOW_RECORD);
+    public void checkRelatedReadPermission(FollowUpRecord record, String orgId, String userId,
+            String followPermission, String followFormType) {
+        if (record == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
+        resourcePermissionService.checkPermission(followPermission);
+        if (hasResourceReadPermission(followPermission, record.getId(), followFormType, userId, orgId)
+                || hasClueReadPermission(record.getClueId(), userId, orgId)
+                || hasCustomerReadPermission(record.getCustomerId(), userId, orgId)
+                || hasResourceReadPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ,
+                        record.getOpportunityId(), FormKeyConstants.OPPORTUNITY, userId, orgId)) {
+            return;
+        }
+        throw new GenericException(CrmHttpResultCode.FORBIDDEN);
     }
 
-    protected void checkRecordPermission(FollowUpRecord record, String orgId, String userId, boolean isRead,
-            FormKey formKey) {
-        if (record == null) {
-            throw new GenericException(Translator.get("plan_not_found"));
+    private boolean hasResourceReadPermission(String permission, String resourceId, String formType, String userId,
+            String orgId) {
+        if (StringUtils.isBlank(resourceId)) {
+            return false;
         }
-        if (isRead && StringUtils.isNotBlank(record.getId())) {
-            relatedResourcePermissionService.checkIsolatedData(formKey.getKey(), record.getId(), userId, orgId);
+        try {
+            resourcePermissionService.checkResourcePermission(permission, resourceId, formType, userId, orgId);
+            return true;
+        } catch (GenericException exception) {
+            return false;
         }
-        if (Strings.CS.equals(record.getOwner(), userId)) {
-            return;
-        }
-        if (isRead && StringUtils.isNotBlank(record.getId())
-                && relatedResourcePermissionService.hasRelatedReadPermission(formKey.getKey(), record.getId(), userId,
-                        orgId)) {
-            return;
-        }
-        String permission;
-        if (Strings.CS.equals(record.getType(), ModuleKey.CLUE.name())) {
-            permission = isRead ? PermissionConstants.CLUE_MANAGEMENT_READ : PermissionConstants.CLUE_MANAGEMENT_UPDATE;
-            Clue clue = clueMapper.selectByPrimaryKey(record.getClueId());
-            if (clue != null) {
-                if (BooleanUtils.isTrue(clue.getInSharedPool())) {
-                    // 校验线索池
-                    poolClueService.checkPoolMember(clue.getPoolId(), userId, orgId);
-                } else {
-                    checkPermission(orgId, userId, permission, clue.getOwner());
-                }
-            } else {
-                throw new GenericException(Translator.get("no.operation.permission"));
-            }
-        } else {
-            permission = isRead ? PermissionConstants.CUSTOMER_MANAGEMENT_READ
-                    : PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE;
-            Customer customer = customerMapper.selectByPrimaryKey(record.getCustomerId());
-            if (customer != null) {
-                if (BooleanUtils.isTrue(customer.getInSharedPool())) {
-                    // 校验公海
-                    poolCustomerService.checkPoolMember(customer.getPoolId(), userId, orgId);
-                    return;
-                }
-                if (hasPermission(orgId, userId, permission, customer.getOwner())
-                        || hasCustomerCollaborationPermission(record.getCustomerId(), userId, isRead)) {
-                    // 有客户权限，或者是客户协作人，直接返回
-                    return;
-                }
-            }
+    }
 
-            if (StringUtils.isNotEmpty(record.getOpportunityId())) {
-                // 如果有商机，则判断商机权限
-                permission = isRead ? PermissionConstants.OPPORTUNITY_MANAGEMENT_READ
-                        : PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE;
-                Opportunity opportunity = opportunityMapper.selectByPrimaryKey(record.getOpportunityId());
-                if (opportunity != null) {
-                    if (StringUtils.isNotBlank(opportunity.getCustomerId())) {
-                        Customer relateCustomer = customerMapper.selectByPrimaryKey(opportunity.getCustomerId());
-                        if (relateCustomer != null && Strings.CI.equals(relateCustomer.getOwner(), userId)) {
-                            return;
-                        }
-                    }
-                    checkPermission(orgId, userId, permission, opportunity.getOwner());
-                    return;
-                }
-            }
-
-            throw new GenericException(Translator.get("no.operation.permission"));
+    private boolean hasClueReadPermission(String clueId, String userId, String orgId) {
+        if (StringUtils.isBlank(clueId)) {
+            return false;
         }
+        Clue clue = clueMapper.selectByPrimaryKey(clueId);
+        if (clue == null || !Strings.CS.equals(clue.getOrganizationId(), orgId)) {
+            return false;
+        }
+        if (!BooleanUtils.isTrue(clue.getInSharedPool())) {
+            return hasResourceReadPermission(PermissionConstants.CLUE_MANAGEMENT_READ, clueId,
+                    FormKeyConstants.CLUE, userId, orgId);
+        }
+        try {
+            poolClueService.checkPoolMember(clue.getPoolId(), userId, orgId);
+            return true;
+        } catch (GenericException exception) {
+            return false;
+        }
+    }
+
+    private boolean hasCustomerReadPermission(String customerId, String userId, String orgId) {
+        if (StringUtils.isBlank(customerId)) {
+            return false;
+        }
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (customer == null || !Strings.CS.equals(customer.getOrganizationId(), orgId)) {
+            return false;
+        }
+        if (!BooleanUtils.isTrue(customer.getInSharedPool())) {
+            return hasResourceReadPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ, customerId,
+                    FormKeyConstants.CUSTOMER, userId, orgId) || hasCustomerCollaborationPermission(customerId, userId, true);
+        }
+        return poolCustomerService.hasPoolMember(customer.getPoolId(), userId, orgId) || hasCustomerCollaborationPermission(customerId, userId, true);
     }
 }

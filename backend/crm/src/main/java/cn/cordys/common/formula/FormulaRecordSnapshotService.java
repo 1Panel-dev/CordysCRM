@@ -72,10 +72,6 @@ public class FormulaRecordSnapshotService {
             if (!allowed) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-        } else if ("record".equals(formKey)) {
-            beans.getBean(FollowUpRecordService.class).checkUpdatePermission(id, userId);
-        } else if ("plan".equals(formKey)) {
-            beans.getBean(FollowUpPlanService.class).checkUpdatePermission(id, userId);
         } else {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }

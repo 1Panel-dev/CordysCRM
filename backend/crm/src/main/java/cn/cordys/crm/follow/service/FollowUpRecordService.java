@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
@@ -365,17 +366,15 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param request                请求参数
      * @param userId                 用户ID
      * @param orgId                  组织ID
-     * @param clueDataPermission     线索业务数据权限
-     * @param customerDataPermission 客户业务数据权限
+     * @param dataPermission 跟进记录数据权限
      * @return 记录的汇总列表
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> totalList(RecordHomePageRequest request, String userId,
-            String orgId,
-            DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
+            String orgId, DeptDataPermissionDTO dataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 解析当前用户数据权限
         List<FollowUpRecordListResponse> recordList = extFollowUpRecordMapper.selectTotalList(request, userId, orgId,
-                clueDataPermission, customerDataPermission);
+                dataPermission);
         buildListData(recordList, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, recordList);
         return PageUtils.setPageInfoWithOption(page, recordList, optionMap);
@@ -541,33 +540,11 @@ public class FollowUpRecordService extends BaseFollowUpService {
      */
     public ResourceTabEnableDTO getTabEnableConfig(String currentUser, String organizationId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(currentUser, organizationId);
-        // 由于统一的记录/计划页面会展示多个业务模块的数据，因此需要合并多个数据权限, 展示范围更大的数据权限配置
-        ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
-                PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
-        ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
-                PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
-        return clueTabConfig.or(customerTabConfig);
+        return PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.FOLLOW_RECORD_READ, rolePermissions);
     }
 
-    /**
-     * 拦截跟进记录的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
-     *
-     * @param id    记录ID
-     * @param orgId 组织ID
-     */
-    public void checkRecordPermission(String id, String orgId, String userId, boolean isRead) {
-        checkRecordPermission(followUpRecordMapper.selectByPrimaryKey(id), orgId, userId, isRead);
-    }
-
-    public void checkUpdatePermission(String id, String userId) {
-        FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
-        if (followUpRecord == null) {
-            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
-        }
-        if (Strings.CS.equals(userId, InternalUser.ADMIN.toString())
-                || Strings.CS.equals(followUpRecord.getOwner(), userId)) {
-            return;
-        }
-        throw new GenericException(Translator.get("no.operation.permission"));
+    public void checkReadPermission(String id, String orgId, String userId) {
+        checkRelatedReadPermission(followUpRecordMapper.selectByPrimaryKey(id), orgId, userId,
+                PermissionConstants.FOLLOW_RECORD_READ, FormKeyConstants.FOLLOW_RECORD);
     }
 }

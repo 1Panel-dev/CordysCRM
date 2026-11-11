@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
@@ -200,16 +201,14 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param request                请求参数
      * @param userId                 用户ID
      * @param orgId                  组织ID
-     * @param clueDataPermission     线索数据权限
-     * @param customerDataPermission 客户数据权限
+     * @param dataPermission 跟进计划数据权限
      * @return 跟进计划汇总列表
      */
     public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId,
-            String orgId,
-            DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
+            String orgId, DeptDataPermissionDTO dataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId,
-                clueDataPermission, customerDataPermission);
+                dataPermission);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
@@ -454,46 +453,12 @@ public class FollowUpPlanService extends BaseFollowUpService {
      */
     public ResourceTabEnableDTO getTabEnableConfig(String currentUser, String organizationId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(currentUser, organizationId);
-        // 由于统一的记录/计划页面会展示多个业务模块的数据，因此需要合并多个数据权限, 展示范围更大的数据权限配置
-        ResourceTabEnableDTO clueTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
-                PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
-        ResourceTabEnableDTO customerTabConfig = PermissionUtils.getTabEnableConfig(currentUser,
-                PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
-        return clueTabConfig.or(customerTabConfig);
+        return PermissionUtils.getTabEnableConfig(currentUser, PermissionConstants.FOLLOW_PLAN_READ, rolePermissions);
     }
 
-    /**
-     * 拦截跟进计划的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
-     *
-     * @param id    计划
-     * @param orgId 组织ID
-     */
-    public void checkPlanPermission(String id, String orgId, String userId, boolean isRead) {
-        checkPlanPermission(followUpPlanMapper.selectByPrimaryKey(id), orgId, userId, isRead);
-    }
-
-    /**
-     * 拦截跟进计划的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
-     *
-     * @param plan  计划
-     * @param orgId 组织ID
-     */
-    public void checkPlanPermission(FollowUpPlan plan, String orgId, String userId, boolean isRead) {
-        if (plan == null) {
-            throw new GenericException(Translator.get("plan_not_found"));
-        }
-        checkRecordPermission(BeanUtils.copyBean(new FollowUpRecord(), plan), orgId, userId, isRead, FormKey.FOLLOW_PLAN);
-    }
-
-    public void checkUpdatePermission(String id, String userId) {
-        FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
-        if (followUpPlan == null) {
-            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
-        }
-        if (Strings.CS.equals(userId, InternalUser.ADMIN.toString())
-                || Strings.CS.equals(followUpPlan.getOwner(), userId)) {
-            return;
-        }
-        throw new GenericException(Translator.get("no.operation.permission"));
+    public void checkReadPermission(String id, String orgId, String userId) {
+        FollowUpPlan plan = followUpPlanMapper.selectByPrimaryKey(id);
+        checkRelatedReadPermission(plan == null ? null : BeanUtils.copyBean(new FollowUpRecord(), plan), orgId, userId,
+                PermissionConstants.FOLLOW_PLAN_READ, FormKeyConstants.FOLLOW_PLAN);
     }
 }
