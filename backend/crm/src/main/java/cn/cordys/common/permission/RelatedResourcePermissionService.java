@@ -12,6 +12,7 @@ import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.domain.CustomerRelation;
+import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.constants.InternalDetailTab;
 import cn.cordys.crm.system.dto.field.DatasourceField;
@@ -55,8 +56,9 @@ public class RelatedResourcePermissionService {
     private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private BaseMapper<CustomerRelation> customerRelationMapper;
+    @Lazy
     @Resource
-    private BaseMapper<CustomerCollaboration> customerCollaborationMapper;
+    private CustomerCollaborationService customerCollaborationService;
 
     public static String isolatedCollaborationType() {
         return CustomerCollaborationType.COLLABORATION.name();
@@ -67,11 +69,9 @@ public class RelatedResourcePermissionService {
         if (!isOwner(FormKey.CUSTOMER.getKey(), customerId, userId, orgId)) {
             return ownerIds;
         }
-        CustomerCollaboration example = new CustomerCollaboration();
-        example.setCustomerId(customerId);
-        example.setCollaborationType(isolatedCollaborationType());
-        for (CustomerCollaboration member : customerCollaborationMapper.select(example)) {
-            if (StringUtils.isNotBlank(member.getUserId()) && !userId.equals(member.getUserId())) {
+        for (CustomerCollaboration member : customerCollaborationService.selectByCustomerId(customerId)) {
+            if (isolatedCollaborationType().equals(member.getCollaborationType())
+                    && StringUtils.isNotBlank(member.getUserId()) && !userId.equals(member.getUserId())) {
                 ownerIds.add(member.getUserId());
             }
         }

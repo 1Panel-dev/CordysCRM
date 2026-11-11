@@ -284,6 +284,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null || !orgId.equals(data.getOrganizationId())) {
             return false;
         }
+        if (relatedResourcePermissionService.isIsolatedData(data.getCustomFormId(), id, userId, orgId)) {
+            return false;
+        }
         try {
             CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
             if (dataScope != CustomFormRoleKey.MANAGE_OWN || userId.equals(data.getOwner())) {
@@ -316,6 +319,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+        relatedResourcePermissionService.checkIsolatedData(data.getCustomFormId(), id, userId, orgId);
 
         // 先校验是否是审批资源
         boolean approvalView = resourcePermissionService.hasApprovalViewPermission(id, userId, orgId,

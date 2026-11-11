@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -90,6 +91,42 @@ class CustomFormDataServiceTest {
         org.mockito.Mockito.doThrow(unexpected).when(service).getDataScope("form-1", "reader", "org-1");
         assertSame(unexpected,
                 assertThrows(GenericException.class, () -> service.hasViewPermission("record-1", "reader", "org-1")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    @SuppressWarnings("unchecked")
+    void 客户关联隔离优先于表单全部数据权限(boolean isolated) {
+        CustomFormDataService service = serviceWithManageAllPermission();
+        BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
+        RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
+        ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
+        when(mapper.selectByPrimaryKey("record-1"))
+                .thenReturn(record("record-1", "form-1", "org-1", "collaborator"));
+        when(relatedPermissions.isIsolatedData("form-1", "record-1", "reader", "org-1")).thenReturn(isolated);
+
+        assertEquals(!isolated, service.hasViewPermission("record-1", "reader", "org-1"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void 隔离的关联详情不能通过普通角色或审批授权读取() {
+        CustomFormDataService service = serviceWithManageAllPermission();
+        BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
+        RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
+        ResourcePermissionService permissions = mock(ResourcePermissionService.class);
+        ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
+        when(mapper.selectByPrimaryKey("record-1"))
+                .thenReturn(record("record-1", "form-1", "org-1", "collaborator"));
+        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(relatedPermissions)
+                .checkIsolatedData("form-1", "record-1", "reader", "org-1");
+
+        assertEquals(CrmHttpResultCode.FORBIDDEN, assertThrows(GenericException.class,
+                () -> service.get("record-1", "reader", "org-1")).getErrorCode());
+        verify(permissions, never()).hasApprovalViewPermission(anyString(), anyString(), anyString(), anyString());
     }
 
     @Test

@@ -9,6 +9,7 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalComment;
+import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.clue.domain.Clue;
@@ -100,12 +101,21 @@ public class AttachmentPermissionService {
             resourceId = comment.getResourceId();
             if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)
                     || (readOnly && extApprovalCommentMapper.existsMention(resourceId, userId, orgId))) {
+                checkIsolatedApprovalResource(resourceId, userId, orgId);
                 return;
             }
         } else if (extApprovalTaskMapper.existsAttachmentParticipant(attachment.getId(), resourceId, userId, orgId)) {
+            checkIsolatedApprovalResource(resourceId, userId, orgId);
             return;
         }
         checkBusinessPermission(resourceId, userId, orgId);
+    }
+
+    private void checkIsolatedApprovalResource(String resourceId, String userId, String orgId) {
+        ApprovalInstance instance = extApprovalCommentMapper.selectLatestInstance(resourceId, orgId);
+        if (instance != null) {
+            relatedResourcePermissionService.checkIsolatedData(instance.getType(), resourceId, userId, orgId);
+        }
     }
 
     private void checkBusinessPermission(String resourceId, String userId, String orgId) {

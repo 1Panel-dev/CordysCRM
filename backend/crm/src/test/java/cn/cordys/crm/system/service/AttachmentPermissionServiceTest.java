@@ -10,6 +10,7 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalComment;
+import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.clue.domain.Clue;
@@ -60,6 +61,7 @@ class AttachmentPermissionServiceTest {
     private final ExtApprovalCommentMapper mentions = mock(ExtApprovalCommentMapper.class);
     private final ResourceAccessContextProvider provider = mock(ResourceAccessContextProvider.class);
     private final ResourcePermissionService permissions = mock(ResourcePermissionService.class);
+    private final RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
     private final BaseMapper<Customer> customers = mock(BaseMapper.class);
     private final BaseMapper<Clue> clues = mock(BaseMapper.class);
     private final BaseMapper<FollowUpRecord> records = mock(BaseMapper.class);
@@ -82,8 +84,7 @@ class AttachmentPermissionServiceTest {
         ReflectionTestUtils.setField(service, "extApprovalCommentMapper", mentions);
         ReflectionTestUtils.setField(service, "contextProviders", List.of(provider));
         ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
-        ReflectionTestUtils.setField(service, "relatedResourcePermissionService",
-                mock(RelatedResourcePermissionService.class));
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(service, "customerMapper", customers);
         ReflectionTestUtils.setField(service, "clueMapper", clues);
         ReflectionTestUtils.setField(service, "followUpRecordMapper", records);
@@ -244,6 +245,35 @@ class AttachmentPermissionServiceTest {
         verify(tasks).existsAttachmentParticipant("attachment", "resource", "user", "org");
         verify(tasks, never()).existsResourceParticipant(anyString(), anyString(), anyString());
         verifyNoInteractions(provider, permissions);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "COMMENT,contract", "MENTION,contract", "OPERATION,contract",
+            "COMMENT,custom-form", "MENTION,custom-form", "OPERATION,custom-form"
+    })
+    void 业务数据隔离优先于附件审批参与和评论提及授权(String source, String formType) {
+        String resourceId = "OPERATION".equals(source) ? "resource" : "business";
+        if ("OPERATION".equals(source)) {
+            when(tasks.existsAttachmentParticipant("attachment", resourceId, "user", "org")).thenReturn(true);
+        } else {
+            when(comments.selectByPrimaryKey("resource")).thenReturn(comment(resourceId));
+            if ("COMMENT".equals(source)) {
+                when(tasks.existsResourceParticipant(resourceId, "user", "org")).thenReturn(true);
+            } else {
+                when(mentions.existsMention(resourceId, "user", "org")).thenReturn(true);
+            }
+        }
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setType(formType);
+        when(mentions.selectLatestInstance(resourceId, "org")).thenReturn(instance);
+
+        assertDoesNotThrow(() -> service.checkReadPermission(attachment));
+        verify(relatedPermissions).checkIsolatedData(formType, resourceId, "user", "org");
+        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(relatedPermissions)
+                .checkIsolatedData(formType, resourceId, "user", "org");
+        assertEquals(CrmHttpResultCode.FORBIDDEN,
+                assertThrows(GenericException.class, () -> service.checkReadPermission(attachment)).getErrorCode());
     }
 
     @Test
