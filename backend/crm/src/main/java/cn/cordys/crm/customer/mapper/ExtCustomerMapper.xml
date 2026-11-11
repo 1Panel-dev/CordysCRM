@@ -925,10 +925,21 @@
             <property name="mainTableAlias" value="c"/>
         </include>
     </select>
-    <!-- 客户负责人读取关联业务时，排除配置为隔离的协作人负责的数据。 -->
-    <sql id="isolatedBusinessRead">
+    <!-- 共同跟进到期后按仅客户信息隔离，与协作配置的有效类型保持一致。 -->
+    <sql id="isolatedCollaboration">
         <bind name="isolatedCollaborationType"
               value="@cn.cordys.common.permission.RelatedResourcePermissionService@isolatedCollaborationType()"/>
+        <bind name="collaborationCurrentTime" value="@java.lang.System@currentTimeMillis()"/>
+        (
+            ${collaborationAlias}.collaboration_type = #{isolatedCollaborationType}
+            OR (${collaborationAlias}.collaboration_type = 'JOINT_FOLLOW'
+                AND ${collaborationAlias}.expire_time IS NOT NULL
+                AND ${collaborationAlias}.expire_time &lt;= #{collaborationCurrentTime})
+        )
+    </sql>
+
+    <!-- 客户负责人读取关联业务时，排除仅客户信息协作人负责的数据。 -->
+    <sql id="isolatedBusinessRead">
         AND NOT EXISTS (
             SELECT 1
             FROM customer_collaboration isolated_member
@@ -936,7 +947,9 @@
             WHERE isolated_member.customer_id = ${customerColumn}
               AND isolated_customer.organization_id = #{${orgParameter}}
               AND isolated_customer.owner = #{${userParameter}}
-              AND isolated_member.collaboration_type = #{isolatedCollaborationType}
+              AND <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedCollaboration">
+                  <property name="collaborationAlias" value="isolated_member"/>
+              </include>
               AND isolated_member.user_id = ${ownerColumn}
               AND isolated_member.user_id != #{${userParameter}}
         )

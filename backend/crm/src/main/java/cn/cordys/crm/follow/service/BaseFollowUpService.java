@@ -4,6 +4,7 @@ import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
@@ -37,6 +38,8 @@ public class BaseFollowUpService {
     private DataScopeService dataScopeService;
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
     @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
@@ -95,6 +98,7 @@ public class BaseFollowUpService {
         if (record == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+        relatedResourcePermissionService.checkIsolatedData(followFormType, record.getId(), userId, orgId);
         resourcePermissionService.checkPermission(followPermission);
         if (hasResourceReadPermission(followPermission, record.getId(), followFormType, userId, orgId)
                 || hasClueReadPermission(record.getClueId(), userId, orgId)
