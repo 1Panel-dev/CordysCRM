@@ -22,14 +22,19 @@ import cn.cordys.crm.system.service.MessageNotificationService;
 import cn.cordys.crm.system.service.OrganizationConfigService;
 import cn.cordys.crm.system.service.OrganizationUserService;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DataHandleUtils {
@@ -210,35 +215,23 @@ public class DataHandleUtils {
      * @param operatorId       操作人ID
      */
     public void handleUpdateData(List<ThirdDepartment> thirdDepartments, String operatorId) {
-        List<DepartmentSourceUserDTO> disableUserList = new ArrayList<>();
+        // 当前系统数据
+        List<Department> currentDepartmentList = departmentService.getDepartmentByOrgId(orgId);
+        List<OrganizationUser> currentUserList = organizationUserService.getUserByOrgId(orgId);
 
-        Map<String, List<DepartmentSourceUserDTO>> userMap = organizationUserService.getuserBySourceId(orgId,
-                departmentUserMap.keySet());
-        departmentUserMap.forEach((k, v) -> {
-            if (userMap.containsKey(k)) {
-                // 系统 当前部门下的用户
-                List<DepartmentSourceUserDTO> userList = userMap.get(k);
-                List<DepartmentSourceUserDTO> disableUser = userList.stream()
-                        .filter(user -> v.stream()
-                                .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(),
-                                        user.getResourceUserId())))
-                        .collect(Collectors.toList());
-
-                if (CollectionUtils.isNotEmpty(disableUser)) {
-                    disableUserList.addAll(disableUser);
-                }
-            }
-        });
+        // 本次同步拉取到的三方用户: 三方唯一ID -> 是否启用(用户出现在多个部门时, 有一个启用即视为在职)
+        Map<String, Boolean> thirdUserStatusMap = getThirdUserStatusMap();
+        // 需要禁用的用户: 已被移出组织架构的 + 三方状态本身就是禁用/离职的
+        List<DepartmentSourceUserDTO> disableUserList = getRemovedUsers(thirdUserStatusMap);
+        disableUserList.addAll(getThirdPartyDisabledUsers(currentUserList, thirdUserStatusMap, disableUserList));
 
         if (CollectionUtils.isNotEmpty(disableUserList)) {
-            List<String> userIds = disableUserList.stream().map(DepartmentSourceUserDTO::getUserId).toList();
+            List<String> userIds = disableUserList.stream().map(DepartmentSourceUserDTO::getUserId).distinct()
+                    .toList();
             approvalActionService.refreshApprovingTasksForDisabledUser(userIds, orgId);
             organizationUserService.disableUsers(disableUserList);
         }
 
-        // 当前系统数据
-        List<Department> currentDepartmentList = departmentService.getDepartmentByOrgId(orgId);
-        List<OrganizationUser> currentUserList = organizationUserService.getUserByOrgId(orgId);
         List<DepartmentCommander> currentCommander = departmentService.getDepartmentCommander(currentUserList);
 
         if (CollectionUtils.isNotEmpty(currentDepartmentList)) {
@@ -252,6 +245,83 @@ public class DataHandleUtils {
                 currentDepartmentList, currentUserList, currentCommander));
 
         saveAllEntities();
+    }
+
+    /**
+     * 已被移出组织架构的用户
+     * <p>
+     * 用户从某个部门下消失, 但出现在本次同步的其它部门里, 说明只是调整了部门而不是离职,
+     * 不能当作禁用用户处理, 否则会把还在职的用户连同其审批待办一起错误地转移给上级或 admin
+     */
+    private List<DepartmentSourceUserDTO> getRemovedUsers(Map<String, Boolean> thirdUserStatusMap) {
+        Set<String> syncedResourceUserIds = thirdUserStatusMap.keySet();
+
+        List<DepartmentSourceUserDTO> disableUserList = new ArrayList<>();
+        Map<String, List<DepartmentSourceUserDTO>> userMap = organizationUserService.getuserBySourceId(orgId,
+                departmentUserMap.keySet());
+        departmentUserMap.forEach((departmentResourceId, thirdUsers) -> {
+            List<DepartmentSourceUserDTO> departmentUsers = userMap.get(departmentResourceId);
+            if (CollectionUtils.isEmpty(departmentUsers)) {
+                return;
+            }
+            List<DepartmentSourceUserDTO> disableUser = departmentUsers.stream()
+                    .filter(user -> CollectionUtils.isEmpty(thirdUsers) || thirdUsers.stream()
+                            .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(),
+                                    user.getResourceUserId())))
+                    .filter(user -> !syncedResourceUserIds.contains(normalizeResourceId(user.getResourceUserId())))
+                    .collect(Collectors.toList());
+            disableUserList.addAll(disableUser);
+        });
+        return disableUserList;
+    }
+
+    /**
+     * 三方状态为禁用/离职的用户, 本系统同步禁用, 并转移其审批待办
+     */
+    private List<DepartmentSourceUserDTO> getThirdPartyDisabledUsers(List<OrganizationUser> currentUserList,
+            Map<String, Boolean> thirdUserStatusMap, List<DepartmentSourceUserDTO> removedUsers) {
+        // 按 org-user 主键去重, 已被移出组织架构的用户在上面处理过, 避免重复禁用与重复转移待办
+        Set<String> disabledOrgUserIds = removedUsers.stream().map(DepartmentSourceUserDTO::getId)
+                .collect(Collectors.toSet());
+
+        List<DepartmentSourceUserDTO> disableUserList = new ArrayList<>();
+        for (OrganizationUser organizationUser : currentUserList) {
+            String resourceUserId = normalizeResourceId(organizationUser.getResourceUserId());
+            // 只处理本次同步范围内、且三方已禁用/离职的用户; 本系统已禁用的也要纳入,
+            // 保证其残留的审批待办同样会转移给上级或 admin
+            if (thirdUserStatusMap.getOrDefault(resourceUserId, Boolean.TRUE)
+                    || disabledOrgUserIds.contains(organizationUser.getId())) {
+                continue;
+            }
+            disabledOrgUserIds.add(organizationUser.getId());
+
+            DepartmentSourceUserDTO disableUser = new DepartmentSourceUserDTO();
+            disableUser.setId(organizationUser.getId());
+            disableUser.setUserId(organizationUser.getUserId());
+            disableUser.setResourceUserId(organizationUser.getResourceUserId());
+            disableUser.setDepartmentId(organizationUser.getDepartmentId());
+            disableUser.setEnable(false);
+            disableUserList.add(disableUser);
+        }
+        return disableUserList;
+    }
+
+    /**
+     * 本次同步拉取到的三方用户状态: 三方唯一ID -> 是否启用
+     */
+    private Map<String, Boolean> getThirdUserStatusMap() {
+        Map<String, Boolean> statusMap = new HashMap<>();
+        departmentUserMap.values().stream()
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .filter(thirdUser -> StringUtils.isNotBlank(thirdUser.getUserId()))
+                .forEach(thirdUser -> statusMap.merge(normalizeResourceId(thirdUser.getUserId()),
+                        Boolean.TRUE.equals(thirdUser.getStatus()), Boolean::logicalOr));
+        return statusMap;
+    }
+
+    private String normalizeResourceId(String resourceUserId) {
+        return StringUtils.upperCase(StringUtils.trimToNull(resourceUserId), Locale.ROOT);
     }
 
     private void handleTreeUpdateData(ThirdDepartment thirdDepartment, String operatorId,
