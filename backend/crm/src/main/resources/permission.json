@@ -728,5 +728,29 @@
         ]
       }
     ]
+  },
+  {
+    "id": "FOLLOW_MANAGEMENT",
+    "name": "permission.follow_management.name",
+    "children": [
+      {
+        "id": "FOLLOW_PLAN",
+        "name": "permission.follow_plan.name",
+        "permissions": [
+          { "id": "FOLLOW_PLAN:READ" }, { "id": "FOLLOW_PLAN:ADD" },
+          { "id": "FOLLOW_PLAN:UPDATE" }, { "id": "FOLLOW_PLAN:DELETE" },
+          { "id": "FOLLOW_PLAN:IMPORT" }, { "id": "FOLLOW_PLAN:EXPORT" }
+        ]
+      },
+      {
+        "id": "FOLLOW_RECORD",
+        "name": "permission.follow_record.name",
+        "permissions": [
+          { "id": "FOLLOW_RECORD:READ" }, { "id": "FOLLOW_RECORD:ADD" },
+          { "id": "FOLLOW_RECORD:UPDATE" }, { "id": "FOLLOW_RECORD:DELETE" },
+          { "id": "FOLLOW_RECORD:IMPORT" }, { "id": "FOLLOW_RECORD:EXPORT" }
+        ]
+      }
+    ]
   }
 ]

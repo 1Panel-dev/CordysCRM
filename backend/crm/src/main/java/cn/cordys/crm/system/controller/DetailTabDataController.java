@@ -79,59 +79,43 @@ public class DetailTabDataController {
     }
 
     @PostMapping("/record/{resourceId}/page")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-            PermissionConstants.OPPORTUNITY_MANAGEMENT_READ }, logical = Logical.OR)
+    @CsPermission(value = PermissionConstants.FOLLOW_RECORD_READ, resourceId = "{#resourceId}", formType = FormKeyConstants.FOLLOW_RECORD)
     @Operation(summary = "分页获取跟进记录详情页标签数据")
     public PagerWithOption<?> followRecordPage(@PathVariable String resourceId,
             @Validated @RequestBody DetailTabPageRequest request) {
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
-        // 跟进记录可能属于线索、客户或商机，需按实际所属资源校验，不能固定使用某一个模块权限。
-        followUpRecordService.checkRecordPermission(resourceId, organizationId, userId, true);
         return detailTabDataService.page(FormKeyConstants.FOLLOW_RECORD, resourceId, request, userId, organizationId);
     }
 
     @PostMapping("/record/{resourceId}/statistic")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-            PermissionConstants.OPPORTUNITY_MANAGEMENT_READ }, logical = Logical.OR)
+    @CsPermission(value = PermissionConstants.FOLLOW_RECORD_READ, resourceId = "{#resourceId}", formType = FormKeyConstants.FOLLOW_RECORD)
     @Operation(summary = "统计跟进记录详情页标签金额数据")
     public Object followRecordStatistic(@PathVariable String resourceId,
             @Validated @RequestBody DetailTabStatisticRequest request) {
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
-        // 与分页入口保持一致：先校验跟进记录实际所属资源的权限。
-        followUpRecordService.checkRecordPermission(resourceId, organizationId, userId, true);
         return detailTabDataService.statistic(FormKeyConstants.FOLLOW_RECORD, resourceId, request, userId,
                 organizationId);
     }
 
     @PostMapping("/plan/{resourceId}/page")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-            PermissionConstants.OPPORTUNITY_MANAGEMENT_READ }, logical = Logical.OR)
+    @CsPermission(value = PermissionConstants.FOLLOW_PLAN_READ, resourceId = "{#resourceId}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "分页获取跟进计划详情页标签数据")
     public PagerWithOption<?> followPlanPage(@PathVariable String resourceId,
             @Validated @RequestBody DetailTabPageRequest request) {
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
-        // 跟进计划与跟进记录使用相同的多父资源模型，因此复用其所属资源权限判断。
-        followUpPlanService.checkPlanPermission(resourceId, organizationId, userId, true);
         return detailTabDataService.page(FormKeyConstants.FOLLOW_PLAN, resourceId, request, userId, organizationId);
     }
 
     @PostMapping("/plan/{resourceId}/statistic")
-    @RequiresPermissions(value = { PermissionConstants.CLUE_MANAGEMENT_READ,
-            PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-            PermissionConstants.OPPORTUNITY_MANAGEMENT_READ }, logical = Logical.OR)
+    @CsPermission(value = PermissionConstants.FOLLOW_PLAN_READ, resourceId = "{#resourceId}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "统计跟进计划详情页标签金额数据")
     public Object followPlanStatistic(@PathVariable String resourceId,
             @Validated @RequestBody DetailTabStatisticRequest request) {
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
-        // 与分页入口保持一致：先校验跟进计划实际所属资源的权限。
-        followUpPlanService.checkPlanPermission(resourceId, organizationId, userId, true);
         return detailTabDataService.statistic(FormKeyConstants.FOLLOW_PLAN, resourceId, request, userId,
                 organizationId);
     }

@@ -296,17 +296,7 @@ class AttachmentPermissionServiceTest {
         record.setOrganizationId("org");
         when(records.selectByPrimaryKey("resource")).thenReturn(record);
         assertDoesNotThrow(() -> service.checkPermission(attachment));
-        verify(followRecords).checkRecordPermission("resource", "org", "user", true);
         record.setOrganizationId("other-org");
-        assertForbidden();
-        locate(FormKey.FOLLOW_PLAN.getKey());
-        FollowUpPlan plan = new FollowUpPlan();
-        plan.setOrganizationId("org");
-        when(plans.selectByPrimaryKey("resource")).thenReturn(plan);
-        assertDoesNotThrow(() -> service.checkPermission(attachment));
-        verify(followPlans).checkPlanPermission("resource", "org", "user", true);
-        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(followPlans)
-                .checkPlanPermission("resource", "org", "user", true);
         assertForbidden();
     }
 

@@ -203,21 +203,19 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private PagerWithOption<?> followRecords(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         RecordHomePageRequest request = prepare(new RecordHomePageRequest(), FormKey.FOLLOW_RECORD, context);
-        DeptDataPermissionDTO clueDataPermission = dataPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ);
-        DeptDataPermissionDTO customerDataPermission = dataPermission(context,
-                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        DeptDataPermissionDTO dataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.FOLLOW_RECORD_READ);
         return followUpRecordService.totalList(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), clueDataPermission, customerDataPermission);
+                OrganizationContext.getOrganizationId(), dataPermission);
     }
 
     private PagerWithOption<?> followPlans(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         PlanHomePageRequest request = prepare(new PlanHomePageRequest(), FormKey.FOLLOW_PLAN, context);
-        DeptDataPermissionDTO clueDataPermission = dataPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ);
-        DeptDataPermissionDTO customerDataPermission = dataPermission(context,
-                PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        DeptDataPermissionDTO dataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.FOLLOW_PLAN_READ);
         return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                clueDataPermission, customerDataPermission);
+                dataPermission);
     }
 
     private void replaceSearchBusinessKey(DetailTabQueryContext context) {

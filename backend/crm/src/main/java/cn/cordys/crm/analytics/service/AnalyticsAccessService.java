@@ -113,10 +113,9 @@ public class AnalyticsAccessService {
             entry("price", ProductPrice.class, ExtProductPriceMapper.class, ProductPricePageRequest::new,
                     PermissionConstants.PRICE_READ),
             entry("record", FollowUpRecord.class, ExtFollowUpRecordMapper.class, RecordHomePageRequest::new,
-                    PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ,
-                    PermissionConstants.OPPORTUNITY_MANAGEMENT_READ),
+                    PermissionConstants.FOLLOW_RECORD_READ),
             entry("plan", FollowUpPlan.class, ExtFollowUpPlanMapper.class, PlanHomePageRequest::new,
-                    PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
+                    PermissionConstants.FOLLOW_PLAN_READ));
 
     private static Map.Entry<String, Source> entry(String key, Class<?> entity, Class<?> mapper,
             Supplier<BasePageRequest> request, String... permissions) {
@@ -180,14 +179,14 @@ public class AnalyticsAccessService {
         } else if (List.of("product", "price").contains(formKey)) {
             effectiveScope = "ORGANIZATION";
         } else if (List.of("record", "plan").contains(formKey)) {
-            DeptDataPermissionDTO clue = scope(userId, orgId, view, PermissionConstants.CLUE_MANAGEMENT_READ);
-            DeptDataPermissionDTO customer = scope(userId, orgId, view, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-            parameters.put("clueDataPermission", clue);
-            parameters.put("customerDataPermission", customer);
+            String permission = formKey.equals("record") ? PermissionConstants.FOLLOW_RECORD_READ
+                    : PermissionConstants.FOLLOW_PLAN_READ;
+            DeptDataPermissionDTO dataPermission = scope(userId, orgId, view, permission);
+            parameters.put("dataPermission", dataPermission);
             if (request instanceof PlanHomePageRequest plan) {
                 plan.setStatus("ALL");
             }
-            empty = clue.getInvisible() && customer.getInvisible();
+            empty = dataPermission.getInvisible();
             effectiveScope = "FOLLOW_PAGE";
         } else {
             DeptDataPermissionDTO permission = scope(userId, orgId, view, permissions.getFirst());
