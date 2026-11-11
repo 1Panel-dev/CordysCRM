@@ -4,6 +4,24 @@
       <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
     </template>
     <template #titleRight>
+      <div
+        v-if="collaborators.length"
+        class="mr-[12px] flex cursor-pointer items-center -space-x-[6px]"
+        @click="activeTab = 'collaborator'"
+      >
+        <n-avatar round :size="28" class="border-2 border-white bg-[var(--primary-1)] text-white">
+          {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
+        </n-avatar>
+        <n-avatar
+          v-for="person in collaborators"
+          :key="person.id"
+          round
+          :size="28"
+          class="border-2 border-white bg-[var(--text-n5)] text-white"
+        >
+          {{ person.userName?.slice(0, 1) || '?' }}
+        </n-avatar>
+      </div>
       <CrmOperationButton
         class="gap-[12px]"
         :group-list="detailActions.groupList"
@@ -179,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, useMessage } from 'naive-ui';
+  import { NAvatar, NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -215,7 +233,13 @@
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
-  import { deleteCustomer, getChangeLogPage, getCustomerHeaderList, transferCustomer } from '@/api/modules';
+  import {
+    deleteCustomer,
+    getChangeLogPage,
+    getCustomerCollaborationList,
+    getCustomerHeaderList,
+    transferCustomer,
+  } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
@@ -257,6 +281,7 @@
   const detailInfo = ref<Record<string, any>>({});
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
+  const collaborators = ref<{ id: string; userName: string }[]>([]);
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
   const customerDataActionMap = computed<Record<string, ActionsItem>>(() => ({
@@ -317,7 +342,7 @@
     groupList: ActionsItem[];
     moreList: ActionsItem[];
   }>(() => {
-    if (collaborationType.value || props.readonly) {
+    if (collaborationType.value === 'READ_ONLY' || props.readonly) {
       return {
         groupList: [],
         moreList: [],
@@ -327,13 +352,15 @@
     const detailAction = resolveRowOperation(detailInfo.value);
 
     return {
-      ...detailAction,
-      groupList: detailAction.groupList.map((e) => ({
-        ...e,
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-      })),
+      moreList: [...detailAction.moreList, ...detailAction.groupList.filter((e) => e.key === 'transfer')],
+      groupList: detailAction.groupList
+        .filter((e) => e.key !== 'transfer')
+        .map((e) => ({
+          ...e,
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+        })),
     };
   });
 
@@ -631,12 +658,22 @@
   }
 
   watch(
-    () => show.value,
-    (val) => {
-      if (val) {
-        initApprovalPermission();
-      } else {
+    [() => show.value, () => props.sourceId],
+    ([visible, sourceId]) => {
+      if (!visible) {
         detailInfo.value = {};
+        collaborators.value = [];
+      } else if (sourceId) {
+        initApprovalPermission();
+        getCustomerCollaborationList({ customerId: sourceId })
+          .then((list) => {
+            if (show.value && props.sourceId === sourceId) collaborators.value = list;
+          })
+          .catch(() => {
+            if (props.sourceId === sourceId) collaborators.value = [];
+          });
+      } else {
+        collaborators.value = [];
       }
     },
     { immediate: true }

@@ -11,5 +11,7 @@ public enum CustomerCollaborationType {
     /**
      * 协作
      */
-    COLLABORATION
+    COLLABORATION,
+    /** 共同跟进，可查看并协同处理客户全量数据 */
+    JOINT_FOLLOW
 }

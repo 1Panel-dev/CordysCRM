@@ -25,7 +25,10 @@ public class CustomerCollaborationAddRequest {
     private String userId;
 
     @NotNull
-    @Schema(description = "协作类型(只读 READ_ONLY / 协作 COLLABORATION)", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "协作类型(只读 READ_ONLY / 仅客户信息 COLLABORATION / 共同跟进 JOINT_FOLLOW)", requiredMode = Schema.RequiredMode.REQUIRED)
     @EnumValue(enumClass = CustomerCollaborationType.class)
     private String collaborationType;
+
+    @Schema(description = "有效期截止时间，留空为长期有效")
+    private Long expireTime;
 }

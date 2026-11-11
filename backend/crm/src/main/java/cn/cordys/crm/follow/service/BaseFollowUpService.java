@@ -81,7 +81,8 @@ public class BaseFollowUpService {
 
         if (CollectionUtils.isNotEmpty(userList)) {
             CustomerCollaboration first = userList.getFirst();
-            if (Strings.CS.equals(first.getCollaborationType(), CustomerCollaborationType.READ_ONLY.name())) {
+            if (Strings.CS.equalsAny(first.getCollaborationType(), CustomerCollaborationType.READ_ONLY.name(),
+                    CustomerCollaborationType.JOINT_FOLLOW.name())) {
                 customerDataDTO.setOwner(true);
             }
         } else {
@@ -182,8 +183,9 @@ public class BaseFollowUpService {
             } else {
                 // 如果是编辑权限，需要判断协作类型是否为协作
                 for (CustomerCollaboration customerCollaboration : userList) {
-                    if (Strings.CS.equals(customerCollaboration.getCollaborationType(),
-                            CustomerCollaborationType.COLLABORATION.name())) {
+                    if (Strings.CS.equalsAny(customerCollaboration.getCollaborationType(),
+                            CustomerCollaborationType.COLLABORATION.name(),
+                            CustomerCollaborationType.JOINT_FOLLOW.name())) {
                         return true;
                     }
                 }

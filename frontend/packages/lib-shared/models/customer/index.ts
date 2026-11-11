@@ -314,17 +314,19 @@ export interface RelationListItem extends RelationItem {
   customerName: string;
 }
 
-export type CollaborationType = 'READ_ONLY' | 'COLLABORATION';
+export type CollaborationType = 'READ_ONLY' | 'COLLABORATION' | 'JOINT_FOLLOW';
 
 export interface UpdateCustomerCollaborationParams {
   id: string;
   collaborationType: CollaborationType;
+  expireTime?: number | null;
 }
 
 export interface AddCustomerCollaborationParams {
   customerId: string;
   userId: string;
   collaborationType: CollaborationType;
+  expireTime?: number | null;
 }
 
 export interface CollaborationItem {
@@ -336,6 +338,7 @@ export interface CollaborationItem {
   userId: string;
   customerId: string;
   collaborationType: CollaborationType;
+  expireTime?: number | null;
   userName: string;
   createUserName: string;
   updateUserName: string;
