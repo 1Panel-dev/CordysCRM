@@ -1075,6 +1075,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                 case ADD -> {
+                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                            request.getCustomFormId(), orgId);
                     // 自定义表单的流水号是用户自己加的字段(不是系统字段)
                     Optional<BaseField> serialOptional = fields.stream().filter(BaseField::isSerialNumber).findAny();
                     List<BaseField> formulaFields = serialOptional
@@ -1083,7 +1085,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                     dataList.forEach(data -> {
                         data.setCustomFormId(request.getCustomFormId());
                         data.setOrganizationId(orgId);
-                        data.setApprovalStatus(ApprovalStatus.NONE.name());
+                        data.setApprovalStatus(initialApprovalStatus);
                         if (StringUtils.isBlank(data.getOwner())) {
                             data.setOwner(userId);
                         }

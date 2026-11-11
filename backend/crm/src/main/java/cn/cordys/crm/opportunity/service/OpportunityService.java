@@ -1054,11 +1054,13 @@ public class OpportunityService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                 case ADD -> {
+                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                            FormKey.OPPORTUNITY.getKey(), currentOrg);
                     for (int i = 0; i < opportunities.size(); i++) {
                         Opportunity opportunity = opportunities.get(i);
                         opportunity.setStage(stageConfigList.getFirst().getId());
                         opportunity.setPos(nextPos + i);
-                        opportunity.setApprovalStatus(ApprovalStatus.NONE.name());
+                        opportunity.setApprovalStatus(initialApprovalStatus);
                         logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD,
                                 LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
                         commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,

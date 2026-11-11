@@ -1629,12 +1629,14 @@ public class ClueService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                 case ADD -> {
+                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(FormKey.CLUE.getKey(),
+                            currentOrg);
                     clues.forEach(clue -> {
                         clue.setCollectionTime(clue.getCreateTime());
                         clue.setStage(ClueStatus.NEW.name());
                         clue.setInSharedPool(false);
                         clue.setFrozen(false);
-                        clue.setApprovalStatus(ApprovalStatus.NONE.name());
+                        clue.setApprovalStatus(initialApprovalStatus);
                         logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX,
                                 clue.getName()));
                     });

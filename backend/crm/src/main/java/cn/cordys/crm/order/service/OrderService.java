@@ -1370,6 +1370,8 @@ public class OrderService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                 case ADD -> {
+                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(FormKey.ORDER.getKey(),
+                            currentOrg);
                     Optional<BaseField> serialOptional = fields.stream().filter(
                             field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.ORDER_NO.getKey()))
                             .findAny();
@@ -1389,9 +1391,8 @@ public class OrderService implements ApprovalResourceHandler {
                             serialNumberFormulaService.fillSerialNumberFormulas(order, serialOptional.get(),
                                     formulaFields, orderFields, serialNo);
                         }
-                        order.setApprovalStatus(ApprovalStatus.NONE.name());
+                        order.setApprovalStatus(initialApprovalStatus);
                         order.setStage(stageConfigList.getFirst().getId());
-                        order.setApprovalStatus(ApprovalStatus.NONE.name());
                         order.setPos(nextPos + i);
                         logs.add(new LogDTO(currentOrg, order.getId(), currentUser, LogType.ADD, LogModule.ORDER_INDEX,
                                 order.getName()));

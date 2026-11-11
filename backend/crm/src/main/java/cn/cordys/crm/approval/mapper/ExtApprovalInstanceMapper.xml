@@ -2,6 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper">
+    <select id="existsApprovingResource" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM ${sourceTable}
+            WHERE organization_id = #{organizationId}
+              AND approval_status = 'APPROVING'
+            <if test="sourceTable == 'custom_form_data'">
+                AND custom_form_id = #{formKey}
+            </if>
+        )
+    </select>
+
     <select id="selectByTaskIdForUpdate" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
         SELECT ai.*
         FROM approval_instance ai

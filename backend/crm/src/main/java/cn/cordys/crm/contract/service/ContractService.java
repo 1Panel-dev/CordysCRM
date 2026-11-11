@@ -1563,6 +1563,8 @@ public class ContractService implements ApprovalResourceHandler {
             ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
             switch (importType) {
             case ADD -> {
+                String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(FormKey.CONTRACT.getKey(),
+                        currentOrg);
                 Optional<BaseField> serialOptional = fields.stream().filter(
                         field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_NO.getKey()))
                         .findAny();
@@ -1580,7 +1582,7 @@ public class ContractService implements ApprovalResourceHandler {
                         fillSerialNumberFormulas(contract, serialOptional.get(), formulaFields, contractFields,
                                 serialNo);
                     }
-                    contract.setApprovalStatus(ApprovalStatus.NONE.name());
+                    contract.setApprovalStatus(initialApprovalStatus);
                     contract.setStage(stageConfigList.getFirst().getId());
                     contract.setPos(nextPos + i);
                     logs.add(new LogDTO(currentOrg, contract.getId(), currentUser, LogType.ADD,
