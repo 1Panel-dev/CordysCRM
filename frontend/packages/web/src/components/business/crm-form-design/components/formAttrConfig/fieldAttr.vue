@@ -1231,8 +1231,22 @@
             :options="statisticTargetFormOptions"
             filterable
             :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
-            :fallback-option="fallbackOption"
+            :fallback-option="fieldConfig.targetFormId ? fallbackOption : false"
             @update-value="handleStatisticTargetFormChange"
+          />
+        </div>
+        <div v-if="fieldConfig.targetFormId" class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            <div>
+              <span class="text-[var(--error-red)]">*</span>
+              {{ t('crmFormDesign.relatedField') }}
+            </div>
+          </div>
+          <n-select
+            v-model:value="fieldConfig.relatedFieldId"
+            :options="statisticRelatedFieldOptions"
+            :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId || !fieldConfig.targetFormId"
+            :fallback-option="fieldConfig.relatedFieldId ? fallbackOption : false"
           />
         </div>
         <div class="crm-form-design-config-item">
@@ -1697,8 +1711,8 @@
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getDataSourceFormKey, isCustomDataSourceType } from '@lib/shared/method/formCreate.js';
   import { CustomFormItem } from '@lib/shared/models/customForm';
+  import type { FormDetailTabOption } from '@lib/shared/models/system/module';
 
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -1739,9 +1753,9 @@
   import subTableFields from './subTableFields.vue';
 
   import {
-    getBusinessTitleModuleForm,
     getCustomFormOptions,
     getFieldDisplayList,
+    getFormDetailTabOptions,
     previewSerialNumberDate,
   } from '@/api/modules';
 
@@ -2027,62 +2041,28 @@
     return [...systemOptions.filter((item) => item.formKey !== props.formKey), ...customOptions];
   });
 
-  const statisticTargetFormOptions = computed<DataSourceOption[]>(() => {
-    if (props.formKey === FormDesignKeyEnum.BUSINESS) {
-      return fullFormSettingList
-        .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION)
-        .map((item) => ({
-          ...item,
-          value: item.formKey,
-        }));
-    }
-    if (props.formKey === FormDesignKeyEnum.CONTRACT) {
-      return fullFormSettingList
-        .filter(
-          (i) =>
-            i.dataSource &&
-            i.formKey &&
-            [
-              FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
-              FormDesignKeyEnum.CONTRACT_PAYMENT,
-              FormDesignKeyEnum.ORDER,
-              FormDesignKeyEnum.INVOICE,
-            ].includes(i.formKey)
-        )
-        .map((item) => ({
-          ...item,
-          value: item.formKey,
-        }));
-    }
-    if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
-      return fullFormSettingList
-        .filter(
-          (i) =>
-            i.dataSource &&
-            i.formKey &&
-            [FormDesignKeyEnum.BUSINESS, FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.ORDER].includes(i.formKey)
-        )
-        .map((item) => ({
-          ...item,
-          value: item.formKey,
-        }));
-    }
-    return [];
+  const statisticRelatedForms = ref<FormDetailTabOption[]>([]);
+  const statisticTargetFormOptions = computed<SelectOption[]>(() => {
+    return statisticRelatedForms.value
+      .filter((form) => !form.internalKey && form.sourceTypeFields.length > 0)
+      .map((form) => ({ label: form.name, value: form.id }));
   });
 
-  const isStatisticTargetCustomForm = computed(() => isCustomDataSourceType(fieldConfig.value.targetFormId));
+  // 当前表单作为数据源字段在统计表单中的所有字段
+  const statisticRelatedFieldOptions = computed<SelectOption[]>(() => {
+    const targetForm = statisticRelatedForms.value.find((form) => form.id === fieldConfig.value.targetFormId);
+    return (targetForm?.sourceTypeFields || []).map((field) => ({ label: field.name, value: field.id }));
+  });
+
   const statisticFieldOptions = ref<SelectOption[]>([]);
 
   async function initTargetFormFields() {
+    if (!fieldConfig.value.targetFormId) {
+      statisticFieldOptions.value = [];
+      return;
+    }
     try {
-      let res;
-      if (isStatisticTargetCustomForm.value) {
-        res = await getFieldDisplayList(fieldConfig.value.targetFormId as string);
-      } else if (fieldConfig.value.targetFormId === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
-        res = await getBusinessTitleModuleForm();
-      } else {
-        res = await getFieldDisplayList(fieldConfig.value.targetFormId as FormDesignKeyEnum);
-      }
+      const res = await getFieldDisplayList(fieldConfig.value.targetFormId as FormDesignKeyEnum);
       statisticFieldOptions.value = res.fields
         .filter((e) => [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA, FieldTypeEnum.STATISTIC].includes(e.type))
         .map((field) => ({
@@ -2097,10 +2077,40 @@
       ) {
         fieldConfig.value.statisticFieldId = statisticFieldOptions.value[0]?.value as string;
       }
-      fieldConfig.value.relatedFieldId = res.fields.find(
-        (e) => e.businessKey && getDataSourceFormKey(e.dataSourceType, formKeyMap) === props.formKey
-      )?.id;
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function initDefaultStatisticRelatedField() {
+    if (
+      fieldConfig.value?.type === FieldTypeEnum.STATISTIC &&
+      fieldConfig.value.isNew &&
+      !statisticRelatedFieldOptions.value.some((item) => item.value === fieldConfig.value.relatedFieldId)
+    ) {
+      fieldConfig.value.relatedFieldId = statisticRelatedFieldOptions.value[0]?.value as string;
+    }
+  }
+
+  function initDefaultStatisticTargetForm() {
+    if (
+      fieldConfig.value?.type === FieldTypeEnum.STATISTIC &&
+      fieldConfig.value.isNew &&
+      !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId)
+    ) {
+      fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as string;
+      initTargetFormFields();
+    }
+    initDefaultStatisticRelatedField();
+  }
+
+  async function initStatisticRelatedForms() {
+    try {
+      statisticRelatedForms.value = (await getFormDetailTabOptions(props.formKey)) || [];
+      initDefaultStatisticTargetForm();
+    } catch (error) {
+      statisticRelatedForms.value = [];
       // eslint-disable-next-line no-console
       console.log(error);
     }
@@ -2115,14 +2125,6 @@
         !options.some((item) => item.value === fieldConfig.value.dataSourceType)
       ) {
         fieldConfig.value.dataSourceType = options[0]?.value as FieldDataSourceTypeEnum;
-      }
-      if (
-        customFormInit.value &&
-        fieldConfig.value &&
-        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId) &&
-        fieldConfig.value.isNew
-      ) {
-        fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as FieldDataSourceTypeEnum;
       }
     },
     { immediate: true }
@@ -2139,15 +2141,8 @@
       ) {
         fieldConfig.value.dataSourceType = dataSourceOptions.value[0]?.value as FieldDataSourceTypeEnum;
       }
-      if (
-        customFormInit.value &&
-        fieldConfig.value &&
-        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId) &&
-        fieldConfig.value.isNew
-      ) {
-        fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as FieldDataSourceTypeEnum;
-      }
       if (fieldConfig.value?.type === FieldTypeEnum.STATISTIC) {
+        initDefaultStatisticTargetForm();
         initTargetFormFields();
       }
     }
@@ -2473,6 +2468,7 @@
 
   onBeforeMount(() => {
     initCustomDataSourceForms();
+    initStatisticRelatedForms();
   });
 
   function fallbackOption(val: string | number) {
@@ -2519,6 +2515,7 @@
 
   function handleStatisticTargetFormChange() {
     fieldConfig.value.statisticFieldId = undefined;
+    fieldConfig.value.relatedFieldId = undefined;
     fieldConfig.value.combineSearch = {
       searchMode: 'OR', // 默认搜索模式
       conditions: [],
@@ -2528,6 +2525,7 @@
       conditions: [],
     };
     nextTick(() => {
+      initDefaultStatisticRelatedField();
       initTargetFormFields();
     });
   }

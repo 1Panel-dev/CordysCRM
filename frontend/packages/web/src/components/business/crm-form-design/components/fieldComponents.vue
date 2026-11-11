@@ -71,7 +71,7 @@
 
   const { t } = useI18n();
 
-  let realAdvancedFields: FormCreateField[] = [];
+  const realAdvancedFields: FormCreateField[] = [];
   if (
     [
       FormDesignKeyEnum.PRICE,
@@ -102,10 +102,6 @@
       }
     });
   }
-  if (![FormDesignKeyEnum.CUSTOMER, FormDesignKeyEnum.BUSINESS, FormDesignKeyEnum.CONTRACT].includes(props.formKey)) {
-    realAdvancedFields = realAdvancedFields.filter((field) => field.type !== FieldTypeEnum.STATISTIC);
-  }
-
   function getFieldDisable(item: FormCreateField) {
     if (item.type === FieldTypeEnum.SERIAL_NUMBER) {
       return props.fieldList.some((e) => e.type === FieldTypeEnum.SERIAL_NUMBER && !e.resourceFieldId);
