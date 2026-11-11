@@ -1147,11 +1147,13 @@ public class CustomerService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                 case ADD -> {
+                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                            FormKey.CUSTOMER.getKey(), currentOrg);
                     customers.forEach(customer -> {
                         customer.setCollectionTime(customer.getCreateTime());
                         customer.setInSharedPool(false);
                         customer.setFrozen(false);
-                        customer.setApprovalStatus(ApprovalStatus.NONE.name());
+                        customer.setApprovalStatus(initialApprovalStatus);
                         logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD,
                                 LogModule.CUSTOMER_INDEX, customer.getName()));
                     });

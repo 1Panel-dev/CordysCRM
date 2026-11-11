@@ -1039,8 +1039,10 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                 case ADD -> {
+                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                            FormKey.INVOICE.getKey(), currentOrg);
                     invoices.forEach(invoice -> {
-                        invoice.setApprovalStatus(ApprovalStatus.NONE.name());
+                        invoice.setApprovalStatus(initialApprovalStatus);
                         logs.add(new LogDTO(currentOrg, invoice.getId(), currentUser, LogType.ADD,
                                 LogModule.CONTRACT_INVOICE, invoice.getName()));
                     });

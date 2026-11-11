@@ -398,23 +398,16 @@ public class ApprovalFlowService {
      * 根据表单类型获取审批流信息（不含节点配置）
      */
     public ApprovalFlowByFormTypeResponse getByFormType(String formType, String organizationId) {
-        ApprovalFlow criteria = new ApprovalFlow();
-        criteria.setFormType(formType);
-        criteria.setEnable(true);
-        criteria.setDeleted(false);
-        criteria.setOrganizationId(organizationId);
-        List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
-
-        ApprovalFlow targetFlow = flows.stream()
-                .filter(ApprovalFlow::getEnable)
-                .findFirst()
-                .orElse(null);
-
+        ApprovalFlow targetFlow = selectApprovalFlowByFormType(formType, organizationId);
         if (targetFlow == null) {
             return null;
         }
 
         ApprovalFlowByFormTypeResponse response = BeanUtils.copyBean(new ApprovalFlowByFormTypeResponse(), targetFlow);
+        String tableName = ApprovalResourceService.resolveApprovalTableName(
+                ApprovalResourceService.resolveApprovalFormKey(formType));
+        response.setExistApprovingData(StringUtils.isNotBlank(tableName)
+                && extApprovalInstanceMapper.existsApprovingResource(tableName, formType, organizationId));
 
         List<Permission> permissions = getPermissionsByFormType(targetFlow.getFormType());
         response.setPermissions(getResourcePermissions(permissions));
@@ -1627,6 +1620,15 @@ public class ApprovalFlowService {
             return null;
         }
         return approvalFlows.getFirst();
+    }
+
+    /**
+     * 获取新增资源的审批初始状态，与页面新增的审批执行条件保持一致。
+     */
+    public String getInitialApprovalStatus(String formKey, String organizationId) {
+        ApprovalFlow flow = getEnabledFlow(formKey, organizationId);
+        return flow != null && Boolean.TRUE.equals(flow.getCreateExecute())
+                ? ApprovalStatus.PENDING.name() : ApprovalStatus.NONE.name();
     }
 
     /**
