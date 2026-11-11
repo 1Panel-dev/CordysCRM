@@ -42,14 +42,20 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
 
     @Override
     public boolean hasAdditionalDataPermission(String permission, String resourceId, String userId) {
-        if (!PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)
+        if (!(PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)
+                || PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE.equals(permission))
                 || StringUtils.isAnyBlank(resourceId, userId)) {
             return false;
         }
         CustomerCollaboration example = new CustomerCollaboration();
         example.setCustomerId(resourceId);
         example.setUserId(userId);
-        return collaborationMapper.countByExample(example) > 0;
+        if (PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)) {
+            return collaborationMapper.countByExample(example) > 0;
+        }
+        return collaborationMapper.select(example).stream()
+                .anyMatch(item -> "JOINT_FOLLOW".equals(item.getCollaborationType())
+                        && (item.getExpireTime() == null || item.getExpireTime() > System.currentTimeMillis()));
     }
 
     @Override

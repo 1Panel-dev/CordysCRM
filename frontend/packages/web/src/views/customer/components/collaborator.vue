@@ -75,15 +75,20 @@
         </template>
         <n-tabs v-model:value="form.permission" type="segment" class="collaborator-tabs">
           <n-tab-pane name="READ_ONLY" :tab="t('customer.readOnly')"></n-tab-pane>
-          <n-tab-pane name="COLLABORATION" :tab="t('customer.cooperation')"></n-tab-pane>
+          <n-tab-pane name="COLLABORATION" :tab="t('customer.customerInfoOnly')"></n-tab-pane>
+          <n-tab-pane name="JOINT_FOLLOW" :tab="t('customer.jointFollow')"></n-tab-pane>
         </n-tabs>
+      </n-form-item>
+      <n-form-item path="expireTime" :label="t('customer.validity')">
+        <n-date-picker v-model:value="form.expireTime" type="datetime" clearable class="w-full" />
+        <template #feedback>{{ t('customer.validityTip') }}</template>
       </n-form-item>
     </n-form>
   </CrmModal>
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, NButton, NForm, NFormItem, NTabPane, NTabs, NTooltip, useMessage } from 'naive-ui';
+  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NTabPane, NTabs, NTooltip, useMessage } from 'naive-ui';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -142,6 +147,7 @@
     id: string;
     member: string | number | (string | number)[];
     permission: CollaborationType;
+    expireTime?: number | null;
   }>({
     id: '',
     member: '',
@@ -158,6 +164,7 @@
           await updateCustomerCollaboration({
             id: form.value.id,
             collaborationType: form.value.permission,
+            expireTime: form.value.expireTime || null,
           });
           Message.success(t('common.updateSuccess'));
         } else {
@@ -165,6 +172,7 @@
             customerId: props.sourceId,
             userId: (form.value.member as string) || '',
             collaborationType: form.value.permission,
+            expireTime: form.value.expireTime || null,
           });
           Message.success(t('common.addSuccess'));
         }
@@ -196,6 +204,7 @@
         id: row.id,
         member: row.userId,
         permission: row.collaborationType,
+        expireTime: row.expireTime,
       };
       addMemberModalVisible.value = true;
     } else if (actionKey === 'pop-delete') {
@@ -235,6 +244,12 @@
     }
   }
 
+  const collaborationTypeLabelMap: Record<CollaborationType, string> = {
+    READ_ONLY: 'customer.readOnly',
+    COLLABORATION: 'customer.customerInfoOnly',
+    JOINT_FOLLOW: 'customer.jointFollow',
+  };
+
   const columns: CrmDataTableColumn[] = [
     {
       title: t('common.name'),
@@ -265,8 +280,14 @@
       },
       width: 80,
       render: (row) => {
-        return t(row.collaborationType === 'READ_ONLY' ? 'customer.readOnly' : 'customer.cooperation');
+        return t(collaborationTypeLabelMap[row.collaborationType as CollaborationType]);
       },
+    },
+    {
+      title: t('customer.validity'),
+      key: 'expireTime',
+      width: 160,
+      render: (row) => (row.expireTime ? new Date(row.expireTime).toLocaleString() : t('customer.longTerm')),
     },
     {
       title: t('common.creator'),
@@ -324,6 +345,7 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function initData() {
+    if (!props.sourceId) return;
     setLoadListParams({
       customerId: props.sourceId,
     });
@@ -349,9 +371,7 @@
     }
   );
 
-  onBeforeMount(() => {
-    initData();
-  });
+  watch(() => props.sourceId, initData, { immediate: true });
 </script>
 
 <style lang="less">
