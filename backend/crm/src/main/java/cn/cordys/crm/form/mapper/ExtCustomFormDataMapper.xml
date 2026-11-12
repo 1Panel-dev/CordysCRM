@@ -7,6 +7,11 @@
                d.create_time as createTime, d.update_time as updateTime, d.approval_status as approvalStatus, d.approved
         from custom_form_data d
 
+        <if test="departmentIds != null and departmentIds.size() > 0">
+            inner join sys_organization_user data_scope_owner
+            on data_scope_owner.user_id = d.owner and data_scope_owner.organization_id = #{orgId}
+        </if>
+
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -25,8 +30,21 @@
 
         where d.custom_form_id = #{request.customFormId}
 
-        <if test="manageOwn">
+        <if test="ownerOnly">
             and d.owner = #{userId}
+        </if>
+        <if test="departmentIds != null">
+            <choose>
+                <when test="departmentIds.size() > 0">
+                    and data_scope_owner.department_id in
+                    <foreach collection="departmentIds" item="departmentId" open="(" close=")" separator=",">
+                        #{departmentId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and 1 = 0
+                </otherwise>
+            </choose>
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">
@@ -54,6 +72,11 @@
                d.create_time as createTime, d.update_time as updateTime, d.approval_status as approvalStatus
         from custom_form_data d
 
+        <if test="departmentIds != null and departmentIds.size() > 0">
+            inner join sys_organization_user data_scope_owner
+            on data_scope_owner.user_id = d.owner and data_scope_owner.organization_id = #{orgId}
+        </if>
+
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -72,8 +95,21 @@
 
         where d.custom_form_id = #{request.customFormId}
 
-        <if test="manageOwn">
+        <if test="ownerOnly">
             and d.owner = #{userId}
+        </if>
+        <if test="departmentIds != null">
+            <choose>
+                <when test="departmentIds.size() > 0">
+                    and data_scope_owner.department_id in
+                    <foreach collection="departmentIds" item="departmentId" open="(" close=")" separator=",">
+                        #{departmentId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and 1 = 0
+                </otherwise>
+            </choose>
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">
@@ -348,8 +384,24 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
-        <if test="manageOwn">
+        <if test="ownerOnly">
             and d.owner = #{userId}
+        </if>
+        <if test="departmentIds != null">
+            <choose>
+                <when test="departmentIds.size() > 0">
+                    and exists (select 1 from sys_organization_user data_scope_owner
+                    where data_scope_owner.user_id = d.owner
+                    and data_scope_owner.organization_id = #{orgId}
+                    and data_scope_owner.department_id in
+                    <foreach collection="departmentIds" item="departmentId" open="(" close=")" separator=",">
+                        #{departmentId}
+                    </foreach>)
+                </when>
+                <otherwise>
+                    and 1 = 0
+                </otherwise>
+            </choose>
         </if>
     </select>
 

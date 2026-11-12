@@ -13,12 +13,14 @@ public interface ExtCustomFormDataMapper {
     List<CustomFormDataListResponse> list(@Param("request") CustomFormDataPageRequest request,
             @Param("orgId") String orgId,
             @Param("userId") String userId,
-            @Param("manageOwn") boolean manageOwn);
+            @Param("ownerOnly") boolean ownerOnly,
+            @Param("departmentIds") List<String> departmentIds);
 
     List<CustomFormDataListResponse> listForExport(@Param("request") CustomFormDataPageRequest request,
             @Param("orgId") String orgId,
             @Param("userId") String userId,
-            @Param("manageOwn") boolean manageOwn,
+            @Param("ownerOnly") boolean ownerOnly,
+            @Param("departmentIds") List<String> departmentIds,
             @Param("limit") int limit,
             @Param("offset") int offset);
 
@@ -29,7 +31,8 @@ public interface ExtCustomFormDataMapper {
     List<CustomFormDataListResponse> getListByIds(@Param("ids") List<String> ids,
             @Param("orgId") String orgId,
             @Param("userId") String userId,
-            @Param("manageOwn") boolean manageOwn);
+            @Param("ownerOnly") boolean ownerOnly,
+            @Param("departmentIds") List<String> departmentIds);
 
     void updateData(@Param("customFormData") CustomFormData customFormData);
 }

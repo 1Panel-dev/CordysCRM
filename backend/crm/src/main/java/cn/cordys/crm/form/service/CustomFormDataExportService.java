@@ -53,14 +53,15 @@ public class CustomFormDataExportService extends BaseExportService {
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
             var request = (CustomFormExportSelectRequest) exportParam.getSelectRequest();
             CustomFormRoleKey dataScope = customFormDataService.getDataScope(request.getCustomFormId(), userId, orgId);
-            boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
-            return extCustomFormDataMapper.getListByIds(exportParam.getSelectIds(), orgId, userId, manageOwn);
+            return extCustomFormDataMapper.getListByIds(exportParam.getSelectIds(), orgId, userId,
+                    dataScope == CustomFormRoleKey.MANAGE_OWN, null);
         } else {
             var request = (CustomFormDataPageRequest) exportParam.getPageRequest();
             CustomFormRoleKey dataScope = customFormDataService.getDataScope(request.getCustomFormId(), userId, orgId);
-            boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
+            var viewScope = customFormDataService.resolveViewScope(request.getViewId(), dataScope, userId, orgId);
             PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
-            return extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
+            return extCustomFormDataMapper.list(request, orgId, userId, viewScope.ownerOnly(),
+                    viewScope.departmentIds());
         }
     }
 

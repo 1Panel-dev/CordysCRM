@@ -8,7 +8,9 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
@@ -61,6 +63,7 @@ import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
@@ -72,8 +75,10 @@ import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -160,6 +165,12 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     private ApprovalFlowService approvalFlowService;
     @Resource
     private ApprovalTodoService approvalTodoService;
+    @Resource
+    private DepartmentService departmentService;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
+    @Resource
+    private UserViewService userViewService;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId,
             String orgId, boolean catchPermissionException) {
@@ -172,6 +183,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId,
             String orgId, boolean catchPermissionException, boolean relatedOwner) {
         String formId = request.getCustomFormId();
+        checkViewResource(request.getViewId(), formId, userId, orgId);
         CustomFormRoleKey dataScope = null;
         if (relatedOwner) {
             customFormService.checkRelatedReadForm(formId, orgId);
@@ -187,10 +199,11 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         } else {
             dataScope = getDataScope(formId, userId, orgId);
         }
-        boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN && !relatedOwner;
+        CustomFormViewScope viewScope = resolveViewScope(request.getViewId(), dataScope, userId, orgId, relatedOwner);
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
+        List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId,
+                viewScope.ownerOnly(), viewScope.departmentIds());
         CustomFormDataFieldService.setFormKey(formId);
         List<String> approvingResourceIds = list.stream()
                 .filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
@@ -221,6 +234,77 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         }
         return dataScope == CustomFormRoleKey.MANAGE_ALL ||
                 (dataScope == CustomFormRoleKey.MANAGE_OWN && StringUtils.equals(owner, userId));
+    }
+
+    /**
+     * 自定义表单没有通用的数据权限位，系统视图只能在表单角色的可见范围内切换。
+     */
+    public void checkViewPermission(String formId, String userId, String orgId) {
+        getDataScope(formId, userId, orgId);
+    }
+
+    public void checkViewResource(String viewId, String formId, String userId, String orgId) {
+        if (StringUtils.isNotBlank(viewId) && !InternalUserView.isInternalUserView(viewId)) {
+            userViewService.checkViewResource(viewId, userId, orgId, formId);
+        }
+    }
+
+    CustomFormViewScope resolveViewScope(String viewId, CustomFormRoleKey dataScope, String userId, String orgId) {
+        return resolveViewScope(viewId, dataScope, userId, orgId, false);
+    }
+
+    private CustomFormViewScope resolveViewScope(String viewId, CustomFormRoleKey dataScope, String userId,
+            String orgId, boolean relatedOwner) {
+        if (relatedOwner || StringUtils.isBlank(viewId) || !InternalUserView.isInternalUserView(viewId)) {
+            return new CustomFormViewScope(dataScope == CustomFormRoleKey.MANAGE_OWN && !relatedOwner, null);
+        }
+        if (!InternalUserView.isAll(viewId) && !InternalUserView.isSelf(viewId)
+                && !InternalUserView.isDepartment(viewId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        if (InternalUserView.isSelf(viewId)) {
+            return new CustomFormViewScope(true, null);
+        }
+        if (dataScope == CustomFormRoleKey.MANAGE_OWN) {
+            // 仅能管理本人的成员不应借由系统视图看到其他数据。
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        if (InternalUserView.isDepartment(viewId)) {
+            OrganizationUser organizationUser = new OrganizationUser();
+            organizationUser.setUserId(userId);
+            organizationUser.setOrganizationId(orgId);
+            OrganizationUser currentUser = organizationUserMapper.selectOne(organizationUser);
+            if (currentUser == null || StringUtils.isBlank(currentUser.getDepartmentId())) {
+                return new CustomFormViewScope(false, List.of());
+            }
+            List<String> departmentIds = getDepartmentIdsWithChildren(orgId, currentUser.getDepartmentId());
+            return new CustomFormViewScope(false, departmentIds);
+        }
+        return new CustomFormViewScope(false, null);
+    }
+
+    private List<String> getDepartmentIdsWithChildren(String orgId, String departmentId) {
+        List<String> result = new ArrayList<>();
+        collectDepartmentIds(departmentService.getTree(orgId), departmentId, result);
+        return result;
+    }
+
+    private boolean collectDepartmentIds(List<BaseTreeNode> nodes, String departmentId, List<String> result) {
+        for (BaseTreeNode node : nodes) {
+            if (StringUtils.equals(node.getId(), departmentId)) {
+                collectAllDepartmentIds(node, result);
+                return true;
+            }
+            if (collectDepartmentIds(node.getChildren(), departmentId, result)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void collectAllDepartmentIds(BaseTreeNode node, List<String> result) {
+        result.add(node.getId());
+        node.getChildren().forEach(child -> collectAllDepartmentIds(child, result));
     }
 
     public List<CustomFormDataListResponse> buildList(List<CustomFormDataListResponse> list, String formId,
