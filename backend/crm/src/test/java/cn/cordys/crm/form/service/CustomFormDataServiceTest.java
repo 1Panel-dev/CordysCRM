@@ -1,6 +1,8 @@
 package cn.cordys.crm.form.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.constants.InternalUserView;
+import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.RelatedResourcePermissionService;
@@ -24,6 +26,7 @@ import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -501,6 +504,41 @@ class CustomFormDataServiceTest {
         // 查不到部门时保持为空, 不写入占位值
         assertNull(unknownOwner.getDepartmentId());
         assertNull(unknownOwner.getDepartmentName());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void systemViewsRespectCustomFormRoleScopeAndDepartmentTree() {
+        CustomFormDataService service = serviceWithManageAllPermission();
+        BaseMapper<cn.cordys.crm.system.domain.OrganizationUser> organizationUserMapper = mock(BaseMapper.class);
+        DepartmentService departmentService = mock(DepartmentService.class);
+        ReflectionTestUtils.setField(service, "organizationUserMapper", organizationUserMapper);
+        ReflectionTestUtils.setField(service, "departmentService", departmentService);
+
+        cn.cordys.crm.system.domain.OrganizationUser currentUser =
+                new cn.cordys.crm.system.domain.OrganizationUser();
+        currentUser.setDepartmentId("sales");
+        when(organizationUserMapper.selectOne(any())).thenReturn(currentUser);
+        BaseTreeNode sales = new BaseTreeNode("sales", "销售部");
+        sales.addChild(new BaseTreeNode("east", "华东组"));
+        when(departmentService.getTree("org-1")).thenReturn(List.of(sales));
+
+        var allScope = service.resolveViewScope(InternalUserView.ALL.name(), CustomFormRoleKey.MANAGE_ALL,
+                "user-1", "org-1");
+        assertFalse(allScope.ownerOnly());
+        assertNull(allScope.departmentIds());
+
+        var selfScope = service.resolveViewScope(InternalUserView.SELF.name(), CustomFormRoleKey.VIEW_ALL,
+                "user-1", "org-1");
+        assertTrue(selfScope.ownerOnly());
+
+        var departmentScope = service.resolveViewScope(InternalUserView.DEPARTMENT.name(),
+                CustomFormRoleKey.VIEW_ALL, "user-1", "org-1");
+        assertEquals(List.of("sales", "east"), departmentScope.departmentIds());
+
+        assertThrows(GenericException.class,
+                () -> service.resolveViewScope(InternalUserView.ALL.name(), CustomFormRoleKey.MANAGE_OWN,
+                        "user-1", "org-1"));
     }
 
     private Object valueOf(

@@ -183,6 +183,17 @@ public class UserViewService {
     }
 
     /**
+     * 校验视图属于指定资源。自定义表单以表单 ID 作为资源类型，避免同一用户跨表单操作视图。
+     */
+    public void checkViewResource(String id, String userId, String orgId, String resourceType) {
+        checkView(userId, id, orgId);
+        UserView userView = userViewMapper.selectByPrimaryKey(id);
+        if (userView == null || !Strings.CS.equals(userView.getResourceType(), resourceType)) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("view_blank"));
+        }
+    }
+
+    /**
      * 删除视图
      */
     public void delete(String id, String userId, String orgId) {

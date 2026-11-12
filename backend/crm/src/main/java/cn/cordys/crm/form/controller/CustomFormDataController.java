@@ -57,6 +57,8 @@ public class CustomFormDataController {
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public PagerWithOption<List<CustomFormDataListResponse>> page(
             @Validated @RequestBody CustomFormDataPageRequest request) {
+        customFormDataService.checkViewResource(request.getViewId(), request.getCustomFormId(),
+                SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
         return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
                 false);
@@ -117,6 +119,8 @@ public class CustomFormDataController {
     @Operation(summary = "导出全部表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public String exportAll(@Validated @RequestBody CustomFormDataExportRequest request) {
+        customFormDataService.checkViewResource(request.getViewId(), request.getCustomFormId(),
+                SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CUSTOM_FORM_DATA.name())

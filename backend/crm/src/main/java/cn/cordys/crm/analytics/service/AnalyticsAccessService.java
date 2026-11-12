@@ -164,7 +164,10 @@ public class AnalyticsAccessService {
         if (custom) {
             boolean own = customFormAccess.manageOwn(formKey, userId, orgId) || view == View.SELF;
             ((CustomFormDataPageRequest) request).setCustomFormId(formKey);
-            parameters.put("manageOwn", own);
+            // ExtCustomFormDataMapper 使用 ownerOnly/departmentIds 描述自定义表单的视图范围。
+            // 管理本人角色不能因 ALL 视图放宽为全量数据。
+            parameters.put("ownerOnly", own);
+            parameters.put("departmentIds", null);
             effectiveScope = own ? "SELF" : "FORM_ALL";
         } else if (pool) {
             if (request instanceof CluePageRequest clue) {
