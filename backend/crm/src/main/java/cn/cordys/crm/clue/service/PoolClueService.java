@@ -259,7 +259,7 @@ public class PoolClueService {
      * @param currentOrgId 当前组织ID
      */
     public void pick(PoolCluePickRequest request, String currentUser, String currentOrgId) {
-        validateNotFrozen(request.getClueId());
+        validateNotFrozen(request.getClueId(), request.getPoolId(), currentOrgId);
         CluePool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(1, currentUser, currentOrgId);
         LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
@@ -282,7 +282,7 @@ public class PoolClueService {
      */
     @OperationLog(module = LogModule.CLUE_POOL_INDEX, type = LogType.ASSIGN, resourceId = "{#request.clueId}")
     public void assign(String id, String assignUserId, String currentOrgId, String currentUser) {
-        validateNotFrozen(id);
+        validateNotFrozen(id, null, currentOrgId);
         validateCapacity(1, assignUserId, currentOrgId);
         ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false);
     }
@@ -333,7 +333,7 @@ public class PoolClueService {
      * @param currentOrgId 当前组织ID
      */
     public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
-        validateBatchNotFrozen(request.getBatchIds());
+        validateBatchNotFrozen(request.getBatchIds(), request.getPoolId(), currentOrgId);
         CluePool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
         LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
@@ -358,7 +358,7 @@ public class PoolClueService {
      */
     public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId,
             String currentUser) {
-        validateBatchNotFrozen(request.getBatchIds());
+        validateBatchNotFrozen(request.getBatchIds(), null, currentOrgId);
         validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
         request.getBatchIds()
                 .forEach(id -> ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
@@ -531,6 +531,7 @@ public class PoolClueService {
         if (clue == null) {
             throw new IllegalArgumentException(Translator.get("clue.not.exist"));
         }
+        validatePoolResource(clue, pickRule == null ? null : pickRule.getPoolId(), currentOrgId);
         if (!clue.getInSharedPool()) {
             throw new GenericException(Translator.getWithArgs("clue.pool.occupied", clue.getName()));
         }
@@ -564,6 +565,7 @@ public class PoolClueService {
                 }
             }
         }
+        String poolId = clue.getPoolId();
         clue.setPoolId(null);
         clue.setInSharedPool(false);
         clue.setOwner(ownerId);
@@ -571,9 +573,10 @@ public class PoolClueService {
         clue.setStage(ClueStatus.FOLLOWING.name());
         clue.setUpdateUser(ownerId);
         clue.setUpdateTime(System.currentTimeMillis());
-        if (extClueMapper.updateIncludeNullById(clue) == 0) {
+        if (extClueMapper.updateIncludeNullById(clue, poolId) == 0) {
             Clue current = clueMapper.selectByPrimaryKey(clueId);
             if (current != null && Boolean.TRUE.equals(current.getInSharedPool())) {
+                validatePoolResource(current, poolId, currentOrgId);
                 validateNotFrozen(current);
             }
             throw new GenericException(Translator.getWithArgs("clue.pool.occupied", clue.getName()));
@@ -647,11 +650,19 @@ public class PoolClueService {
         return clue;
     }
 
-    private void validateNotFrozen(String id) {
+    private void validatePoolResource(Clue clue, String poolId, String orgId) {
+        if (StringUtils.isBlank(orgId) || !orgId.equals(clue.getOrganizationId())
+                || (poolId != null && !poolId.equals(clue.getPoolId()))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
+    private void validateNotFrozen(String id, String poolId, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         if (clue == null) {
             throw new IllegalArgumentException(Translator.get("clue.not.exist"));
         }
+        validatePoolResource(clue, poolId, orgId);
         validateNotFrozen(clue);
     }
 
@@ -663,13 +674,14 @@ public class PoolClueService {
         unfreezeExpired(clue, now);
     }
 
-    private void validateBatchNotFrozen(List<String> ids) {
+    private void validateBatchNotFrozen(List<String> ids, String poolId, String orgId) {
         Map<String, Clue> clueMap = clueMapper.selectByIds(ids).stream()
                 .collect(Collectors.toMap(Clue::getId, Function.identity()));
         for (String id : ids) {
             if (!clueMap.containsKey(id)) {
                 throw new IllegalArgumentException(Translator.get("clue.not.exist"));
             }
+            validatePoolResource(clueMap.get(id), poolId, orgId);
         }
 
         long now = System.currentTimeMillis();
