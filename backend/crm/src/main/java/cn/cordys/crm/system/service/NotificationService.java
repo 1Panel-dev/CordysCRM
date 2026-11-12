@@ -9,6 +9,7 @@ import cn.cordys.crm.system.domain.Notification;
 import cn.cordys.crm.system.dto.request.NotificationRequest;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
+import cn.cordys.crm.system.notice.NoticeRedisSync;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -114,21 +115,21 @@ public class NotificationService {
         if (update == null || update == 0) {
             return 0;
         }
-        //删除缓存中的公告提示
-        stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + userId, id);
-        stringRedisTemplate.delete(ANNOUNCE_PREFIX + id);
-        stringRedisTemplate.opsForZSet().remove(USER_PREFIX + userId, id);
-        stringRedisTemplate.delete(MSG_PREFIX + id);
-        //检查当前用户是否还有有已读信息，没有更新用户状态
+        // 在事务内查询更新后的未读数量，提交后再同步缓存和广播。
         Integer unRead = getUnRead(orgId, userId);
-        if (unRead == 0) {
-            stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
-            //sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
-            NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
-            noticeRedisMessage.setMessage(userId);
-            noticeRedisMessage.setNoticeType(NotificationConstants.Status.READ.toString());
-            messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
-        }
+        NoticeRedisSync.afterCommit(() -> {
+            stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + userId, id);
+            stringRedisTemplate.delete(ANNOUNCE_PREFIX + id);
+            stringRedisTemplate.opsForZSet().remove(USER_PREFIX + userId, id);
+            stringRedisTemplate.delete(MSG_PREFIX + id);
+            if (unRead == 0) {
+                stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
+                NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+                noticeRedisMessage.setMessage(userId);
+                noticeRedisMessage.setNoticeType(NotificationConstants.Status.READ.toString());
+                messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+            }
+        });
         return update;
     }
 
@@ -137,28 +138,30 @@ public class NotificationService {
         record.setStatus(NotificationConstants.Status.READ.name());
         record.setOrganizationId(organizationId);
         record.setReceiver(userId);
-        //所有这个用户的公告都不再显示
-        Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
-        if (CollectionUtils.isNotEmpty(values)) {
-            for (String value : values) {
-                stringRedisTemplate.delete(ANNOUNCE_PREFIX + value);
+        int update = extNotificationMapper.updateByReceiver(record);
+        NoticeRedisSync.afterCommit(() -> {
+            //所有这个用户的公告都不再显示
+            Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
+            if (CollectionUtils.isNotEmpty(values)) {
+                for (String value : values) {
+                    stringRedisTemplate.delete(ANNOUNCE_PREFIX + value);
+                }
             }
-        }
-        Set<String> range = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
-        if (CollectionUtils.isNotEmpty(range)) {
-            for (String value : range) {
-                stringRedisTemplate.delete(MSG_PREFIX + value);
+            Set<String> range = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
+            if (CollectionUtils.isNotEmpty(range)) {
+                for (String value : range) {
+                    stringRedisTemplate.delete(MSG_PREFIX + value);
+                }
             }
-        }
-        stringRedisTemplate.delete(USER_ANNOUNCE_PREFIX + userId);
-        stringRedisTemplate.delete(USER_PREFIX + userId);
-        stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
-        NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
-        noticeRedisMessage.setMessage(userId);
-        noticeRedisMessage.setNoticeType(NotificationConstants.Status.READ.toString());
-        messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
-        //sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
-        return extNotificationMapper.updateByReceiver(record);
+            stringRedisTemplate.delete(USER_ANNOUNCE_PREFIX + userId);
+            stringRedisTemplate.delete(USER_PREFIX + userId);
+            stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
+            NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+            noticeRedisMessage.setMessage(userId);
+            noticeRedisMessage.setNoticeType(NotificationConstants.Status.READ.toString());
+            messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+        });
+        return update;
     }
 
     public List<OptionCountDTO> countNotification(NotificationRequest notificationRequest, String organizationId,

@@ -8,6 +8,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Notification;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
+import cn.cordys.crm.system.notice.NoticeRedisSync;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.Receiver;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
@@ -81,27 +82,25 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             notification.setUpdateTime(System.currentTimeMillis());
             notificationBaseMapper.insert(notification);
             String messageText = JSON.toJSONString(notification);
-            //储存信息
-            String userRedisKey = USER_PREFIX + receiver.getUserId();
-            stringRedisTemplate.opsForZSet().add(userRedisKey, id, System.currentTimeMillis());
-            stringRedisTemplate.opsForValue().set(MSG_PREFIX + id, messageText);
-            // 限制 Redis 只存 5 条消息：移除排名 5 之后的所有条目
-            Set<String> oldNotificationIds = stringRedisTemplate.opsForZSet()
-                    .reverseRange(userRedisKey, 4, -1);
-            if (CollectionUtils.isNotEmpty(oldNotificationIds)) {
-                stringRedisTemplate.delete(oldNotificationIds.stream()
-                        .map(nid -> MSG_PREFIX + nid)
-                        .toList());
-                stringRedisTemplate.opsForZSet().removeRange(userRedisKey, 0, -6);
-            }
-            //更新用户的已读全部消息状态 0 为未读，1为已读
-            stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiver.getUserId(), "False");
-
-            // 发送消息
-            NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
-            noticeRedisMessage.setMessage(receiver.getUserId());
-            noticeRedisMessage.setNoticeType(NotificationConstants.Type.SYSTEM_NOTICE.toString());
-            messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+            NoticeRedisSync.afterCommit(() -> {
+                String userRedisKey = USER_PREFIX + receiver.getUserId();
+                stringRedisTemplate.opsForZSet().add(userRedisKey, id, System.currentTimeMillis());
+                stringRedisTemplate.opsForValue().set(MSG_PREFIX + id, messageText);
+                // 限制 Redis 只存 5 条消息：移除排名 5 之后的所有条目
+                Set<String> oldNotificationIds = stringRedisTemplate.opsForZSet()
+                        .reverseRange(userRedisKey, 4, -1);
+                if (CollectionUtils.isNotEmpty(oldNotificationIds)) {
+                    stringRedisTemplate.delete(oldNotificationIds.stream()
+                            .map(nid -> MSG_PREFIX + nid)
+                            .toList());
+                    stringRedisTemplate.opsForZSet().removeRange(userRedisKey, 0, -6);
+                }
+                stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiver.getUserId(), "False");
+                NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+                noticeRedisMessage.setMessage(receiver.getUserId());
+                noticeRedisMessage.setNoticeType(NotificationConstants.Type.SYSTEM_NOTICE.toString());
+                messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+            });
         });
     }
 

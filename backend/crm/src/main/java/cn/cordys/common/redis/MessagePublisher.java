@@ -3,7 +3,6 @@ package cn.cordys.common.redis;
 import cn.cordys.common.constants.TopicConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,8 +32,7 @@ public class MessagePublisher {
      */
     public void publish(String topicName, String message) {
         try {
-            ChannelTopic topic = new ChannelTopic(topicName);
-            redisTemplate.convertAndSend(topic.getTopic(), message);
+            redisTemplate.convertAndSend(topicName, message);
         } catch (Exception e) {
             log.error("发布消息到主题失败", e);
         }
