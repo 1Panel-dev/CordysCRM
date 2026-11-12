@@ -112,8 +112,8 @@ class CustomerCollaborationIsolationSqlTest {
     }
 
     private static boolean isolated(Expression expression, String type, Long expires, List<Object> values) {
-        if (expression instanceof ParenthesedExpressionList<?> parenthesed) {
-            return isolated(parenthesed.getFirst(), type, expires, values);
+        if (expression instanceof ParenthesedExpressionList<?> parenthesized) {
+            return isolated(parenthesized.getFirst(), type, expires, values);
         }
         if (expression instanceof AndExpression and) {
             return isolated(and.getLeftExpression(), type, expires, values)

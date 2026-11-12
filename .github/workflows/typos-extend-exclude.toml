@@ -1,2 +1,5 @@
 [files]
 extend-exclude = ["*.json", "**/*.json", "**/*.js", "**/*.html", "**/*.xml", "**/config.ts", "**/*.sql", "**/*.conf", "**/en-US.ts", "OWNERS", "CODEOWNERS", "LICENSE", "NOTICE"]
+
+[default.extend-identifiers]
+ParenthesedExpressionList = "ParenthesedExpressionList"
