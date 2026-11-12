@@ -1,4 +1,4 @@
-import { type MaybeRef, unref } from 'vue';
+import { type MaybeRef, unref, watch } from 'vue';
 
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -22,6 +22,7 @@ interface ApprovalActionLike {
 
 interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   formType: MaybeRef<string>;
+  poolId?: MaybeRef<string | number | undefined>;
   getApprovalStatus?: (row: Row) => ProcessStatusEnum | undefined;
   identityResolver?: {
     isApplicant?: (row: Row, currentUserId: string) => boolean;
@@ -197,7 +198,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   async function initApprovalPermission(forceRefresh = false) {
     const requestToken = ++approvalPermissionRequestToken;
     try {
-      const result = await loadApprovalConfig(unref(options.formType), forceRefresh);
+      const result = await loadApprovalConfig(unref(options.formType), forceRefresh, unref(options.poolId));
       if (requestToken !== approvalPermissionRequestToken) {
         return;
       }
@@ -222,6 +223,11 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
       console.log(error);
     }
   }
+
+  watch(
+    () => unref(options.poolId),
+    () => initApprovalPermission()
+  );
 
   return {
     approvalConfig,

@@ -73,9 +73,10 @@ class ApprovalFlowServiceTest {
         flow.setFormType("contract");
         flow.setEnable(enabled);
         when(flowMapper.select(any(ApprovalFlow.class))).thenReturn(List.of(flow));
-        when(instanceMapper.existsApprovingResource("contract", "contract", "org-a")).thenReturn(hasApprovingData);
+        when(instanceMapper.existsApprovingResource("contract", "contract", "org-a", null))
+                .thenReturn(hasApprovingData);
 
-        ApprovalFlowByFormTypeResponse response = service.getByFormType("contract", "org-a");
+        ApprovalFlowByFormTypeResponse response = service.getByFormType("contract", "org-a", null);
 
         assertNotNull(response);
         assertEquals("flow-a", response.getId());
@@ -93,9 +94,35 @@ class ApprovalFlowServiceTest {
     void returnsNullWhenNoFlowIsConfigured() {
         when(flowMapper.select(any(ApprovalFlow.class))).thenReturn(List.of());
 
-        assertNull(service.getByFormType("contract", "org-a"));
+        assertNull(service.getByFormType("contract", "org-a", null));
 
         verifyNoInteractions(instanceMapper, roleService);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "clue, clue,", "cluePool, clue,", "cluePool, clue, pool-a",
+            "customer, customer,", "customerOpenSea, customer,", "customerOpenSea, customer, pool-b" })
+    void poolFormsShareFlowConfigurationButKeepTheirOwnResourceScope(String formType, String configFormType,
+            String poolId) {
+        ApprovalFlow flow = new ApprovalFlow();
+        flow.setId("shared-flow");
+        flow.setFormType(configFormType);
+        flow.setEnable(false);
+        when(flowMapper.select(any(ApprovalFlow.class))).thenReturn(List.of(flow));
+        when(instanceMapper.existsApprovingResource(configFormType, formType, "org-a", poolId)).thenReturn(true);
+
+        ApprovalFlowByFormTypeResponse response = service.getByFormType(formType, "org-a", poolId);
+
+        assertNotNull(response);
+        assertEquals("shared-flow", response.getId());
+        assertEquals(configFormType, response.getFormType());
+        assertEquals(false, response.getEnable());
+        assertEquals(true, response.getExistApprovingData());
+        ArgumentCaptor<ApprovalFlow> query = ArgumentCaptor.forClass(ApprovalFlow.class);
+        verify(flowMapper).select(query.capture());
+        assertEquals(configFormType, query.getValue().getFormType());
+        assertEquals("org-a", query.getValue().getOrganizationId());
+        verify(instanceMapper).existsApprovingResource(configFormType, formType, "org-a", poolId);
     }
 
     @Test
@@ -104,14 +131,14 @@ class ApprovalFlowServiceTest {
         flow.setFormType("custom-form-a");
         flow.setEnable(false);
         when(flowMapper.select(any(ApprovalFlow.class))).thenReturn(List.of(flow));
-        when(instanceMapper.existsApprovingResource("custom_form_data", "custom-form-a", "org-b"))
+        when(instanceMapper.existsApprovingResource("custom_form_data", "custom-form-a", "org-b", null))
                 .thenReturn(true);
 
-        ApprovalFlowByFormTypeResponse response = service.getByFormType("custom-form-a", "org-b");
+        ApprovalFlowByFormTypeResponse response = service.getByFormType("custom-form-a", "org-b", null);
 
         assertNotNull(response);
         assertEquals(true, response.getExistApprovingData());
-        verify(instanceMapper).existsApprovingResource("custom_form_data", "custom-form-a", "org-b");
+        verify(instanceMapper).existsApprovingResource("custom_form_data", "custom-form-a", "org-b", null);
         ArgumentCaptor<ApprovalFlow> query = ArgumentCaptor.forClass(ApprovalFlow.class);
         verify(flowMapper).select(query.capture());
         assertEquals("custom-form-a", query.getValue().getFormType());

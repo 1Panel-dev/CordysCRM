@@ -9,10 +9,10 @@ import java.util.List;
 public interface ExtApprovalInstanceMapper {
 
     /**
-     * 判断当前组织、当前表单是否仍有审批中的业务资源，表名由审批资源映射提供。
+     * 判断当前组织、当前表单列表范围内是否有审批中的资源；池表单可按池 ID 限定范围。
      */
     boolean existsApprovingResource(@Param("sourceTable") String sourceTable, @Param("formKey") String formKey,
-            @Param("organizationId") String organizationId);
+            @Param("organizationId") String organizationId, @Param("poolId") String poolId);
 
     /**
      * 根据任务锁定所属实例，使同一实例的审批推进按顺序执行。

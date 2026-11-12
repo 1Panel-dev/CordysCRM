@@ -10,8 +10,18 @@ const approvalConfigPendingMap = new Map<ApprovalConfigKey, Promise<ApprovalProc
 
 export function clearApprovalConfigCache(formKey?: ApprovalConfigKey) {
   if (formKey) {
-    approvalConfigCache.delete(formKey);
-    approvalConfigPendingMap.delete(formKey);
+    let formKeys = [formKey];
+    if (formKey === FormDesignKeyEnum.CLUE || formKey === FormDesignKeyEnum.CLUE_POOL) {
+      formKeys = [FormDesignKeyEnum.CLUE, FormDesignKeyEnum.CLUE_POOL];
+    } else if (formKey === FormDesignKeyEnum.CUSTOMER || formKey === FormDesignKeyEnum.CUSTOMER_OPEN_SEA) {
+      formKeys = [FormDesignKeyEnum.CUSTOMER, FormDesignKeyEnum.CUSTOMER_OPEN_SEA];
+    }
+    [...approvalConfigCache.keys(), ...approvalConfigPendingMap.keys()].forEach((key) => {
+      if (formKeys.includes(JSON.parse(key)[0])) {
+        approvalConfigCache.delete(key);
+        approvalConfigPendingMap.delete(key);
+      }
+    });
     return;
   }
 
@@ -19,35 +29,36 @@ export function clearApprovalConfigCache(formKey?: ApprovalConfigKey) {
   approvalConfigPendingMap.clear();
 }
 
-export function loadApprovalConfig(formKey: ApprovalConfigKey, forceRefresh = false) {
+export function loadApprovalConfig(formKey: ApprovalConfigKey, forceRefresh = false, poolId?: string | number) {
+  const cacheKey = JSON.stringify([formKey, poolId ? String(poolId) : null]);
   if (forceRefresh) {
-    approvalConfigCache.delete(formKey);
+    approvalConfigCache.delete(cacheKey);
   }
 
-  if (approvalConfigCache.has(formKey)) {
-    return Promise.resolve(approvalConfigCache.get(formKey) ?? null);
+  if (approvalConfigCache.has(cacheKey)) {
+    return Promise.resolve(approvalConfigCache.get(cacheKey) ?? null);
   }
 
-  const pendingConfig = approvalConfigPendingMap.get(formKey);
+  const pendingConfig = approvalConfigPendingMap.get(cacheKey);
   if (pendingConfig) {
     return pendingConfig;
   }
 
-  const request = getApprovalConfigDetail(formKey)
+  const request = getApprovalConfigDetail(formKey, poolId)
     .then((result) => {
       const config = result ?? null;
-      if (approvalConfigPendingMap.get(formKey) === request) {
-        approvalConfigCache.set(formKey, config);
+      if (approvalConfigPendingMap.get(cacheKey) === request) {
+        approvalConfigCache.set(cacheKey, config);
       }
       return config;
     })
     .finally(() => {
-      if (approvalConfigPendingMap.get(formKey) === request) {
-        approvalConfigPendingMap.delete(formKey);
+      if (approvalConfigPendingMap.get(cacheKey) === request) {
+        approvalConfigPendingMap.delete(cacheKey);
       }
     });
 
-  approvalConfigPendingMap.set(formKey, request);
+  approvalConfigPendingMap.set(cacheKey, request);
 
   return request;
 }

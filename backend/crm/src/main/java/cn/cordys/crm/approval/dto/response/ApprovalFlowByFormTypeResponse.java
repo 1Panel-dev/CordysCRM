@@ -37,7 +37,7 @@ public class ApprovalFlowByFormTypeResponse {
     @Schema(description = "启用状态")
     private Boolean enable;
 
-    @Schema(description = "当前组织、当前表单是否存在审批中的数据")
+    @Schema(description = "当前组织、当前表单列表范围内是否存在审批中的数据，池表单可按池 ID 限定范围")
     private Boolean existApprovingData;
 
     @Schema(description = "流程描述")

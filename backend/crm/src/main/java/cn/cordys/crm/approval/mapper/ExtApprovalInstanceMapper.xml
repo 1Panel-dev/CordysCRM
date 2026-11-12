@@ -8,6 +8,19 @@
             FROM ${sourceTable}
             WHERE organization_id = #{organizationId}
               AND approval_status = 'APPROVING'
+            <if test="sourceTable == 'clue' or sourceTable == 'customer'">
+                <choose>
+                    <when test="formKey == 'cluePool' or formKey == 'customerOpenSea'">
+                        AND in_shared_pool IS TRUE
+                        <if test="poolId != null and poolId != ''">
+                            AND pool_id = #{poolId}
+                        </if>
+                    </when>
+                    <otherwise>
+                        AND in_shared_pool IS FALSE
+                    </otherwise>
+                </choose>
+            </if>
             <if test="sourceTable == 'custom_form_data'">
                 AND custom_form_id = #{formKey}
             </if>

@@ -1,4 +1,4 @@
-import { type MaybeRef, type Ref, ref, unref } from 'vue';
+import { type MaybeRef, type Ref, ref, unref, watch } from 'vue';
 
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
@@ -21,6 +21,7 @@ export type ApprovalConfigType =
 
 export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   formType: MaybeRef<ApprovalConfigType>;
+  poolId?: MaybeRef<string | number | undefined>;
   dataActionMap: Record<string, ActionsItem> | ((row: Row) => Record<string, ActionsItem>);
   isDetail?: boolean;
   maxVisibleActions?: number;
@@ -358,7 +359,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   async function initApprovalPermission(forceRefresh = false) {
     const requestToken = ++approvalPermissionRequestToken;
     try {
-      const result = await loadApprovalConfig(unref(options.formType), forceRefresh);
+      const result = await loadApprovalConfig(unref(options.formType), forceRefresh, unref(options.poolId));
       if (requestToken !== approvalPermissionRequestToken) {
         return;
       }
@@ -392,6 +393,11 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
       console.log(error);
     }
   }
+
+  watch(
+    () => unref(options.poolId),
+    () => initApprovalPermission()
+  );
 
   return {
     initApprovalPermission,
