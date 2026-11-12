@@ -4,6 +4,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.util.CaseFormatUtils;
@@ -34,7 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 当前线索、客户、商机负责人通过已启用标签只读访问真实关联的数据。
+ * 线索、商机负责人及客户负责人、协作成员通过已启用标签只读访问真实关联的数据。
  */
 @Service
 public class RelatedResourcePermissionService {
@@ -65,17 +66,41 @@ public class RelatedResourcePermissionService {
     }
 
     public Set<String> getIsolatedOwnerIds(String customerId, String userId, String orgId) {
-        Set<String> ownerIds = new HashSet<>();
-        if (!isOwner(FormKey.CUSTOMER.getKey(), customerId, userId, orgId)) {
-            return ownerIds;
+        DeptDataPermissionDTO scope = getCustomerTabDataPermission(customerId, userId, orgId);
+        return scope == null ? Set.of() : scope.getExcludedOwnerIds();
+    }
+
+    /** 客户详情标签优先按协作关系确定数据范围，无有效关系时由调用方保留普通角色范围。 */
+    public DeptDataPermissionDTO getCustomerTabDataPermission(String customerId, String userId, String orgId) {
+        if (StringUtils.isAnyBlank(customerId, userId, orgId)
+                || !orgId.equals(value("customer", "organization_id", customerId))) {
+            return null;
         }
-        for (CustomerCollaboration member : customerCollaborationService.selectByCustomerId(customerId)) {
+        String inSharedPool = value("customer", "in_shared_pool", customerId);
+        if ("1".equals(inSharedPool) || Boolean.parseBoolean(inSharedPool)) {
+            return null;
+        }
+        String customerOwner = value("customer", "owner", customerId);
+        List<CustomerCollaboration> members = customerCollaborationService.selectByCustomerId(customerId);
+        boolean owner = userId.equals(customerOwner);
+        boolean collaborator = members.stream().anyMatch(member -> userId.equals(member.getUserId()));
+        if (!owner && !collaborator) {
+            return null;
+        }
+        boolean fullRead = owner || members.stream().anyMatch(member -> userId.equals(member.getUserId())
+                && (CustomerCollaborationType.READ_ONLY.name().equals(member.getCollaborationType())
+                        || CustomerCollaborationType.JOINT_FOLLOW.name().equals(member.getCollaborationType())));
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setAll(fullRead);
+        scope.setSelf(!fullRead);
+        for (CustomerCollaboration member : members) {
             if (isolatedCollaborationType().equals(member.getCollaborationType())
-                    && StringUtils.isNotBlank(member.getUserId()) && !userId.equals(member.getUserId())) {
-                ownerIds.add(member.getUserId());
+                    && StringUtils.isNotBlank(member.getUserId()) && !userId.equals(member.getUserId())
+                    && !member.getUserId().equals(customerOwner)) {
+                scope.getExcludedOwnerIds().add(member.getUserId());
             }
         }
-        return ownerIds;
+        return scope;
     }
 
     public boolean isIsolatedData(String formKey, String resourceId, String userId, String orgId) {
@@ -83,7 +108,7 @@ public class RelatedResourcePermissionService {
             return false;
         }
         FormKey form = FormKey.ofKey(formKey);
-        if (form == FormKey.CUSTOMER || form == FormKey.PRODUCT || form == FormKey.PRICE) {
+        if (form == FormKey.PRODUCT || form == FormKey.PRICE || form == FormKey.QUOTATION) {
             return false;
         }
         String table = tableName(formKey);
@@ -91,7 +116,7 @@ public class RelatedResourcePermissionService {
                 || (form == null && !formKey.equals(value(table, "custom_form_id", resourceId)))) {
             return false;
         }
-        String owner = value(table, form == FormKey.QUOTATION ? "create_user" : "owner", resourceId);
+        String owner = value(table, "owner", resourceId);
         if (userId.equals(owner)) {
             return false;
         }
@@ -103,7 +128,10 @@ public class RelatedResourcePermissionService {
                         formKey, resourceId, table, orgId));
             }
         }
-        return customerIds.stream().anyMatch(customerId -> getIsolatedOwnerIds(customerId, userId, orgId).contains(owner));
+        return customerIds.stream().anyMatch(customerId -> {
+            DeptDataPermissionDTO scope = getCustomerTabDataPermission(customerId, userId, orgId);
+            return scope != null && (scope.getSelf() || scope.getExcludedOwnerIds().contains(owner));
+        });
     }
 
     public void checkIsolatedData(String formKey, String resourceId, String userId, String orgId) {
@@ -264,14 +292,16 @@ public class RelatedResourcePermissionService {
         }
         if (tab.getRelatedFieldInternalKey() != null) {
             BusinessModuleField field = BusinessModuleField.ofKey(tab.getRelatedFieldInternalKey());
-            return field != null && isOwner(tab.getFormKey(),
-                    value(table, CaseFormatUtils.camelToUnderscore(field.getBusinessKey()), resourceId), userId, orgId);
+            return field != null && hasParentReadPermission(tab.getFormKey(),
+                    value(table, CaseFormatUtils.camelToUnderscore(field.getBusinessKey()), resourceId), formKey,
+                    userId, orgId);
         }
         if (tab == InternalDetailTab.CUSTOMER_PAYMENT_PLAN || tab == InternalDetailTab.CUSTOMER_PAYMENT_RECORD
                 || tab == InternalDetailTab.CUSTOMER_INVOICE) {
             String contractId = value(table, "contract_id", resourceId);
             return StringUtils.isNotBlank(contractId) && orgId.equals(value("contract", "organization_id", contractId))
-                    && isOwner(FormKey.CUSTOMER.getKey(), value("contract", "customer_id", contractId), userId, orgId);
+                    && hasParentReadPermission(FormKey.CUSTOMER.getKey(), value("contract", "customer_id", contractId),
+                            formKey, userId, orgId);
         }
         return false;
     }
@@ -279,7 +309,38 @@ public class RelatedResourcePermissionService {
     private boolean hasFieldRelation(String parentForm, String fieldId, String formKey, String resourceId,
             String table, String userId, String orgId) {
         return fieldRelatedIds(parentForm, fieldId, formKey, resourceId, table, orgId).stream()
-                .anyMatch(parentId -> isOwner(parentForm, parentId, userId, orgId));
+                .anyMatch(parentId -> hasParentReadPermission(parentForm, parentId, formKey, userId, orgId));
+    }
+
+    private boolean hasParentReadPermission(String formKey, String resourceId, String relatedForm, String userId,
+            String orgId) {
+        if (FormKey.CUSTOMER.getKey().equals(formKey)) {
+            if (getCustomerTabDataPermission(resourceId, userId, orgId) == null) {
+                return false;
+            }
+            if (userId.equals(value("customer", "owner", resourceId)) || InternalUser.ADMIN.getValue().equals(userId)) {
+                return true;
+            }
+            String permission = switch (FormKey.ofKey(relatedForm)) {
+            case CLUE -> PermissionConstants.CLUE_MANAGEMENT_READ;
+            case CUSTOMER -> PermissionConstants.CUSTOMER_MANAGEMENT_READ;
+            case CONTACT -> PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ;
+            case FOLLOW_RECORD -> PermissionConstants.FOLLOW_RECORD_READ;
+            case FOLLOW_PLAN -> PermissionConstants.FOLLOW_PLAN_READ;
+            case OPPORTUNITY -> PermissionConstants.OPPORTUNITY_MANAGEMENT_READ;
+            case PRODUCT -> PermissionConstants.PRODUCT_MANAGEMENT_READ;
+            case PRICE -> PermissionConstants.PRICE_READ;
+            case QUOTATION -> PermissionConstants.OPPORTUNITY_QUOTATION_READ;
+            case CONTRACT -> PermissionConstants.CONTRACT_READ;
+            case INVOICE -> PermissionConstants.CONTRACT_INVOICE_READ;
+            case CONTRACT_PAYMENT_PLAN -> PermissionConstants.CONTRACT_PAYMENT_PLAN_READ;
+            case CONTRACT_PAYMENT_RECORD -> PermissionConstants.CONTRACT_PAYMENT_RECORD_READ;
+            case ORDER -> PermissionConstants.ORDER_READ;
+            case null -> PermissionConstants.CUSTOM_FORM_READ;
+            };
+            return permissionCache.getPermissionIds(userId, orgId).contains(permission);
+        }
+        return isOwner(formKey, resourceId, userId, orgId);
     }
 
     private List<String> fieldRelatedIds(String parentForm, String fieldId, String formKey, String resourceId,

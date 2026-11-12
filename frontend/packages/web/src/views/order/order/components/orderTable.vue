@@ -206,6 +206,7 @@
   import {
     batchDeleteOrder,
     deleteOrder,
+    getCustomerOrderStatistic,
     getFormDetailTabStatistic,
     getOrderStatistic,
     getOrderStatusConfig,
@@ -746,6 +747,14 @@
           combineSearch: advanceFilter,
           filters: filterItem.value,
           ...props.detailTabQuery,
+        });
+        return;
+      }
+      if (props.isCustomerTab && props.sourceId) {
+        statisticInfo.value = await getCustomerOrderStatistic(props.sourceId, {
+          keyword: _keyword ?? keyword.value,
+          combineSearch: advanceFilter,
+          filters: filterItem.value,
         });
         return;
       }

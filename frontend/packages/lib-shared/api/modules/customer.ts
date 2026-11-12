@@ -21,7 +21,6 @@ import {
   BatchTransferCustomerUrl,
   BatchUpdateAccountUrl,
   BatchUpdateContactUrl,
-  CancelCustomerFollowPlanUrl,
   CheckOpportunityContactUrl,
   ContactListUnderCustomerUrl,
   DeleteAccountPoolViewUrl,
@@ -132,7 +131,9 @@ import {
   GetAccountInvoiceListUrl,
   GetAccountInvoiceStatisticUrl,
   GetAccountOrderListUrl,
+  GetAccountOrderStatisticUrl,
 } from '@lib/shared/api/requrls/customer';
+import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import type {
   ChartResponseDataItem,
   CommonList,
@@ -329,7 +330,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 取消客户跟进计划
   function cancelCustomerFollowPlan(id: string) {
-    return CDR.get({ url: `${CancelCustomerFollowPlanUrl}/${id}` });
+    return updateCustomerFollowPlanStatus({ id, status: CustomerFollowPlanStatusEnum.CANCELLED });
   }
 
   // 获取客户跟进计划表单配置
@@ -385,6 +386,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取客户的订单
   function getCustomerOrderList(data: TableQueryParams) {
     return CDR.post<CommonList<OrderItem>>({ url: GetAccountOrderListUrl, data });
+  }
+
+  // 获取客户的订单统计
+  function getCustomerOrderStatistic(id: string, data: TableQueryParams) {
+    return CDR.post<{ amount: number; averageAmount: number }>({ url: `${GetAccountOrderStatisticUrl}/${id}`, data });
   }
 
   // 启用客户联系人
@@ -989,6 +995,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getAccountPaymentRecordStatistic,
     getCustomerInvoiceList,
     getCustomerOrderList,
+    getCustomerOrderStatistic,
     getCustomerInvoiceStatistic,
   };
 }

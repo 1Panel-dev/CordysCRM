@@ -13,7 +13,6 @@ import {
   BatchUpdateQuotationUrl,
   BatchUpdateOpportunityUrl,
   BatchVoidedUrl,
-  CancelOptFollowPlanUrl,
   DeleteBusinessViewUrl,
   DeleteOpportunityStageUrl,
   DeleteOptFollowPlanUrl,
@@ -76,6 +75,7 @@ import {
   SaveOpportunityStageAdvancedConfigUrl,
   SwitchOpportunityCirculationTypeUrl,
 } from '@lib/shared/api/requrls/opportunity';
+import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import type {
   ChartResponseDataItem,
   CommonList,
@@ -215,7 +215,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 取消商机跟进计划
   function cancelOptFollowPlan(id: string) {
-    return CDR.get({ url: `${CancelOptFollowPlanUrl}/${id}` });
+    return updateOptFollowPlanStatus({ id, status: CustomerFollowPlanStatusEnum.CANCELLED });
   }
 
   // 批量转移商机

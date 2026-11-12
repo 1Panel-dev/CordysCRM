@@ -13,6 +13,8 @@ import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.dto.condition.BaseCondition;
+import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
@@ -56,6 +58,7 @@ import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
+import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
@@ -88,6 +91,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -446,12 +450,36 @@ public class CustomerController {
                 deptDataPermission, false);
     }
 
+    @PostMapping("/order/statistic/{accountId}")
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#accountId}", formType = FormKeyConstants.CUSTOMER)
+    @Operation(summary = "客户详情-订单列表统计")
+    public OrderStatisticResponse calculateCustomerOrderStatistic(@PathVariable String accountId,
+            @Validated @RequestBody BaseCondition request) {
+        request.setViewId(InternalUserView.ALL.name());
+        FilterCondition customer = new FilterCondition();
+        customer.setName("customerId");
+        customer.setOperator(FilterCondition.CombineConditionOperator.EQUALS.name());
+        customer.setValue(accountId);
+        List<FilterCondition> filters = new ArrayList<>(request.getFilters());
+        filters.add(customer);
+        request.setFilters(filters);
+        ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
+        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(accountId, request.getViewId(),
+                PermissionConstants.ORDER_READ);
+        return orderService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+                deptDataPermission);
+    }
+
     private DeptDataPermissionDTO getRelatedDataPermission(String customerId, String viewId, String permission) {
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
-        if (relatedResourcePermissionService.isOwner(FormKey.CUSTOMER.getKey(), customerId, userId, organizationId)) {
-            DeptDataPermissionDTO permissionScope = new DeptDataPermissionDTO();
-            permissionScope.setAll(true);
+        DeptDataPermissionDTO permissionScope = relatedResourcePermissionService.getCustomerTabDataPermission(
+                customerId, userId, organizationId);
+        if (permissionScope != null) {
+            if (!relatedResourcePermissionService.isOwner(FormKey.CUSTOMER.getKey(), customerId, userId,
+                    organizationId)) {
+                resourcePermissionService.checkPermission(permission);
+            }
             return permissionScope;
         }
         resourcePermissionService.checkPermission(permission);
@@ -462,16 +490,13 @@ public class CustomerController {
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#accountId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "客户详情-发票列表统计")
     public CustomerInvoiceStatisticResponse calculateCustomerInvoiceStatistic(@PathVariable String accountId) {
-        DeptDataPermissionDTO contractPermission = getRelatedDataPermission(accountId, null,
+        DeptDataPermissionDTO invoicePermission = getRelatedDataPermission(accountId, null,
                 PermissionConstants.CONTRACT_INVOICE_READ);
-        if (!relatedResourcePermissionService.isOwner(FormKey.CUSTOMER.getKey(), accountId,
-                SessionUtils.getUserId(), OrganizationContext.getOrganizationId())) {
-            contractPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                    OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_READ);
-        }
+        DeptDataPermissionDTO contractPermission = getRelatedDataPermission(accountId, null,
+                PermissionConstants.CONTRACT_READ);
         BigDecimal invoiceAmount = contractInvoiceService.calculateCustomerInvoiceAmount(accountId,
                 SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId());
+                OrganizationContext.getOrganizationId(), invoicePermission);
 
         CustomerInvoiceStatisticResponse response = new CustomerInvoiceStatisticResponse();
         response.setContractAmount(contractService.calculateContractStatisticByCustomerId(accountId,

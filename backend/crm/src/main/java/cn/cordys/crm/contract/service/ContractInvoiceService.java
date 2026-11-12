@@ -708,11 +708,14 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
         //        );
     }
 
-    public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String orgId) {
+    public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String orgId,
+            DeptDataPermissionDTO dataPermission) {
         if (dictService.isDictConfigEnable(DictModule.INVOICE_APPROVAL.name(), orgId)) {
-            return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, orgId, true);
+            return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, orgId, true,
+                    dataPermission);
         } else {
-            return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, orgId, false);
+            return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, orgId, false,
+                    dataPermission);
         }
     }
 

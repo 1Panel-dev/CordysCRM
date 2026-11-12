@@ -265,6 +265,13 @@ public class CustomerContactService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
         String userId = SessionUtils.getUserId();
+        Customer customer = customerMapper.selectByPrimaryKey(customerContact.getCustomerId());
+        DeptDataPermissionDTO tabScope = relatedResourcePermissionService.getCustomerTabDataPermission(
+                customerContact.getCustomerId(), userId, orgId);
+        if (tabScope != null && ((tabScope.getSelf() && !userId.equals(customerContact.getOwner()))
+                || tabScope.getExcludedOwnerIds().contains(customerContact.getOwner()))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
         relatedResourcePermissionService.checkIsolatedData(FormKey.CONTACT.getKey(), id, userId, orgId);
         boolean hasContactPermission = PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
                 && StringUtils.isNotBlank(customerContact.getOwner())
@@ -285,7 +292,6 @@ public class CustomerContactService {
         CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(),
                 customerContact);
 
-        Customer customer = customerMapper.selectByPrimaryKey(customerContact.getCustomerId());
         if (customer != null) {
             customerContactGetResponse.setCustomerName(customer.getName());
         }
@@ -569,16 +575,26 @@ public class CustomerContactService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
+        DeptDataPermissionDTO tabScope = relatedResourcePermissionService.getCustomerTabDataPermission(
+                customerId, userId, orgId);
+        if (tabScope != null) {
+            List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId).stream()
+                    .filter(item -> !tabScope.getSelf() || userId.equals(item.getOwner()))
+                    .filter(item -> !tabScope.getExcludedOwnerIds().contains(item.getOwner())).toList();
+            list = buildListData(list, orgId);
+            CustomerContactListAllResponse response = new CustomerContactListAllResponse();
+            response.setList(list);
+            response.setOptionMap(getListOptionMap(orgId, list));
+            return response;
+        }
+        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(customerId);
+        Set<String> isolatedOwnerIds = getIsolatedContactOwnerIds(customer, userId, collaborations);
+        List<CustomerContactListResponse> visibleContacts = extCustomerContactMapper.listByCustomerId(customerId).stream()
+                .filter(item -> !isolatedOwnerIds.contains(item.getOwner())).toList();
         CustomerContactListAllResponse response = new CustomerContactListAllResponse();
         boolean isCustomerOwner = Strings.CS.equals(customer.getOwner(), userId);
         if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue()) || isCustomerOwner) {
-            List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId);
-            if (isCustomerOwner) {
-                Set<String> isolatedOwnerIds = relatedResourcePermissionService.getIsolatedOwnerIds(customerId, userId,
-                        orgId);
-                list = list.stream().filter(item -> !isolatedOwnerIds.contains(item.getOwner())).toList();
-            }
-            list = buildListData(list, orgId);
+            List<CustomerContactListResponse> list = buildListData(visibleContacts, orgId);
             Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
             response.setList(list);
             response.setOptionMap(optionMap);
@@ -587,17 +603,13 @@ public class CustomerContactService {
 
         List<CustomerContactListResponse> list = List.of();
 
-        // 查询协作人信息
-        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(customerId);
-
         boolean fullDataCollaborator = collaborations.stream()
                 .anyMatch(item -> Strings.CS.equals(item.getUserId(), userId)
                         && Strings.CS.equalsAny(item.getCollaborationType(),
                                 CustomerCollaborationType.READ_ONLY.name(),
                                 CustomerCollaborationType.JOINT_FOLLOW.name()));
         if (fullDataCollaborator) {
-            List<CustomerContactListResponse> all = buildListData(
-                    extCustomerContactMapper.listByCustomerId(customerId), orgId);
+            List<CustomerContactListResponse> all = buildListData(visibleContacts, orgId);
             response.setList(all);
             response.setOptionMap(getListOptionMap(orgId, all));
             return response;
@@ -621,7 +633,7 @@ public class CustomerContactService {
             boolean hasDeptCustomerPermission = customerOwnerDept != null
                     && deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId());
 
-            list = extCustomerContactMapper.listByCustomerId(customerId);
+            list = visibleContacts;
             if (hasDeptCustomerPermission) {
                 Map<String, UserDeptDTO> userDeptMapByUserIds = baseService
                         .getUserDeptMapByUserIds(collaborationUserIds, orgId);
@@ -646,7 +658,7 @@ public class CustomerContactService {
         }
 
         if (deptDataPermission.getSelf()) {
-            list = extCustomerContactMapper.listByCustomerId(customerId);
+            list = visibleContacts;
             if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
                 list = list.stream()
@@ -660,6 +672,16 @@ public class CustomerContactService {
         response.setList(list);
         response.setOptionMap(optionMap);
         return response;
+    }
+
+    private Set<String> getIsolatedContactOwnerIds(Customer customer, String userId,
+            List<CustomerCollaboration> collaborations) {
+        // 有效协作类型已处理到期降级；客户负责人和本人负责的联系人始终保留。
+        return collaborations.stream()
+                .filter(item -> CustomerCollaborationType.COLLABORATION.name().equals(item.getCollaborationType())
+                        && !Strings.CS.equalsAny(item.getUserId(), customer.getOwner(), userId))
+                .map(CustomerCollaboration::getUserId)
+                .collect(Collectors.toSet());
     }
 
     public boolean checkOpportunity(String id) {

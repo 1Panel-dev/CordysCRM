@@ -222,8 +222,9 @@
 
   function getListItemActions(item: CustomerListItem & { collaborationType: CollaborationType }) {
     if (activeFilter.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
-      const collaborationActions =
-        item.collaborationType === 'COLLABORATION' ? actions.filter((action) => action.key === 'writeRecord') : [];
+      const collaborationActions = ['COLLABORATION', 'JOINT_FOLLOW'].includes(item.collaborationType)
+        ? actions.filter((action) => action.key === 'writeRecord')
+        : [];
 
       return resolveRowActions(item, collaborationActions);
     }

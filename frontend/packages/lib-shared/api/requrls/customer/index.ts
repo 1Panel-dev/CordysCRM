@@ -9,18 +9,10 @@ export const TransferCustomerUrl = '/account/transfer'; // 单条转移客户
 export const BatchTransferCustomerUrl = '/account/batch/transfer'; // 批量转移客户
 export const BatchMoveCustomerUrl = '/account/batch/to-pool'; // 批量移入公海
 export const MoveToCustomerUrl = '/account/to-pool'; // 移入公海
-export const UpdateCustomerFollowRecordUrl = '/account/follow/record/update'; // 更新跟进记录
 export const GetCustomerFollowRecordListUrl = '/account/follow/record/page'; // 获取跟进记录列表
-export const AddCustomerFollowRecordUrl = '/account/follow/record/add'; // 添加跟进记录
-export const DeleteCustomerFollowRecordUrl = '/account/follow/record/delete'; // 删除跟进记录
-export const GetCustomerFollowRecordUrl = '/account/follow/record/get'; // 获取跟进记录详情
 export const GetCustomerFollowRecordFormConfigUrl = '/follow/record/module/form'; // 获取跟进记录表单配置
-export const UpdateCustomerFollowPlanUrl = '/account/follow/plan/update'; // 更新跟进计划
 export const GetCustomerFollowPlanListUrl = '/account/follow/plan/page'; // 获取跟进计划列表
-export const AddCustomerFollowPlanUrl = '/account/follow/plan/add'; // 添加跟进计划
-export const DeleteCustomerFollowPlanUrl = '/account/follow/plan/delete'; // 删除跟进计划
 export const GetCustomerFollowPlanFormConfigUrl = '/follow/plan/module/form'; // 获取跟进计划表单配置
-export const GetCustomerFollowPlanUrl = '/account/follow/plan/get'; // 获取跟进记录详情
 export const UpdateCustomerContactUrl = '/account/contact/update'; // 更新客户联系人
 export const GetCustomerContactListUrl = '/account/contact/page'; // 获取客户联系人列表
 export const DisableCustomerContactUrl = '/account/contact/disable'; // 禁用客户联系人
@@ -59,7 +51,6 @@ export const MergeAccountPageUrl = '/account/merge/page'; // 获取数据范围�
 export const GenerateCustomerChartUrl = '/account/chart'; // 生成客户图表
 export const generateCustomerContactChartUrl = '/account/contact/chart'; // 生成客户联系人图表
 
-export const CancelCustomerFollowPlanUrl = '/account/follow/plan/cancel'; // 取消客户跟进计划
 export const GetCustomerHeaderListUrl = '/account/owner/history/list'; // 客户负责人记录列表
 export const SaveCustomerRelationUrl = '/account/relation/save'; // 保存客户关系
 export const GetCustomerRelationListUrl = '/account/relation/list'; // 获取客户关系列表
@@ -75,7 +66,6 @@ export const GetCustomerOptionsUrl = '/account/option'; // 获取客户选项列
 export const GetCustomerOpenSeaFollowRecordListUrl = '/account/follow/record/pool/page'; // 获取客户公海池跟进记录列表
 export const GetCustomerTabUrl = '/account/tab'; // 客户tab显隐
 export const GetCustomerContactTabUrl = '/account/contact/tab'; // 客户联系人tab显隐
-export const UpdateCustomerFollowPlanStatusUrl = '/account/follow/plan/status/update'; // 更新客户跟进计划状态
 export const GetCustomerOpportunityListUrl = '/account/opportunity/page'; // 客户商机列表
 export const ExportCustomerAllUrl = '/account/export-all'; // 导出所有客户
 export const ExportCustomerSelectedUrl = '/account/export-select'; // 导出选中客户
@@ -99,6 +89,7 @@ export const GetAccountPaymentRecordStatisticUrl = '/account/contract/payment-re
 export const GetAccountInvoiceListUrl = '/account/invoice/page'; // 客户详情-发票列表
 export const GetAccountInvoiceStatisticUrl = '/account/invoice/statistic'; // 客户详情-发票列表统计
 export const GetAccountOrderListUrl = '/account/order/page'; // 客户详情-订单列表
+export const GetAccountOrderStatisticUrl = '/account/order/statistic'; // 客户详情-订单列表统计
 
 // 视图
 export const GetCustomerViewDetailUrl = '/account/view/detail';
@@ -142,3 +133,15 @@ export const FixedAccountPoolViewUrl = 'pool/account/view/fixed';
 export const EnableAccountPoolViewUrl = 'pool/account/view/enable';
 export const DragAccountPoolViewUrl = 'pool/account/view/edit/pos';
 export const generateCustomerPoolChartUrl = '/pool/account/chart';
+
+export {
+  AddFollowPlanUrl as AddCustomerFollowPlanUrl,
+  AddFollowRecordUrl as AddCustomerFollowRecordUrl,
+  DeleteFollowPlanUrl as DeleteCustomerFollowPlanUrl,
+  DeleteFollowRecordUrl as DeleteCustomerFollowRecordUrl,
+  GetFollowPlanUrl as GetCustomerFollowPlanUrl,
+  GetFollowRecordUrl as GetCustomerFollowRecordUrl,
+  UpdateFollowPlanStatusUrl as UpdateCustomerFollowPlanStatusUrl,
+  UpdateFollowPlanUrl as UpdateCustomerFollowPlanUrl,
+  UpdateFollowRecordUrl as UpdateCustomerFollowRecordUrl,
+} from '../follow';
