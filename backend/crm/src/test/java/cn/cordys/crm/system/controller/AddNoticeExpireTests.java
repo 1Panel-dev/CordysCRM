@@ -22,15 +22,20 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 
+import static org.awaitility.Awaitility.await;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Tag("integration")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AddNoticeExpireTests {
@@ -244,19 +249,20 @@ public class AddNoticeExpireTests {
     public void cleanupNotificationSuccess() {
         saveNotice();
         noticeExpireJob.onEvent();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(this::assertNotificationsCreated);
+    }
+
+    private void assertNotificationsCreated() {
         Notification notification = new Notification();
         notification.setOrganizationId("100001");
         notification.setResourceType("OPPORTUNITY");
+        notification.setResourceId("SgDFDJJND");
         List<NotificationDTO> notifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertTrue(CollectionUtils.isNotEmpty(notifications));
         notification = new Notification();
         notification.setOrganizationId("100001");
         notification.setResourceType("CONTRACT");
+        notification.setResourceId("34554546565656667");
         notifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertTrue(CollectionUtils.isNotEmpty(notifications));
     }

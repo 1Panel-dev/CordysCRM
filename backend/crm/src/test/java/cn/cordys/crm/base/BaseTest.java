@@ -16,10 +16,10 @@ import cn.cordys.security.SessionConstants;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.annotation.Resource;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -51,9 +51,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Tag("integration")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Slf4j
 public abstract class BaseTest {
     public static final String DEFAULT_ORGANIZATION_ID = "100001";
     protected static final String DEFAULT_USER_PASSWORD = "CordysCRM";
@@ -164,14 +164,7 @@ public abstract class BaseTest {
     }
 
     protected MockHttpServletRequestBuilder getRequestBuilder(String url, Object... uriVariables) {
-        try {
-            MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(getBasePath() + url,
-                    uriVariables);
-            return setRequestBuilderHeader(requestBuilder, adminAuthInfo);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return null;
+        return setRequestBuilderHeader(MockMvcRequestBuilders.get(getBasePath() + url, uriVariables), adminAuthInfo);
     }
 
     protected ResultActions requestGetWithOk(String url, Object... uriVariables) throws Exception {

@@ -19,6 +19,7 @@ import cn.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.service.PoolCustomerService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
@@ -26,6 +27,7 @@ import cn.cordys.crm.system.dto.request.PoolBatchRequest;
 import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
 import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.service.ExportTaskCenterService;
+import cn.cordys.file.engine.DefaultRepositoryDir;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -39,12 +41,17 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -197,17 +204,25 @@ public class PoolCustomerControllerTests extends BaseTest {
         request.setHeadList(list);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(EXPORT_ALL, request);
         String resultData = getResultData(mvcResult, String.class);
-        Thread.sleep(1500); // 等待导出任务完成
+        await().alias("公海客户导出完成").atMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                Assertions.assertEquals(ExportConstants.ExportStatus.SUCCESS.name(),
+                        exportTaskBaseMapper.selectByPrimaryKey(resultData).getStatus()));
         ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService
                 .download(resultData, "admin");
-        Assertions.assertTrue(resourceResponseEntity.getBody().exists());
-        ExportTask exportTask = new ExportTask();
-        exportTask.setId(resultData);
+        Assertions.assertNotNull(resourceResponseEntity.getBody());
+        try (InputStream stream = resourceResponseEntity.getBody().getInputStream()) {
+            Assertions.assertTrue(stream.readAllBytes().length > 0);
+        }
+        ExportTask exportTask = exportTaskBaseMapper.selectByPrimaryKey(resultData);
+        Path exportFile = DefaultRepositoryDir.getFullExportPath(exportTask.getOrganizationId())
+                .resolve(exportTask.getFileId()).resolve(exportTask.getFileName() + ".xlsx");
+        Assertions.assertTrue(Files.isRegularFile(exportFile));
         LocalDateTime oneDayBefore = LocalDateTime.now().minusDays(2);
         exportTask.setCreateTime(oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         exportTaskBaseMapper.updateById(exportTask);
         exportTaskCenterService.clean();
-        System.out.println(resourceResponseEntity.getBody().exists());
+        Assertions.assertFalse(Files.exists(exportFile));
+        Assertions.assertNull(exportTaskBaseMapper.selectByPrimaryKey(resultData));
 
         //权限校验
         this.requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT, EXPORT_ALL, request);

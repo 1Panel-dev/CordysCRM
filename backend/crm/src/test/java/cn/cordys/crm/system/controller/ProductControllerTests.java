@@ -25,7 +25,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -261,12 +260,10 @@ class ProductControllerTests extends BaseTest {
         PosRequest request = new PosRequest();
         request.setOrgId(DEFAULT_ORGANIZATION_ID);
         request.setMoveId(addProduct.getId());
-        System.out.println(addProduct.getPos());
         request.setMoveMode("after");
         request.setTargetId(batchIds.getFirst());
         this.requestPostWithOk("/edit/pos", request);
         Product product = productBaseMapper.selectByPrimaryKey(addProduct.getId());
-        System.out.println(product.getPos());
         Assertions.assertTrue(addProduct.getPos() < product.getPos());
     }
 
@@ -279,7 +276,7 @@ class ProductControllerTests extends BaseTest {
         ProductField example = new ProductField();
         example.setResourceId(addProduct.getId());
         List<ProductField> fields = productFieldBaseMapper.select(example);
-        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
+        Assertions.assertTrue(CollectionUtils.isEmpty(fields), "删除产品后应清理其自定义字段");
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_DELETE, DEFAULT_DELETE, addProduct.getId());
@@ -294,7 +291,7 @@ class ProductControllerTests extends BaseTest {
         ProductField example = new ProductField();
         example.setResourceId(batchIds.getFirst());
         List<ProductField> fields = productFieldBaseMapper.select(example);
-        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
+        Assertions.assertTrue(CollectionUtils.isEmpty(fields), "批量删除产品后应清理其自定义字段");
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_DELETE, DEFAULT_DELETE, addProduct.getId());
