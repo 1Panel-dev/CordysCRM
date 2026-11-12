@@ -289,7 +289,8 @@
     hasApprovalScopedPermission,
     getApprovalActionTip,
   } = useApprovalOperation<Record<string, any>>({
-    formType: FormDesignKeyEnum.CUSTOMER,
+    formType: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
+    poolId: computed(() => (props.hiddenPoolSelect ? undefined : openSea.value)),
     dataActionMap: {
       delete: {
         label: t('common.delete'),

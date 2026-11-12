@@ -93,8 +93,9 @@ public class ApprovalFlowController {
 
     @GetMapping("/get-by-form-type/{formType}")
     @Operation(summary = "根据表单类型获取审批流信息")
-    public ApprovalFlowByFormTypeResponse getByFormType(@PathVariable("formType") String formType) {
-        return approvalFlowService.getByFormType(formType, OrganizationContext.getOrganizationId());
+    public ApprovalFlowByFormTypeResponse getByFormType(@PathVariable("formType") String formType,
+            @RequestParam(value = "poolId", required = false) String poolId) {
+        return approvalFlowService.getByFormType(formType, OrganizationContext.getOrganizationId(), poolId);
     }
 
     @GetMapping("/form/options")

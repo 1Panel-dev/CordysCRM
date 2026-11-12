@@ -73,8 +73,8 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.get<ApprovalPermissionsDetail>({ url: `${ApprovalPermissionsUrl}/${type}` });
   }
   // 审批流配置详情 用于列表里边查询对应状态审批流详情
-  function getApprovalConfigDetail(type: string) {
-    return CDR.get<ApprovalProcessDetail>({ url: `${GetApprovalConfigDetailUrl}/${type}` });
+  function getApprovalConfigDetail(type: string, poolId?: string | number) {
+    return CDR.get<ApprovalProcessDetail>({ url: `${GetApprovalConfigDetailUrl}/${type}`, params: { poolId } });
   }
   // 审批流数据权限
   function getApprovalProcessList(data: TableQueryParams) {

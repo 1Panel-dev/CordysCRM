@@ -224,7 +224,8 @@
   );
 
   const { initApprovalPermission, resolveRowActions, deleteExecute } = useApprovalOperation<Record<string, any>>({
-    formType: FormDesignKeyEnum.CLUE,
+    formType: FormDesignKeyEnum.CLUE_POOL,
+    poolId: computed(() => props.poolId),
     dataActionMap: {
       delete: {
         label: t('common.delete'),

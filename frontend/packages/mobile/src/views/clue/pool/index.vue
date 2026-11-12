@@ -91,7 +91,8 @@
   });
   const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
     useApprovalOperation<CluePoolListItem>({
-      formType: FormDesignKeyEnum.CLUE,
+      formType: FormDesignKeyEnum.CLUE_POOL,
+      poolId: activeFilter,
       ignoreRolePermissionCheck: true,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
       onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),

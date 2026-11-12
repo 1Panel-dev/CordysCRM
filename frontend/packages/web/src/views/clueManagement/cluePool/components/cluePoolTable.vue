@@ -289,7 +289,8 @@
     hasApprovalScopedPermission,
     getApprovalActionTip,
   } = useApprovalOperation<CluePoolListItem>({
-    formType: FormDesignKeyEnum.CLUE,
+    formType: FormDesignKeyEnum.CLUE_POOL,
+    poolId: computed(() => (props.hiddenPoolSelect ? undefined : poolId.value)),
     dataActionMap: {
       delete: {
         label: t('common.delete'),

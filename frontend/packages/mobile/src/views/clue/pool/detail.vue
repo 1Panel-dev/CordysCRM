@@ -179,7 +179,8 @@
     approvalHistoryRefreshKey.value += 1;
   };
   const { resolveRowActions, initApprovalPermission, deleteExecute, enableApproval } = useApprovalOperation({
-    formType: FormDesignKeyEnum.CLUE,
+    formType: FormDesignKeyEnum.CLUE_POOL,
+    poolId,
     ignoreRolePermissionCheck: true,
     onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
     onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshDetail }),

@@ -142,6 +142,7 @@
   ]);
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
+  const poolId = computed(() => route.query.poolId?.toString() ?? '');
 
   const { descriptions, detail, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
@@ -183,13 +184,13 @@
     approvalHistoryRefreshKey.value += 1;
   };
   const { resolveRowActions, initApprovalPermission, deleteExecute, enableApproval } = useApprovalOperation({
-    formType: FormDesignKeyEnum.CUSTOMER,
+    formType: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
+    poolId,
     ignoreRolePermissionCheck: true,
     onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
     onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshDetail }),
   });
 
-  const poolId = computed(() => route.query.poolId?.toString() ?? '');
   const poolActions = computed<CrmActionButtonsItem[]>(() => [
     ...(poolId.value
       ? [

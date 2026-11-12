@@ -93,7 +93,8 @@
   });
   const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
     useApprovalOperation<CustomerListItem>({
-      formType: FormDesignKeyEnum.CUSTOMER,
+      formType: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
+      poolId: activeOpenSea,
       ignoreRolePermissionCheck: true,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
       onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
