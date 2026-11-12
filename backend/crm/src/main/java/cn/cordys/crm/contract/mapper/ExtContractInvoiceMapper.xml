@@ -457,6 +457,18 @@
         from
             contract_invoice ci
         left join contract c on ci.contract_id = c.id
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on ci.owner = sou.user_id
+            and (
+                sou.department_id in
+                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                <if test="dataPermission.viewId != 'DEPARTMENT'">
+                    or sou.user_id = #{userId}
+                </if>
+            )
+        </if>
         where
             c.customer_id = #{customerId}
             and ci.organization_id = #{orgId}
@@ -466,6 +478,12 @@
             <property name="userParameter" value="userId"/>
             <property name="orgParameter" value="orgId"/>
         </include>
+        <if test="dataPermission != null and dataPermission.self">
+            and ci.owner = #{userId}
+        </if>
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
         <if test="approved">
             and ci.approval_status = 'APPROVED'
         </if>

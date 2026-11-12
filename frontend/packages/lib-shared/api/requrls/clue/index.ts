@@ -24,20 +24,10 @@ export const GenerateLeadChartUrl = '/lead/chart'; // 生成线索图表
 export const GetLeadTransitionCustomerRecordListUrl = '/lead/transition/account/list'; // 查询线索转换客户记录
 
 // 跟进记录
-export const UpdateClueFollowRecordUrl = '/lead/follow/record/update'; // 更新跟进记录
 export const GetClueFollowRecordListUrl = '/lead/follow/record/page'; // 获取跟进记录列表
-export const AddClueFollowRecordUrl = '/lead/follow/record/add'; // 添加跟进记录
-export const GetClueFollowRecordUrl = '/lead/follow/record/get'; // 获取跟进记录详情
-export const DeleteClueFollowRecordUrl = '/lead/follow/record/delete'; // 删除跟进记录
 
 // 跟进计划
-export const UpdateClueFollowPlanUrl = '/lead/follow/plan/update'; // 更新跟进计划
 export const GetClueFollowPlanListUrl = '/lead/follow/plan/page'; // 获取跟进计划列表
-export const AddClueFollowPlanUrl = '/lead/follow/plan/add'; // 添加跟进计划
-export const GetClueFollowPlanUrl = '/lead/follow/plan/get'; // 跟进计划详情
-export const CancelClueFollowPlanUrl = '/lead/follow/plan/cancel'; // 取消跟进计划
-export const DeleteClueFollowPlanUrl = '/lead/follow/plan/delete'; // 删除跟进计划
-export const UpdateClueFollowPlanStatusUrl = '/lead/follow/plan/status/update'; // 更新线索跟进计划状态
 
 export const GetClueHeaderListUrl = '/lead/owner/history/list'; // 线索负责人记录列表
 
@@ -92,3 +82,15 @@ export const DeletePoolLeadViewUrl = 'pool/lead/view/delete';
 export const FixedPoolLeadViewUrl = 'pool/lead/view/fixed';
 export const EnablePoolLeadViewUrl = 'pool/lead/view/enable';
 export const DragPoolLeadViewUrl = 'pool/lead/view/edit/pos';
+
+export {
+  AddFollowPlanUrl as AddClueFollowPlanUrl,
+  AddFollowRecordUrl as AddClueFollowRecordUrl,
+  DeleteFollowPlanUrl as DeleteClueFollowPlanUrl,
+  DeleteFollowRecordUrl as DeleteClueFollowRecordUrl,
+  GetFollowPlanUrl as GetClueFollowPlanUrl,
+  GetFollowRecordUrl as GetClueFollowRecordUrl,
+  UpdateFollowPlanStatusUrl as UpdateClueFollowPlanStatusUrl,
+  UpdateFollowPlanUrl as UpdateClueFollowPlanUrl,
+  UpdateFollowRecordUrl as UpdateClueFollowRecordUrl,
+} from '../follow';

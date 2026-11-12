@@ -28,7 +28,8 @@ public interface ExtContractInvoiceMapper extends StatisticSqlMapper {
             @Param("userId") String userId, @Param("updateTime") long updateTime);
 
     BigDecimal calculateCustomerInvoiceAmount(@Param("customerId") String customerId, @Param("userId") String userId,
-            @Param("orgId") String orgId, @Param("approved") boolean approved);
+            @Param("orgId") String orgId, @Param("approved") boolean approved,
+            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     BigDecimal calculateContractInvoiceAmount(@Param("contractId") String contractId, @Param("userId") String userId,
             @Param("orgId") String orgId, @Param("approved") boolean approved);

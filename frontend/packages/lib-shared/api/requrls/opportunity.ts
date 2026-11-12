@@ -4,23 +4,13 @@ export const OptUpdateUrl = '/opportunity/update'; // 更新商机
 export const GetOptFormConfigUrl = '/opportunity/module/form'; // 商机表单配置
 export const OptFollowRecordListUrl = '/opportunity/follow/record/page'; // 商机跟进记录列表
 export const OptFollowPlanPageUrl = '/opportunity/follow/plan/page'; // 商机跟进计划列表
-export const UpdateOptFollowRecordUrl = '/opportunity/follow/record/update'; // 更新商机跟进记录
-export const AddOptFollowRecordUrl = '/opportunity/follow/record/add'; // 添加商机跟进记录
-export const UpdateOptFollowPlanUrl = '/opportunity/follow/plan/update'; // 更新商机跟进计划
-export const AddOptFollowPlanUrl = '/opportunity/follow/plan/add'; // 添加商机跟进计划
-export const GetOptFollowRecordUrl = '/opportunity/follow/record/get'; // 商机跟进记录详情
-export const GetOptFollowPlanUrl = '/opportunity/follow/plan/get'; // 商机跟进计划详情
-export const CancelOptFollowPlanUrl = '/opportunity/follow/plan/cancel'; // 取消商机跟进计划
 export const OptBatchTransferUrl = '/opportunity/batch/transfer'; // 批量转移商机
 export const OptBatchDeleteUrl = '/opportunity/batch/delete'; // 批量删除商机
 export const OptDeleteUrl = '/opportunity/delete'; // 删除商机
 export const OptUpdateStageUrl = '/opportunity/update/stage'; // 更新商机阶段
 export const GetOptDetailUrl = '/opportunity/get'; // 获取商机详情
-export const DeleteOptFollowRecordUrl = '/opportunity/follow/record/delete'; // 删除商机跟进记录
-export const DeleteOptFollowPlanUrl = '/opportunity/follow/plan/delete'; // 删除商机跟进计划
 export const GetOptTabUrl = '/opportunity/tab'; // 商机tab显隐
 export const GetOpportunityContactListUrl = 'opportunity/contact/list'; // 商机详情联系人列表
-export const UpdateOptFollowPlanStatusUrl = '/opportunity/follow/plan/status/update'; // 更新商机跟进计划状态
 export const ExportOpportunityAllUrl = '/opportunity/export-all'; // 商机导出
 export const ExportOpportunitySelectedUrl = '/opportunity/export-select'; // 商机导出选中
 export const GetOptStatisticUrl = '/opportunity/statistic'; // 商机列表的金额数据
@@ -81,3 +71,15 @@ export const DownloadQuotationUrl = '/opportunity/quotation/download';
 export const PreCheckOptImportUrl = '/opportunity/import/pre-check';
 export const DownloadOptTemplateUrl = '/opportunity/template/download';
 export const ImportOpportunityUrl = '/opportunity/import';
+
+export {
+  AddFollowPlanUrl as AddOptFollowPlanUrl,
+  AddFollowRecordUrl as AddOptFollowRecordUrl,
+  DeleteFollowPlanUrl as DeleteOptFollowPlanUrl,
+  DeleteFollowRecordUrl as DeleteOptFollowRecordUrl,
+  GetFollowPlanUrl as GetOptFollowPlanUrl,
+  GetFollowRecordUrl as GetOptFollowRecordUrl,
+  UpdateFollowPlanStatusUrl as UpdateOptFollowPlanStatusUrl,
+  UpdateFollowPlanUrl as UpdateOptFollowPlanUrl,
+  UpdateFollowRecordUrl as UpdateOptFollowRecordUrl,
+} from './follow';

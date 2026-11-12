@@ -44,4 +44,7 @@ public class DeptDataPermissionDTO {
      * 写作人id集合
      */
     private Set<String> collaborationIds = new HashSet<>();
+
+    /** 客户详情标签中需要排除的数据负责人，不用于独立列表的角色范围。 */
+    private Set<String> excludedOwnerIds = new HashSet<>();
 }

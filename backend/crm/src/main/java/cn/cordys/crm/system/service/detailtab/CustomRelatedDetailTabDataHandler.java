@@ -2,6 +2,7 @@ package cn.cordys.crm.system.service.detailtab;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
@@ -60,6 +61,10 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
     public PagerWithOption<?> page(DetailTabQueryContext context) {
         boolean relatedOwner = relatedResourcePermissionService.isOwner(context.formKey(), context.resourceId(),
                 context.userId(), context.organizationId());
+        DeptDataPermissionDTO customerScope = FormKey.CUSTOMER.getKey().equals(context.formKey())
+                ? relatedResourcePermissionService.getCustomerTabDataPermission(context.resourceId(), context.userId(),
+                        context.organizationId())
+                : null;
         if (!relatedOwner) {
             resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
         }
@@ -76,22 +81,30 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
         request.setViewId(null);
         List<FilterCondition> filters = context.request().getFilters();
         filters.add(buildRelationFilter(relatedFieldId, context.resourceId()));
-        if (relatedOwner && FormKey.CUSTOMER.getKey().equals(context.formKey())) {
-            Set<String> isolatedOwners = relatedResourcePermissionService.getIsolatedOwnerIds(context.resourceId(),
-                    context.userId(), context.organizationId());
-            if (!isolatedOwners.isEmpty()) {
+        if (customerScope != null) {
+            if (customerScope.getSelf()) {
                 FilterCondition condition = new FilterCondition();
                 condition.setName("owner");
-                condition.setOperator(FilterCondition.CombineConditionOperator.NOT_IN.name());
-                condition.setValue(List.copyOf(isolatedOwners));
+                condition.setOperator(FilterCondition.CombineConditionOperator.EQUALS.name());
+                condition.setValue(context.userId());
                 filters.add(condition);
+            } else {
+                Set<String> isolatedOwners = relatedResourcePermissionService.getIsolatedOwnerIds(context.resourceId(),
+                        context.userId(), context.organizationId());
+                if (!isolatedOwners.isEmpty()) {
+                    FilterCondition condition = new FilterCondition();
+                    condition.setName("owner");
+                    condition.setOperator(FilterCondition.CombineConditionOperator.NOT_IN.name());
+                    condition.setValue(List.copyOf(isolatedOwners));
+                    filters.add(condition);
+                }
             }
         }
         request.setFilters(filters);
         ConditionFilterUtils.parseCondition(request, relatedFormId);
 
-        // 宿主负责人只读关联数据，其他用户仍须具备关联表单权限。
-        if (relatedOwner) {
+        // 关联只读范围由宿主关系决定，功能权限仍在上方校验。
+        if (relatedOwner || customerScope != null) {
             return customFormDataService.page(request, context.userId(), context.organizationId(), false, true);
         }
         return customFormDataService.page(request, context.userId(), context.organizationId(), false);

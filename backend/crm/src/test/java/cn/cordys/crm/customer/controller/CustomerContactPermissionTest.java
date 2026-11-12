@@ -36,6 +36,7 @@ import cn.cordys.crm.customer.service.CustomerResourceAccessContextProvider;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.service.OpportunityResourceAccessContextProvider;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.mapper.ExtStatisticMapper;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -107,6 +108,7 @@ class CustomerContactPermissionTest {
     private final ApprovalFlowService approvals = mock(ApprovalFlowService.class);
     private final ResourcePermissionService resourcePermissions = new ResourcePermissionService();
     private final RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
+    private final ExtStatisticMapper relatedFields = mock(ExtStatisticMapper.class);
     private final PermissionCache permissions = mock(PermissionCache.class);
     private final CustomerContactService service = spy(new CustomerContactService());
     private final CustomerContactFieldService contactFields = mock(CustomerContactFieldService.class);
@@ -158,6 +160,17 @@ class CustomerContactPermissionTest {
         when(base.getUserDeptMapByUserIds(anySet(), eq(ORG))).thenReturn(departments);
         when(users.getUserDeptMapByUserIds(anyList(), eq(ORG))).thenReturn(departments);
         configureCollaboration("NONE");
+        when(relatedFields.selectBusinessFieldValue(eq("customer"), anyString(), eq(CUSTOMER)))
+                .thenAnswer(invocation -> switch ((String) invocation.getArgument(1)) {
+                case "owner" -> customer.getOwner();
+                case "organization_id" -> customer.getOrganizationId();
+                case "in_shared_pool" -> String.valueOf(customer.getInSharedPool());
+                default -> null;
+                });
+        ReflectionTestUtils.setField(relatedPermissions, "extStatisticMapper", relatedFields);
+        ReflectionTestUtils.setField(relatedPermissions, "customerCollaborationService", collaborations);
+        when(relatedPermissions.getCustomerTabDataPermission(anyString(), anyString(), anyString()))
+                .thenCallRealMethod();
 
         ReflectionTestUtils.setField(provider, "customerMapper", customers);
         ReflectionTestUtils.setField(provider, "collaborationMapper", collaborationMapper);
@@ -254,7 +267,8 @@ class CustomerContactPermissionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "OWNER,owner,owner", "COLLABORATION,mine,reader", "READ_ONLY,collaboration,collaborator" })
+    @CsvSource({ "OWNER,owner,owner", "COLLABORATION,mine,reader", "READ_ONLY,read-only,reader-only",
+            "JOINT_FOLLOW,owner,owner" })
     void 仅客户查看权限保留本人客户和协作客户的联系人详情(String access, String id, String owner) {
         when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(READ));
         if ("OWNER".equals(access)) {
@@ -282,7 +296,7 @@ class CustomerContactPermissionTest {
         customer.setOwner(USER);
         CustomerContact record = detail("collaboration", "collaborator");
         assertDetailForbidden(record.getId());
-        verify(contacts).listByCustomerId(CUSTOMER);
+        verifyNoInteractions(contacts);
     }
 
     @Test
@@ -311,7 +325,7 @@ class CustomerContactPermissionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "COLLABORATION,mine", "READ_ONLY,mine|owner|collaboration|read-only" })
+    @CsvSource({ "COLLABORATION,mine", "READ_ONLY,mine|owner|read-only", "JOINT_FOLLOW,mine|owner|read-only" })
     void 协作客户通过权限切面且保留原联系人过滤(String type, String expected) {
         configureCollaboration(type);
         assertContacts(expected);
@@ -319,17 +333,15 @@ class CustomerContactPermissionTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "OWNER", "ALL", "DEPARTMENT", "DEPARTMENT_COLLABORATOR", "ADMIN" })
-    void 原有负责人全部与部门范围返回结果不变(String access) {
+    void 客户联系人各读取范围均隔离仅客户信息成员数据(String access) {
         String expected = "mine|owner|read-only";
         switch (access) {
         case "OWNER" -> customer.setOwner(USER);
         case "ALL" -> {
             scope.setAll(true);
-            expected = "mine|owner|collaboration|read-only";
         }
         case "ADMIN" -> {
             user.setId(InternalUser.ADMIN.getValue());
-            expected = "mine|owner|collaboration|read-only";
         }
         default -> {
             scope.setSelf(false);
@@ -342,6 +354,45 @@ class CustomerContactPermissionTest {
         }
         }
         assertContacts(expected);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "READ_ONLY", "JOINT_FOLLOW" })
+    void 联系人查看权限不能绕过仅客户信息成员的数据隔离(String access) {
+        configureCollaboration(access);
+        when(dataScope.hasDataPermission(USER, ORG, "collaborator", CONTACT_READ)).thenReturn(true);
+        CustomerContact record = detail("collaboration", "collaborator");
+        assertDetailForbidden(record.getId());
+    }
+
+    @Test
+    void 无客户协作关系的联系人详情仍使用联系人角色范围() {
+        when(dataScope.hasDataPermission(USER, ORG, "collaborator", CONTACT_READ)).thenReturn(true);
+        CustomerContact record = detail("collaboration", "collaborator");
+        prepareDetailDisplay();
+        assertEquals(record.getId(), controller.get(record.getId()).getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "SELF", "ALL", "DEPARTMENT" })
+    void 仅客户信息成员的联系人范围始终为本人负责而非创建人(String roleScope) {
+        configureCollaboration("COLLABORATION");
+        scope.setSelf("SELF".equals(roleScope));
+        scope.setAll("ALL".equals(roleScope));
+        scope.setDeptIds("DEPARTMENT".equals(roleScope) ? Set.of("dept-a") : Set.of());
+        assertContacts("mine");
+        when(dataScope.hasDataPermission(USER, ORG, "owner", CONTACT_READ)).thenReturn(true);
+        CustomerContact record = detail("owner", "owner");
+        record.setCreateUser(USER);
+        assertDetailForbidden(record.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "READ_ONLY", "JOINT_FOLLOW" })
+    void 全量协作读取保留当前客户负责人的联系人(String previousType) {
+        configureCollaboration(previousType);
+        customer.setOwner("collaborator");
+        assertContacts("mine|owner|collaboration|read-only");
     }
 
     @Test

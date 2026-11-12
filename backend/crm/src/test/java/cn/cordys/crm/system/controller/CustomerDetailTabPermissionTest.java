@@ -31,11 +31,15 @@ import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.service.CustomFormDataService;
+import cn.cordys.crm.follow.service.FollowUpPlanService;
+import cn.cordys.crm.follow.service.FollowUpRecordService;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationPageRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunitySearchStatisticRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.domain.ModuleField;
@@ -50,6 +54,7 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.DetailTabDataService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.detailtab.CustomRelatedDetailTabDataHandler;
+import cn.cordys.crm.system.service.detailtab.DetailTabQueryContext;
 import cn.cordys.crm.system.service.detailtab.StandardRelatedDetailTabDataHandler;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionConstants;
@@ -95,7 +100,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-/** 客户协作读取穿过真实父权限切面后，关联模块仍独立校验自己的权限和固定关联条件。 */
+/** 客户协作标签保留功能权限和固定关联条件，数据范围由客户关系决定。 */
 class CustomerDetailTabPermissionTest {
     private static final String READ = PermissionConstants.CUSTOMER_MANAGEMENT_READ;
     private static final String RELATED_READ = PermissionConstants.OPPORTUNITY_MANAGEMENT_READ;
@@ -114,22 +119,27 @@ class CustomerDetailTabPermissionTest {
     private final CustomerRelationService relations = mock(CustomerRelationService.class);
     private final CustomerCollaborationService collaborations = mock(CustomerCollaborationService.class);
     private final OpportunityService opportunities = mock(OpportunityService.class);
+    private final OpportunityQuotationService quotations = mock(OpportunityQuotationService.class);
     private final ContractService contracts = mock(ContractService.class);
     private final OrderService orderService = mock(OrderService.class);
     private final ContractPaymentRecordService paymentRecords = mock(ContractPaymentRecordService.class);
     private final CustomFormDataService customData = mock(CustomFormDataService.class);
+    private final FollowUpRecordService followRecords = mock(FollowUpRecordService.class);
+    private final FollowUpPlanService followPlans = mock(FollowUpPlanService.class);
     private final ModuleFormCacheService forms = mock(ModuleFormCacheService.class);
     private final PermissionCache permissions = mock(PermissionCache.class);
     private final DataScopeService dataScope = spy(new DataScopeService());
     private final ResourcePermissionService resourcePermissions = new ResourcePermissionService();
     private final RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
     private final DeptDataPermissionDTO relatedScope = new DeptDataPermissionDTO();
+    private final DeptDataPermissionDTO customerTabScope = new DeptDataPermissionDTO();
     private final Set<String> granted = new HashSet<>(Set.of(READ, RELATED_READ, PermissionConstants.CUSTOM_FORM_READ));
     private final Customer customer = new Customer();
     private final CustomerCollaboration collaboration = new CustomerCollaboration();
     private CustomerRelationController relationController;
     private CustomerCollaborationController collaborationController;
     private DetailTabDataController tabController;
+    private StandardRelatedDetailTabDataHandler standard;
     private ApplicationContext previousContext;
     private Subject previousSubject;
     private String previousOrg;
@@ -182,6 +192,16 @@ class CustomerDetailTabPermissionTest {
         doReturn(parentScope).when(dataScope).getDeptDataPermission(USER, ORG, READ);
         relatedScope.setDeptIds(Set.of("related-department"));
         doReturn(relatedScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL", RELATED_READ);
+        when(relatedPermissions.getCustomerTabDataPermission(CUSTOMER, USER, ORG)).thenAnswer(invocation -> {
+            if (collaboration.getCollaborationType() == null && !USER.equals(customer.getOwner())) {
+                return null;
+            }
+            boolean self = "COLLABORATION".equals(collaboration.getCollaborationType())
+                    && !USER.equals(customer.getOwner());
+            customerTabScope.setSelf(self);
+            customerTabScope.setAll(!self);
+            return customerTabScope;
+        });
         CustomerResourceAccessContextProvider provider = new CustomerResourceAccessContextProvider();
         ReflectionTestUtils.setField(provider, "customerMapper", customers);
         ReflectionTestUtils.setField(provider, "collaborationMapper", collaborationMapper);
@@ -193,14 +213,17 @@ class CustomerDetailTabPermissionTest {
         ModuleField linkField = new ModuleField();
         linkField.setId(LINK);
         when(fields.selectByPrimaryKey(LINK)).thenReturn(linkField);
-        StandardRelatedDetailTabDataHandler standard = new StandardRelatedDetailTabDataHandler();
+        standard = new StandardRelatedDetailTabDataHandler();
         ReflectionTestUtils.setField(standard, "resourcePermissionService", resourcePermissions);
         ReflectionTestUtils.setField(standard, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(standard, "dataScopeService", dataScope);
         ReflectionTestUtils.setField(standard, "opportunityService", opportunities);
+        ReflectionTestUtils.setField(standard, "opportunityQuotationService", quotations);
         ReflectionTestUtils.setField(standard, "contractService", contracts);
         ReflectionTestUtils.setField(standard, "orderService", orderService);
         ReflectionTestUtils.setField(standard, "contractPaymentRecordService", paymentRecords);
+        ReflectionTestUtils.setField(standard, "followUpRecordService", followRecords);
+        ReflectionTestUtils.setField(standard, "followUpPlanService", followPlans);
         ReflectionTestUtils.setField(standard, "moduleFieldBaseMapper", fields);
         CustomRelatedDetailTabDataHandler custom = new CustomRelatedDetailTabDataHandler();
         ReflectionTestUtils.setField(custom, "resourcePermissionService", resourcePermissions);
@@ -242,7 +265,7 @@ class CustomerDetailTabPermissionTest {
         switch (entry) {
         case "RELATION" -> verify(relations).list(CUSTOMER);
         case "COLLABORATION" -> verify(collaborations).list(CUSTOMER, ORG);
-        default -> verify(opportunities).list(any(), eq(USER), eq(ORG), same(relatedScope), eq(false));
+        default -> verify(opportunities).list(any(), eq(USER), eq(ORG), same(customerTabScope), eq(false));
         }
     }
 
@@ -266,12 +289,13 @@ class CustomerDetailTabPermissionTest {
     }
 
     @Test
-    void 标准标签保留关联模块范围与固定父客户过滤() {
+    void 标准标签采用客户协作范围并保留固定父客户过滤() {
         PagerWithOption<List<OpportunityListResponse>> result = new PagerWithOption<>();
-        when(opportunities.list(any(), eq(USER), eq(ORG), same(relatedScope), eq(false))).thenReturn(result);
+        when(opportunities.list(any(), eq(USER), eq(ORG), same(customerTabScope), eq(false))).thenReturn(result);
         assertSame(result, tabController.customerPage(CUSTOMER, pageRequest("opportunity")));
         ArgumentCaptor<OpportunityPageRequest> query = ArgumentCaptor.forClass(OpportunityPageRequest.class);
-        verify(opportunities).list(query.capture(), eq(USER), eq(ORG), same(relatedScope), eq(false));
+        verify(opportunities).list(query.capture(), eq(USER), eq(ORG), same(customerTabScope), eq(false));
+        assertTrue(customerTabScope.getAll());
         assertEquals("ALL", query.getValue().getViewId());
         assertEquals(2, query.getValue().getCurrent());
         assertEquals(20, query.getValue().getPageSize());
@@ -279,20 +303,92 @@ class CustomerDetailTabPermissionTest {
         verify(forms).getConfig(FormKeyConstants.CUSTOMER, ORG);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = { "OWNER", "READ_ONLY", "JOINT_FOLLOW", "COLLABORATION" })
+    void 标准关联标签优先采用客户关系范围而不是角色部门范围(String access) {
+        if ("OWNER".equals(access)) {
+            customer.setOwner(USER);
+        } else {
+            collaboration.setCollaborationType(access);
+        }
+        when(relatedPermissions.getIsolatedOwnerIds(CUSTOMER, USER, ORG)).thenReturn(Set.of("private-owner"));
+        tabController.customerPage(CUSTOMER, pageRequest("opportunity"));
+        ArgumentCaptor<OpportunityPageRequest> query = ArgumentCaptor.forClass(OpportunityPageRequest.class);
+        verify(opportunities).list(query.capture(), eq(USER), eq(ORG), same(customerTabScope), eq(false));
+        assertEquals("COLLABORATION".equals(access), customerTabScope.getSelf());
+        assertEquals(!"COLLABORATION".equals(access), customerTabScope.getAll());
+        assertTrue(customerTabScope.getDeptIds().isEmpty());
+        FilterCondition isolation = query.getValue().getFilters().getLast();
+        assertEquals("owner", isolation.getName());
+        assertEquals("NOT_IN", isolation.getOperator());
+        assertEquals(List.of("private-owner"), isolation.getValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "READ_ONLY", "JOINT_FOLLOW", "COLLABORATION" })
+    void 无负责人报价标签不按创建人隔离(String access) {
+        collaboration.setCollaborationType(access);
+        granted.add(PermissionConstants.OPPORTUNITY_QUOTATION_READ);
+        savedTab("quotation");
+        when(relatedPermissions.getIsolatedOwnerIds(CUSTOMER, USER, ORG)).thenReturn(Set.of("private-owner"));
+        tabController.customerPage(CUSTOMER, pageRequest("quotation"));
+        ArgumentCaptor<OpportunityQuotationPageRequest> query =
+                ArgumentCaptor.forClass(OpportunityQuotationPageRequest.class);
+        ArgumentCaptor<DeptDataPermissionDTO> scope = ArgumentCaptor.forClass(DeptDataPermissionDTO.class);
+        verify(quotations).list(query.capture(), eq(ORG), eq(USER), scope.capture(), eq(false));
+        assertTrue(scope.getValue().getAll());
+        assertEquals(false, scope.getValue().getSelf());
+        assertFixedRelation(query.getValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "opportunity", CUSTOM_FORM })
+    void 非客户负责人或协作人保留关联表单角色范围(String relatedForm) {
+        collaboration.setCollaborationType(null);
+        DeptDataPermissionDTO parentScope = new DeptDataPermissionDTO();
+        parentScope.setAll(true);
+        doReturn(parentScope).when(dataScope).getDeptDataPermission(USER, ORG, READ);
+        savedTab(relatedForm);
+        tabController.customerPage(CUSTOMER, pageRequest(relatedForm));
+        if (CUSTOM_FORM.equals(relatedForm)) {
+            verify(customData).page(any(), eq(USER), eq(ORG), eq(false));
+        } else {
+            verify(opportunities).list(any(), eq(USER), eq(ORG), same(relatedScope), eq(false));
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "clue,record", "clue,plan", "opportunity,record", "opportunity,plan" })
+    void 非客户宿主负责人保留动态跟进的原角色范围(String formKey, String relatedForm) {
+        savedTab(relatedForm);
+        when(relatedPermissions.isOwner(formKey, CUSTOMER, USER, ORG)).thenReturn(true);
+        String permission = "record".equals(relatedForm)
+                ? PermissionConstants.FOLLOW_RECORD_READ : PermissionConstants.FOLLOW_PLAN_READ;
+        relatedScope.setSelf(true);
+        doReturn(relatedScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL", permission);
+        FormDetailTab tab = forms.getConfig(FormKeyConstants.CUSTOMER, ORG).getFormProp().getDetailTabs().getFirst();
+        standard.page(new DetailTabQueryContext(formKey, CUSTOMER, tab, pageRequest(relatedForm), USER, ORG));
+        if ("record".equals(relatedForm)) {
+            verify(followRecords).totalList(any(), eq(USER), eq(ORG), same(relatedScope));
+        } else {
+            verify(followPlans).totalList(any(), eq(USER), eq(ORG), same(relatedScope));
+        }
+    }
+
     @Test
     void 商机标签统计沿用主列表口径与固定父客户过滤() {
         OpportunitySearchStatisticResponse statistic = new OpportunitySearchStatisticResponse();
-        when(opportunities.searchStatistic(any(), eq(USER), eq(ORG), same(relatedScope))).thenReturn(statistic);
+        when(opportunities.searchStatistic(any(), eq(USER), eq(ORG), same(customerTabScope))).thenReturn(statistic);
         assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("opportunity")));
         ArgumentCaptor<OpportunitySearchStatisticRequest> query =
                 ArgumentCaptor.forClass(OpportunitySearchStatisticRequest.class);
-        verify(opportunities).searchStatistic(query.capture(), eq(USER), eq(ORG), same(relatedScope));
+        verify(opportunities).searchStatistic(query.capture(), eq(USER), eq(ORG), same(customerTabScope));
         assertEquals("ALL", query.getValue().getViewId());
         assertFixedRelation(query.getValue());
     }
 
     @Test
-    void 合同标签统计沿用合同数据范围与固定父客户过滤() {
+    void 合同标签统计采用客户协作范围并保留固定父客户过滤() {
         savedTab("contract");
         granted.add(PermissionConstants.CONTRACT_READ);
         DeptDataPermissionDTO contractScope = new DeptDataPermissionDTO();
@@ -300,10 +396,10 @@ class CustomerDetailTabPermissionTest {
         doReturn(contractScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL",
                 PermissionConstants.CONTRACT_READ);
         ContractStatisticResponse statistic = new ContractStatisticResponse();
-        doReturn(statistic).when(contracts).searchStatistic(any(), eq(USER), eq(ORG), same(contractScope));
+        doReturn(statistic).when(contracts).searchStatistic(any(), eq(USER), eq(ORG), same(customerTabScope));
         assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("contract")));
         ArgumentCaptor<BaseCondition> query = ArgumentCaptor.forClass(BaseCondition.class);
-        verify(contracts).searchStatistic(query.capture(), eq(USER), eq(ORG), same(contractScope));
+        verify(contracts).searchStatistic(query.capture(), eq(USER), eq(ORG), same(customerTabScope));
         assertEquals("ALL", query.getValue().getViewId());
         assertFixedRelation(query.getValue());
     }
@@ -316,17 +412,17 @@ class CustomerDetailTabPermissionTest {
     }
 
     @Test
-    void 订单标签统计沿用订单数据范围与固定父客户过滤() {
+    void 订单标签统计采用客户协作范围并保留固定父客户过滤() {
         savedTab("order");
         granted.add(PermissionConstants.ORDER_READ);
         DeptDataPermissionDTO orderScope = new DeptDataPermissionDTO();
         orderScope.setSelf(true);
         doReturn(orderScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL", PermissionConstants.ORDER_READ);
         OrderStatisticResponse statistic = new OrderStatisticResponse();
-        doReturn(statistic).when(orderService).searchStatistic(any(), eq(USER), eq(ORG), same(orderScope));
+        doReturn(statistic).when(orderService).searchStatistic(any(), eq(USER), eq(ORG), same(customerTabScope));
         assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("order")));
         ArgumentCaptor<BaseCondition> query = ArgumentCaptor.forClass(BaseCondition.class);
-        verify(orderService).searchStatistic(query.capture(), eq(USER), eq(ORG), same(orderScope));
+        verify(orderService).searchStatistic(query.capture(), eq(USER), eq(ORG), same(customerTabScope));
         assertEquals("ALL", query.getValue().getViewId());
         assertFixedRelation(query.getValue());
     }
@@ -339,16 +435,16 @@ class CustomerDetailTabPermissionTest {
         orderScope.setSelf(true);
         doReturn(orderScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL", PermissionConstants.ORDER_READ);
         OrderStatisticResponse statistic = new OrderStatisticResponse();
-        doReturn(statistic).when(orderService).searchStatistic(any(), eq(USER), eq(ORG), same(orderScope));
+        doReturn(statistic).when(orderService).searchStatistic(any(), eq(USER), eq(ORG), same(customerTabScope));
         assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("order")));
         ArgumentCaptor<BaseCondition> query = ArgumentCaptor.forClass(BaseCondition.class);
-        verify(orderService).searchStatistic(query.capture(), eq(USER), eq(ORG), same(orderScope));
+        verify(orderService).searchStatistic(query.capture(), eq(USER), eq(ORG), same(customerTabScope));
         assertEquals("ALL", query.getValue().getViewId());
         assertFixedRelation(query.getValue());
     }
 
     @Test
-    void 回款记录标签统计沿用回款数据范围与固定父客户过滤() {
+    void 回款记录标签统计采用客户协作范围并保留固定父客户过滤() {
         savedTab("contractPaymentRecord");
         granted.add(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
         DeptDataPermissionDTO paymentScope = new DeptDataPermissionDTO();
@@ -356,11 +452,11 @@ class CustomerDetailTabPermissionTest {
         doReturn(paymentScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL",
                 PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
         ContractPaymentRecordStatisticResponse statistic = new ContractPaymentRecordStatisticResponse();
-        doReturn(statistic).when(paymentRecords).searchStatistic(any(), eq(USER), eq(ORG), same(paymentScope));
+        doReturn(statistic).when(paymentRecords).searchStatistic(any(), eq(USER), eq(ORG), same(customerTabScope));
         assertSame(statistic, tabController.customerStatistic(CUSTOMER, statisticRequest("contractPaymentRecord")));
         ArgumentCaptor<ContractPaymentRecordStatisticRequest> query =
                 ArgumentCaptor.forClass(ContractPaymentRecordStatisticRequest.class);
-        verify(paymentRecords).searchStatistic(query.capture(), eq(USER), eq(ORG), same(paymentScope));
+        verify(paymentRecords).searchStatistic(query.capture(), eq(USER), eq(ORG), same(customerTabScope));
         assertEquals("ALL", query.getValue().getViewId());
         assertNull(query.getValue().getContractId());
         assertFixedRelation(query.getValue());
@@ -384,21 +480,45 @@ class CustomerDetailTabPermissionTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { false, true })
-    void 自定义标签仍委派表单角色校验且不吞权限错误(boolean formRoleDenied) {
+    void 自定义标签采用客户协作范围且不吞表单有效性错误(boolean formRoleDenied) {
         savedTab(CUSTOM_FORM);
-        // 此处仅验证真实 Handler 的委派契约，具体表单角色算法由其自身测试覆盖。
+        // 关联范围在 Handler 固定，表单有效性仍由服务校验。
         if (formRoleDenied) {
-            when(customData.page(any(), eq(USER), eq(ORG), eq(false)))
+            when(customData.page(any(), eq(USER), eq(ORG), eq(false), eq(true)))
                     .thenThrow(new GenericException(CrmHttpResultCode.FORBIDDEN));
             assertForbidden(() -> tabController.customerPage(CUSTOMER, pageRequest(CUSTOM_FORM)));
         } else {
             assertDoesNotThrow(() -> tabController.customerPage(CUSTOMER, pageRequest(CUSTOM_FORM)));
         }
         ArgumentCaptor<CustomFormDataPageRequest> query = ArgumentCaptor.forClass(CustomFormDataPageRequest.class);
-        verify(customData).page(query.capture(), eq(USER), eq(ORG), eq(false));
+        verify(customData).page(query.capture(), eq(USER), eq(ORG), eq(false), eq(true));
         assertEquals(CUSTOM_FORM, query.getValue().getCustomFormId());
         assertNull(query.getValue().getViewId());
         assertFixedRelation(query.getValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "OWNER", "READ_ONLY", "JOINT_FOLLOW", "COLLABORATION" })
+    void 自定义关联标签按负责人固定协作可见范围(String access) {
+        if ("OWNER".equals(access)) {
+            customer.setOwner(USER);
+        } else {
+            collaboration.setCollaborationType(access);
+        }
+        savedTab(CUSTOM_FORM);
+        when(relatedPermissions.getIsolatedOwnerIds(CUSTOMER, USER, ORG)).thenReturn(Set.of("private-owner"));
+        tabController.customerPage(CUSTOMER, pageRequest(CUSTOM_FORM));
+        ArgumentCaptor<CustomFormDataPageRequest> query = ArgumentCaptor.forClass(CustomFormDataPageRequest.class);
+        verify(customData).page(query.capture(), eq(USER), eq(ORG), eq(false), eq(true));
+        FilterCondition isolation = query.getValue().getFilters().getLast();
+        assertEquals("owner", isolation.getName());
+        if ("COLLABORATION".equals(access)) {
+            assertEquals("EQUALS", isolation.getOperator());
+            assertEquals(USER, isolation.getValue());
+        } else {
+            assertEquals("NOT_IN", isolation.getOperator());
+            assertEquals(List.of("private-owner"), isolation.getValue());
+        }
     }
 
     private Object invoke(String entry) {

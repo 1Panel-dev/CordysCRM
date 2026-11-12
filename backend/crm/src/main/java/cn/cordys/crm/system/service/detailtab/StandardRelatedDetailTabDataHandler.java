@@ -15,7 +15,6 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
-import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
@@ -48,7 +47,6 @@ import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -203,19 +201,15 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private PagerWithOption<?> followRecords(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         RecordHomePageRequest request = prepare(new RecordHomePageRequest(), FormKey.FOLLOW_RECORD, context);
-        DeptDataPermissionDTO dataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.FOLLOW_RECORD_READ);
-        return followUpRecordService.totalList(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), dataPermission);
+        return followUpRecordService.totalList(request, context.userId(), context.organizationId(),
+                dataPermission(context, PermissionConstants.FOLLOW_RECORD_READ));
     }
 
     private PagerWithOption<?> followPlans(DetailTabQueryContext context) {
         replaceSearchBusinessKey(context);
         PlanHomePageRequest request = prepare(new PlanHomePageRequest(), FormKey.FOLLOW_PLAN, context);
-        DeptDataPermissionDTO dataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.FOLLOW_PLAN_READ);
-        return followUpPlanService.totalList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                dataPermission);
+        return followUpPlanService.totalList(request, context.userId(), context.organizationId(),
+                dataPermission(context, PermissionConstants.FOLLOW_PLAN_READ));
     }
 
     private void replaceSearchBusinessKey(DetailTabQueryContext context) {
@@ -346,13 +340,12 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         List<FilterCondition> filters = request.getFilters();
         filters.add(relation);
         if (FormKey.CUSTOMER.getKey().equals(context.formKey())
-                && relatedForm != FormKey.CUSTOMER && relatedForm != FormKey.PRODUCT && relatedForm != FormKey.PRICE) {
-            String ownerField = relatedForm == FormKey.QUOTATION ? "createUser" : "owner";
+                && relatedForm != FormKey.QUOTATION && relatedForm != FormKey.PRODUCT && relatedForm != FormKey.PRICE) {
             List<String> isolatedOwners = new ArrayList<>(relatedResourcePermissionService.getIsolatedOwnerIds(
                     context.resourceId(), context.userId(), context.organizationId()));
             if (!isolatedOwners.isEmpty()) {
                 FilterCondition isolation = new FilterCondition();
-                isolation.setName(ownerField);
+                isolation.setName("owner");
                 isolation.setOperator(FilterCondition.CombineConditionOperator.NOT_IN.name());
                 isolation.setValue(isolatedOwners);
                 filters.add(isolation);
@@ -372,6 +365,23 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     }
 
     private DeptDataPermissionDTO dataPermission(DetailTabQueryContext context, String permission) {
+        if (FormKey.CUSTOMER.getKey().equals(context.formKey())) {
+            DeptDataPermissionDTO customerScope = relatedResourcePermissionService.getCustomerTabDataPermission(
+                    context.resourceId(), context.userId(), context.organizationId());
+            if (customerScope != null) {
+                if (FormKey.QUOTATION.getKey().equals(context.tab().getRelatedForm().getIdAsString())) {
+                    DeptDataPermissionDTO all = new DeptDataPermissionDTO();
+                    all.setAll(true);
+                    return all;
+                }
+                return customerScope;
+            }
+        }
+        if (PermissionConstants.FOLLOW_RECORD_READ.equals(permission)
+                || PermissionConstants.FOLLOW_PLAN_READ.equals(permission)) {
+            return dataScopeService.getDeptDataPermission(context.userId(), context.organizationId(),
+                    InternalUserView.ALL.name(), permission);
+        }
         if (relatedResourcePermissionService.isOwner(context.formKey(), context.resourceId(), context.userId(),
                 context.organizationId())) {
             DeptDataPermissionDTO all = new DeptDataPermissionDTO();

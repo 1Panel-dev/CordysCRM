@@ -1,7 +1,6 @@
 package cn.cordys.crm.customer.mapper;
 
 import cn.cordys.common.mapper.CommonMapper;
-import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import net.sf.jsqlparser.expression.Expression;
@@ -45,7 +44,7 @@ class CustomerCollaborationIsolationSqlTest {
     static void loadMapperXml() throws Exception {
         configuration = new Configuration();
         for (Class<?> mapper : List.of(CommonMapper.class, ExtCustomerMapper.class,
-                ExtContractPaymentRecordMapper.class, ExtFollowUpRecordMapper.class, ExtFollowUpPlanMapper.class)) {
+                ExtFollowUpRecordMapper.class, ExtFollowUpPlanMapper.class)) {
             String resource = mapper.getName().replace('.', '/') + ".xml";
             try (InputStream in = CustomerCollaborationIsolationSqlTest.class.getClassLoader()
                     .getResourceAsStream(resource)) {
@@ -56,10 +55,9 @@ class CustomerCollaborationIsolationSqlTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "payment", "record", "plan" })
+    @ValueSource(strings = { "record", "plan" })
     void relatedQueriesIsolateOnlyEffectiveCustomerInformationMembers(String entry) throws Exception {
         String statement = switch (entry) {
-        case "payment" -> ExtContractPaymentRecordMapper.class.getName() + ".sumCustomerRecordAmount";
         case "record" -> ExtFollowUpRecordMapper.class.getName() + ".selectList";
         default -> ExtFollowUpPlanMapper.class.getName() + ".selectList";
         };
@@ -76,7 +74,7 @@ class CustomerCollaborationIsolationSqlTest {
             return boundSql.hasAdditionalParameter(property) ? boundSql.getAdditionalParameter(property)
                     : configuration.newMetaObject(parameters).getValue(property);
         }).toList();
-        int occurrences = entry.equals("payment") ? 2 : 1;
+        int occurrences = 1;
         assertEquals(occurrences, values.stream().filter(value -> Objects.equals(value, now)).count(),
                 "同一查询的全部隔离条件应使用相同时间绑定");
         assertEquals(occurrences, values.stream().filter("COLLABORATION"::equals).count());
@@ -106,19 +104,11 @@ class CustomerCollaborationIsolationSqlTest {
         }
 
         String sql = boundSql.getSql().replaceAll("\\s+", "");
-        if (entry.equals("payment")) {
-            assertTrue(sql.contains("isolated_customer.organization_id=?"));
-            assertTrue(sql.contains("isolated_customer.owner=?"));
-            assertTrue(sql.contains("isolated_member.user_id!=?"));
-            assertTrue(sql.contains("isolated_member.user_id=cpr.owner"));
-            assertTrue(sql.contains("isolated_member.user_id=c.owner"));
-        } else {
-            String alias = entry.equals("record") ? "fur" : "fup";
-            assertTrue(sql.contains("AND(" + alias + ".owner=?ORNOTEXISTS("));
-            assertTrue(sql.contains("privacy_customer.organization_id=?"));
-            assertTrue(sql.contains("cc.user_id!=COALESCE(privacy_customer.owner,'')"));
-            assertTrue(sql.contains("cc.user_idIN(" + alias + ".owner,?)"));
-        }
+        String alias = entry.equals("record") ? "fur" : "fup";
+        assertTrue(sql.contains("AND(" + alias + ".owner=?ORNOTEXISTS("));
+        assertTrue(sql.contains("privacy_customer.organization_id=?"));
+        assertTrue(sql.contains("cc.user_id!=COALESCE(privacy_customer.owner,'')"));
+        assertTrue(sql.contains("cc.user_idIN(" + alias + ".owner,?)"));
     }
 
     private static boolean isolated(Expression expression, String type, Long expires, List<Object> values) {

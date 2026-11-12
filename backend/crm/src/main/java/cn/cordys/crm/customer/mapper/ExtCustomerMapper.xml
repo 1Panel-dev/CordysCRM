@@ -938,20 +938,13 @@
         )
     </sql>
 
-    <!-- 客户负责人读取关联业务时，排除仅客户信息协作人负责的数据。 -->
+    <!-- 客户详情标签按协作范围排除仅客户信息成员负责的数据。 -->
     <sql id="isolatedBusinessRead">
-        AND NOT EXISTS (
-            SELECT 1
-            FROM customer_collaboration isolated_member
-            INNER JOIN customer isolated_customer ON isolated_customer.id = isolated_member.customer_id
-            WHERE isolated_member.customer_id = ${customerColumn}
-              AND isolated_customer.organization_id = #{${orgParameter}}
-              AND isolated_customer.owner = #{${userParameter}}
-              AND <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedCollaboration">
-                  <property name="collaborationAlias" value="isolated_member"/>
-              </include>
-              AND isolated_member.user_id = ${ownerColumn}
-              AND isolated_member.user_id != #{${userParameter}}
-        )
+        <if test="dataPermission != null and dataPermission.excludedOwnerIds != null and !dataPermission.excludedOwnerIds.isEmpty()">
+            AND ${ownerColumn} NOT IN
+            <foreach collection="dataPermission.excludedOwnerIds" item="excludedOwnerId" open="(" close=")" separator=",">
+                #{excludedOwnerId}
+            </foreach>
+        </if>
     </sql>
 </mapper>

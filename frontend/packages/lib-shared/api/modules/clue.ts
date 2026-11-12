@@ -14,7 +14,6 @@ import {
   BatchTransferClueUrl,
   BatchUpdateCluePoolUrl,
   BatchUpdateLeadUrl,
-  CancelClueFollowPlanUrl,
   ClueTransitionCustomerUrl,
   DeleteClueFollowPlanUrl,
   DeleteClueFollowRecordUrl,
@@ -78,6 +77,7 @@ import {
   UnfreezeClueUrl,
   GetLeadTransitionCustomerRecordListUrl,
 } from '@lib/shared/api/requrls/clue';
+import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import type {
   AssignClueParams,
   BatchAssignClueParams,
@@ -263,7 +263,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 取消跟进计划
   function cancelClueFollowPlan(id: string) {
-    return CDR.get({ url: `${CancelClueFollowPlanUrl}/${id}` });
+    return updateClueFollowPlanStatus({ id, status: CustomerFollowPlanStatusEnum.CANCELLED });
   }
 
   // 获取线索负责人列表

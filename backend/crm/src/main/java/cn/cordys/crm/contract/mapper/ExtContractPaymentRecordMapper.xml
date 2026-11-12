@@ -140,12 +140,6 @@
         ) cpr_sum on c.id = cpr_sum.contract_id
 
         where c.organization_id = #{orgId}
-        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
-            <property name="ownerColumn" value="c.owner"/>
-            <property name="customerColumn" value="c.customer_id"/>
-            <property name="userParameter" value="userId"/>
-            <property name="orgParameter" value="orgId"/>
-        </include>
         and c.customer_id = #{customerId}
     </select>
 
