@@ -95,11 +95,12 @@ public interface ExtCustomerMapper extends StatisticSqlMapper {
     long globalSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
     /**
-     * 根据ID全量更新客户信息
+     * 按原组织和公海归属领取或分配客户
      *
      * @param customer 客户
+     * @param poolId   更新前的公海ID
      */
-    int updateIncludeNullById(@Param("customer") Customer customer);
+    int updateIncludeNullById(@Param("customer") Customer customer, @Param("poolId") String poolId);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 

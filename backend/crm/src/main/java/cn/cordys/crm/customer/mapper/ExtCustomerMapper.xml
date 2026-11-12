@@ -768,7 +768,8 @@
     <update id="updateIncludeNullById" parameterType="cn.cordys.crm.customer.domain.Customer">
         update customer set pool_id = #{customer.poolId}, in_shared_pool = #{customer.inSharedPool}, owner = #{customer.owner},
                 collection_time = #{customer.collectionTime}, update_time = #{customer.updateTime}
-        where id = #{customer.id} and in_shared_pool is true
+        where id = #{customer.id} and organization_id = #{customer.organizationId}
+          and pool_id = #{poolId} and in_shared_pool is true
           and (frozen is false or frozen is null)
     </update>
 

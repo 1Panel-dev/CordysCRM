@@ -97,11 +97,12 @@ public interface ExtClueMapper extends StatisticSqlMapper {
     long globalPoolSearchListCount(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
     /**
-     * 根据ID全量更新线索
+     * 按原组织和公海归属领取或分配线索
      *
-     * @param clue 线索
+     * @param clue   线索
+     * @param poolId 更新前的公海ID
      */
-    int updateIncludeNullById(@Param("clue") Clue clue);
+    int updateIncludeNullById(@Param("clue") Clue clue, @Param("poolId") String poolId);
 
     /**
      * 检查字段值是否唯一

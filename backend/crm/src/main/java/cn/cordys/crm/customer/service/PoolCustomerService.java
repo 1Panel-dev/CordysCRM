@@ -268,7 +268,7 @@ public class PoolCustomerService {
      * @param currentOrgId 当前组织ID
      */
     public void pick(PoolCustomerPickRequest request, String currentUser, String currentOrgId) {
-        validateNotFrozen(request.getCustomerId());
+        validateNotFrozen(request.getCustomerId(), request.getPoolId(), currentOrgId);
         CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(1, currentUser, currentOrgId);
         var pickRuleWrapper = new LambdaQueryWrapper<CustomerPoolPickRule>();
@@ -290,7 +290,7 @@ public class PoolCustomerService {
      * @param assignUserId 分配用户ID
      */
     public void assign(String id, String assignUserId, String currentOrgId, String currentUser) {
-        validateNotFrozen(id);
+        validateNotFrozen(id, null, currentOrgId);
         validateCapacity(1, assignUserId, currentOrgId);
         ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false);
     }
@@ -359,7 +359,7 @@ public class PoolCustomerService {
      * @param currentOrgId 当前组织ID
      */
     public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
-        validateBatchNotFrozen(request.getBatchIds());
+        validateBatchNotFrozen(request.getBatchIds(), request.getPoolId(), currentOrgId);
         CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
         var pickRuleWrapper = new LambdaQueryWrapper<CustomerPoolPickRule>();
@@ -384,7 +384,7 @@ public class PoolCustomerService {
      */
     public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId,
             String currentUser) {
-        validateBatchNotFrozen(request.getBatchIds());
+        validateBatchNotFrozen(request.getBatchIds(), null, currentOrgId);
         validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
         request.getBatchIds()
                 .forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
@@ -571,6 +571,7 @@ public class PoolCustomerService {
         if (customer == null) {
             throw new IllegalArgumentException(Translator.get("customer.not.exist"));
         }
+        validatePoolResource(customer, pickRule == null ? null : pickRule.getPoolId(), currentOrgId);
         if (!customer.getInSharedPool()) {
             throw new GenericException(Translator.getWithArgs("customer.pool.occupied", customer.getName()));
         }
@@ -611,15 +612,17 @@ public class PoolCustomerService {
         }
 
         long now = System.currentTimeMillis();
+        String poolId = customer.getPoolId();
         customer.setPoolId(null);
         customer.setInSharedPool(false);
         customer.setOwner(ownerId);
         customer.setCollectionTime(now);
         customer.setUpdateUser(ownerId);
         customer.setUpdateTime(now);
-        if (extCustomerMapper.updateIncludeNullById(customer) == 0) {
+        if (extCustomerMapper.updateIncludeNullById(customer, poolId) == 0) {
             Customer current = customerMapper.selectByPrimaryKey(customerId);
             if (current != null && Boolean.TRUE.equals(current.getInSharedPool())) {
+                validatePoolResource(current, poolId, currentOrgId);
                 validateNotFrozen(current);
             }
             throw new GenericException(Translator.getWithArgs("customer.pool.occupied", customer.getName()));
@@ -713,11 +716,19 @@ public class PoolCustomerService {
         return customer;
     }
 
-    private void validateNotFrozen(String id) {
+    private void validatePoolResource(Customer customer, String poolId, String orgId) {
+        if (StringUtils.isBlank(orgId) || !orgId.equals(customer.getOrganizationId())
+                || (poolId != null && !poolId.equals(customer.getPoolId()))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
+    private void validateNotFrozen(String id, String poolId, String orgId) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         if (customer == null) {
             throw new IllegalArgumentException(Translator.get("customer.not.exist"));
         }
+        validatePoolResource(customer, poolId, orgId);
         validateNotFrozen(customer);
     }
 
@@ -729,13 +740,14 @@ public class PoolCustomerService {
         unfreezeExpired(customer, now);
     }
 
-    private void validateBatchNotFrozen(List<String> ids) {
+    private void validateBatchNotFrozen(List<String> ids, String poolId, String orgId) {
         Map<String, Customer> customerMap = customerMapper.selectByIds(ids).stream()
                 .collect(Collectors.toMap(Customer::getId, Function.identity()));
         for (String id : ids) {
             if (!customerMap.containsKey(id)) {
                 throw new IllegalArgumentException(Translator.get("customer.not.exist"));
             }
+            validatePoolResource(customerMap.get(id), poolId, orgId);
         }
 
         long now = System.currentTimeMillis();
