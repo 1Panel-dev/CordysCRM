@@ -11,7 +11,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -98,38 +97,24 @@ public class RedisConfig {
      * 支持并发消息处理和自动重连
      *
      * @param factory         Redis连接工厂
-     * @param listenerAdapter 消息监听适配器
+     * @param subscriber      消息订阅处理器
      * @param channelTopics   Redis主题集合
      * @return Redis消息监听容器
      */
     @Bean
     public RedisMessageListenerContainer redisContainer(
             RedisConnectionFactory factory,
-            MessageListenerAdapter listenerAdapter,
+            MessageSubscriber subscriber,
             List<ChannelTopic> channelTopics) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);
 
         // 动态添加所有主题的监听器
         for (ChannelTopic topic : channelTopics) {
-            container.addMessageListener(listenerAdapter, topic);
+            container.addMessageListener(subscriber, topic);
         }
 
         return container;
-    }
-
-    /**
-     * 配置消息监听适配器
-     *
-     * @param subscriber 消息订阅处理器
-     * @return 消息监听适配器
-     */
-    @Bean
-    public MessageListenerAdapter listenerAdapter(MessageSubscriber subscriber) {
-        MessageListenerAdapter adapter = new MessageListenerAdapter(subscriber, "onMessage");
-        // 使用JSON序列化器处理消息
-        adapter.setSerializer(jsonSerializer);
-        return adapter;
     }
 
 }

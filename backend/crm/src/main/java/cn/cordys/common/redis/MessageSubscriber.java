@@ -5,6 +5,7 @@ import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,8 @@ public class MessageSubscriber implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
-            String channel = new String(pattern);
-            String messageBody = new String(message.getBody());
+            String channel = new String(message.getChannel(), StandardCharsets.UTF_8);
+            String messageBody = new String(message.getBody(), StandardCharsets.UTF_8);
             // 处理消息
             processMessage(messageBody, channel);
         } catch (Exception e) {

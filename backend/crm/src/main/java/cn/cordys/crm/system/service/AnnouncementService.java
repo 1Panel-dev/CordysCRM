@@ -30,6 +30,7 @@ import cn.cordys.crm.system.mapper.ExtAnnouncementMapper;
 import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
+import cn.cordys.crm.system.notice.NoticeRedisSync;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -225,12 +226,14 @@ public class AnnouncementService {
         notificationRequest.setResourceId(announcementId);
         notificationRequest.setOrganizationId(organizationId);
         List<NotificationDTO> notificationDTOS = notificationMapper.selectByAnyOne(notificationRequest);
-        for (NotificationDTO notificationDTO : notificationDTOS) {
-            String notificationDTOId = notificationDTO.getId();
-            stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + notificationDTO.getReceiver(),
-                    notificationDTOId);
-            stringRedisTemplate.delete(ANNOUNCE_PREFIX + notificationDTOId);
-        }
+        NoticeRedisSync.afterCommit(() -> {
+            for (NotificationDTO notificationDTO : notificationDTOS) {
+                String notificationDTOId = notificationDTO.getId();
+                stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + notificationDTO.getReceiver(),
+                        notificationDTOId);
+                stringRedisTemplate.delete(ANNOUNCE_PREFIX + notificationDTOId);
+            }
+        });
     }
 
     /**
@@ -240,8 +243,14 @@ public class AnnouncementService {
      * @param announcement 公告
      * @param userIds      接收人集合
      */
+    @Transactional(rollbackFor = Exception.class)
     public void convertNotification(String userId, Announcement announcement, List<String> userIds) {
         SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
+            AnnouncementContentDTO announcementContentDTO = new AnnouncementContentDTO();
+            announcementContentDTO.setUrl(announcement.getUrl());
+            announcementContentDTO.setRenameUrl(announcement.getRenameUrl());
+            announcementContentDTO.setContent(new String(announcement.getContent()));
+            String contentText = JSON.toJSONString(announcementContentDTO);
             List<Notification> notifications = new ArrayList<>();
             for (String subUserId : subUserIds) {
                 Notification notification = new Notification();
@@ -257,38 +266,36 @@ public class AnnouncementService {
                 notification.setResourceId(announcement.getId());
                 notification.setResourceType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name());
                 notification.setResourceName(announcement.getSubject());
-                AnnouncementContentDTO announcementContentDTO = new AnnouncementContentDTO();
-                announcementContentDTO.setUrl(announcement.getUrl());
-                announcementContentDTO.setRenameUrl(announcement.getRenameUrl());
-                announcementContentDTO.setContent(new String(announcement.getContent()));
-                notification.setContent(JSON.toJSONString(announcementContentDTO).getBytes());
+                notification.setContent(contentText.getBytes());
                 notification.setCreateUser(userId);
                 notification.setUpdateUser(userId);
                 notification.setCreateTime(System.currentTimeMillis());
                 notification.setUpdateTime(System.currentTimeMillis());
                 notifications.add(notification);
+            }
+            notificationBaseMapper.batchInsert(notifications);
+            for (Notification notification : notifications) {
                 //根据公告的有效时间判断是否需要发送通知
                 if (announcement.getStartTime() <= System.currentTimeMillis()
                         && announcement.getEndTime() >= System.currentTimeMillis()) {
                     NotificationDTO notificationDTO = new NotificationDTO();
                     BeanUtils.copyBean(notificationDTO, notification);
-                    notificationDTO.setContentText(JSON.toJSONString(announcementContentDTO));
+                    notificationDTO.setContentText(contentText);
                     String messageText = JSON.toJSONString(notificationDTO);
-
-                    stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + subUserId, id,
-                            System.currentTimeMillis());
-                    stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
-                    //更新用户的已读全部消息状态 0 为未读，1为已读
-                    stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "False");
-                    // 发送消息
-                    NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
-                    noticeRedisMessage.setMessage(subUserId);
-                    noticeRedisMessage.setNoticeType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
-                    messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
-                    //sseService.broadcastPeriodically(subUserId, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
+                    String receiverId = notification.getReceiver();
+                    String notificationId = notification.getId();
+                    NoticeRedisSync.afterCommit(() -> {
+                        stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + receiverId, notificationId,
+                                System.currentTimeMillis());
+                        stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + notificationId, messageText);
+                        stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiverId, "False");
+                        NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+                        noticeRedisMessage.setMessage(receiverId);
+                        noticeRedisMessage.setNoticeType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
+                        messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+                    });
                 }
             }
-            notificationBaseMapper.batchInsert(notifications);
         });
     }
 
