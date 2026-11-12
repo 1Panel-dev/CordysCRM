@@ -12,9 +12,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -23,6 +24,13 @@ import java.util.List;
 @Configuration
 @EnableCaching
 public class RedisConfig {
+
+    // 沿用旧序列化器的类型规则、空值标记和 JSON 格式，兼容已有 Redis 数据。
+    private final GenericJacksonJsonRedisSerializer jsonSerializer = GenericJacksonJsonRedisSerializer.builder()
+            .enableUnsafeDefaultTyping()
+            .enableSpringCacheNullValueSupport()
+            .customize(JsonMapper.Builder::configureForJackson2)
+            .build();
 
     /**
      * 配置 RedisCacheManager，提供全局的缓存配置。
@@ -39,7 +47,7 @@ public class RedisConfig {
                 .serializeKeysWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                        .fromSerializer(jsonSerializer))
                 // 禁止缓存 null 值
                 .disableCachingNullValues();
 
@@ -64,8 +72,8 @@ public class RedisConfig {
         template.setHashKeySerializer(new StringRedisSerializer());
 
         // 使用 JSON 序列化器序列化 value
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
 
         template.afterPropertiesSet();
         return template;
@@ -120,7 +128,7 @@ public class RedisConfig {
     public MessageListenerAdapter listenerAdapter(MessageSubscriber subscriber) {
         MessageListenerAdapter adapter = new MessageListenerAdapter(subscriber, "onMessage");
         // 使用JSON序列化器处理消息
-        adapter.setSerializer(new GenericJackson2JsonRedisSerializer());
+        adapter.setSerializer(jsonSerializer);
         return adapter;
     }
 
