@@ -42,7 +42,6 @@
 
         <!-- CI / tooling -->
         <skipAntRunForJenkins>false</skipAntRunForJenkins>
-        <jacoco.version>0.8.15</jacoco.version>
 
         <!-- Sonar -->
         <sonar.organization>cordys-dev</sonar.organization>
@@ -258,38 +257,6 @@
                         <phase>clean</phase>
                         <goals>
                             <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- JaCoCo: 代码覆盖率 -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>cn/cordys/crm/*/mapper/**</exclude>
-                        <exclude>cn/cordys/crm/*/domain/**</exclude>
-                        <exclude>cn/cordys/common/**</exclude>
-                        <exclude>cn/cordys/config/**</exclude>
-                        <exclude>cn/cordys/aspectj/**</exclude>
-                        <exclude>cn/cordys/mybatis/**</exclude>
-                        <exclude>cn/cordys/security/**</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>

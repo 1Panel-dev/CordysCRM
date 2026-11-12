@@ -35,8 +35,7 @@ jobs:
           java-version: 21
           check-latest: false
 
-      # Keep Surefire's argLine defined when the JaCoCo agent is disabled.
       - name: Test and package with Maven
         run: >-
-          mvn -B clean package -Djacoco.skip=true -DargLine=
+          mvn -B clean package
           -DskipAntRunForJenkins --file pom.xml -pl '!frontend'

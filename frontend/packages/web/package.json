@@ -7,6 +7,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "test": "node --test scripts/*.test.mjs",
     "dev": "vite --config ./config/vite.config.dev.ts",
     "build": "vue-tsc --noEmit && vite build --config ./config/vite.config.prod.ts",
     "build:local": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode development",
