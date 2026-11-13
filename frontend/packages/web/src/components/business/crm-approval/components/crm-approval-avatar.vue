@@ -56,8 +56,11 @@
     if (props.signNode) {
       return 'iconicon_add_one';
     }
-    if (status === ProcessStatusEnum.PENDING) {
+    if ([ProcessStatusEnum.PENDING, ProcessStatusEnum.APPROVING, ProcessStatusEnum.NONE].includes(status)) {
       return 'iconicon_block_filled';
+    }
+    if (status === ProcessStatusEnum.REVOKED) {
+      return 'iconicon_skip_planarity';
     }
     if ([ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(status)) {
       return 'iconicon_close_circle_filled';
