@@ -32,6 +32,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -166,23 +169,28 @@ public class ContractControllerTests extends BaseTest {
                 Assertions.assertEquals("contract_test_customer", updated.getCustomerId(),
                         "批量更新客户后，DB 中的 customer_id 应等于请求值");
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
-                // 更新金额
+                // 公式金额不可批量编辑，拒绝请求后保留原值。
+                Contract original = contractMapper.selectByPrimaryKey(addContract.getId());
                 request.setFieldValue("9999.99");
-                this.requestPostWithOk(BATCH_UPDATE, request);
+                this.requestPost(BATCH_UPDATE, request)
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.message").value("不匹配的字段类型"));
 
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
-                Assertions.assertEquals(0, new java.math.BigDecimal("9999.99").compareTo(updated.getAmount()),
-                        "批量更新金额后，DB 中的 amount 应等于请求值");
+                Assertions.assertEquals(original.getAmount(), updated.getAmount(), "拒绝修改公式金额后，原金额应保持不变");
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_NO.getKey())) {
-                // 更新编号
+                // 自动编号不可批量编辑，拒绝请求后保留原值。
+                Contract original = contractMapper.selectByPrimaryKey(addContract.getId());
                 String newNumber = "HT-" + UUID.randomUUID().toString().substring(0, 8);
                 request.setFieldValue(newNumber);
-                this.requestPostWithOk(BATCH_UPDATE, request);
+                this.requestPost(BATCH_UPDATE, request)
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.message").value("不匹配的字段类型"));
 
                 Contract updated = contractMapper.selectByPrimaryKey(addContract.getId());
                 Assertions.assertNotNull(updated);
-                Assertions.assertEquals(newNumber, updated.getNumber(), "批量更新编号后，DB 中的 number 应等于请求值");
+                Assertions.assertEquals(original.getNumber(), updated.getNumber(), "拒绝修改自动编号后，原编号应保持不变");
             } else if (Strings.CS.equals(internalKey, BusinessModuleField.CONTRACT_START_TIME.getKey())) {
                 // 更新开始时间
                 Long newStartTime = System.currentTimeMillis() + 100000L;
