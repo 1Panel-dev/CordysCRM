@@ -24,6 +24,7 @@ import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
@@ -147,6 +148,8 @@ class ApprovalAutoPassFlowTest {
         ReflectionTestUtils.setField(flowService, "formService", formService);
         when(formService.compressResourceDetail(anyString(), anyString())).thenReturn(List.of());
         ReflectionTestUtils.setField(resourceService, "extApprovalInstanceMapper", extInstanceMapper);
+        ReflectionTestUtils.setField(resourceService, "extApprovalResourceSnapshotMapper",
+                mock(ExtApprovalResourceSnapshotMapper.class));
         ReflectionTestUtils.setField(resourceService, "logService", mock(LogService.class));
         doReturn("示例商机").when(resourceService).getInstanceResourceName(FormKey.OPPORTUNITY, "opportunity-1");
         doNothing().when(flowService).updateApprovalPostField(any(), anyString(), any(), anyString());

@@ -303,8 +303,10 @@ public class ApprovalActionService {
             return;
         }
         handler.revertToSnapshot(resourceId, userId, orgId, snapshot.getSnapshotData());
+        String currentSnapshotData = handler.getPreUpdateSnapshotData(resourceId, userId, orgId);
         // 回退成功后清理快照
         approvalResourceSnapshotMapper.deleteByPrimaryKey(snapshot.getId());
+        attachmentService.cleanupSnapshotAttachments(snapshot, currentSnapshotData, orgId, userId);
     }
 
     /**

@@ -366,8 +366,14 @@
     }
   }
 
-  function handleChangeDescriptionConfirm(comment: string) {
-    saveForm({ ...buildSavePayload(), comment }, () => router.back());
+  async function handleChangeDescriptionConfirm(comment: string) {
+    try {
+      await formRef.value?.validate();
+      saveForm({ ...buildSavePayload(), comment }, () => router.back());
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   async function handleReview() {

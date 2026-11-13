@@ -26,6 +26,8 @@ export default {
   'formCreate.repeatTip': '与 {name} 重复',
   'formCreate.repeatTipWithoutName': '系统中存在重复值',
   'formCreate.upload.repeatFileTip': '文件重复',
+  'formCreate.advanced.waitForUpload': '请等待文件上传完成后再提交',
+  'formCreate.advanced.uploadFailed': '文件上传失败，请重试或删除后再提交',
   'formCreate.advanced.overSize': '文件大小限制为 {size} MB，请重新选择文件',
   'formCreate.advanced.selectLocation': '请选择地址',
   'formCreate.advanced.inputLocationDetail': '请输入详细地址',

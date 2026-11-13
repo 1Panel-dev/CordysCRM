@@ -2,7 +2,7 @@
   <van-field
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :required="required"
-    :rules="props.fieldConfig.rules as FieldRule[]"
+    :rules="uploadRules"
     :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
   >
     <template #input>
@@ -11,7 +11,7 @@
         :before-read="handleBeforeRead"
         :before-delete="handleBeforeDelete"
         :after-read="handleAfterRead"
-        :max-count="10"
+        :max-count="props.fieldConfig.uploadLimit || 10"
         multiple
       />
     </template>
@@ -23,7 +23,6 @@
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { Result } from '@lib/shared/types/axios';
 
   import { uploadTempFile } from '@/api/modules';
 
@@ -43,6 +42,17 @@
   });
   const fileList = ref<UploaderFileListItem[]>([]);
   const required = computed(() => props.fieldConfig.rules.some((rule) => rule.key === 'required'));
+  const uploadRules = computed<FieldRule[]>(() => [
+    ...(props.fieldConfig.rules as FieldRule[]),
+    {
+      validator: () => {
+        if (fileList.value.some((file) => file.status === 'uploading')) {
+          return t('formCreate.advanced.waitForUpload');
+        }
+        return !fileList.value.some((file) => file.status === 'failed') || t('formCreate.advanced.uploadFailed');
+      },
+    },
+  ]);
 
   function handleBeforeRead(file: File | File[]) {
     if (fileList.value.length > 0) {
@@ -62,40 +72,18 @@
       showToast(t('formCreate.advanced.overSize', { size: maxSize }));
       return false;
     }
-    if (props.fieldConfig.uploadLimit === 1) {
-      // 单文件上传时，清空之前的文件（得放到校验文件大小之后，避免文件大小限制后文件丢失）
-      fileList.value = [];
-      fileKeys.value = [];
-    }
     return true;
   }
 
   async function handleAfterRead(file: UploaderFileListItem | UploaderFileListItem[]) {
     if (Array.isArray(file)) {
-      const requestArr: Promise<Result<string[]>>[] = [];
-      file.forEach((f) => {
-        if (f.file) {
-          requestArr.push(uploadTempFile(f.file!));
-          f.status = 'uploading';
-        }
-      });
-      try {
-        const resArr = await Promise.all(requestArr);
-        resArr.forEach((res, index) => {
-          fileKeys.value.push(...res.data);
-          file[index].status = 'done';
-          file[index].content = `${PreviewPictureUrl}/${res.data[0]}`;
-        });
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-      }
-      emit('change', fileKeys.value, fileList.value);
+      await Promise.all(file.map(handleAfterRead));
     } else {
       try {
         if (file.file) {
           file.status = 'uploading';
           const res = await uploadTempFile(file.file!);
+          if (!fileList.value.some((item) => item.file === file.file)) return;
           fileKeys.value.push(...res.data);
           file.status = 'done';
           file.content = `${PreviewPictureUrl}/${res.data[0]}`;
@@ -110,7 +98,9 @@
   }
 
   function handleBeforeDelete(file: UploaderFileListItem) {
-    const index = fileList.value.findIndex((item) => item.content === file.content);
+    const index = fileList.value.findIndex(
+      (item) => item === file || (file.file ? item.file === file.file : !!file.content && item.content === file.content)
+    );
     if (index !== -1) {
       fileKeys.value = fileKeys.value.filter((key) => `${PreviewPictureUrl}/${key}` !== file.content);
       fileList.value.splice(index, 1);
@@ -121,7 +111,7 @@
     () => fileKeys.value,
     () => {
       if (fileKeys.value.length === 0) {
-        fileList.value = [];
+        fileList.value = fileList.value.filter((file) => ['uploading', 'failed'].includes(file.status || ''));
       } else if (fileList.value.length !== fileKeys.value.length) {
         fileKeys.value.forEach((key) => {
           if (!fileList.value.some((item) => item.content === `${PreviewPictureUrl}/${key}`)) {
