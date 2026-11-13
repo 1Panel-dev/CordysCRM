@@ -307,6 +307,7 @@
     dataActionMap: () => clueDataActionMap.value,
     isDetail: true,
     shouldUseRolePermissionOnly: () => isConverted.value,
+    forceMoreActionKeys: ['transfer'],
   });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({

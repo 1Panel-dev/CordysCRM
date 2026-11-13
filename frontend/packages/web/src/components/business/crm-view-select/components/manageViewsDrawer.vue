@@ -220,7 +220,7 @@
       width: 150,
       fixed: 'right',
       render: (row) => {
-        if (row.id === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
+        if (nonCopyableInternalViewIds.has(row.id)) {
           return '-';
         }
         return h(CrmOperationButton, {

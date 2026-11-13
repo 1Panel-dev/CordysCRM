@@ -21,11 +21,7 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="
-            activeTab !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION &&
-            hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) &&
-            !props.readonly
-          "
+          v-if="!isReadonlyView && hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) && !props.readonly"
           type="primary"
           @click="handleNewClick"
         >
@@ -38,11 +34,7 @@
           @import-success="() => searchData()"
         />
         <n-button
-          v-if="
-            hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) &&
-            activeTab !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION &&
-            !props.readonly
-          "
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && !isReadonlyView && !props.readonly"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -285,6 +277,7 @@
   const tableRemoveRefreshId = ref('');
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferLoading = ref(false);
+  const isReadonlyView = computed(() => [CustomerSearchTypeEnum.CUSTOMER_COLLABORATION].includes(activeTab.value));
   const transferForm = ref<any>({
     owner: null,
   });
@@ -298,7 +291,7 @@
       },
     };
 
-    if (activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
+    if (!isReadonlyView.value) {
       actions.edit = {
         label: t('common.edit'),
         key: 'edit',
@@ -716,7 +709,7 @@
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const tableColumns = computed(() => {
-    if (activeTab.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
+    if (isReadonlyView.value) {
       return propsRes.value.columns
         .filter((item: any) => item.type !== 'selection')
         .map((e) => {
