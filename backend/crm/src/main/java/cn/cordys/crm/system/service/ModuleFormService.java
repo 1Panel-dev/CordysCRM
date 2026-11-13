@@ -262,10 +262,8 @@ public class ModuleFormService {
         List<BaseField> fields = config.getFields().stream()
                 .filter(f -> {
                     if (f instanceof ProductSubField || f instanceof PriceSubField) {
-                        if (StringUtils.isBlank(f.getBusinessKey())) {
-                            // 过滤掉非业务字段的子表格字段
-                            return false;
-                        }
+                        // 过滤掉非业务字段的子表格字段
+                        return !StringUtils.isBlank(f.getBusinessKey());
                     }
                     return true;
                 })
@@ -916,7 +914,7 @@ public class ModuleFormService {
 
     private boolean isRelatedField(BaseField field, String sourceType) {
         return field instanceof DatasourceField datasourceField
-                && StringUtils.equals(datasourceField.getDataSourceType(), sourceType);
+                && Strings.CS.equals(datasourceField.getDataSourceType(), sourceType);
     }
 
     public List<BaseField> getAllFields(String formKey, String orgId) {
@@ -2152,14 +2150,14 @@ public class ModuleFormService {
 
         List<BaseField> fields = allFields
                 .stream()
-                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f))
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && BaseField.canImport(f))
                 .toList();
 
         List<List<String>> heads = new ArrayList<>();
         fields.forEach(field -> {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 subField.getSubFields().forEach(f -> {
-                    if (!f.canImport(f)) {
+                    if (!BaseField.canImport(f)) {
                         return;
                     }
                     List<String> head = new ArrayList<>();
@@ -3486,7 +3484,7 @@ public class ModuleFormService {
 
         List<BaseField> fields = allFields
                 .stream()
-                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && BaseField.canImport(f)
                         && !Strings.CI.equals(f.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()))
                 .toList();
 
@@ -3494,7 +3492,7 @@ public class ModuleFormService {
         fields.forEach(field -> {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 subField.getSubFields().forEach(f -> {
-                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !f.canImport(f)) {
+                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !BaseField.canImport(f)) {
                         return;
                     }
                     List<String> head = new ArrayList<>();
@@ -3515,12 +3513,11 @@ public class ModuleFormService {
             return null;
         }
 
-        List<BaseField> fields = allFields
+        return allFields
                 .stream()
-                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && BaseField.canImport(f)
                         && !Strings.CI.equals(f.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()))
                 .toList();
-        return fields;
     }
 
 }
