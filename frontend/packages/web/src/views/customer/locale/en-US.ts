@@ -44,8 +44,12 @@ export default {
   'customer.longTerm': 'Unlimited',
   'customer.opportunityInfo': 'Opportunity Information',
   'customer.cooperation': 'Cooperation',
-  'customer.cooperationTip':
-    'Account Info Only: business data is limited to records you own; Read Only: view all account data without changes; Joint Follow-up: view and edit all account data together',
+  'customer.collaborationDescription.infoOnly':
+    'View basic account information. For follow-ups, contacts, opportunities, contracts, and other business tabs, only your own records are visible.',
+  'customer.collaborationDescription.readOnly':
+    'View all account data from the owner’s perspective without making changes; ideal for onboarding and learning.',
+  'customer.collaborationDescription.jointFollow':
+    'View and collaboratively edit all account data without data-permission restrictions.',
   'customer.deleteMemberTip': 'After deletion, the member will no longer have the account permission',
   'customer.batchDeleteMemberTip': 'Are you sure to delete {count} members?',
   'customer.contacts.all': 'All contacts',

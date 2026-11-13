@@ -25,6 +25,7 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   dataActionMap: Record<string, ActionsItem> | ((row: Row) => Record<string, ActionsItem>);
   isDetail?: boolean;
   maxVisibleActions?: number;
+  forceMoreActionKeys?: string[]; // 强制收纳到更多操作的操作 key
   getApprovalStatus?: (row: Row) => ProcessStatusEnum;
   getBizStatus?: (row: Row) => string | undefined;
   identityResolver?: {
@@ -316,6 +317,25 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     const newActions = options.isDetail
       ? actions.map((e) => ({ ...e, danger: ['delete', 'unPass'].includes(e.key ?? '') }))
       : actions;
+    const forceMoreActionKeys = new Set(options.forceMoreActionKeys);
+    const forceMoreActions = newActions.filter((action) => forceMoreActionKeys.has(action.key as string));
+
+    if (forceMoreActions.length) {
+      const normalActions = newActions.filter((action) => !forceMoreActionKeys.has(action.key as string));
+      const moreList = [...normalActions.slice(realVisibleNumber), ...forceMoreActions];
+
+      return {
+        groupList: [
+          ...normalActions.slice(0, realVisibleNumber),
+          {
+            label: 'more',
+            key: 'more',
+            slotName: 'more',
+          },
+        ],
+        moreList,
+      };
+    }
 
     if (actions.length <= realVisibleNumber) {
       return {

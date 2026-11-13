@@ -7,25 +7,30 @@
         hide-if-no-status
       />
     </template>
-    <template #titleRight>
-      <div
-        v-if="collaborators.length"
-        class="mr-[12px] flex cursor-pointer items-center -space-x-[6px]"
-        @click="activeTab = 'collaborator'"
-      >
-        <n-avatar round :size="28" class="border-2 border-white bg-[var(--primary-1)] text-white">
-          {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
-        </n-avatar>
-        <n-avatar
-          v-for="person in collaborators"
-          :key="person.id"
-          round
-          :size="28"
-          class="border-2 border-white bg-[var(--text-n5)] text-white"
+    <template #title>
+      <div class="flex min-w-0 items-center gap-[12px]">
+        <div class="one-line-text !leading-[20px]" :title="sourceName">{{ sourceName }}</div>
+        <div
+          v-if="collaborators.length"
+          class="flex flex-shrink-0 cursor-pointer items-center -space-x-[4px]"
+          @click="activeTab = 'collaborator'"
         >
-          {{ person.userName?.slice(0, 1) || '?' }}
-        </n-avatar>
+          <n-avatar round :size="24" class="bg-[var(--primary-1)] text-white ring-2 ring-white">
+            {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
+          </n-avatar>
+          <n-avatar
+            v-for="person in collaborators"
+            :key="person.id"
+            round
+            :size="24"
+            class="bg-[var(--text-n5)] text-white ring-2 ring-white"
+          >
+            {{ person.userName?.slice(0, 1) || '?' }}
+          </n-avatar>
+        </div>
       </div>
+    </template>
+    <template #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :group-list="detailActions.groupList"
@@ -138,7 +143,12 @@
           />
         </div>
         <div v-if="activeTab === 'collaborator'" class="h-full px-[24px] pt-[24px]">
-          <collaborator :source-id="props.sourceId" :readonly="props.readonly" />
+          <collaborator
+            :source-id="props.sourceId"
+            :collaborators="collaborators"
+            :readonly="props.readonly"
+            @refresh="initCollaborators"
+          />
         </div>
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
           <ContractTable
@@ -221,7 +231,7 @@
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { CollaborationType } from '@lib/shared/models/customer';
+  import type { CollaborationItem, CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -299,7 +309,7 @@
   const detailInfo = ref<Record<string, any>>({});
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
-  const collaborators = ref<{ id: string; userName: string }[]>([]);
+  const collaborators = ref<CollaborationItem[]>([]);
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
   const customerDataActionMap = computed<Record<string, ActionsItem>>(() => ({
@@ -356,6 +366,7 @@
     formType: FormDesignKeyEnum.CUSTOMER,
     dataActionMap: () => customerDataActionMap.value,
     isDetail: true,
+    forceMoreActionKeys: ['transfer'],
   });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
@@ -376,15 +387,13 @@
     const detailAction = resolveRowOperation(detailInfo.value);
 
     return {
-      moreList: [...detailAction.moreList, ...detailAction.groupList.filter((e) => e.key === 'transfer')],
-      groupList: detailAction.groupList
-        .filter((e) => e.key !== 'transfer')
-        .map((e) => ({
-          ...e,
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
-        })),
+      moreList: detailAction.moreList,
+      groupList: detailAction.groupList.map((e) => ({
+        ...e,
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+      })),
     };
   });
 
@@ -694,6 +703,21 @@
     showContractDetailDrawer.value = false;
   }
 
+  async function initCollaborators() {
+    const { sourceId } = props;
+    if (!show.value || !sourceId) {
+      collaborators.value = [];
+      return;
+    }
+
+    try {
+      const list = await getCustomerCollaborationList({ customerId: sourceId });
+      if (show.value && props.sourceId === sourceId) collaborators.value = list;
+    } catch {
+      if (props.sourceId === sourceId) collaborators.value = [];
+    }
+  }
+
   watch(
     [() => show.value, () => props.sourceId],
     ([visible, sourceId]) => {
@@ -702,13 +726,7 @@
         collaborators.value = [];
       } else if (sourceId) {
         initApprovalPermission();
-        getCustomerCollaborationList({ customerId: sourceId })
-          .then((list) => {
-            if (show.value && props.sourceId === sourceId) collaborators.value = list;
-          })
-          .catch(() => {
-            if (props.sourceId === sourceId) collaborators.value = [];
-          });
+        initCollaborators();
       } else {
         collaborators.value = [];
       }
