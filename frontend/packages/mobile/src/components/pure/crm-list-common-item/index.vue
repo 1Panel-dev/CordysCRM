@@ -12,7 +12,10 @@
           :tag="item.stageName ?? ''"
           :text-color="getStage(item.stage)?.color"
         />
-        <ApprovalStatus v-if="item.approvalStatus" :status="item.approvalStatus" />
+        <ApprovalStatus
+          v-if="props.showApprovalStatus !== false && item.approvalStatus"
+          :status="item.approvalStatus"
+        />
         <CrmTag
           v-if="item.frozen"
           bg-color="var(--warning-5)"
@@ -98,6 +101,7 @@
   const props = defineProps<{
     item: Record<string, any>;
     hiddenStage?: boolean;
+    showApprovalStatus?: boolean;
     actions?: CrmListCommonItemActionsItem[];
     resourceType?: 'customer' | 'lead';
   }>();

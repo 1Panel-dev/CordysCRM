@@ -1,7 +1,11 @@
 <template>
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
+      <CrmApprovalStatus
+        v-if="enableApproval"
+        :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+        hide-if-no-status
+      />
     </template>
     <template #titleRight>
       <div
@@ -327,12 +331,18 @@
     },
   }));
 
-  const { initApprovalPermission, resolveRowOperation, updateExecute, deleteExecute, hasApprovalScopedPermission } =
-    useApprovalOperation<Record<string, any>>({
-      formType: FormDesignKeyEnum.CUSTOMER,
-      dataActionMap: () => customerDataActionMap.value,
-      isDetail: true,
-    });
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    updateExecute,
+    deleteExecute,
+    hasApprovalScopedPermission,
+  } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.CUSTOMER,
+    dataActionMap: () => customerDataActionMap.value,
+    isDetail: true,
+  });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CUSTOMER,
@@ -558,6 +568,9 @@
         try {
           await deleteCustomer(props.sourceId);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            emit('approvalSuccess');
+          }
           emit('deleted');
           show.value = false;
         } catch (error) {
@@ -596,7 +609,10 @@
 
   function handleRevoke() {
     revokeByResourceId(props.sourceId, {
-      onSuccess: handleSaved,
+      onSuccess: async () => {
+        await initApprovalPermission();
+        handleSaved();
+      },
     });
   }
 
@@ -650,6 +666,8 @@
 
   function handleRemoveSuccess() {
     show.value = false;
+    // 移入公海可能移除最后一条审批中数据；通知列表重新获取审批配置以更新状态列显隐。
+    emit('approvalSuccess');
     emit('deleted');
   }
 

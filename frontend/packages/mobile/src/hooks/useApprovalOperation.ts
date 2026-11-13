@@ -62,6 +62,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   const statusPermissionMap = ref<Map<ProcessStatusEnum, Set<string>>>(new Map());
 
   const enableApproval = ref(false);
+  const showApprovalStatus = ref(false);
   const createExecute = ref(false);
   const updateExecute = ref(false);
   const deleteExecute = ref(false);
@@ -205,9 +206,11 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
       approvalConfig.value = result;
       enableApproval.value = Boolean(result?.enable);
+      showApprovalStatus.value = Boolean(result?.enable || result?.existApprovingData);
       createExecute.value = Boolean(result?.createExecute);
       updateExecute.value = Boolean(result?.updateExecute);
-      deleteExecute.value = Boolean(result?.deleteExecute);
+      // 流程关闭后仍会返回历史配置，删除执行时机仅在流程启用时生效。
+      deleteExecute.value = Boolean(result?.enable && result?.deleteExecute);
       statusPermissionMap.value = buildStatusPermissionMap(result?.statusPermissions ?? []);
     } catch (error) {
       if (requestToken !== approvalPermissionRequestToken) {
@@ -215,6 +218,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
       }
       approvalConfig.value = null;
       enableApproval.value = false;
+      showApprovalStatus.value = false;
       createExecute.value = false;
       updateExecute.value = false;
       deleteExecute.value = false;
@@ -232,6 +236,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   return {
     approvalConfig,
     enableApproval,
+    showApprovalStatus,
     createExecute,
     updateExecute,
     deleteExecute,

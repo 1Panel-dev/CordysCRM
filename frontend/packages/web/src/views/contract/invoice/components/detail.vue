@@ -10,7 +10,11 @@
   >
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" hide-if-no-status />
+        <CrmApprovalStatus
+          v-if="enableApproval"
+          :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE"
+          hide-if-no-status
+        />
       </div>
     </template>
     <template v-if="!props.readonly" #titleRight>
@@ -219,7 +223,7 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute, hasApprovalScopedPermission } =
     useApprovalOperation<ContractInvoiceItem>({
       formType: FormDesignKeyEnum.INVOICE,
       dataActionMap: invoiceDetailDataActionMap,
@@ -280,6 +284,9 @@
         try {
           await deleteInvoiced(row.id);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            emit('approvalSuccess');
+          }
           visible.value = false;
           emit('delete');
         } catch (error) {
@@ -319,7 +326,8 @@
 
   function handleRevoke() {
     revokeByResourceId(props.sourceId, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await initApprovalPermission();
         handleSaved();
       },
     });

@@ -8,7 +8,11 @@
     :view-size="formViewSize"
   >
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
+      <CrmApprovalStatus
+        v-if="enableApproval"
+        :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+        hide-if-no-status
+      />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -223,7 +227,9 @@
     )
   );
 
-  const { initApprovalPermission, resolveRowActions, deleteExecute } = useApprovalOperation<Record<string, any>>({
+  const { initApprovalPermission, resolveRowActions, enableApproval, deleteExecute } = useApprovalOperation<
+    Record<string, any>
+  >({
     formType: FormDesignKeyEnum.CLUE_POOL,
     poolId: computed(() => props.poolId),
     dataActionMap: {
@@ -313,8 +319,10 @@
             assignUserId: distributeForm.value.owner || '',
             clueId: sourceId.value,
           });
+          await initApprovalPermission(true);
           Message.success(t('common.distributeSuccess'));
           resetDistributeForm();
+          emit('approvalSuccess');
           emit('remove');
           show.value = false;
         } catch (e) {
@@ -339,6 +347,10 @@
         try {
           await deleteCluePool(sourceId.value);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+            emit('approvalSuccess');
+          }
           show.value = false;
           emit('remove');
         } catch (error) {
@@ -357,7 +369,9 @@
         clueId: sourceId.value,
         poolId: props.poolId,
       });
+      await initApprovalPermission(true);
       Message.success(t('common.claimSuccess'));
+      emit('approvalSuccess');
       emit('remove');
       show.value = false;
       openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
@@ -398,7 +412,10 @@
         break;
       case 'revoke':
         revokeByResourceId(sourceId.value, {
-          onSuccess: handleSaved,
+          onSuccess: async () => {
+            await initApprovalPermission();
+            handleSaved();
+          },
         });
         break;
       case 'pop-claim':

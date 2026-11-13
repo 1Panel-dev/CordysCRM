@@ -93,6 +93,7 @@
     @deleted="removeItemFromList(activeSourceId)"
     @delete-approved="searchData"
     @transfer="searchData"
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
   />
   <CrmFormCreateDrawer
@@ -125,7 +126,7 @@
     :name="initialSourceName"
     type="warning"
     :show-approval-tip="Array.isArray(moveIds) ? batchMoveToOpenSeaApprovalTip : ''"
-    @refresh="Array.isArray(moveIds) ? (tableRefreshId += 1) : removeItemFromList(moveIds.toString())"
+    @refresh="handleMoveRefresh"
   />
 
   <CrmBatchEditModal
@@ -335,6 +336,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,
@@ -386,6 +388,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteCustomer(checkedRowKeys.value);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
@@ -471,6 +476,9 @@
         try {
           await deleteCustomer(row.id);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -536,7 +544,10 @@
         break;
       case 'revoke':
         revokeByResourceId(row.id, {
-          onSuccess: (resourceId) => handleSearchData.value?.(undefined, resourceId),
+          onSuccess: async (resourceId) => {
+            await initApprovalPermission();
+            handleSearchData.value?.(undefined, resourceId);
+          },
         });
         break;
       case 'edit':
@@ -701,6 +712,7 @@
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
     enableApproval,
+    showApprovalStatus,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const tableColumns = computed(() => {
@@ -733,14 +745,16 @@
   }
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('common.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: processStatusOptions,
-      },
-    },
+    ...(enableApproval.value
+      ? [
+          {
+            title: t('common.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            selectProps: { options: processStatusOptions },
+          },
+        ]
+      : []),
     {
       title: t('opportunity.department'),
       dataIndex: 'departmentId',
@@ -875,6 +889,15 @@
       ...propsRes.value.crmPagination,
       itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
     };
+  }
+
+  async function handleMoveRefresh() {
+    await initApprovalPermission();
+    if (Array.isArray(moveIds.value)) {
+      tableRefreshId.value += 1;
+      return;
+    }
+    removeItemFromList(moveIds.value.toString());
   }
 
   watch(

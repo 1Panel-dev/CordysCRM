@@ -100,6 +100,7 @@
     getCustomerHeaderList,
     pickOpenSeaCustomer,
   } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -263,6 +264,7 @@
         customerId: sourceId.value,
         poolId: poolId.value,
       });
+      clearApprovalConfigCache(FormDesignKeyEnum.CUSTOMER);
       showSuccessToast(t('common.pickSuccess'));
       await sleep(300);
       router.back();
@@ -298,6 +300,9 @@
         try {
           showLoadingToast(t('common.deleting'));
           await deleteOpenSeaCustomer(sourceId.value);
+          if (!deleteExecute.value) {
+            clearApprovalConfigCache(FormDesignKeyEnum.CUSTOMER);
+          }
           showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           if (deleteExecute.value) {
             await refreshDetail();

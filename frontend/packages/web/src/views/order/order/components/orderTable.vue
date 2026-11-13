@@ -135,6 +135,7 @@
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
     :readonly="props.readonly"
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
     @open-contract-drawer="showContractDrawer"
@@ -396,6 +397,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -428,6 +430,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteOrder(checkedRowKeys.value);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           handleRefresh();
         } catch (error) {
@@ -478,6 +483,9 @@
       onPositiveClick: async () => {
         try {
           await deleteOrder(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshSignal.value = {
             id: row.id,
@@ -501,7 +509,8 @@
 
   function handleRevoke(row: OrderItem) {
     revokeByResourceId(row.id, {
-      onSuccess: (resourceId) => {
+      onSuccess: async (resourceId) => {
+        await initApprovalPermission();
         tableItemRefreshId.value = resourceId;
       },
     });
@@ -665,6 +674,7 @@
     orderStage: stageConfig.value?.stageConfigList || [],
     permission: ['ORDER:UPDATE', 'ORDER:DELETE'],
     enableApproval,
+    showApprovalStatus,
   });
   const {
     propsRes,
@@ -717,14 +727,16 @@
           })) || [],
       },
     },
-    {
-      title: t('common.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: processStatusOptions,
-      },
-    },
+    ...(enableApproval.value
+      ? [
+          {
+            title: t('common.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            selectProps: { options: processStatusOptions },
+          },
+        ]
+      : []),
     ...baseFilterConfigList,
   ]);
 

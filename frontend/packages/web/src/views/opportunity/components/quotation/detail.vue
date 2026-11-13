@@ -255,14 +255,6 @@
     });
   }
 
-  function handleRevoke() {
-    revokeByResourceId(props.sourceId, {
-      onSuccess: () => {
-        handleSavedRefresh();
-      },
-    });
-  }
-
   function handleFormReview(res: any) {
     reviewByFormResult(res, {
       onSuccess: () => {
@@ -295,7 +287,7 @@
     emit('refresh');
   }
 
-  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute, hasApprovalScopedPermission } =
     useApprovalOperation<Record<string, any>>({
       formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
       dataActionMap: quotationDataActionMap,
@@ -312,6 +304,15 @@
       },
     });
 
+  function handleRevoke() {
+    revokeByResourceId(props.sourceId, {
+      onSuccess: async () => {
+        await initApprovalPermission();
+        handleSavedRefresh();
+      },
+    });
+  }
+
   function handleDelete() {
     openModal({
       type: 'error',
@@ -323,6 +324,9 @@
         try {
           await deleteQuotation(props.sourceId);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            emit('approvalSuccess');
+          }
           visible.value = false;
           emit('remove');
         } catch (error) {
@@ -382,7 +386,7 @@
     };
   });
   const isShowApprovalStatus = computed(() => {
-    return !detailInfo.value?.invalid;
+    return enableApproval.value && !detailInfo.value?.invalid;
   });
 
   const formDescriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();

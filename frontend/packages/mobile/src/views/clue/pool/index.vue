@@ -41,6 +41,7 @@
       <template #item="{ item }">
         <CrmListCommonItem
           :item="item"
+          :show-approval-status="showApprovalStatus"
           :actions="getListItemActions(item)"
           resource-type="lead"
           @click="(value) => goDetail(value as CluePoolListItem)"
@@ -66,6 +67,7 @@
   } from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteCluePool, getCluePoolList, getPoolOptions, pickClue } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import { hasAnyPermission } from '@/utils/permission';
@@ -89,7 +91,7 @@
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CLUE,
   });
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<CluePoolListItem>({
       formType: FormDesignKeyEnum.CLUE_POOL,
       poolId: activeFilter,
@@ -118,6 +120,8 @@
         clueId: id,
         poolId: activeFilter.value,
       });
+      clearApprovalConfigCache(FormDesignKeyEnum.CLUE);
+      await initApprovalPermission();
       showSuccessToast(t('common.pickSuccess'));
       await sleep(300);
       refreshList();
@@ -150,6 +154,10 @@
           try {
             showLoadingToast(t('common.deleting'));
             await deleteCluePool(id);
+            if (!deleteExecute.value) {
+              clearApprovalConfigCache(FormDesignKeyEnum.CLUE);
+              await initApprovalPermission();
+            }
             showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
             refreshList();
             return Promise.resolve(true);

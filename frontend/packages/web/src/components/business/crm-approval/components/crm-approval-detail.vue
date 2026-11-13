@@ -395,6 +395,7 @@
     revokeApproval,
     revokeResource,
   } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
 
@@ -783,6 +784,7 @@
         approverId: currentTaskNode.value.approverId,
         comment: approvalOpinion.value,
       });
+      clearApprovalConfigCache(props.formKey);
       message.success(t('common.approved'));
       approvalOpinionModalVisible.value = false;
       if (approvalInfo.value?.executeTime === ApprovalTaskExecuteTimeEnum.DELETE) {
@@ -861,6 +863,7 @@
             resubmitMode: resubmitMode.value,
             resubmitStartNodeNumber: getResubmitStartNodeNumber(),
           });
+          clearApprovalConfigCache(props.formKey);
           message.success(t('common.rejected'));
           approvalOpinionModalVisible.value = false;
           if (!props.approvalTaskId) {
@@ -1071,6 +1074,7 @@
                 resourceId: props.sourceId,
                 formKey: props.formKey,
               });
+              clearApprovalConfigCache(props.formKey);
               message.success(t('common.revokeSuccess'));
               initApprovalDetail();
               emit('refresh');
@@ -1093,6 +1097,7 @@
               await revokeApproval({
                 id: prevMineApprovalNode.value?.taskId || '',
               });
+              clearApprovalConfigCache(props.formKey);
               message.success(t('crm.approval.cancelApprovalSuccess'));
               initApprovalDetail();
               emit('refresh');

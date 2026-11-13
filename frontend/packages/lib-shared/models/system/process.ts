@@ -205,6 +205,7 @@ export interface UpdateApprovalProcessParams extends AddApprovalProcessParams {
 }
 
 export interface ApprovalProcessDetail extends UpdateApprovalProcessParams {
+  existApprovingData: boolean; // 流程关闭后，是否仍存在审批中的数据
   permissions: PermissionItem[];
   id: string;
   number: string;

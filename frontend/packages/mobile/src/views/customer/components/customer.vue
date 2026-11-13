@@ -49,6 +49,7 @@
       <template #item="{ item }">
         <CrmListCommonItem
           :item="item"
+          :show-approval-status="showApprovalStatus"
           :actions="getListItemActions(item)"
           @click="(value) => goDetail(value as CustomerListItem)"
         ></CrmListCommonItem>
@@ -71,6 +72,7 @@
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteCustomer, getCustomerList } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
@@ -116,7 +118,7 @@
   });
 
   const refreshList = () => crmListRef.value?.loadList(true);
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<CustomerListItem>({
       formType: FormDesignKeyEnum.CUSTOMER,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
@@ -203,6 +205,10 @@
             if (action === 'confirm') {
               try {
                 await deleteCustomer(item.id);
+                if (!deleteExecute.value) {
+                  clearApprovalConfigCache(FormDesignKeyEnum.CUSTOMER);
+                  await initApprovalPermission();
+                }
                 showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
                 crmListRef.value?.loadList(true);
                 return Promise.resolve(true);

@@ -2,7 +2,11 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :footer="false" :title="title" :view-size="formViewSize">
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
-        <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
+        <CrmApprovalStatus
+          v-if="enableApproval"
+          :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+          hide-if-no-status
+        />
       </div>
     </template>
     <template #titleRight>
@@ -473,6 +477,9 @@
         try {
           await deleteContract(row.id);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            emit('approvalSuccess');
+          }
           visible.value = false;
           emit('delete');
         } catch (error) {
@@ -485,7 +492,8 @@
 
   function handleRevoke() {
     revokeByResourceId(props.sourceId, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await initApprovalPermission();
         handleSaved();
       },
     });

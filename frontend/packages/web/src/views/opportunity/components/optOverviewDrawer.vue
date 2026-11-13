@@ -16,7 +16,11 @@
       </n-tooltip>
     </template>
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
+      <CrmApprovalStatus
+        v-if="enableApproval"
+        :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+        hide-if-no-status
+      />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -284,23 +288,29 @@
     },
   }));
 
-  const { initApprovalPermission, resolveRowOperation, updateExecute, deleteExecute, hasApprovalScopedPermission } =
-    useApprovalOperation<Record<string, any>>({
-      formType: FormDesignKeyEnum.BUSINESS,
-      dataActionMap: () => opportunityDataActionMap.value,
-      isDetail: true,
-      specialActionFilter: (_row: Record<string, any>, actionKeys: string[]) => {
-        if (isFail.value) {
-          return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
-        }
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    updateExecute,
+    deleteExecute,
+    hasApprovalScopedPermission,
+  } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.BUSINESS,
+    dataActionMap: () => opportunityDataActionMap.value,
+    isDetail: true,
+    specialActionFilter: (_row: Record<string, any>, actionKeys: string[]) => {
+      if (isFail.value) {
+        return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+      }
 
-        if (isSuccess.value && !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])) {
-          return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
-        }
+      if (isSuccess.value && !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])) {
+        return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+      }
 
-        return actionKeys;
-      },
-    });
+      return actionKeys;
+    },
+  });
 
   async function handleBeforeChangeStage() {
     return getUpdateReviewExtraParams(Boolean(detailInfo.value?.approved && updateExecute.value));
@@ -475,6 +485,9 @@
         try {
           await deleteOpt(sourceId.value);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            emit('approvalSuccess');
+          }
           showOptOverviewDrawer.value = false;
           emit('remove');
         } catch (error) {
@@ -504,7 +517,10 @@
 
   function handleRevoke() {
     revokeByResourceId(sourceId.value, {
-      onSuccess: refreshList,
+      onSuccess: async () => {
+        await initApprovalPermission();
+        refreshList();
+      },
     });
   }
 

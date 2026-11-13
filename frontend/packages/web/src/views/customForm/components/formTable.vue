@@ -78,6 +78,7 @@
     :customFormId="props.formKey"
     :refreshId="refreshKey"
     @edit="handleEdit"
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
   />
@@ -206,6 +207,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -244,6 +246,9 @@
       onPositiveClick: async () => {
         try {
           await deleteCustomFormData(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshSignal.value = {
             id: row.id,
@@ -271,7 +276,10 @@
         break;
       case 'revoke':
         revokeByResourceId(row.id, {
-          onSuccess: () => handleSearchData.value?.(undefined, row.id),
+          onSuccess: async () => {
+            await initApprovalPermission();
+            handleSearchData.value?.(undefined, row.id);
+          },
         });
         break;
       default:
@@ -357,19 +365,22 @@
     permission: [],
     containerClass: '.crm-customForm-table',
     enableApproval,
+    showApprovalStatus,
   });
 
   const { propsRes, propsEvent, loadList, setLoadListParams, tableQueryParams, setAdvanceFilter } = useTableRes;
   const formColumns = computed(() => columns.value);
   const customFormFilterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('common.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: processStatusOptions,
-      },
-    },
+    ...(enableApproval.value
+      ? [
+          {
+            title: t('common.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            selectProps: { options: processStatusOptions },
+          },
+        ]
+      : []),
     {
       title: t('opportunity.department'),
       dataIndex: 'departmentId',
@@ -510,6 +521,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteCustomFormData(checkedRowKeys.value as string[]);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {

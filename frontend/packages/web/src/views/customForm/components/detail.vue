@@ -9,7 +9,7 @@
     :view-size="formViewSize"
   >
     <template #titleLeft>
-      <CrmApprovalStatus :status="currentApprovalStatus" hide-if-no-status />
+      <CrmApprovalStatus v-if="enableApproval" :status="currentApprovalStatus" hide-if-no-status />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -174,7 +174,7 @@
       danger: true,
     },
   };
-  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute, hasApprovalScopedPermission } =
     useApprovalOperation<Record<string, any>>({
       formType: approvalFormKey,
       dataActionMap: customFormActionMap,
@@ -327,6 +327,9 @@
         try {
           await deleteCustomFormData(props.sourceId);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            emit('approvalSuccess');
+          }
           emit('delete');
           visible.value = false;
         } catch (error) {
@@ -352,7 +355,10 @@
         break;
       case 'revoke':
         revokeByResourceId(props.sourceId, {
-          onSuccess: handleSavedRefresh,
+          onSuccess: async () => {
+            await initApprovalPermission();
+            handleSavedRefresh();
+          },
         });
         break;
       default:

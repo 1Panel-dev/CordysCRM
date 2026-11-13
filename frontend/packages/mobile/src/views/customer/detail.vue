@@ -141,6 +141,7 @@
   import relation from './components/relation.vue';
 
   import { deleteCustomer, getApprovalResourceDetail, getCustomerHeaderList } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -331,6 +332,9 @@
         if (action === 'confirm') {
           try {
             await deleteCustomer(id);
+            if (!deleteExecute.value) {
+              clearApprovalConfigCache(FormDesignKeyEnum.CUSTOMER);
+            }
             showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
             router.back();
             return Promise.resolve(true);

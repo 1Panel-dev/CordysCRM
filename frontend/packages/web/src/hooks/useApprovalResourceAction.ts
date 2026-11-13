@@ -4,6 +4,7 @@ import { useMessage } from 'naive-ui';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { reviewResource, revokeResource } from '@/api/modules';
+import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
 import useModal from '@/hooks/useModal';
 
 interface ApprovalResourceActionHandlers {
@@ -66,6 +67,7 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
         resourceId,
         formKey: unref(options.formKey),
       });
+      clearApprovalConfigCache(unref(options.formKey));
       Message.success(t('common.revokeSuccess'));
       await callback?.onSuccess?.(resourceId);
     } catch (error) {

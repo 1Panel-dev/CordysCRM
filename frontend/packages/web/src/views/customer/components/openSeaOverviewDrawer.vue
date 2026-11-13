@@ -1,7 +1,11 @@
 <template>
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
+      <CrmApprovalStatus
+        v-if="enableApproval"
+        :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+        hide-if-no-status
+      />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -223,7 +227,9 @@
     );
   });
 
-  const { initApprovalPermission, resolveRowActions, deleteExecute } = useApprovalOperation<Record<string, any>>({
+  const { initApprovalPermission, resolveRowActions, enableApproval, deleteExecute } = useApprovalOperation<
+    Record<string, any>
+  >({
     formType: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
     poolId: computed(() => props.poolId),
     dataActionMap: {
@@ -348,6 +354,10 @@
         try {
           await deleteOpenSeaCustomer(props.sourceId);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+            emit('approvalSuccess');
+          }
           emit('delete');
           show.value = false;
         } catch (error) {
@@ -365,7 +375,9 @@
         customerId: id,
         poolId: props.poolId,
       });
+      await initApprovalPermission(true);
       Message.success(t('common.claimSuccess'));
+      emit('approvalSuccess');
       emit('delete');
       show.value = false;
       openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
@@ -386,8 +398,10 @@
         customerId: id,
         assignUserId: distributeForm.value.owner || '',
       });
+      await initApprovalPermission(true);
       Message.success(t('common.distributeSuccess'));
       resetDistributeForm();
+      emit('approvalSuccess');
       emit('delete');
       show.value = false;
     } catch (error) {
@@ -423,7 +437,10 @@
         break;
       case 'revoke':
         revokeByResourceId(props.sourceId, {
-          onSuccess: handleSaved,
+          onSuccess: async () => {
+            await initApprovalPermission();
+            handleSaved();
+          },
         });
         break;
       case 'delete':

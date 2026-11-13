@@ -150,6 +150,7 @@
   import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
 
   import { deleteOpt, getApprovalResourceDetail, getOpportunityStageConfig } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -376,6 +377,9 @@
             if (action === 'confirm') {
               try {
                 await deleteOpt(sourceId.value);
+                if (!deleteExecute.value) {
+                  clearApprovalConfigCache(FormDesignKeyEnum.BUSINESS);
+                }
                 showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
                 router.back();
                 return Promise.resolve(true);

@@ -80,6 +80,7 @@
     v-if="isInitOverviewDrawer"
     v-model:show="showOverviewDrawer"
     :detail="activeClue"
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="handleRefresh"
     @open-customer-drawer="handleOpenCustomerDetail"
     @saved="() => searchData(undefined, activeClue?.id)"
@@ -121,7 +122,7 @@
     :name="activeRowName"
     type="warning"
     :show-approval-tip="Array.isArray(moveIds) ? batchMoveToPoolApprovalTip : ''"
-    @refresh="() => handleRefresh()"
+    @refresh="handleMoveToPoolRefresh"
   />
   <customerOverviewDrawer
     v-if="isInitCustomerDrawer"
@@ -337,6 +338,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,
@@ -396,6 +398,11 @@
     }
   }
 
+  async function handleMoveToPoolRefresh() {
+    await initApprovalPermission();
+    handleRefresh();
+  }
+
   // 批量删除
   function handleBatchDelete() {
     moveIds.value = [];
@@ -409,6 +416,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteClue(checkedRowKeys.value as string[]);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           handleRefresh();
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
@@ -497,6 +507,9 @@
         try {
           await deleteClue(row.id);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -588,7 +601,10 @@
         break;
       case 'revoke':
         revokeByResourceId(row.id, {
-          onSuccess: (resourceId) => handleSearchData.value?.(undefined, resourceId),
+          onSuccess: async (resourceId) => {
+            await initApprovalPermission();
+            handleSearchData.value?.(undefined, resourceId);
+          },
         });
         break;
       case 'edit':
@@ -627,7 +643,7 @@
     }
   }
 
-  await initApprovalPermission();
+  await initApprovalPermission(true);
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.tableFormKey,
@@ -718,6 +734,7 @@
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
     enableApproval,
+    showApprovalStatus,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const exportParams = computed(() => {
@@ -728,14 +745,16 @@
   });
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('common.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: processStatusOptions,
-      },
-    },
+    ...(enableApproval.value
+      ? [
+          {
+            title: t('common.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            selectProps: { options: processStatusOptions },
+          },
+        ]
+      : []),
     {
       title: t('opportunity.department'),
       dataIndex: 'departmentId',

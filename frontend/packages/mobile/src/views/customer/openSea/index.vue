@@ -38,6 +38,7 @@
       <template #item="{ item }">
         <CrmListCommonItem
           :item="item"
+          :show-approval-status="showApprovalStatus"
           :actions="getListItemActions(item)"
           resource-type="customer"
           @click="goDetail"
@@ -63,6 +64,7 @@
   } from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteOpenSeaCustomer, getOpenSeaCustomerList, getOpenSeaOptions, pickOpenSeaCustomer } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import { hasAnyPermission } from '@/utils/permission';
@@ -91,7 +93,7 @@
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CUSTOMER,
   });
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<CustomerListItem>({
       formType: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
       poolId: activeOpenSea,
@@ -112,6 +114,8 @@
             customerId: item.id,
             poolId: activeOpenSea.value,
           });
+          clearApprovalConfigCache(FormDesignKeyEnum.CUSTOMER);
+          await initApprovalPermission();
           showSuccessToast(t('common.pickSuccess'));
           await sleep(300);
           refreshList();
@@ -150,6 +154,10 @@
           try {
             showLoadingToast(t('common.deleting'));
             await deleteOpenSeaCustomer(id);
+            if (!deleteExecute.value) {
+              clearApprovalConfigCache(FormDesignKeyEnum.CUSTOMER);
+              await initApprovalPermission();
+            }
             showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
             refreshList();
             return Promise.resolve(true);

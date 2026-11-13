@@ -58,6 +58,7 @@
   import { useRoute, useRouter } from 'vue-router';
   import { showFailToast, showSuccessToast } from 'vant';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
@@ -72,6 +73,7 @@
     moveCustomerToPool,
     moveToLeadPool,
   } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
 
   import { ClueRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -169,6 +171,7 @@
       if (fail > 0) {
         showFailToast(t('common.transferFailed'));
       } else {
+        clearApprovalConfigCache(isCluePoolReason.value ? FormDesignKeyEnum.CLUE : FormDesignKeyEnum.CUSTOMER);
         showSuccessToast(t('common.transferSuccess'));
       }
       await sleep(800);
