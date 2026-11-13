@@ -137,8 +137,11 @@ public class ApprovalInstanceService {
                 .map(ApprovalTask::getId).toList());
         List<ApprovalReturnBackRecord> backRecords = getBackRecords(latestInstance);
         Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records, signTasks, backRecords);
+        // 已终止的本轮与历史记录一致，不再推演后续节点或补充待审批人员。
+        boolean historicalView = historical || Strings.CS.equalsAny(latestInstance.getApprovalStatus(),
+                ApprovalStatus.REVOKED.name(), ApprovalStatus.UNAPPROVED.name());
         instanceDetail.setNodes(buildApprovalRecordNodeList(latestInstance, tasks, records, signTasks, backRecords,
-                elementAttachmentsMap, simpleUserMap, currentOrgId, historical));
+                elementAttachmentsMap, simpleUserMap, currentOrgId, historicalView));
         instanceDetail.setCurrentNodeId(latestInstance.getCurrentNodeId());
         instanceDetail.setComment(latestInstance.getComment());
         ApprovalComment commentCriteria = new ApprovalComment();

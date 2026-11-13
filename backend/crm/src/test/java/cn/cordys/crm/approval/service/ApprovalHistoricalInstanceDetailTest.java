@@ -21,6 +21,7 @@ import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -210,8 +211,9 @@ class ApprovalHistoricalInstanceDetailTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ApprovalAddSignType.class)
-    void rejectedSignPointsToActualRejectionAndStopsBeforeFollowingTasks(ApprovalAddSignType signType) {
+    @CsvSource({ "BEFORE,true", "BEFORE,false", "AFTER,true", "AFTER,false" })
+    void rejectedSignPointsToActualRejectionAndStopsBeforeFollowingTasks(ApprovalAddSignType signType,
+            boolean historical) {
         instance.setCurrentNodeId("NODE001");
         boolean before = signType == ApprovalAddSignType.BEFORE;
         ApprovalTask root = task("root", "NODE001", ApprovalTaskType.NL,
@@ -233,7 +235,8 @@ class ApprovalHistoricalInstanceDetailTest {
             return ids.contains("NODE001") ? List.of(approver("NODE001", MultiApproverModeEnum.ALL)) : List.of();
         });
 
-        ApprovalInstanceDetail detail = service.getHistoricalApprovalInstanceDetail(instance, "org-1");
+        ApprovalInstanceDetail detail = historical ? service.getHistoricalApprovalInstanceDetail(instance, "org-1")
+                : service.getApprovalInstanceDetail(instance, "org-1");
 
         List<String> expectedTaskIds = before ? List.of(previous.getId(), rejected.getId())
                 : List.of(root.getId(), previous.getId(), rejected.getId());
@@ -250,16 +253,17 @@ class ApprovalHistoricalInstanceDetailTest {
     }
 
     @Test
-    void latestDetailStillAppendsFutureAndEndNodes() {
-        ApprovalTask rejected = task("rejected", "NODE002", ApprovalTaskType.NL, ApprovalStatus.UNAPPROVED, 10L);
+    void approvingLatestDetailStillAppendsFutureAndEndNodes() {
+        instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        ApprovalTask current = task("current", "NODE002", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 10L);
         ApprovalNodeApproverResponse future = new ApprovalNodeApproverResponse();
         future.setId("NODE003");
         future.setApprovalType("AUTO_PASS");
         future.setApproverList(List.of());
         ApprovalNode end = node("END-OLD", "审批结束", "END", 4);
-        when(taskMapper.selectListByLambda(any())).thenReturn(List.of(rejected));
+        when(taskMapper.selectListByLambda(any())).thenReturn(List.of(current));
         when(flowService.getCurrentNodeApproverList(instance, "NODE002", "org-1"))
-                .thenReturn(List.of(rejected.getApproverId()));
+                .thenReturn(List.of(current.getApproverId()));
         when(flowService.getInstanceCurrentFollowNode(instance, "org-1")).thenReturn(List.of(future));
         when(nodeMapper.selectOne(any())).thenReturn(end);
         when(nodeMapper.selectByIds(anyList())).thenReturn(List.of(
@@ -273,6 +277,45 @@ class ApprovalHistoricalInstanceDetailTest {
         assertEquals(ApprovalStatus.PENDING.name(), detail.getNodes().get(1).getApprovalStatus());
         assertTrue(detail.getNodes().getLast().isEndNode());
         verify(flowService).getInstanceCurrentFollowNode(instance, "org-1");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ApprovalStatus.class, names = { "REVOKED", "UNAPPROVED" })
+    void terminatedLatestDetailKeepsStoredHistoryWithoutPendingPreviews(ApprovalStatus status) {
+        instance.setApprovalStatus(status.name());
+        ApprovalTask approved = task("approved", "NODE001", ApprovalTaskType.NL, ApprovalStatus.APPROVED, 10L);
+        ApprovalTask stopped = task("stopped", "NODE002", ApprovalTaskType.NL,
+                status == ApprovalStatus.REVOKED ? ApprovalStatus.NONE : ApprovalStatus.UNAPPROVED, 20L);
+        ApprovalRecord record = record(approved, "已核对合同", 15L);
+        when(taskMapper.selectListByLambda(any())).thenReturn(List.of(approved, stopped));
+        when(recordMapper.selectListByLambda(any())).thenReturn(List.of(record));
+        when(nodeMapper.selectByIds(anyList())).thenReturn(List.of(
+                node("NODE001", "初审", "APPROVER", 1), node("NODE002", "依次审批", "APPROVER", 2)));
+        when(approverMapper.selectByIds(anyList())).thenReturn(List.of(
+                approver("NODE001", MultiApproverModeEnum.ALL),
+                approver("NODE002", MultiApproverModeEnum.SEQUENTIAL)));
+        ApprovalInstanceAttachment relation = new ApprovalInstanceAttachment();
+        relation.setElementId(record.getId());
+        relation.setAttachmentId("attachment-kept");
+        Attachment attachment = new Attachment();
+        attachment.setId(relation.getAttachmentId());
+        when(instanceAttachmentMapper.selectListByLambda(any())).thenReturn(List.of(relation));
+        when(attachmentMapper.selectByIds(List.of(attachment.getId()))).thenReturn(List.of(attachment));
+        when(userExtendService.getUserOptionByIds(anyList())).thenReturn(List.of());
+
+        ApprovalInstanceDetail detail = service.getApprovalInstanceDetail(instance, "org-1");
+
+        assertEquals(status.name(), detail.getApprovalStatus());
+        assertEquals(List.of("NODE001", "NODE002"), detail.getNodes().stream()
+                .map(ApprovalRecordNode::getNodeId).toList());
+        ApprovalTaskNode approvedTask = detail.getNodes().getFirst().getTaskNodes().getFirst();
+        assertEquals(ApprovalStatus.APPROVED.name(), approvedTask.getApprovalStatus());
+        assertEquals(record.getComment(), approvedTask.getComment());
+        assertEquals(List.of(attachment), approvedTask.getAttachments());
+        assertEquals(List.of(stopped.getId()), detail.getNodes().getLast().getTaskNodes().stream()
+                .map(ApprovalTaskNode::getTaskId).toList());
+        assertFalse(detail.getNodes().stream().anyMatch(ApprovalRecordNode::isEndNode));
+        verifyNoInteractions(flowService);
     }
 
     private ApprovalTask task(String id, String nodeId, ApprovalTaskType type, ApprovalStatus status, long createTime) {

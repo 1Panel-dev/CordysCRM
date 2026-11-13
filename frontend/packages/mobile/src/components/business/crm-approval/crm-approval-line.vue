@@ -106,6 +106,12 @@
             >
               {{ t('crm.approval.currentRound') }}
             </span>
+            <CrmApprovalStatus
+              v-if="!props.isHistorical && isFinished && props.finallyResult"
+              :status="props.finallyResult"
+              scene="approvalRecord"
+              class="mr-[8px]"
+            />
             <div class="text-[var(--text-n4)]">
               {{ dayjs(props.submitter.submitTime).format('YYYY-MM-DD HH:mm') }}
             </div>
@@ -167,9 +173,9 @@
                     <CrmApprovalStatus
                       v-if="!node.endNode"
                       :status="
-                        index > props.currentApprovalNodeIndex && props.currentApprovalNodeIndex !== -1
+                        !isFinished && index > props.currentApprovalNodeIndex && props.currentApprovalNodeIndex !== -1
                           ? ProcessStatusEnum.PENDING
-                          : node.approvalStatus
+                          : getDisplayStatus(node.approvalStatus)
                       "
                       isTag
                       scene="approvalRecord"
@@ -203,7 +209,7 @@
                               avatar: task.approverAvatar,
                               name: task.approver,
                               id: task.approverId,
-                              approveResult: task.approvalStatus,
+                              approveResult: getDisplayStatus(task.approvalStatus),
                             } as any"
                             :sign-node="task.signAction"
                           />
@@ -518,18 +524,33 @@
     { immediate: true }
   );
 
+  const isFinished = computed(() =>
+    Boolean(
+      props.finallyResult &&
+        ![ProcessStatusEnum.APPROVING, ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.finallyResult)
+    )
+  );
+
+  function getDisplayStatus(status: ProcessStatusEnum) {
+    return isFinished.value && [ProcessStatusEnum.PENDING, ProcessStatusEnum.APPROVING].includes(status)
+      ? ProcessStatusEnum.NONE
+      : status;
+  }
+
   function getIconClass(node: ApprovalNode) {
-    const { approvalStatus, endNode, nodeId } = node;
+    const { endNode, nodeId } = node;
+    const approvalStatus = getDisplayStatus(node.approvalStatus);
     if (endNode) {
       if (
-        props.currentApprovalNode?.nodeId === nodeId ||
-        (props.finallyResult && [ProcessStatusEnum.REVOKED, ProcessStatusEnum.UNAPPROVED].includes(props.finallyResult))
+        (!isFinished.value && props.currentApprovalNode?.nodeId === nodeId) ||
+        (props.finallyResult &&
+          [ProcessStatusEnum.APPROVED, ProcessStatusEnum.AUTO_APPROVED].includes(props.finallyResult))
       ) {
         return 'bg-[var(--success-green)]';
       }
       return 'bg-[var(--text-n4)]';
     }
-    if (!approvalStatus && props.currentApprovalNode?.nodeId === nodeId) {
+    if (!isFinished.value && !approvalStatus && props.currentApprovalNode?.nodeId === nodeId) {
       return 'bg-[var(--info-blue)]';
     }
     switch (approvalStatus) {
