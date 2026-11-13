@@ -128,7 +128,28 @@ public class ResourcePermissionService {
         ResourceAccessContextProvider provider = getProvider(formType);
         ResourceAccessContext context = provider != null ? provider.getAccessContext(resourceId, orgId) : null;
         boolean permitted = checkRoleAndDataAndStatusPermission(permission, resourceId, formType, userId, orgId,
-                context, provider);
+                context, provider, true);
+
+        if (!permitted) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
+    /**
+     * 校验资源角色、数据范围及组织归属，但不应用父资源的审批状态限制。
+     * 仅用于审批状态不应影响的子资源管理操作。
+     */
+    public void checkResourcePermissionWithoutApprovalStatus(String permission, String resourceId, String formType,
+            String userId, String orgId) {
+        if (StringUtils.isBlank(resourceId)) {
+            checkPermission(permission);
+            return;
+        }
+
+        ResourceAccessContextProvider provider = getProvider(formType);
+        ResourceAccessContext context = provider != null ? provider.getAccessContext(resourceId, orgId) : null;
+        boolean permitted = checkRoleAndDataAndStatusPermission(permission, resourceId, formType, userId, orgId,
+                context, provider, false);
 
         if (!permitted) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -281,7 +302,7 @@ public class ResourcePermissionService {
      */
     private boolean checkRoleAndDataAndStatusPermission(String permission, String resourceId, String formType,
             String userId, String orgId, ResourceAccessContext context,
-            ResourceAccessContextProvider provider) {
+            ResourceAccessContextProvider provider, boolean checkApprovalStatus) {
         if (permission != null && permission.endsWith(":READ")
                 && relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)) {
             return false;
@@ -308,7 +329,8 @@ public class ResourcePermissionService {
         }
 
         // Check 3: 审批流的状态权限
-        if (StringUtils.isNotBlank(formType) && !checkStatusPermission(permission, formType, approvalStatus, orgId)) {
+        if (checkApprovalStatus && StringUtils.isNotBlank(formType)
+                && !checkStatusPermission(permission, formType, approvalStatus, orgId)) {
             return false;
         }
 

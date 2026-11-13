@@ -40,7 +40,8 @@ public class CustomerAssociationPermissionService {
             if (collaboration == null || StringUtils.isBlank(collaboration.getCustomerId())) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-            resourcePermissionService.checkResourcePermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+            resourcePermissionService.checkResourcePermissionWithoutApprovalStatus(
+                    PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
                     collaboration.getCustomerId(), FormKeyConstants.CUSTOMER,
                     SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         }

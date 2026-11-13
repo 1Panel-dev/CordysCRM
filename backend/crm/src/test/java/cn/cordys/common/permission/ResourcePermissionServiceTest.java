@@ -697,6 +697,28 @@ class ResourcePermissionServiceTest {
         verifyNoInteractions(commentMentions);
     }
 
+    @Test
+    void checkResourcePermissionWithoutApprovalStatusStillChecksRoleAndDataScope() {
+        clue.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        StatusPermissionDTO status = new StatusPermissionDTO();
+        status.setApprovalStatus(clue.getApprovalStatus());
+        status.setPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE);
+        status.setEnabled(false);
+        StatusPermissionSettingResponse setting = new StatusPermissionSettingResponse();
+        setting.setStatusPermissions(List.of(status));
+        ApprovalFlowService approvals = mock(ApprovalFlowService.class);
+        when(approvals.getStatusPermissionsByFormType(FormKeyConstants.CLUE, "org")).thenReturn(setting);
+        ReflectionTestUtils.setField(service, "approvalFlowService", approvals);
+
+        try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
+            roles.when(() -> PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE)).thenReturn(true);
+            assertThrows(GenericException.class, () -> service.checkResourcePermission(
+                    PermissionConstants.CLUE_MANAGEMENT_UPDATE, clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+            assertDoesNotThrow(() -> service.checkResourcePermissionWithoutApprovalStatus(
+                    PermissionConstants.CLUE_MANAGEMENT_UPDATE, clue.getId(), FormKeyConstants.CLUE, "sales", "org"));
+        }
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"unknown", "other-user", "other-org", "other-resource", "no-context", "POST"})
     void rejectsCommentMentionOutsideItsUserOrganizationResourceOrGetContext(String reason) {

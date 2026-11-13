@@ -78,7 +78,7 @@ class CustomerAssociationPermissionServiceTest {
         CustomerCollaborationService mutations = mutations();
         mutations.delete("collaboration");
         var order = inOrder(permissions, collaborations);
-        order.verify(permissions).checkResourcePermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+        order.verify(permissions).checkResourcePermissionWithoutApprovalStatus(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
                 "customer", FormKeyConstants.CUSTOMER, "sales", "org");
         order.verify(collaborations).deleteByPrimaryKey("collaboration");
     }
@@ -98,7 +98,8 @@ class CustomerAssociationPermissionServiceTest {
         collaboration.setCustomerId("other-customer");
         when(collaborations.selectByPrimaryKey("collaboration")).thenReturn(collaboration);
         doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(permissions)
-                .checkResourcePermission(anyString(), anyString(), anyString(), anyString(), anyString());
+                .checkResourcePermissionWithoutApprovalStatus(anyString(), anyString(), anyString(), anyString(),
+                        anyString());
         assertThrows(GenericException.class, () -> mutations().delete("collaboration"));
         verify(collaborations, never()).deleteByPrimaryKey(any());
     }

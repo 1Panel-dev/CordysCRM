@@ -3,6 +3,7 @@ package cn.cordys.crm.customer.controller;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
@@ -33,6 +34,8 @@ import java.util.List;
 public class CustomerCollaborationController {
     @Resource
     private CustomerCollaborationService customerCollaborationService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     @GetMapping("/list/{customerId}")
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
@@ -42,9 +45,12 @@ public class CustomerCollaborationController {
     }
 
     @PostMapping("/add")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#request.customerId}", formType = FormKeyConstants.CUSTOMER)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "添加客户协作人")
     public CustomerCollaboration add(@Validated @RequestBody CustomerCollaborationAddRequest request) {
+        resourcePermissionService.checkResourcePermissionWithoutApprovalStatus(
+                PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, request.getCustomerId(), FormKeyConstants.CUSTOMER,
+                SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         return customerCollaborationService.add(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
     }
