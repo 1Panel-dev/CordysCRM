@@ -1,11 +1,15 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
+import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
+import cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.file.engine.DefaultRepositoryDir;
@@ -38,6 +42,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +64,9 @@ public class AttachmentService {
 
     @Resource
     private BaseMapper<ApprovalInstanceAttachment> approvalInstanceAttachmentMapper;
+
+    @Resource
+    private ExtApprovalResourceSnapshotMapper approvalResourceSnapshotMapper;
 
     @Resource
     private FileCommonService fileCommonService;
@@ -231,54 +239,72 @@ public class AttachmentService {
      * @param transferRequest 转存参数
      */
     public void processTemp(UploadTransferRequest transferRequest) {
+        List<String> requestedIds = transferRequest.getTempFileIds().stream().distinct().toList();
+        requestedIds.forEach(this::checkAttachmentId);
         List<Attachment> attachments = new ArrayList<>();
         LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Attachment::getResourceId, transferRequest.getResourceId());
         queryWrapper.eq(Attachment::getOrganizationId, transferRequest.getOrganizationId());
         List<Attachment> transferredAttachments = attachmentMapper.selectListByLambda(queryWrapper);
         List<String> transferredIds = transferredAttachments.stream().map(Attachment::getId).toList();
-        transferRequest.getTempFileIds().stream().filter(id -> !transferredIds.contains(id))
+        attachmentMapper.selectByIds(requestedIds).forEach(attachment -> {
+            if (!Objects.equals(transferRequest.getOrganizationId(), attachment.getOrganizationId())
+                    || !Objects.equals(transferRequest.getResourceId(), attachment.getResourceId())) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+        });
+        requestedIds.stream().filter(id -> !transferredIds.contains(id))
                 .forEach(id -> checkTemporaryPermission(id, transferRequest.getOrganizationId(),
                         transferRequest.getOperatorUserId()));
         // insert new attachment
-        transferRequest.getTempFileIds().stream().filter(tempFileId -> !transferredIds.contains(tempFileId))
+        requestedIds.stream().filter(tempFileId -> !transferredIds.contains(tempFileId))
                 .forEach(tempFileId -> {
                     // transfer new pic
                     FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId,
                             StorageType.LOCAL.name(), null);
                     List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
-                    if (!CollectionUtils.isEmpty(folderTempFiles)) {
-                        File tempFile = folderTempFiles.getFirst();
-                        FileCopyRequest copyRequest = new FileCopyRequest(
-                                DefaultRepositoryDir.getTempFileDir(tempFileId),
-                                DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
-                                        transferRequest.getResourceId(), tempFileId),
-                                tempFile.getName());
-                        fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
-                        Attachment attachment = new Attachment();
-                        attachment.setId(tempFileId);
-                        attachment.setName(tempFile.getName());
-                        String type = "";
-                        int index = tempFile.getName().lastIndexOf('.');
-                        if (index != -1 && index < tempFile.getName().length() - 1) {
-                            type = tempFile.getName().substring(index + 1);
-                        }
-                        attachment.setType(type);
-                        attachment.setSize(tempFile.length());
-                        attachment.setStorage(StorageType.LOCAL.name());
-                        attachment.setOrganizationId(transferRequest.getOrganizationId());
-                        attachment.setResourceId(transferRequest.getResourceId());
-                        attachment.setCreateTime(System.currentTimeMillis());
-                        attachment.setCreateUser(transferRequest.getOperatorUserId());
-                        attachment.setUpdateTime(System.currentTimeMillis());
-                        attachment.setUpdateUser(transferRequest.getOperatorUserId());
-                        attachments.add(attachment);
+                    File tempFile = folderTempFiles == null ? null
+                            : folderTempFiles.stream().filter(File::isFile).findFirst().orElse(null);
+                    if (tempFile == null) {
+                        throw new GenericException(Translator.get("approval.attachment.save_failed"));
                     }
+                    FileCopyRequest copyRequest = new FileCopyRequest(
+                            DefaultRepositoryDir.getTempFileDir(tempFileId),
+                            DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(),
+                                    transferRequest.getResourceId(), tempFileId),
+                            tempFile.getName());
+                    try {
+                        FileCenter.getRepository(StorageType.LOCAL.name()).copyFile(copyRequest);
+                    } catch (Exception e) {
+                        throw new GenericException(Translator.get("approval.attachment.save_failed"), e);
+                    }
+                    Attachment attachment = new Attachment();
+                    attachment.setId(tempFileId);
+                    attachment.setName(tempFile.getName());
+                    String type = "";
+                    int index = tempFile.getName().lastIndexOf('.');
+                    if (index != -1 && index < tempFile.getName().length() - 1) {
+                        type = tempFile.getName().substring(index + 1);
+                    }
+                    attachment.setType(type);
+                    attachment.setSize(tempFile.length());
+                    attachment.setStorage(StorageType.LOCAL.name());
+                    attachment.setOrganizationId(transferRequest.getOrganizationId());
+                    attachment.setResourceId(transferRequest.getResourceId());
+                    attachment.setCreateTime(System.currentTimeMillis());
+                    attachment.setCreateUser(transferRequest.getOperatorUserId());
+                    attachment.setUpdateTime(System.currentTimeMillis());
+                    attachment.setUpdateUser(transferRequest.getOperatorUserId());
+                    attachments.add(attachment);
                 });
-        attachmentMapper.batchInsert(attachments);
+        attachments.forEach(attachmentMapper::insert);
         // remove deleted
         List<String> removedIds = transferredIds.stream().filter(aId -> !transferRequest.getTempFileIds().contains(aId))
                 .toList();
+        ApprovalResourceSnapshot snapshot = approvalResourceSnapshotMapper
+                .selectByResourceId(transferRequest.getResourceId());
+        Set<String> snapshotIds = snapshot == null ? Set.of() : snapshotAttachmentIds(snapshot.getSnapshotData());
+        removedIds = removedIds.stream().filter(id -> !snapshotIds.contains(id)).toList();
         if (!CollectionUtils.isEmpty(removedIds)) {
             // 审批附件与表单附件共用资源ID，表单同步不能删除仍被审批记录引用的附件。
             LambdaQueryWrapper<ApprovalInstanceAttachment> approvalQueryWrapper = new LambdaQueryWrapper<>();
@@ -294,6 +320,70 @@ public class AttachmentService {
             transferredAttachments.stream().filter(attachment -> deletedIds.contains(attachment.getId()))
                     .forEach(this::checkPermission);
             deleteRemovedAttachments(transferRequest, removedIds);
+        }
+    }
+
+    /**
+     * 仅用于服务端已存字段或快照中的可信旧引用，正式记录缺失即失效，不依赖残留临时所有权。
+     */
+    public Set<String> findStaleAttachmentReferences(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Set.of();
+        }
+        Set<String> existingIds = attachmentMapper.selectByIds(ids).stream().map(Attachment::getId)
+                .collect(Collectors.toSet());
+        return ids.stream().filter(id -> !existingIds.contains(id))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * 审批前快照解除引用后，仅清理它曾使用且已不再被当前字段或审批记录引用的附件。
+     */
+    public void cleanupSnapshotAttachments(ApprovalResourceSnapshot snapshot, String currentSnapshotData,
+            String orgId, String userId) {
+        // ponytail: 其他模块仍会容错读取字段，改用严格读取后再启用快照附件回收。
+        if (!FormKey.CONTRACT.getKey().equals(snapshot.getFormKey())) {
+            return;
+        }
+        Set<String> candidates = snapshotAttachmentIds(snapshot.getSnapshotData());
+        candidates.removeAll(snapshotAttachmentIds(currentSnapshotData));
+        ApprovalResourceSnapshot remaining = approvalResourceSnapshotMapper.selectByResourceId(snapshot.getResourceId());
+        if (remaining != null) {
+            candidates.removeAll(snapshotAttachmentIds(remaining.getSnapshotData()));
+        }
+        if (candidates.isEmpty()) {
+            return;
+        }
+        LambdaQueryWrapper<ApprovalInstanceAttachment> approvalQuery = new LambdaQueryWrapper<>();
+        approvalQuery.in(ApprovalInstanceAttachment::getAttachmentId, new ArrayList<>(candidates));
+        approvalInstanceAttachmentMapper.selectListByLambda(approvalQuery)
+                .forEach(attachment -> candidates.remove(attachment.getAttachmentId()));
+        List<String> removedIds = attachmentMapper.selectByIds(new ArrayList<>(candidates)).stream()
+                .filter(attachment -> Objects.equals(orgId, attachment.getOrganizationId())
+                        && Objects.equals(snapshot.getResourceId(), attachment.getResourceId()))
+                .map(Attachment::getId).toList();
+        if (!removedIds.isEmpty()) {
+            deleteRemovedAttachments(new UploadTransferRequest(orgId, snapshot.getResourceId(), userId, List.of()),
+                    removedIds);
+        }
+    }
+
+    private Set<String> snapshotAttachmentIds(String snapshotData) {
+        Set<String> ids = new LinkedHashSet<>();
+        if (StringUtils.isNotBlank(snapshotData)) {
+            Map<?, ?> snapshot = JSON.parseObject(snapshotData, Map.class);
+            collectSnapshotIds(snapshot.get("moduleFields"), ids);
+        }
+        return ids;
+    }
+
+    private void collectSnapshotIds(Object value, Set<String> ids) {
+        if (value instanceof Map<?, ?> map) {
+            map.values().forEach(item -> collectSnapshotIds(item, ids));
+        } else if (value instanceof List<?> list) {
+            list.forEach(item -> collectSnapshotIds(item, ids));
+        } else if (value instanceof String id) {
+            ids.add(id);
         }
     }
 

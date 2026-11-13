@@ -1,5 +1,7 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
@@ -9,8 +11,12 @@ import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
+import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
+import cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.dto.field.AttachmentField;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.file.engine.DefaultRepositoryDir;
 import cn.cordys.file.engine.FileCopyRequest;
 import cn.cordys.file.engine.FileRequest;
@@ -54,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -93,6 +100,7 @@ class AttachmentServiceTest {
     private final BaseMapper<Attachment> attachmentMapper = mock(BaseMapper.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<ApprovalInstanceAttachment> approvalMapper = mock(BaseMapper.class);
+    private final ExtApprovalResourceSnapshotMapper snapshotMapper = mock(ExtApprovalResourceSnapshotMapper.class);
     private final FileCommonService files = mock(FileCommonService.class);
     private final LocalRepository repository = mock(LocalRepository.class);
     private final AttachmentPermissionService permissions = mock(AttachmentPermissionService.class);
@@ -109,6 +117,7 @@ class AttachmentServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(service, "attachmentMapper", attachmentMapper);
         ReflectionTestUtils.setField(service, "approvalInstanceAttachmentMapper", approvalMapper);
+        ReflectionTestUtils.setField(service, "approvalResourceSnapshotMapper", snapshotMapper);
         ReflectionTestUtils.setField(service, "fileCommonService", files);
         ReflectionTestUtils.setField(service, "attachmentPermissionService", permissions);
         ReflectionTestUtils.setField(service, "stringRedisTemplate", redis);
@@ -378,18 +387,16 @@ class AttachmentServiceTest {
         assertEquals(DefaultRepositoryDir.getTempFileDir("new-file"), folderRequest.getValue().getFolder());
         assertEquals(StorageType.LOCAL.name(), folderRequest.getValue().getStorage());
         ArgumentCaptor<FileCopyRequest> copyRequest = ArgumentCaptor.forClass(FileCopyRequest.class);
-        verify(files).copyFile(copyRequest.capture(), eq(StorageType.LOCAL.name()));
+        verify(repository).copyFile(copyRequest.capture());
         assertEquals(DefaultRepositoryDir.getTempFileDir("new-file"), copyRequest.getValue().getSourceFolder());
         assertEquals(DefaultRepositoryDir.getTransferFileDir(ORGANIZATION_ID, RESOURCE_ID, "new-file"),
                 copyRequest.getValue().getDestFolder());
         assertEquals(source.getFileName().toString(), copyRequest.getValue().getFileName());
         verifyNoMoreInteractions(files);
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<Attachment>> inserted = ArgumentCaptor.forClass(List.class);
-        verify(attachmentMapper).batchInsert(inserted.capture());
-        assertEquals(1, inserted.getValue().size());
-        Attachment attachment = inserted.getValue().getFirst();
+        ArgumentCaptor<Attachment> inserted = ArgumentCaptor.forClass(Attachment.class);
+        verify(attachmentMapper).insert(inserted.capture());
+        Attachment attachment = inserted.getValue();
         assertEquals("new-file", attachment.getId());
         assertEquals("new-file.txt", attachment.getName());
         assertEquals("txt", attachment.getType());
@@ -399,6 +406,123 @@ class AttachmentServiceTest {
         assertEquals(RESOURCE_ID, attachment.getResourceId());
         assertEquals(USER_ID, attachment.getCreateUser());
         assertEquals(USER_ID, attachment.getUpdateUser());
+    }
+
+    @Test
+    void missingTemporaryFormFileStopsTransfer() {
+        when(files.getFolderFiles(any())).thenReturn(List.of());
+
+        assertThrows(GenericException.class, () -> service.processTemp(request(List.of("new-file"))));
+
+        verify(attachmentMapper, never()).insert(any());
+        verify(attachmentMapper, never()).deleteByLambda(any());
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    void formCopyFailureStopsTransfer() throws Exception {
+        Path source = Files.writeString(temporaryDirectory.resolve("new-file.txt"), "测试附件");
+        when(files.getFolderFiles(any())).thenReturn(List.of(source.toFile()));
+        doThrow(new IOException("复制失败")).when(repository).copyFile(any());
+
+        assertThrows(GenericException.class, () -> service.processTemp(request(List.of("new-file"))));
+
+        verify(attachmentMapper, never()).insert(any());
+        verify(attachmentMapper, never()).deleteByLambda(any());
+    }
+
+    @Test
+    void foreignFormalAttachmentCannotBeClaimedEvenWithTemporaryOwnership() {
+        Attachment foreign = attachment("foreign-file");
+        foreign.setResourceId("another-resource");
+        when(attachmentMapper.selectByIds(List.of(foreign.getId()))).thenReturn(List.of(foreign));
+
+        assertThrows(GenericException.class, () -> service.processTemp(request(List.of(foreign.getId()))));
+
+        verifyNoInteractions(files, repository);
+        verify(attachmentMapper, never()).insert(any());
+    }
+
+    @Test
+    void trustedMissingReferencesRemainStaleDespiteResidualTemporaryOwnership() {
+        when(attachmentMapper.selectByIds(List.of("formal", "stale", "own-temp", "foreign-temp")))
+                .thenReturn(List.of(attachment("formal")));
+        when(temporaryOwners.get("attachment:temp:owner:stale")).thenReturn(null);
+        when(temporaryOwners.get("attachment:temp:owner:foreign-temp")).thenReturn("another-user");
+
+        assertEquals(Set.of("stale", "own-temp", "foreign-temp"), service.findStaleAttachmentReferences(
+                List.of("formal", "stale", "own-temp", "foreign-temp")));
+        verifyNoInteractions(temporaryOwners);
+    }
+
+    @Test
+    void attachmentMapToleratesStaleReferencesAndStillDisplaysValidAttachments() {
+        ModuleFormService forms = new ModuleFormService();
+        UserExtendService users = mock(UserExtendService.class);
+        ReflectionTestUtils.setField(forms, "attachmentMapper", attachmentMapper);
+        ReflectionTestUtils.setField(forms, "userExtendService", users);
+        when(users.getUserOptionByIds(anyList())).thenReturn(List.of());
+        AttachmentField field = new AttachmentField();
+        field.setId("review-attachment");
+        field.setType("ATTACHMENT");
+        ModuleFormConfigDTO config = new ModuleFormConfigDTO();
+        config.setFields(List.of(field));
+        Attachment valid = attachment("valid-file");
+        valid.setName("合法附件.txt");
+        when(attachmentMapper.selectByIds(List.of("stale"))).thenReturn(List.of());
+        when(attachmentMapper.selectByIds(List.of("stale", "valid-file"))).thenReturn(List.of(valid));
+
+        assertEquals(List.of(), forms.getAttachmentMap(config,
+                List.of(new BaseModuleFieldValue(field.getId(), List.of("stale")))).get(field.getId()));
+        List<Attachment> displayed = forms.getAttachmentMap(config,
+                List.of(new BaseModuleFieldValue(field.getId(), List.of("stale", "valid-file")))).get(field.getId());
+        assertEquals(List.of("valid-file"), displayed.stream().map(Attachment::getId).toList());
+        assertEquals("合法附件.txt", displayed.getFirst().getName());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void editingAndCompletingApprovalKeepOnlyTheRequiredAttachment(boolean approved) throws Exception {
+        Map<String, Attachment> persisted = new LinkedHashMap<>();
+        persisted.put("old-file", attachment("old-file"));
+        ApprovalResourceSnapshot snapshot = new ApprovalResourceSnapshot();
+        snapshot.setFormKey(FormKey.CONTRACT.getKey());
+        snapshot.setResourceId(RESOURCE_ID);
+        snapshot.setSnapshotData("{\"moduleFields\":[{\"fieldValue\":[\"old-file\"]}]}");
+        when(snapshotMapper.selectByResourceId(RESOURCE_ID)).thenReturn(snapshot);
+        when(attachmentMapper.selectListByLambda(any())).thenAnswer(call -> new ArrayList<>(persisted.values()));
+        when(attachmentMapper.selectByIds(anyList())).thenAnswer(call -> {
+            List<String> ids = call.getArgument(0);
+            return ids.stream().map(persisted::get).filter(Objects::nonNull).toList();
+        });
+        doAnswer(call -> {
+            Attachment attachment = call.getArgument(0);
+            persisted.put(attachment.getId(), attachment);
+            return null;
+        }).when(attachmentMapper).insert(any());
+        doAnswer(call -> {
+            LambdaQueryWrapper<?> query = call.getArgument(0);
+            ((List<?>) query.getParams().get("array_id")).forEach(persisted::remove);
+            return null;
+        }).when(attachmentMapper).deleteByLambda(any());
+        Path source = Files.writeString(temporaryDirectory.resolve("new-file.txt"), "新附件");
+        when(files.getFolderFiles(any())).thenReturn(List.of(source.toFile()));
+
+        service.processTemp(request(List.of("new-file")));
+
+        assertEquals(Set.of("old-file", "new-file"), persisted.keySet());
+        verify(files, never()).deleteFolder(any(), anyBoolean());
+        if (!approved) {
+            // 模拟撤销或驳回恢复旧字段，旧正式附件不依赖临时凭证。
+            when(temporaryOwners.get(anyString())).thenReturn(null);
+            service.processTemp(request(List.of("old-file")));
+        }
+        when(snapshotMapper.selectByResourceId(RESOURCE_ID)).thenReturn(null);
+        String retained = approved ? "new-file" : "old-file";
+        service.cleanupSnapshotAttachments(snapshot,
+                "{\"moduleFields\":[{\"fieldValue\":[\"" + retained + "\"]}]}", ORGANIZATION_ID, USER_ID);
+
+        assertEquals(Set.of(retained), persisted.keySet());
     }
 
     @ParameterizedTest

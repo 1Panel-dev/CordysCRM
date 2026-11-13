@@ -133,7 +133,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -439,8 +441,8 @@ public class ContractService implements ApprovalResourceHandler {
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO),
                 ModuleFormConfigDTO.class);
         Optional.ofNullable(oldContract).ifPresentOrElse(item -> {
-            List<BaseModuleFieldValue> originFields = contractFieldService
-                    .getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originFields = getAttachmentOriginFields(request.getId(), contractFieldService
+                    .getModuleFieldValuesByResourceIdStrict(request.getId()));
             Contract contract = BeanUtils.copyBean(new Contract(), request);
             contract.setStartTime(request.getStartTime());
             contract.setEndTime(request.getEndTime());
@@ -460,24 +462,13 @@ public class ContractService implements ApprovalResourceHandler {
             // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
             StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                     FormKey.CONTRACT.getKey(), List.of(request.getId()), orgId);
-            updateFields(moduleFields, contract, orgId, userId);
+            updateFields(moduleFields, contract, orgId, userId, originFields);
             contractMapper.update(contract);
             // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
             statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
             //删除快照
             LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
             delWrapper.eq(ContractSnapshot::getContractId, request.getId());
-            List<ContractSnapshot> contractSnapshots = snapshotBaseMapper.selectListByLambda(delWrapper);
-            if (CollectionUtils.isNotEmpty(contractSnapshots)) {
-                ContractSnapshot first = contractSnapshots.getFirst();
-                if (first != null) {
-                    ContractGetResponse response = JSON.parseObject(first.getContractValue(),
-                            ContractGetResponse.class);
-                    List<BaseModuleFieldValue> originModuleFields = response.getModuleFields();
-                    originModuleFields.add(new BaseModuleFieldValue("products", response.getProducts()));
-                    originFields.addAll(originModuleFields);
-                }
-            }
             snapshotBaseMapper.deleteByLambda(delWrapper);
             //保存快照
             List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields,
@@ -509,12 +500,34 @@ public class ContractService implements ApprovalResourceHandler {
     /**
      * 更新自定义字段
      */
-    private void updateFields(List<BaseModuleFieldValue> moduleFields, Contract contract, String orgId, String userId) {
+    private void updateFields(List<BaseModuleFieldValue> moduleFields, Contract contract, String orgId, String userId,
+            List<BaseModuleFieldValue> originFields) {
         if (moduleFields == null) {
             return;
         }
+        contractFieldService.normalizeAttachmentReferences(orgId, contract.getId(), moduleFields, originFields);
         contractFieldService.deleteByResourceId(contract.getId());
         contractFieldService.saveModuleField(contract, orgId, userId, moduleFields, true);
+    }
+
+    /**
+     * 兼容仅残留在合同快照中的旧附件引用，可信来源必须由服务端读取。
+     */
+    private List<BaseModuleFieldValue> getAttachmentOriginFields(String resourceId,
+            List<BaseModuleFieldValue> storedFields) {
+        List<BaseModuleFieldValue> origins = new ArrayList<>(storedFields);
+        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ContractSnapshot::getContractId, resourceId);
+        List<ContractSnapshot> snapshots = snapshotBaseMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isNotEmpty(snapshots)) {
+            ContractGetResponse response = JSON.parseObject(snapshots.getFirst().getContractValue(),
+                    ContractGetResponse.class);
+            if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
+                origins.addAll(response.getModuleFields());
+            }
+            origins.add(new BaseModuleFieldValue("products", response.getProducts()));
+        }
+        return origins;
     }
 
     @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
@@ -800,7 +813,27 @@ public class ContractService implements ApprovalResourceHandler {
             ModuleFormConfigDTO businessFormConfig = moduleFormCacheService
                     .getBusinessFormConfig(FormKey.CONTRACT.getKey(), contract.getOrganizationId());
             List<BaseField> fields = businessFormConfig.getFields();
-            requestFields.forEach(field -> {
+            List<BaseModuleFieldValue> storedFields = contractFieldService
+                    .getModuleFieldValuesByResourceIdStrict(contract.getId());
+            List<BaseModuleFieldValue> origins = getAttachmentOriginFields(contract.getId(), storedFields);
+            List<BaseModuleFieldValue> normalizedFields = storedFields.stream()
+                    .map(field -> new BaseModuleFieldValue(field.getFieldId(), field.getFieldValue()))
+                    .collect(Collectors.toCollection(ArrayList::new));
+            contractFieldService.normalizeAttachmentReferences(contract.getOrganizationId(), contract.getId(),
+                    normalizedFields, origins);
+            List<BaseModuleFieldValue> updatedFields = new ArrayList<>(requestFields);
+            Set<String> requestedIds = requestFields.stream().map(BaseModuleFieldValue::getFieldId)
+                    .collect(Collectors.toSet());
+            for (int i = 0; i < storedFields.size(); i++) {
+                BaseModuleFieldValue normalized = normalizedFields.get(i);
+                if (!requestedIds.contains(normalized.getFieldId())
+                        && !Objects.equals(storedFields.get(i).getFieldValue(), normalized.getFieldValue())) {
+                    updatedFields.add(normalized);
+                }
+            }
+            contractFieldService.normalizeAttachmentReferences(contract.getOrganizationId(), contract.getId(),
+                    updatedFields, origins);
+            updatedFields.forEach(field -> {
                 BaseField baseField = fields.stream()
                         .filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
                 ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
@@ -810,14 +843,12 @@ public class ContractService implements ApprovalResourceHandler {
                 contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class,
                         LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId(),
                         false);
-
-                // 处理附件类型字段: 转存新增的临时附件, 移除已删除的正式附件
-                Map<String, BaseModuleFieldValue> fieldValueMap = requestFields.stream()
-                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(),
-                                (v1, v2) -> v2));
-                contractFieldService.processAttachmentFields(contract.getOrganizationId(), contract.getId(), userId,
-                        fields, fieldValueMap);
             });
+            // 所有字段写入后统一同步附件，保留本次未修改的其他附件字段。
+            Map<String, BaseModuleFieldValue> fieldValueMap = updatedFields.stream()
+                    .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(), (v1, v2) -> v2));
+            contractFieldService.processAttachmentFields(contract.getOrganizationId(), contract.getId(), userId,
+                    fields, fieldValueMap);
         }
         ContractSnapshot snapshotCriteria = new ContractSnapshot();
         snapshotCriteria.setContractId(contract.getId());
@@ -908,7 +939,9 @@ public class ContractService implements ApprovalResourceHandler {
         if (contract == null) {
             return null;
         }
-        List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceId(resourceId);
+        List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceIdStrict(resourceId);
+        contractFieldService.normalizeAttachmentReferences(orgId, resourceId, contractFields,
+                getAttachmentOriginFields(resourceId, contractFields));
         ContractApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new ContractApprovalSnapshotRequest(),
                 contract);
         snapshotReq.setAmount(contract.getAmount() != null ? contract.getAmount().toString() : null);
@@ -922,18 +955,20 @@ public class ContractService implements ApprovalResourceHandler {
 
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
-        try {
-            ContractApprovalSnapshotRequest request = JSON.parseObject(snapshotData,
-                    ContractApprovalSnapshotRequest.class);
-            if (request == null) {
-                return;
-            }
-            CommonBeanFactory.getBean(ContractService.class).update(request, userId, orgId);
-            // 阶段变更不走编辑接口, 需按快照单独回退
-            revertStage(request, userId);
-        } catch (Exception e) {
-            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        ContractApprovalSnapshotRequest request = JSON.parseObject(snapshotData,
+                ContractApprovalSnapshotRequest.class);
+        if (request == null) {
+            return;
         }
+        // 兼容修复前已保存的审批快照，仅清理该快照原有且已经失效的附件引用。
+        List<BaseModuleFieldValue> snapshotFields = request.getModuleFields() == null ? List.of()
+                : request.getModuleFields();
+        contractFieldService.normalizeAttachmentReferences(orgId, resourceId, snapshotFields,
+                snapshotFields.stream().map(field -> new BaseModuleFieldValue(field.getFieldId(), field.getFieldValue()))
+                        .toList());
+        CommonBeanFactory.getBean(ContractService.class).update(request, userId, orgId);
+        // 阶段变更不走编辑接口, 需按快照单独回退
+        revertStage(request, userId);
     }
 
     /**
@@ -1182,9 +1217,7 @@ public class ContractService implements ApprovalResourceHandler {
      */
     public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId,
             String organizationId) {
-        BaseField field = contractFieldService.getAndCheckField(request.getFieldId(), organizationId);
-        // getAndCheckField 走的是 getConfig()，不会设置 businessKey，需要手动补充
-        moduleFormService.setFieldBusinessParam(field);
+        BaseField field = contractFieldService.getAndCheckBatchUpdateField(request, organizationId);
         List<Contract> originContracts = contractMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(originContracts)) {
             return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)

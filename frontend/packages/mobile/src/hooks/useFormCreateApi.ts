@@ -553,7 +553,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           // 处理时间类型的字段
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : '';
         } else if (item.type === FieldTypeEnum.ATTACHMENT) {
-          item.initialOptions = res.attachmentMap?.[item.id];
+          item.initialOptions = res.attachmentMap?.[item.businessKey || item.id] || [];
+          formDetail.value[item.id] = item.initialOptions.map((file) => file.id);
         } else if (item.type === FieldTypeEnum.STATISTIC) {
           formDetail.value[item.businessKey || item.id] = formatNumberValueToString(
             formDetail.value[item.businessKey || item.id],

@@ -7,6 +7,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.service.ContractPaymentPlanFieldService;
@@ -14,14 +15,18 @@ import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormDataField;
 import cn.cordys.crm.form.domain.CustomFormDataFieldBlob;
 import cn.cordys.crm.form.service.CustomFormDataFieldService;
+import cn.cordys.crm.system.dto.field.AttachmentField;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.InputNumberField;
+import cn.cordys.crm.system.dto.field.PictureField;
 import cn.cordys.crm.system.dto.field.ProductSubField;
 import cn.cordys.crm.system.dto.field.TextAreaField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.RuleProp;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -38,16 +43,22 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class BaseResourceFieldServiceTest {
@@ -196,6 +207,188 @@ class BaseResourceFieldServiceTest {
         assertEquals("blob-row-1", updated.getValue().getId());
         assertEquals("新说明", updated.getValue().getFieldValue());
         verify(blobMapper, never()).batchInsert(any());
+    }
+
+    @Test
+    void normalizationRemovesOnlyTrustedStaleAttachmentsWithoutChangingOriginalValues() {
+        AttachmentField attachment = attachmentField("attachment");
+        AttachmentField reference = attachmentField("reference");
+        reference.setResourceFieldId("source-field");
+        InputField text = new InputField();
+        text.setId("text");
+        text.setType("INPUT");
+        AttachmentFixture fixture = attachmentFixture(List.of(attachment, reference, text));
+        BaseModuleFieldValue original = new BaseModuleFieldValue("attachment",
+                List.of("stale", "kept", "foreign-temp"));
+        List<BaseModuleFieldValue> origins = List.of(original,
+                new BaseModuleFieldValue("reference", List.of("reference-only")),
+                new BaseModuleFieldValue("text", List.of("text-only")));
+        List<BaseModuleFieldValue> submitted = new ArrayList<>(origins);
+        submitted.set(0, new BaseModuleFieldValue("attachment",
+                List.of("stale", "kept", "foreign-temp", "new-file", "unknown")));
+        when(fixture.attachments().findStaleAttachmentReferences(List.of("stale", "kept", "foreign-temp")))
+                .thenReturn(Set.of("stale"));
+
+        fixture.service().normalizeAttachmentReferences("org-1", "record-1", submitted, origins);
+
+        assertEquals(List.of("kept", "foreign-temp", "new-file", "unknown"), submitted.getFirst().getFieldValue());
+        assertEquals(List.of("stale", "kept", "foreign-temp"), original.getFieldValue());
+        assertNotSame(original, submitted.getFirst());
+        assertEquals(List.of("reference-only"), submitted.get(1).getFieldValue());
+        assertEquals(List.of("text-only"), submitted.get(2).getFieldValue());
+        verify(fixture.attachments()).findStaleAttachmentReferences(List.of("stale", "kept", "foreign-temp"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void partialAttachmentChangesPreserveOtherAttachmentAndPictureFields(boolean clear) {
+        PictureField picture = new PictureField();
+        picture.setId("picture");
+        picture.setType("PICTURE");
+        List<BaseField> config = List.of(attachmentField("changed"), attachmentField("kept"), picture);
+        AttachmentFixture fixture = attachmentFixture(config);
+        when(fixture.blobs().selectListByLambda(any())).thenReturn(List.of(
+                attachmentRow("changed", List.of("old-file")), attachmentRow("kept", List.of("kept-file"))));
+        CustomFormDataField image = new CustomFormDataField();
+        image.setFieldId("picture");
+        image.setFieldValue("[\"kept-image\"]");
+        when(fixture.values().selectListByLambda(any())).thenReturn(List.of(image));
+        BaseModuleFieldValue change = new BaseModuleFieldValue("changed", clear ? List.of() : List.of("new-file"));
+
+        fixture.service().processAttachmentFields("org-1", "record-1", "user-1", config,
+                Map.of(change.getFieldId(), change));
+
+        ArgumentCaptor<UploadTransferRequest> transfer = ArgumentCaptor.forClass(UploadTransferRequest.class);
+        verify(fixture.attachments()).processTemp(transfer.capture());
+        assertEquals(clear ? List.of("kept-file", "kept-image") : List.of("new-file", "kept-file", "kept-image"),
+                transfer.getValue().getTempFileIds());
+    }
+
+    @Test
+    void attachmentReadFailureCannotBeTreatedAsAnEmptyAttachmentSet() {
+        AttachmentFixture fixture = attachmentFixture(List.of(attachmentField("attachment")));
+        IllegalStateException failure = new IllegalStateException("附件字段读取失败");
+        when(fixture.blobs().selectListByLambda(any())).thenThrow(failure);
+
+        assertSame(failure, assertThrows(IllegalStateException.class,
+                () -> fixture.service().processAttachmentFields("org-1", "record-1", "user-1",
+                        List.of(attachmentField("attachment")), Map.of("attachment",
+                                new BaseModuleFieldValue("attachment", List.of("new-file"))))));
+        verifyNoInteractions(fixture.attachments());
+    }
+
+    @Test
+    void strictResourceReadsPropagateDatabaseAndConversionFailures() {
+        InputNumberField number = new InputNumberField();
+        number.setId("number");
+        number.setType("INPUT_NUMBER");
+        AttachmentFixture fixture = attachmentFixture(List.of(number));
+        ModuleFormService forms = CommonBeanFactory.getBean(ModuleFormService.class);
+        when(forms.getFlattenFormFields("form-1", "org-1")).thenReturn(List.of(number));
+        ReflectionTestUtils.setField(fixture.service(), "fieldReferenceService", new FieldReferenceService());
+        CustomFormDataField stored = new CustomFormDataField();
+        stored.setResourceId("record-1");
+        stored.setFieldId("number");
+        stored.setFieldValue("invalid-number");
+        when(fixture.values().selectListByLambda(any())).thenReturn(List.of(stored));
+
+        assertThrows(NumberFormatException.class,
+                () -> fixture.service().getModuleFieldValuesByResourceIdStrict("record-1"));
+
+        when(fixture.values().selectListByLambda(any())).thenReturn(List.of());
+        IllegalStateException failure = new IllegalStateException("字段读取失败");
+        when(fixture.blobs().selectListByLambda(any())).thenThrow(failure);
+        assertSame(failure, assertThrows(IllegalStateException.class,
+                () -> fixture.service().getModuleFieldValuesByResourceIdStrict("record-1")));
+    }
+
+    @Test
+    void attachmentTransferFailureStopsFieldPersistence() {
+        AttachmentFixture fixture = attachmentFixture(List.of(attachmentField("attachment")));
+        IllegalStateException failure = new IllegalStateException("附件转存失败");
+        doThrow(failure).when(fixture.attachments()).processTemp(any());
+        CustomFormData record = new CustomFormData();
+        record.setId("record-1");
+
+        assertSame(failure, assertThrows(IllegalStateException.class,
+                () -> fixture.service().saveModuleField(record, "org-1", "user-1",
+                        List.of(new BaseModuleFieldValue("attachment", List.of("new-file"))), true)));
+        verify(fixture.values(), never()).batchInsert(any());
+        verify(fixture.blobs(), never()).batchInsert(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void updatingExistingFieldsSynchronizesFinalAttachmentsInsteadOfOnlyNewFields(boolean changeAttachment) {
+        TextAreaField note = new TextAreaField();
+        note.setId("note");
+        note.setType("TEXTAREA");
+        AttachmentFixture fixture = attachmentFixture(List.of(attachmentField("attachment"), note));
+        CustomFormDataFieldBlob storedAttachment = attachmentRow("attachment", List.of("old-file"));
+        CustomFormDataFieldBlob storedNote = attachmentRow("note", List.of());
+        storedNote.setFieldValue("旧说明");
+        when(fixture.blobs().selectListByLambda(any())).thenReturn(List.of(storedAttachment, storedNote));
+        when(fixture.blobs().update(any())).thenAnswer(invocation -> {
+            CustomFormDataFieldBlob updated = invocation.getArgument(0);
+            (storedAttachment.getId().equals(updated.getId()) ? storedAttachment : storedNote)
+                    .setFieldValue(updated.getFieldValue());
+            return 1;
+        });
+        CustomFormData record = new CustomFormData();
+        record.setId("record-1");
+        BaseModuleFieldValue change = changeAttachment
+                ? new BaseModuleFieldValue("attachment", List.of("new-file"))
+                : new BaseModuleFieldValue("note", "新说明");
+
+        fixture.service().updateModuleField(record, "org-1", "user-1", List.of(change), true);
+
+        ArgumentCaptor<UploadTransferRequest> transfer = ArgumentCaptor.forClass(UploadTransferRequest.class);
+        var order = inOrder(fixture.blobs(), fixture.attachments());
+        order.verify(fixture.blobs()).update(any());
+        order.verify(fixture.attachments()).processTemp(transfer.capture());
+        assertEquals(List.of(changeAttachment ? "new-file" : "old-file"), transfer.getValue().getTempFileIds());
+        verify(fixture.blobs(), never()).batchInsert(any());
+    }
+
+    private AttachmentField attachmentField(String id) {
+        AttachmentField field = new AttachmentField();
+        field.setId(id);
+        field.setType("ATTACHMENT");
+        return field;
+    }
+
+    private CustomFormDataFieldBlob attachmentRow(String fieldId, List<String> ids) {
+        CustomFormDataFieldBlob row = new CustomFormDataFieldBlob();
+        row.setId(fieldId + "-row");
+        row.setResourceId("record-1");
+        row.setFieldId(fieldId);
+        row.setFieldValue(JSON.toJSONString(ids));
+        return row;
+    }
+
+    @SuppressWarnings("unchecked")
+    private AttachmentFixture attachmentFixture(List<BaseField> fields) {
+        CustomFormDataFieldService service = new CustomFormDataFieldService();
+        BaseMapper<CustomFormDataField> values = mock(BaseMapper.class);
+        BaseMapper<CustomFormDataFieldBlob> blobs = mock(BaseMapper.class);
+        AttachmentService attachments = mock(AttachmentService.class);
+        ModuleFormService forms = mock(ModuleFormService.class);
+        when(forms.getAllFields("form-1", "org-1")).thenReturn(fields);
+        when(values.selectListByLambda(any())).thenReturn(List.of());
+        when(blobs.selectListByLambda(any())).thenReturn(List.of());
+        ApplicationContext context = mock(ApplicationContext.class);
+        when(context.getBean(ModuleFormService.class)).thenReturn(forms);
+        when(context.getBean(AttachmentService.class)).thenReturn(attachments);
+        new CommonBeanFactory().setApplicationContext(context);
+        OrganizationContext.setOrganizationId("org-1");
+        CustomFormDataFieldService.setFormKey("form-1");
+        ReflectionTestUtils.setField(service, "customFormDataFieldMapper", values);
+        ReflectionTestUtils.setField(service, "customFormDataFieldBlobMapper", blobs);
+        return new AttachmentFixture(service, values, blobs, attachments);
+    }
+
+    private record AttachmentFixture(CustomFormDataFieldService service, BaseMapper<CustomFormDataField> values,
+            BaseMapper<CustomFormDataFieldBlob> blobs, AttachmentService attachments) {
     }
 
     @Test

@@ -59,6 +59,7 @@ import cn.cordys.crm.system.dto.field.ProductSubField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.mybatis.BaseMapper;
@@ -122,6 +123,8 @@ public class ApprovalResourceService {
     private ExtApprovalResourceSnapshotMapper extApprovalResourceSnapshotMapper;
     @Resource
     private BaseMapper<ApprovalResourceSnapshot> approvalResourceSnapshotMapper;
+    @Resource
+    private AttachmentService attachmentService;
     @Resource
     private ApprovalFlowService approvalFlowService;
     @Resource
@@ -346,6 +349,9 @@ public class ApprovalResourceService {
         }
         // 当前读避免外层事务的旧快照导致状态更新被错误跳过。
         String oldApprovalStatus = extApprovalInstanceMapper.selectApprovalStatusForUpdate(tableName, resourceId);
+        if (Strings.CS.equals(approvalStatus, ApprovalStatus.APPROVED.name())) {
+            clearPreUpdateSnapshot(formKey, resourceId, userId, orgId);
+        }
         if (Strings.CS.equals(approvalStatus, oldApprovalStatus)) {
             return;
         }
@@ -484,23 +490,36 @@ public class ApprovalResourceService {
         if (StringUtils.isBlank(snapshotData)) {
             return;
         }
-        try {
-            // 清理旧快照（防止重复保存）
-            extApprovalResourceSnapshotMapper.deleteByResourceId(resourceId);
-            ApprovalResourceSnapshot snapshot = new ApprovalResourceSnapshot();
-            snapshot.setId(IDGenerator.nextStr());
-            // 自定义表单（formKey 为 null）以 customFormId 作为快照 formKey
-            snapshot.setFormKey(formKey != null ? formKey.getKey() : resolveCustomFormIdByResourceId(resourceId));
-            snapshot.setResourceId(resourceId);
-            snapshot.setSnapshotData(snapshotData);
-            snapshot.setCreateTime(System.currentTimeMillis());
-            snapshot.setCreateUser(userId);
-            snapshot.setUpdateTime(System.currentTimeMillis());
-            snapshot.setUpdateUser(userId);
-            approvalResourceSnapshotMapper.insert(snapshot);
-        } catch (Exception e) {
-            log.error("保存编辑前快照失败", e);
+        // 快照保存失败必须中止编辑，避免审批结束时无法恢复原数据。
+        extApprovalResourceSnapshotMapper.deleteByResourceId(resourceId);
+        ApprovalResourceSnapshot snapshot = new ApprovalResourceSnapshot();
+        snapshot.setId(IDGenerator.nextStr());
+        // 自定义表单（formKey 为 null）以 customFormId 作为快照 formKey
+        snapshot.setFormKey(formKey != null ? formKey.getKey() : resolveCustomFormIdByResourceId(resourceId));
+        snapshot.setResourceId(resourceId);
+        snapshot.setSnapshotData(snapshotData);
+        snapshot.setCreateTime(System.currentTimeMillis());
+        snapshot.setCreateUser(userId);
+        snapshot.setUpdateTime(System.currentTimeMillis());
+        snapshot.setUpdateUser(userId);
+        approvalResourceSnapshotMapper.insert(snapshot);
+    }
+
+    /**
+     * 审批通过后释放编辑前快照，并清理已不再引用的旧附件。
+     */
+    private void clearPreUpdateSnapshot(FormKey formKey, String resourceId, String userId, String orgId) {
+        ApprovalResourceSnapshot snapshot = extApprovalResourceSnapshotMapper.selectByResourceId(resourceId);
+        if (snapshot == null) {
+            return;
         }
+        ApprovalResourceHandler handler = resolveApprovalHandler(formKey);
+        if (handler == null) {
+            return;
+        }
+        String currentSnapshotData = handler.getPreUpdateSnapshotData(resourceId, userId, orgId);
+        approvalResourceSnapshotMapper.deleteByPrimaryKey(snapshot.getId());
+        attachmentService.cleanupSnapshotAttachments(snapshot, currentSnapshotData, orgId, userId);
     }
 
     /**

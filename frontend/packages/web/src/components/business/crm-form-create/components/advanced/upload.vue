@@ -3,10 +3,9 @@
     ref="crmFormItemRef"
     :label="props.fieldConfig.name"
     :path="props.path"
-    :rule="props.fieldConfig.rules"
+    :rule="uploadRules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
-    :validation-status="fileKeys.length > 0 ? 'success' : undefined"
     :show-label="!props.isSubTableRender"
   >
     <template #label>
@@ -98,6 +97,19 @@
   const fileList = ref<UploadFileInfo[]>([]);
   const fileKeysMap = ref<Record<string, string>>({});
   const crmFormItemRef = ref<FormItemInst>();
+  const uploadRules = computed(() => [
+    ...props.fieldConfig.rules,
+    {
+      validator: () => {
+        if (fileList.value.some((file) => ['pending', 'uploading'].includes(file.status))) {
+          return new Error(t('crmFormCreate.advanced.waitForUpload'));
+        }
+        return fileList.value.some((file) => file.status === 'error')
+          ? new Error(t('crmFormCreate.advanced.uploadFailed'))
+          : true;
+      },
+    },
+  ]);
 
   const getTriggerStyle = computed(() => {
     if (props.isSubTableField || props.isSubTableRender) {
@@ -133,11 +145,6 @@
       Message.warning(t('crmFormCreate.advanced.overSize', { size: `${maxSize}MB` }));
       return Promise.resolve(false);
     }
-    if (props.fieldConfig.uploadLimit === 1) {
-      // 单文件上传时，清空之前的文件（得放到校验文件大小之后，避免文件大小限制后文件丢失）
-      fileList.value = [];
-      fileKeys.value = [];
-    }
     return Promise.resolve(true);
   }
 
@@ -163,6 +170,7 @@
       onProgress({ percent: 100 });
       clearInterval(timer as unknown as number);
       onFinish();
+      if (!fileList.value.some((item) => item.id === file.id)) return;
       fileKeys.value.push(...res.data);
       [fileKeysMap.value[file.id]] = res.data;
       crmFormItemRef.value?.validate();
@@ -172,11 +180,7 @@
       console.error(error);
       // Message.error(t('crm.upload.uploadFail'));
       clearInterval(timer as unknown as number);
-      // clear error file
-      const index = fileList.value.findIndex((item) => item.id === file.id);
-      if (index !== -1) {
-        fileList.value.splice(index, 1);
-      }
+      file.status = 'error';
       onError();
     }
   }
@@ -200,7 +204,7 @@
     () => fileKeys.value,
     (keys: string[]) => {
       if (keys.length === 0) {
-        fileList.value = [];
+        fileList.value = fileList.value.filter((file) => ['pending', 'uploading', 'error'].includes(file.status));
         fileKeysMap.value = {};
       } else if (Object.keys(fileKeysMap.value).length === 0) {
         keys.forEach((key) => {

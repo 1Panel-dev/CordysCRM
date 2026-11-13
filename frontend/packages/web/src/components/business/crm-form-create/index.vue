@@ -903,33 +903,29 @@
     }
   }
 
-  function handleSave(isContinue = false, afterSave?: () => Promise<void>) {
-    formRef.value?.validate(async (errors) => {
-      if (!errors) {
-        if (!(await validateSubmitRules())) {
-          return;
-        }
-        const result = buildSavePayload();
-        // 获取变更说明
-        const extraParams = await getUpdateReviewExtraParams(shouldConfirmUpdateChange.value);
-        if (extraParams === false) {
-          return;
-        }
-        saveForm(
-          result,
-          isContinue,
-          async (_isContinue, res) => {
-            await afterSave?.();
-            emit('saved', isContinue, res, Boolean((extraParams as Record<string, any>).comment));
-          },
-          false,
-          false,
-          extraParams
-        );
-      } else {
-        scrollToFirstError(errors);
+  async function handleSave(isContinue = false, afterSave?: () => Promise<void>) {
+    try {
+      await formRef.value?.validate();
+      // 获取变更说明后重新校验并读取最新字段值。
+      const extraParams = await getUpdateReviewExtraParams(shouldConfirmUpdateChange.value);
+      if (extraParams === false || !(await validateSubmitRules())) {
+        return;
       }
-    });
+      await formRef.value?.validate();
+      saveForm(
+        buildSavePayload(),
+        isContinue,
+        async (_isContinue, res) => {
+          await afterSave?.();
+          emit('saved', isContinue, res, Boolean(extraParams.comment));
+        },
+        false,
+        false,
+        extraParams
+      );
+    } catch (errors) {
+      if (Array.isArray(errors)) scrollToFirstError(errors);
+    }
   }
 
   function handleSaveWithCallback(afterSave: () => Promise<void>) {
@@ -938,26 +934,25 @@
 
   defineExpose({ handleSave, handleSaveWithCallback });
 
-  function handleReview() {
-    formRef.value?.validate(async (errors) => {
-      if (!errors) {
-        if (!(await validateSubmitRules())) {
-          return;
-        }
-        const result = buildSavePayload();
-        saveForm(
-          result,
-          false,
-          (_isContinue, res) => {
-            emit('review', res);
-          },
-          false,
-          true
-        );
-      } else {
-        scrollToFirstError(errors);
+  async function handleReview() {
+    try {
+      await formRef.value?.validate();
+      if (!(await validateSubmitRules())) {
+        return;
       }
-    });
+      await formRef.value?.validate();
+      saveForm(
+        buildSavePayload(),
+        false,
+        (_isContinue, res) => {
+          emit('review', res);
+        },
+        false,
+        true
+      );
+    } catch (errors) {
+      if (Array.isArray(errors)) scrollToFirstError(errors);
+    }
   }
 
   watch(

@@ -15,6 +15,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.constants.FieldType;
@@ -162,6 +163,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
+     * 业务快照和附件清理必须区分真实空值与读取失败，避免用容错空结果覆盖或删除原数据。
+     */
+    public List<BaseModuleFieldValue> getModuleFieldValuesByResourceIdStrict(String resourceId) {
+        List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(List.of(resourceId), true, true).get(resourceId);
+        return fieldValues == null ? new ArrayList<>(0) : fieldValues;
+    }
+
+    /**
      * 保存字段值
      *
      * @param resource          资源
@@ -191,6 +200,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
         // 校验业务字段，字段值是否重复
         businessFieldRepeatCheck(orgId, resource, update ? List.of(resourceId) : List.of(), allFields);
+
+        syncAttachmentFields(orgId, resourceId, userId, allFields, fieldValueMap);
 
         // 处理字段值
         Map<String, String> serialNumCache = new HashMap<>(2);
@@ -240,16 +251,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 fieldValue.getFieldId(), strValue));
                     }
                 });
-
-        // 处理附件类型字段
-        List<BaseModuleFieldValue> attachmentFieldVals = allFields.stream()
-                .filter(field -> {
-                    BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
-                    return (fieldValue != null && fieldValue.valid()) && field.isAttachment();
-                }).map(field -> fieldValueMap.get(field.getId())).toList();
-        List processVal = attachmentFieldVals.stream().map(val -> (List) val.getFieldValue()).flatMap(List::stream)
-                .toList();
-        preProcessTempAttachment(orgId, resourceId, userId, processVal);
 
         // 字段值入库
         if (CollectionUtils.isNotEmpty(customerFields)) {
@@ -438,8 +439,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param withBlob    是否包含大文本字段
      * @return 字段集合
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
+        return getResourceFieldMap(resourceIds, withBlob, false);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob,
+            boolean strict) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return new HashMap<>(2);
         }
@@ -473,6 +479,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 resourceField.getFieldValue().toString());
                         resourceField.setFieldValue(objectValue);
                     } catch (Exception e) {
+                        if (strict) {
+                            throw e;
+                        }
                         log.error("Convert field value error: {}", e.getMessage());
                     }
 
@@ -536,6 +545,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             });
             return resourceMap;
         } catch (Exception e) {
+            if (strict) {
+                throw e;
+            }
             log.error(e.getMessage(), e);
             return new HashMap<>(2);
         } finally {
@@ -791,8 +803,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         && !existingFieldIds.contains(moduleField.getFieldId()))
                 .toList();
 
-        saveModuleField(resource, orgId, userId, addlist, update);
         updateData(updateFields, updateBlobFields);
+        saveModuleField(resource, orgId, userId, addlist, update);
     }
 
     /**
@@ -936,50 +948,82 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fields        表单字段配置
      * @param fieldValueMap 提交的字段值(以字段ID为键)
      */
-    @SuppressWarnings({"rawtypes" })
     public void processAttachmentFields(String orgId, String resourceId, String userId,
             List<BaseField> fields, Map<String, BaseModuleFieldValue> fieldValueMap) {
-        if (CollectionUtils.isEmpty(fields) || MapUtils.isEmpty(fieldValueMap)) {
+        if (CollectionUtils.isEmpty(fields) || MapUtils.isEmpty(fieldValueMap)
+                || fields.stream().noneMatch(field -> field.isAttachment()
+                        && StringUtils.isBlank(field.getResourceFieldId())
+                        && fieldValueMap.containsKey(field.getId()))) {
             return;
         }
-        List<BaseModuleFieldValue> attachmentFieldValues = fields.stream()
-                .filter(field -> {
-                    BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
-                    return fieldValue != null && fieldValue.valid() && field.isAttachment();
-                })
-                .map(field -> fieldValueMap.get(field.getId()))
-                .toList();
-        // 请求未包含附件字段时不做处理, 避免 processTemp 误删该资源下其它附件字段的附件
-        if (CollectionUtils.isEmpty(attachmentFieldValues)) {
-            return;
-        }
-        List processVal = attachmentFieldValues.stream()
-                .map(val -> (List) val.getFieldValue())
-                .flatMap(List::stream)
-                .toList();
-        preProcessTempAttachment(orgId, resourceId, userId, processVal);
+        syncAttachmentFields(orgId, resourceId, userId, fields, fieldValueMap);
     }
 
     /**
-     * 处理临时附件
+     * 仅清理本资源原有字段中已经失效的附件引用，不放过本次新增的非法附件ID。
      */
-    @SuppressWarnings("unchecked")
-    private void preProcessTempAttachment(String orgId, String resourceId, String userId, Object processValue) {
-        try {
-            List<String> tmpPicIds = new ArrayList<>();
-            if (processValue instanceof String) {
-                tmpPicIds.add(processValue.toString());
-            } else if (processValue instanceof List) {
-                tmpPicIds.addAll((List<String>) processValue);
-            }
-            AttachmentService attachmentService = CommonBeanFactory.getBean(AttachmentService.class);
-            UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
-            if (attachmentService != null) {
-                attachmentService.processTemp(transferRequest);
-            }
-        } catch (Exception e) {
-            log.error("临时附件处理失败: {}", e.getMessage());
+    public void normalizeAttachmentReferences(String orgId, String resourceId,
+            List<BaseModuleFieldValue> fieldValues, List<BaseModuleFieldValue> originFields) {
+        if (CollectionUtils.isEmpty(fieldValues) || CollectionUtils.isEmpty(originFields)) {
+            return;
         }
+        Set<String> attachmentFieldIds = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
+                .getAllFields(getFormKey(), orgId).stream()
+                .filter(field -> field.isAttachment() && StringUtils.isBlank(field.getResourceFieldId()))
+                .map(BaseField::getId).collect(Collectors.toSet());
+        List<String> originIds = originFields.stream()
+                .filter(field -> attachmentFieldIds.contains(field.getFieldId()))
+                .map(BaseModuleFieldValue::getFieldValue).filter(List.class::isInstance)
+                .flatMap(value -> ((List<?>) value).stream())
+                .filter(String.class::isInstance).map(String.class::cast).distinct().toList();
+        if (originIds.isEmpty()) {
+            return;
+        }
+        Set<String> staleIds = Objects.requireNonNull(CommonBeanFactory.getBean(AttachmentService.class))
+                .findStaleAttachmentReferences(originIds);
+        if (staleIds.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < fieldValues.size(); i++) {
+            BaseModuleFieldValue field = fieldValues.get(i);
+            if (attachmentFieldIds.contains(field.getFieldId()) && field.getFieldValue() instanceof List<?> ids) {
+                List<?> retainedIds = ids.stream().filter(id -> !staleIds.contains(id)).toList();
+                if (retainedIds.size() != ids.size()) {
+                    fieldValues.set(i, new BaseModuleFieldValue(field.getFieldId(), retainedIds));
+                }
+            }
+        }
+    }
+
+    private void syncAttachmentFields(String orgId, String resourceId, String userId,
+            List<BaseField> fields, Map<String, BaseModuleFieldValue> fieldValueMap) {
+        List<BaseField> attachmentFields = fields.stream()
+                .filter(field -> field.isAttachment() && StringUtils.isBlank(field.getResourceFieldId()))
+                .toList();
+        if (attachmentFields.isEmpty()) {
+            return;
+        }
+        Set<String> attachmentFieldIds = attachmentFields.stream().map(BaseField::getId).collect(Collectors.toSet());
+        Map<String, BaseModuleFieldValue> fullValues = new HashMap<>();
+        List<BaseResourceField> storedFields = new ArrayList<>(getResourceField(List.of(resourceId)));
+        storedFields.addAll(getResourceFieldBlob(List.of(resourceId)));
+        for (BaseResourceField stored : storedFields) {
+            if (attachmentFieldIds.contains(stored.getFieldId())) {
+                Object value = stored.getFieldValue();
+                if (value instanceof String jsonValue) {
+                    value = JSON.parseArray(jsonValue, String.class);
+                }
+                fullValues.put(stored.getFieldId(), new BaseModuleFieldValue(stored.getFieldId(), value));
+            }
+        }
+        // 局部更新覆盖对应字段，未提交的附件字段保留；空数组覆盖旧值，表示明确移除。
+        fullValues.putAll(fieldValueMap);
+        List<String> attachmentIds = attachmentFields.stream().map(field -> fullValues.get(field.getId()))
+                .filter(Objects::nonNull).filter(BaseModuleFieldValue::valid)
+                .flatMap(field -> ((List<?>) field.getFieldValue()).stream())
+                .map(String.class::cast).distinct().toList();
+        Objects.requireNonNull(CommonBeanFactory.getBean(AttachmentService.class))
+                .processTemp(new UploadTransferRequest(orgId, resourceId, userId, attachmentIds));
     }
 
     /**

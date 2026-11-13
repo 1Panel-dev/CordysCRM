@@ -3,7 +3,7 @@
     ref="crmFormItemRef"
     :label="props.fieldConfig.name"
     :path="props.path"
-    :rule="props.fieldConfig.rules"
+    :rule="uploadRules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <template #label>
@@ -90,6 +90,19 @@
   const fileList = ref<UploadFileInfo[]>([]);
   const fileKeysMap = ref<Record<string, string>>({});
   const crmFormItemRef = ref<FormItemInst>();
+  const uploadRules = computed(() => [
+    ...props.fieldConfig.rules,
+    {
+      validator: () => {
+        if (fileList.value.some((file) => ['pending', 'uploading'].includes(file.status))) {
+          return new Error(t('crmFormCreate.advanced.waitForUpload'));
+        }
+        return fileList.value.some((file) => file.status === 'error')
+          ? new Error(t('crmFormCreate.advanced.uploadFailed'))
+          : true;
+      },
+    },
+  ]);
 
   async function beforeUpload({
     file,
@@ -123,11 +136,6 @@
       );
       return Promise.resolve(false);
     }
-    if (props.fieldConfig.onlyOne) {
-      // 单文件上传时，清空之前的文件（得放到校验文件大小之后，避免文件大小限制后文件丢失）
-      fileList.value = [];
-      fileKeys.value = [];
-    }
     return Promise.resolve(true);
   }
 
@@ -154,6 +162,7 @@
       onProgress({ percent: 100 });
       clearInterval(timer as unknown as number);
       onFinish();
+      if (!fileList.value.some((item) => item.id === file.id)) return;
       fileKeys.value.push(...res.data);
       [fileKeysMap.value[file.id]] = res.data;
       crmFormItemRef.value?.validate();
@@ -168,8 +177,11 @@
   }
 
   function handleFileListChange(files: UploadFileInfo[]) {
-    if (fileKeys.value.length > files.length) {
-      fileKeys.value = fileKeys.value.filter((key) => files.some((file) => file.id === key));
+    const remainingKeys = fileKeys.value.filter((key) =>
+      files.some((file) => (fileKeysMap.value[file.id] || file.id) === key)
+    );
+    if (remainingKeys.length !== fileKeys.value.length) {
+      fileKeys.value = remainingKeys;
       crmFormItemRef.value?.validate();
       emit('change', fileKeys.value, fileList.value);
     }

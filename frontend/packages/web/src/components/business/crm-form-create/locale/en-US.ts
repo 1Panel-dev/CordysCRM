@@ -1,5 +1,7 @@
 export default {
   'crmFormCreate.advanced.uploadTip': 'Drag or click to paste the image, single image within {size} MB',
+  'crmFormCreate.advanced.waitForUpload': 'Please wait for files to finish uploading before submitting',
+  'crmFormCreate.advanced.uploadFailed': 'File upload failed. Please retry or remove the file before submitting',
   'crmFormCreate.advanced.overSize': 'The file size limit is {size}, please reselect the file',
   'crmFormCreate.advanced.selectLocation': 'Please select the address',
   'crmFormCreate.advanced.inputLocationDetail': 'Please enter the detailed address',

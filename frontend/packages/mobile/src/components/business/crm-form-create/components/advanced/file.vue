@@ -2,7 +2,7 @@
   <van-field
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :required="required"
-    :rules="props.fieldConfig.rules as FieldRule[]"
+    :rules="uploadRules"
     :disabled="!props.fieldConfig.editable || !!props.fieldConfig.resourceFieldId"
   >
     <template #input>
@@ -58,6 +58,17 @@
   });
   const fileList = ref<UploaderFileListItem[]>([]);
   const required = computed(() => props.fieldConfig.rules.some((rule) => rule.key === 'required'));
+  const uploadRules = computed<FieldRule[]>(() => [
+    ...(props.fieldConfig.rules as FieldRule[]),
+    {
+      validator: () => {
+        if (fileList.value.some((file) => file.status === 'uploading')) {
+          return t('formCreate.advanced.waitForUpload');
+        }
+        return !fileList.value.some((file) => file.status === 'failed') || t('formCreate.advanced.uploadFailed');
+      },
+    },
+  ]);
 
   function handleBeforeRead(file: File | File[]) {
     if (fileList.value.length > 0) {
@@ -77,19 +88,7 @@
       showToast(t('formCreate.advanced.overSize', { size: props.fieldConfig.limitSize || '20' }));
       return false;
     }
-    if (props.fieldConfig.onlyOne) {
-      // 单文件上传时，清空之前的文件（得放到校验文件大小之后，避免文件大小限制后文件丢失）
-      fileList.value = [];
-      fileKeys.value = [];
-    }
     return true;
-  }
-
-  function removeFailedFile(file: UploaderFileListItem) {
-    const index = fileList.value.findIndex((item) => item === file || item.file === file.file);
-    if (index !== -1) {
-      fileList.value.splice(index, 1);
-    }
   }
 
   async function handleAfterRead(file: UploaderFileListItem | UploaderFileListItem[]) {
@@ -103,13 +102,14 @@
           try {
             item.status = 'uploading';
             const res = await uploadTempAttachment(item.file);
+            if (!fileList.value.some((current) => current.file === item.file)) return;
             fileKeys.value.push(...res.data);
             item.status = 'done';
             item.content = `${PreviewAttachmentUrl}/${res.data[0]}`;
           } catch (error) {
             // eslint-disable-next-line no-console
             console.log(error);
-            removeFailedFile(item);
+            item.status = 'failed';
           }
         })
       );
@@ -119,6 +119,7 @@
         if (file.file) {
           file.status = 'uploading';
           const res = await uploadTempAttachment(file.file!);
+          if (!fileList.value.some((item) => item.file === file.file)) return;
           fileKeys.value.push(...res.data);
           file.status = 'done';
           file.content = `${PreviewAttachmentUrl}/${res.data[0]}`;
@@ -127,13 +128,15 @@
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
-        removeFailedFile(file);
+        file.status = 'failed';
       }
     }
   }
 
   function handleBeforeDelete(file: UploaderFileListItem) {
-    const index = fileList.value.findIndex((item) => item.content === file.content);
+    const index = fileList.value.findIndex(
+      (item) => item === file || (file.file ? item.file === file.file : !!file.content && item.content === file.content)
+    );
     if (index !== -1) {
       fileKeys.value = fileKeys.value.filter((key) => `${PreviewAttachmentUrl}/${key}` !== file.content);
       fileList.value.splice(index, 1);
