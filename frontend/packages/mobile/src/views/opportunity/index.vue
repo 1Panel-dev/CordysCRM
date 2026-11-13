@@ -50,7 +50,12 @@
         :transform="transformFormData"
       >
         <template #item="{ item }">
-          <CrmListCommonItem :item="item" :actions="actions(item)" @click="(val)=>goDetail(val as OpportunityItem)" />
+          <CrmListCommonItem
+            :item="item"
+            :show-approval-status="showApprovalStatus"
+            :actions="actions(item)"
+            @click="(val) => goDetail(val as OpportunityItem)"
+          />
         </template>
       </CrmList>
     </div>
@@ -70,6 +75,7 @@
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
 
   import { deleteOpt, getOpportunityList, getOpportunityStageConfig } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
@@ -126,7 +132,7 @@
   });
 
   const refreshList = () => crmListRef.value?.loadList(true);
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<OpportunityItem>({
       formType: FormDesignKeyEnum.BUSINESS,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
@@ -238,6 +244,10 @@
                 if (action === 'confirm') {
                   try {
                     await deleteOpt(item.id);
+                    if (!deleteExecute.value) {
+                      clearApprovalConfigCache(FormDesignKeyEnum.BUSINESS);
+                      await initApprovalPermission();
+                    }
                     showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
                     crmListRef.value?.loadList(true);
                     return Promise.resolve(true);

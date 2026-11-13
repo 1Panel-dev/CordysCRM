@@ -1,3 +1,4 @@
+import { watch } from 'vue';
 import { NImage, NImageGroup } from 'naive-ui';
 
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
@@ -78,6 +79,7 @@ export interface FormCreateTableProps {
   hiddenAllScreen?: boolean;
   hiddenRefresh?: boolean;
   enableApproval?: Ref<boolean>;
+  showApprovalStatus?: Ref<boolean>;
   customFormId?: Ref<string | undefined>; // 自定义表单id
   tableKey?: TableKeyEnum | string; // 覆盖默认列缓存 key，用于隔离嵌入式表格的列配置
   hideOperationColumn?: boolean; // 不生成操作列，不影响 readonly 在既有列表中的行为
@@ -536,7 +538,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       columns.value = [
         ...getFollowColumn(res.fields),
         ...columns.value,
-        ...(internalColumnMap[props.formKey] || []),
+        ...(internalColumnMap[props.formKey] || []).filter(
+          (column) => column.key !== 'approvalStatus' || props.showApprovalStatus?.value
+        ),
         ...staticColumns,
       ];
       if (
@@ -626,6 +630,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         fields: fieldList.value,
         excludeFieldIds: props.excludeFieldIds,
       });
+    }
+  );
+
+  watch(
+    () => props.showApprovalStatus?.value,
+    async (value, oldValue) => {
+      if (value === oldValue) {
+        return;
+      }
+      await initFormConfig();
+      useTableRes.propsRes.value.columns = columns.value;
     }
   );
 

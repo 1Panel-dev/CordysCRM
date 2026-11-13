@@ -58,6 +58,7 @@
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
   import { assignClue, assignOpenSeaCustomer, getUserOptions } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
 
   const route = useRoute();
   const router = useRouter();
@@ -81,6 +82,7 @@
         [route.query.apiKey === FormDesignKeyEnum.CUSTOMER ? 'customerId' : 'clueId']: route.query.id as string,
         assignUserId: value.value,
       });
+      clearApprovalConfigCache(route.query.apiKey as FormDesignKeyEnum);
       showSuccessToast(t('common.distributeSuccess'));
       await sleep(300);
       router.back();

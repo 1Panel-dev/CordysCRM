@@ -4,6 +4,7 @@ import { showConfirmDialog, showSuccessToast } from 'vant';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { reviewResource, revokeResource } from '@/api/modules';
+import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
 
 interface ApprovalResourceActionHandlers {
   onSuccess?: (resourceId: string) => void | Promise<void>;
@@ -62,6 +63,7 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
         resourceId,
         formKey: unref(options.formKey),
       });
+      clearApprovalConfigCache(unref(options.formKey));
       showSuccessToast(t('common.revokeSuccess'));
       await callback?.onSuccess?.(resourceId);
     } catch (error) {

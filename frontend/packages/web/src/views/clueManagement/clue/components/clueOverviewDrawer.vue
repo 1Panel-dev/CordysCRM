@@ -1,7 +1,11 @@
 <template>
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" hide-if-no-status />
+      <CrmApprovalStatus
+        v-if="enableApproval"
+        :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+        hide-if-no-status
+      />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -291,13 +295,19 @@
     },
   }));
 
-  const { initApprovalPermission, resolveRowOperation, updateExecute, deleteExecute, hasApprovalScopedPermission } =
-    useApprovalOperation<Record<string, any>>({
-      formType: FormDesignKeyEnum.CLUE,
-      dataActionMap: () => clueDataActionMap.value,
-      isDetail: true,
-      shouldUseRolePermissionOnly: () => isConverted.value,
-    });
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    updateExecute,
+    deleteExecute,
+    hasApprovalScopedPermission,
+  } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.CLUE,
+    dataActionMap: () => clueDataActionMap.value,
+    isDetail: true,
+    shouldUseRolePermissionOnly: () => isConverted.value,
+  });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CLUE,
@@ -436,6 +446,8 @@
 
   function handleMovedSuccess() {
     show.value = false;
+    // 移入线索池可能移除最后一条审批中数据；通知列表重新获取审批配置以更新状态列显隐。
+    emit('approvalSuccess');
     emit('remove');
   }
 
@@ -462,7 +474,10 @@
 
   function handleRevoke() {
     revokeByResourceId(sourceId.value, {
-      onSuccess: handleSaved,
+      onSuccess: async () => {
+        await initApprovalPermission();
+        handleSaved();
+      },
     });
   }
 
@@ -478,6 +493,9 @@
         try {
           await deleteClue(sourceId.value);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (!deleteExecute.value) {
+            emit('approvalSuccess');
+          }
           emit('remove');
         } catch (error) {
           // eslint-disable-next-line no-console

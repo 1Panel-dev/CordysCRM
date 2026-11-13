@@ -62,6 +62,7 @@
   import { ref } from 'vue';
   import { DataTableRowKey, FormInst, NAlert, NButton, NForm, NFormItem, NSelect } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -81,6 +82,7 @@
     moveCustomerToPool,
     moveToLeadPool,
   } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
 
   import { SystemRouteEnum } from '@/enums/routeEnum';
@@ -214,6 +216,11 @@
         successCount.value = success;
         failCount.value = fail;
         showToPoolResultModel.value = true;
+      }
+      if (successCount.value > 0) {
+        clearApprovalConfigCache(
+          props.reasonKey === ReasonTypeEnum.CLUE_POOL_RS ? FormDesignKeyEnum.CLUE : FormDesignKeyEnum.CUSTOMER
+        );
       }
       if (failCount.value > 0) {
         setTimeout(() => {

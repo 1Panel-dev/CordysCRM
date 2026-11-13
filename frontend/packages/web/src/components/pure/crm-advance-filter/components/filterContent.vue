@@ -350,7 +350,17 @@
   const currentOptions = computed(() => {
     const allOptions = [...props.configList, ...(props.customList || [])];
     if (props.noFilterOption) {
-      return () => allOptions.map((item) => ({ ...item, label: t(item.title as string) }));
+      return (currentDataIndex: string) => {
+        const options = allOptions.map((item) => ({ ...item, label: t(item.title as string) }));
+        if (currentDataIndex && !allOptions.some((item) => item.dataIndex === currentDataIndex)) {
+          options.unshift({
+            dataIndex: currentDataIndex,
+            label: t('common.optionNotExist'),
+            type: FieldTypeEnum.INPUT,
+          });
+        }
+        return options;
+      };
     }
     const formItems = formModel.value.list;
 
@@ -359,9 +369,19 @@
         formItems.filter((item) => item.dataIndex !== currentDataIndex).map((item) => item.dataIndex)
       );
 
-      return allOptions
+      const options = allOptions
         .filter(({ dataIndex }) => !usedDataIndices.has(dataIndex))
         .map((item) => ({ ...item, label: t(item.title as string) }));
+
+      if (currentDataIndex && !allOptions.some((item) => item.dataIndex === currentDataIndex)) {
+        options.unshift({
+          dataIndex: currentDataIndex,
+          label: t('common.optionNotExist'),
+          type: FieldTypeEnum.INPUT,
+        });
+      }
+
+      return options;
     };
   });
 

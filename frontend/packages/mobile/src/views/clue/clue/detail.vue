@@ -127,6 +127,7 @@
   import transitionRecord from './transitionRecord.vue';
 
   import { deleteClue, getApprovalResourceDetail, getClueHeaderList } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -312,6 +313,9 @@
         if (action === 'confirm') {
           try {
             await deleteClue(id);
+            if (!deleteExecute.value) {
+              clearApprovalConfigCache(FormDesignKeyEnum.CLUE);
+            }
             showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
             await sleep(300);
             router.back();

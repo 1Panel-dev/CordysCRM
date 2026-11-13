@@ -54,6 +54,7 @@
   import { showConfirmDialog, showSuccessToast, type PickerOption } from 'vant';
 
   import { getApprovalConfigDetail, revokeApproval, revokeResource } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useUserStore from '@/store/modules/user';
   import { ApprovalTaskExecuteTimeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -263,12 +264,14 @@
   }
 
   function refresh() {
+    clearApprovalConfigCache(props.formKey);
     initApprovalConfig();
     emit('refresh');
   }
 
   function handleApprovalSuccess() {
     if (!isRejecting.value && props.approvalInfo?.executeTime === ApprovalTaskExecuteTimeEnum.DELETE) {
+      clearApprovalConfigCache(props.formKey);
       emit('deleteApproved');
       return;
     }

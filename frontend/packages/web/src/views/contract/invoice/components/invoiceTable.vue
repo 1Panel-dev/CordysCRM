@@ -93,6 +93,7 @@
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
     :readonly="props.readonly"
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
     @open-contract-drawer="showContractDrawer"
@@ -248,6 +249,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -278,6 +280,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteInvoiced(checkedRowKeys.value as string[]);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           tableRefreshId.value += 1;
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
         } catch (error) {
@@ -316,6 +321,9 @@
       onPositiveClick: async () => {
         try {
           await deleteInvoiced(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshSignal.value = {
             id: row.id,
@@ -345,7 +353,8 @@
 
   function handleRevoke(row: ContractInvoiceItem) {
     revokeByResourceId(row.id, {
-      onSuccess: (resourceId) => {
+      onSuccess: async (resourceId) => {
+        await initApprovalPermission();
         tableItemRefreshId.value = resourceId;
       },
     });
@@ -501,6 +510,7 @@
     permission: ['CONTRACT_INVOICE:EXPORT', 'CONTRACT_INVOICE:DELETE'],
     containerClass: `.crm-contract-payment-table-${FormDesignKeyEnum.INVOICE}`,
     enableApproval,
+    showApprovalStatus,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
@@ -536,15 +546,17 @@
         containChildIds: [],
       },
     },
-    {
-      title: t('contract.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      selectProps: {
-        options: processStatusOptions,
-      },
-    },
+    ...(enableApproval.value
+      ? [
+          {
+            title: t('contract.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            operatorOption: COMMON_SELECTION_OPERATORS,
+            selectProps: { options: processStatusOptions },
+          },
+        ]
+      : []),
     ...baseFilterConfigList,
   ]);
 

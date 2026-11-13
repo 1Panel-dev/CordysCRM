@@ -285,6 +285,7 @@
     initApprovalPermission,
     resolveRowActions,
     enableApproval,
+    showApprovalStatus,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -422,6 +423,9 @@
             batchIds: checkedRowKeys.value,
             poolId: openSea.value,
           });
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           checkedRowKeys.value = [];
           tableRefreshId.value += 1;
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
@@ -485,6 +489,9 @@
       onPositiveClick: async () => {
         try {
           await deleteOpenSeaCustomer(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshSignal.value = {
             id: row.id,
@@ -506,6 +513,7 @@
         customerId: row.id,
         poolId: openSea.value,
       });
+      await initApprovalPermission(true);
       Message.success(t('common.claimSuccess'));
       tableRemoveRefreshSignal.value = {
         id: row.id,
@@ -530,6 +538,7 @@
         customerId: id,
         assignUserId: distributeForm.value.owner,
       });
+      await initApprovalPermission(true);
       Message.success(t('common.distributeSuccess'));
       tableRemoveRefreshSignal.value = {
         id,
@@ -610,7 +619,8 @@
         break;
       case 'revoke':
         revokeByResourceId(row.id, {
-          onSuccess: () => {
+          onSuccess: async () => {
+            await initApprovalPermission();
             tableRefreshId.value += 1;
           },
         });
@@ -772,6 +782,7 @@
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
     enableApproval,
+    showApprovalStatus,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   batchTableQueryParams.value = tableQueryParams.value;
@@ -888,14 +899,16 @@
   const filterConfigList = computed(
     () =>
       [
-        {
-          title: t('common.approvalStatus'),
-          dataIndex: 'approvalStatus',
-          type: FieldTypeEnum.SELECT_MULTIPLE,
-          selectProps: {
-            options: processStatusOptions,
-          },
-        },
+        ...(enableApproval.value
+          ? [
+              {
+                title: t('common.approvalStatus'),
+                dataIndex: 'approvalStatus',
+                type: FieldTypeEnum.SELECT_MULTIPLE,
+                selectProps: { options: processStatusOptions },
+              },
+            ]
+          : []),
         {
           title: t('customer.recycleReason'),
           dataIndex: 'reasonId',

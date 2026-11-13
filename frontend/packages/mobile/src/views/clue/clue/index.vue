@@ -52,6 +52,7 @@
         <CrmListCommonItem
           :hidden-stage="true"
           :item="item"
+          :show-approval-status="showApprovalStatus"
           :actions="actions(item)"
           @click="(value) => goDetail(value as ClueListItem)"
         />
@@ -74,6 +75,7 @@
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteClue, getClueList } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
@@ -112,7 +114,7 @@
   });
 
   const refreshList = () => crmListRef.value?.loadList(true);
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<ClueListItem>({
       formType: FormDesignKeyEnum.CLUE,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
@@ -172,6 +174,10 @@
         if (action === 'confirm') {
           try {
             await deleteClue(id);
+            if (!deleteExecute.value) {
+              clearApprovalConfigCache(FormDesignKeyEnum.CLUE);
+              await initApprovalPermission();
+            }
             showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
             crmListRef.value?.loadList(true);
             return Promise.resolve(true);

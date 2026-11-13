@@ -141,6 +141,7 @@
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
     isContractTableDetail
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
     @showCustomerDrawer="showCustomerDrawer"
@@ -395,6 +396,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -438,6 +440,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteContract(checkedRowKeys.value);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           handleRefresh();
         } catch (error) {
@@ -479,6 +484,9 @@
       onPositiveClick: async () => {
         try {
           await deleteContract(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshSignal.value = {
             id: row.id,
@@ -494,7 +502,8 @@
 
   function handleRevoke(row: ContractItem) {
     revokeByResourceId(row.id, {
-      onSuccess: (resourceId) => {
+      onSuccess: async (resourceId) => {
+        await initApprovalPermission();
         tableItemRefreshId.value = resourceId;
       },
     });
@@ -737,6 +746,7 @@
     containerClass: '.crm-contract-table',
     contractStage: stageConfig.value?.stageConfigList || [],
     enableApproval,
+    showApprovalStatus,
   });
   const {
     propsRes,
@@ -890,15 +900,17 @@
     //   dataIndex: 'alreadyPayAmount',
     //   type: FieldTypeEnum.INPUT_NUMBER,
     // },
-    {
-      title: t('contract.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: processStatusOptions,
-      },
-    },
+    ...(enableApproval.value
+      ? [
+          {
+            title: t('contract.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            operatorOption: COMMON_SELECTION_OPERATORS,
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            selectProps: { options: processStatusOptions },
+          },
+        ]
+      : []),
     ...baseFilterConfigList,
   ]);
 

@@ -1,20 +1,22 @@
 <template>
-  <template v-if="shouldRenderStatus">
-    <CrmTag
-      v-if="props.isTag && currentStatus?.label"
-      :color="{
-        textColor: currentStatus.tagColor,
-        color: currentStatus.tagBgColor,
-      }"
-    >
-      {{ currentStatus.label }}
-    </CrmTag>
-    <div v-else-if="currentStatus?.label" class="flex items-center gap-[8px]">
-      <CrmIcon :type="currentStatus.icon" :size="16" :class="`text-[${currentStatus.color}]`" />
-      {{ currentStatus.label }}
-    </div>
-    <div v-else>-</div>
-  </template>
+  <div class="inline-flex">
+    <template v-if="shouldRenderStatus">
+      <CrmTag
+        v-if="props.isTag && currentStatus?.label"
+        :color="{
+          textColor: currentStatus.tagColor,
+          color: currentStatus.tagBgColor,
+        }"
+      >
+        {{ currentStatus.label }}
+      </CrmTag>
+      <div v-else-if="currentStatus?.label" class="flex items-center gap-[8px]">
+        <CrmIcon :type="currentStatus.icon" :size="16" :class="`text-[${currentStatus.color}]`" />
+        {{ currentStatus.label }}
+      </div>
+      <div v-else>-</div>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">

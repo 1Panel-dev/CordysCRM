@@ -95,6 +95,7 @@
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
 
   import { deleteCluePool, getApprovalResourceDetail, getClueHeaderList, pickClue } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -258,6 +259,7 @@
         clueId: sourceId.value,
         poolId: poolId.value,
       });
+      clearApprovalConfigCache(FormDesignKeyEnum.CLUE);
       showSuccessToast(t('common.pickSuccess'));
       await sleep(300);
       router.back();
@@ -293,6 +295,9 @@
         try {
           showLoadingToast(t('common.deleting'));
           await deleteCluePool(sourceId.value);
+          if (!deleteExecute.value) {
+            clearApprovalConfigCache(FormDesignKeyEnum.CLUE);
+          }
           showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           if (deleteExecute.value) {
             await refreshDetail();

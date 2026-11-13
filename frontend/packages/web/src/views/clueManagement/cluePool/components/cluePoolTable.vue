@@ -90,6 +90,7 @@
     :detail="activeClue"
     :hidden-columns="hiddenColumns"
     @remove="handleOverviewRemove"
+    @approval-success="initApprovalPermission"
     @refresh="searchData(undefined, undefined, activeClue?.id || '')"
     @freeze="openFreezeModal('freeze')"
     @unfreeze="openFreezeModal('unfreeze')"
@@ -285,6 +286,7 @@
     initApprovalPermission,
     resolveRowActions,
     enableApproval,
+    showApprovalStatus,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -407,6 +409,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteCluePool(checkedRowKeys.value as string[]);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           handleRefresh();
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
         } catch (error) {
@@ -431,6 +436,9 @@
       onPositiveClick: async () => {
         try {
           await deleteCluePool(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshSignal.value = {
             id: row.id,
@@ -453,6 +461,7 @@
         clueId: row.id,
         poolId: poolId.value,
       });
+      await initApprovalPermission(true);
       Message.success(t('common.claimSuccess'));
       tableRemoveRefreshSignal.value = {
         id: row.id,
@@ -486,6 +495,7 @@
             assignUserId: distributeForm.value.owner || '',
             clueId: id,
           });
+          await initApprovalPermission(true);
           Message.success(t('common.distributeSuccess'));
           distributeForm.value = { ...defaultTransferForm };
           tableRemoveRefreshSignal.value = {
@@ -566,7 +576,10 @@
         break;
       case 'revoke':
         revokeByResourceId(row.id, {
-          onSuccess: handleRefresh,
+          onSuccess: async () => {
+            await initApprovalPermission();
+            handleRefresh();
+          },
         });
         break;
       case 'pop-claim':
@@ -735,6 +748,7 @@
     hiddenTotal: ref(!!props.hiddenTotal),
     readonly: props.readonly,
     enableApproval,
+    showApprovalStatus,
   });
 
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
@@ -822,14 +836,16 @@
   const filterConfigList = computed(
     () =>
       [
-        {
-          title: t('common.approvalStatus'),
-          dataIndex: 'approvalStatus',
-          type: FieldTypeEnum.SELECT_MULTIPLE,
-          selectProps: {
-            options: processStatusOptions,
-          },
-        },
+        ...(enableApproval.value
+          ? [
+              {
+                title: t('common.approvalStatus'),
+                dataIndex: 'approvalStatus',
+                type: FieldTypeEnum.SELECT_MULTIPLE,
+                selectProps: { options: processStatusOptions },
+              },
+            ]
+          : []),
         {
           title: t('customer.recycleReason'),
           dataIndex: 'reasonId',

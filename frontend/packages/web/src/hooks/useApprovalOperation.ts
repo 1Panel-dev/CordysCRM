@@ -64,6 +64,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   const statusPermissionMap = ref<Map<ProcessStatusEnum, Set<string>>>(new Map());
 
   const enableApproval = ref(false);
+  const showApprovalStatus = ref(false);
   const createExecute = ref(false);
   const updateExecute = ref(false);
   const deleteExecute = ref(false);
@@ -363,17 +364,20 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
       if (requestToken !== approvalPermissionRequestToken) {
         return;
       }
-
       if (result) {
         approvalPermissionsDetail.value = result;
         enableApproval.value = result.enable;
+        // 启用中的流程始终展示状态列；流程关闭后是否保留列由后端根据审批中实例返回。
+        showApprovalStatus.value = Boolean(result.enable || result.existApprovingData);
         createExecute.value = Boolean(result.createExecute);
         updateExecute.value = Boolean(result.updateExecute);
-        deleteExecute.value = Boolean(result.deleteExecute);
+        // 流程关闭后仍会返回历史配置，删除执行时机仅在流程启用时生效。
+        deleteExecute.value = Boolean(result.enable && result.deleteExecute);
         statusPermissionMap.value = buildStatusPermissionMap(result.statusPermissions);
       } else {
         approvalPermissionsDetail.value = result;
         enableApproval.value = false;
+        showApprovalStatus.value = false;
         createExecute.value = false;
         updateExecute.value = false;
         deleteExecute.value = false;
@@ -385,6 +389,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
       }
       approvalPermissionsDetail.value = null;
       enableApproval.value = false;
+      showApprovalStatus.value = false;
       createExecute.value = false;
       updateExecute.value = false;
       deleteExecute.value = false;
@@ -411,6 +416,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     getApprovalStatus,
     getBizStatus,
     enableApproval,
+    showApprovalStatus,
     createExecute,
     updateExecute,
     deleteExecute,

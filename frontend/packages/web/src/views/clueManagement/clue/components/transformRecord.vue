@@ -286,7 +286,10 @@
         break;
       case 'revoke':
         revokeByResourceId(row.id, {
-          onSuccess: (resourceId) => init(),
+          onSuccess: async () => {
+            await initApprovalPermission();
+            init();
+          },
         });
         break;
       case 'edit':

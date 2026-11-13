@@ -53,6 +53,7 @@
     v-model:visible="showDetailDrawer"
     :source-id="activeSourceId"
     @edit="handleEdit"
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="() => searchData(undefined, activeSourceId)"
     @remove="removeItemFromList(activeSourceId)"
   />
@@ -325,6 +326,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
@@ -369,6 +371,9 @@
       onPositiveClick: async () => {
         try {
           await deleteQuotation(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshSignal.value = {
             id: row.id,
@@ -400,7 +405,8 @@
 
   function handleRevoke(row: QuotationItem) {
     revokeByResourceId(row.id, {
-      onSuccess: (resourceId) => {
+      onSuccess: async (resourceId) => {
+        await initApprovalPermission();
         tableRefreshItemId.value = resourceId;
       },
     });
@@ -570,6 +576,7 @@
     permission: ['OPPORTUNITY_QUOTATION:VOIDED', 'OPPORTUNITY_QUOTATION:UPDATE'],
     readonly: props.readonly,
     enableApproval,
+    showApprovalStatus,
   });
 
   const actionConfig = computed(<BatchActionConfig>() => {
@@ -594,14 +601,16 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
-      {
-        title: t('common.approvalStatus'),
-        dataIndex: 'approvalStatus',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options: processStatusOptions,
-        },
-      },
+      ...(enableApproval.value
+        ? [
+            {
+              title: t('common.approvalStatus'),
+              dataIndex: 'approvalStatus',
+              type: FieldTypeEnum.SELECT_MULTIPLE,
+              selectProps: { options: processStatusOptions },
+            },
+          ]
+        : []),
       {
         title: t('common.status'),
         dataIndex: 'invalid',

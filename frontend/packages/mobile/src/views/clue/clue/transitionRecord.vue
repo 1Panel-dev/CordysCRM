@@ -10,6 +10,7 @@
             :key="item.id"
             class="mb-[16px] last:mb-0"
             :item="item"
+            :show-approval-status="showApprovalStatus"
             :actions="getCustomerActions(item)"
             @click="goCustomerDetail(item)"
           />
@@ -35,6 +36,7 @@
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
   import { deleteCustomer, getClueTransitionCustomerRecordList } from '@/api/modules';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
@@ -55,7 +57,7 @@
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CUSTOMER,
   });
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<CustomerListItem>({
       formType: FormDesignKeyEnum.CUSTOMER,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: loadTransitionRecordList }),
@@ -177,6 +179,9 @@
 
             try {
               await deleteCustomer(item.id);
+              if (!deleteExecute.value) {
+                clearApprovalConfigCache(FormDesignKeyEnum.CUSTOMER);
+              }
               showSuccessToast(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
               await loadTransitionRecordList();
               return Promise.resolve(true);

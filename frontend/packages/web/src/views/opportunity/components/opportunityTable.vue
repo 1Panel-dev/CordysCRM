@@ -137,6 +137,7 @@
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
     :detail="activeOpportunity"
+    @approval-success="() => initApprovalPermission(true)"
     @refresh="() => searchData(undefined, activeOpportunity?.id)"
     @remove="removeItemFromList(activeOpportunity?.id || '')"
     @open-customer-drawer="handleOpenCustomerDrawer"
@@ -353,6 +354,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,
@@ -450,6 +452,9 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteOpt(checkedRowKeys.value);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(t('common.deleteSuccess'));
           handleRefresh();
         } catch (error) {
@@ -572,6 +577,9 @@
       onPositiveClick: async () => {
         try {
           await deleteOpt(row.id);
+          if (!deleteExecute.value) {
+            await initApprovalPermission(true);
+          }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
@@ -622,21 +630,20 @@
     });
   }
 
-  function refreshAfterApproval(resourceId?: string) {
-    handleSearchData.value?.(undefined, resourceId);
-  }
-
   function handleActionSelect(row: OpportunityItem, actionKey: string, done?: () => void) {
     activeSourceId.value = row.id;
     switch (actionKey) {
       case 'review':
         reviewByResourceId(row.id, {
-          onSuccess: refreshAfterApproval,
+          onSuccess: (resourceId) => handleSearchData.value?.(undefined, resourceId),
         });
         break;
       case 'revoke':
         revokeByResourceId(row.id, {
-          onSuccess: refreshAfterApproval,
+          onSuccess: async (resourceId) => {
+            await initApprovalPermission();
+            handleSearchData.value?.(undefined, resourceId);
+          },
         });
         break;
       case 'edit':
@@ -799,6 +806,7 @@
     readonly: props.readonly,
     opportunityStage: stageConfig.value?.stageConfigList || [],
     enableApproval,
+    showApprovalStatus,
   });
   const {
     propsRes,
@@ -896,14 +904,16 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
-      {
-        title: t('common.approvalStatus'),
-        dataIndex: 'approvalStatus',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options: processStatusOptions,
-        },
-      },
+      ...(enableApproval.value
+        ? [
+            {
+              title: t('common.approvalStatus'),
+              dataIndex: 'approvalStatus',
+              type: FieldTypeEnum.SELECT_MULTIPLE,
+              selectProps: { options: processStatusOptions },
+            },
+          ]
+        : []),
       {
         title: t('opportunity.opportunityStage'),
         dataIndex: 'stage',
