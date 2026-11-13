@@ -619,9 +619,16 @@ export function abbreviateNumber(count: number | string, currency: string, decim
   }
 
   const locale = localStorage.getItem('CRM-locale') || 'zh-CN';
+  const shiftDecimal = (num: number, exponent: number) => {
+    const [coefficient, currentExponent = '0'] = num.toString().split('e');
+    return Number(`${coefficient}e${Number(currentExponent) + exponent}`);
+  };
   const truncateNumber = (num: number) => {
-    const factor = 10 ** decimals;
-    return Math.round(num * factor) / factor;
+    if (!Number.isFinite(num)) return num;
+    const shifted = shiftDecimal(num, decimals);
+    if (!Number.isFinite(shifted)) return num;
+    const rounded = Math.sign(shifted) * Math.round(Math.abs(shifted));
+    return shiftDecimal(rounded, -decimals);
   };
 
   const full = `${count.toLocaleString('en-US', {

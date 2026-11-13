@@ -209,6 +209,12 @@ export default function useTable<T>(
           const newData = tmpArr.list?.find((item: CrmTableDataItem<T>) => item.id === refreshId);
           if (oldData && newData) {
             Object.assign(oldData, processRecordItem(newData, tmpArr) as unknown as UnwrapRef<CrmTableDataItem<T>>);
+          } else if (oldData && !newData) {
+            // 如果新数据不存在，则从列表中移除旧数据
+            propsRes.value.data = propsRes.value.data.filter((item) => item.id !== refreshId) as unknown as UnwrapRef<
+              CrmTableDataItem<T>[]
+            >;
+            setPagination(tmpArr.current, tmpArr.total);
           }
         } else {
           propsRes.value.data = tmpArr.list?.map((item: CrmTableDataItem<T>) =>

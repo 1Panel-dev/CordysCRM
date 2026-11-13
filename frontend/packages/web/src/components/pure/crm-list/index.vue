@@ -5,13 +5,21 @@
       ref="draggableListRef"
       v-model="listData"
       tag="div"
-      :class="['crm-list', 'crm-list-draggable', containerStatusClass, props.class]"
+      :class="[
+        'crm-list',
+        'crm-list-draggable',
+        suppressDragHover ? 'crm-list--suppress-hover' : '',
+        containerStatusClass,
+        props.class,
+      ]"
       :style="{ height: props.virtualScrollHeight }"
       handle=".crm-list-drag-icon"
       ghost-class="crm-list-ghost"
       :animation="150"
       @scroll="handleScroll"
       @wheel="handleWheel"
+      @start="handleDragStart"
+      @end="handleDragEnd"
     >
       <template v-for="item of listData" :key="item[props.keyField]">
         <slot name="item" :item="item">
@@ -25,7 +33,8 @@
               innerActiveItemKey === item[keyField] ? props.activeItemClass : '',
             ]"
             :style="{ height: `${props.itemHeight}px` }"
-            @click="emit('itemClick', item)"
+            @pointerdown="handleItemPointerDown"
+            @click="handleItemClick(item)"
           >
             <span class="crm-list-drag-icon cursor-move">
               <CrmIcon type="iconicon_move" class="text-[var(--text-n4)]" />
@@ -40,6 +49,7 @@
                   $slots['itemAction'] || (props.itemMoreActions && props.itemMoreActions.length > 0 && !props.disabled)
                 "
                 class="crm-list-item-actions"
+                :style="{ visibility: suppressDragHover ? 'hidden' : undefined }"
               >
                 <slot name="itemAction" :item="item"></slot>
                 <CrmMoreAction
@@ -50,6 +60,7 @@
                   trigger="click"
                   @select="handleMoreActionSelect($event, item)"
                   @close="handleMoreActionClose"
+                  @update-show="handleMoreActionUpdateShow"
                   @click.stop="handleClickMore(item)"
                 >
                 </CrmMoreAction>
@@ -89,7 +100,8 @@
             :style="{
               height: `${props.itemHeight}px`,
             }"
-            @click="emit('itemClick', item)"
+            @pointerdown="handleItemPointerDown"
+            @click="handleItemClick(item)"
           >
             <slot name="titleLeft" :item="item"></slot>
             <div class="flex-1 overflow-x-hidden">
@@ -111,6 +123,7 @@
                   trigger="click"
                   @select="handleMoreActionSelect($event, item)"
                   @close="handleMoreActionClose"
+                  @update-show="handleMoreActionUpdateShow"
                   @click.stop="handleClickMore(item)"
                 >
                 </CrmMoreAction>
@@ -198,8 +211,13 @@
   }
 
   function handleMoreActionClose() {
+    if (!innerFocusItemKey.value) return;
     innerFocusItemKey.value = '';
     emit('moreActionsClose');
+  }
+
+  function handleMoreActionUpdateShow(show: boolean) {
+    if (!show) handleMoreActionClose();
   }
 
   function handleClickMore(item: Record<string, any>) {
@@ -209,6 +227,36 @@
 
   const listRef: Ref = ref(null);
   const draggableListRef = ref();
+  const isDragging = ref(false);
+  const suppressDragClick = ref(false);
+  const suppressDragHover = ref(false);
+
+  function handleDragStart() {
+    isDragging.value = true;
+    suppressDragHover.value = true;
+  }
+
+  function handleDragEnd(event: { oldIndex?: number; newIndex?: number }) {
+    if (event.oldIndex !== undefined && event.newIndex !== undefined && event.oldIndex !== event.newIndex) {
+      suppressDragClick.value = true;
+    }
+    nextTick(() => {
+      isDragging.value = false;
+    });
+  }
+
+  function handleItemPointerDown() {
+    suppressDragClick.value = false;
+    if (!isDragging.value) suppressDragHover.value = false;
+  }
+
+  function handleItemClick(item: Record<string, any>) {
+    if (suppressDragClick.value) {
+      suppressDragClick.value = false;
+      return;
+    }
+    emit('itemClick', item);
+  }
 
   watch(
     () => [listData.value.length, props.draggable],
@@ -309,6 +357,14 @@
     }
     .crm-list-item--active {
       color: var(--primary-8);
+    }
+    &.crm-list--suppress-hover {
+      .crm-list-item:hover {
+        background: transparent;
+      }
+      .crm-list-item-actions {
+        visibility: hidden;
+      }
     }
   }
   .crm-list-draggable {
