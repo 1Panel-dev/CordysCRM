@@ -20,8 +20,11 @@
                  LEFT JOIN sys_user_extend
                            ON sys_user.id = sys_user_extend.id
         WHERE sys_user.id = #{id}
+        <!-- admin 仅按用户 ID 查询，避免与其他用户的手机号或邮箱冲突。 -->
+        <if test='id == null or !id.equalsIgnoreCase("admin")'>
            OR sys_user.phone = #{id}
            OR sys_user.email = #{id}
+        </if>
     </select>
 
     <select id="selectUserOptionByIds" resultType="cn.cordys.common.dto.OptionDTO">
