@@ -141,16 +141,30 @@
           <collaborator :source-id="props.sourceId" :readonly="props.readonly" />
         </div>
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
-          <ContractTable :customer-id="props.sourceId" hide-board />
+          <ContractTable
+            :detail-tab-resource-id="props.sourceId"
+            :detail-tab-page-form-id="FormDesignKeyEnum.CUSTOMER"
+            :detail-tab-query="contractTabStatisticQuery"
+            disable-customer-link
+            hide-board
+          />
         </div>
         <div v-if="activeTab === 'contractPayment'" class="h-full p-[24px]">
-          <PaymentTable :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT" :customer-id="props.sourceId" />
+          <PaymentTable
+            :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
+            :customer-id="props.sourceId"
+            @open-contract-drawer="handleOpenContractDrawer"
+          />
         </div>
         <div v-if="activeTab === 'contractPaymentRecord'" class="h-full p-[24px]">
-          <PaymentRecordTable :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD" :customer-id="props.sourceId" />
+          <PaymentRecordTable
+            :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
+            :customer-id="props.sourceId"
+            @open-contract-drawer="handleOpenContractDrawer"
+          />
         </div>
         <div v-if="activeTab === 'invoice'" class="h-full p-[24px]">
-          <InvoiceTable :customer-id="props.sourceId" />
+          <InvoiceTable :customer-id="props.sourceId" @open-contract-drawer="handleOpenContractDrawer" />
         </div>
         <div v-if="activeTab === 'order'" class="h-full px-[24px] pt-[24px]">
           <OrderTable
@@ -472,7 +486,12 @@
   );
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 1);
   const { getDetailTabTable } = useFormDetailTabTable();
-  // 内置订单标签的关联表单、关联字段取自已保存表单配置，金额统计走详情标签专用接口。
+  // 内置合同和订单标签的详情分页、统计使用已保存表单配置中的关联字段。
+  const contractTabStatisticQuery = computed(() => {
+    const tab = formConfig.value?.detailTabs?.find((item) => item.internalKey === 'CUSTOMER_CONTRACT');
+    if (!tab?.relatedForm?.id || !tab.relatedField?.id) return undefined;
+    return { relatedFormId: tab.relatedForm.id, relatedFieldId: tab.relatedField.id };
+  });
   const orderTabStatisticQuery = computed(() => {
     const tab = formConfig.value?.detailTabs?.find((item) => item.internalKey === 'CUSTOMER_ORDER');
     if (!tab?.relatedForm?.id || !tab.relatedField?.id) return undefined;

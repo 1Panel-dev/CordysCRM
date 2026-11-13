@@ -33,6 +33,7 @@
         tooltip-position="top-start"
         :readonly="props.readonly"
         :is-contract-table-detail="props.isContractTableDetail"
+        :disable-customer-link="props.disableCustomerLink"
         :other-save-params="otherSaveParams"
         :custom-form-id="props.customFormId"
         @init="handleDescriptionInit"
@@ -86,6 +87,7 @@
       column?: number;
       readonly?: boolean;
       isContractTableDetail?: boolean;
+      disableCustomerLink?: boolean;
       customFormId?: string;
       approvalTaskId?: string;
       commentMentionId?: string;

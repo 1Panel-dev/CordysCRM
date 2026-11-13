@@ -328,6 +328,7 @@
         | undefined;
       readonly?: boolean;
       loadingDescription?: string;
+      disableCustomerLink?: boolean;
       oneLineValue?: boolean; // value 是否单行显示
       oneLineLabel?: boolean; // label 是否单行显示
       isContractTableDetail?: boolean; // 只支持合同列表打开的合同详情抽屉高亮跳转
@@ -545,6 +546,7 @@
   const dataSourceConfig: Partial<Record<FieldDataSourceTypeEnum, DataSourceConfig>> = {
     [FieldDataSourceTypeEnum.CUSTOMER]: {
       canOpen: (item: Description) => {
+        if (props.disableCustomerLink) return false;
         const { value } = item;
 
         const valid = value !== t('common.optionNotExist') && value !== '-';

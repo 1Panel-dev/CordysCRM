@@ -35,6 +35,7 @@
             mode="static"
             @item-click="handleFormClick"
             @more-action-select="handleMoreActionSelect"
+            @more-actions-close="clearFocusItem"
           >
             <template #title="{ item }">
               <n-tooltip trigger="hover">
@@ -211,6 +212,10 @@
   const configDrawerVisible = ref(false);
   const currentSourceId = ref();
   const defaultTab = ref<'design' | 'memberPermission'>('design');
+
+  function clearFocusItem() {
+    focusItemKey.value = '';
+  }
 
   // 删除
   function handleDelete(row: any) {

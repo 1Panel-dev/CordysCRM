@@ -525,7 +525,6 @@
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
     try {
-      if (props.customerId) return;
       if (props.detailTabResourceId) {
         // 详情标签统计走专用接口，由后端按标签配置追加固定关联条件并校验数据范围。
         if (!props.detailTabPageFormId || !props.detailTabQuery) return;

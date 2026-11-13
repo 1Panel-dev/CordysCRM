@@ -140,6 +140,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
+    :disable-customer-link="props.disableCustomerLink"
     isContractTableDetail
     @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
@@ -251,6 +252,7 @@
     fullscreenTargetRef?: HTMLElement | null;
     readonly?: boolean;
     customerId?: string;
+    disableCustomerLink?: boolean;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -681,7 +683,8 @@
           : h(CrmNameTooltip, { text: row.name });
       },
       customerId: (row: ContractItem) => {
-        return !row.customerName ||
+        return props.disableCustomerLink ||
+          !row.customerName ||
           (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
           (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
           ? h(
@@ -767,7 +770,6 @@
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
     try {
-      if (props.customerId) return;
       if (props.detailTabResourceId) {
         // 详情标签统计走专用接口，由后端按标签配置追加固定关联条件并校验数据范围。
         if (!props.detailTabPageFormId || !props.detailTabQuery) return;
@@ -817,7 +819,7 @@
 
   const showStatisticInfo = computed(() => {
     const hasAmountColumn = !!propsRes.value.columns.find((item) => item.key === 'amount');
-    if (props.detailTabResourceId) {
+    if (props.detailTabResourceId || props.customerId) {
       // 详情标签没有看板模式，只要展示金额列就显示统计。
       return hasAmountColumn;
     }
@@ -1063,14 +1065,8 @@
   );
 
   onMounted(async () => {
-    if (props.customerId) {
+    if (props.customerId || props.detailTabResourceId) {
       activeShowType.value = 'table';
-      searchData();
-      return;
-    }
-    if (props.detailTabResourceId) {
-      activeShowType.value = 'table';
-      searchData();
       return;
     }
     activeShowType.value = (await getItem<'billboard' | 'table'>('contract-active-show-type')) ?? 'table';

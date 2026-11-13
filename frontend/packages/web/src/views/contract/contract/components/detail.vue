@@ -82,6 +82,7 @@
                 :set-editing="setEditing"
                 :readonly="!canUpdateStage"
                 :is-contract-table-detail="props.isContractTableDetail"
+                :disable-customer-link="props.disableCustomerLink"
                 :approval-task-id="props.approvalTaskId"
                 :comment-mention-id="props.commentMentionId"
                 @init="handleInit"
@@ -222,6 +223,7 @@
   const props = defineProps<{
     sourceId: string;
     isContractTableDetail?: boolean;
+    disableCustomerLink?: boolean;
     approvalTaskId?: string;
     commentMentionId?: string;
   }>();
