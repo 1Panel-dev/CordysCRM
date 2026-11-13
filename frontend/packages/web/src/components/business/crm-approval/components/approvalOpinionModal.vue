@@ -52,25 +52,11 @@
       </n-form-item>
       <section v-if="props.approvalType === 'reject' && props.showResubmitPath !== false" class="resubmit-section">
         <div class="resubmit-section-title">{{ t('crm.approval.resubmitPath') }}</div>
-        <div class="resubmit-options" role="radiogroup" :aria-label="t('crm.approval.resubmitPath')">
-          <div
-            v-for="option of resubmitOptions"
-            :key="option.value"
-            class="resubmit-option"
-            :class="{ 'resubmit-option--selected': resubmitMode === option.value }"
-            role="radio"
-            :aria-checked="resubmitMode === option.value"
-            tabindex="0"
-            @click="resubmitMode = option.value"
-            @keydown="handleOptionKeydown($event, option.value)"
-          >
-            <span class="resubmit-option-radio" aria-hidden="true"></span>
-            <span class="resubmit-option-copy">
-              <span class="resubmit-option-title">{{ option.label }}</span>
-              <span class="resubmit-option-description">{{ option.description }}</span>
-            </span>
-          </div>
-        </div>
+        <CrmRadioCardGroup
+          v-model:value="resubmitMode"
+          :options="resubmitOptions"
+          :aria-label="t('crm.approval.resubmitPath')"
+        />
         <n-form-item
           v-if="resubmitMode === 'SPECIFIED_NODE'"
           path="resubmitStartNodeNumber"
@@ -104,6 +90,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import CrmRadioCardGroup from '@/components/pure/crm-radio-card-group/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmFileInput from '@/components/business/crm-file-input/index.vue';
 
@@ -233,13 +220,6 @@
     });
   }
 
-  function handleOptionKeydown(event: KeyboardEvent, value: 'SUBMITTER' | 'CURRENT_NODE' | 'SPECIFIED_NODE') {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      resubmitMode.value = value;
-    }
-  }
-
   watch(
     resubmitStartNodeNumber,
     (value) => {
@@ -293,69 +273,6 @@
     margin-bottom: 12px;
     font-weight: 600;
     color: var(--text-n1);
-  }
-  .resubmit-options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .resubmit-option {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    border: 1px solid var(--text-n8);
-    border-radius: 4px;
-    background: var(--text-n10);
-    transition: border-color 120ms ease, background-color 120ms ease;
-    gap: 12px;
-    cursor: pointer;
-    &:focus-visible {
-      outline: 2px solid var(--primary-8);
-      outline-offset: 2px;
-    }
-  }
-  .resubmit-option--selected {
-    border-color: var(--primary-8);
-    background: var(--primary-10, #f0fbfb);
-    .resubmit-option-radio {
-      border-color: var(--primary-8);
-      &::after {
-        transform: scale(1);
-      }
-    }
-  }
-  .resubmit-option-radio {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 20px;
-    height: 20px;
-    border: 1px solid var(--text-n6);
-    border-radius: 50%;
-    flex: 0 0 20px;
-    &::after {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--primary-8);
-      content: '';
-      transform: scale(0);
-      transition: transform 120ms ease;
-    }
-  }
-  .resubmit-option-copy {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .resubmit-option-title {
-    color: var(--text-n1);
-    line-height: 22px;
-  }
-  .resubmit-option-description {
-    color: var(--text-n4);
-    line-height: 20px;
   }
   .resubmit-node-field {
     margin-top: 16px;

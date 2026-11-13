@@ -12,7 +12,7 @@
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
       @batch-action="handleBatchAction"
-      @refresh="initData"
+      @refresh="refreshCollaborators"
     >
       <template #actionLeft>
         <n-button
@@ -36,10 +36,9 @@
     <n-form
       ref="formRef"
       :model="form"
-      label-placement="left"
-      label-width="auto"
-      require-mark-placement="left"
-      label-align="right"
+      label-placement="top"
+      require-mark-placement="right"
+      class="collaborator-form"
       :rules="{
         member: [
           { trigger: ['input', 'blur'], required: true, message: t('common.notNull', { value: t('role.member') }) },
@@ -58,46 +57,43 @@
           :disabled-ids="disabledIds"
         />
       </n-form-item>
-      <n-form-item path="permission" feedback-class="hidden">
+      <n-form-item path="permission" :label="t('role.permission')">
+        <CrmRadioCardGroup v-model:value="form.permission" :options="collaborationOptions" />
+      </n-form-item>
+      <n-form-item path="expireTime">
         <template #label>
           <n-tooltip trigger="hover">
             <template #trigger>
               <div class="flex items-center gap-[4px]">
-                {{ t('role.permission') }}
+                {{ t('customer.validity') }}
                 <CrmIcon
                   type="iconicon_help_circle"
                   class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
                 />
               </div>
             </template>
-            {{ t('customer.cooperationTip') }}
+            {{ t('customer.validityTip') }}
           </n-tooltip>
         </template>
-        <n-tabs v-model:value="form.permission" type="segment" class="collaborator-tabs">
-          <n-tab-pane name="READ_ONLY" :tab="t('customer.readOnly')"></n-tab-pane>
-          <n-tab-pane name="COLLABORATION" :tab="t('customer.customerInfoOnly')"></n-tab-pane>
-          <n-tab-pane name="JOINT_FOLLOW" :tab="t('customer.jointFollow')"></n-tab-pane>
-        </n-tabs>
-      </n-form-item>
-      <n-form-item path="expireTime" :label="t('customer.validity')">
         <n-date-picker v-model:value="form.expireTime" type="datetime" clearable class="w-full" />
-        <template #feedback>{{ t('customer.validityTip') }}</template>
       </n-form-item>
     </n-form>
   </CrmModal>
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NTabPane, NTabs, NTooltip, useMessage } from 'naive-ui';
+  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NTooltip, useMessage } from 'naive-ui';
+  import dayjs from 'dayjs';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
-  import { CollaborationType } from '@lib/shared/models/customer';
+  import type { CollaborationItem, CollaborationType } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmRadioCardGroup, { type CrmRadioCardOption } from '@/components/pure/crm-radio-card-group/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
@@ -108,7 +104,6 @@
     addCustomerCollaboration,
     batchDeleteCustomerCollaboration,
     deleteCustomerCollaboration,
-    getCustomerCollaborationList,
     getUserOptions,
     updateCustomerCollaboration,
   } from '@/api/modules';
@@ -117,21 +112,31 @@
 
   const props = defineProps<{
     sourceId: string; // 资源id
+    collaborators: CollaborationItem[];
     readonly?: boolean; // 是否只读
+  }>();
+  const emit = defineEmits<{
+    (e: 'refresh'): void;
   }>();
 
   const { t } = useI18n();
   const Message = useMessage();
   const { openModal } = useModal();
 
-  const tableRefreshId = ref(0);
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  function refreshCollaborators() {
+    crmTableRef.value?.clearCheckedRowKeys();
+    emit('refresh');
+    crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
   const removeLoading = ref(false);
   async function removeMember(row: any) {
     try {
       removeLoading.value = true;
       await deleteCustomerCollaboration(row.id);
       Message.success(t('common.removeSuccess'));
-      tableRefreshId.value += 1;
+      refreshCollaborators();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -145,15 +150,32 @@
   const addMemberLoading = ref(false);
   const form = ref<{
     id: string;
-    member: string | number | (string | number)[];
+    member: string | number | (string | number)[] | null;
     permission: CollaborationType;
     expireTime?: number | null;
   }>({
     id: '',
-    member: '',
+    member: null,
     permission: 'READ_ONLY',
   });
   const formRef = ref<FormInst>();
+  const collaborationOptions = computed<CrmRadioCardOption[]>(() => [
+    {
+      value: 'COLLABORATION',
+      label: t('customer.customerInfoOnly'),
+      description: t('customer.collaborationDescription.infoOnly'),
+    },
+    {
+      value: 'READ_ONLY',
+      label: t('customer.readOnly'),
+      description: t('customer.collaborationDescription.readOnly'),
+    },
+    {
+      value: 'JOINT_FOLLOW',
+      label: t('customer.jointFollow'),
+      description: t('customer.collaborationDescription.jointFollow'),
+    },
+  ]);
 
   function handleAddMember() {
     formRef.value?.validate(async (errs) => {
@@ -177,7 +199,7 @@
           Message.success(t('common.addSuccess'));
         }
         addMemberModalVisible.value = false;
-        tableRefreshId.value += 1;
+        refreshCollaborators();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -191,7 +213,7 @@
     isEdit.value = false;
     form.value = {
       id: '',
-      member: '',
+      member: null,
       permission: 'READ_ONLY',
     };
     addMemberModalVisible.value = true;
@@ -224,8 +246,8 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteCustomerCollaboration(checkedRowKeys.value);
-          tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
+          refreshCollaborators();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -333,7 +355,7 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getCustomerCollaborationList, {
+  const { propsRes, propsEvent } = useTable(undefined, {
     tableKey: TableKeyEnum.CUSTOMER_COLLABORATOR,
     showSetting: true,
     showPagination: false,
@@ -342,16 +364,6 @@
   });
 
   const disabledIds = computed(() => propsRes.value.data.map((e) => e.userId));
-
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  function initData() {
-    if (!props.sourceId) return;
-    setLoadListParams({
-      customerId: props.sourceId,
-    });
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
-  }
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
@@ -364,20 +376,15 @@
   };
 
   watch(
-    () => tableRefreshId.value,
-    () => {
-      crmTableRef.value?.clearCheckedRowKeys();
-      initData();
-    }
+    () => props.collaborators,
+    (list) => {
+      propsRes.value.data = list.map((item) => ({
+        ...item,
+        createTime: item.createTime ? dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') : item.createTime,
+        updateTime: item.updateTime ? dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss') : item.updateTime,
+      }));
+      if (propsRes.value.crmPagination) propsRes.value.crmPagination.itemCount = list.length;
+    },
+    { immediate: true }
   );
-
-  watch(() => props.sourceId, initData, { immediate: true });
 </script>
-
-<style lang="less">
-  .collaborator-tabs {
-    .n-tab-pane {
-      @apply hidden;
-    }
-  }
-</style>

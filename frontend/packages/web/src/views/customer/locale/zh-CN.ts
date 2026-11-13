@@ -41,7 +41,10 @@ export default {
   'customer.longTerm': '长期有效',
   'customer.opportunityInfo': '商机信息',
   'customer.cooperation': '协作',
-  'customer.cooperationTip': '仅客户信息：业务数据仅可见本人负责的数据；全部只读：可查看客户全部数据但不可操作；共同跟进：可查看并协同编辑客户全部数据',
+  'customer.collaborationDescription.infoOnly':
+    '可查看客户基础信息；跟进、联系人、商机、合同等业务标签页，仅可见本人负责的数据',
+  'customer.collaborationDescription.readOnly': '以负责人视角查看该客户全部数据，不支持操作，多用于新人观摩学习',
+  'customer.collaborationDescription.jointFollow': '可查看客户全量数据并协同编辑，无数据权限隔离',
   'customer.deleteMemberTip': '删除后，成员将不再拥有该客户权限',
   'customer.batchDeleteMemberTip': '确认删除 {count} 个成员吗？',
   'customer.contacts.all': '全部联系人',
