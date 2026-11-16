@@ -31,10 +31,6 @@
                  inner join sys_module_field f on f.form_id = mf.id and f.type = #{fieldType}
                  inner join sys_module_field_blob b on b.id = f.id
         where mf.organization_id = #{orgId}
-          and mf.form_key in
-        <foreach collection="hostFormKeys" item="hostFormKey" open="(" separator="," close=")">
-            #{hostFormKey}
-        </foreach>
     </select>
 
     <!-- 字段对字段比较条件里的右值: 宿主表单某条数据的某个字段值 -->

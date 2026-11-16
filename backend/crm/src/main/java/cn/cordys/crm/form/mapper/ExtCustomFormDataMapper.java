@@ -1,6 +1,7 @@
 package cn.cordys.crm.form.mapper;
 
 import cn.cordys.common.dto.BatchUpdateDbParam;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
@@ -8,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface ExtCustomFormDataMapper {
+public interface ExtCustomFormDataMapper extends StatisticSqlMapper {
 
     List<CustomFormDataListResponse> list(@Param("request") CustomFormDataPageRequest request,
             @Param("orgId") String orgId,

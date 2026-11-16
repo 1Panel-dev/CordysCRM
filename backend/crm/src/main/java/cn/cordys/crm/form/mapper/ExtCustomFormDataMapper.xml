@@ -350,6 +350,48 @@
         </choose>
     </sql>
 
+    <!-- 自定义表单作为统计目标或宿主时，复用其列表过滤语义。 -->
+    <select id="selectStatisticAggregate" resultType="java.math.BigDecimal">
+        select
+        <include refid="cn.cordys.common.mapper.CommonMapper.statisticAggregateHead">
+            <property name="mainTableAlias" value="d"/>
+        </include>
+        from custom_form_data d
+        <include refid="cn.cordys.common.mapper.CommonMapper.statisticRelationJoin">
+            <property name="mainTableAlias" value="d"/>
+            <property name="valueFieldTable" value="custom_form_data_field"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.scopeCondition.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where d.organization_id = #{request.orgId}
+          and d.custom_form_id = #{request.targetFormKey}
+        <if test="request.relatedBusinessKey != null and request.relatedBusinessKey != ''">
+            and d.`${request.relatedBusinessKey}` = #{request.dataId}
+        </if>
+        <include refid="combine">
+            <property name="combineSearch" value="request.scopeCondition"/>
+        </include>
+    </select>
+
+    <select id="selectStatisticHostDataIds" resultType="java.lang.String">
+        select d.id
+        from custom_form_data d
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.scopeCondition.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where d.organization_id = #{request.orgId}
+          and d.custom_form_id = #{request.formKey}
+        <include refid="combine">
+            <property name="combineSearch" value="request.scopeCondition"/>
+        </include>
+        <include refid="cn.cordys.common.mapper.CommonMapper.statisticCursorPage">
+            <property name="mainTableAlias" value="d"/>
+        </include>
+    </select>
+
     <update id="batchUpdate">
         UPDATE custom_form_data
         <set>

@@ -513,6 +513,9 @@ public class ModuleFormService {
      * @return 内置标签、关联表单及其匹配的数据源字段
      */
     public List<RelatedFormDTO> getRelatedForms(String formKey, String organizationId) {
+        if (FormKey.ofKey(formKey) == null && !isCustomFormInOrganization(formKey, organizationId)) {
+            return List.of();
+        }
         String sourceType = getFormSourceType(formKey);
 
         // 关联字段只允许数据源单选类型，先从字段主表缩小需要解析的属性范围。
@@ -568,6 +571,12 @@ public class ModuleFormService {
         return result.stream()
                 .filter(item -> StringUtils.isNotBlank(item.getName()))
                 .toList();
+    }
+
+    /** 自定义表单以表单 ID 作为 formKey，查询前必须限制在当前组织。 */
+    private boolean isCustomFormInOrganization(String formId, String organizationId) {
+        CustomForm form = customFormMapper.selectByPrimaryKey(formId);
+        return form != null && StringUtils.equals(form.getOrganizationId(), organizationId);
     }
 
     /**
@@ -2389,11 +2398,6 @@ public class ModuleFormService {
             return;
         }
 
-        // TODO 自定义表单暂不支持添加统计字段: 其字段配置模型与数据权限链路尚未适配统计聚合, 后续版本放开。
-        if (FormKey.ofKey(formKey) == null) {
-            throw new GenericException(Translator.get("module.form.statistic.custom.form.unsupported"));
-        }
-
         Map<String, RelatedFormDTO> relatedFormMap = getRelatedForms(formKey, orgId).stream()
                 .collect(Collectors.toMap(RelatedFormDTO::getId, Function.identity(), (p, n) -> p));
 
@@ -2422,11 +2426,6 @@ public class ModuleFormService {
 
         if (StringUtils.isBlank(field.getTargetFormId())) {
             throw new GenericException(Translator.getWithArgs("module.form.statistic.target.required", name));
-        }
-        // TODO 自定义表单暂不支持作为被统计的目标表单, 目标表单目前只允许标准模块表单, 后续版本放开。
-        if (FormKey.ofKey(field.getTargetFormId()) == null) {
-            throw new GenericException(
-                    Translator.getWithArgs("module.form.statistic.target.custom.form.unsupported", name));
         }
         if (StringUtils.isBlank(field.getRelatedFieldId())) {
             throw new GenericException(Translator.getWithArgs("module.form.statistic.related.field.required", name));

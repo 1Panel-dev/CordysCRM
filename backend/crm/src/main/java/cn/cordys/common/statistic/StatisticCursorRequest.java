@@ -21,6 +21,9 @@ public class StatisticCursorRequest {
      */
     private String orgId;
 
+    /** 宿主表单 Key；自定义表单共用数据表时用于限定具体表单。 */
+    private String formKey;
+
     /**
      * 上一页最后一条的主键; 为空表示第一页。
      */

@@ -78,6 +78,8 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
@@ -171,6 +173,47 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private UserViewService userViewService;
+    @Resource
+    private StatisticFieldService statisticFieldService;
+
+    /*
+     * 统计服务由 Spring 容器强制装配；保留空值分支是为了兼容直接 new Service 的历史单测，
+     * 不让派生数据协作掩盖被测的主业务异常。
+     */
+    private void refreshDataStatisticFields(String formId, String dataId, String orgId) {
+        if (statisticFieldService != null) {
+            statisticFieldService.refreshDataStatisticFields(formId, dataId, orgId);
+        }
+    }
+
+    private void refreshByRelatedDataChange(String formId, String dataId, String orgId) {
+        if (statisticFieldService != null) {
+            statisticFieldService.refreshByRelatedDataChange(formId, dataId, orgId);
+        }
+    }
+
+    private StatisticHostScope captureRelatedHosts(String formId, List<String> dataIds, String orgId) {
+        return statisticFieldService == null ? null
+                : statisticFieldService.captureRelatedHosts(formId, dataIds, orgId);
+    }
+
+    private StatisticHostScope captureRelatedHostsForFieldChange(String formId, String fieldId,
+            List<String> dataIds, String orgId) {
+        return statisticFieldService == null ? null
+                : statisticFieldService.captureRelatedHostsForFieldChange(formId, fieldId, dataIds, orgId);
+    }
+
+    private void refreshAfterRelatedChange(StatisticHostScope scope, List<String> dataIds) {
+        if (statisticFieldService != null) {
+            statisticFieldService.refreshAfterRelatedChange(scope, dataIds);
+        }
+    }
+
+    private void refreshAfterRelatedDelete(StatisticHostScope scope) {
+        if (statisticFieldService != null) {
+            statisticFieldService.refreshAfterRelatedDelete(scope);
+        }
+    }
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId,
             String orgId, boolean catchPermissionException) {
@@ -559,6 +602,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             CustomFormDataFieldService.clearFormKey();
         }
         customFormDataMapper.insert(data);
+        refreshDataStatisticFields(request.getCustomFormId(), data.getId(), orgId);
+        refreshByRelatedDataChange(request.getCustomFormId(), data.getId(), orgId);
 
         ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(request.getCustomFormId(), orgId);
         baseService.handleAddLogWithSubTable(data, request.getModuleFields(), Translator.get("products_info"),
@@ -596,6 +641,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             request.setOwner(originData.getOwner());
         }
 
+        StatisticHostScope statisticScope = request.getModuleFields() == null ? null
+                : captureRelatedHosts(originData.getCustomFormId(), List.of(request.getId()), orgId);
         CustomFormData updateData = new CustomFormData();
         updateData.setId(request.getId());
         updateData.setName(request.getName());
@@ -628,6 +675,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             }
         } finally {
             CustomFormDataFieldService.clearFormKey();
+        }
+        if (statisticScope != null) {
+            refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
         }
 
         return customFormDataMapper.selectByPrimaryKey(request.getId());
@@ -663,8 +713,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
+        StatisticHostScope statisticScope = captureRelatedHosts(data.getCustomFormId(), List.of(id), orgId);
         customFormDataFieldService.deleteByResourceId(id);
         customFormDataMapper.deleteByPrimaryKey(id);
+        refreshAfterRelatedDelete(statisticScope);
         // 清理审批待办
         approvalTodoService.deletePendingTasksByResourceIds(List.of(id));
 
@@ -711,6 +763,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             return;
         }
         String customFormId = customFormData.getCustomFormId();
+        StatisticHostScope statisticScope = captureRelatedHosts(customFormId,
+                List.of(postFieldParam.getResourceId()), orgId);
         ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(customFormId, orgId);
         List<BaseField> fields = formConfig.getFields();
         Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
@@ -768,6 +822,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (CollectionUtils.isNotEmpty(customFormDataFieldBlobs)) {
             customFormDataFieldBlobMapper.batchInsert(customFormDataFieldBlobs);
         }
+        refreshAfterRelatedChange(statisticScope, List.of(postFieldParam.getResourceId()));
         // 记录审批后置字段更新日志
         CustomFormDataFieldService.setFormKey(customFormId);
         try {
@@ -875,8 +930,11 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             filteredRequest.setIds(permittedIds);
             filteredRequest.setFieldId(request.getFieldId());
             filteredRequest.setFieldValue(request.getFieldValue());
+            StatisticHostScope statisticScope = captureRelatedHostsForFieldChange(
+                    request.getCustomFormId(), request.getFieldId(), permittedIds, orgId);
             customFormDataFieldService.batchUpdate(filteredRequest, field, permittedDataList, CustomFormData.class,
                     LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId, true);
+            refreshAfterRelatedChange(statisticScope, permittedIds);
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
@@ -943,8 +1001,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             return;
         }
 
+        StatisticHostScope statisticScope = captureRelatedHosts(formId, deleteIds, orgId);
         customFormDataFieldService.deleteByResourceIds(deleteIds);
         customFormDataMapper.deleteByIds(deleteIds);
+        refreshAfterRelatedDelete(statisticScope);
         // 清理审批待办
         approvalTodoService.deletePendingTasksByResourceIds(deleteIds);
 
