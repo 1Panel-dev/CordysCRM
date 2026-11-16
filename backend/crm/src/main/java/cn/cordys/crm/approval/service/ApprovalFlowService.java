@@ -423,6 +423,14 @@ public class ApprovalFlowService {
         response.setStatusPermissions(
                 parseStatusPermissions(response.getPermissions(), targetFlow.getStatusPermissions()));
 
+        response.setDefaultResubmitModes(getNodesByFlowVersionId(targetFlow.getCurrentVersionId()).stream()
+                .filter(ApprovalNodeApproverResponse.class::isInstance)
+                .map(ApprovalNodeApproverResponse.class::cast)
+                .filter(node -> node.getRejectPostConfig() != null
+                        && StringUtils.isNotBlank(node.getRejectPostConfig().getDefaultResubmitMode()))
+                .collect(Collectors.toMap(ApprovalNodeResponse::getNumber,
+                        node -> node.getRejectPostConfig().getDefaultResubmitMode())));
+
         return response;
     }
 

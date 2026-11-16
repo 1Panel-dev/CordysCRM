@@ -6,9 +6,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ApprovalFlowByFormTypeResponse {
+
+    @Schema(description = "各节点默认重审路径，键为节点编号，仅用于前端预选")
+    private Map<String, String> defaultResubmitModes;
 
     @Schema(description = "ID")
     private String id;

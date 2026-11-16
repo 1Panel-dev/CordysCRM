@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.dto;
 
 import cn.cordys.common.dto.EnableFieldValue;
+import cn.cordys.crm.approval.constants.ApprovalResubmitModeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -17,4 +18,7 @@ public class ApprovalPostConfigDTO {
 
     @Schema(description = "webhook配置")
     private WebHookConfig webHookConfig;
+
+    @Schema(description = "默认重审路径：SUBMITTER/CURRENT_NODE/SPECIFIED_NODE，仅用于驳回后配置")
+    private String defaultResubmitMode = ApprovalResubmitModeEnum.SUBMITTER.name();
 }

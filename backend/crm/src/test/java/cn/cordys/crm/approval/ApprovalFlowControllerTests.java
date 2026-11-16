@@ -16,6 +16,7 @@ import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.domain.ApprovalNodeLink;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
+import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowAddRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowNodeConfigRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowPageRequest;
@@ -26,6 +27,7 @@ import cn.cordys.crm.approval.dto.request.ApprovalNodeRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowByFormTypeResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.base.BaseTest;
@@ -34,6 +36,7 @@ import cn.cordys.crm.system.domain.DepartmentCommander;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.common.util.JSON;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.jupiter.api.Assertions;
@@ -107,6 +110,9 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 配置抄送
         node.setCcType(ApproverTypeEnum.ROLE.name());
         node.setCcList(List.of("org_admin"));
+        ApprovalPostConfigDTO rejectPostConfig = new ApprovalPostConfigDTO();
+        rejectPostConfig.setDefaultResubmitMode("CURRENT_NODE");
+        node.setRejectPostConfig(rejectPostConfig);
 
         return node;
     }
@@ -262,6 +268,9 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertNotNull(approverNode);
         ApprovalNodeApprover approverConfig = approvalNodeApproverMapper.selectByPrimaryKey(approverNode.getId());
         Assertions.assertNotNull(approverConfig);
+        ApprovalPostConfigDTO storedRejectPostConfig = JSON.parseObject(approverConfig.getRejectPostConfig(),
+                ApprovalPostConfigDTO.class);
+        Assertions.assertEquals("CURRENT_NODE", storedRejectPostConfig.getDefaultResubmitMode());
 
         // 校验节点连接配置
         List<ApprovalNodeLink> links = getLinksByFlowVersionId(flow.getCurrentVersionId());
@@ -323,6 +332,9 @@ class ApprovalFlowControllerTests extends BaseTest {
         nodes.add(buildStartNodeRequest(startNodeId));
         ApprovalNodeApproverRequest approverNode = buildApproverNodeRequest(approverNodeId, "经理审批");
         approverNode.setApprovalType(ApprovalTypeEnum.AUTO_PASS.name());
+        ApprovalPostConfigDTO rejectPostConfig = new ApprovalPostConfigDTO();
+        rejectPostConfig.setDefaultResubmitMode("SPECIFIED_NODE");
+        approverNode.setRejectPostConfig(rejectPostConfig);
         nodes.add(approverNode);
         nodes.add(buildEndNodeRequest(endNodeId));
         request.setCreateNodeConfig(new ApprovalFlowNodeConfigRequest());
@@ -356,6 +368,14 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 校验节点配置已更新（删除旧节点，插入新节点）
         List<ApprovalNode> updatedNodes = getNodesByFlowVersionId(updatedFlow.getCurrentVersionId());
         Assertions.assertEquals(3, updatedNodes.size());
+        ApprovalNode updatedApproverNode = updatedNodes.stream()
+                .filter(node -> ApprovalNodeTypeEnum.APPROVER.name().equals(node.getNodeType()))
+                .findFirst().orElseThrow();
+        ApprovalNodeApprover updatedApproverConfig = approvalNodeApproverMapper
+                .selectByPrimaryKey(updatedApproverNode.getId());
+        ApprovalPostConfigDTO updatedRejectPostConfig = JSON.parseObject(updatedApproverConfig.getRejectPostConfig(),
+                ApprovalPostConfigDTO.class);
+        Assertions.assertEquals("SPECIFIED_NODE", updatedRejectPostConfig.getDefaultResubmitMode());
 
         // 不修改信息
         ApprovalFlowUpdateRequest emptyRequest = new ApprovalFlowUpdateRequest();
@@ -439,6 +459,11 @@ class ApprovalFlowControllerTests extends BaseTest {
 
         // 校验节点配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getCreateNodeConfig().getNodes()));
+        ApprovalNodeApproverResponse responseApproverNode = response.getCreateNodeConfig().getNodes().stream()
+                .filter(ApprovalNodeApproverResponse.class::isInstance)
+                .map(ApprovalNodeApproverResponse.class::cast)
+                .findFirst().orElseThrow();
+        Assertions.assertEquals("SPECIFIED_NODE", responseApproverNode.getRejectPostConfig().getDefaultResubmitMode());
 
         // 校验连接配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getCreateNodeConfig().getLinks()));
@@ -617,6 +642,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(flow.getDuplicateApproverRule(), response.getDuplicateApproverRule());
         Assertions.assertEquals(flow.getRequireApproveComment(), response.getRequireApproveComment());
         Assertions.assertEquals(flow.getRequireRejectComment(), response.getRequireRejectComment());
+        Assertions.assertTrue(response.getDefaultResubmitModes().containsValue("SPECIFIED_NODE"));
 
         // 校验权限列表
         Assertions.assertNotNull(response.getPermissions());
