@@ -2,8 +2,8 @@
   <CrmCard no-content-padding hide-footer>
     <CrmSplitPanel :default-size="0.2" :min="0.2" :max="0.5">
       <template #1>
-        <div class="h-full p-[24px]">
-          <div class="mb-[8px] flex w-full items-center gap-[8px]">
+        <div class="flex h-full min-h-0 flex-col p-[24px]">
+          <div class="mb-[8px] flex w-full shrink-0 items-center gap-[8px]">
             <CrmSearchInput v-model:value="keyword" class="flex-1" @search="searchList" />
             <n-button
               v-permission="['CUSTOM_FORM:ADD']"
@@ -21,33 +21,35 @@
             :show-icon="false"
             class="flex h-[38px] flex-col items-center justify-center bg-[var(--text-n9)]"
           />
-          <CrmList
-            v-show="finished && formList.length > 0"
-            v-model:data="formList"
-            v-model:active-item-key="activeForm"
-            v-model:focus-item-key="focusItemKey"
-            virtual-scroll-height="calc(100% - 40px)"
-            key-field="id"
-            :draggable="!keyword"
-            :item-more-actions="getFormAction"
-            item-class="gap-[8px] px-[4px]"
-            activeItemClass="bg-[var(--text-n9)]"
-            mode="static"
-            @item-click="handleFormClick"
-            @more-action-select="handleMoreActionSelect"
-            @more-actions-close="clearFocusItem"
-          >
-            <template #title="{ item }">
-              <n-tooltip trigger="hover">
-                <template #trigger>
-                  <div class="one-line-text" :class="activeForm === item.id ? 'text-[var(--primary-8)]' : ''">
-                    {{ item.name }}
-                  </div>
-                </template>
-                {{ item.name }}
-              </n-tooltip>
-            </template>
-          </CrmList>
+          <n-scrollbar v-show="finished && formList.length > 0" class="min-h-0 flex-1">
+            <CrmList
+              v-model:data="formList"
+              v-model:active-item-key="activeForm"
+              v-model:focus-item-key="focusItemKey"
+              class="custom-form-list"
+              virtual-scroll-height="auto"
+              key-field="id"
+              :draggable="!keyword"
+              :item-more-actions="getFormAction"
+              item-class="gap-[8px] px-[4px]"
+              activeItemClass="bg-[var(--text-n9)]"
+              mode="static"
+              @item-click="handleFormClick"
+              @more-action-select="handleMoreActionSelect"
+              @more-actions-close="clearFocusItem"
+            >
+              <template #title="{ item }">
+                <n-tooltip trigger="hover">
+                  <template #trigger>
+                    <div class="one-line-text" :class="activeForm === item.id ? 'text-[var(--primary-8)]' : ''">
+                      {{ item.name }}
+                    </div>
+                  </template>
+                  {{ item.name }}
+                </n-tooltip>
+              </template>
+            </CrmList>
+          </n-scrollbar>
         </div>
       </template>
       <template #2>
@@ -79,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NEmpty, NSwitch, NTooltip, useMessage } from 'naive-ui';
+  import { NButton, NEmpty, NScrollbar, NSwitch, NTooltip, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n.js';
@@ -334,4 +336,10 @@
   });
 </script>
 
-<style scoped></style>
+<style scoped lang="less">
+  .custom-form-list {
+    :deep(.crm-list-draggable) {
+      overflow-y: visible;
+    }
+  }
+</style>
