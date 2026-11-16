@@ -584,14 +584,14 @@ public class OpportunityService implements ApprovalResourceHandler {
                 .map(Opportunity::getId)
                 .toList();
         // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
-        CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
+        Objects.requireNonNull(CommonBeanFactory.getBean(ApprovalResourceService.class)).batchTransferTriggerApproval(
                 changedIds, BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, orgId, userId,
                 request.getOwner(), comment);
 
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
-        for (int i = 0; i < changedIds.size(); i++) {
-            batchUpdateMapper.transfer(request.getOwner(), userId, changedIds.get(i), System.currentTimeMillis());
+        for (String changedId : changedIds) {
+            batchUpdateMapper.transfer(request.getOwner(), userId, changedId, System.currentTimeMillis());
         }
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
@@ -1316,7 +1316,7 @@ public class OpportunityService implements ApprovalResourceHandler {
             return;
         }
         // 自调用不走代理, 需从容器取代理对象才能命中审批切面
-        CommonBeanFactory.getBean(OpportunityService.class).sortWithApproval(request, userId);
+        Objects.requireNonNull(CommonBeanFactory.getBean(OpportunityService.class)).sortWithApproval(request, userId);
     }
 
     /**
@@ -1421,7 +1421,7 @@ public class OpportunityService implements ApprovalResourceHandler {
             if (request == null) {
                 return;
             }
-            CommonBeanFactory.getBean(OpportunityService.class).update(request, userId, orgId);
+            Objects.requireNonNull(CommonBeanFactory.getBean(OpportunityService.class)).update(request, userId, orgId);
             // 阶段变更不走编辑接口, 需按快照单独回退
             revertStage(request, userId, orgId);
         } catch (Exception e) {

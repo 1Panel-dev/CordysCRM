@@ -194,7 +194,7 @@ public class StageAdvancedConfigService {
         if (config == null || !config.getEnable()) {
             throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
         }
-        return config.getEnable();
+        return true;
     }
 
     private boolean handleNormal(StageConfigResponse originConfig, StageConfigResponse targetConfig,
@@ -231,23 +231,20 @@ public class StageAdvancedConfigService {
             throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
         }
 
-        if (originConfig.getAfootRollBack()) {
-            // 只开启进行中回退
-            // 源阶段为 END 时，默认不允许任何切换；商机有反签权限时例外，见 isOpportunityResignSuccessToFail
-            if (Strings.CI.equals(OpportunityStageType.END.name(), originConfig.getType())) {
-                if (isOpportunityResignSuccessToFail(originConfig, targetConfig, moduleType)) {
-                    return true;
-                }
-                throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
+        // 只开启进行中回退
+        // 源阶段为 END 时，默认不允许任何切换；商机有反签权限时例外，见 isOpportunityResignSuccessToFail
+        if (Strings.CI.equals(OpportunityStageType.END.name(), originConfig.getType())) {
+            if (isOpportunityResignSuccessToFail(originConfig, targetConfig, moduleType)) {
+                return true;
             }
-
-            // 源阶段为 AFOOT 时，允许目标为 AFOOT 或 END（不限制 pos）
-            String targetType = targetConfig.getType();
-            return Strings.CI.equals(OpportunityStageType.END.name(), targetType)
-                    || Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
+            throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
         }
 
-        throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
+        // 源阶段为 AFOOT 时，允许目标为 AFOOT 或 END（不限制 pos）
+        String targetType = targetConfig.getType();
+        return Strings.CI.equals(OpportunityStageType.END.name(), targetType)
+                || Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
+
     }
 
     /**
