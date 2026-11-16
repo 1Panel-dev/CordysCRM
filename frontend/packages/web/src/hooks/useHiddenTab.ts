@@ -110,6 +110,21 @@ export default function useHiddenTab(type?: TabType) {
     },
   ];
 
+  const allCustomFormTabList: TabPaneProps[] = [
+    {
+      name: CustomerSearchTypeEnum.ALL,
+      tab: t('customForm.allData'),
+    },
+    {
+      name: CustomerSearchTypeEnum.DEPARTMENT,
+      tab: t('customForm.departmentData'),
+    },
+    {
+      name: CustomerSearchTypeEnum.SELF,
+      tab: t('customForm.myData'),
+    },
+  ];
+
   const allOpportunityTabList: TabPaneProps[] = [
     {
       name: OpportunitySearchTypeEnum.ALL,
@@ -252,8 +267,12 @@ export default function useHiddenTab(type?: TabType) {
 
   const tabList = ref<TabPaneProps[]>([]);
 
-  async function initTab() {
+  async function initTab(customForm = false) {
     try {
+      if (customForm) {
+        tabList.value = allCustomFormTabList;
+        return;
+      }
       if (!type) return;
 
       const typeValue = type as keyof typeof tabApiMap;

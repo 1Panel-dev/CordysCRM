@@ -49,6 +49,19 @@
         @keyword-search="searchData"
       />
     </template>
+    <template #view>
+      <CrmViewSelect
+        v-if="!props.detailTabResourceId"
+        :key="props.formKey"
+        v-model:active-tab="activeViewId"
+        :type="FormDesignKeyEnum.CUSTOMER"
+        :custom-form-id="props.formKey"
+        :filter-config-list="customFormFilterConfigList"
+        :custom-fields-config-list="customFieldsFilterConfig"
+        @view-change="handleViewChange"
+        @refresh-table-data="searchData"
+      />
+    </template>
   </CrmTable>
 
   <CrmBatchEditModal
@@ -121,6 +134,7 @@
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import detail from './detail.vue';
 
   import { batchDeleteCustomFormData, deleteCustomFormData } from '@/api/modules';
@@ -157,6 +171,7 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const keyword = ref('');
+  const activeViewId = ref('');
   const isAdvancedSearchMode = ref(false);
   const advancedOriginalForm = ref<FilterForm | undefined>();
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
@@ -402,6 +417,7 @@
     setLoadListParams({
       keyword: val ?? keyword.value,
       customFormId: customFormId.value,
+      ...(props.detailTabResourceId || !activeViewId.value ? {} : { viewId: activeViewId.value }),
     });
     loadList(false, refreshId, customFormId.value);
     if (!refreshId) {
@@ -409,6 +425,12 @@
     }
   }
   handleSearchData.value = searchData;
+
+  function handleViewChange(viewId: string, filter: FilterResult) {
+    activeViewId.value = viewId;
+    setAdvanceFilter(filter);
+    searchData();
+  }
 
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
     keyword.value = '';
@@ -606,6 +628,7 @@
   async function init(val: string) {
     checkedRowKeys.value = [];
     keyword.value = '';
+    activeViewId.value = '';
     propsRes.value.tableKey = currentTableKey.value;
     await initApprovalPermission(true);
     await initFormConfig(props.readonly, operationColumn.value);

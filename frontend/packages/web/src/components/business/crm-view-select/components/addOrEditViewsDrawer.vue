@@ -3,7 +3,7 @@
     v-model:show="visible"
     :width="800"
     :title="title"
-    :show-continue="!form.id"
+    :show-continue="!props.customFormId && !form.id"
     :ok-text="form.id ? t('common.update') : undefined"
     :loading="loading"
     :footer="!props.readonly"
@@ -49,12 +49,13 @@
   import { FormInst, FormRules, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { CustomFormUserViewDetail } from '@lib/shared/models/customForm';
   import type { ViewItem } from '@lib/shared/models/view';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
-  import { FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+  import { FilterForm, FilterFormItem, filterOptionKeyMap } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
 
@@ -67,6 +68,7 @@
 
   const props = defineProps<{
     type: TabType;
+    customFormId?: string;
     row?: ViewItem;
     readonly?: boolean;
     configList: FilterFormItem[];
@@ -100,7 +102,7 @@
     ],
   };
 
-  const initForm: { name?: string; id?: string } = {
+  const initForm: { name: string; id?: string } = {
     name: '',
   };
 
@@ -137,6 +139,27 @@
     };
   }
 
+  function toFilterForm(detail: CustomFormUserViewDetail): FilterForm {
+    return {
+      searchMode: detail.searchMode || 'AND',
+      list: (detail.conditions || []).map((condition) => {
+        const key = filterOptionKeyMap[condition.type as FieldTypeEnum];
+        const options = detail.optionMap?.[condition.name] || [];
+        return {
+          ...condition,
+          dataIndex: condition.name,
+          ...(key
+            ? {
+                [key]: options.filter((option) =>
+                  Array.isArray(condition.value) ? condition.value.includes(option.id) : option.id === condition.value
+                ),
+              }
+            : {}),
+        } as FilterFormItem;
+      }),
+    };
+  }
+
   async function handleSave(isContinue: boolean) {
     try {
       loading.value = true;
@@ -144,12 +167,21 @@
         ...form.value,
         ...getParams(),
       };
-      let activeId;
+      let activeId: string | undefined;
       const isEdit = !!form.value?.id;
-      if (isEdit) {
+      if (props.customFormId) {
+        if (isEdit) {
+          await viewApiMap.update[FormDesignKeyEnum.CUSTOM_FORM](props.customFormId, params);
+          activeId = form.value.id;
+        } else {
+          const res = await viewApiMap.add[FormDesignKeyEnum.CUSTOM_FORM](props.customFormId, params);
+          activeId = res.id;
+        }
+        Message.success(t(isEdit ? 'common.updateSuccess' : 'common.addSuccess'));
+      } else if (isEdit) {
         await viewApiMap.update[props.type](params);
         Message.success(t('common.updateSuccess'));
-        activeId = form.value?.id;
+        activeId = form.value.id;
       } else {
         const res = await viewApiMap.add[props.type](params);
         Message.success(t('common.addSuccess'));
@@ -161,7 +193,7 @@
       } else {
         cancelHandler();
       }
-      emit('refresh', activeId, isEdit);
+      if (activeId) emit('refresh', activeId, props.customFormId ? true : isEdit);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
@@ -188,15 +220,34 @@
   }
 
   watch(
-    () => props.row,
-    (val?: ViewItem) => {
-      if (val) {
-        form.value = { ...val };
-        formModel.value = {
-          searchMode: val.searchMode,
-          list: cloneDeep(val.list),
-        };
+    () => [visible.value, props.row] as const,
+    async ([isVisible, row]) => {
+      if (!isVisible) return;
+      form.value = cloneDeep(initForm);
+      formModel.value = cloneDeep(defaultFormModel);
+      if (!row) return;
+
+      if (props.customFormId) {
+        try {
+          loading.value = true;
+          const detail = await viewApiMap.detail[FormDesignKeyEnum.CUSTOM_FORM](props.customFormId, row.id);
+          form.value = { id: detail.id, name: detail.name };
+          formModel.value = toFilterForm(detail);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+          visible.value = false;
+        } finally {
+          loading.value = false;
+        }
+        return;
       }
+
+      form.value = { id: row.id, name: row.name };
+      formModel.value = {
+        searchMode: row.searchMode,
+        list: cloneDeep(row.list),
+      };
     }
   );
 </script>

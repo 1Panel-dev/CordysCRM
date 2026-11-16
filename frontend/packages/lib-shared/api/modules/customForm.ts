@@ -31,13 +31,16 @@ import {
   CustomFormExportSelectedUrl,
   GetCustomFormCreatePermissionUrl,
   RefreshStatisticUrl,
+  CustomFormUserViewUrl,
 } from '@lib/shared/api/requrls/customForm';
 import type {
   CommonList,
   ImportUploadParams,
+  TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
 } from '@lib/shared/models/common';
+import type { ViewParams } from '@lib/shared/models/view';
 import type {
   AddCustomFormDataParams,
   BatchUpdateCustomFormDataParams,
@@ -50,6 +53,8 @@ import type {
   CustomFormRoleUserQueryParams,
   CustomFormPageItem,
   CustomFormSaveRequest,
+  CustomFormUserViewDetail,
+  CustomFormUserViewItem,
   GetCustomFormDataPageParams,
   RelateCustomFormMemberParams,
   UpdateCustomFormDataParams,
@@ -131,6 +136,38 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.post<CommonList<CustomFormPageItem>>({ url: GetCustomFormDataPageUrl, data });
   }
 
+  function getCustomFormViewList(customFormId: string) {
+    return CDR.get<CustomFormUserViewItem[]>({ url: `${CustomFormUserViewUrl}/${customFormId}/list` });
+  }
+
+  function getCustomFormViewDetail(customFormId: string, viewId: string) {
+    return CDR.get<CustomFormUserViewDetail>({ url: `${CustomFormUserViewUrl}/${customFormId}/detail/${viewId}` });
+  }
+
+  function addCustomFormView(customFormId: string, data: ViewParams) {
+    return CDR.post<{ id: string }>({ url: `${CustomFormUserViewUrl}/${customFormId}/add`, data });
+  }
+
+  function updateCustomFormView(customFormId: string, data: ViewParams) {
+    return CDR.post({ url: `${CustomFormUserViewUrl}/${customFormId}/update`, data });
+  }
+
+  function deleteCustomFormView(customFormId: string, viewId: string) {
+    return CDR.get({ url: `${CustomFormUserViewUrl}/${customFormId}/delete/${viewId}` });
+  }
+
+  function toggleCustomFormViewFixed(customFormId: string, viewId: string) {
+    return CDR.get({ url: `${CustomFormUserViewUrl}/${customFormId}/fixed/${viewId}` });
+  }
+
+  function toggleCustomFormViewEnabled(customFormId: string, viewId: string) {
+    return CDR.get({ url: `${CustomFormUserViewUrl}/${customFormId}/enable/${viewId}` });
+  }
+
+  function dragCustomFormView(customFormId: string, data: TableDraggedParams) {
+    return CDR.post({ url: `${CustomFormUserViewUrl}/${customFormId}/edit/pos`, data });
+  }
+
   function addCustomFormData(data: AddCustomFormDataParams) {
     return CDR.post({ url: AddCustomFormDataUrl, data });
   }
@@ -209,6 +246,14 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     getCustomFormList,
     getCustomFormDataDetail,
     getCustomFormDataPage,
+    getCustomFormViewList,
+    getCustomFormViewDetail,
+    addCustomFormView,
+    updateCustomFormView,
+    deleteCustomFormView,
+    toggleCustomFormViewFixed,
+    toggleCustomFormViewEnabled,
+    dragCustomFormView,
     addCustomFormData,
     updateCustomFormData,
     deleteCustomFormData,

@@ -59,6 +59,28 @@ export interface CustomFormItem {
   hasCreateDataPermission: boolean;
 }
 
+export interface CustomFormUserViewItem {
+  id: string;
+  name: string;
+  fixed: boolean;
+  enable: boolean;
+}
+
+export interface CustomFormUserViewCondition {
+  name: string;
+  value: any;
+  operator: string;
+  type: string;
+  multipleValue?: boolean;
+  containChildIds?: string[];
+}
+
+export interface CustomFormUserViewDetail extends CustomFormUserViewItem {
+  searchMode: 'AND' | 'OR';
+  conditions: CustomFormUserViewCondition[];
+  optionMap?: Record<string, Array<{ id: string; name: string }>>;
+}
+
 export interface AddCustomFormDataParams {
   customFormId: string;
   name: string;

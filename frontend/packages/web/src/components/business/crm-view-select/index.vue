@@ -75,6 +75,7 @@
       </n-select>
       <n-button
         v-if="
+          !props.customFormId &&
           ![
             FormDesignKeyEnum.FOLLOW_PLAN,
             FormDesignKeyEnum.FOLLOW_RECORD,
@@ -97,6 +98,7 @@
   <ManageViewsDrawer
     v-model:visible="manageViewsDrawerVisible"
     :type="props.type"
+    :custom-form-id="props.customFormId"
     :config-list="props.filterConfigList"
     :custom-list="props.customFieldsConfigList"
     @change-active="handleChangeActive"
@@ -105,6 +107,7 @@
   <AddOrEditViewsDrawer
     v-model:visible="addOrEditViewsDrawerVisible"
     :type="props.type"
+    :custom-form-id="props.customFormId"
     :row="detail"
     :config-list="props.filterConfigList"
     :custom-list="props.customFieldsConfigList"
@@ -166,6 +169,7 @@
 
   const props = defineProps<{
     type: TabType;
+    customFormId?: string;
     filterConfigList: FilterFormItem[]; // 系统字段
     customFieldsConfigList?: FilterFormItem[]; // 自定义字段
     advancedOriginalForm?: FilterForm;
@@ -176,11 +180,16 @@
   const emit = defineEmits<{
     (e: 'refreshTableData'): void;
     (e: 'generatedChart', filterResult: FilterResult, filterForm: FilterForm): void;
+    (e: 'viewChange', viewId: string, filterResult: FilterResult): void;
   }>();
 
   const activeTab = defineModel<string>('activeTab', { default: '' });
+  const viewType = computed(() => (props.customFormId ? FormDesignKeyEnum.CUSTOM_FORM : props.type));
+  const internalViews = computed<ViewItem[]>(() => viewStore.internalViews);
+  const customViews = computed<ViewItem[]>(() => viewStore.customViews);
+
   async function handleChangeActive(id: string, refreshTable?: boolean) {
-    await viewStore.loadCustomViews(props.type);
+    await viewStore.loadCustomViews(viewType.value, props.customFormId);
     if (id) {
       activeTab.value = id;
     }
@@ -189,29 +198,31 @@
     }
   }
   async function handleDeleteOrDisable(id: string) {
-    await viewStore.loadCustomViews(props.type);
+    await viewStore.loadCustomViews(viewType.value, props.customFormId);
     if (activeTab.value === id) {
       // 取第一个系统视图
-      const list = [...viewStore.internalViews].filter((item) => item.enable);
+      const list = internalViews.value.filter((item) => item.enable);
       activeTab.value = list[0].id;
     }
   }
 
   const tags = computed(() =>
-    [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable && item.fixed)
+    [...internalViews.value, ...customViews.value].filter((item) => item.enable && item.fixed)
   );
 
-  const sortData = computed(() => [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable));
+  const sortData = computed(() => [...internalViews.value, ...customViews.value].filter((item) => item.enable));
 
   const { tabList, initTab } = useHiddenTab(props.type);
 
   onMounted(async () => {
-    await initTab();
-    await viewStore.loadInternalViews(props.type, tabList.value as TabPaneProps[]);
-    await viewStore.loadCustomViews(props.type);
+    await initTab(!!props.customFormId);
+    await viewStore.loadInternalViews(viewType.value, tabList.value as TabPaneProps[], props.customFormId);
+    await viewStore.loadCustomViews(viewType.value, props.customFormId);
     nextTick(async () => {
       // 如果上一次的值存在则取上一次，不存在就取固定视图的第一个
-      const lastTab = await viewStore.getActiveView(props.type);
+      const lastTab = await viewStore.getActiveView(
+        props.customFormId ? `custom-form-${props.customFormId}` : props.type
+      );
       if (lastTab && sortData.value.find((item) => item.id === lastTab)) {
         activeTab.value = lastTab;
       } else {
@@ -223,7 +234,34 @@
   watch(
     () => activeTab.value,
     async (val) => {
-      viewStore.setActiveView(props.type, val);
+      viewStore.setActiveView(props.customFormId ? `custom-form-${props.customFormId}` : props.type, val);
+      if (!props.customFormId || !val) return;
+      const selectedView = sortData.value.find((item) => item.id === val);
+      if (!selectedView) return;
+      let filterResult: FilterResult = { searchMode: 'AND', conditions: [] };
+      if (selectedView.type !== 'internal') {
+        try {
+          const detail = await viewStore.getViewDetail(viewType.value, selectedView, props.customFormId);
+          filterResult = {
+            searchMode: detail.searchMode || 'AND',
+            conditions: (detail.list || []).map((condition) => {
+              const viewCondition = condition as FilterFormItem & { multipleValue?: boolean };
+              return {
+                name: condition.dataIndex ?? '',
+                value: condition.value,
+                operator: condition.operator as NonNullable<FilterResult['conditions']>[number]['operator'],
+                multipleValue: viewCondition.multipleValue ?? false,
+                type: condition.type as NonNullable<FilterResult['conditions']>[number]['type'],
+              };
+            }),
+          };
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+          return;
+        }
+      }
+      if (activeTab.value === val) emit('viewChange', val, filterResult);
     }
   );
 
@@ -240,13 +278,13 @@
       type: 'group',
       name: t('crmViewSelect.systemView'),
       key: 'internal',
-      children: [...viewStore.internalViews].filter((item) => item.enable),
+      children: [...internalViews.value].filter((item) => item.enable),
     },
     {
       type: 'group',
       name: t('crmViewSelect.myView'),
       key: 'custom',
-      children: [...viewStore.customViews].filter((item) => item.enable),
+      children: [...customViews.value].filter((item) => item.enable),
     },
   ]);
 
@@ -263,7 +301,7 @@
   }
 
   async function handleCopy(option: ViewItem) {
-    const res = await viewStore.getViewDetail(props.type, option);
+    const res = await viewStore.getViewDetail(viewType.value, option, props.customFormId);
     detail.value = { ...res, name: getCopiedName(res.name as string) };
     addOrEditViewsDrawerVisible.value = true;
   }
@@ -303,7 +341,7 @@
                     if (tags.value.length <= 1 && option.fixed) {
                       return;
                     }
-                    viewStore.toggleFixed(props.type, option);
+                    viewStore.toggleFixed(viewType.value, option, props.customFormId);
                   },
                 }),
               default: () => t('crmViewSelect.keepAFixedViewTip'),
@@ -315,7 +353,7 @@
           }),
         ]),
         // 右侧内容：复制图标
-        ...(nonCopyableInternalViewIds.has(option.id)
+        ...(props.customFormId || nonCopyableInternalViewIds.has(option.id)
           ? []
           : [
               h(CrmIcon, {
@@ -360,7 +398,7 @@
   // 拖拽结束
   async function dragHandler(params: TableDraggedParams) {
     clearWarningInstance();
-    viewStore.toggleDrag(props.type, params);
+    viewStore.toggleDrag(viewType.value, params, props.customFormId);
   }
 
   const getNodeProps = (option: SelectOption | SelectGroupOption) => ({
