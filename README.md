@@ -56,7 +56,7 @@ docker run -d \
 
 你可以通过下方的微信交流群，与 Cordys CRM 开源项目组进行交流和反馈。
 
-<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://resource.fit2cloud.com/1panel/cordys-crm/img/wechat.png?v=20250904" />
+<image height="150px" width="150px" alt="Cordys CRM QRCode" src="https://github.com/user-attachments/assets/a8ee0c57-1d2f-431e-bc3a-41804ae93f44" />
 
 ## UI 展示
 
