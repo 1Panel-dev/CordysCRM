@@ -23,6 +23,9 @@ public class StatisticAggregateRequest {
      */
     private String orgId;
 
+    /** 目标表单 Key；自定义表单共用数据表时用于限定具体表单。 */
+    private String targetFormKey;
+
     /**
      * 宿主表单的数据ID, 即被统计数据的关联目标。
      */

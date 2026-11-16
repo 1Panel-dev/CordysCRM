@@ -181,6 +181,11 @@ public class StatisticFieldService {
             Map.entry(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), "contract_payment_record"),
             Map.entry(FormKey.ORDER.getKey(), "sales_order"));
 
+    /** 自定义表单数据统一落在 custom_form_data，具体表单由请求中的 formKey 再限定。 */
+    private static String dataTable(String formKey) {
+        return FORM_KEY_TABLE.getOrDefault(formKey, "custom_form_data");
+    }
+
     /**
      * 手动刷新统计字段时, 各表单要求的读权限(与 {@code ModuleFieldController} 里各模块的读接口一致)。
      * <p>
@@ -256,12 +261,7 @@ public class StatisticFieldService {
     public void refreshOnConfigSave(String formKey, List<BaseField> originFields, List<BaseField> currentFields,
             String orgId) {
         try {
-            // 1) 只处理标准模块表单: 自定义表单暂不支持统计字段, 直接返回。
-            String hostDataTable = FORM_KEY_TABLE.get(formKey);
-            if (hostDataTable == null) {
-                log.warn("统计字段刷新跳过, 非标准模块表单: formKey={}", formKey);
-                return;
-            }
+            String hostDataTable = dataTable(formKey);
 
             // 2) 按字段ID给新旧配置建索引。字段ID以 sys_module_field.id 为准,
             //    设计器里改标题不会换ID, 换ID等价于「删一个 + 加一个」。
@@ -378,6 +378,7 @@ public class StatisticFieldService {
             // 每页一份请求对象: 游标位置是这一页独有的, 逐页新建比复用同一个实例再改字段更难写错
             StatisticCursorRequest cursorRequest = new StatisticCursorRequest();
             cursorRequest.setOrgId(orgId);
+            cursorRequest.setFormKey(hostFormKey);
             cursorRequest.setLastId(lastId);
             cursorRequest.setLimit(PAGE_SIZE);
             cursorRequest.setScopeCondition(hostCondition);
@@ -459,6 +460,7 @@ public class StatisticFieldService {
         //    改共享对象会串值。
         StatisticAggregateRequest request = new StatisticAggregateRequest();
         request.setOrgId(orgId);
+        request.setTargetFormKey(context.targetFormKey);
         request.setDataId(dataId);
         request.setRelatedFieldId(context.relatedFieldId);
         request.setRelatedBusinessKey(context.relatedBusinessKey);
@@ -544,7 +546,7 @@ public class StatisticFieldService {
             return;
         }
 
-        String targetDataTable = FORM_KEY_TABLE.get(targetFormKey);
+        String targetDataTable = dataTable(targetFormKey);
         String originOrgId = OrganizationContext.getOrganizationId();
         OrganizationContext.setOrganizationId(orgId);
         try {
@@ -681,13 +683,7 @@ public class StatisticFieldService {
                 }
             }
 
-            // 3) 反查只保证「有字段把我当目标」, 不保证这个目标是个标准模块表单。真出现这种配置
-            //    (保存时没拦住、或直接改了库), 下面会拿着空表名逐条去查并抛出 N 条错误日志, 不如在这里说清楚。
-            String targetDataTable = FORM_KEY_TABLE.get(targetFormKey);
-            if (targetDataTable == null) {
-                log.warn("统计字段的目标表单不是标准模块表单, 变更/删除后无法重算: targetFormKey={}", targetFormKey);
-                return new StatisticHostScope(targetFormKey, orgId, changedFieldId, Collections.emptyList());
-            }
+            String targetDataTable = dataTable(targetFormKey);
 
             // 4) 目标表单的字段配置只取一次(走缓存): 用来判断关联字段是不是大字段, 决定从哪张表读值。
             Map<String, BaseField> targetFields = toFieldMap(moduleFormCacheService.getConfig(targetFormKey, orgId));
@@ -996,12 +992,7 @@ public class StatisticFieldService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void refreshDataStatisticFields(String formKey, String dataId, String orgId) {
-        // 1) formKey 反查物理表, 非标准模块表单直接返回 —— 这一条同时兜住了
-        //    「统计字段暂不支持自定义表单」, 调用方不需要自己判。
-        String hostDataTable = FORM_KEY_TABLE.get(formKey);
-        if (hostDataTable == null) {
-            return;
-        }
+        String hostDataTable = dataTable(formKey);
 
         // 2) 3) 取该表单的字段配置(走缓存)筛出统计字段, 一个都没有就直接返回 ——
         //    这是绝大多数表单的路径, 必须足够便宜, 否则每个模块的每次新增都要多花一次配置查询。
@@ -1084,11 +1075,7 @@ public class StatisticFieldService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
         String formKey = moduleForm.getFormKey();
-        String hostDataTable = FORM_KEY_TABLE.get(formKey);
-        if (hostDataTable == null) {
-            // 自定义表单暂不支持统计字段, 理论上不会走到这里
-            throw new GenericException("自定义表单暂不支持统计字段");
-        }
+        String hostDataTable = dataTable(formKey);
 
         // 5) 权限: 不通过要抛异常而不是静默 return, 否则用户点了刷新没有任何反馈。
         //    校验的是「这条数据」而不是「这张表单」, 原因见 checkDataPermission。
@@ -1166,17 +1153,13 @@ public class StatisticFieldService {
      */
     private List<StatisticFieldRef> findStatisticFieldsByTargetForm(String targetFormKey, String orgId) {
         List<StatisticFieldSourceDTO> sources = extStatisticMapper.selectStatisticFields(
-                orgId, FieldType.STATISTIC.name(), FORM_KEY_TABLE.keySet());
+                orgId, FieldType.STATISTIC.name(), Collections.emptySet());
         if (CollectionUtils.isEmpty(sources)) {
             return Collections.emptyList();
         }
         List<StatisticFieldRef> refs = new ArrayList<>();
         for (StatisticFieldSourceDTO source : sources) {
-            // 宿主表单的物理表名: 标准模块表单才有, 表里没有的即自定义表单
-            String hostDataTable = FORM_KEY_TABLE.get(source.getHostFormKey());
-            if (hostDataTable == null) {
-                continue;
-            }
+            String hostDataTable = dataTable(source.getHostFormKey());
             BaseField baseField = JSON.parseObject(source.getProp(), BaseField.class);
             if (!(baseField instanceof StatisticField field)) {
                 // 字段类型是统计字段但属性解析不出统计字段: 属性被改坏了, 记下来否则会静默不刷新
@@ -1319,12 +1302,6 @@ public class StatisticFieldService {
      */
     private StatisticRefreshContext buildContext(StatisticField field, String hostDataTable) {
         String targetFormKey = field.getTargetFormId();
-        // 目标表单必须能反查到物理表: 这张表同时是「哪些表单支持统计字段」的判据, 拿不到就直接失败,
-        // 不要放进去让它在刷新时变成一条查不出东西的语句。
-        if (FORM_KEY_TABLE.get(targetFormKey) == null) {
-            // 自定义表单暂时不能作为统计目标, 保存时已经拦过, 这里是兜底
-            throw new GenericException("统计字段的目标表单不支持: " + targetFormKey);
-        }
 
         StatisticRefreshContext context = new StatisticRefreshContext();
         context.field = field;

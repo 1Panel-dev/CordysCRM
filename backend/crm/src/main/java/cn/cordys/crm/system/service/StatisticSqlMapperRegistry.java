@@ -9,6 +9,7 @@ import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
+import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
@@ -86,6 +87,9 @@ public class StatisticSqlMapperRegistry {
     @Resource
     private ExtOrderMapper extOrderMapper;
 
+    @Resource
+    private ExtCustomFormDataMapper extCustomFormDataMapper;
+
     /**
      * 分发表本体。用 {@link LinkedHashMap} 是为了让 {@link #all()} 的遍历顺序稳定 —— 测试报错时
      * 「第几个表单挂了」每次都不一样会很难排查。
@@ -128,10 +132,7 @@ public class StatisticSqlMapperRegistry {
      */
     public StatisticSqlMapper get(String formKey) {
         StatisticSqlMapper mapper = mappers.get(formKey);
-        if (mapper == null) {
-            throw new IllegalStateException("表单没有注册统计聚合语句: " + formKey);
-        }
-        return mapper;
+        return mapper == null ? extCustomFormDataMapper : mapper;
     }
 
     /**
