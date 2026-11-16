@@ -117,6 +117,19 @@
         left join (
             select cpr.contract_id, sum(cpr.record_amount) as receivedAmount
             from contract_payment_record cpr
+            join contract cpr_contract on cpr_contract.id = cpr.contract_id
+            <include refid="fieldConditionJoin">
+                <property name="conditions" value="request.filters"/>
+                <property name="tablePrefix" value="filter"/>
+            </include>
+            <include refid="fieldConditionJoin">
+                <property name="conditions" value="request.combineSearch.conditions"/>
+                <property name="tablePrefix" value="combine"/>
+            </include>
+            <include refid="fieldConditionJoin">
+                <property name="conditions" value="request.viewCombineSearch.conditions"/>
+                <property name="tablePrefix" value="viewCombine"/>
+            </include>
             <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
                 join sys_organization_user sou on cpr.owner = sou.user_id
                 and (
@@ -127,20 +140,39 @@
                 )
             </if>
             where cpr.organization_id = #{orgId}
+            and cpr_contract.customer_id = #{request.customerId}
             <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
                 <property name="ownerColumn" value="cpr.owner"/>
-                <property name="customerColumn" value="(SELECT isolation_contract.customer_id FROM contract isolation_contract WHERE isolation_contract.id = cpr.contract_id AND isolation_contract.organization_id = #{orgId})"/>
+                <property name="customerColumn" value="cpr_contract.customer_id"/>
                 <property name="userParameter" value="userId"/>
                 <property name="orgParameter" value="orgId"/>
             </include>
             <if test="dataPermission != null and dataPermission.self">
                 and cpr.owner = #{userId}
             </if>
+            <if test="dataPermission != null and dataPermission.invisible">
+                AND 0
+            </if>
+            <if test="request.contractId != null and request.contractId != ''">
+                and cpr.contract_id = #{request.contractId}
+            </if>
+            <if test="request.keyword != null and request.keyword != ''">
+                and cpr.name like concat('%', #{request.keyword},'%')
+            </if>
+            <include refid="filters">
+                <property name="filters" value="request.filters"/>
+            </include>
+            <include refid="combine">
+                <property name="combineSearch" value="request.combineSearch"/>
+            </include>
+            <include refid="viewCombine">
+                <property name="combineSearch" value="request.viewCombineSearch"/>
+            </include>
             group by contract_id
         ) cpr_sum on c.id = cpr_sum.contract_id
 
         where c.organization_id = #{orgId}
-        and c.customer_id = #{customerId}
+        and c.customer_id = #{request.customerId}
     </select>
 
     <sql id="sort">

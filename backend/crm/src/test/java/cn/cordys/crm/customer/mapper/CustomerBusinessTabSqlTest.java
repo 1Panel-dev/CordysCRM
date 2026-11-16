@@ -1,17 +1,21 @@
 package cn.cordys.crm.customer.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanPageRequest;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -33,7 +37,7 @@ class CustomerBusinessTabSqlTest {
     private static Configuration configuration;
 
     @BeforeAll
-    static void 读取真实业务查询() throws Exception {
+    static void loadRealBusinessQueries() throws Exception {
         configuration = new Configuration();
         for (Class<?> mapper : List.of(CommonMapper.class, ExtCustomerMapper.class, ExtOpportunityMapper.class,
                 ExtContractMapper.class, ExtContractPaymentPlanMapper.class, ExtContractPaymentRecordMapper.class,
@@ -46,7 +50,7 @@ class CustomerBusinessTabSqlTest {
         }
     }
 
-    static Stream<Arguments> 业务查询及范围() {
+    static Stream<Arguments> businessQueriesAndScopes() {
         return Stream.of(
                 new Object[] { ExtOpportunityMapper.class, "list", "o" },
                 new Object[] { ExtContractMapper.class, "list", "ct" },
@@ -64,8 +68,8 @@ class CustomerBusinessTabSqlTest {
     }
 
     @ParameterizedTest
-    @MethodSource("业务查询及范围")
-    void 客户标签列表统计按数据负责人使用相同范围(Class<?> mapper, String statement, String alias,
+    @MethodSource("businessQueriesAndScopes")
+    void customerTabQueriesUseOwnerBasedScope(Class<?> mapper, String statement, String alias,
             String access) {
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
         scope.setAll(!"SELF".equals(access));
@@ -102,5 +106,37 @@ class CustomerBusinessTabSqlTest {
             assertFalse(sql.contains("c.ownernotin("), "回款记录不能再按父合同负责人剔除");
             assertFalse(sql.contains("andc.owner=?"));
         }
+    }
+
+    @Test
+    void customerPaymentStatisticsUseListFilters() {
+        CustomerContractPaymentPlanPageRequest planRequest = new CustomerContractPaymentPlanPageRequest();
+        planRequest.setCustomerId("customer-a");
+        planRequest.setFilters(List.of(filter("planStatus", "COMPLETED")));
+        assertTrue(statisticSql(ExtContractPaymentPlanMapper.class, "calculateCustomerPaymentPlanStatistic", planRequest)
+                .contains("cpp.plan_status=?"));
+
+        ContractPaymentRecordPageRequest recordRequest = new ContractPaymentRecordPageRequest();
+        recordRequest.setCustomerId("customer-a");
+        recordRequest.setFilters(List.of(filter("recordAmount", "100")));
+        assertTrue(statisticSql(ExtContractPaymentRecordMapper.class, "sumCustomerRecordAmount", recordRequest)
+                .contains("cpr.record_amount=?"));
+    }
+
+    private String statisticSql(Class<?> mapper, String statement, Object request) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("request", request);
+        parameters.put("userId", "reader-a");
+        parameters.put("orgId", "org-a");
+        return configuration.getMappedStatement(mapper.getName() + "." + statement).getBoundSql(parameters)
+                .getSql().replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+    }
+
+    private FilterCondition filter(String name, String value) {
+        FilterCondition filter = new FilterCondition();
+        filter.setName(name);
+        filter.setOperator(FilterCondition.CombineConditionOperator.EQUALS.name());
+        filter.setValue(value);
+        return filter;
     }
 }

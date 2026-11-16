@@ -12,10 +12,16 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerInvoiceStatisticResponse;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
+import cn.cordys.crm.contract.service.ContractPaymentPlanService;
+import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.contract.service.ContractService;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanPageRequest;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.security.SessionUtils;
@@ -50,7 +56,7 @@ class CustomerBusinessTabPermissionTest {
     private MockedStatic<OrganizationContext> organizations;
 
     @BeforeEach
-    void 配置当前用户及权限依赖() {
+    void setUpCurrentUserAndPermissionDependencies() {
         sessions = mockStatic(SessionUtils.class);
         sessions.when(SessionUtils::getUserId).thenReturn("user-a");
         organizations = mockStatic(OrganizationContext.class);
@@ -61,14 +67,14 @@ class CustomerBusinessTabPermissionTest {
     }
 
     @AfterEach
-    void 恢复静态会话() {
+    void closeStaticSessions() {
         organizations.close();
         sessions.close();
     }
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
-    void 六类业务标签采用协作范围但保留功能权限(boolean self) {
+    void businessTabsUseCollaborativeScopeAndRetainFunctionalPermissions(boolean self) {
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
         scope.setAll(!self);
         scope.setSelf(self);
@@ -86,7 +92,7 @@ class CustomerBusinessTabPermissionTest {
     }
 
     @Test
-    void 客户负责人沿用关联业务的功能授权() {
+    void customerOwnerUsesRelatedBusinessFunctionalPermission() {
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
         scope.setAll(true);
         when(related.getCustomerTabDataPermission("customer-a", "user-a", "org-a")).thenReturn(scope);
@@ -98,7 +104,7 @@ class CustomerBusinessTabPermissionTest {
     }
 
     @Test
-    void 协作成员缺少业务查看功能权限时拒绝() {
+    void collaborativeMemberWithoutBusinessReadPermissionIsDenied() {
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
         scope.setAll(true);
         when(related.getCustomerTabDataPermission("customer-a", "user-a", "org-a")).thenReturn(scope);
@@ -114,7 +120,7 @@ class CustomerBusinessTabPermissionTest {
     }
 
     @Test
-    void 非客户负责人及协作成员仍使用业务角色数据范围() {
+    void nonOwnerAndNonCollaboratorUsesBusinessRoleDataScope() {
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
         when(dataScope.getDeptDataPermission("user-a", "org-a", "ALL", PermissionConstants.CONTRACT_READ))
                 .thenReturn(scope);
@@ -126,7 +132,7 @@ class CustomerBusinessTabPermissionTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
-    void 订单统计固定关联客户并采用标签范围(boolean self) {
+    void orderStatisticFixesRelatedCustomerAndUsesTabScope(boolean self) {
         OrderService orders = mock(OrderService.class);
         ReflectionTestUtils.setField(controller, "orderService", orders);
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
@@ -166,7 +172,7 @@ class CustomerBusinessTabPermissionTest {
     }
 
     @Test
-    void 客户发票统计分别传递发票及合同的可见范围() {
+    void customerInvoiceStatisticPassesInvoiceAndContractVisibilityScopes() {
         ContractInvoiceService invoices = mock(ContractInvoiceService.class);
         ContractService contracts = mock(ContractService.class);
         ReflectionTestUtils.setField(controller, "contractInvoiceService", invoices);
@@ -188,5 +194,69 @@ class CustomerBusinessTabPermissionTest {
         verify(permissions).checkPermission(PermissionConstants.CONTRACT_INVOICE_READ);
         verify(permissions).checkPermission(PermissionConstants.CONTRACT_READ);
         verifyNoInteractions(dataScope);
+    }
+
+    @Test
+    void customerPaymentPlanStatisticParsesFiltersAndUsesRelatedPermissionScope() {
+        ContractPaymentPlanService paymentPlans = mock(ContractPaymentPlanService.class);
+        ReflectionTestUtils.setField(controller, "contractPaymentPlanService", paymentPlans);
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setAll(true);
+        when(related.getCustomerTabDataPermission("customer-a", "user-a", "org-a")).thenReturn(scope);
+        CustomerContractPaymentPlanPageRequest request = new CustomerContractPaymentPlanPageRequest();
+        request.setCustomerId("customer-a");
+        request.setKeyword("计划");
+        request.setFilters(List.of(filter("planStatus", "COMPLETED")));
+        CustomerPaymentPlanStatisticResponse response = new CustomerPaymentPlanStatisticResponse();
+        when(paymentPlans.calculateCustomerPaymentPlanStatistic(request, "user-a", "org-a", scope))
+                .thenReturn(response);
+
+        try (MockedStatic<ConditionFilterUtils> conditions = mockStatic(ConditionFilterUtils.class)) {
+            conditions.when(() -> ConditionFilterUtils.getValidConditions(any())).thenCallRealMethod();
+
+            assertSame(response, controller.calculateCustomerPaymentPlanStatistic(request));
+
+            conditions.verify(() -> ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey()));
+        }
+        assertEquals("ALL", request.getViewId());
+        verify(paymentPlans).calculateCustomerPaymentPlanStatistic(request, "user-a", "org-a", scope);
+        verify(permissions).checkPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
+        verifyNoInteractions(dataScope);
+    }
+
+    @Test
+    void customerPaymentRecordStatisticParsesFiltersAndUsesRelatedPermissionScope() {
+        ContractPaymentRecordService paymentRecords = mock(ContractPaymentRecordService.class);
+        ReflectionTestUtils.setField(controller, "contractPaymentRecordService", paymentRecords);
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setSelf(true);
+        when(related.getCustomerTabDataPermission("customer-a", "user-a", "org-a")).thenReturn(scope);
+        CustomerContractPaymentRecordStatisticRequest request = new CustomerContractPaymentRecordStatisticRequest();
+        request.setCustomerId("customer-a");
+        request.setKeyword("回款");
+        request.setFilters(List.of(filter("recordAmount", "100")));
+        CustomerPaymentRecordStatisticResponse response = new CustomerPaymentRecordStatisticResponse();
+        when(paymentRecords.sumCustomerPaymentAmount(request, "user-a", "org-a", scope)).thenReturn(response);
+
+        try (MockedStatic<ConditionFilterUtils> conditions = mockStatic(ConditionFilterUtils.class)) {
+            conditions.when(() -> ConditionFilterUtils.getValidConditions(any())).thenCallRealMethod();
+
+            assertSame(response, controller.calculateCustomerPaymentRecordStatistic(request));
+
+            conditions.verify(() -> ConditionFilterUtils.parseCondition(request,
+                    FormKey.CONTRACT_PAYMENT_RECORD.getKey()));
+        }
+        assertEquals("ALL", request.getViewId());
+        verify(paymentRecords).sumCustomerPaymentAmount(request, "user-a", "org-a", scope);
+        verify(permissions).checkPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        verifyNoInteractions(dataScope);
+    }
+
+    private FilterCondition filter(String name, String value) {
+        FilterCondition filter = new FilterCondition();
+        filter.setName(name);
+        filter.setOperator(FilterCondition.CombineConditionOperator.EQUALS.name());
+        filter.setValue(value);
+        return filter;
     }
 }

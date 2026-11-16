@@ -47,15 +47,15 @@ public interface ExtContractPaymentRecordMapper extends StatisticSqlMapper {
     /**
      * 汇总客户回款记录金额
      *
-     * @param customerId         客户ID
+     * @param request            筛选条件
      * @param userId             用户ID
      * @param orgId              组织ID
      * @param deptDataPermission 数据权限
      * @return 汇总结果
      */
-    CustomerPaymentRecordStatisticResponse sumCustomerRecordAmount(@Param("customerId") String customerId,
-            @Param("userId") String userId, @Param("orgId") String orgId,
-            @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+    CustomerPaymentRecordStatisticResponse sumCustomerRecordAmount(
+            @Param("request") ContractPaymentRecordPageRequest request, @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     ContractPaymentRecordStatisticResponse searchStatistic(
             @Param("request") ContractPaymentRecordStatisticRequest request, @Param("orgId") String orgId,
