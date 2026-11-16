@@ -438,9 +438,11 @@
   async function initApprovalConfig() {
     try {
       approvalConfig.value = await getApprovalConfigDetail(props.resourceType);
+      return approvalConfig.value;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      return undefined;
     }
   }
 
@@ -449,11 +451,15 @@
     async (val) => {
       if (val) {
         resetApprovalForm();
-        initApprovalConfig();
+        const configPromise = initApprovalConfig();
         if (props.isRejecting && !props.selectedKeys?.length) {
           await initApprovalInfo();
           if (props.approvingItem?.approvalTaskId) {
             await initResubmitNodeOptions(props.approvingItem.approvalTaskId);
+          }
+          const config = await configPromise;
+          if (showApprovalPopup.value && props.isRejecting && !props.selectedKeys?.length) {
+            resubmitMode.value = config?.defaultResubmitMode ?? 'SUBMITTER';
           }
         } else {
           approvalInfo.value = props.approvalInfo;

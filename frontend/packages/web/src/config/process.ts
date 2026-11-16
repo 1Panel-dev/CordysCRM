@@ -186,6 +186,7 @@ export const defaultMoreConfig: MoreSettingsParams = {
   allowWithdraw: false,
   allowAddSign: false,
   duplicateApproverRule: 'FIRST_ONLY',
+  defaultResubmitMode: 'SUBMITTER',
   requireApproveComment: false,
   requireRejectComment: false,
   permissions: [],

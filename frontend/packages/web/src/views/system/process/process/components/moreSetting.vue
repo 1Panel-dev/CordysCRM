@@ -93,6 +93,19 @@
       <n-form-item
         require-mark-placement="left"
         label-placement="left"
+        path="defaultResubmitMode"
+        :label="t('crm.approval.resubmitPath')"
+      >
+        <n-select
+          v-model:value="form.defaultResubmitMode"
+          :disabled="readonly"
+          :options="resubmitModeOptions"
+          :placeholder="t('common.pleaseSelect')"
+        />
+      </n-form-item>
+      <n-form-item
+        require-mark-placement="left"
+        label-placement="left"
         path="approvalAuthority"
         :label="t('process.process.approvalAuthority')"
       >
@@ -110,7 +123,17 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableColumn, NCheckbox, NDataTable, NForm, NFormItem, NRadio, NRadioGroup, NTooltip } from 'naive-ui';
+  import {
+    DataTableColumn,
+    NCheckbox,
+    NDataTable,
+    NForm,
+    NFormItem,
+    NRadio,
+    NRadioGroup,
+    NSelect,
+    NTooltip,
+  } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
@@ -173,6 +196,14 @@
       value: 'EACH',
       label: 'process.process.autoApproval.allNode',
     },
+  ];
+
+  const resubmitModeOptions: {
+    value: Exclude<MoreSettingsParams['defaultResubmitMode'], 'SPECIFIED_NODE'>;
+    label: string;
+  }[] = [
+    { value: 'SUBMITTER', label: t('crm.approval.resubmitFromSubmitter') },
+    { value: 'CURRENT_NODE', label: t('crm.approval.resubmitFromCurrentNode') },
   ];
 
   const loading = ref(false);
