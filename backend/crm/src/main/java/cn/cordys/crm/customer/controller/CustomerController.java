@@ -44,6 +44,7 @@ import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractInvoicePageRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPageRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanPageRequest;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.customer.dto.request.CustomerExportRequest;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.customer.dto.request.CustomerOpportunityPageRequest;
@@ -390,13 +391,16 @@ public class CustomerController {
                 OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
-    @GetMapping("/contract/payment-plan/statistic/{accountId}")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#accountId}", formType = FormKeyConstants.CUSTOMER)
+    @PostMapping("/contract/payment-plan/statistic")
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#request.customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "客户详情-合同回款计划列表统计")
-    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(@PathVariable String accountId) {
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(accountId, null,
+    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(
+            @Validated @RequestBody CustomerContractPaymentPlanPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(), request.getViewId(),
                 PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        return contractPaymentPlanService.calculateCustomerPaymentPlanStatistic(accountId, SessionUtils.getUserId(),
+        return contractPaymentPlanService.calculateCustomerPaymentPlanStatistic(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -413,14 +417,16 @@ public class CustomerController {
                 OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
-    @GetMapping("/contract/payment-record/statistic/{accountId}")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#accountId}", formType = FormKeyConstants.CUSTOMER)
+    @PostMapping("/contract/payment-record/statistic")
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#request.customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "客户详情-合同回款记录列表统计")
     public CustomerPaymentRecordStatisticResponse calculateCustomerPaymentRecordStatistic(
-            @PathVariable String accountId) {
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(accountId, null,
+            @Validated @RequestBody CustomerContractPaymentRecordStatisticRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(), request.getViewId(),
                 PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        return contractPaymentRecordService.sumCustomerPaymentAmount(accountId, SessionUtils.getUserId(),
+        return contractPaymentRecordService.sumCustomerPaymentAmount(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 

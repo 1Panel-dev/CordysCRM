@@ -108,12 +108,29 @@
         <if test="dataPermission != null and dataPermission.self">
             and cpp.owner = #{userId}
         </if>
+
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
     </select>
     <select id="calculateCustomerPaymentPlanStatistic"
             resultType="cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse">
         select IFNULL(SUM(cpp.plan_amount), 0) as totalPlanAmount
         from contract_payment_plan cpp
         join contract c on c.id = cpp.contract_id
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on cpp.owner = sou.user_id
@@ -132,7 +149,26 @@
             <property name="userParameter" value="userId"/>
             <property name="orgParameter" value="orgId"/>
         </include>
-        and c.customer_id = #{customerId}
+        and c.customer_id = #{request.customerId}
+
+        <if test="request.contractId != null and request.contractId != ''">
+            and cpp.contract_id = #{request.contractId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and cpp.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
 
         <if test="dataPermission != null and dataPermission.self">
             and cpp.owner = #{userId}

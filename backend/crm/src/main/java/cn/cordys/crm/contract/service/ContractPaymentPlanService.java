@@ -496,9 +496,10 @@ public class ContractPaymentPlanService {
                 rolePermissions);
     }
 
-    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(String accountId, String userId,
-            String organizationId, DeptDataPermissionDTO deptDataPermission) {
-        return extContractPaymentPlanMapper.calculateCustomerPaymentPlanStatistic(accountId, userId, organizationId,
+    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(
+            ContractPaymentPlanPageRequest request, String userId, String organizationId,
+            DeptDataPermissionDTO deptDataPermission) {
+        return extContractPaymentPlanMapper.calculateCustomerPaymentPlanStatistic(request, userId, organizationId,
                 deptDataPermission);
     }
 

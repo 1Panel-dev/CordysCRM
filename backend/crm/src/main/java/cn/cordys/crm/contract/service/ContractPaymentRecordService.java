@@ -668,15 +668,15 @@ public class ContractPaymentRecordService {
     /**
      * 汇总客户回款记录列表金额
      *
-     * @param customerId         客户ID
+     * @param request            筛选条件
      * @param userId             用户ID
      * @param organizationId     组织ID
      * @param deptDataPermission 数据权限
      * @return 汇总结果
      */
-    public CustomerPaymentRecordStatisticResponse sumCustomerPaymentAmount(String customerId, String userId,
-            String organizationId, DeptDataPermissionDTO deptDataPermission) {
-        return extContractPaymentRecordMapper.sumCustomerRecordAmount(customerId, userId, organizationId,
+    public CustomerPaymentRecordStatisticResponse sumCustomerPaymentAmount(ContractPaymentRecordPageRequest request,
+            String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
+        return extContractPaymentRecordMapper.sumCustomerRecordAmount(request, userId, organizationId,
                 deptDataPermission);
     }
 
