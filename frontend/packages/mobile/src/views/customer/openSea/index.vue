@@ -16,7 +16,7 @@
         :key="item.id"
         round
         size="small"
-        class="!border-none !px-[16px] !py-[4px] !text-[14px]"
+        class="!shrink-0 !whitespace-nowrap !border-none !px-[16px] !py-[4px] !text-[14px]"
         :class="
           activeOpenSea === item.id
             ? '!bg-[var(--primary-7)] !text-[var(--primary-8)]'
@@ -272,11 +272,15 @@
 
 <style lang="less" scoped>
   .filter-buttons {
-    @apply flex;
+    @apply flex flex-nowrap overflow-x-auto overflow-y-hidden;
 
-    gap: 8px;
-    padding: 8px 4px;
+    padding: 0 4px;
+    height: 48px;
+    border-bottom: 0.5px solid var(--van-border-color);
     background-color: var(--text-n10);
-    .half-px-border-bottom();
+    gap: 8px;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 </style>

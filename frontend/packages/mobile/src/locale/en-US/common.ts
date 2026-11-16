@@ -136,5 +136,6 @@ export default {
   'common.freeze': 'Freeze',
   'common.frozen': 'Frozen',
   'common.unfreeze': 'Unfreeze',
+  'common.clear': 'Clear',
   'common.unfreezeTime': 'Unfreeze Time',
 };

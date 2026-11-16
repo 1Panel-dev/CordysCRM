@@ -1,5 +1,21 @@
 <template>
   <CrmPageWrapper :title="route.query.name?.toString() || ''">
+    <template #headerRight>
+      <div
+        v-if="collaborators.length"
+        class="flex cursor-pointer items-center -space-x-[4px]"
+        @click="activeTab = 'collaborator'"
+      >
+        <CrmAvatar :size="24" :text="ownerName" class="customer-owner-avatar ring-2 ring-[var(--text-n10)]" />
+        <CrmAvatar
+          v-for="person in collaborators"
+          :key="person.id"
+          :size="24"
+          :text="person.userName"
+          class="!bg-[var(--text-n5)] text-white ring-2 ring-[var(--text-n10)]"
+        />
+      </div>
+    </template>
     <van-tabs v-model:active="activeTab" border :ellipsis="false" class="detail-tabs">
       <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
         <template #title>
@@ -128,6 +144,7 @@
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import ApprovalStatus from '@/components/business/crm-approval/crm-approval-status.vue';
   import CrmApprovalLine from '@/components/business/crm-approval/crm-approval-line.vue';
   import CrmApprovalRecordActions from '@/components/business/crm-approval/crm-approval-record-actions.vue';
@@ -145,6 +162,7 @@
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useCustomerCollaborators from '@/hooks/useCustomerCollaborators';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
@@ -157,6 +175,11 @@
   const { t } = useI18n();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
+  const {
+    collaborators,
+    refresh: refreshCollaborators,
+    clear: clearCollaborators,
+  } = useCustomerCollaborators(sourceId);
   const {
     sourceName,
     descriptions,
@@ -171,6 +194,7 @@
     sourceId,
     needInitDetail: true,
   });
+  const ownerName = computed(() => (detail.value as { ownerName?: string }).ownerName || '');
   const changeRecordTab = computed(() =>
     formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
   );
@@ -422,9 +446,15 @@
     initApprovalPermission();
     await initFormConfig();
     await refreshDetail();
+    await refreshCollaborators();
+  });
+
+  onBeforeUnmount(() => {
+    clearCollaborators();
   });
 
   onActivated(() => {
+    refreshCollaborators();
     if (activeTab.value === 'record') {
       recordListRef.value?.[0].loadList();
     } else if (activeTab.value === 'plan') {
@@ -454,5 +484,9 @@
         @apply h-full;
       }
     }
+  }
+  :deep(.customer-owner-avatar .van-image__error) {
+    color: var(--text-n10);
+    background-color: var(--primary-1);
   }
 </style>

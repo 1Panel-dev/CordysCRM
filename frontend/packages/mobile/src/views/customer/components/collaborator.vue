@@ -29,11 +29,16 @@
           </div>
           <div class="flex items-center gap-[4px] overflow-hidden">
             <CrmTag
-              :tag="item.collaborationType === 'READ_ONLY' ? t('customer.readOnly') : t('customer.cooperation')"
-              :icon="item.collaborationType === 'READ_ONLY' ? 'iconicon_browse' : 'iconicon_handwritten_signature'"
+              :tag="collaborationTypeMap[item.collaborationType].label"
+              :icon="collaborationTypeMap[item.collaborationType].icon"
               bg-color="var(--text-n9)"
             />
-            <CrmTag :tag="item.departmentName" bg-color="var(--text-n9)" class="flex-1 overflow-hidden" />
+            <CrmTag
+              v-if="item.departmentName"
+              :tag="item.departmentName"
+              bg-color="var(--text-n9)"
+              class="flex-1 overflow-hidden"
+            />
           </div>
         </div>
       </div>
@@ -52,12 +57,13 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
-  import { CollaborationItem } from '@lib/shared/models/customer';
+  import type { CollaborationItem, CollaborationType } from '@lib/shared/models/customer';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
-  import { deleteCustomerCollaboration, getCustomerCollaborationList } from '@/api/modules';
+  import { deleteCustomerCollaboration } from '@/api/modules';
+  import useCustomerCollaborators from '@/hooks/useCustomerCollaborators';
 
   import { CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -68,12 +74,26 @@
   const { t } = useI18n();
   const router = useRouter();
 
-  const collaborators = ref<CollaborationItem[]>([]);
+  const { collaborators, refresh: refreshCollaborators } = useCustomerCollaborators(computed(() => props.sourceId));
+  const collaborationTypeMap = computed<Record<CollaborationType, { label: string; icon: string }>>(() => ({
+    READ_ONLY: {
+      label: t('customer.readOnly'),
+      icon: 'iconicon_browse',
+    },
+    COLLABORATION: {
+      label: t('customer.customerInfoOnly'),
+      icon: 'iconicon_handwritten_signature',
+    },
+    JOINT_FOLLOW: {
+      label: t('customer.jointFollow'),
+      icon: 'iconicon_handwritten_signature',
+    },
+  }));
 
   async function initList() {
     try {
       showLoadingToast(t('common.loading'));
-      collaborators.value = await getCustomerCollaborationList({ customerId: props.sourceId });
+      await refreshCollaborators();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -87,7 +107,7 @@
       showLoadingToast(t('common.deleting'));
       await deleteCustomerCollaboration(id);
       showSuccessToast(t('common.deleteSuccess'));
-      initList();
+      await initList();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -120,6 +140,7 @@
         params: JSON.stringify({
           userIds: collaborators.value.map((e) => e.userId),
           collaborationType: item.collaborationType,
+          expireTime: item.expireTime,
           collaborator: {
             id: item.userId,
             name: item.userName,

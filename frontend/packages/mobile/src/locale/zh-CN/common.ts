@@ -137,6 +137,7 @@ export default {
   'common.freeze': '冻结',
   'common.frozen': '已冻结',
   'common.unfreeze': '解冻',
+  'common.clear': '清空',
   'common.freezeForever': '永久冻结',
   'common.unfreezeTime': '解冻时间',
 };

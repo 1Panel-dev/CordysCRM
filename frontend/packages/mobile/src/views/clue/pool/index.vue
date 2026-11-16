@@ -16,7 +16,7 @@
         :key="item.id"
         round
         size="small"
-        class="!border-none !px-[16px] !py-[4px] !text-[14px]"
+        class="!shrink-0 !whitespace-nowrap !border-none !px-[16px] !py-[4px] !text-[14px]"
         :class="
           activeFilter === item.id
             ? '!bg-[var(--primary-7)] !text-[var(--primary-8)]'
@@ -282,18 +282,16 @@
 
 <style lang="less" scoped>
   .filter-buttons {
-    @apply flex;
+    @apply flex flex-nowrap overflow-x-auto overflow-y-hidden;
 
-    overflow: auto;
-    padding: 8px 4px;
-    min-height: 48px;
-    white-space: nowrap;
+    padding: 0 4px;
+    height: 48px;
+    border-bottom: 0.5px solid var(--van-border-color);
     background-color: var(--text-n10);
     gap: 8px;
     &::-webkit-scrollbar {
       display: none;
     }
-    .half-px-border-bottom();
   }
   :deep(.van-action-sheet__cancel) {
     color: var(--text-n1);

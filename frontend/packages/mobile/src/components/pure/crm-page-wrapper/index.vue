@@ -1,6 +1,10 @@
 <template>
   <div class="crm-page-wrapper">
-    <CrmPageHeader :title="props.title" :hide-back="props.hideBack" :back-route-name="props.backRouteName" />
+    <CrmPageHeader :title="props.title" :hide-back="props.hideBack" :back-route-name="props.backRouteName">
+      <template #rightSlot>
+        <slot name="headerRight" />
+      </template>
+    </CrmPageHeader>
     <div class="crm-page-content">
       <slot />
     </div>
