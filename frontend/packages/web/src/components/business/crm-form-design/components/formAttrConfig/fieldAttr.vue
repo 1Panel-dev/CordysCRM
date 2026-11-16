@@ -1777,6 +1777,9 @@
   });
 
   const customFormSourceId = inject<Readonly<Ref<string>>>('customFormSourceId', ref(''));
+  const currentStatisticFormId = computed(() =>
+    props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? customFormSourceId.value : props.formKey
+  );
 
   const showRules = computed(() => {
     if (!fieldConfig.value) {
@@ -2107,7 +2110,7 @@
 
   async function initStatisticRelatedForms() {
     try {
-      statisticRelatedForms.value = (await getFormDetailTabOptions(props.formKey)) || [];
+      statisticRelatedForms.value = (await getFormDetailTabOptions(currentStatisticFormId.value)) || [];
       initDefaultStatisticTargetForm();
     } catch (error) {
       statisticRelatedForms.value = [];
