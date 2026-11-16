@@ -29,6 +29,7 @@
   <AddOrEditViewsDrawer
     v-model:visible="addOrEditViewsDrawerVisible"
     :type="props.type"
+    :custom-form-id="props.customFormId"
     :readonly="readonly"
     :row="detail"
     :config-list="props.configList"
@@ -41,6 +42,7 @@
   import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit, getCopiedName } from '@lib/shared/method';
   import type { TableDraggedParams } from '@lib/shared/models/common';
@@ -68,9 +70,16 @@
 
   const props = defineProps<{
     type: TabType;
+    customFormId?: string;
     configList: FilterFormItem[]; // 系统字段
     customList?: FilterFormItem[]; // 自定义字段
   }>();
+
+  const viewType = computed(() => (props.customFormId ? FormDesignKeyEnum.CUSTOM_FORM : props.type));
+
+  function getViewApiArgs(...args: unknown[]) {
+    return props.customFormId ? [props.customFormId, ...args] : args;
+  }
 
   const visible = defineModel<boolean>('visible', {
     required: true,
@@ -101,7 +110,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await viewApiMap.delete[props.type](row.id);
+          await viewApiMap.delete[viewType.value](...getViewApiArgs(row.id));
           Message.success(t('common.deleteSuccess'));
           emit('handleDeleteOrDisable', row.id);
         } catch (error) {
@@ -115,7 +124,7 @@
   async function handleActionSelect(row: ViewItem, actionKey: string) {
     let res;
     if (actionKey !== 'delete') {
-      res = await viewStore.getViewDetail(props.type, row);
+      res = await viewStore.getViewDetail(viewType.value, row, props.customFormId);
     }
     switch (actionKey) {
       case 'readOnly':
@@ -174,7 +183,7 @@
                     if (tags.value.length <= 1 && row.fixed) {
                       return;
                     }
-                    viewStore.toggleFixed(props.type, row);
+                    viewStore.toggleFixed(viewType.value, row, props.customFormId);
                   },
                 }),
               default: () => t('crmViewSelect.keepAFixedViewTip'),
@@ -209,7 +218,7 @@
           disabled: row.type === 'internal',
           onClick: async () => {
             if (row.type === 'internal') return;
-            await viewStore.toggleEnabled(props.type, row);
+            await viewStore.toggleEnabled(viewType.value, row, props.customFormId);
             emit('handleDeleteOrDisable', row.id);
           },
         });
@@ -304,6 +313,6 @@
       warningInstance.destroy();
       warningInstance = null;
     }
-    viewStore.toggleDrag(props.type, params);
+    viewStore.toggleDrag(viewType.value, params, props.customFormId);
   }
 </script>

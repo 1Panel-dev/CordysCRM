@@ -19,6 +19,9 @@ export const GetCustomFormAllOptionsUrl = '/custom-form/option/all'; // 自定�
 export const GetCustomFormCreatePermissionUrl = '/custom-form/data/create-permission'; // 获取自定义表单创建权限
 export const RefreshStatisticUrl = '/field/statistic/refresh'; // 重新计算统计字段
 
+// 自定义表单视图
+export const CustomFormUserViewUrl = '/custom-form/view';
+
 // 表单数据
 export const AddCustomFormDataUrl = '/custom-form/data/add'; // 添加自定义表单数据
 export const GetCustomFormDataPageUrl = '/custom-form/data/page'; // 自定义表单数据列表

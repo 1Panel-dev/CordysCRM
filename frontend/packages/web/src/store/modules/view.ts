@@ -6,6 +6,7 @@ import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
 import type { SortParams, TableDraggedParams } from '@lib/shared/models/common';
+import type { CustomFormUserViewItem } from '@lib/shared/models/customForm';
 import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 import type { ViewItem } from '@lib/shared/models/view';
 
@@ -21,6 +22,12 @@ import { TabType } from '@/hooks/useHiddenTab';
 import useLocalForage from '@/hooks/useLocalForage';
 import useUserStore from '@/store/modules/user';
 
+type ViewType = TabType | FormDesignKeyEnum.CUSTOM_FORM;
+
+function getViewApiArgs(type: ViewType, customFormId?: string, ...args: unknown[]) {
+  return type === FormDesignKeyEnum.CUSTOM_FORM ? [customFormId, ...args] : args;
+}
+
 // 视图
 const useViewStore = defineStore('view', {
   persist: true,
@@ -29,8 +36,9 @@ const useViewStore = defineStore('view', {
     internalViews: [] as ViewItem[],
   }),
   actions: {
-    getInternalKey(type: TabType) {
-      return `internal_views_${type}`;
+    getInternalKey(type: ViewType, customFormId?: string) {
+      const scope = type === FormDesignKeyEnum.CUSTOM_FORM ? `custom-form-${customFormId}` : type;
+      return `internal_views_${scope}`;
     },
 
     async getInternalViews(key: string): Promise<ViewItem[]> {
@@ -91,7 +99,7 @@ const useViewStore = defineStore('view', {
         ];
       }
     },
-    async resolveTypeOptions(type: TabType) {
+    async resolveTypeOptions(type: ViewType) {
       switch (type) {
         case FormDesignKeyEnum.BUSINESS:
           return {
@@ -102,11 +110,12 @@ const useViewStore = defineStore('view', {
       }
     },
     resolveInternalConditionList(params: {
-      type: TabType;
+      type: ViewType;
       tabName: string;
       optionItem: Record<string, any>;
     }): FilterFormItem[] {
       const { type, tabName, optionItem } = params;
+      if (type === FormDesignKeyEnum.CUSTOM_FORM) return [];
       // 商机成功阶段
       if (tabName === OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS) {
         return optionItem.opportunitySuccessOptions ?? [];
@@ -117,10 +126,11 @@ const useViewStore = defineStore('view', {
       }
       return internalConditionsMap[tabName] ?? [];
     },
-    async loadInternalViews(type: TabType, internalList: TabPaneProps[]) {
+    async loadInternalViews(type: ViewType, internalList: TabPaneProps[], customFormId?: string) {
       const userStore = useUserStore();
 
-      const stored = await this.getInternalViews(this.getInternalKey(type));
+      const storageKey = this.getInternalKey(type, customFormId);
+      const stored = await this.getInternalViews(storageKey);
       const listMap = internalList.reduce<Record<string, TabPaneProps>>((map, item) => {
         map[item.name as string] = item;
         return map;
@@ -175,12 +185,21 @@ const useViewStore = defineStore('view', {
       } else {
         this.internalViews = merged;
       }
-      await this.setInternalViews(this.getInternalKey(type), this.internalViews);
+      await this.setInternalViews(storageKey, this.internalViews);
     },
 
-    async loadCustomViews(type: TabType) {
+    async loadCustomViews(type: ViewType, customFormId?: string) {
       try {
-        this.customViews = await viewApiMap.list[type]();
+        const views = await viewApiMap.list[type](...getViewApiArgs(type, customFormId));
+        this.customViews =
+          type === FormDesignKeyEnum.CUSTOM_FORM
+            ? (views as CustomFormUserViewItem[]).map((item) => ({
+                ...item,
+                type: 'custom',
+                searchMode: 'AND',
+                list: [],
+              }))
+            : views;
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -188,17 +207,18 @@ const useViewStore = defineStore('view', {
     },
 
     // 获取详情
-    async getViewDetail(type: TabType, option: ViewItem) {
+    async getViewDetail(type: ViewType, option: ViewItem, customFormId?: string) {
       let res: ViewItem;
       if (option.type === 'internal') {
         res = option;
       } else {
         try {
-          res = await viewApiMap.detail[type](option.id);
+          res = await viewApiMap.detail[type](...getViewApiArgs(type, customFormId, option.id));
           res.list = (res.conditions ?? []).map((item: ConditionsItem) => {
+            const values = Array.isArray(item.value) ? item.value : [item.value];
             const options =
               res.optionMap?.[item.name as string]?.filter((i: { id: string; name: string }) =>
-                item.value?.includes(i.id)
+                values.includes(i.id)
               ) ?? [];
             const keyText = filterOptionKeyMap[item.type as FieldTypeEnum];
 
@@ -222,16 +242,16 @@ const useViewStore = defineStore('view', {
     },
 
     // 拖拽
-    async toggleDrag(type: TabType, params: TableDraggedParams) {
+    async toggleDrag(type: ViewType, params: TableDraggedParams, customFormId?: string) {
       const isInternal = this.internalViews.some((item) => item.id === params.moveId);
       if (isInternal) {
         const movedItem = this.internalViews.splice(params.oldIndex, 1)[0];
         this.internalViews.splice(params.newIndex, 0, movedItem);
-        await this.setInternalViews(this.getInternalKey(type), this.internalViews);
+        await this.setInternalViews(this.getInternalKey(type, customFormId), this.internalViews);
       } else {
         try {
-          await viewApiMap.drag[type](params);
-          this.loadCustomViews(type);
+          await viewApiMap.drag[type](...getViewApiArgs(type, customFormId, params));
+          await this.loadCustomViews(type, customFormId);
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -240,15 +260,15 @@ const useViewStore = defineStore('view', {
     },
 
     // 固定/取消固定
-    async toggleFixed(type: TabType, option: ViewItem) {
+    async toggleFixed(type: ViewType, option: ViewItem, customFormId?: string) {
       if (option.type === 'internal') {
         const index = this.internalViews.findIndex((i: ViewItem) => i.id === option.id);
         if (index !== -1) this.internalViews[index].fixed = !this.internalViews[index].fixed;
-        this.setInternalViews(this.getInternalKey(type), this.internalViews);
+        this.setInternalViews(this.getInternalKey(type, customFormId), this.internalViews);
       } else {
         try {
-          await viewApiMap.fixed[type](option.id);
-          this.loadCustomViews(type);
+          await viewApiMap.fixed[type](...getViewApiArgs(type, customFormId, option.id));
+          await this.loadCustomViews(type, customFormId);
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -256,14 +276,14 @@ const useViewStore = defineStore('view', {
       }
     },
 
-    async toggleEnabled(type: TabType, option: ViewItem) {
+    async toggleEnabled(type: ViewType, option: ViewItem, customFormId?: string) {
       if (option.type === 'internal') {
         const index = this.internalViews.findIndex((i: ViewItem) => i.id === option.id);
         if (index !== -1) this.internalViews[index].enable = !this.internalViews[index].enable;
-        this.setInternalViews(this.getInternalKey(type), this.internalViews);
+        this.setInternalViews(this.getInternalKey(type, customFormId), this.internalViews);
       } else {
         try {
-          await viewApiMap.enable[type](option.id);
+          await viewApiMap.enable[type](...getViewApiArgs(type, customFormId, option.id));
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
