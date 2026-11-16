@@ -53,6 +53,9 @@ public class ApprovalFlow extends BaseModel {
     @Schema(description = "驳回时是否必须填写审批意见")
     private Boolean requireRejectComment;
 
+    @Schema(description = "默认重审路径：SUBMITTER/CURRENT_NODE/SPECIFIED_NODE，仅用于前端预选")
+    private String defaultResubmitMode;
+
     @Schema(description = "启用状态")
     private Boolean enable;
 

@@ -17,4 +17,5 @@ public class ApprovalPostConfigDTO {
 
     @Schema(description = "webhook配置")
     private WebHookConfig webHookConfig;
+
 }

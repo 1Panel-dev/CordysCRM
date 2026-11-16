@@ -10,6 +10,9 @@ import java.util.List;
 @Data
 public class ApprovalFlowByFormTypeResponse {
 
+    @Schema(description = "默认重审路径：SUBMITTER/CURRENT_NODE/SPECIFIED_NODE，仅用于前端预选")
+    private String defaultResubmitMode;
+
     @Schema(description = "ID")
     private String id;
 
