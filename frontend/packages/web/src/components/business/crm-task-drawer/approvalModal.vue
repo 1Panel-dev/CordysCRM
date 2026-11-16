@@ -195,9 +195,11 @@
   async function initApprovalConfig() {
     try {
       approvalConfig.value = await getApprovalConfigDetail(props.resourceType);
+      return approvalConfig.value;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      return undefined;
     }
   }
 
@@ -222,7 +224,7 @@
 
   watch(
     () => show.value,
-    (val) => {
+    async (val) => {
       if (!val) {
         approvalForm.value = {
           reason: '',
@@ -232,9 +234,13 @@
         resubmitStartNodeNumber.value = null;
         resubmitNodeOptions.value = [];
       } else {
-        initApprovalConfig();
+        const configPromise = initApprovalConfig();
         if (props.approvalType === 'reject' && !props.approvalItemKeys?.length && props.approvalItem?.approvalTaskId) {
           loadResubmitNodeOptions(props.approvalItem.approvalTaskId);
+        }
+        const config = await configPromise;
+        if (show.value && props.approvalType === 'reject' && !props.approvalItemKeys?.length) {
+          resubmitMode.value = config?.defaultResubmitMode ?? 'SUBMITTER';
         }
       }
     },

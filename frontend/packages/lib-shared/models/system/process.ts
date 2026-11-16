@@ -170,12 +170,15 @@ export interface BasicFormParams {
 }
 
 // 更多设置参数
+export type ApprovalResubmitMode = 'SUBMITTER' | 'CURRENT_NODE' | 'SPECIFIED_NODE';
+
 export interface MoreSettingsParams {
   submitterCanRevoke: boolean;
   allowBatchProcess: boolean;
   allowWithdraw: boolean;
   allowAddSign: boolean;
   duplicateApproverRule: string;
+  defaultResubmitMode: ApprovalResubmitMode;
   requireApproveComment: boolean;
   requireRejectComment: boolean;
   permissions: BaseItem[];

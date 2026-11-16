@@ -518,18 +518,6 @@
   }
 
   const commentExpanded = ref(true);
-
-  async function initApprovalConfig() {
-    try {
-      if (props.formKey) {
-        approvalConfig.value = await getApprovalConfigDetail(props.formKey);
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   const approvalOpinion = ref('');
   const fileList = ref<UploadFileInfo[]>([]);
   const resubmitMode = ref<'SUBMITTER' | 'CURRENT_NODE' | 'SPECIFIED_NODE'>('SUBMITTER');
@@ -544,6 +532,21 @@
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
   const resubmitNodeOptions = ref<Array<{ label: string; value: string; tag?: 'submitter' | 'current' }>>([]);
+
+  async function initApprovalConfig() {
+    try {
+      if (props.formKey) {
+        approvalConfig.value = await getApprovalConfigDetail(props.formKey);
+        if (approvalOpinionModalVisible.value && approvalAction.value === 'reject') {
+          resubmitMode.value = approvalConfig.value.defaultResubmitMode ?? 'SUBMITTER';
+        }
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   async function loadResubmitNodeOptions(taskId: string) {
     try {
       const nodes = await getApprovalResubmitNodes(taskId);
@@ -809,7 +812,7 @@
     approvalAction.value = action;
     approvalOpinion.value = '';
     fileList.value = [];
-    resubmitMode.value = 'SUBMITTER';
+    resubmitMode.value = action === 'reject' ? approvalConfig.value?.defaultResubmitMode ?? 'SUBMITTER' : 'SUBMITTER';
     resubmitStartNodeNumber.value = null;
     resubmitNodeOptions.value = [];
     approvalOpinionModalVisible.value = true;
