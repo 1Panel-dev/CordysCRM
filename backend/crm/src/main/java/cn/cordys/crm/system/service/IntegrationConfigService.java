@@ -133,12 +133,12 @@ public class IntegrationConfigService {
     }
 
     /**
-     * 测试连接
+     * 仅测试连接，不保存配置。
      *
      * @param configDTO 配置DTO
      * @return 是否连接成功
      */
-    public boolean testConnection(ThirdConfigBaseDTO<?> configDTO, String orgId, String userId) {
+    public boolean testConnection(ThirdConfigBaseDTO<?> configDTO) {
         String token = getToken(configDTO);
         if (ThirdConfigTypeConstants.WECOM.name().equals(configDTO.getType()) && StringUtils.isNotBlank(token)) {
             WecomThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(),
@@ -148,10 +148,7 @@ public class IntegrationConfigService {
                 token = null;
             }
         }
-        boolean verify = StringUtils.isNotBlank(token);
-        editThirdConfig((ThirdConfigBaseDTO<Object>) configDTO, orgId, userId);
-
-        return verify;
+        return StringUtils.isNotBlank(token);
     }
 
     /**
