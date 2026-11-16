@@ -4,6 +4,7 @@
     :label="props.label"
     :name="props.id"
     :rules="props.rules"
+    :required="props.required"
     is-link
     readonly
     :placeholder="props.placeholder || t('common.pleaseSelect')"
@@ -121,6 +122,7 @@
     placeholder?: string;
     disabled?: boolean;
     rules?: FieldRule[];
+    required?: boolean;
     id?: string;
     label?: string;
     multiple?: boolean;
