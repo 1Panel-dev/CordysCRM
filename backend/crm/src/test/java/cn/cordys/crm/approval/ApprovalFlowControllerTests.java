@@ -179,6 +179,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setDuplicateApproverRule(DuplicateApproverRuleEnum.EACH.name());
         request.setRequireApproveComment(false);
         request.setRequireRejectComment(true);
+        request.setDefaultResubmitMode("CURRENT_NODE");
         request.setCreateExecute(false);
         request.setUpdateExecute(true);
         request.setStatusPermissions(buildStatusPermissions());
@@ -262,6 +263,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertNotNull(approverNode);
         ApprovalNodeApprover approverConfig = approvalNodeApproverMapper.selectByPrimaryKey(approverNode.getId());
         Assertions.assertNotNull(approverConfig);
+        Assertions.assertEquals("CURRENT_NODE", resultData.getDefaultResubmitMode());
+        Assertions.assertEquals("CURRENT_NODE", flow.getDefaultResubmitMode());
 
         // 校验节点连接配置
         List<ApprovalNodeLink> links = getLinksByFlowVersionId(flow.getCurrentVersionId());
@@ -310,6 +313,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setDuplicateApproverRule(DuplicateApproverRuleEnum.FIRST_ONLY.name());
         request.setRequireApproveComment(true);
         request.setRequireRejectComment(false);
+        request.setDefaultResubmitMode("SPECIFIED_NODE");
         request.setCreateExecute(true);
         request.setUpdateExecute(false);
         request.setStatusPermissions(buildStatusPermissions());
@@ -338,6 +342,7 @@ class ApprovalFlowControllerTests extends BaseTest {
 
         // 校验请求成功数据
         ApprovalFlow updatedFlow = approvalFlowMapper.selectByPrimaryKey(request.getId());
+        Assertions.assertEquals("SPECIFIED_NODE", updatedFlow.getDefaultResubmitMode());
         Assertions.assertEquals(request.getName(), updatedFlow.getName());
         Assertions.assertEquals(request.getDescription(), updatedFlow.getDescription());
 
@@ -361,6 +366,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         ApprovalFlowUpdateRequest emptyRequest = new ApprovalFlowUpdateRequest();
         emptyRequest.setId(addApprovalFlow.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
+        Assertions.assertEquals("SPECIFIED_NODE",
+                approvalFlowMapper.selectByPrimaryKey(addApprovalFlow.getId()).getDefaultResubmitMode());
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PROCESS_SETTING_UPDATE, DEFAULT_UPDATE, request);
@@ -439,6 +446,7 @@ class ApprovalFlowControllerTests extends BaseTest {
 
         // 校验节点配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getCreateNodeConfig().getNodes()));
+        Assertions.assertEquals("SPECIFIED_NODE", response.getDefaultResubmitMode());
 
         // 校验连接配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getCreateNodeConfig().getLinks()));
@@ -617,6 +625,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(flow.getDuplicateApproverRule(), response.getDuplicateApproverRule());
         Assertions.assertEquals(flow.getRequireApproveComment(), response.getRequireApproveComment());
         Assertions.assertEquals(flow.getRequireRejectComment(), response.getRequireRejectComment());
+        Assertions.assertEquals("SPECIFIED_NODE", response.getDefaultResubmitMode());
 
         // 校验权限列表
         Assertions.assertNotNull(response.getPermissions());
@@ -690,6 +699,23 @@ class ApprovalFlowControllerTests extends BaseTest {
 
         Assertions.assertEquals(List.of("ams_direct_superior", "ams_upper_superior"),
                 approvers.stream().map(User::getId).toList());
+    }
+
+    @Test
+    @Order(14)
+    void testUpdateDefaultResubmitModeWithoutChangingFlowVersion() throws Exception {
+        ApprovalFlow before = approvalFlowMapper.selectByPrimaryKey(addApprovalFlow.getId());
+        ApprovalFlowUpdateRequest request = new ApprovalFlowUpdateRequest();
+        request.setId(before.getId());
+        request.setDefaultResubmitMode("SUBMITTER");
+        this.requestPostWithOk(DEFAULT_UPDATE, request);
+
+        ApprovalFlow after = approvalFlowMapper.selectByPrimaryKey(before.getId());
+        Assertions.assertEquals("SUBMITTER", after.getDefaultResubmitMode());
+        Assertions.assertEquals(before.getCurrentVersionId(), after.getCurrentVersionId());
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(GET_BY_FORM_TYPE, before.getFormType());
+        ApprovalFlowByFormTypeResponse response = getResultData(mvcResult, ApprovalFlowByFormTypeResponse.class);
+        Assertions.assertEquals("SUBMITTER", response.getDefaultResubmitMode());
     }
 
     private void prepareMultipleDeptHeadData() {

@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.dto.request;
 
 import cn.cordys.common.constants.EnumValue;
+import cn.cordys.crm.approval.constants.ApprovalResubmitModeEnum;
 import cn.cordys.crm.approval.constants.DuplicateApproverRuleEnum;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,6 +13,10 @@ import java.util.List;
 
 @Data
 public class ApprovalFlowAddRequest {
+
+    @EnumValue(enumClass = ApprovalResubmitModeEnum.class)
+    @Schema(description = "默认重审路径：SUBMITTER/CURRENT_NODE/SPECIFIED_NODE，仅用于前端预选")
+    private String defaultResubmitMode = ApprovalResubmitModeEnum.SUBMITTER.name();
 
     @NotBlank(message = "流程名称不能为空")
     @Schema(description = "流程名称")

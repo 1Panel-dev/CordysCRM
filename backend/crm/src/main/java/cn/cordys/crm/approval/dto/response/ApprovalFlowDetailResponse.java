@@ -11,6 +11,9 @@ import java.util.Map;
 @Data
 public class ApprovalFlowDetailResponse {
 
+    @Schema(description = "默认重审路径：SUBMITTER/CURRENT_NODE/SPECIFIED_NODE")
+    private String defaultResubmitMode;
+
     @Schema(description = "ID")
     private String id;
 
