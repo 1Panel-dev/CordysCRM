@@ -3,6 +3,7 @@ package cn.cordys.crm.form.controller;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -68,6 +69,14 @@ public class CustomFormDataController {
     @Operation(summary = "表单数据详情")
     public CustomFormDataGetResponse get(@PathVariable String id) {
         return customFormDataService.get(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/tab/{customFormId}")
+    @Operation(summary = "自定义表单系统视图tab是否显示")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public ResourceTabEnableDTO getTabEnableConfig(@PathVariable String customFormId) {
+        return customFormDataService.getTabEnableConfig(customFormId, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/create-permission/{customFormId}")

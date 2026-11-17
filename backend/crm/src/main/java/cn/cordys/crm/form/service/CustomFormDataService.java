@@ -14,6 +14,7 @@ import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.formula.FormulaEngine;
@@ -286,6 +287,19 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         getDataScope(formId, userId, orgId);
     }
 
+    /**
+     * 自定义表单的系统视图仅由表单成员角色决定，不使用通用权限位的数据范围。
+     */
+    public ResourceTabEnableDTO getTabEnableConfig(String formId, String userId, String orgId) {
+        CustomFormRoleKey dataScope = getDataScope(formId, userId, orgId);
+        ResourceTabEnableDTO result = new ResourceTabEnableDTO();
+        if (dataScope != CustomFormRoleKey.MANAGE_OWN) {
+            result.setAll(true);
+            result.setDept(true);
+        }
+        return result;
+    }
+
     public void checkViewResource(String viewId, String formId, String userId, String orgId) {
         if (StringUtils.isNotBlank(viewId) && !InternalUserView.isInternalUserView(viewId)) {
             userViewService.checkViewResource(viewId, userId, orgId, formId);
@@ -305,13 +319,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 && !InternalUserView.isDepartment(viewId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
-        if (InternalUserView.isSelf(viewId)) {
+        if (InternalUserView.isSelf(viewId) || dataScope == CustomFormRoleKey.MANAGE_OWN) {
             return new CustomFormViewScope(true, null);
         }
-        if (dataScope == CustomFormRoleKey.MANAGE_OWN) {
-            // 仅能管理本人的成员不应借由系统视图看到其他数据。
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
+
         if (InternalUserView.isDepartment(viewId)) {
             OrganizationUser organizationUser = new OrganizationUser();
             organizationUser.setUserId(userId);
