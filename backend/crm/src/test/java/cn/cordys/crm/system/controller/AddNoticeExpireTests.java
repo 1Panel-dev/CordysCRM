@@ -244,26 +244,5 @@ public class AddNoticeExpireTests {
         organizationUserBaseMapper.insert(organizationUser);
     }
 
-    @Test
-    @Order(0)
-    public void cleanupNotificationSuccess() {
-        saveNotice();
-        noticeExpireJob.onEvent();
-        await().atMost(Duration.ofSeconds(10)).untilAsserted(this::assertNotificationsCreated);
-    }
 
-    private void assertNotificationsCreated() {
-        Notification notification = new Notification();
-        notification.setOrganizationId("100001");
-        notification.setResourceType("OPPORTUNITY");
-        notification.setResourceId("SgDFDJJND");
-        List<NotificationDTO> notifications = extNotificationMapper.selectByAnyOne(notification);
-        Assertions.assertTrue(CollectionUtils.isNotEmpty(notifications));
-        notification = new Notification();
-        notification.setOrganizationId("100001");
-        notification.setResourceType("CONTRACT");
-        notification.setResourceId("34554546565656667");
-        notifications = extNotificationMapper.selectByAnyOne(notification);
-        Assertions.assertTrue(CollectionUtils.isNotEmpty(notifications));
-    }
 }

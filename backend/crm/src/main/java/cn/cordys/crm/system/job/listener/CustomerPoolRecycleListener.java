@@ -172,15 +172,14 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
         customerContactService.updateContactOwner(customer.getId(), "-", customer.getOwner(),
                 customer.getOrganizationId());
 
-        // 消息通知
-        commonNoticeSendService.sendNotice(
+        // 消息通知：自动移入公海通知原负责人(此时负责人尚未清空, 取旧值)
+        commonNoticeSendService.sendNoticeByConfig(
                 NotificationConstants.Module.CUSTOMER,
                 NotificationConstants.Event.CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS,
-                customer.getName(),
                 InternalUser.ADMIN.getValue(),
                 customer.getOrganizationId(),
-                List.of(customer.getOwner()),
-                true);
+                true, true,
+                customer, null, null, null);
 
         // 插入责任人历史
         customerOwnerHistoryService.add(customer, InternalUser.ADMIN.getValue(), false);

@@ -14,24 +14,27 @@ public class MessageTask extends BaseModel {
     @Schema(description = "任务类型")
     private String taskType;
 
-    @Schema(description = "邮件启用")
-    private Boolean emailEnable;
-
     @Schema(description = "系统启用")
     private Boolean sysEnable;
 
-    @Schema(description = "企业微信启用")
-    private Boolean weComEnable;
-
-    @Schema(description = "钉钉启用")
-    private Boolean dingTalkEnable;
-
-    @Schema(description = "飞书启用")
-    private Boolean larkEnable;
+    @Schema(description = "类型(SYSTEM/CUSTOM)")
+    private String type;
 
     @Schema(description = "组织id")
     private String organizationId;
 
     @Schema(description = "消息模版")
-    private byte[] template;
+    private String template;
+
+    @Schema(description = "场景名称")
+    private String name;
+
+    @Schema(description = "状态")
+    private Boolean enable;
+
+    @Schema(description = "接收人")
+    private String scopeId;
+
+    @Schema(description = "接收方式")
+    private String receiveMethod;
 }

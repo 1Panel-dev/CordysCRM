@@ -65,6 +65,12 @@ public class NoticeSendService {
         LocaleContextHolder.setLocale(locale);
     }
 
+    @Async("threadPoolTaskExecutor")
+    public void sendNotificationAsync(MessageDetailDTO messageDetail, NoticeModel noticeModel) {
+        setLanguage(noticeModel.getParamMap().get("Language"));
+        sendNotification(messageDetail, noticeModel);
+    }
+
     public void sendNotification(MessageDetailDTO messageDetail, NoticeModel noticeModel) {
         MessageDetailDTO clonedMessageDetail = SerializationUtils.clone(messageDetail);
         NoticeModel clonedNoticeModel = SerializationUtils.clone(noticeModel);

@@ -558,9 +558,9 @@ public class ClueService implements ApprovalResourceHandler {
         baseService.handleAddLogWithResourceName(clue, request.getModuleFields());
 
         // 消息通知
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.CLUE_ADD, clue.getName(), userId,
-                orgId, List.of(clue.getOwner()), true);
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                NotificationConstants.Event.CLUE_ADD, userId, orgId, true, true,
+                null, null, clue, request.getModuleFields());
         return clue;
     }
 
@@ -590,7 +590,10 @@ public class ClueService implements ApprovalResourceHandler {
                 if (!isApprovalRevert(request.getUpdateType())) {
                     clueOwnerHistoryService.add(originClue, userId, false);
                 }
-                sendTransferNotice(List.of(originClue), request.getOwner(), userId, orgId);
+                // 负责人变更单独发送转移通知：原负责人取 originCustomer、新负责人取 customer
+                commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                        NotificationConstants.Event.TRANSFER_CLUE, userId, orgId, true, true,
+                        originClue, null, clue, null);
             }
         }
 
@@ -615,16 +618,15 @@ public class ClueService implements ApprovalResourceHandler {
         clue = clueMapper.selectByPrimaryKey(request.getId());
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
-        baseService.handleUpdateLog(originClue, clue, originCustomerFields,
-                request.getModuleFields() == null ? originCustomerFields : request.getModuleFields(),
+        List<BaseModuleFieldValue> newFields = request.getModuleFields() == null ? originCustomerFields
+                : request.getModuleFields();
+        baseService.handleUpdateLog(originClue, clue, originCustomerFields, newFields,
                 originClue.getId(), originClue.getName());
-        return clueMapper.selectByPrimaryKey(clue.getId());
-    }
 
-    private void sendTransferNotice(List<Clue> originClues, String toUser, String userId, String orgId) {
-        originClues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.TRANSFER_CLUE, clue.getName(), userId,
-                orgId, List.of(toUser), true));
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                NotificationConstants.Event.CLUE_UPDATE, userId, orgId, true, false,
+                originClue, originCustomerFields, clue, newFields);
+        return clueMapper.selectByPrimaryKey(clue.getId());
     }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -678,8 +680,8 @@ public class ClueService implements ApprovalResourceHandler {
         CustomerListResponse item = new CustomerListResponse();
         boolean hasPermission = hasTransitionCustomerPermission(customer, item, userId, orgId)
                 || (!BooleanUtils.isTrue(clue.getInSharedPool()) && Strings.CS.equals(clue.getOwner(), userId)
-                        && !BooleanUtils.isTrue(customer.getInSharedPool())
-                        && PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_READ));
+                && !BooleanUtils.isTrue(customer.getInSharedPool())
+                && PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_READ));
         List<CustomerListResponse> list = List.of(item);
         if (hasPermission) {
             BeanUtils.copyBean(item, customer);
@@ -841,9 +843,9 @@ public class ClueService implements ApprovalResourceHandler {
         // 消息通知
         // 线索池的线索没有负责人, List.of(null) 会直接抛 NPE; 审批通过后执行的删除也会走到这里
         List<String> receivers = StringUtils.isBlank(clue.getOwner()) ? List.of() : List.of(clue.getOwner());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
-                orgId, receivers, true);
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                NotificationConstants.Event.CLUE_DELETED, userId, orgId, true, true,
+                clue, null, null, null);
     }
 
     /**
@@ -933,8 +935,15 @@ public class ClueService implements ApprovalResourceHandler {
                 }).toList();
 
         logService.batchAdd(logs);
-
-        sendTransferNotice(transferableClues, request.getOwner(), userId, orgId);
+        transferableClues.stream()
+                .filter(clue -> !Strings.CS.equals(clue.getOwner(), request.getOwner()))
+                .forEach(clue -> {
+                    Customer transferredClue = BeanUtils.copyBean(new Customer(), clue);
+                    transferredClue.setOwner(request.getOwner());
+                    commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                            NotificationConstants.Event.TRANSFER_CLUE, userId, orgId, true, true,
+                            clue, null, transferredClue, null);
+                });
 
         // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里查不到或无权转移的线索
         return BatchAffectReasonResponse.builder()
@@ -1009,9 +1018,10 @@ public class ClueService implements ApprovalResourceHandler {
         // 消息通知
         permittedClues.stream()
                 .filter(clue -> deleteIds.contains(clue.getId()))
-                .forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                        NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
-                        orgId, List.of(clue.getOwner()), true));
+                .forEach(clue -> commonNoticeSendService.sendNoticeByConfig(
+                        NotificationConstants.Module.CLUE,
+                        NotificationConstants.Event.CLUE_DELETED, userId, orgId, true, true,
+                        clue, null, null, null));
     }
 
     private List<String> getOwners(List<Clue> clues) {
@@ -1075,9 +1085,10 @@ public class ClueService implements ApprovalResourceHandler {
             logDTO.setDetail(detail);
             logs.add(logDTO);
             // 消息通知
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                    NotificationConstants.Event.CLUE_MOVED_POOL, clue.getName(), currentUser,
-                    orgId, List.of(clue.getOwner()), true);
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.CLUE_MOVED_POOL, currentUser, orgId, true, true,
+                    clue, null, clue, null);
+
             // 插入责任人历史
             clue.setReasonId(request.getReasonId());
             clueOwnerHistoryService.add(clue, currentUser, true);
@@ -1466,10 +1477,10 @@ public class ClueService implements ApprovalResourceHandler {
         // 部分内置字段未配置联动, 取线索值即可
         addRequest.setName(customerLinkFillDTO.getEntity() == null
                 || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getName()) ? clue.getName()
-                        : customerLinkFillDTO.getEntity().getName());
+                : customerLinkFillDTO.getEntity().getName());
         addRequest.setOwner(customerLinkFillDTO.getEntity() == null
                 || StringUtils.isEmpty(customerLinkFillDTO.getEntity().getOwner()) ? clue.getOwner()
-                        : customerLinkFillDTO.getEntity().getOwner());
+                : customerLinkFillDTO.getEntity().getOwner());
         addRequest.setModuleFields(customerLinkFillDTO.getFields());
         addRequest.setFollower(clue.getFollower());
         addRequest.setFollowTime(clue.getFollowTime());
@@ -1628,118 +1639,120 @@ public class ClueService implements ApprovalResourceHandler {
                 List<LogDTO> logs = new ArrayList<>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                case ADD -> {
-                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(FormKey.CLUE.getKey(),
-                            currentOrg);
-                    clues.forEach(clue -> {
-                        clue.setCollectionTime(clue.getCreateTime());
-                        clue.setStage(ClueStatus.NEW.name());
-                        clue.setInSharedPool(false);
-                        clue.setFrozen(false);
-                        clue.setApprovalStatus(initialApprovalStatus);
-                        logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX,
-                                clue.getName()));
-                    });
-                    clueMapper.batchInsert(clues);
-                    clueFieldMapper.batchInsert(
-                            clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
-                    clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream()
-                            .map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
-                    // 日志
-                    logService.batchAdd(logs);
-                }
-                case UPDATE -> {
-                    List<String> ids = clues.stream().map(Clue::getId).toList();
-                    if (CollectionUtils.isEmpty(ids)) {
-                        break;
-                    }
-                    //原数据
-                    List<Clue> originClueList = clueMapper.selectByIds(ids);
-                    if (CollectionUtils.isEmpty(originClueList)) {
-                        break;
-                    }
-                    Map<String, Clue> originClueMaps = originClueList.stream()
-                            .collect(Collectors.toMap(Clue::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = clueFieldService
-                            .getResourceFieldMap(ids, true);
-
-                    List<ClueField> insertField = new ArrayList<>();
-                    List<ClueFieldBlob> insertFieldBlob = new ArrayList<>();
-                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                    ExtClueMapper clueBatchMapper = sqlSession.getMapper(ExtClueMapper.class);
-                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-                    //更新
-                    if (CollectionUtils.isNotEmpty(clues)) {
+                    case ADD -> {
+                        String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                                FormKey.CLUE.getKey(),
+                                currentOrg);
                         clues.forEach(clue -> {
+                            clue.setCollectionTime(clue.getCreateTime());
+                            clue.setStage(ClueStatus.NEW.name());
                             clue.setInSharedPool(false);
-                            clueBatchMapper.updateClue(clue);
+                            clue.setFrozen(false);
+                            clue.setApprovalStatus(initialApprovalStatus);
+                            logs.add(
+                                    new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX,
+                                            clue.getName()));
                         });
+                        clueMapper.batchInsert(clues);
+                        clueFieldMapper.batchInsert(
+                                clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
+                        clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream()
+                                .map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
+                        // 日志
+                        logService.batchAdd(logs);
                     }
-
-                    if (CollectionUtils.isNotEmpty(clueFields)) {
-                        List<ClueField> fieldList = clueFieldMapper
-                                .selectByIds(clueFields.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, ClueField> fieldMap = fieldList.stream()
-                                .collect(Collectors.toMap(ClueField::getId, Function.identity()));
-                        clueFields.forEach(clueField -> {
-                            if (fieldMap.containsKey(clueField.getId())) {
-                                commonMapper.updateCustomerField("clue_field", clueField);
-                            } else {
-                                insertField.add(BeanUtils.copyBean(new ClueField(), clueField));
-                            }
-                        });
-                    }
-
-                    if (CollectionUtils.isNotEmpty(clueFieldBlobs)) {
-                        List<ClueFieldBlob> blobList = clueFieldBlobMapper
-                                .selectByIds(clueFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, ClueFieldBlob> blobMap = blobList.stream()
-                                .collect(Collectors.toMap(ClueFieldBlob::getId, Function.identity()));
-                        clueFieldBlobs.forEach(clueFieldBlob -> {
-                            if (blobMap.containsKey(clueFieldBlob.getId())) {
-                                commonMapper.updateCustomerField("clue_field_blob", clueFieldBlob);
-                            } else {
-                                insertFieldBlob.add(BeanUtils.copyBean(new ClueFieldBlob(), clueFieldBlob));
-                            }
-                        });
-                    }
-
-                    sqlSession.flushStatements();
-                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                    if (CollectionUtils.isNotEmpty(insertField)) {
-                        clueFieldMapper.batchInsert(insertField);
-                    }
-                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                        clueFieldBlobMapper.batchInsert(insertFieldBlob);
-                    }
-
-                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                    currentSession.clearCache();
-
-                    Map<String, Clue> modifiedClueMaps = clueMapper.selectByIds(ids).stream()
-                            .collect(Collectors.toMap(Clue::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = clueFieldService
-                            .getResourceFieldMap(ids, true);
-
-                    //日志
-                    ids.forEach(id -> {
-                        Clue originDate = originClueMaps.get(id);
-                        Clue modifiedDate = modifiedClueMaps.get(id);
-                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
-                                modifiedFieldValueMap.get(id), id, modifiedDate.getName());
-                        LogContextInfo contextInfo = OperationLogContext.getContext();
-                        if (contextInfo != null) {
-                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
-                                    LogModule.CLUE_INDEX, modifiedDate.getName());
-                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                            logs.add(logDTO);
-                            OperationLogContext.clear();
+                    case UPDATE -> {
+                        List<String> ids = clues.stream().map(Clue::getId).toList();
+                        if (CollectionUtils.isEmpty(ids)) {
+                            break;
                         }
-                    });
-                    logService.batchAdd(logs);
-                }
+                        //原数据
+                        List<Clue> originClueList = clueMapper.selectByIds(ids);
+                        if (CollectionUtils.isEmpty(originClueList)) {
+                            break;
+                        }
+                        Map<String, Clue> originClueMaps = originClueList.stream()
+                                .collect(Collectors.toMap(Clue::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = clueFieldService
+                                .getResourceFieldMap(ids, true);
+
+                        List<ClueField> insertField = new ArrayList<>();
+                        List<ClueFieldBlob> insertFieldBlob = new ArrayList<>();
+                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                        ExtClueMapper clueBatchMapper = sqlSession.getMapper(ExtClueMapper.class);
+                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                        //更新
+                        if (CollectionUtils.isNotEmpty(clues)) {
+                            clues.forEach(clue -> {
+                                clue.setInSharedPool(false);
+                                clueBatchMapper.updateClue(clue);
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(clueFields)) {
+                            List<ClueField> fieldList = clueFieldMapper
+                                    .selectByIds(clueFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, ClueField> fieldMap = fieldList.stream()
+                                    .collect(Collectors.toMap(ClueField::getId, Function.identity()));
+                            clueFields.forEach(clueField -> {
+                                if (fieldMap.containsKey(clueField.getId())) {
+                                    commonMapper.updateCustomerField("clue_field", clueField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new ClueField(), clueField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(clueFieldBlobs)) {
+                            List<ClueFieldBlob> blobList = clueFieldBlobMapper
+                                    .selectByIds(clueFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, ClueFieldBlob> blobMap = blobList.stream()
+                                    .collect(Collectors.toMap(ClueFieldBlob::getId, Function.identity()));
+                            clueFieldBlobs.forEach(clueFieldBlob -> {
+                                if (blobMap.containsKey(clueFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("clue_field_blob", clueFieldBlob);
+                                } else {
+                                    insertFieldBlob.add(BeanUtils.copyBean(new ClueFieldBlob(), clueFieldBlob));
+                                }
+                            });
+                        }
+
+                        sqlSession.flushStatements();
+                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (CollectionUtils.isNotEmpty(insertField)) {
+                            clueFieldMapper.batchInsert(insertField);
+                        }
+                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            clueFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
+
+                        SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                        currentSession.clearCache();
+
+                        Map<String, Clue> modifiedClueMaps = clueMapper.selectByIds(ids).stream()
+                                .collect(Collectors.toMap(Clue::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = clueFieldService
+                                .getResourceFieldMap(ids, true);
+
+                        //日志
+                        ids.forEach(id -> {
+                            Clue originDate = originClueMaps.get(id);
+                            Clue modifiedDate = modifiedClueMaps.get(id);
+                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
+                                    modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            LogContextInfo contextInfo = OperationLogContext.getContext();
+                            if (contextInfo != null) {
+                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                        LogModule.CLUE_INDEX, modifiedDate.getName());
+                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                                logs.add(logDTO);
+                                OperationLogContext.clear();
+                            }
+                        });
+                        logService.batchAdd(logs);
+                    }
                 }
             };
             CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields,
@@ -2015,7 +2028,7 @@ public class ClueService implements ApprovalResourceHandler {
      * @param postFieldParam 参数
      */
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         Map<String, BaseField> fieldConfigMap = formConfig.getFields().stream()

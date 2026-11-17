@@ -395,9 +395,9 @@ public class OpportunityService implements ApprovalResourceHandler {
                 getFormConfig(orgId));
 
         // 消息通知
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), operatorId,
-                orgId, List.of(opportunity.getOwner()), true);
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_ADD, operatorId, orgId, true, true,
+                null, null, opportunity, request.getModuleFields());
         return opportunity;
     }
 
@@ -420,7 +420,10 @@ public class OpportunityService implements ApprovalResourceHandler {
             // 关联联系人的负责人要跟着走, 并通知新负责人
             if (StringUtils.isNotBlank(request.getOwner()) && !Strings.CS.equals(request.getOwner(), item.getOwner())) {
                 syncContactOwner(request.getContactId(), request.getOwner());
-                sendTransferNotice(List.of(item), request.getOwner(), userId, orgId);
+                // 负责人变更单独发送转移通知：原负责人取 originCustomer、新负责人取 customer
+                commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                        NotificationConstants.Event.BUSINESS_TRANSFER, userId, orgId, true, true,
+                        oldOpportunity, null, newOpportunity, null);
             }
             //更新商机
             Opportunity updateOpportunity = newOpportunity(newOpportunity, request, userId);
@@ -448,6 +451,11 @@ public class OpportunityService implements ApprovalResourceHandler {
                     request.getModuleFields(),
                     oldOpportunity.getId(), oldOpportunity.getName(), Translator.get("products_info"),
                     getFormConfig(orgId));
+            List<BaseModuleFieldValue> newFields = request.getModuleFields() == null ? originCustomerFields
+                    : request.getModuleFields();
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                    NotificationConstants.Event.BUSINESS_UPDATE, userId, orgId, true, false,
+                    item, originCustomerFields, newOpportunity, newFields);
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
@@ -515,9 +523,9 @@ public class OpportunityService implements ApprovalResourceHandler {
         // 添加日志上下文
         OperationLogContext.setResourceName(opportunity.getName());
 
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
-                orgId, List.of(opportunity.getOwner()), true);
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_DELETED, userId, orgId, true, true,
+                opportunity, null, null, null);
     }
 
     /**
@@ -616,7 +624,16 @@ public class OpportunityService implements ApprovalResourceHandler {
                 .forEach(opportunity -> syncContactOwner(opportunity.getContactId(), request.getOwner()));
 
         logService.batchAdd(logs);
-        sendTransferNotice(transferableOpportunities, request.getOwner(), userId, orgId);
+
+        transferableOpportunities.stream()
+                .filter(opportunity -> !Strings.CS.equals(opportunity.getOwner(), request.getOwner()))
+                .forEach(opportunity -> {
+                    Customer transferredOpportunity = BeanUtils.copyBean(new Customer(), opportunity);
+                    transferredOpportunity.setOwner(request.getOwner());
+                    commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                            NotificationConstants.Event.BUSINESS_TRANSFER, userId, orgId, true, true,
+                            opportunity, null, transferredOpportunity, null);
+                });
 
         // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里查不到或无权转移的商机
         return BatchAffectReasonResponse.builder()
@@ -625,13 +642,6 @@ public class OpportunityService implements ApprovalResourceHandler {
                 .skip(transferableOpportunities.size() - changedIds.size())
                 .errorMessages(Translator.get("batch.operate.reason"))
                 .build();
-    }
-
-    private void sendTransferNotice(List<Opportunity> opportunityList, String toUser, String userId, String orgId) {
-        opportunityList
-                .forEach(opportunity -> commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                        NotificationConstants.Event.BUSINESS_TRANSFER, opportunity.getName(), userId,
-                        orgId, List.of(toUser), true));
     }
 
     /**
@@ -696,9 +706,10 @@ public class OpportunityService implements ApprovalResourceHandler {
         // 消息通知
         opportunityList.stream()
                 .filter(opportunity -> deleteIds.contains(opportunity.getId()))
-                .forEach(opportunity -> commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                        NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
-                        orgId, List.of(opportunity.getOwner()), true));
+                .forEach(opportunity -> commonNoticeSendService.sendNoticeByConfig(
+                        NotificationConstants.Module.OPPORTUNITY,
+                        NotificationConstants.Event.BUSINESS_DELETED, userId, orgId, true, true,
+                        opportunity, null, null, null));
     }
 
     public OpportunityDetailResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
@@ -872,7 +883,7 @@ public class OpportunityService implements ApprovalResourceHandler {
         // 使用实际商机的组织和负责人校验，避免依赖资源 provider 的选择结果。
         if (!orgId.equals(oldOpportunity.getOrganizationId()) || StringUtils.isBlank(oldOpportunity.getOwner())
                 || !dataScopeService.hasDataPermission(userId, orgId, oldOpportunity.getOwner(),
-                        PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)) {
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
@@ -924,9 +935,16 @@ public class OpportunityService implements ApprovalResourceHandler {
         updateField(oldOpportunity, request.getFields(), userId);
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getId());
 
+        List<BaseModuleFieldValue> newFields = opportunityFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
         baseService.handleUpdateLogWithSubTable(oldOpportunity, opportunity, originCustomerFields,
-                opportunityFieldService.getModuleFieldValuesByResourceId(request.getId()),
-                request.getId(), opportunity.getName(), Translator.get("products_info"), getFormConfig(orgId));
+                newFields, request.getId(), opportunity.getName(), Translator.get("products_info"),
+                getFormConfig(orgId));
+
+        // 更新商机阶段通知：阶段作为字段参与字段触发条件比较
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_UPDATE, userId, orgId, true, false,
+                oldOpportunity, originCustomerFields, opportunity, newFields);
     }
 
     private void updateField(Opportunity opportunity, List<BaseModuleFieldValue> requestFields, String userId) {
@@ -1053,120 +1071,122 @@ public class OpportunityService implements ApprovalResourceHandler {
                 List<LogDTO> logs = new ArrayList<>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                case ADD -> {
-                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
-                            FormKey.OPPORTUNITY.getKey(), currentOrg);
-                    for (int i = 0; i < opportunities.size(); i++) {
-                        Opportunity opportunity = opportunities.get(i);
-                        opportunity.setStage(stageConfigList.getFirst().getId());
-                        opportunity.setPos(nextPos + i);
-                        opportunity.setApprovalStatus(initialApprovalStatus);
-                        logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD,
-                                LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
-                        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                                NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
-                                currentOrg, List.of(opportunity.getOwner()), true);
-                    }
-                    opportunityMapper.batchInsert(opportunities);
-                    opportunityFieldMapper.batchInsert(opportunityFields.stream()
-                            .map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
-                    opportunityFieldBlobMapper.batchInsert(opportunityFieldBlobs.stream()
-                            .map(field -> BeanUtils.copyBean(new OpportunityFieldBlob(), field)).toList());
-                    // record logs
-                    logService.batchAdd(logs);
-                }
-                case UPDATE -> {
-                    List<String> ids = opportunities.stream().map(Opportunity::getId).toList();
-                    if (CollectionUtils.isEmpty(ids)) {
-                        break;
-                    }
-                    //原数据
-                    List<Opportunity> originOpportunityList = opportunityMapper.selectByIds(ids);
-                    if (CollectionUtils.isEmpty(originOpportunityList)) {
-                        break;
-                    }
-                    Map<String, Opportunity> originOpportunityMaps = originOpportunityList.stream()
-                            .collect(Collectors.toMap(Opportunity::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = opportunityFieldService
-                            .getResourceFieldMap(ids, true);
-
-                    List<OpportunityField> insertField = new ArrayList<>();
-                    List<OpportunityFieldBlob> insertFieldBlob = new ArrayList<>();
-                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                    ExtOpportunityMapper batchMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
-                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-
-                    if (CollectionUtils.isNotEmpty(opportunities)) {
-                        opportunities.forEach(opportunity -> {
-                            batchMapper.updateOpportunity(opportunity);
-                        });
-                    }
-
-                    if (CollectionUtils.isNotEmpty(opportunityFields)) {
-                        List<OpportunityField> fieldList = opportunityFieldMapper
-                                .selectByIds(opportunityFields.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, OpportunityField> fieldMap = fieldList.stream()
-                                .collect(Collectors.toMap(OpportunityField::getId, Function.identity()));
-                        opportunityFields.forEach(opportunityField -> {
-                            if (fieldMap.containsKey(opportunityField.getId())) {
-                                commonMapper.updateCustomerField("opportunity_field", opportunityField);
-                            } else {
-                                insertField.add(BeanUtils.copyBean(new OpportunityField(), opportunityField));
-                            }
-                        });
-                    }
-
-                    if (CollectionUtils.isNotEmpty(opportunityFieldBlobs)) {
-                        List<OpportunityFieldBlob> blobList = opportunityFieldBlobMapper
-                                .selectByIds(opportunityFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, OpportunityFieldBlob> blobMap = blobList.stream()
-                                .collect(Collectors.toMap(OpportunityFieldBlob::getId, Function.identity()));
-                        opportunityFieldBlobs.forEach(opportunityFieldBlob -> {
-                            if (blobMap.containsKey(opportunityFieldBlob.getId())) {
-                                commonMapper.updateCustomerField("opportunity_field_blob", opportunityFieldBlob);
-                            } else {
-                                insertFieldBlob
-                                        .add(BeanUtils.copyBean(new OpportunityFieldBlob(), opportunityFieldBlob));
-                            }
-                        });
-                    }
-
-                    sqlSession.flushStatements();
-                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                    if (CollectionUtils.isNotEmpty(insertField)) {
-                        opportunityFieldMapper.batchInsert(insertField);
-                    }
-                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                        opportunityFieldBlobMapper.batchInsert(insertFieldBlob);
-                    }
-
-                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                    currentSession.clearCache();
-
-                    Map<String, Opportunity> modifiedOpportunityMaps = opportunityMapper.selectByIds(ids).stream()
-                            .collect(Collectors.toMap(Opportunity::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = opportunityFieldService
-                            .getResourceFieldMap(ids, true);
-
-                    ids.forEach(id -> {
-                        Opportunity originDate = originOpportunityMaps.get(id);
-                        Opportunity modifiedDate = modifiedOpportunityMaps.get(id);
-                        baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id),
-                                modifiedFieldValueMap.get(id),
-                                id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
-                        LogContextInfo contextInfo = OperationLogContext.getContext();
-                        if (contextInfo != null) {
-                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
-                                    LogModule.OPPORTUNITY_INDEX, modifiedDate.getName());
-                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                            logs.add(logDTO);
-                            OperationLogContext.clear();
+                    case ADD -> {
+                        String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                                FormKey.OPPORTUNITY.getKey(), currentOrg);
+                        for (int i = 0; i < opportunities.size(); i++) {
+                            Opportunity opportunity = opportunities.get(i);
+                            opportunity.setStage(stageConfigList.getFirst().getId());
+                            opportunity.setPos(nextPos + i);
+                            opportunity.setApprovalStatus(initialApprovalStatus);
+                            logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD,
+                                    LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
+                            commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                                    NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
+                                    currentOrg, List.of(opportunity.getOwner()), true);
                         }
-                    });
-                    logService.batchAdd(logs);
-                }
+                        opportunityMapper.batchInsert(opportunities);
+                        opportunityFieldMapper.batchInsert(opportunityFields.stream()
+                                .map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
+                        opportunityFieldBlobMapper.batchInsert(opportunityFieldBlobs.stream()
+                                .map(field -> BeanUtils.copyBean(new OpportunityFieldBlob(), field)).toList());
+                        // record logs
+                        logService.batchAdd(logs);
+                    }
+                    case UPDATE -> {
+                        List<String> ids = opportunities.stream().map(Opportunity::getId).toList();
+                        if (CollectionUtils.isEmpty(ids)) {
+                            break;
+                        }
+                        //原数据
+                        List<Opportunity> originOpportunityList = opportunityMapper.selectByIds(ids);
+                        if (CollectionUtils.isEmpty(originOpportunityList)) {
+                            break;
+                        }
+                        Map<String, Opportunity> originOpportunityMaps = originOpportunityList.stream()
+                                .collect(Collectors.toMap(Opportunity::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = opportunityFieldService
+                                .getResourceFieldMap(ids, true);
+
+                        List<OpportunityField> insertField = new ArrayList<>();
+                        List<OpportunityFieldBlob> insertFieldBlob = new ArrayList<>();
+                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                        ExtOpportunityMapper batchMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
+                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                        if (CollectionUtils.isNotEmpty(opportunities)) {
+                            opportunities.forEach(opportunity -> {
+                                batchMapper.updateOpportunity(opportunity);
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(opportunityFields)) {
+                            List<OpportunityField> fieldList = opportunityFieldMapper
+                                    .selectByIds(opportunityFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, OpportunityField> fieldMap = fieldList.stream()
+                                    .collect(Collectors.toMap(OpportunityField::getId, Function.identity()));
+                            opportunityFields.forEach(opportunityField -> {
+                                if (fieldMap.containsKey(opportunityField.getId())) {
+                                    commonMapper.updateCustomerField("opportunity_field", opportunityField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new OpportunityField(), opportunityField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(opportunityFieldBlobs)) {
+                            List<OpportunityFieldBlob> blobList = opportunityFieldBlobMapper
+                                    .selectByIds(
+                                            opportunityFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, OpportunityFieldBlob> blobMap = blobList.stream()
+                                    .collect(Collectors.toMap(OpportunityFieldBlob::getId, Function.identity()));
+                            opportunityFieldBlobs.forEach(opportunityFieldBlob -> {
+                                if (blobMap.containsKey(opportunityFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("opportunity_field_blob", opportunityFieldBlob);
+                                } else {
+                                    insertFieldBlob
+                                            .add(BeanUtils.copyBean(new OpportunityFieldBlob(), opportunityFieldBlob));
+                                }
+                            });
+                        }
+
+                        sqlSession.flushStatements();
+                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (CollectionUtils.isNotEmpty(insertField)) {
+                            opportunityFieldMapper.batchInsert(insertField);
+                        }
+                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            opportunityFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
+
+                        SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                        currentSession.clearCache();
+
+                        Map<String, Opportunity> modifiedOpportunityMaps = opportunityMapper.selectByIds(ids).stream()
+                                .collect(Collectors.toMap(Opportunity::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = opportunityFieldService
+                                .getResourceFieldMap(ids, true);
+
+                        ids.forEach(id -> {
+                            Opportunity originDate = originOpportunityMaps.get(id);
+                            Opportunity modifiedDate = modifiedOpportunityMaps.get(id);
+                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate,
+                                    originFieldValueMap.get(id),
+                                    modifiedFieldValueMap.get(id),
+                                    id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+                            LogContextInfo contextInfo = OperationLogContext.getContext();
+                            if (contextInfo != null) {
+                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                        LogModule.OPPORTUNITY_INDEX, modifiedDate.getName());
+                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                                logs.add(logDTO);
+                                OperationLogContext.clear();
+                            }
+                        });
+                        logService.batchAdd(logs);
+                    }
                 }
             };
             CustomFieldImportEventListener<Opportunity> eventListener = new CustomFieldImportEventListener<>(fields,
@@ -1291,6 +1311,10 @@ public class OpportunityService implements ApprovalResourceHandler {
                 LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
+
+        permittedOpportunities.forEach(opportunity -> commonNoticeSendService.sendNoticeByConfig(
+                NotificationConstants.Module.OPPORTUNITY, NotificationConstants.Event.BUSINESS_UPDATE,
+                userId, organizationId, true, true, opportunity, null, opportunity, null));
 
         return BatchAffectReasonResponse.builder()
                 .success(permittedIds.size())
@@ -1479,7 +1503,7 @@ public class OpportunityService implements ApprovalResourceHandler {
      * @param postFieldParam 参数
      */
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         Map<String, BaseField> fieldConfigMap = formConfig.getFields().stream()

@@ -416,7 +416,7 @@ public class CustomerService implements ApprovalResourceHandler {
         boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(),
                 PermissionConstants.CUSTOMER_MANAGEMENT_READ)
                 || relatedResourcePermissionService.hasRelatedReadPermission(
-                        FormKey.CUSTOMER.getKey(), id, userId, orgId);
+                FormKey.CUSTOMER.getKey(), id, userId, orgId);
         if (!hasPermission) {
             List<CustomerCollaboration> collaborations = customerCollaborationService
                     .selectByCustomerIdAndUserId(getResponse.getId(), userId);
@@ -597,9 +597,9 @@ public class CustomerService implements ApprovalResourceHandler {
         statisticFieldService.refreshByRelatedDataChange(FormKey.CUSTOMER.getKey(), customer.getId(), orgId);
         baseService.handleAddLogWithResourceName(customer, request.getModuleFields());
         // 通知
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                NotificationConstants.Event.CUSTOMER_ADD, customer.getName(), userId,
-                orgId, List.of(customer.getOwner()), true);
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_ADD, userId, orgId, true, true,
+                null, null, customer, request.getModuleFields());
         return customer;
     }
 
@@ -631,7 +631,10 @@ public class CustomerService implements ApprovalResourceHandler {
                 if (!isApprovalRevert(request.getUpdateType())) {
                     customerOwnerHistoryService.add(originCustomer, userId, false);
                 }
-                sendTransferNotice(List.of(originCustomer), request.getOwner(), userId, orgId);
+                // 负责人变更单独发送转移通知：原负责人取 originCustomer、新负责人取 customer
+                commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                        NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER, userId, orgId, true, true,
+                        originCustomer, null, customer, null);
                 // 重置领取时间
                 customer.setCollectionTime(System.currentTimeMillis());
             }
@@ -659,9 +662,13 @@ public class CustomerService implements ApprovalResourceHandler {
         statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
 
         customer = customerMapper.selectByPrimaryKey(request.getId());
-        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields,
-                request.getModuleFields() == null ? originCustomerFields : request.getModuleFields(),
+        List<BaseModuleFieldValue> newFields = request.getModuleFields() == null ? originCustomerFields
+                : request.getModuleFields();
+        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, newFields,
                 originCustomer.getId(), originCustomer.getName());
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_UPDATE, userId, orgId, true, false,
+                originCustomer, originCustomerFields, customer, newFields);
         return customer;
     }
 
@@ -718,9 +725,9 @@ public class CustomerService implements ApprovalResourceHandler {
         // 公海客户没有负责人, List.of(null) 会直接抛 NPE; 审批通过后执行的删除也会走到这里
         List<String> receivers = StringUtils.isBlank(originCustomer.getOwner()) ? List.of()
                 : List.of(originCustomer.getOwner());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                NotificationConstants.Event.CUSTOMER_DELETED, originCustomer.getName(), userId,
-                orgId, receivers, true);
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_DELETED, userId, orgId, true, true,
+                originCustomer, null, null, null);
     }
 
     /**
@@ -819,7 +826,17 @@ public class CustomerService implements ApprovalResourceHandler {
 
         logService.batchAdd(logs);
 
-        sendTransferNotice(transferableCustomers, request.getOwner(), userId, orgId);
+        // 消息通知：仅负责人真正变更的客户, 旧值取原客户(原负责人)、新值取改派后客户(新负责人),
+        // 转移任务分别给原负责人、新负责人各发一条模板
+        transferableCustomers.stream()
+                .filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner()))
+                .forEach(customer -> {
+                    Customer transferredCustomer = BeanUtils.copyBean(new Customer(), customer);
+                    transferredCustomer.setOwner(request.getOwner());
+                    commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                            NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER, userId, orgId, true, true,
+                            customer, null, transferredCustomer, null);
+                });
 
         // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里查不到或无权转移的客户
         return BatchAffectReasonResponse.builder()
@@ -927,9 +944,9 @@ public class CustomerService implements ApprovalResourceHandler {
         logService.batchAdd(logs);
 
         // 消息通知
-        deletedCustomers.forEach(customer -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
-                orgId, List.of(customer.getOwner()), true));
+        deletedCustomers.forEach(customer -> commonNoticeSendService.sendNoticeByConfig(
+                NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_DELETED, userId, orgId,
+                true, true, customer, null, null, null));
     }
 
     public void deleteCustomerResource(List<String> ids) {
@@ -1022,10 +1039,10 @@ public class CustomerService implements ApprovalResourceHandler {
                     customerPool.getName());
             logDTO.setDetail(detail);
             logs.add(logDTO);
-            // 消息通知
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                    NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, customer.getName(), currentUser,
-                    orgId, List.of(customer.getOwner()), true);
+            // 消息通知：移入公海通知原负责人(此处负责人尚未清空, 取旧值)
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, currentUser, orgId, true, true,
+                    customer, null, null, null);
             // 插入责任人历史
             customer.setReasonId(request.getReasonId());
             customerOwnerHistoryService.add(customer, currentUser, true);
@@ -1146,116 +1163,116 @@ public class CustomerService implements ApprovalResourceHandler {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
-                case ADD -> {
-                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
-                            FormKey.CUSTOMER.getKey(), currentOrg);
-                    customers.forEach(customer -> {
-                        customer.setCollectionTime(customer.getCreateTime());
-                        customer.setInSharedPool(false);
-                        customer.setFrozen(false);
-                        customer.setApprovalStatus(initialApprovalStatus);
-                        logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD,
-                                LogModule.CUSTOMER_INDEX, customer.getName()));
-                    });
-                    customerMapper.batchInsert(customers);
-                    customerFieldMapper.batchInsert(customerFields.stream()
-                            .map(field -> BeanUtils.copyBean(new CustomerField(), field)).toList());
-                    customerFieldBlobMapper.batchInsert(customerFieldBlobs.stream()
-                            .map(field -> BeanUtils.copyBean(new CustomerFieldBlob(), field)).toList());
-                    // record logs
-                    logService.batchAdd(logs);
-                }
-                case UPDATE -> {
-                    List<String> ids = customers.stream().map(Customer::getId).toList();
-                    if (CollectionUtils.isEmpty(ids)) {
-                        break;
-                    }
-                    //原数据
-                    List<Customer> originCustomerList = customerMapper.selectByIds(ids);
-                    if (CollectionUtils.isEmpty(originCustomerList)) {
-                        break;
-                    }
-                    Map<String, Customer> originCustomerMaps = originCustomerList.stream()
-                            .collect(Collectors.toMap(Customer::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customerFieldService
-                            .getResourceFieldMap(ids, true);
-
-                    List<CustomerField> insertField = new ArrayList<>();
-                    List<CustomerFieldBlob> insertFieldBlob = new ArrayList<>();
-                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                    ExtCustomerMapper customerBatchMapper = sqlSession.getMapper(ExtCustomerMapper.class);
-                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-
-                    if (CollectionUtils.isNotEmpty(customers)) {
+                    case ADD -> {
+                        String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                                FormKey.CUSTOMER.getKey(), currentOrg);
                         customers.forEach(customer -> {
+                            customer.setCollectionTime(customer.getCreateTime());
                             customer.setInSharedPool(false);
-                            customerBatchMapper.updateCustomer(customer);
+                            customer.setFrozen(false);
+                            customer.setApprovalStatus(initialApprovalStatus);
+                            logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD,
+                                    LogModule.CUSTOMER_INDEX, customer.getName()));
                         });
+                        customerMapper.batchInsert(customers);
+                        customerFieldMapper.batchInsert(customerFields.stream()
+                                .map(field -> BeanUtils.copyBean(new CustomerField(), field)).toList());
+                        customerFieldBlobMapper.batchInsert(customerFieldBlobs.stream()
+                                .map(field -> BeanUtils.copyBean(new CustomerFieldBlob(), field)).toList());
+                        // record logs
+                        logService.batchAdd(logs);
                     }
-
-                    if (CollectionUtils.isNotEmpty(customerFields)) {
-                        List<CustomerField> fieldList = customerFieldMapper
-                                .selectByIds(customerFields.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, CustomerField> fieldMap = fieldList.stream()
-                                .collect(Collectors.toMap(CustomerField::getId, Function.identity()));
-                        customerFields.forEach(customerField -> {
-                            if (fieldMap.containsKey(customerField.getId())) {
-                                commonMapper.updateCustomerField("customer_field", customerField);
-                            } else {
-                                insertField.add(BeanUtils.copyBean(new CustomerField(), customerField));
-                            }
-                        });
-                    }
-
-                    if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
-                        List<CustomerFieldBlob> blobList = customerFieldBlobMapper
-                                .selectByIds(customerFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                        Map<String, CustomerFieldBlob> blobMap = blobList.stream()
-                                .collect(Collectors.toMap(CustomerFieldBlob::getId, Function.identity()));
-                        customerFieldBlobs.forEach(customerFieldBlob -> {
-                            if (blobMap.containsKey(customerFieldBlob.getId())) {
-                                commonMapper.updateCustomerField("customer_field_blob", customerFieldBlob);
-                            } else {
-                                insertFieldBlob.add(BeanUtils.copyBean(new CustomerFieldBlob(), customerFieldBlob));
-                            }
-                        });
-                    }
-
-                    sqlSession.flushStatements();
-                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                    if (CollectionUtils.isNotEmpty(insertField)) {
-                        customerFieldMapper.batchInsert(insertField);
-                    }
-                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                        customerFieldBlobMapper.batchInsert(insertFieldBlob);
-                    }
-
-                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                    currentSession.clearCache();
-
-                    Map<String, Customer> modifiedCustomerMaps = customerMapper.selectByIds(ids).stream()
-                            .collect(Collectors.toMap(Customer::getId, Function.identity()));
-                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerFieldService
-                            .getResourceFieldMap(ids, true);
-
-                    ids.forEach(id -> {
-                        Customer originDate = originCustomerMaps.get(id);
-                        Customer modifiedDate = modifiedCustomerMaps.get(id);
-                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
-                                modifiedFieldValueMap.get(id), id, modifiedDate.getName());
-                        LogContextInfo contextInfo = OperationLogContext.getContext();
-                        if (contextInfo != null) {
-                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
-                                    LogModule.CUSTOMER_INDEX, modifiedDate.getName());
-                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                            logs.add(logDTO);
-                            OperationLogContext.clear();
+                    case UPDATE -> {
+                        List<String> ids = customers.stream().map(Customer::getId).toList();
+                        if (CollectionUtils.isEmpty(ids)) {
+                            break;
                         }
-                    });
-                    logService.batchAdd(logs);
-                }
+                        //原数据
+                        List<Customer> originCustomerList = customerMapper.selectByIds(ids);
+                        if (CollectionUtils.isEmpty(originCustomerList)) {
+                            break;
+                        }
+                        Map<String, Customer> originCustomerMaps = originCustomerList.stream()
+                                .collect(Collectors.toMap(Customer::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customerFieldService
+                                .getResourceFieldMap(ids, true);
+
+                        List<CustomerField> insertField = new ArrayList<>();
+                        List<CustomerFieldBlob> insertFieldBlob = new ArrayList<>();
+                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                        ExtCustomerMapper customerBatchMapper = sqlSession.getMapper(ExtCustomerMapper.class);
+                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                        if (CollectionUtils.isNotEmpty(customers)) {
+                            customers.forEach(customer -> {
+                                customer.setInSharedPool(false);
+                                customerBatchMapper.updateCustomer(customer);
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(customerFields)) {
+                            List<CustomerField> fieldList = customerFieldMapper
+                                    .selectByIds(customerFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, CustomerField> fieldMap = fieldList.stream()
+                                    .collect(Collectors.toMap(CustomerField::getId, Function.identity()));
+                            customerFields.forEach(customerField -> {
+                                if (fieldMap.containsKey(customerField.getId())) {
+                                    commonMapper.updateCustomerField("customer_field", customerField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new CustomerField(), customerField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
+                            List<CustomerFieldBlob> blobList = customerFieldBlobMapper
+                                    .selectByIds(customerFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, CustomerFieldBlob> blobMap = blobList.stream()
+                                    .collect(Collectors.toMap(CustomerFieldBlob::getId, Function.identity()));
+                            customerFieldBlobs.forEach(customerFieldBlob -> {
+                                if (blobMap.containsKey(customerFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("customer_field_blob", customerFieldBlob);
+                                } else {
+                                    insertFieldBlob.add(BeanUtils.copyBean(new CustomerFieldBlob(), customerFieldBlob));
+                                }
+                            });
+                        }
+
+                        sqlSession.flushStatements();
+                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (CollectionUtils.isNotEmpty(insertField)) {
+                            customerFieldMapper.batchInsert(insertField);
+                        }
+                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            customerFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
+
+                        SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                        currentSession.clearCache();
+
+                        Map<String, Customer> modifiedCustomerMaps = customerMapper.selectByIds(ids).stream()
+                                .collect(Collectors.toMap(Customer::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerFieldService
+                                .getResourceFieldMap(ids, true);
+
+                        ids.forEach(id -> {
+                            Customer originDate = originCustomerMaps.get(id);
+                            Customer modifiedDate = modifiedCustomerMaps.get(id);
+                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id),
+                                    modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            LogContextInfo contextInfo = OperationLogContext.getContext();
+                            if (contextInfo != null) {
+                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                        LogModule.CUSTOMER_INDEX, modifiedDate.getName());
+                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                                logs.add(logDTO);
+                                OperationLogContext.clear();
+                            }
+                        });
+                        logService.batchAdd(logs);
+                    }
                 }
             };
             CustomFieldImportEventListener<Customer> eventListener = new CustomFieldImportEventListener<>(fields,
@@ -1535,11 +1552,11 @@ public class CustomerService implements ApprovalResourceHandler {
     /**
      * 获取合并相关的日志
      *
-     * @param mergeRequest    合并请求参数
-     * @param currentUser     当前用户
-     * @param currentOrgId    当前组织ID
-     * @param mergeContracts  被合并客户名下的合同(合并前查询)
-     * @param mergeOrders     被合并客户名下的订单(合并前查询)
+     * @param mergeRequest   合并请求参数
+     * @param currentUser    当前用户
+     * @param currentOrgId   当前组织ID
+     * @param mergeContracts 被合并客户名下的合同(合并前查询)
+     * @param mergeOrders    被合并客户名下的订单(合并前查询)
      * @return 日志列表
      */
     private List<LogDTO> getMergeRelateLogs(CustomerMergeRequest mergeRequest, String currentUser,
@@ -1787,7 +1804,7 @@ public class CustomerService implements ApprovalResourceHandler {
      * @param postFieldParam 参数
      */
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         Map<String, BaseField> fieldConfigMap = formConfig.getFields().stream()
