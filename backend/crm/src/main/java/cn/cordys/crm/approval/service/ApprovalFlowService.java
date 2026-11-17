@@ -1479,8 +1479,8 @@ public class ApprovalFlowService {
      */
     private boolean matchBetween(Object actualValue, Object expectedValue) {
         if (expectedValue instanceof List<?> rangeList && rangeList.size() == RANGE_SIZE) {
-            Object min = rangeList.get(0);
-            Object max = rangeList.get(1);
+            Object min = rangeList.getFirst();
+            Object max = rangeList.getLast();
             return matchCompare(actualValue, min) >= 0 && matchCompare(actualValue, max) <= 0;
         }
         return false;

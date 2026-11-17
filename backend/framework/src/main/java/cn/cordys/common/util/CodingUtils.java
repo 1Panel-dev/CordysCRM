@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.HexFormat;
 
 /**
  * 加密解密工具类，提供 MD5、BASE64 和 AES 加密解密操作。
@@ -22,8 +23,7 @@ import java.security.SecureRandom;
 public class CodingUtils {
 
     private static final String UTF_8 = "UTF-8";
-    private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
-            'e', 'f' };
+
     /**
      * 加密偏移量，AES 加密的初始化向量。
      */
@@ -59,16 +59,7 @@ public class CodingUtils {
             MessageDigest mdTemp = MessageDigest.getInstance("MD5");
             mdTemp.update(strTemp);
 
-            byte[] md = mdTemp.digest();
-            char[] str = new char[md.length * 2];
-            int k = 0;
-
-            for (byte byte0 : md) {
-                str[k++] = HEX_DIGITS[(byte0 >>> 4) & 0xf];
-                str[k++] = HEX_DIGITS[byte0 & 0xf];
-            }
-
-            return new String(str);
+            return HexFormat.of().formatHex(mdTemp.digest());
         } catch (Exception e) {
             throw new RuntimeException("MD5 encrypt error:", e);
         }
@@ -150,25 +141,17 @@ public class CodingUtils {
     /**
      * 生成一个新的AES密钥
      *
-     * @return 生成的AES密钥（Base64编码）
+     * @return 生成的AES密钥（小写十六进制编码）
      */
     public static String generateSecretKey() {
         try {
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
             keyGen.init(128);
             SecretKey secretKey = keyGen.generateKey();
-            return bytesToHex(secretKey.getEncoded());
+            return HexFormat.of().formatHex(secretKey.getEncoded());
         } catch (Exception e) {
             throw new RuntimeException("Generate AES secret key error:", e);
         }
-    }
-
-    private static String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
     }
 
     public static String generateAK() {
@@ -208,15 +191,10 @@ public class CodingUtils {
             byte[] digest = md.digest(str.getBytes(StandardCharsets.UTF_8));
 
             // 转换为十六进制字符串
-            char[] hexChars = new char[digest.length * 2];
-            int k = 0;
-            for (byte b : digest) {
-                hexChars[k++] = HEX_DIGITS[(b >>> 4) & 0xf];
-                hexChars[k++] = HEX_DIGITS[b & 0xf];
-            }
+            String hex = HexFormat.of().formatHex(digest);
 
             // 只使用前16个字符，平衡长度和唯一性
-            return new String(hexChars, 0, Math.min(16, hexChars.length));
+            return hex.substring(0, Math.min(16, hex.length()));
         } catch (NoSuchAlgorithmException e) {
             // 降级方案：使用多种哈希组合减少冲突
             return str.hashCode() + "-" + str.length();

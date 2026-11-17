@@ -428,7 +428,7 @@ public abstract class BaseExportService {
             }
         }
 
-        String parseVal = value instanceof List ? JSON.toJSONString(value) : value.toString();
+        String parseVal = value instanceof List<?> ? JSON.toJSONString(value) : value.toString();
         try {
             Object data = resolver.transformToValue(field, parseVal);
             if (cacheable && MapUtils.isNotEmpty(cacheMap) && data != null) {
@@ -447,7 +447,7 @@ public abstract class BaseExportService {
             return null;
         }
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-        String stringValue = value instanceof List ? JSON.toJSONString(value) : value.toString();
+        String stringValue = value instanceof List<?> ? JSON.toJSONString(value) : value.toString();
         try {
             return customFieldResolver.transformToValue(field, stringValue);
         } catch (Exception e) {

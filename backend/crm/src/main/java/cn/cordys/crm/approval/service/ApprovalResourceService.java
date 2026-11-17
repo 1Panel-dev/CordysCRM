@@ -1247,7 +1247,7 @@ public class ApprovalResourceService {
             List<BaseModuleFieldValue> fieldValues, String resourceId) {
         Pattern pattern = Pattern.compile("\\$\\{([^}]+)}");
         Matcher matcher = pattern.matcher(webHookConfig.getWebHookUrl());
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             String placeholder = matcher.group(1);
             Object value = getFieldValueRecursive(
