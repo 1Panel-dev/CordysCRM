@@ -54,7 +54,7 @@
         v-if="!props.detailTabResourceId"
         :key="props.formKey"
         v-model:active-tab="activeViewId"
-        :type="FormDesignKeyEnum.CUSTOMER"
+        :type="FormDesignKeyEnum.CUSTOM_FORM"
         :custom-form-id="props.formKey"
         :filter-config-list="customFormFilterConfigList"
         :custom-fields-config-list="customFieldsFilterConfig"

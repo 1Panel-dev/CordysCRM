@@ -105,6 +105,7 @@ export const {
   exportCustomFormSelected,
   getCustomFormCreatePermission,
   refreshStatistic,
+  getCustomFormDataTab,
 } = customFormApi;
 
 export const {

@@ -11,6 +11,7 @@ import {
   getContractTab,
   getCustomerContactTab,
   getCustomerTab,
+  getCustomFormDataTab,
   getFollowPlanTab,
   getFollowRecordTab,
   getInvoicedTab,
@@ -35,13 +36,14 @@ export type TabType =
   | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
   | FormDesignKeyEnum.INVOICE
-  | FormDesignKeyEnum.ORDER;
-export default function useHiddenTab(type?: TabType) {
+  | FormDesignKeyEnum.ORDER
+  | FormDesignKeyEnum.CUSTOM_FORM;
+export default function useHiddenTab(type?: TabType, customFormId?: string) {
   const { t } = useI18n();
 
   const tabApiMap: Record<
     Exclude<TabType, FormDesignKeyEnum.CLUE_POOL | FormDesignKeyEnum.CUSTOMER_OPEN_SEA>,
-    () => Promise<CustomerTabHidden>
+    (customFormId?: string) => Promise<CustomerTabHidden>
   > = {
     [FormDesignKeyEnum.CUSTOMER]: getCustomerTab,
     [FormDesignKeyEnum.CONTACT]: getCustomerContactTab,
@@ -55,6 +57,7 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationTab,
     [FormDesignKeyEnum.INVOICE]: getInvoicedTab,
     [FormDesignKeyEnum.ORDER]: getOrderTab,
+    [FormDesignKeyEnum.CUSTOM_FORM]: getCustomFormDataTab,
   };
 
   const allClueTabList: TabPaneProps[] = [
@@ -267,22 +270,19 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: allRecordTabList,
     [FormDesignKeyEnum.INVOICE]: allInvoiceTabList,
     [FormDesignKeyEnum.ORDER]: allOrderTabList,
+    [FormDesignKeyEnum.CUSTOM_FORM]: allCustomFormTabList,
   };
 
   const tabList = ref<TabPaneProps[]>([]);
 
-  async function initTab(customForm = false) {
+  async function initTab() {
     try {
-      if (customForm) {
-        tabList.value = allCustomFormTabList;
-        return;
-      }
       if (!type) return;
 
       const typeValue = type as keyof typeof tabApiMap;
       const tabApi = tabApiMap[typeValue];
       if (tabApi) {
-        const result = await tabApi();
+        const result = await tabApi(customFormId);
         const { all, dept } = result;
         tabList.value = tabListMap[typeValue].filter((e) => {
           if (e.name === 'ALL') return !!all;
@@ -295,6 +295,7 @@ export default function useHiddenTab(type?: TabType) {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      tabList.value = type ? tabListMap[type] : [];
     }
   }
 

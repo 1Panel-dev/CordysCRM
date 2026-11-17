@@ -32,6 +32,7 @@ import {
   GetCustomFormCreatePermissionUrl,
   RefreshStatisticUrl,
   CustomFormUserViewUrl,
+  GetCustomFormDataTabUrl,
 } from '@lib/shared/api/requrls/customForm';
 import type {
   CommonList,
@@ -62,6 +63,7 @@ import type {
 import type { SelectedUsersItem } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 import { ValidateInfo } from '@lib/shared/models/system/org';
+import type { CustomerTabHidden } from '@lib/shared/models/customer';
 
 export default function useCustomFormApi(CDR: CordysAxios) {
   function addCustomForm(data: CustomFormSaveRequest) {
@@ -231,6 +233,10 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.post({ url: CustomFormExportSelectedUrl, data });
   }
 
+  function getCustomFormDataTab(customFormId?: string) {
+    return CDR.get<CustomerTabHidden>({ url: `${GetCustomFormDataTabUrl}/${customFormId}` });
+  }
+
   return {
     addCustomForm,
     updateCustomForm,
@@ -271,5 +277,6 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     exportCustomFormSelected,
     getCustomFormCreatePermission,
     refreshStatistic,
+    getCustomFormDataTab,
   };
 }
