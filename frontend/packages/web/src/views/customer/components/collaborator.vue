@@ -309,7 +309,7 @@
       title: t('customer.validity'),
       key: 'expireTime',
       width: 160,
-      render: (row) => (row.expireTime ? new Date(row.expireTime).toLocaleString() : t('customer.longTerm')),
+      render: (row) => (row.expireTime ? dayjs(row.expireTime).format('YYYY-MM-DD HH:mm:ss') : t('customer.longTerm')),
     },
     {
       title: t('common.creator'),
