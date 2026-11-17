@@ -16,7 +16,6 @@ import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.domain.UserExtend;
 import cn.cordys.crm.system.dto.DepartmentSourceUserDTO;
-import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.MessageNotificationService;
 import cn.cordys.crm.system.service.OrganizationConfigService;
@@ -43,7 +42,6 @@ public class DataHandleUtils {
     private final DepartmentService departmentService;
     private final OrganizationUserService organizationUserService;
     private final OrganizationConfigService organizationConfigService;
-    private final MessageNotificationService messageNotificationService;
     private final ExtApprovalTaskMapper extApprovalTaskMapper;
     private final ApprovalActionService approvalActionService;
     private final List<Department> addDepartments = new ArrayList<>();
@@ -64,7 +62,6 @@ public class DataHandleUtils {
         this.departmentService = CommonBeanFactory.getBean(DepartmentService.class);
         this.organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
         this.organizationConfigService = CommonBeanFactory.getBean(OrganizationConfigService.class);
-        this.messageNotificationService = CommonBeanFactory.getBean(MessageNotificationService.class);
         this.extApprovalTaskMapper = CommonBeanFactory.getBean(ExtApprovalTaskMapper.class);
         this.approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
         this.orgId = orgId;
@@ -90,13 +87,11 @@ public class DataHandleUtils {
         organizationUserService.deleteUser(orgId);
         departmentService.deleteByOrgId(orgId);
 
-
         thirdDepartmentTree.forEach(wecomDept -> handleTreeAddData(wecomDept, operatorId));
 
         saveAllEntities();
         organizationConfigService.updateSyncFlag(orgId, type, true);
     }
-
 
     private void handleTreeAddData(ThirdDepartment thirdDepartment, String operatorId) {
         buildData(thirdDepartment, operatorId);
@@ -259,7 +254,7 @@ public class DataHandleUtils {
                             .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(),
                                     user.getResourceUserId())))
                     .filter(user -> !syncedResourceUserIds.contains(normalizeResourceId(user.getResourceUserId())))
-                    .collect(Collectors.toList());
+                    .toList();
             disableUserList.addAll(disableUser);
         });
         return disableUserList;

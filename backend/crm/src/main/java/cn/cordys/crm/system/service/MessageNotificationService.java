@@ -202,9 +202,7 @@ public class MessageNotificationService {
      * 处理初始化数据
      */
     public void modifyMessageNotification() {
-        /**
-         *删除旧通知
-         */
+        // 删除旧通知
         List<String> deleteEvents = List.of("CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED",
                 "CUSTOMER_FOLLOW_UP_PLAN_DUE",
                 "CLUE_FOLLOW_UP_PLAN_DUE",
@@ -603,9 +601,7 @@ public class MessageNotificationService {
             }
         }
 
-        /**
-         * 补充：默认初始化配置
-         */
+        // 补充默认初始化配置
         // ------客户-------
         // 初始化：编辑客户 通知
         addTaskAndConfig(List.of(TemplateEnum.CUSTOMER_UPDATE_TEXT.name()), eventNameMap,
@@ -879,8 +875,6 @@ public class MessageNotificationService {
                             buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
                                     "SELECT_MULTIPLE")));
         }
-
-
     }
 
     /**
@@ -919,13 +913,16 @@ public class MessageNotificationService {
     }
 
     /**
-     * 保存 初始化配置
+     * 保存任务及初始化配置
      *
-     * @param eventNameMap 任务名称
-     * @param event        通知事件类型(新建客户/更新客户...
-     * @param owners       接收人
-     * @param taskType     类型(客户/商机...
-     * @param triggerType  触发类型(动作/定时/字段
+     * @param templates     模板枚举名称
+     * @param eventNameMap   事件与任务名称的映射
+     * @param event         通知事件类型（新建客户、更新客户等）
+     * @param owners        接收人
+     * @param taskType      任务类型（客户、商机等）
+     * @param receiveMethod 接收方式
+     * @param triggerType   触发类型（动作、定时、字段）
+     * @param value         通知配置值
      */
     private void addTaskAndConfig(List<String> templates, Map<String, String> eventNameMap, String event,
             List<String> owners, String taskType,
@@ -957,18 +954,17 @@ public class MessageNotificationService {
         messageTaskConfig.setTriggerType(triggerType);
         messageTaskConfig.setValue(value);
         messageTaskConfigMapper.insert(messageTaskConfig);
-
-
     }
 
     /**
-     * 更新任务 && 保存任务配置
+     * 更新任务并保存任务配置
      *
-     * @param eventNameMap  任务名称
+     * @param templates     模板枚举名称
+     * @param eventNameMap   任务名称
      * @param messageTask   任务
      * @param owners        接收人
-     * @param receiveMethod 接收方式（/站内/邮件/企微..）
-     * @param triggerType   触发类型（动作/定时/条件)
+     * @param receiveMethod 接收方式（站内、邮件、企微等）
+     * @param triggerType   触发类型（动作、定时、条件）
      * @param value         通知配置值
      */
     private void updateTaskAndAddConfig(List<String> templates, Map<String, String> eventNameMap,
@@ -993,14 +989,15 @@ public class MessageNotificationService {
     }
 
     /**
-     * 更新任务 && 更新任务配置
+     * 更新任务及任务配置
      *
+     * @param templates     模板枚举名称
      * @param config        消息通知配置
-     * @param eventNameMap  任务名称
+     * @param eventNameMap   任务名称
      * @param messageTask   任务
      * @param owners        接收人
-     * @param receiveMethod 接收方式（/站内/邮件/企微..）
-     * @param triggerType   触发类型（动作/定时/条件)
+     * @param receiveMethod 接收方式（站内、邮件、企微等）
+     * @param triggerType   触发类型（动作、定时、条件）
      * @param value         通知配置值
      */
     private void updateTaskAndUpdateConfig(List<String> templates, MessageTaskConfig config,

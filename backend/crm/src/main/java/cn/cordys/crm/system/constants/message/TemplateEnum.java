@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 消息通知  接收人id枚举
+ * 消息通知模板枚举
  */
 @Getter
 public enum TemplateEnum {
@@ -47,7 +47,6 @@ public enum TemplateEnum {
     CLUE_DISTRIBUTED_TEXT("message.clue_distributed_text"),
     CLUE_RECEIVE_TEXT("message.clue_receive_text"),
     CLUE_APPROVAL_TEXT("message.clue_approval_text"),
-
 
     //商机
     BUSINESS_ADD_TEXT("message.business_add_text"),
@@ -125,7 +124,6 @@ public enum TemplateEnum {
     TemplateEnum(String description) {
         this.description = description;
     }
-
 
     public static TemplateEnum get(String scopeId) {
         return TEMPLATE_MAP.get(scopeId);
