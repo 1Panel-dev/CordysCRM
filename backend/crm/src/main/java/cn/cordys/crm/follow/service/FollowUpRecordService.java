@@ -241,7 +241,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
 
-    private void buildListData(List<FollowUpRecordListResponse> list, String orgId) {
+    public List<FollowUpRecordListResponse> buildListData(List<FollowUpRecordListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpRecordListResponse::getId).toList();
         Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService
                 .getResourceFieldMap(ids, true);
@@ -291,6 +291,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
                 recordListResponse.setDepartmentName(userResponse.getDepartmentName());
             }
         });
+        return list;
     }
 
     /**
