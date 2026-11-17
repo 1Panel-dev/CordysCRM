@@ -28,7 +28,9 @@
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
                c.follower, c.follow_time, c.reason_id, c.approval_status, c.approved, <include refid="freezeColumns"/>
                 <if test="dataPermission != null and dataPermission.visible">
-                    ,cc.collaboration_type
+                    <bind name="collaborationCurrentTime" value="@java.lang.System@currentTimeMillis()"/>
+                    ,IF(cc.expire_time IS NOT NULL AND cc.expire_time &lt;= #{collaborationCurrentTime},
+                        'COLLABORATION', cc.collaboration_type) AS collaboration_type
                 </if>
         from customer c
 
@@ -926,15 +928,14 @@
             <property name="mainTableAlias" value="c"/>
         </include>
     </select>
-    <!-- 共同跟进到期后按仅客户信息隔离，与协作配置的有效类型保持一致。 -->
+    <!-- 协作权限到期后按仅客户信息隔离，与协作配置的有效类型保持一致。 -->
     <sql id="isolatedCollaboration">
         <bind name="isolatedCollaborationType"
               value="@cn.cordys.common.permission.RelatedResourcePermissionService@isolatedCollaborationType()"/>
         <bind name="collaborationCurrentTime" value="@java.lang.System@currentTimeMillis()"/>
         (
             ${collaborationAlias}.collaboration_type = #{isolatedCollaborationType}
-            OR (${collaborationAlias}.collaboration_type = 'JOINT_FOLLOW'
-                AND ${collaborationAlias}.expire_time IS NOT NULL
+            OR (${collaborationAlias}.expire_time IS NOT NULL
                 AND ${collaborationAlias}.expire_time &lt;= #{collaborationCurrentTime})
         )
     </sql>

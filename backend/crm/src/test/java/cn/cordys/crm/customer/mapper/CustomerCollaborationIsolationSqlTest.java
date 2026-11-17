@@ -1,9 +1,12 @@
 package cn.cordys.crm.customer.mapper;
 
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -96,7 +99,10 @@ class CustomerCollaborationIsolationSqlTest {
         for (Expression condition : isolationConditions) {
             assertTrue(isolated(condition, "COLLABORATION", null, values));
             assertTrue(isolated(condition, "COLLABORATION", now + 1, values));
-            assertFalse(isolated(condition, "READ_ONLY", now - 1, values));
+            assertFalse(isolated(condition, "READ_ONLY", null, values));
+            assertFalse(isolated(condition, "READ_ONLY", now + 1, values));
+            assertTrue(isolated(condition, "READ_ONLY", now, values));
+            assertTrue(isolated(condition, "READ_ONLY", now - 1, values));
             assertFalse(isolated(condition, "JOINT_FOLLOW", null, values));
             assertFalse(isolated(condition, "JOINT_FOLLOW", now + 1, values));
             assertTrue(isolated(condition, "JOINT_FOLLOW", now, values));
@@ -109,6 +115,49 @@ class CustomerCollaborationIsolationSqlTest {
         assertTrue(sql.contains("privacy_customer.organization_id=?"));
         assertTrue(sql.contains("cc.user_id!=COALESCE(privacy_customer.owner,'')"));
         assertTrue(sql.contains("cc.user_idIN(" + alias + ".owner,?)"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "READ_ONLY", "JOINT_FOLLOW" })
+    void customerListReturnsEffectiveCollaborationType(String type) throws Exception {
+        CustomerPageRequest request = new CustomerPageRequest();
+        request.setTransition(false);
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setVisible(true);
+        Map<String, Object> parameters = Map.of("request", request, "orgId", "org-a", "userId", "member-a",
+                "dataPermission", scope);
+        long before = System.currentTimeMillis();
+        BoundSql boundSql = configuration.getMappedStatement(ExtCustomerMapper.class.getName() + ".list")
+                .getBoundSql(parameters);
+        long after = System.currentTimeMillis();
+        long now = assertInstanceOf(Long.class, boundSql.getAdditionalParameter("collaborationCurrentTime"));
+        assertTrue(before <= now && now <= after);
+        List<Object> values = boundSql.getParameterMappings().stream().map(mapping -> {
+            String property = mapping.getProperty();
+            return boundSql.hasAdditionalParameter(property) ? boundSql.getAdditionalParameter(property)
+                    : configuration.newMetaObject(parameters).getValue(property);
+        }).toList();
+        List<Function> effectiveTypes = new ArrayList<>();
+        new TablesNamesFinder<Void>() {
+            @Override
+            public <S> Void visit(Function function, S context) {
+                if ("IF".equalsIgnoreCase(function.getName()) && function.getParameters().size() == 3
+                        && function.getParameters().get(2) instanceof Column column
+                        && "collaboration_type".equals(column.getColumnName())) {
+                    effectiveTypes.add(function);
+                }
+                return super.visit(function, context);
+            }
+        }.getTables(CCJSqlParserUtil.parse(boundSql.getSql()));
+        assertEquals(1, effectiveTypes.size());
+        List<?> branches = effectiveTypes.getFirst().getParameters();
+        Expression expired = (Expression) branches.getFirst();
+        assertFalse(isolated(expired, type, null, values));
+        assertFalse(isolated(expired, type, now + 1, values));
+        assertTrue(isolated(expired, type, now, values));
+        assertTrue(isolated(expired, type, now - 1, values));
+        assertEquals("COLLABORATION", value((Expression) branches.get(1), type, now, values));
+        assertEquals(type, value((Expression) branches.get(2), type, now + 1, values));
     }
 
     private static boolean isolated(Expression expression, String type, Long expires, List<Object> values) {

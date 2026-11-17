@@ -98,7 +98,8 @@ class RelatedResourcePermissionServiceTest {
             "COLLABORATION,,true",
             "COLLABORATION,9223372036854775807,true",
             "READ_ONLY,,false",
-            "READ_ONLY,1,false",
+            "READ_ONLY,9223372036854775807,false",
+            "READ_ONLY,1,true",
             "JOINT_FOLLOW,,false",
             "JOINT_FOLLOW,9223372036854775807,false",
             "JOINT_FOLLOW,1,true"
@@ -149,7 +150,8 @@ class RelatedResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "READ_ONLY,,false", "JOINT_FOLLOW,,false", "JOINT_FOLLOW,1,true", "COLLABORATION,,true" })
+    @CsvSource({ "READ_ONLY,,false", "READ_ONLY,1,true", "JOINT_FOLLOW,,false", "JOINT_FOLLOW,1,true",
+            "COLLABORATION,,true" })
     void 协作标签数据范围及详情只读授权按有效类型判断(CustomerCollaborationType memberType, Long expiry,
             boolean selfOnly) {
         type = memberType;
