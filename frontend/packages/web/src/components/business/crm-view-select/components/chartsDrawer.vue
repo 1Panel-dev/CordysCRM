@@ -284,6 +284,7 @@
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: () => Promise.resolve([]),
     [FormDesignKeyEnum.INVOICE]: () => Promise.resolve([]),
     [FormDesignKeyEnum.ORDER]: () => Promise.resolve([]),
+    [FormDesignKeyEnum.CUSTOM_FORM]: () => Promise.resolve([]),
   };
   const loading = ref<boolean>(false);
   const expandNames = ref<string[]>(['1']);

@@ -18,6 +18,7 @@ export const GetCustomFormOptionsUrl = '/custom-form/option'; // 自定义表单
 export const GetCustomFormAllOptionsUrl = '/custom-form/option/all'; // 自定义表单选项列表(包含未开启的)
 export const GetCustomFormCreatePermissionUrl = '/custom-form/data/create-permission'; // 获取自定义表单创建权限
 export const RefreshStatisticUrl = '/field/statistic/refresh'; // 重新计算统计字段
+export const GetCustomFormDataTabUrl = '/custom-form/data/tab'; // 获取自定义表单数据tab
 
 // 自定义表单视图
 export const CustomFormUserViewUrl = '/custom-form/view';

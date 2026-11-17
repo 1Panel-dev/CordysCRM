@@ -212,10 +212,10 @@
 
   const sortData = computed(() => [...internalViews.value, ...customViews.value].filter((item) => item.enable));
 
-  const { tabList, initTab } = useHiddenTab(props.type);
+  const { tabList, initTab } = useHiddenTab(props.type, props.customFormId);
 
   onMounted(async () => {
-    await initTab(!!props.customFormId);
+    await initTab();
     await viewStore.loadInternalViews(viewType.value, tabList.value as TabPaneProps[], props.customFormId);
     await viewStore.loadCustomViews(viewType.value, props.customFormId);
     nextTick(async () => {
