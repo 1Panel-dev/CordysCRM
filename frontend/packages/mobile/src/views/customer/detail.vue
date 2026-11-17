@@ -62,7 +62,7 @@
           v-else-if="tab.name === 'relation'"
           ref="relationListRef"
           :source-id="sourceId"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || isCustomerReadOnlyCollaboration"
         />
         <collaborator v-else-if="tab.name === 'collaborator'" ref="collaboratorListRef" :source-id="sourceId" />
         <CrmChangeRecord
@@ -309,16 +309,20 @@
 
     return [...approvalStatusDescription, ...descriptions.value];
   });
-  const isReadOnlyCollaboration = computed(() => collaborationType.value === 'READ_ONLY');
+  const isCustomerReadOnlyCollaboration = computed(() =>
+    ['READ_ONLY', 'COLLABORATION'].includes(collaborationType.value || '')
+  );
   const showEditButton = computed(
-    () => !isReadOnlyCollaboration.value && hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE'])
+    () =>
+      !isCustomerReadOnlyCollaboration.value &&
+      hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE'])
   );
   const operationActions = computed(() =>
-    isReadOnlyCollaboration.value ? [] : resolveRowActions(detail.value, actions.value)
+    isCustomerReadOnlyCollaboration.value ? [] : resolveRowActions(detail.value, actions.value)
   );
   const showDetailActions = computed(() => Boolean(showEditButton.value || operationActions.value.length));
   const showApprovalActions = computed(
-    () => !isReadOnlyCollaboration.value && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
+    () => !isCustomerReadOnlyCollaboration.value && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
   );
   const showFooterActions = computed(
     () => ['info', 'approval'].includes(activeTab.value) && (showDetailActions.value || showApprovalActions.value)

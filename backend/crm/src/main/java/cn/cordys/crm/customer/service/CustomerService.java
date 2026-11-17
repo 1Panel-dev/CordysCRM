@@ -409,6 +409,14 @@ public class CustomerService implements ApprovalResourceHandler {
         if (getResponse == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer.not.exist"));
         }
+        List<CustomerCollaboration> collaborations = customerCollaborationService
+                .selectByCustomerIdAndUserId(getResponse.getId(), userId);
+        // 协作读取和审批查看均需返回有效协作类型，已有独立客户写权限时不降权。
+        if (CollectionUtils.isNotEmpty(collaborations) && !Strings.CS.equals(userId, getResponse.getOwner())
+                && (StringUtils.isBlank(getResponse.getOwner()) || !dataScopeService.hasDataPermission(
+                userId, orgId, getResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE))) {
+            getResponse.setCollaborationType(collaborations.getFirst().getCollaborationType());
+        }
         // 待办审批人和有效评论@用户可查看对应资源详情。
         if (resourcePermissionService.hasApprovalViewPermission(id, userId, orgId, FormKey.CUSTOMER.getKey())) {
             return getResponse;
@@ -417,14 +425,8 @@ public class CustomerService implements ApprovalResourceHandler {
                 PermissionConstants.CUSTOMER_MANAGEMENT_READ)
                 || relatedResourcePermissionService.hasRelatedReadPermission(
                 FormKey.CUSTOMER.getKey(), id, userId, orgId);
-        if (!hasPermission) {
-            List<CustomerCollaboration> collaborations = customerCollaborationService
-                    .selectByCustomerIdAndUserId(getResponse.getId(), userId);
-            if (CollectionUtils.isEmpty(collaborations)) {
-                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-            } else {
-                getResponse.setCollaborationType(collaborations.getFirst().getCollaborationType());
-            }
+        if (!hasPermission && CollectionUtils.isEmpty(collaborations)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
         return getResponse;

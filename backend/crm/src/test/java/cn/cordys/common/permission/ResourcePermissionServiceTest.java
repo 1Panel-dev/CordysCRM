@@ -24,6 +24,7 @@ import cn.cordys.crm.clue.service.ClueResourceAccessContextProvider;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.customer.controller.CustomerContactController;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactResourceAccessContextProvider;
 import cn.cordys.crm.customer.service.CustomerResourceAccessContextProvider;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockMakers;
@@ -365,6 +367,54 @@ class ResourcePermissionServiceTest {
             assertDoesNotThrow(
                     () -> service.checkBatchResourcePermission("permission", List.of("id"), "", "sales", "org"));
         });
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "COLLABORATION,,false", "READ_ONLY,,false", "JOINT_FOLLOW,1,false",
+            "READ_ONLY,1,false", "JOINT_FOLLOW,,true" })
+    void customerCollaborationOnlyAddsThePermittedCustomerOperations(String type, Long expireTime,
+            boolean canUpdate) {
+        CustomerResourceAccessContextProvider provider = new CustomerResourceAccessContextProvider();
+        @SuppressWarnings("unchecked")
+        BaseMapper<Customer> customerMapper = mock(BaseMapper.class);
+        @SuppressWarnings("unchecked")
+        BaseMapper<CustomerCollaboration> collaborationMapper = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(provider, "customerMapper", customerMapper);
+        ReflectionTestUtils.setField(provider, "collaborationMapper", collaborationMapper);
+        register(List.of(provider));
+        Customer customer = new Customer();
+        customer.setId("customer-id");
+        customer.setOrganizationId("org");
+        customer.setOwner("other-sales");
+        when(customerMapper.selectByPrimaryKey(customer.getId())).thenReturn(customer);
+        CustomerCollaboration member = new CustomerCollaboration();
+        member.setCollaborationType(type);
+        member.setExpireTime(expireTime);
+        when(collaborationMapper.countByExample(any(CustomerCollaboration.class))).thenReturn(1L);
+        when(collaborationMapper.select(any(CustomerCollaboration.class))).thenReturn(List.of(member));
+        try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
+            for (String permission : List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE,
+                    PermissionConstants.CUSTOMER_MANAGEMENT_MERGE)) {
+                roles.when(() -> PermissionUtils.hasPermission(permission)).thenReturn(true);
+                DeptDataPermissionDTO self = new DeptDataPermissionDTO();
+                self.setSelf(true);
+                doReturn(self).when(dataScope).getDeptDataPermission("sales", "org", permission);
+                Runnable check = () -> service.checkResourcePermissionWithoutApprovalTask(permission, customer.getId(),
+                        FormKeyConstants.CUSTOMER, "sales", "org");
+                if (PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)
+                        || (canUpdate && PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE.equals(permission))) {
+                    assertDoesNotThrow(check::run);
+                } else {
+                    assertThrows(GenericException.class, check::run);
+                }
+                DeptDataPermissionDTO all = new DeptDataPermissionDTO();
+                all.setAll(true);
+                doReturn(all).when(dataScope).getDeptDataPermission("sales", "org", permission);
+                assertDoesNotThrow(check::run);
+            }
+        }
     }
 
     @ParameterizedTest

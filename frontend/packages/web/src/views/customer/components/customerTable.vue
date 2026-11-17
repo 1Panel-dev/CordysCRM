@@ -337,6 +337,8 @@
   } = useApprovalOperation<Record<string, any>>({
     formType: FormDesignKeyEnum.CUSTOMER,
     dataActionMap: () => customerDataActionMap.value,
+    specialActionFilter: (row, actionKeys) =>
+      row.collaborationType === 'COLLABORATION' ? actionKeys.filter((key) => key === 'followUp') : actionKeys,
   });
   const batchEditApprovalTip = computed(() =>
     getApprovalActionTip(['CUSTOMER_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
@@ -588,7 +590,7 @@
     detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     disabledSelection: (row: any) => {
-      return row.collaborationType === 'READ_ONLY';
+      return ['READ_ONLY', 'COLLABORATION'].includes(row.collaborationType);
     },
     operationColumn: props.readonly
       ? undefined
