@@ -45,6 +45,7 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.SheetKey;
@@ -674,8 +675,9 @@ public class ContractPaymentRecordService {
      * @param deptDataPermission 数据权限
      * @return 汇总结果
      */
-    public CustomerPaymentRecordStatisticResponse sumCustomerPaymentAmount(ContractPaymentRecordPageRequest request,
-            String userId, String organizationId, DeptDataPermissionDTO deptDataPermission) {
+    public CustomerPaymentRecordStatisticResponse sumCustomerPaymentAmount(
+            CustomerContractPaymentRecordStatisticRequest request, String userId, String organizationId,
+            DeptDataPermissionDTO deptDataPermission) {
         return extContractPaymentRecordMapper.sumCustomerRecordAmount(request, userId, organizationId,
                 deptDataPermission);
     }

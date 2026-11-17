@@ -7,6 +7,7 @@ import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public interface ExtContractPaymentPlanMapper extends StatisticSqlMapper {
             @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(
-            @Param("request") ContractPaymentPlanPageRequest request, @Param("userId") String userId,
+            @Param("request") CustomerContractPaymentPlanStatisticRequest request, @Param("userId") String userId,
             @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<ContractPaymentPlan> selectByTimestamp(@Param("timestamp") long timestamp,

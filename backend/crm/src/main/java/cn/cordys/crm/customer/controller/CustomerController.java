@@ -44,6 +44,7 @@ import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractInvoicePageRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPageRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanPageRequest;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.customer.dto.request.CustomerExportRequest;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
@@ -395,7 +396,7 @@ public class CustomerController {
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#request.customerId}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "客户详情-合同回款计划列表统计")
     public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(
-            @Validated @RequestBody CustomerContractPaymentPlanPageRequest request) {
+            @Validated @RequestBody CustomerContractPaymentPlanStatisticRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(), request.getViewId(),

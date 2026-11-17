@@ -7,8 +7,8 @@ import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
-import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
-import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanPageRequest;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
@@ -110,13 +110,16 @@ class CustomerBusinessTabSqlTest {
 
     @Test
     void customerPaymentStatisticsUseListFilters() {
-        CustomerContractPaymentPlanPageRequest planRequest = new CustomerContractPaymentPlanPageRequest();
+        CustomerContractPaymentPlanStatisticRequest planRequest = new CustomerContractPaymentPlanStatisticRequest();
         planRequest.setCustomerId("customer-a");
+        planRequest.setContractId("contract-a");
         planRequest.setFilters(List.of(filter("planStatus", "COMPLETED")));
-        assertTrue(statisticSql(ExtContractPaymentPlanMapper.class, "calculateCustomerPaymentPlanStatistic", planRequest)
-                .contains("cpp.plan_status=?"));
+        String planSql = statisticSql(ExtContractPaymentPlanMapper.class, "calculateCustomerPaymentPlanStatistic",
+                planRequest);
+        assertTrue(planSql.contains("cpp.contract_id=?"));
+        assertTrue(planSql.contains("cpp.plan_status=?"));
 
-        ContractPaymentRecordPageRequest recordRequest = new ContractPaymentRecordPageRequest();
+        CustomerContractPaymentRecordStatisticRequest recordRequest = new CustomerContractPaymentRecordStatisticRequest();
         recordRequest.setCustomerId("customer-a");
         recordRequest.setFilters(List.of(filter("recordAmount", "100")));
         assertTrue(statisticSql(ExtContractPaymentRecordMapper.class, "sumCustomerRecordAmount", recordRequest)

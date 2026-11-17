@@ -9,6 +9,7 @@ import cn.cordys.crm.contract.dto.request.ContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -54,7 +55,7 @@ public interface ExtContractPaymentRecordMapper extends StatisticSqlMapper {
      * @return 汇总结果
      */
     CustomerPaymentRecordStatisticResponse sumCustomerRecordAmount(
-            @Param("request") ContractPaymentRecordPageRequest request, @Param("userId") String userId,
+            @Param("request") CustomerContractPaymentRecordStatisticRequest request, @Param("userId") String userId,
             @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     ContractPaymentRecordStatisticResponse searchStatistic(
