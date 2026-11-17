@@ -1,6 +1,7 @@
 package cn.cordys.crm.form.controller;
 
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.base.BaseTest;
@@ -176,6 +177,18 @@ public class CustomFormDataControllerTests extends BaseTest {
 
     @Test
     @Order(5)
+    void testTab() throws Exception {
+        ensureFormExists();
+
+        MvcResult mvcResult = this.requestGetWithOkAndReturn("tab/{0}", testFormId);
+        ResourceTabEnableDTO result = getResultData(mvcResult, ResourceTabEnableDTO.class);
+        assertNotNull(result);
+        assertEquals(true, result.getAll());
+        assertEquals(true, result.getDept());
+    }
+
+    @Test
+    @Order(6)
     void testUpdate() throws Exception {
         assertNotNull(createdDataId, "数据应已创建");
 

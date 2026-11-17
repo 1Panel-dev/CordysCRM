@@ -536,9 +536,18 @@ class CustomFormDataServiceTest {
                 CustomFormRoleKey.VIEW_ALL, "user-1", "org-1");
         assertEquals(List.of("sales", "east"), departmentScope.departmentIds());
 
-        assertThrows(GenericException.class,
-                () -> service.resolveViewScope(InternalUserView.ALL.name(), CustomFormRoleKey.MANAGE_OWN,
-                        "user-1", "org-1"));
+        var ownAllScope = service.resolveViewScope(InternalUserView.ALL.name(), CustomFormRoleKey.MANAGE_OWN,
+                "user-1", "org-1");
+        assertTrue(ownAllScope.ownerOnly());
+    }
+
+    @ParameterizedTest
+    @EnumSource(CustomFormRoleKey.class)
+    void tabEnableConfigUsesCustomFormRoleScope(CustomFormRoleKey scope) {
+        var result = serviceWithPermission(scope).getTabEnableConfig("form-1", "user-1", "org-1");
+
+        assertEquals(scope != CustomFormRoleKey.MANAGE_OWN, result.getAll());
+        assertEquals(scope != CustomFormRoleKey.MANAGE_OWN, result.getDept());
     }
 
     private Object valueOf(
