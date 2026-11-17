@@ -20,7 +20,7 @@ import cn.cordys.crm.contract.service.ContractInvoiceService;
 import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.contract.service.ContractService;
-import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanPageRequest;
+import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.service.OrderService;
@@ -203,7 +203,7 @@ class CustomerBusinessTabPermissionTest {
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
         scope.setAll(true);
         when(related.getCustomerTabDataPermission("customer-a", "user-a", "org-a")).thenReturn(scope);
-        CustomerContractPaymentPlanPageRequest request = new CustomerContractPaymentPlanPageRequest();
+        CustomerContractPaymentPlanStatisticRequest request = new CustomerContractPaymentPlanStatisticRequest();
         request.setCustomerId("customer-a");
         request.setKeyword("计划");
         request.setFilters(List.of(filter("planStatus", "COMPLETED")));
