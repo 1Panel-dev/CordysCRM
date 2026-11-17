@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.condition.CombineSearch;
@@ -15,6 +16,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.NodeSortUtils;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.UserViewConditionValueType;
 import cn.cordys.crm.system.domain.UserView;
@@ -33,6 +35,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +51,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class UserViewService {
 
+    private static final String APPROVAL_STATUS = "approvalStatus";
+
     @Resource
     private BaseMapper<UserView> userViewMapper;
     @Resource
@@ -60,6 +65,9 @@ public class UserViewService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    @Lazy
+    private ApprovalFlowService approvalFlowService;
 
     /**
      * 添加用户视图
@@ -157,6 +165,15 @@ public class UserViewService {
     public UserView update(UserViewUpdateRequest request, String userId, String orgId) {
         checkView(userId, request.getId(), orgId);
 
+        List<FilterCondition> conditions = request.getConditions();
+        List<FilterCondition> storedConditions = getStoredFilterConditions(request.getId());
+        if (isApprovalConditionDisabled(request.getId(), storedConditions)) {
+            // 关闭期间隐藏的审批条件仍需保留，重新开启后继续生效。
+            conditions.removeIf(condition -> APPROVAL_STATUS.equals(condition.getName()));
+            storedConditions.stream().filter(condition -> APPROVAL_STATUS.equals(condition.getName()))
+                    .forEach(conditions::add);
+        }
+
         UserView userView = new UserView();
         userView.setId(request.getId());
         userView.setName(request.getName());
@@ -167,7 +184,7 @@ public class UserViewService {
         // 先删除
         deleteConditionsByViewId(request.getId());
         // 再新增
-        addUserViewConditions(request.getConditions(), request.getId(), userId);
+        addUserViewConditions(conditions, request.getId(), userId);
 
         return userView;
     }
@@ -277,6 +294,33 @@ public class UserViewService {
     }
 
     public List<FilterCondition> getFilterConditions(String viewId) {
+        List<FilterCondition> conditions = getStoredFilterConditions(viewId);
+        if (isApprovalConditionDisabled(viewId, conditions)) {
+            return conditions.stream().filter(condition -> !APPROVAL_STATUS.equals(condition.getName())).toList();
+        }
+        return conditions;
+    }
+
+    private boolean isApprovalConditionDisabled(String viewId, List<FilterCondition> conditions) {
+        if (conditions.stream().noneMatch(condition -> APPROVAL_STATUS.equals(condition.getName()))) {
+            return false;
+        }
+        UserView view = userViewMapper.selectByPrimaryKey(viewId);
+        String resourceType = view.getResourceType();
+        String formKey = switch (resourceType) {
+        case "CUSTOMER_POOL" -> FormKey.CUSTOMER.getKey();
+        case "CLUE_POOL" -> FormKey.CLUE.getKey();
+        case "OPPORTUNITY_QUOTATION" -> FormKey.QUOTATION.getKey();
+        case "CONTRACT_INVOICE" -> FormKey.INVOICE.getKey();
+        case "CUSTOMER_CONTACT" -> FormKey.CONTACT.getKey();
+        default -> Arrays.stream(FormKey.values())
+                .filter(key -> Strings.CI.equalsAny(resourceType, key.name(), key.getKey()))
+                .map(FormKey::getKey).findFirst().orElse(resourceType);
+        };
+        return approvalFlowService.getEnabledFlow(formKey, view.getOrganizationId()) == null;
+    }
+
+    private List<FilterCondition> getStoredFilterConditions(String viewId) {
         List<UserViewCondition> viewConditions = extUserViewConditionMapper.getViewConditions(viewId);
         return viewConditions.stream().map(condition -> {
             FilterCondition filterCondition = BeanUtils.copyBean(new FilterCondition(), condition);
