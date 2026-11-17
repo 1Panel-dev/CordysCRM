@@ -82,6 +82,7 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
   import {
@@ -93,9 +94,11 @@
   } from '@lib/shared/models/system/role';
 
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules';
+  import useAppStore from '@/store/modules/app';
   import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
+  const appStore = useAppStore();
   const licenseStore = useLicenseStore();
 
   const props = defineProps<{
@@ -172,10 +175,45 @@
     );
   }
 
+  const permissionModuleMap: Partial<Record<string, ModuleConfigEnum>> = {
+    SYSTEM: ModuleConfigEnum.SYSTEM_SETTINGS,
+    CUSTOMER_MANAGEMENT: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    FOLLOW_MANAGEMENT: ModuleConfigEnum.FOLLOW_MANAGEMENT,
+    CLUE_MANAGEMENT: ModuleConfigEnum.CLUE_MANAGEMENT,
+    OPPORTUNITY_MANAGEMENT: ModuleConfigEnum.BUSINESS_MANAGEMENT,
+    PRODUCT_MANAGEMENT: ModuleConfigEnum.PRODUCT_MANAGEMENT,
+    DASHBOARD_MANAGEMENT: ModuleConfigEnum.DASHBOARD,
+    AGENT_MANAGEMENT: ModuleConfigEnum.AGENT,
+    TENDER_MANAGEMENT: ModuleConfigEnum.TENDER,
+    CONTRACT_MANAGEMENT: ModuleConfigEnum.CONTRACT,
+    ORDER_MANAGEMENT: ModuleConfigEnum.ORDER,
+    CUSTOM_FORM: ModuleConfigEnum.CUSTOM_FORM,
+  };
+
+  function sortPermissionModules(permissions: PermissionTreeNode[]) {
+    const moduleOrder = new Map(appStore.moduleConfigList.map((item, index) => [item.moduleKey, index]));
+    const personalInfoOrder = Number.MAX_SAFE_INTEGER;
+
+    return permissions
+      .map((item, index) => ({ item, index }))
+      .sort((a, b) => {
+        const getOrder = ({ id }: PermissionTreeNode) => {
+          if (id === 'PERSONAL_INFO') {
+            return personalInfoOrder;
+          }
+          const moduleKey = permissionModuleMap[id];
+          return moduleKey === undefined ? personalInfoOrder - 1 : moduleOrder.get(moduleKey) ?? personalInfoOrder - 1;
+        };
+
+        return getOrder(a.item) - getOrder(b.item) || a.index - b.index;
+      })
+      .map(({ item }) => item);
+  }
+
   function transferData(permissions: PermissionTreeNode[], isNew = false) {
     const isEnterprise = licenseStore.hasLicense();
 
-    permissions.forEach((item) => {
+    sortPermissionModules(permissions).forEach((item) => {
       if (!isEnterprise && item.license) return;
 
       const children = isEnterprise ? item.children || [] : item.children?.filter((child) => !child.license) || [];

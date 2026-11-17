@@ -24,6 +24,12 @@ export enum ClueRouteEnum {
   CLUE_MANAGEMENT_POOL = 'leadManagementPool',
 }
 
+export enum FollowRouteEnum {
+  FOLLOW_MANAGEMENT = 'followManagement',
+  FOLLOW_MANAGEMENT_RECORD = 'followManagementRecord',
+  FOLLOW_MANAGEMENT_PLAN = 'followManagementPlan',
+}
+
 export enum CustomerRouteEnum {
   CUSTOMER = 'account',
   CUSTOMER_INDEX = 'accountIndex',
@@ -97,6 +103,7 @@ export const AppRouteEnum = {
   ...SystemRouteEnum,
   ...OpportunityRouteEnum,
   ...ClueRouteEnum,
+  ...FollowRouteEnum,
   ...CustomerRouteEnum,
   ...ProductRouteEnum,
   ...PersonalRouteEnum,

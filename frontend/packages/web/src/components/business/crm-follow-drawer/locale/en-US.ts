@@ -1,4 +1,8 @@
 export default {
+  'eventDrawer.record': 'Record',
+  'eventDrawer.plan': 'Plan',
+  'eventDrawer.exportRecord': 'Export record',
+  'eventDrawer.exportPlan': 'Export plan',
   'eventDrawer.record.all': 'All Records',
   'eventDrawer.record.my': 'My Records',
   'eventDrawer.record.depart': 'Department Records',

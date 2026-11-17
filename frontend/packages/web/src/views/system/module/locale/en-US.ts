@@ -1,6 +1,7 @@
 export default {
   'module.workbenchHome': 'Home',
   'module.customerManagement': 'Account',
+  'module.followManagement': 'Follow-up',
   'module.clueManagement': 'Lead',
   'module.businessManagement': 'Opportunity',
   'module.dataManagement': 'Data',

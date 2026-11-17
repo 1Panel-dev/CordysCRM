@@ -170,6 +170,10 @@
     exportCustomerSelected,
     exportCustomFormAll,
     exportCustomFormSelected,
+    exportFollowPlanAll,
+    exportFollowPlanSelected,
+    exportFollowRecordAll,
+    exportFollowRecordSelected,
     exportInvoicedAll,
     exportInvoicedSelected,
     exportOpportunityAll,
@@ -205,6 +209,8 @@
       | 'businessTitle'
       | 'invoice'
       | 'order'
+      | 'followRecord'
+      | 'followPlan'
       | 'customForm';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
@@ -239,6 +245,8 @@
     businessTitle: t('module.businessTitle'),
     invoice: t('module.invoice'),
     order: t('order.all'),
+    followRecord: t('crmFollowRecord.followRecord'),
+    followPlan: t('common.plan'),
   };
 
   const loading = ref<boolean>(false);
@@ -369,6 +377,8 @@
     invoice: exportInvoicedAll,
     order: exportOrderAll,
     customForm: exportCustomFormAll,
+    followRecord: exportFollowRecordAll,
+    followPlan: exportFollowPlanAll,
   };
 
   const exportSelectedApiMap = {
@@ -387,6 +397,8 @@
     invoice: exportInvoicedSelected,
     order: exportOrderSelected,
     customForm: exportCustomFormSelected,
+    followRecord: exportFollowRecordSelected,
+    followPlan: exportFollowPlanSelected,
   };
 
   function confirmHandler() {

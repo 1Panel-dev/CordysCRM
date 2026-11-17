@@ -336,7 +336,7 @@ export default {
   'common.showFields': '显示字段',
   'common.exportTaskTip': '【左下角头像 > 我的导出】查看导出任务进度',
   'common.dashboard': '仪表板',
-  'common.convertPlanToRecord': '计划转记录',
+  'common.convertPlanToRecord': '转记录',
   'common.hasConvertToRecord': '已转记录',
   'common.notAllowForwardSlash': '不允许输入 /',
   'common.conversionSuccessful': '转换成功',

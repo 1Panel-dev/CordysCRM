@@ -263,9 +263,18 @@
         : []),
     ];
     if (collaborationType.value) {
-      return fullTabList.filter((item) => item.name !== 'collaborator');
+      return fullTabList.filter(
+        (item) =>
+          item.name !== 'collaborator' &&
+          (item.name !== 'record' || hasAnyPermission(['FOLLOW_RECORD:READ'])) &&
+          (item.name !== 'plan' || hasAnyPermission(['FOLLOW_PLAN:READ']))
+      );
     }
-    return fullTabList;
+    return fullTabList.filter(
+      (item) =>
+        (item.name !== 'record' || hasAnyPermission(['FOLLOW_RECORD:READ'])) &&
+        (item.name !== 'plan' || hasAnyPermission(['FOLLOW_PLAN:READ']))
+    );
   });
 
   const actions = ref<CrmActionButtonsItem[]>([

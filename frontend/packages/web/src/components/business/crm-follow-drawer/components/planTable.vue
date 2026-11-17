@@ -2,20 +2,39 @@
   <CrmCard hide-footer no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
+      v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       class="crm-plan-table"
-      :columns="tableColumns"
       :not-show-table="activeShowType === 'timeline'"
       :hiddenBackToTop="activeShowType === 'timeline'"
-      :action-config="{ baseAction: [] }"
+      :action-config="props.detailTabResourceId ? { baseAction: [] } : actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="handleSorterChange"
       @filter-change="handleFilterChange"
+      @batch-action="handleBatchAction"
     >
       <template #actionLeft>
-        <div class="flex gap-[12px]">
-          <CrmTab v-model:active-tab="activeStatus" no-content :tab-list="statusTabList" type="segment" />
+        <div class="flex items-center gap-[12px]">
+          <n-button v-if="canCreate" type="primary" @click="handleAdd">
+            {{ t('common.create') }}
+          </n-button>
+          <CrmImportButton
+            v-if="!props.detailTabResourceId && !props.readonly && hasAnyPermission(['FOLLOW_PLAN:IMPORT'])"
+            :api-type="FormDesignKeyEnum.FOLLOW_PLAN"
+            :title="t('eventDrawer.plan')"
+            @import-success="searchData"
+          />
+          <n-button
+            v-if="!props.detailTabResourceId && hasAnyPermission(['FOLLOW_PLAN:EXPORT'])"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary"
+            :disabled="propsRes.data.length === 0"
+            @click="handleExportAllClick"
+          >
+            {{ t('eventDrawer.exportPlan') }}
+          </n-button>
         </div>
       </template>
       <template #actionRight>
@@ -74,9 +93,7 @@
                   {{ t('common.detail') }}
                 </n-button>
                 <n-button
-                  v-if="
-                    isOwner(item) && [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) && !item.converted
-                  "
+                  v-if="canEdit && [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) && !item.converted"
                   type="primary"
                   class="text-btn-primary"
                   quaternary
@@ -84,17 +101,11 @@
                 >
                   {{ t('common.convertPlanToRecord') }}
                 </n-button>
-                <n-button
-                  v-if="isOwner(item)"
-                  type="primary"
-                  class="text-btn-primary"
-                  quaternary
-                  @click="handleEdit(item)"
-                >
+                <n-button v-if="canEdit" type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
                   {{ t('common.edit') }}
                 </n-button>
                 <n-button
-                  v-if="isOwner(item)"
+                  v-if="canDelete"
                   type="error"
                   class="text-btn-error"
                   quaternary
@@ -137,25 +148,70 @@
       :source-name="sourceName"
       :refresh-key="refreshKey"
       :detail="activeItem"
-      :readonly="!isOwner(activeItem)"
+      :readonly="!canEdit"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
       @convert="(detail) => handleConvert(detail)"
       @detail-init="handleDetailInit"
       @count-change="handleCommentCountChange"
     />
+    <CustomerOverviewDrawer
+      v-model:show="showCustomerDrawer"
+      :source-id="customerId"
+      @refresh="handleRefresh"
+      @saved="handleRefresh"
+      @deleted="handleRefresh"
+    />
+    <OptOverviewDrawer
+      v-model:show="showOpportunityDrawer"
+      :detail="activeOpportunity"
+      @refresh="handleRefresh"
+      @remove="handleRefresh"
+      @open-customer-drawer="handleShowCustomerDrawer"
+    />
+    <ClueOverviewDrawer
+      v-model:show="showClueDrawer"
+      :detail="activeClue"
+      @refresh="handleRefresh"
+      @saved="handleRefresh"
+      @remove="handleRefresh"
+      @open-customer-drawer="handleShowCustomerDrawer"
+    />
+    <OpenSeaOverviewDrawer
+      v-model:show="showOpenSeaDrawer"
+      :source-id="customerId"
+      :pool-id="poolId"
+      :hidden-columns="[]"
+      @change="handleRefresh"
+    />
+    <CluePoolOverviewDrawer
+      v-model:show="showCluePoolDrawer"
+      :detail="activeCluePool"
+      :pool-id="poolId"
+      :hidden-columns="[]"
+      @refresh="handleRefresh"
+      @remove="handleRefresh"
+    />
   </CrmCard>
+  <CrmTableExportModal
+    v-model:show="showExportModal"
+    :params="exportParams"
+    :export-columns="exportColumns"
+    :is-export-all="isExportAll"
+    type="followPlan"
+    @create-success="handleExportCreateSuccess"
+  />
 </template>
 
 <script setup lang="ts">
-  import { NButton, NSpin, NTabPane, NTabs, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NSpin, NTabPane, NTabs, useMessage } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
-  import type { FilterConditionItem, SortParams } from '@lib/shared/models/common';
+  import type { ExportTableColumnItem, FilterConditionItem, SortParams } from '@lib/shared/models/common';
   import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
@@ -164,18 +220,25 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
+  import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import { descriptionList, statusTabList } from '@/components/business/crm-follow-detail/config';
+  import { descriptionList } from '@/components/business/crm-follow-detail/config';
   import FollowRecord from '@/components/business/crm-follow-detail/followRecord.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import { getFormListApiMap } from '@/components/business/crm-form-create/config';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detailDrawer.vue';
+  import ClueOverviewDrawer from '@/views/clueManagement/clue/components/clueOverviewDrawer.vue';
+  import CluePoolOverviewDrawer from '@/views/clueManagement/cluePool/components/cluePoolOverviewDrawer.vue';
+  import CustomerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import OpenSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
+  import OptOverviewDrawer from '@/views/opportunity/components/optOverviewDrawer.vue';
 
   import { deleteFollowPlan, updateFollowPlanStatus } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
@@ -183,8 +246,8 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
-  import useOpenDetailPage from '@/hooks/useOpenDetailPage';
-  import useUserStore from '@/store/modules/user';
+  import { getExportColumns } from '@/utils/export';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     readonly?: boolean;
@@ -196,16 +259,25 @@
   }>();
 
   const { t } = useI18n();
-  const userStore = useUserStore();
   const Message = useMessage();
   const { setItem, getItem } = useLocalForage();
-  const { goDetail } = useOpenDetailPage();
   const { openModal } = useModal();
+
+  const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const isExportAll = ref(false);
+  const actionConfig: BatchActionConfig = {
+    baseAction: [
+      {
+        label: t('common.exportChecked'),
+        key: 'exportChecked',
+        permission: ['FOLLOW_PLAN:EXPORT'],
+      },
+    ],
+  };
 
   const activeTab = ref('');
 
   const keyword = ref('');
-  const activeStatus = ref<CustomerFollowPlanStatusEnum>(CustomerFollowPlanStatusEnum.ALL);
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
@@ -265,6 +337,10 @@
   ];
 
   const tableRefreshId = ref(0);
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
 
   async function changePlanStatus(item: any) {
     try {
@@ -285,7 +361,54 @@
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
   const activeItem = ref<any>();
-  const isOwner = (item?: any) => item?.owner === userStore.userInfo.id;
+  const canRead = computed(() => hasAnyPermission(['FOLLOW_PLAN:READ']));
+  const canManage = (permission: string) => !props.readonly && canRead.value && hasAnyPermission([permission]);
+  const canCreate = computed(() => canManage('FOLLOW_PLAN:ADD'));
+  const canEdit = computed(() => canManage('FOLLOW_PLAN:UPDATE'));
+  const canDelete = computed(() => canManage('FOLLOW_PLAN:DELETE'));
+
+  const showCustomerDrawer = ref(false);
+  const showOpportunityDrawer = ref(false);
+  const showClueDrawer = ref(false);
+  const showOpenSeaDrawer = ref(false);
+  const showCluePoolDrawer = ref(false);
+  const customerId = ref('');
+  const poolId = ref('');
+  const activeOpportunity = ref();
+  const activeClue = ref();
+  const activeCluePool = ref();
+  function handleShowCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    customerId.value = params.customerId;
+    if (params.inCustomerPool) {
+      poolId.value = params.poolId;
+      showOpenSeaDrawer.value = true;
+    } else {
+      showCustomerDrawer.value = true;
+    }
+  }
+  function openRelatedDrawer(row: any) {
+    if (row.resourceType === 'CLUE') {
+      if (row.poolId) {
+        poolId.value = row.poolId;
+        activeCluePool.value = { id: row.clueId, name: row.clueName };
+        showCluePoolDrawer.value = true;
+      } else {
+        activeClue.value = { id: row.clueId, name: row.clueName };
+        showClueDrawer.value = true;
+      }
+    } else if (row.opportunityId) {
+      activeOpportunity.value = { id: row.opportunityId, name: row.opportunityName };
+      showOpportunityDrawer.value = true;
+    } else {
+      customerId.value = row.customerId;
+      if (row.poolId) {
+        poolId.value = row.poolId;
+        showOpenSeaDrawer.value = true;
+      } else {
+        showCustomerDrawer.value = true;
+      }
+    }
+  }
 
   function handleDetail(row: any) {
     sourceId.value = row.id;
@@ -357,6 +480,13 @@
   const needInitDetail = ref(false);
   const planNeedInitDetail = ref(false);
   const linkFormKey = ref(FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER);
+
+  function handleAdd() {
+    realFollowSourceId.value = '';
+    realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN;
+    needInitDetail.value = false;
+    formDrawerVisible.value = true;
+  }
 
   const linkSourceId = computed(() => {
     if (linkScenario.value !== FormLinkScenarioEnum.PLAN_TO_RECORD) {
@@ -434,19 +564,20 @@
     detailTabQuery: props.detailTabQuery,
     tableKey: props.tableKey,
     hideOperationColumn: props.hideOperationColumn,
+    permission: props.detailTabResourceId ? [] : ['FOLLOW_PLAN:EXPORT'],
     operationColumn: {
       key: 'operation',
-      width: 140,
+      width: 190,
       fixed: 'right',
       render: (row: any) => {
         const showConvert =
-          isOwner(row) && [CustomerFollowPlanStatusEnum.COMPLETED].includes(row.status) && !row.converted;
+          canEdit.value && [CustomerFollowPlanStatusEnum.COMPLETED].includes(row.status) && !row.converted;
         return h(CrmOperationButton, {
           groupList: operationGroupList.filter((item) => {
-            if (item.key === 'detail') return true;
-            if (!isOwner(row)) return false;
+            if (item.key === 'detail') return canRead.value;
             if (item.key === 'more') return showConvert;
-            return true;
+            if (item.key === 'edit') return canEdit.value;
+            return canDelete.value;
           }),
           moreList: showConvert
             ? [
@@ -465,9 +596,7 @@
         return h(
           CrmTableButton,
           {
-            onClick: () => {
-              goDetail(row);
-            },
+            onClick: () => openRelatedDrawer(row),
           },
           {
             default: () => (row.resourceType === 'CLUE' ? row.clueName : row.customerName),
@@ -475,10 +604,14 @@
           }
         );
       },
+      customerName: (row: any) =>
+        h(CrmTableButton, { onClick: () => openRelatedDrawer(row) }, { default: () => row.customerName }),
+      opportunityName: (row: any) =>
+        h(CrmTableButton, { onClick: () => openRelatedDrawer(row) }, { default: () => row.opportunityName }),
       status: (row: any) => {
         return h(StatusTagSelect, {
           'status': row.status,
-          'disabled': !!row.converted || !isOwner(row),
+          'disabled': !!row.converted || !canEdit.value,
           'onUpdate:status': (val) => {
             row.status = val;
           },
@@ -490,6 +623,37 @@
     },
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const showExportModal = ref(false);
+
+  function handleBatchAction(item: ActionsItem) {
+    if (item.key === 'exportChecked') {
+      isExportAll.value = false;
+      showExportModal.value = true;
+    }
+  }
+
+  const exportParams = computed(() => ({
+    ...tableQueryParams.value,
+    ids: checkedRowKeys.value,
+  }));
+  const exportColumns = computed<ExportTableColumnItem[]>(() =>
+    getExportColumns(
+      propsRes.value.columns,
+      customFieldsFilterConfig.value as FilterFormItem[],
+      tableFieldList.value,
+      true
+    )
+  );
+
+  function handleExportAllClick() {
+    isExportAll.value = true;
+    showExportModal.value = true;
+  }
+
+  function handleExportCreateSuccess() {
+    checkedRowKeys.value = [];
+  }
 
   const timelineData = ref<any[]>([]);
   const timelineLoading = ref(false);
@@ -574,21 +738,6 @@
       loadTimelineData();
     }
   }
-  const tableColumns = computed(() =>
-    propsRes.value.columns.map((column) =>
-      column.key === 'operation'
-        ? {
-            ...column,
-            width: [CustomerFollowPlanStatusEnum.COMPLETED, CustomerFollowPlanStatusEnum.ALL].includes(
-              activeStatus.value
-            )
-              ? 190
-              : 140,
-          }
-        : column
-    )
-  );
-
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
   const isAdvancedSearchMode = ref(false);
@@ -607,7 +756,6 @@
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
-      status: activeStatus.value,
     });
     await loadList();
     refreshTimeline();
@@ -651,7 +799,6 @@
         setLoadListParams({
           keyword: keyword.value,
           viewId,
-          status: activeStatus.value,
         });
         crmTableRef.value?.setColumnSort(viewId);
       } else {
@@ -660,9 +807,12 @@
     }
   );
 
-  watch([() => tableRefreshId.value, () => activeStatus.value], async () => {
-    await searchData();
-  });
+  watch(
+    () => tableRefreshId.value,
+    async () => {
+      await searchData();
+    }
+  );
 
   watch(
     () => propsRes.value.loading,

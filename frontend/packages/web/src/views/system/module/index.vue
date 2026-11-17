@@ -54,16 +54,6 @@
                     {{ t('common.more') }}
                   </n-button>
                 </CrmMoreAction>
-                <CrmMoreAction
-                  v-if="item.key === 'event'"
-                  :options="eventMoreOptions"
-                  trigger="hover"
-                  @select="(item) => handleMoreSelect(item.key as string)"
-                >
-                  <n-button v-permission="['MODULE_SETTING:UPDATE']" type="primary" text :keyboard="false">
-                    {{ t('common.more') }}
-                  </n-button>
-                </CrmMoreAction>
               </div>
             </VueDraggable>
           </div>
@@ -77,8 +67,6 @@
       </div>
     </div>
   </n-scrollbar>
-  <followRecordDrawer v-model:visible="customerManagementFollowRecordVisible" />
-  <followPlanDrawer v-model:visible="customerManagementFollowPlanVisible" />
 </template>
 
 <script setup lang="ts">
@@ -95,8 +83,6 @@
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import ConfigCard from './components/configCard.vue';
-  import followPlanDrawer from './components/customManagement/followPlanDrawer.vue';
-  import followRecordDrawer from './components/customManagement/followRecordDrawer.vue';
   import desensitizationModal from './components/desensitizationModal.vue';
 
   import { getAdvancedSwitch, moduleNavListSort, setDisplayAdvanced, setTopNavListSort } from '@/api/modules';
@@ -132,6 +118,11 @@
       label: t('module.order'),
       key: ModuleConfigEnum.ORDER,
       icon: 'iconicon_order_form',
+    },
+    {
+      label: t('module.followManagement'),
+      key: ModuleConfigEnum.FOLLOW_MANAGEMENT,
+      icon: 'iconicon_account_outlined',
     },
     {
       label: t('module.clueManagement'),
@@ -302,20 +293,6 @@
     },
   ]);
 
-  const eventMoreOptions = computed<ActionsItem[]>(() => [
-    {
-      key: 'followRecord',
-      label: t('module.followRecordFormSetting'),
-    },
-    {
-      key: 'followPlan',
-      label: t('module.followPlanFormSetting'),
-    },
-  ]);
-
-  const customerManagementFollowRecordVisible = ref(false);
-  const customerManagementFollowPlanVisible = ref(false);
-
   const showDesensitizationDrawer = ref(false);
   function handleDesensitization() {
     showDesensitizationDrawer.value = true;
@@ -325,12 +302,6 @@
     switch (key) {
       case 'desensitizationSet':
         handleDesensitization();
-        break;
-      case 'followRecord':
-        customerManagementFollowRecordVisible.value = true;
-        break;
-      case 'followPlan':
-        customerManagementFollowPlanVisible.value = true;
         break;
       default:
         break;

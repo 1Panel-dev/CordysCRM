@@ -119,28 +119,30 @@
   const approvalInfo = ref<ApprovalDetail>();
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
-  const tabList = computed(() => [
-    {
-      name: 'info',
-      title: t('customer.info'),
-    },
-    {
-      name: 'record',
-      title: t('common.record'),
-    },
-    {
-      name: 'header',
-      title: t('customer.headerRecord'),
-    },
-    ...(approvalInfo.value
-      ? [
-          {
-            name: 'approval',
-            title: t('workbench.approval.record'),
-          },
-        ]
-      : []),
-  ]);
+  const tabList = computed(() =>
+    [
+      {
+        name: 'info',
+        title: t('customer.info'),
+      },
+      {
+        name: 'record',
+        title: t('common.record'),
+      },
+      {
+        name: 'header',
+        title: t('customer.headerRecord'),
+      },
+      ...(approvalInfo.value
+        ? [
+            {
+              name: 'approval',
+              title: t('workbench.approval.record'),
+            },
+          ]
+        : []),
+    ].filter((item) => item.name !== 'record' || hasAnyPermission(['FOLLOW_RECORD:READ']))
+  );
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
   const poolId = computed(() => route.query.poolId?.toString() ?? '');

@@ -1,6 +1,7 @@
 export default {
   'module.workbenchHome': '首页',
   'module.customerManagement': '客户',
+  'module.followManagement': '跟进',
   'module.clueManagement': '线索',
   'module.businessManagement': '商机',
   'module.dataManagement': '数据',

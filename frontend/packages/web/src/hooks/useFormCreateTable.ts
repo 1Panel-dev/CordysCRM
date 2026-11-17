@@ -543,11 +543,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ),
         ...staticColumns,
       ];
-      if (
-        !_readOnly &&
-        !props.readonly &&
-        ![FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey)
-      ) {
+      const isFollowList = [FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey);
+      if (!_readOnly && !props.readonly && (!isFollowList || !!props.permission?.length)) {
         columns.value.unshift({
           type: 'selection',
           fixed: 'left',

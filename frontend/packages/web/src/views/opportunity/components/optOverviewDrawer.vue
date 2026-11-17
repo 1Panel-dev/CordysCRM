@@ -356,12 +356,14 @@
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
       enable: true,
+      permission: ['FOLLOW_RECORD:READ'],
       internalKey: 'OPPORTUNITY_FOLLOW_RECORD',
     },
     {
       name: 'followPlan',
       tab: t('common.plan'),
       enable: true,
+      permission: ['FOLLOW_PLAN:READ'],
       internalKey: 'OPPORTUNITY_FOLLOW_PLAN',
     },
     {

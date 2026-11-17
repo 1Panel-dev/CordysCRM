@@ -27,7 +27,7 @@
           <van-dropdown-menu class="status-select-menu" @click.stop>
             <van-dropdown-item
               v-model="status"
-              :disabled="props.readonly || item.converted || !isOwner(item)"
+              :disabled="!canUpdatePlan"
               :options="statusOptions"
               @change="changeStatus"
             />
@@ -46,8 +46,15 @@
         </div>
         <div :class="`flex items-center ${isShowAction ? 'justify-between' : 'justify-end'}`">
           <div v-if="isShowAction" class="flex items-center gap-[16px]">
-            <CrmTextButton icon="iconicon_delete" color="var(--error-red)" icon-size="16px" @click="emit('delete')" />
             <CrmTextButton
+              v-if="canDelete"
+              icon="iconicon_delete"
+              color="var(--error-red)"
+              icon-size="16px"
+              @click="emit('delete')"
+            />
+            <CrmTextButton
+              v-if="canEdit"
               icon="iconicon_handwritten_signature"
               color="var(--primary-8)"
               icon-size="16px"
@@ -140,7 +147,22 @@
 
   const isOwner = (item: FollowDetailItem) => item.owner === userStore.userInfo?.id;
 
-  const isShowAction = computed(() => !props.readonly && isOwner(props.item));
+  const permissionPrefix = computed(() => (isPlan.value ? 'FOLLOW_PLAN' : 'FOLLOW_RECORD'));
+  const canEdit = computed(
+    () => !props.readonly && isOwner(props.item) && hasAnyPermission([`${permissionPrefix.value}:UPDATE`])
+  );
+  const canDelete = computed(
+    () => !props.readonly && isOwner(props.item) && hasAnyPermission([`${permissionPrefix.value}:DELETE`])
+  );
+  const canUpdatePlan = computed(
+    () =>
+      isPlan.value &&
+      !props.readonly &&
+      !props.item.converted &&
+      isOwner(props.item) &&
+      hasAnyPermission(['FOLLOW_PLAN:UPDATE'])
+  );
+  const isShowAction = computed(() => canEdit.value || canDelete.value);
 
   const displayCommentCount = computed(() => formatBadgeCount(props.item.commentCount));
 

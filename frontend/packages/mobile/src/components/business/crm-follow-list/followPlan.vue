@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden bg-[var(--text-n9)]">
     <div class="top-bar">
-      <van-button v-if="!props.readonly" plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
+      <van-button v-if="canCreate" plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
       <van-search
         v-model="keyword"
         shape="round"
@@ -53,6 +53,7 @@
   import listItem from './components/listItem.vue';
 
   import { followPlanApiMap, PlanEnumType } from '@/config/follow';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import useFollowApi from './useFollowApi';
 
@@ -67,6 +68,7 @@
   const keyword = ref('');
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
+  const canCreate = computed(() => !props.readonly && hasAnyPermission(['FOLLOW_PLAN:ADD']));
 
   const { transformField, goCreate, handleEdit, goDetail } = useFollowApi({
     type: 'followPlan',
