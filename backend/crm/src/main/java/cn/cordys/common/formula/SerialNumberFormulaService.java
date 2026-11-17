@@ -62,7 +62,7 @@ public class SerialNumberFormulaService {
             }
             BaseResourceSubField resourceField = resourceFields.stream()
                     .filter(item -> Objects.equals(resourceId, item.getResourceId())
-                            && StringUtils.equals(field.getId(), item.getFieldId()))
+                            && Strings.CS.equals(field.getId(), item.getFieldId()))
                     .findFirst()
                     .orElse(null);
             if (resourceField != null && resourceField.getFieldValue() != null) {

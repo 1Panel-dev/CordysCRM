@@ -36,6 +36,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -272,7 +273,7 @@ public class StatisticFieldService {
             List<StatisticField> toRefresh = new ArrayList<>(currentMap.size());
             currentMap.forEach((fieldId, current) -> {
                 StatisticField origin = originMap.get(fieldId);
-                if (origin == null || !StringUtils.equals(configFingerprint(origin), configFingerprint(current))) {
+                if (origin == null || !Strings.CS.equals(configFingerprint(origin), configFingerprint(current))) {
                     toRefresh.add(current);
                 }
             });
@@ -744,10 +745,10 @@ public class StatisticFieldService {
      * @param changedFieldId 本次批量编辑改的字段ID
      */
     private static boolean affectsStatisticValue(StatisticField field, String changedFieldId) {
-        if (StringUtils.equals(changedFieldId, field.getRelatedFieldId())) {
+        if (Strings.CS.equals(changedFieldId, field.getRelatedFieldId())) {
             return true;
         }
-        if (StringUtils.equals(changedFieldId, field.getStatisticFieldId())) {
+        if (Strings.CS.equals(changedFieldId, field.getStatisticFieldId())) {
             return true;
         }
         return conditionFieldIds(field.getCombineSearch()).contains(changedFieldId);
@@ -1070,7 +1071,7 @@ public class StatisticFieldService {
 
         // 4) 组织隔离: 字段配置必须属于当前组织, 否则换个组织传同一个 fieldId 就能刷到别人的数据。
         //    这是最关键的一层; 校验失败要留痕, 这是越权探测的痕迹。
-        if (moduleForm == null || !StringUtils.equals(moduleForm.getOrganizationId(), orgId)) {
+        if (moduleForm == null || !Strings.CS.equals(moduleForm.getOrganizationId(), orgId)) {
             log.warn("统计字段手动刷新越权: fieldId={}, userId={}, orgId={}", fieldId, userId, orgId);
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
@@ -1083,7 +1084,7 @@ public class StatisticFieldService {
 
         // 6) 字段配置走缓存, 与其它四个入口读的是同一份, 避免手动刷新用的配置和自动刷新不一致。
         StatisticField field = getStatisticFields(formKey, orgId).stream()
-                .filter(item -> StringUtils.equals(fieldId, item.getId()))
+                .filter(item -> Strings.CS.equals(fieldId, item.getId()))
                 .findFirst()
                 .orElse(null);
         if (field == null) {
@@ -1168,7 +1169,7 @@ public class StatisticFieldService {
                 continue;
             }
             // 「统计谁」只写在字段属性里, 只能逐条比对; 命中率极低, 不影响这条查询本身的开销
-            if (StringUtils.equals(targetFormKey, field.getTargetFormId())) {
+            if (Strings.CS.equals(targetFormKey, field.getTargetFormId())) {
                 refs.add(new StatisticFieldRef(source.getHostFormKey(), hostDataTable, field));
             }
         }

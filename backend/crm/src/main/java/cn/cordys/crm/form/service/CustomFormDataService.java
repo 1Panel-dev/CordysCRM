@@ -277,7 +277,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             return false;
         }
         return dataScope == CustomFormRoleKey.MANAGE_ALL ||
-                (dataScope == CustomFormRoleKey.MANAGE_OWN && StringUtils.equals(owner, userId));
+                (dataScope == CustomFormRoleKey.MANAGE_OWN && Strings.CS.equals(owner, userId));
     }
 
     /**
@@ -345,7 +345,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     private boolean collectDepartmentIds(List<BaseTreeNode> nodes, String departmentId, List<String> result) {
         for (BaseTreeNode node : nodes) {
-            if (StringUtils.equals(node.getId(), departmentId)) {
+            if (Strings.CS.equals(node.getId(), departmentId)) {
                 collectAllDepartmentIds(node, result);
                 return true;
             }
@@ -468,7 +468,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             try {
                 resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
                 CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
-                if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getOwner(), userId)) {
+                if (dataScope == CustomFormRoleKey.MANAGE_OWN && !Strings.CS.equals(data.getOwner(), userId)) {
                     throw new GenericException(CrmHttpResultCode.FORBIDDEN);
                 }
             } catch (GenericException e) {
@@ -699,7 +699,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         checkWritePermission(userId, orgId, originData);
 
         if (StringUtils.isNotBlank(request.getCustomFormId())
-                && !StringUtils.equals(request.getCustomFormId(), originData.getCustomFormId())) {
+                && !Strings.CS.equals(request.getCustomFormId(), originData.getCustomFormId())) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
     }
@@ -969,7 +969,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 // 数据所属表单不一致，禁止批量操作
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(customFormData.getOwner(), userId)) {
+            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !Strings.CS.equals(customFormData.getOwner(), userId)) {
                 // 仅能操作自己负责的数据，且数据负责人不为当前用户，禁止操作
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
@@ -1031,7 +1031,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (dataScope == CustomFormRoleKey.VIEW_ALL) {
             return false;
         }
-        return dataScope != CustomFormRoleKey.MANAGE_OWN || StringUtils.equals(owner, currentUserId);
+        return dataScope != CustomFormRoleKey.MANAGE_OWN || Strings.CS.equals(owner, currentUserId);
     }
 
     private void checkWritePermission(CustomFormRoleKey dataScope, String owner, String currentUserId) {
@@ -1047,7 +1047,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     }
 
     private void checkCurrentOrganization(CustomFormData data, String orgId) {
-        if (!StringUtils.equals(data.getOrganizationId(), orgId)) {
+        if (!Strings.CS.equals(data.getOrganizationId(), orgId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
     }
@@ -1063,7 +1063,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     CustomFormRoleKey getDataScope(String formId, String userId, String orgId, boolean checkEnable,
             boolean checkManage) {
         CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
-        if (customForm == null || !StringUtils.equals(customForm.getOrganizationId(), orgId)) {
+        if (customForm == null || !Strings.CS.equals(customForm.getOrganizationId(), orgId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
         if (customFormService.isFormAdminUser(formId, userId, orgId)) {
@@ -1450,8 +1450,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
      */
     private String serialNumberValue(List<BaseResourceSubField> dataFields, String dataId, BaseField serialField) {
         return dataFields.stream()
-                .filter(field -> StringUtils.equals(dataId, field.getResourceId())
-                        && StringUtils.equals(serialField.idOrBusinessKey(), field.getFieldId()))
+                .filter(field -> Strings.CS.equals(dataId, field.getResourceId())
+                        && Strings.CS.equals(serialField.idOrBusinessKey(), field.getFieldId()))
                 .map(BaseResourceSubField::getFieldValue)
                 .filter(Objects::nonNull)
                 .map(Object::toString)

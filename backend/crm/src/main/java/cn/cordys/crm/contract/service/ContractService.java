@@ -1791,8 +1791,8 @@ public class ContractService implements ApprovalResourceHandler {
                 continue;
             }
             BaseResourceSubField contractField = contractFields.stream()
-                    .filter(item -> StringUtils.equals(contract.getId(), item.getResourceId())
-                            && StringUtils.equals(field.getId(), item.getFieldId()))
+                    .filter(item -> Strings.CS.equals(contract.getId(), item.getResourceId())
+                            && Strings.CS.equals(field.getId(), item.getFieldId()))
                     .findFirst()
                     .orElse(null);
             if (contractField != null && contractField.getFieldValue() != null) {
