@@ -1521,9 +1521,7 @@ public class ApprovalResourceService {
         ResourceAccessContextProvider provider = getResourceAccessContextProvider(instance.getType());
         ResourceAccessContext context = provider != null ? provider.getAccessContext(instance.getResourceId(), orgId)
                 : null;
-        return context != null
-                && (!provider.requiresOwner() || StringUtils.isNotBlank(context.getOwnerId()))
-                && hasResourceDataPermission(context, userId, orgId, readPermission);
+        return hasResourceDataPermission(provider, context, instance.getResourceId(), userId, orgId, readPermission);
     }
 
     /**
@@ -1576,17 +1574,20 @@ public class ApprovalResourceService {
         ResourceAccessContextProvider provider = getResourceAccessContextProvider(formType);
         if (provider != null) {
             ResourceAccessContext context = provider.getAccessContext(resourceId, orgId);
-            return hasResourceDataPermission(context, userId, orgId, readPermission);
+            return hasResourceDataPermission(provider, context, resourceId, userId, orgId, readPermission);
         }
 
         return true;
     }
 
-    private boolean hasResourceDataPermission(ResourceAccessContext context, String userId, String orgId,
-            String readPermission) {
-        String ownerId = context != null ? context.getOwnerId() : null;
-        return StringUtils.isBlank(ownerId)
-                || dataScopeService.hasDataPermission(userId, orgId, ownerId, readPermission);
+    private boolean hasResourceDataPermission(ResourceAccessContextProvider provider, ResourceAccessContext context,
+            String resourceId, String userId, String orgId, String readPermission) {
+        if (context == null || (provider.requiresOwner() && StringUtils.isBlank(context.getOwnerId()))) {
+            return false;
+        }
+        return !provider.requiresOwner()
+                || dataScopeService.hasDataPermission(userId, orgId, context.getOwnerId(), readPermission)
+                || provider.hasAdditionalDataPermission(readPermission, resourceId, userId);
     }
 
     /**
