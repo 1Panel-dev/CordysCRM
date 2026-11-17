@@ -160,6 +160,7 @@
     batchDeletePaymentRecord,
     deletePaymentRecord,
     getAccountPaymentRecord,
+    getAccountPaymentRecordStatistic,
     getFormDetailTabStatistic,
     getPaymentRecordStatistic,
   } from '@/api/modules';
@@ -533,6 +534,16 @@
           combineSearch: advanceFilter,
           filters: filterItem.value,
           ...props.detailTabQuery,
+        });
+        return;
+      }
+      if (props.customerId) {
+        statisticInfo.value = await getAccountPaymentRecordStatistic({
+          customerId: props.customerId,
+          keyword: _keyword ?? keyword.value,
+          viewId: activeTab.value,
+          combineSearch: advanceFilter,
+          filters: filterItem.value,
         });
         return;
       }

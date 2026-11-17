@@ -859,8 +859,8 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<PaymentRecordItem>>({ url: GetAccountPaymentRecordListUrl, data });
   }
 
-  function getAccountPaymentRecordStatistic(id: string) {
-    return CDR.get({ url: `${GetAccountPaymentRecordStatisticUrl}/${id}` });
+  function getAccountPaymentRecordStatistic(data: TableQueryParams) {
+    return CDR.post({ url: GetAccountPaymentRecordStatisticUrl, data }, { ignoreCancelToken: true });
   }
 
   return {
