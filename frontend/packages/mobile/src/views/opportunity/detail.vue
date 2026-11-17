@@ -154,7 +154,7 @@
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { hasAllPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
@@ -166,40 +166,46 @@
   const router = useRouter();
 
   const activeTab = ref('info');
-  const tabList = computed(() => [
-    {
-      name: 'info',
-      title: t('opportunity.info'),
-    },
-    {
-      name: 'contact',
-      title: t('menu.contact'),
-    },
-    {
-      name: 'record',
-      title: t('common.record'),
-    },
-    {
-      name: 'plan',
-      title: t('common.plan'),
-    },
-    ...(approvalInfo.value
-      ? [
-          {
-            name: 'approval',
-            title: t('workbench.approval.record'),
-          },
-        ]
-      : []),
-    ...(changeRecordTab.value
-      ? [
-          {
-            name: 'changeRecord',
-            title: changeRecordTab.value.name || t('common.changeRecord'),
-          },
-        ]
-      : []),
-  ]);
+  const tabList = computed(() =>
+    [
+      {
+        name: 'info',
+        title: t('opportunity.info'),
+      },
+      {
+        name: 'contact',
+        title: t('menu.contact'),
+      },
+      {
+        name: 'record',
+        title: t('common.record'),
+      },
+      {
+        name: 'plan',
+        title: t('common.plan'),
+      },
+      ...(approvalInfo.value
+        ? [
+            {
+              name: 'approval',
+              title: t('workbench.approval.record'),
+            },
+          ]
+        : []),
+      ...(changeRecordTab.value
+        ? [
+            {
+              name: 'changeRecord',
+              title: changeRecordTab.value.name || t('common.changeRecord'),
+            },
+          ]
+        : []),
+    ].filter(
+      (item) =>
+        (item.name !== 'record' || hasAnyPermission(['FOLLOW_RECORD:READ'])) &&
+        (item.name !== 'plan' || hasAnyPermission(['FOLLOW_PLAN:READ']))
+    )
+  );
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
   const stageConfig = ref<OpportunityStageConfig>();

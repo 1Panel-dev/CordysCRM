@@ -143,44 +143,50 @@
   const router = useRouter();
 
   const activeTab = ref('info');
-  const tabList = computed(() => [
-    {
-      name: 'info',
-      title: t('clue.info'),
-    },
-    {
-      name: 'record',
-      title: t('common.record'),
-    },
-    {
-      name: 'plan',
-      title: t('common.plan'),
-    },
-    {
-      name: 'header',
-      title: t('customer.headerRecord'),
-    },
-    {
-      name: 'transitionRecord',
-      title: t('clue.transitionRecord'),
-    },
-    ...(approvalInfo.value
-      ? [
-          {
-            name: 'approval',
-            title: t('workbench.approval.record'),
-          },
-        ]
-      : []),
-    ...(changeRecordTab.value
-      ? [
-          {
-            name: 'changeRecord',
-            title: changeRecordTab.value.name || t('common.changeRecord'),
-          },
-        ]
-      : []),
-  ]);
+  const tabList = computed(() =>
+    [
+      {
+        name: 'info',
+        title: t('clue.info'),
+      },
+      {
+        name: 'record',
+        title: t('common.record'),
+      },
+      {
+        name: 'plan',
+        title: t('common.plan'),
+      },
+      {
+        name: 'header',
+        title: t('customer.headerRecord'),
+      },
+      {
+        name: 'transitionRecord',
+        title: t('clue.transitionRecord'),
+      },
+      ...(approvalInfo.value
+        ? [
+            {
+              name: 'approval',
+              title: t('workbench.approval.record'),
+            },
+          ]
+        : []),
+      ...(changeRecordTab.value
+        ? [
+            {
+              name: 'changeRecord',
+              title: changeRecordTab.value.name || t('common.changeRecord'),
+            },
+          ]
+        : []),
+    ].filter(
+      (item) =>
+        (item.name !== 'record' || hasAnyPermission(['FOLLOW_RECORD:READ'])) &&
+        (item.name !== 'plan' || hasAnyPermission(['FOLLOW_PLAN:READ']))
+    )
+  );
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 

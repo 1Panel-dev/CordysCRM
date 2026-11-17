@@ -43,7 +43,7 @@
           </template>
           <template #eventSlot>
             <n-button
-              v-permission="['CUSTOMER_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ']"
+              v-permission="['FOLLOW_RECORD:READ', 'FOLLOW_PLAN:READ']"
               class="p-[8px]"
               quaternary
               @click="

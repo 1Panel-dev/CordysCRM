@@ -2,16 +2,41 @@
   <CrmCard hide-footer no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
+      v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       class="crm-record-table"
       :not-show-table="activeShowType === 'timeline'"
       :hiddenBackToTop="activeShowType === 'timeline'"
-      :action-config="{ baseAction: [] }"
+      :action-config="props.detailTabResourceId ? { baseAction: [] } : actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="handleSorterChange"
       @filter-change="handleFilterChange"
+      @batch-action="handleBatchAction"
     >
+      <template #actionLeft>
+        <div class="flex items-center gap-[12px]">
+          <n-button v-if="canCreate" type="primary" @click="handleAdd">
+            {{ t('common.create') }}
+          </n-button>
+          <CrmImportButton
+            v-if="!props.detailTabResourceId && !props.readonly && hasAnyPermission(['FOLLOW_RECORD:IMPORT'])"
+            :api-type="FormDesignKeyEnum.FOLLOW_RECORD"
+            :title="t('eventDrawer.record')"
+            @import-success="searchData"
+          />
+          <n-button
+            v-if="!props.detailTabResourceId && hasAnyPermission(['FOLLOW_RECORD:EXPORT'])"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary"
+            :disabled="propsRes.data.length === 0"
+            @click="handleExportAllClick"
+          >
+            {{ t('eventDrawer.exportRecord') }}
+          </n-button>
+        </div>
+      </template>
       <template #actionRight>
         <CrmAdvanceFilter
           ref="tableAdvanceFilterRef"
@@ -65,17 +90,11 @@
                 <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
                   {{ t('common.detail') }}
                 </n-button>
-                <n-button
-                  v-if="isOwner(item)"
-                  type="primary"
-                  class="text-btn-primary"
-                  quaternary
-                  @click="handleEdit(item)"
-                >
+                <n-button v-if="canEdit" type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
                   {{ t('common.edit') }}
                 </n-button>
                 <n-button
-                  v-if="isOwner(item)"
+                  v-if="canDelete"
                   type="error"
                   class="text-btn-error"
                   quaternary
@@ -104,7 +123,7 @@
       v-model:visible="formDrawerVisible"
       :form-key="FormDesignKeyEnum.FOLLOW_RECORD"
       :source-id="realFollowSourceId"
-      need-init-detail
+      :need-init-detail="needInitDetail"
       @saved="handleAfterSave"
     />
     <DetailDrawer
@@ -113,24 +132,69 @@
       :source-id="sourceId"
       :refresh-key="refreshKey"
       :source-name="sourceName"
-      :readonly="!isOwner(activeItem)"
+      :readonly="!canEdit"
       :detail="activeItem"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
       @detail-init="handleDetailInit"
       @count-change="handleCommentCountChange"
     />
+    <CustomerOverviewDrawer
+      v-model:show="showCustomerDrawer"
+      :source-id="customerId"
+      @refresh="handleRefresh"
+      @saved="handleRefresh"
+      @deleted="handleRefresh"
+    />
+    <OptOverviewDrawer
+      v-model:show="showOpportunityDrawer"
+      :detail="activeOpportunity"
+      @refresh="handleRefresh"
+      @remove="handleRefresh"
+      @open-customer-drawer="handleShowCustomerDrawer"
+    />
+    <ClueOverviewDrawer
+      v-model:show="showClueDrawer"
+      :detail="activeClue"
+      @refresh="handleRefresh"
+      @saved="handleRefresh"
+      @remove="handleRefresh"
+      @open-customer-drawer="handleShowCustomerDrawer"
+    />
+    <OpenSeaOverviewDrawer
+      v-model:show="showOpenSeaDrawer"
+      :source-id="customerId"
+      :pool-id="poolId"
+      :hidden-columns="[]"
+      @change="handleRefresh"
+    />
+    <CluePoolOverviewDrawer
+      v-model:show="showCluePoolDrawer"
+      :detail="activeCluePool"
+      :pool-id="poolId"
+      :hidden-columns="[]"
+      @refresh="handleRefresh"
+      @remove="handleRefresh"
+    />
   </CrmCard>
+  <CrmTableExportModal
+    v-model:show="showExportModal"
+    :params="exportParams"
+    :export-columns="exportColumns"
+    :is-export-all="isExportAll"
+    type="followRecord"
+    @create-success="handleExportCreateSuccess"
+  />
 </template>
 
 <script setup lang="ts">
-  import { NButton, NSpin, NTabPane, NTabs, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NSpin, NTabPane, NTabs, useMessage } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
-  import type { FilterConditionItem, SortParams } from '@lib/shared/models/common';
+  import type { ExportTableColumnItem, FilterConditionItem, SortParams } from '@lib/shared/models/common';
   import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -139,23 +203,31 @@
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTable from '@/components/pure/crm-table/index.vue';
+  import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { descriptionList } from '@/components/business/crm-follow-detail/config';
   import FollowRecord from '@/components/business/crm-follow-detail/followRecord.vue';
   import { getFormListApiMap } from '@/components/business/crm-form-create/config';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detailDrawer.vue';
+  import ClueOverviewDrawer from '@/views/clueManagement/clue/components/clueOverviewDrawer.vue';
+  import CluePoolOverviewDrawer from '@/views/clueManagement/cluePool/components/cluePoolOverviewDrawer.vue';
+  import CustomerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import OpenSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
+  import OptOverviewDrawer from '@/views/opportunity/components/optOverviewDrawer.vue';
 
   import { deleteFollowRecord } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
-  import useOpenDetailPage from '@/hooks/useOpenDetailPage';
-  import useUserStore from '@/store/modules/user';
+  import { getExportColumns } from '@/utils/export';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     readonly?: boolean;
@@ -167,11 +239,21 @@
   }>();
 
   const { t } = useI18n();
-  const userStore = useUserStore();
   const Message = useMessage();
-  const { goDetail } = useOpenDetailPage();
   const { setItem, getItem } = useLocalForage();
   const { openModal } = useModal();
+
+  const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const isExportAll = ref(false);
+  const actionConfig: BatchActionConfig = {
+    baseAction: [
+      {
+        label: t('common.exportChecked'),
+        key: 'exportChecked',
+        permission: ['FOLLOW_RECORD:EXPORT'],
+      },
+    ],
+  };
 
   const activeTab = ref('');
 
@@ -218,13 +300,64 @@
   ];
 
   const tableRefreshId = ref(0);
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
 
   const refreshKey = ref(0);
   const activeItem = ref<any>();
   const sourceId = ref('');
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
-  const isOwner = (item?: any) => item?.owner === userStore.userInfo.id;
+  const canRead = computed(() => hasAnyPermission(['FOLLOW_RECORD:READ']));
+  const canManage = (permission: string) => !props.readonly && hasAnyPermission([permission]);
+  const canCreate = computed(() => canManage('FOLLOW_RECORD:ADD'));
+  const canEdit = computed(() => canManage('FOLLOW_RECORD:UPDATE'));
+  const canDelete = computed(() => canManage('FOLLOW_RECORD:DELETE'));
+
+  const showCustomerDrawer = ref(false);
+  const showOpportunityDrawer = ref(false);
+  const showClueDrawer = ref(false);
+  const showOpenSeaDrawer = ref(false);
+  const showCluePoolDrawer = ref(false);
+  const customerId = ref('');
+  const poolId = ref('');
+  const activeOpportunity = ref();
+  const activeClue = ref();
+  const activeCluePool = ref();
+  function handleShowCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    customerId.value = params.customerId;
+    if (params.inCustomerPool) {
+      poolId.value = params.poolId;
+      showOpenSeaDrawer.value = true;
+    } else {
+      showCustomerDrawer.value = true;
+    }
+  }
+  function openRelatedDrawer(row: any) {
+    if (row.resourceType === 'CLUE') {
+      if (row.poolId) {
+        poolId.value = row.poolId;
+        activeCluePool.value = { id: row.clueId, name: row.clueName };
+        showCluePoolDrawer.value = true;
+      } else {
+        activeClue.value = { id: row.clueId, name: row.clueName };
+        showClueDrawer.value = true;
+      }
+    } else if (row.opportunityId) {
+      activeOpportunity.value = { id: row.opportunityId, name: row.opportunityName };
+      showOpportunityDrawer.value = true;
+    } else {
+      customerId.value = row.customerId;
+      if (row.poolId) {
+        poolId.value = row.poolId;
+        showOpenSeaDrawer.value = true;
+      } else {
+        showCustomerDrawer.value = true;
+      }
+    }
+  }
   function handleDetail(row: any) {
     sourceId.value = row.id;
     activeItem.value = row;
@@ -258,8 +391,15 @@
 
   const formDrawerVisible = ref(false);
   const realFollowSourceId = ref<string | undefined>('');
+  const needInitDetail = ref(false);
+  function handleAdd() {
+    realFollowSourceId.value = '';
+    needInitDetail.value = false;
+    formDrawerVisible.value = true;
+  }
   function handleEdit(item: any) {
     realFollowSourceId.value = item.id;
+    needInitDetail.value = true;
     formDrawerVisible.value = true;
   }
 
@@ -296,13 +436,18 @@
     detailTabQuery: props.detailTabQuery,
     tableKey: props.tableKey,
     hideOperationColumn: props.hideOperationColumn,
+    permission: props.detailTabResourceId ? [] : ['FOLLOW_RECORD:EXPORT'],
     operationColumn: {
       key: 'operation',
       width: 140,
       fixed: 'right',
       render: (row: any) =>
         h(CrmOperationButton, {
-          groupList: operationGroupList.filter((item) => item.key === 'detail' || isOwner(row)),
+          groupList: operationGroupList.filter((item) => {
+            if (item.key === 'detail') return canRead.value;
+            if (item.key === 'edit') return canEdit.value;
+            return canDelete.value;
+          }),
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
@@ -311,9 +456,7 @@
         return h(
           CrmTableButton,
           {
-            onClick: () => {
-              goDetail(row);
-            },
+            onClick: () => openRelatedDrawer(row),
           },
           {
             default: () => (row.resourceType === 'CLUE' ? row.clueName : row.customerName),
@@ -321,9 +464,39 @@
           }
         );
       },
+      customerName: (row: any) =>
+        h(CrmTableButton, { onClick: () => openRelatedDrawer(row) }, { default: () => row.customerName }),
+      opportunityName: (row: any) =>
+        h(CrmTableButton, { onClick: () => openRelatedDrawer(row) }, { default: () => row.opportunityName }),
     },
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const showExportModal = ref(false);
+
+  function handleBatchAction(item: ActionsItem) {
+    if (item.key === 'exportChecked') {
+      isExportAll.value = false;
+      showExportModal.value = true;
+    }
+  }
+
+  const exportParams = computed(() => ({
+    ...tableQueryParams.value,
+    ids: checkedRowKeys.value,
+  }));
+  const exportColumns = computed<ExportTableColumnItem[]>(() =>
+    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
+  );
+
+  function handleExportAllClick() {
+    isExportAll.value = true;
+    showExportModal.value = true;
+  }
+
+  function handleExportCreateSuccess() {
+    checkedRowKeys.value = [];
+  }
 
   const timelineData = ref<any[]>([]);
   const timelineLoading = ref(false);

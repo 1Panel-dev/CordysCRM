@@ -8,13 +8,32 @@
     no-padding
     :footer="false"
   >
-    <template v-if="!props.readonly" #titleRight>
-      <div v-if="!props.readonly" class="flex items-center gap-[12px]">
-        <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleEdit">
+    <template #titleLeft>
+      <StatusTag
+        v-if="props.formKey === FormDesignKeyEnum.FOLLOW_PLAN && props.detail?.status"
+        :status="props.detail.status"
+        hiddenDownIcon
+        class="font-normal"
+      />
+      <CrmTag
+        v-if="
+          props.formKey === FormDesignKeyEnum.FOLLOW_PLAN &&
+          [CustomerFollowPlanStatusEnum.COMPLETED].includes(props.detail?.status) &&
+          props.detail?.converted
+        "
+        class="font-normal"
+      >
+        {{ t('common.hasConvertToRecord') }}
+      </CrmTag>
+    </template>
+    <template #titleRight>
+      <div class="flex items-center gap-[12px]">
+        <n-button v-if="canUpdate" type="primary" ghost class="n-btn-outline-primary" @click="handleEdit">
           {{ t('common.edit') }}
         </n-button>
         <n-button
           v-if="
+            canUpdate &&
             props.detail?.status &&
             [CustomerFollowPlanStatusEnum.COMPLETED].includes(props.detail?.status) &&
             !props.detail?.converted
@@ -26,7 +45,7 @@
         >
           {{ t('common.convertPlanToRecord') }}
         </n-button>
-        <n-button type="error" ghost class="n-btn-outline-error" @click="handleDelete">
+        <n-button v-if="canDelete" type="error" ghost class="n-btn-outline-error" @click="handleDelete">
           {{ t('common.delete') }}
         </n-button>
       </div>
@@ -69,7 +88,9 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmComment from '@/components/business/crm-comment/index.vue';
+  import StatusTag from '@/components/business/crm-follow-detail/statusTag.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
 
   import { hasAnyPermission } from '@/utils/permission';
@@ -97,6 +118,11 @@
 
   const { t } = useI18n();
   const canComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
+  const permissionPrefix = computed(() =>
+    props.formKey === FormDesignKeyEnum.FOLLOW_RECORD ? 'FOLLOW_RECORD' : 'FOLLOW_PLAN'
+  );
+  const canUpdate = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:UPDATE`]));
+  const canDelete = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:DELETE`]));
 
   const commentExpanded = ref(false);
   const commentResourceType = computed(() =>

@@ -5,6 +5,11 @@ export const DeleteFollowRecordUrl = '/follow/record/delete'; // 删除跟进记
 export const GetFollowRecordUrl = '/follow/record/get'; // 跟进记录详情
 export const UpdateFollowRecordUrl = '/follow/record/update';
 export const AddFollowRecordUrl = '/follow/record/add';
+export const PreCheckFollowRecordImportUrl = '/follow/record/import/pre-check';
+export const DownloadFollowRecordTemplateUrl = '/follow/record/template/download';
+export const ImportFollowRecordUrl = '/follow/record/import';
+export const ExportFollowRecordUrl = '/follow/record/export-select';
+export const ExportAllFollowRecordUrl = '/follow/record/export-all';
 
 // 跟进记录评论
 export const GetFollowRecordCommentListUrl = '/follow/record/comment/page';
@@ -20,6 +25,11 @@ export const DeleteFollowPlanUrl = '/follow/plan/delete'; // 删除跟进计划
 export const GetFollowPlanUrl = '/follow/plan/get'; // 跟进计划详情
 export const UpdateFollowPlanUrl = '/follow/plan/update';
 export const AddFollowPlanUrl = '/follow/plan/add';
+export const PreCheckFollowPlanImportUrl = '/follow/plan/import/pre-check';
+export const DownloadFollowPlanTemplateUrl = '/follow/plan/template/download';
+export const ImportFollowPlanUrl = '/follow/plan/import';
+export const ExportFollowPlanUrl = '/follow/plan/export-select';
+export const ExportAllFollowPlanUrl = '/follow/plan/export-all';
 
 // 跟进计划评论
 export const GetFollowPlanCommentListUrl = '/follow/plan/comment/page';

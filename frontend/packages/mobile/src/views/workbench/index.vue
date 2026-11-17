@@ -165,6 +165,7 @@
   import useAppStore from '@/store/modules/app';
   // import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
+  import { hasAnyPermission } from '@/utils/permission';
   // import showNoLicenseDialog from '@/utils/license';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
@@ -186,18 +187,30 @@
   const showAlert = ref(useStore.userInfo.defaultPwd);
 
   const activeNameFollowType = ref('followRecord');
-  const followTabList = ref([
-    {
-      name: 'followRecord',
-      tab: t('common.recordBusiness'),
-      permission: [],
+  const followTabList = computed(() =>
+    [
+      {
+        name: 'followRecord',
+        tab: t('common.recordBusiness'),
+        permission: ['FOLLOW_RECORD:READ'],
+      },
+      {
+        name: 'followPlan',
+        tab: t('common.planBusiness'),
+        permission: ['FOLLOW_PLAN:READ'],
+      },
+    ].filter((item) => hasAnyPermission(item.permission))
+  );
+
+  watch(
+    followTabList,
+    (tabs) => {
+      if (!tabs.some((tab) => tab.name === activeNameFollowType.value)) {
+        activeNameFollowType.value = tabs[0]?.name || '';
+      }
     },
-    {
-      name: 'followPlan',
-      tab: t('common.planBusiness'),
-      permission: [],
-    },
-  ]);
+    { immediate: true }
+  );
 
   enum WorkbenchHomeTabEnum {
     SMART = 'smart',

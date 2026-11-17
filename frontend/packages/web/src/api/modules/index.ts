@@ -186,6 +186,16 @@ export const {
   getFollowRecordViewList,
   getFollowPlanViewDetail,
   getFollowRecordViewDetail,
+  preCheckImportFollowRecord,
+  downloadFollowRecordTemplate,
+  importFollowRecord,
+  exportFollowRecordAll,
+  exportFollowRecordSelected,
+  preCheckImportFollowPlan,
+  downloadFollowPlanTemplate,
+  importFollowPlan,
+  exportFollowPlanAll,
+  exportFollowPlanSelected,
 } = followApi;
 
 export const {

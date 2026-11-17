@@ -9,15 +9,15 @@
     :title="t('settings.navbar.event')"
   >
     <div class="flex h-full flex-col bg-[var(--text-n9)] px-[16px] pt-[16px]">
-      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+      <CrmCard v-if="tabList.length" no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
       </CrmCard>
-      <div v-if="visible" class="flex-1">
+      <div v-if="visible && tabList.length" class="flex-1">
         <Suspense>
           <template v-if="activeTab === 'followRecord'">
             <RecordTable />
           </template>
-          <template v-else>
+          <template v-else-if="activeTab === 'followPlan'">
             <PlanTable />
           </template>
         </Suspense>
@@ -33,6 +33,8 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
 
+  import { hasAnyPermission } from '@/utils/permission';
+
   const RecordTable = defineAsyncComponent(() => import('./components/recordTable.vue'));
   const PlanTable = defineAsyncComponent(() => import('./components/planTable.vue'));
 
@@ -44,14 +46,28 @@
 
   const activeTab = ref('followRecord');
 
-  const tabList = [
-    {
-      name: 'followRecord',
-      tab: t('crmFollowRecord.followRecord'),
+  const tabList = computed(() =>
+    [
+      {
+        name: 'followRecord',
+        tab: t('crmFollowRecord.followRecord'),
+        permission: ['FOLLOW_RECORD:READ'],
+      },
+      {
+        name: 'followPlan',
+        tab: t('common.plan'),
+        permission: ['FOLLOW_PLAN:READ'],
+      },
+    ].filter((item) => hasAnyPermission(item.permission))
+  );
+
+  watch(
+    tabList,
+    (tabs) => {
+      if (!tabs.some((tab) => tab.name === activeTab.value)) {
+        activeTab.value = tabs[0]?.name || '';
+      }
     },
-    {
-      name: 'followPlan',
-      tab: t('common.plan'),
-    },
-  ];
+    { immediate: true }
+  );
 </script>

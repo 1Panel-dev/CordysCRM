@@ -77,6 +77,8 @@
   <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
   <ContractPaymentRecordFormDrawer v-model:visible="contractPaymentRecordFormVisible" />
   <contractInvoiceFormDrawer v-model:visible="contractInvoiceFormVisible" />
+  <followRecordDrawer v-model:visible="followRecordFormVisible" />
+  <followPlanDrawer v-model:visible="followPlanFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -105,6 +107,8 @@
   import ContractPaymentPlanFormDrawer from './contract/contractPaymentPlanFormDrawer.vue';
   import ContractPaymentRecordFormDrawer from './contract/contractPaymentRecordFormDrawer.vue';
   import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
+  import followPlanDrawer from './customManagement/followPlanDrawer.vue';
+  import followRecordDrawer from './customManagement/followRecordDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import MoveAccountReasonDrawer from './customManagement/moveReasonDrawer.vue';
   import OpenSeaDrawer from './customManagement/openSeaDrawer.vue';
@@ -330,6 +334,22 @@
       key: ModuleConfigEnum.HOME,
       icon: 'iconicon_home',
       groupList: [],
+      enable: true,
+    },
+    {
+      label: t('module.followManagement'),
+      key: ModuleConfigEnum.FOLLOW_MANAGEMENT,
+      icon: 'iconicon_account_outlined',
+      groupList: [
+        {
+          label: t('module.followRecordFormSetting'),
+          key: 'followRecordForm',
+        },
+        {
+          label: t('module.followPlanFormSetting'),
+          key: 'followPlanForm',
+        },
+      ],
       enable: true,
     },
     {
@@ -585,6 +605,8 @@
   const contractPaymentPlanFormVisible = ref(false);
   const contractPaymentRecordFormVisible = ref(false);
   const contractInvoiceFormVisible = ref(false);
+  const followRecordFormVisible = ref(false);
+  const followPlanFormVisible = ref(false);
 
   function handleSelect(key: string, item: ModuleConfigItem) {
     selectKey.value = item.key;
@@ -616,6 +638,13 @@
           clueManagementCluePoolVisible.value = true;
         } else if (key === 'capacitySet') {
           capacitySetVisible.value = true;
+        }
+        break;
+      case ModuleConfigEnum.FOLLOW_MANAGEMENT:
+        if (key === 'followRecordForm') {
+          followRecordFormVisible.value = true;
+        } else if (key === 'followPlanForm') {
+          followPlanFormVisible.value = true;
         }
         break;
       case ModuleConfigEnum.BUSINESS_MANAGEMENT:

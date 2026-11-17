@@ -183,14 +183,21 @@ export const pathMap: PathMapItem[] = [
     ],
   },
   {
-    key: 'FOLLOW_UP_RECORD',
-    route: AppRouteEnum.OPPORTUNITY_OPT, // TODO lmy 跟进记录
-    locale: 'module.customer.followRecord',
-  },
-  {
-    key: 'FOLLOW_UP_PLAN',
-    route: AppRouteEnum.OPPORTUNITY_OPT, // TODO lmy 跟进计划
-    locale: 'module.customer.followPlan',
+    key: 'FOLLOW',
+    route: AppRouteEnum.FOLLOW_MANAGEMENT,
+    locale: 'module.followManagement',
+    children: [
+      {
+        key: 'FOLLOW_UP_RECORD',
+        route: AppRouteEnum.FOLLOW_MANAGEMENT_RECORD,
+        locale: 'module.customer.followRecord',
+      },
+      {
+        key: 'FOLLOW_UP_PLAN',
+        route: AppRouteEnum.FOLLOW_MANAGEMENT_PLAN,
+        locale: 'module.customer.followPlan',
+      },
+    ],
   },
   {
     key: 'SYSTEM',

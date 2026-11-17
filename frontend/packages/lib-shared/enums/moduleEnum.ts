@@ -5,6 +5,9 @@ export enum ModuleConfigEnum {
   /** 客户管理 */
   CUSTOMER_MANAGEMENT = 'customer',
 
+  /** 跟进管理 */
+  FOLLOW_MANAGEMENT = 'follow',
+
   /** 线索管理 */
   CLUE_MANAGEMENT = 'clue',
 

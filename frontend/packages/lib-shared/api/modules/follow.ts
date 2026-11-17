@@ -36,9 +36,26 @@ import {
   UpdateFollowRecordUrl,
   AddFollowRecordUrl,
   AddFollowPlanUrl,
+  DownloadFollowPlanTemplateUrl,
+  DownloadFollowRecordTemplateUrl,
+  ExportFollowPlanUrl,
+  ExportFollowRecordUrl,
+  ExportAllFollowPlanUrl,
+  ExportAllFollowRecordUrl,
+  ImportFollowPlanUrl,
+  ImportFollowRecordUrl,
+  PreCheckFollowPlanImportUrl,
+  PreCheckFollowRecordImportUrl,
   UpdateFollowRecordViewUrl,
 } from '@lib/shared/api/requrls/follow';
-import type { CommonList, TableDraggedParams } from '@lib/shared/models/common';
+import type {
+  CommonList,
+  ImportUploadParams,
+  TableDraggedParams,
+  TableExportParams,
+  TableExportSelectedParams,
+} from '@lib/shared/models/common';
+import type { ValidateInfo } from '@lib/shared/models/system/org';
 import type {
   CustomerFollowRecordTableParams,
   CustomerTabHidden,
@@ -93,6 +110,29 @@ export default function useFollowApi(CDR: CordysAxios) {
     return CDR.post({ url: AddFollowRecordUrl, data });
   }
 
+  function preCheckImportFollowRecord(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckFollowRecordImportUrl }, params, 'file');
+  }
+
+  function downloadFollowRecordTemplate() {
+    return CDR.get(
+      { url: DownloadFollowRecordTemplateUrl, responseType: 'blob' },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importFollowRecord(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportFollowRecordUrl }, params, 'file');
+  }
+
+  function exportFollowRecordAll(data: TableExportParams) {
+    return CDR.post({ url: ExportAllFollowRecordUrl, data });
+  }
+
+  function exportFollowRecordSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportFollowRecordUrl, data });
+  }
+
   // 获取tab显隐藏
   function getFollowPlanTab() {
     return CDR.get<CustomerTabHidden>({ url: GetFollowPlanTabUrl });
@@ -112,6 +152,29 @@ export default function useFollowApi(CDR: CordysAxios) {
 
   function addFollowPlan(data: UpdateCustomerFollowRecordParams) {
     return CDR.post({ url: AddFollowPlanUrl, data });
+  }
+
+  function preCheckImportFollowPlan(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckFollowPlanImportUrl }, params, 'file');
+  }
+
+  function downloadFollowPlanTemplate() {
+    return CDR.get(
+      { url: DownloadFollowPlanTemplateUrl, responseType: 'blob' },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importFollowPlan(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportFollowPlanUrl }, params, 'file');
+  }
+
+  function exportFollowPlanAll(data: TableExportParams) {
+    return CDR.post({ url: ExportAllFollowPlanUrl, data });
+  }
+
+  function exportFollowPlanSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportFollowPlanUrl, data });
   }
 
   // 跟进记录评论
@@ -228,6 +291,16 @@ export default function useFollowApi(CDR: CordysAxios) {
     updateFollowRecord,
     addFollowRecord,
     addFollowPlan,
+    preCheckImportFollowRecord,
+    downloadFollowRecordTemplate,
+    importFollowRecord,
+    exportFollowRecordAll,
+    exportFollowRecordSelected,
+    preCheckImportFollowPlan,
+    downloadFollowPlanTemplate,
+    importFollowPlan,
+    exportFollowPlanAll,
+    exportFollowPlanSelected,
     getFollowRecordCommentList,
     addFollowRecordComment,
     updateFollowRecordComment,

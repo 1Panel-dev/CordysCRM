@@ -12,6 +12,8 @@ import {
   downloadContractPaymentRecordTemplate,
   downloadContractTemplate,
   downloadCustomFormTemplate,
+  downloadFollowPlanTemplate,
+  downloadFollowRecordTemplate,
   downloadLeadTemplate,
   downloadOptTemplate,
   downloadOrderTemplate,
@@ -28,6 +30,8 @@ import {
   importContractPaymentPlan,
   importContractPaymentRecord,
   importCustomForm,
+  importFollowPlan,
+  importFollowRecord,
   importLead,
   importOpportunity,
   importOrder,
@@ -44,6 +48,8 @@ import {
   preCheckImportContractPaymentPlan,
   preCheckImportContractPaymentRecord,
   preCheckImportCustomForm,
+  preCheckImportFollowPlan,
+  preCheckImportFollowRecord,
   preCheckImportLead,
   preCheckImportOpt,
   preCheckImportOrder,
@@ -70,6 +76,8 @@ export type ImportApiType =
   | FormDesignKeyEnum.CUSTOM_FORM
   | FormDesignKeyEnum.CONTRACT
   | FormDesignKeyEnum.ORDER
+  | FormDesignKeyEnum.FOLLOW_RECORD
+  | FormDesignKeyEnum.FOLLOW_PLAN
   | ImportTypeExcludeFormDesignEnum.TERM_IMPORT;
 
 export interface importRequestType {
@@ -163,5 +171,15 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: (params) => preCheckImportCustomForm(params.uploadParams),
     save: (params) => importCustomForm(params.uploadParams),
     download: downloadCustomFormTemplate,
+  },
+  [FormDesignKeyEnum.FOLLOW_RECORD]: {
+    preCheck: (params) => preCheckImportFollowRecord(params.uploadParams),
+    save: (params) => importFollowRecord(params.uploadParams),
+    download: downloadFollowRecordTemplate,
+  },
+  [FormDesignKeyEnum.FOLLOW_PLAN]: {
+    preCheck: (params) => preCheckImportFollowPlan(params.uploadParams),
+    save: (params) => importFollowPlan(params.uploadParams),
+    download: downloadFollowPlanTemplate,
   },
 };

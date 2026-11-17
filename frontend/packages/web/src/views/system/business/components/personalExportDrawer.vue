@@ -164,6 +164,7 @@
     { name: SystemResourceMessageTypeEnum.ORDER, tab: t('module.order') },
     { name: SystemResourceMessageTypeEnum.PRODUCT, tab: t('module.productManagement') },
     { name: SystemResourceMessageTypeEnum.CUSTOM_FORM, tab: t('module.customForm') },
+    { name: SystemResourceMessageTypeEnum.FOLLOW_RECORD, tab: t('module.followManagement') },
   ]);
 
   const childrenTabMap: Record<string, CrmTabListItem[]> = {
@@ -187,6 +188,10 @@
     [SystemResourceMessageTypeEnum.PRODUCT]: [
       { name: SystemResourceMessageTypeEnum.PRODUCT, tab: t('module.productManagement') },
       { name: SystemResourceMessageTypeEnum.PRODUCT_PRICE, tab: t('module.productManagementPrice') },
+    ],
+    [SystemResourceMessageTypeEnum.FOLLOW_RECORD]: [
+      { name: SystemResourceMessageTypeEnum.FOLLOW_RECORD, tab: t('module.customer.followRecord') },
+      { name: SystemResourceMessageTypeEnum.FOLLOW_PLAN, tab: t('module.customer.followPlan') },
     ],
   };
 
@@ -270,6 +275,10 @@
         return t('module.productManagement');
       case SystemResourceMessageTypeEnum.ORDER:
         return t('module.order');
+      case SystemResourceMessageTypeEnum.FOLLOW_RECORD:
+        return t('module.customer.followRecord');
+      case SystemResourceMessageTypeEnum.FOLLOW_PLAN:
+        return t('module.customer.followPlan');
       default:
         return t('menu.opportunity');
     }
