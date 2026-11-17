@@ -92,7 +92,7 @@
                 :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="props.readonly || !hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
+                :readonly="customerReadonly || !hasApprovalScopedPermission(detailInfo, ['CUSTOMER_MANAGEMENT:UPDATE'])"
                 @init="handleDescriptionInit"
                 @refresh="emit('refresh')"
                 @saved="handleSaved"
@@ -130,7 +130,7 @@
           />
         </div>
         <div v-if="activeTab === 'relation'" class="h-full px-[24px] pt-[24px]">
-          <customerRelation :source-id="props.sourceId" :readonly="props.readonly" />
+          <customerRelation :source-id="props.sourceId" :readonly="customerReadonly" />
         </div>
         <div v-if="activeTab === 'opportunityInfo'" class="h-full px-[24px] pt-[24px]">
           <opportunityTable
@@ -146,7 +146,7 @@
           <collaborator
             :source-id="props.sourceId"
             :collaborators="collaborators"
-            :readonly="props.readonly"
+            :readonly="customerReadonly"
             @refresh="initCollaborators"
           />
         </div>
@@ -309,6 +309,9 @@
   const detailInfo = ref<Record<string, any>>({});
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
+  const customerReadonly = computed(
+    () => props.readonly || ['READ_ONLY', 'COLLABORATION'].includes(collaborationType.value ?? '')
+  );
   const collaborators = ref<CollaborationItem[]>([]);
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
@@ -377,7 +380,7 @@
     groupList: ActionsItem[];
     moreList: ActionsItem[];
   }>(() => {
-    if (collaborationType.value === 'READ_ONLY' || props.readonly) {
+    if (customerReadonly.value) {
       return {
         groupList: [],
         moreList: [],
@@ -723,6 +726,7 @@
     ([visible, sourceId]) => {
       if (!visible) {
         detailInfo.value = {};
+        collaborationType.value = undefined;
         collaborators.value = [];
       } else if (sourceId) {
         initApprovalPermission();
