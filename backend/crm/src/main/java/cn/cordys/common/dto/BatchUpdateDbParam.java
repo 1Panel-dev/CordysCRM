@@ -17,7 +17,7 @@ public class BatchUpdateDbParam {
     private Long updateTime;
 
     public Object getFieldValue() {
-        if (fieldValue != null && fieldValue instanceof List) {
+        if (fieldValue != null && fieldValue instanceof List<?>) {
             return JSON.toJSONString(fieldValue);
         }
         return fieldValue;

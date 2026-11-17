@@ -386,7 +386,7 @@ public class StatisticFieldService {
             if (CollectionUtils.isEmpty(dataIds)) {
                 break;
             }
-            lastId = dataIds.get(dataIds.size() - 1);
+            lastId = dataIds.getLast();
 
             inFlight.addLast(CompletableFuture.supplyAsync(
                     () -> refreshPage(context, dataIds, orgId), statisticRefreshExecutor));

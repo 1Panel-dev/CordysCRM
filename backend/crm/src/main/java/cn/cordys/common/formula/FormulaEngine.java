@@ -309,7 +309,7 @@ public class FormulaEngine {
     }
 
     private double days(List<Object> args) {
-        if (args.size() < 2 || !(args.get(0) instanceof Number end) || !(args.get(1) instanceof Number start)) {
+        if (args.size() < 2 || !(args.getFirst() instanceof Number end) || !(args.get(1) instanceof Number start)) {
             return 0D;
         }
         if (!Double.isFinite(end.doubleValue()) || !Double.isFinite(start.doubleValue())) {
@@ -341,7 +341,7 @@ public class FormulaEngine {
         if (args.size() < 2) {
             return null;
         }
-        if (toBoolean(args.get(0).get())) {
+        if (toBoolean(args.getFirst().get())) {
             return args.get(1).get();
         }
         return args.size() > 2 ? args.get(2).get() : null;
@@ -369,7 +369,7 @@ public class FormulaEngine {
         if (args.size() < 2) {
             return "";
         }
-        return formatTextValue(args.get(0), args.get(1));
+        return formatTextValue(args.getFirst(), args.get(1));
     }
 
     private String formatTextValue(Object value, Object formatValue) {
