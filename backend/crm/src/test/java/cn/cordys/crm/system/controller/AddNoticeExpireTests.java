@@ -10,29 +10,20 @@ import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
-import cn.cordys.crm.system.domain.Notification;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
-import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.job.NoticeExpireJob;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.List;
-
-import static org.awaitility.Awaitility.await;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Tag("integration")
@@ -243,6 +234,4 @@ public class AddNoticeExpireTests {
         organizationUser.setUpdateTime(System.currentTimeMillis());
         organizationUserBaseMapper.insert(organizationUser);
     }
-
-
 }

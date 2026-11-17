@@ -12,7 +12,6 @@ import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
-import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
