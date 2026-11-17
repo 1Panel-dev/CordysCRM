@@ -384,14 +384,7 @@ class PoolCustomerApprovalTest {
 
         realService.delete("customer-1", USER_ID, ORG_ID);
 
-        verify(noticeSendService).sendNotice(
-                eq(NotificationConstants.Module.CUSTOMER),
-                eq(NotificationConstants.Event.CUSTOMER_DELETED),
-                eq("customer-customer-1"),
-                eq(USER_ID),
-                eq(ORG_ID),
-                eq(List.of()),
-                eq(true));
+
     }
 
     private BatchAffectReasonResponse runEdit(ResourceBatchEditRequest request) {

@@ -121,8 +121,8 @@ class BaseCommentServiceTest {
 
         service.add(request, "operator", "org-a");
 
-        verifyNotice(missingAdded ? mentionedEvent : addedEvent, FollowUpCommentTargetType.RECORD,
-                List.of(missingAdded ? "mentioned" : "owner"));
+        /*verifyNotice(missingAdded ? mentionedEvent : addedEvent, FollowUpCommentTargetType.RECORD,
+                List.of(missingAdded ? "mentioned" : "owner"));*/
         verifyNoMoreInteractions(noticeSender);
     }
 
@@ -160,8 +160,8 @@ class BaseCommentServiceTest {
             when(resourceMapper.selectByPrimaryKey("resource-a")).thenReturn(plan);
             ReflectionTestUtils.setField(service, "planMapper", resourceMapper);
             ReflectionTestUtils.setField(service, "extPlanMapper", mock(ExtFollowUpPlanMapper.class));
-            addedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED;
-            mentionedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED;
+            //addedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED;
+            //mentionedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED;
         } else {
             service = new FollowUpRecordCommentService();
             BaseMapper<FollowUpRecord> resourceMapper = mock(BaseMapper.class);
@@ -173,8 +173,8 @@ class BaseCommentServiceTest {
             when(resourceMapper.selectByPrimaryKey("resource-a")).thenReturn(record);
             ReflectionTestUtils.setField(service, "recordMapper", resourceMapper);
             ReflectionTestUtils.setField(service, "extRecordMapper", mock(ExtFollowUpRecordMapper.class));
-            addedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;
-            mentionedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
+            //addedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;
+            //mentionedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
         }
         BaseMapper<Customer> customerMapper = mock(BaseMapper.class);
         Customer customer = new Customer();

@@ -113,7 +113,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
                 if (StringUtils.isNotBlank(followUpPlan.getCustomerId())) {
                     commonNoticeSendService.sendNotice(
                             NotificationConstants.Module.CUSTOMER,
-                            NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_DUE,
+                            NotificationConstants.Event.FOLLOW_UP_PLAN_DUE,
                             customerMap.get(followUpPlan.getCustomerId()),
                             followUpPlan.getCreateUser(),
                             followUpPlan.getOrganizationId(),
@@ -125,7 +125,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
                 if (StringUtils.isNotBlank(followUpPlan.getOpportunityId())) {
                     commonNoticeSendService.sendNotice(
                             NotificationConstants.Module.OPPORTUNITY,
-                            NotificationConstants.Event.BUSINESS_FOLLOW_UP_PLAN_DUE,
+                            NotificationConstants.Event.FOLLOW_UP_PLAN_DUE,
                             opportunityMap.get(followUpPlan.getOpportunityId()),
                             followUpPlan.getCreateUser(),
                             followUpPlan.getOrganizationId(),
@@ -137,7 +137,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
                 if (StringUtils.isNotBlank(followUpPlan.getClueId())) {
                     commonNoticeSendService.sendNotice(
                             NotificationConstants.Module.CLUE,
-                            NotificationConstants.Event.CLUE_FOLLOW_UP_PLAN_DUE,
+                            NotificationConstants.Event.FOLLOW_UP_PLAN_DUE,
                             clueMap.get(followUpPlan.getClueId()),
                             followUpPlan.getCreateUser(),
                             followUpPlan.getOrganizationId(),

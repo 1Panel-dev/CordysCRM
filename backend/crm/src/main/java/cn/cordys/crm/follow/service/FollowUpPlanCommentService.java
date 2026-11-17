@@ -81,7 +81,7 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
     @Override
     protected String getCommentAddedEvent(String resourceId) {
         FollowUpPlan plan = planMapper.selectByPrimaryKey(resourceId);
-        if (plan != null) {
+        /*if (plan != null) {
             if (Strings.CI.equals(plan.getType(), ModuleKey.CLUE.name())) {
                 return NotificationConstants.Event.CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED;
             } else if (StringUtils.isNotBlank(plan.getOpportunityId())) {
@@ -90,13 +90,14 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
                 return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED;
             }
         }
-        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED;
+        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED;*/
+        return null;
     }
 
     @Override
     protected String getCommentMentionedEvent(String resourceId) {
         FollowUpPlan plan = planMapper.selectByPrimaryKey(resourceId);
-        if (plan != null) {
+        /*if (plan != null) {
             if (Strings.CI.equals(plan.getType(), ModuleKey.CLUE.name())) {
                 return NotificationConstants.Event.CLUE_FOLLOW_UP_PLAN_COMMENT_MENTIONED;
             } else if (StringUtils.isNotBlank(plan.getOpportunityId())) {
@@ -105,7 +106,8 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
                 return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED;
             }
         }
-        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED;
+        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED;*/
+        return null;
     }
 
     @Override

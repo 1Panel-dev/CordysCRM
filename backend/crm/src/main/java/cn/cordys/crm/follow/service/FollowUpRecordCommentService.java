@@ -81,22 +81,23 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
     @Override
     protected String getCommentAddedEvent(String resourceId) {
         FollowUpRecord record = recordMapper.selectByPrimaryKey(resourceId);
-        if (record != null) {
+        /*if (record != null) {
             if (Strings.CI.equals(record.getType(), ModuleKey.CLUE.name())) {
-                return NotificationConstants.Event.CLUE_FOLLOW_UP_RECORD_COMMENT_ADDED;
+                return NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT;
             } else if (StringUtils.isNotBlank(record.getOpportunityId())) {
                 return NotificationConstants.Event.OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_ADDED;
             } else {
                 return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;
             }
         }
-        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;
+        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;*/
+        return null;
     }
 
     @Override
     protected String getCommentMentionedEvent(String resourceId) {
         FollowUpRecord record = recordMapper.selectByPrimaryKey(resourceId);
-        if (record != null) {
+        /*if (record != null) {
             if (Strings.CI.equals(record.getType(), ModuleKey.CLUE.name())) {
                 return NotificationConstants.Event.CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
             } else if (StringUtils.isNotBlank(record.getOpportunityId())) {
@@ -105,7 +106,8 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
                 return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
             }
         }
-        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
+        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;*/
+        return null;
     }
 
     @Override

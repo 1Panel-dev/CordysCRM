@@ -1750,7 +1750,8 @@ public class ApprovalActionService {
         if (formKey == null) {
             // 自定义表单（非 FormKey 枚举），统一发送到审批待办通知
             module = NotificationConstants.Module.APPROVAL;
-            event = NotificationConstants.Event.CUSTOM_FORM_DATA_APPROVAL;
+            //event = NotificationConstants.Event.CUSTOM_FORM_DATA_APPROVAL;
+            event= null;
         } else {
             switch (formKey) {
             case CLUE -> {

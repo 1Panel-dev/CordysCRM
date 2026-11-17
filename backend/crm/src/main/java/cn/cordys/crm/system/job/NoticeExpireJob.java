@@ -314,11 +314,12 @@ public class NoticeExpireJob {
         if (task == null) {
             return true;
         }
-        return !Boolean.TRUE.equals(task.getDingTalkEnable())
+        /*return !Boolean.TRUE.equals(task.getDingTalkEnable())
                 && !Boolean.TRUE.equals(task.getEmailEnable())
                 && !Boolean.TRUE.equals(task.getSysEnable())
                 && !Boolean.TRUE.equals(task.getWeComEnable())
-                && !Boolean.TRUE.equals(task.getLarkEnable());
+                && !Boolean.TRUE.equals(task.getLarkEnable());*/
+        return false;
     }
 
     /**

@@ -340,7 +340,7 @@ public class ThirdDepartmentService {
             paramMap.put("organizationId", orgId);
 
             // 发送通知给操作人
-            commonNoticeSendService.sendNotice(
+            /*commonNoticeSendService.sendNotice(
                     NotificationConstants.Module.SYSTEM, // 模块类型
                     NotificationConstants.Event.SYNC_ORGANIZATION_STRUCTURE, // 事件类型
                     paramMap,
@@ -348,7 +348,7 @@ public class ThirdDepartmentService {
                     orgId,
                     List.of(operatorId), // 只发送给操作人
                     false // 不排除自己
-            );
+            );*/
             log.info("组织架构同步成功通知已发送，操作人：{}，同步类型：{}", operatorId, type);
         } catch (Exception e) {
             log.error("发送组织架构同步成功通知失败", e);

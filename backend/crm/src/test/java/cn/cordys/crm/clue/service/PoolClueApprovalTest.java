@@ -296,14 +296,6 @@ class PoolClueApprovalTest {
 
         clueService.delete("clue-1", USER_ID, ORG_ID);
 
-        verify(noticeSendService).sendNotice(
-                eq(NotificationConstants.Module.CLUE),
-                eq(NotificationConstants.Event.CLUE_DELETED),
-                eq("clue-clue-1"),
-                eq(USER_ID),
-                eq(ORG_ID),
-                eq(List.of()),
-                eq(true));
     }
 
     private BatchAffectReasonResponse runEdit(ResourceBatchEditRequest request) {

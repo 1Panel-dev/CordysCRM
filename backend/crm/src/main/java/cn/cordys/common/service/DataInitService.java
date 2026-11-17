@@ -8,6 +8,7 @@ import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.domain.Parameter;
+import cn.cordys.crm.system.service.MessageNotificationService;
 import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.crm.system.service.ModuleFieldService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -51,6 +52,8 @@ public class DataInitService {
     private OpportunityQuotationService opportunityQuotationService;
     @Resource
     private OrderService orderService;
+    @Resource
+    private MessageNotificationService messageNotificationService;
 
     public void initOneTime() {
         RLock lock = redisson.getLock("init_data_lock");
@@ -91,6 +94,7 @@ public class DataInitService {
             // 更新标记以补齐新增系统标签，新环境仍只执行一次通用初始化。
             initOneTime(moduleFormService::initInternalDetailTabs, "init.clue.transition.detail.tab");
             initOneTime(moduleFormService::initChangeLogTabs, "init.change.log.detail.tab");
+            initOneTime(messageNotificationService::modifyMessageNotification, "modify.message.notification");
         } finally {
             lock.unlock();
         }

@@ -797,9 +797,7 @@ public class ContractService implements ApprovalResourceHandler {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name())
                 || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
-            String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name())
-                    ? NotificationConstants.Event.CONTRACT_VOID
-                    : NotificationConstants.Event.CONTRACT_ARCHIVED;
+            String event = NotificationConstants.Event.CONTRACT_VOID;
             sendNotice(newContract, userId, orgId, event, contract.getName());
         }
 
@@ -878,7 +876,7 @@ public class ContractService implements ApprovalResourceHandler {
         List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper
                 .selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
                         .eq(MessageTaskConfig::getOrganizationId, orgId)
-                        .eq(MessageTaskConfig::getTaskType, NotificationConstants.Module.CONTRACT)
+                        //.eq(MessageTaskConfig::getTaskType, NotificationConstants.Module.CONTRACT)
                         .eq(MessageTaskConfig::getEvent, event));
         if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
             MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();

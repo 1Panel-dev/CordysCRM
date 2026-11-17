@@ -17,9 +17,12 @@ public class MessageTaskConfig {
     @Schema(description = "通知事件类型")
     private String event;
 
-    @Schema(description = "任务类型")
-    private String taskType;
-
     @Schema(description = "通知配置值")
     private String value;
+
+    @Schema(description = "触发类型")
+    private String triggerType;
+
+    @Schema(description = "消息通知任务id")
+    private String messageTaskId;
 }
