@@ -134,7 +134,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
-    :readonly="props.readonly"
+    :readonly="props.readonly && !props.independentDetail"
     @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
@@ -243,6 +243,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    independentDetail?: boolean;
     formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER | FormDesignKeyEnum.CUSTOMER_ORDER;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;

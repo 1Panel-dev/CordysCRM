@@ -6,7 +6,7 @@
           :active-editor="getParentCommentEditor(comment)"
           :can-delete="canDelete(comment)"
           :can-edit="canEdit(comment)"
-          :can-reply="props.canReply"
+          :can-reply="!props.readonly && props.canReply"
           :actions-in-more="props.actionsInMore"
           :comment="comment"
           :enable-attachment="props.enableAttachment"
@@ -37,7 +37,7 @@
               :active-editor="props.activeEditor"
               :can-delete="canDelete(reply)"
               :can-edit="canEdit(reply)"
-              :can-reply="props.canReply"
+              :can-reply="!props.readonly && props.canReply"
               :actions-in-more="props.actionsInMore"
               :comment="reply"
               :submit-loading="props.submitLoading"
@@ -116,6 +116,7 @@
       activeEditor?: FollowCommentActiveEditor | null;
       submitLoading?: boolean;
       canReply?: boolean;
+      readonly?: boolean;
       enableAttachment?: boolean;
       actionsInMore?: boolean;
     }>(),
@@ -197,12 +198,12 @@
 
   const isCommentOwner = (comment: FollowCommentItem) => comment.createUser === userStore.userInfo.id;
 
-  const canEdit = (comment: FollowCommentItem) => isCommentOwner(comment);
+  const canEdit = (comment: FollowCommentItem) => !props.readonly && isCommentOwner(comment);
 
-  const canDelete = (comment: FollowCommentItem) => isCommentOwner(comment);
+  const canDelete = (comment: FollowCommentItem) => !props.readonly && isCommentOwner(comment);
 
   function handleReply(comment: FollowCommentItem) {
-    if (!props.canReply) {
+    if (props.readonly || !props.canReply) {
       return;
     }
     emit('reply', comment);
@@ -223,7 +224,7 @@
   }
 
   function handleParentReplySubmit(comment: FollowCommentItem, value: FollowCommentSubmitValue) {
-    if (!props.canReply) {
+    if (props.readonly || !props.canReply) {
       return;
     }
 
@@ -234,7 +235,7 @@
   }
 
   function handleReplySubmit(value: FollowCommentActionValue) {
-    if (!props.canReply) {
+    if (props.readonly || !props.canReply) {
       return;
     }
     emit('replySubmit', value);

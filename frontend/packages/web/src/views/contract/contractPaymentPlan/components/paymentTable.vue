@@ -89,7 +89,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
-    :readonly="props.readonly"
+    :readonly="props.readonly && !props.independentDetail"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
     @open-contract-drawer="showContractDrawer"
@@ -165,6 +165,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    independentDetail?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
@@ -472,7 +473,7 @@
       status: (row: PaymentPlanItem) =>
         h(StatusTagSelect, {
           'status': row.planStatus as ContractPaymentPlanEnum,
-          'disabled': !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE']),
+          'disabled': props.readonly || !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE']),
           'statusTagComponent': ContractStatus,
           'onUpdate:status': (val) => {
             row.planStatus = val;

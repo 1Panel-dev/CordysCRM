@@ -4,7 +4,7 @@
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
     :class="`crm-quotation-table-${props.formKey}`"
-    :action-config="actionConfig"
+    :action-config="props.readonly ? undefined : actionConfig"
     :not-show-table-filter="isAdvancedSearchMode"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
@@ -520,7 +520,7 @@
         },
     specialRender: {
       name: (row: QuotationItem) => {
-        const canOpenDetail = !props.readonly && hasApprovalScopedPermission(row, ['OPPORTUNITY_QUOTATION:READ']);
+        const canOpenDetail = hasApprovalScopedPermission(row, ['OPPORTUNITY_QUOTATION:READ']);
         const createNameButton = () =>
           h(
             CrmTableButton,

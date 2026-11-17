@@ -21,7 +21,7 @@
               <StatusTagSelect
                 v-if="item.status"
                 v-model:status="item.status"
-                :disabled="!props.getDisabledFun?.(item) || !!item.converted || !isOwner(item)"
+                :disabled="props.readonly || !props.getDisabledFun?.(item) || !!item.converted || !isOwner(item)"
                 @change="() => emit('change', item)"
               />
               <CrmTag v-if="item.status && item.converted"> {{ t('common.hasConvertToRecord') }} </CrmTag>
@@ -81,6 +81,7 @@
             :source-id="item.id"
             :can-create="canComment"
             :can-reply="canComment"
+            :readonly="props.readonly"
           />
         </div>
       </div>
@@ -123,6 +124,7 @@
     virtualScrollHeight: string;
     emptyText?: string;
     disabledOpenDetail?: boolean;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{

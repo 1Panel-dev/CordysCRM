@@ -29,6 +29,7 @@
           @import-success="() => searchData()"
         />
         <n-button
+          v-if="!props.readonly"
           v-permission="['CONTRACT:EXPORT']"
           type="primary"
           ghost
@@ -705,7 +706,7 @@
             );
       },
       stage: (row: ContractItem) => {
-        const canEditStage = hasApprovalScopedPermission(row, ['CONTRACT:UPDATE']);
+        const canEditStage = !props.readonly && hasApprovalScopedPermission(row, ['CONTRACT:UPDATE']);
         return h(StatusTagSelect, {
           'status': row.stage as ContractStatusEnum,
           'noRender': true,

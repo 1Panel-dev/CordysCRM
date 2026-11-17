@@ -2,7 +2,7 @@
   <div :class="`crm-follow-detail p-[24px] ${props.wrapperClass}`">
     <div class="mb-[16px] flex items-center justify-between">
       <div>
-        <n-button v-if="showAdd" type="primary" @click="handleAdd">
+        <n-button v-if="showAdd && !props.readonly" type="primary" @click="handleAdd">
           {{ t(props.activeType === 'followPlan' ? 'crmFollowRecord.writePlan' : 'crmFollowRecord.writeRecord') }}
         </n-button>
       </div>
@@ -35,6 +35,7 @@
         :type="props.activeType"
         :empty-text="emptyText"
         :get-disabled-fun="getShowAction"
+        :readonly="props.readonly"
         @reach-bottom="handleReachBottom"
         @change="changePlanStatus"
       >
@@ -43,11 +44,18 @@
             <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
               {{ t('common.detail') }}
             </n-button>
-            <n-button v-if="isOwner(item)" type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
+            <n-button
+              v-if="!props.readonly && isOwner(item)"
+              type="primary"
+              class="text-btn-primary"
+              quaternary
+              @click="handleEdit(item)"
+            >
               {{ t('common.edit') }}
             </n-button>
             <n-button
               v-if="
+                !props.readonly &&
                 props.activeType === 'followPlan' &&
                 [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) &&
                 !item.converted &&
@@ -60,7 +68,13 @@
             >
               {{ t('common.convertPlanToRecord') }}
             </n-button>
-            <n-button v-if="isOwner(item)" type="error" class="text-btn-error" quaternary @click="handleDelete(item)">
+            <n-button
+              v-if="!props.readonly && isOwner(item)"
+              type="error"
+              class="text-btn-error"
+              quaternary
+              @click="handleDelete(item)"
+            >
               {{ t('common.delete') }}
             </n-button>
           </div>
@@ -143,6 +157,7 @@
     sourceId: string; // 资源id
     refreshKey?: number;
     showAction?: boolean; // 显示操作
+    readonly?: boolean;
     initialSourceName?: string; // 初始化详情时的名称
     showAdd?: boolean; // 显示增加按钮
     anyPermission?: string[]; // 无任一权限展示无权限

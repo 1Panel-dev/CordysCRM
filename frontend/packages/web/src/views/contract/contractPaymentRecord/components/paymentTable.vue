@@ -109,7 +109,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
-    :readonly="props.readonly"
+    :readonly="props.readonly && !props.independentDetail"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
     @open-contract-drawer="showContractDrawer"
@@ -186,6 +186,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    independentDetail?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;

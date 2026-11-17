@@ -78,8 +78,9 @@
             :get-description-fun="getDescriptionFun"
             key-field="id"
             :disabled-open-detail="false"
+            :readonly="props.readonly"
             type="followPlan"
-            :get-disabled-fun="() => true"
+            :get-disabled-fun="() => !props.readonly"
             :empty-text="t('crmFollowRecord.noFollowPlan')"
             @reach-bottom="handleTimelineReachBottom"
             @change="changePlanStatus"
@@ -148,7 +149,7 @@
       :source-name="sourceName"
       :refresh-key="refreshKey"
       :detail="activeItem"
-      :readonly="!canEdit"
+      :readonly="!canEditDetail"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
       @convert="(detail) => handleConvert(detail)"
@@ -251,6 +252,7 @@
 
   const props = defineProps<{
     readonly?: boolean;
+    independentDetail?: boolean;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -365,6 +367,9 @@
   const canManage = (permission: string) => !props.readonly && canRead.value && hasAnyPermission([permission]);
   const canCreate = computed(() => canManage('FOLLOW_PLAN:ADD'));
   const canEdit = computed(() => canManage('FOLLOW_PLAN:UPDATE'));
+  const canEditDetail = computed(() =>
+    props.independentDetail ? canRead.value && hasAnyPermission(['FOLLOW_PLAN:UPDATE']) : canEdit.value
+  );
   const canDelete = computed(() => canManage('FOLLOW_PLAN:DELETE'));
 
   const showCustomerDrawer = ref(false);

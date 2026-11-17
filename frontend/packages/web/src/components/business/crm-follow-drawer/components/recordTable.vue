@@ -78,6 +78,7 @@
             :get-description-fun="getDescriptionFun"
             key-field="id"
             :disabled-open-detail="false"
+            :readonly="props.readonly"
             type="followRecord"
             :empty-text="t('crmFollowRecord.noFollowRecord')"
             @reach-bottom="handleTimelineReachBottom"
@@ -132,7 +133,7 @@
       :source-id="sourceId"
       :refresh-key="refreshKey"
       :source-name="sourceName"
-      :readonly="!canEdit"
+      :readonly="!canEditDetail"
       :detail="activeItem"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
@@ -231,6 +232,7 @@
 
   const props = defineProps<{
     readonly?: boolean;
+    independentDetail?: boolean;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -314,6 +316,9 @@
   const canManage = (permission: string) => !props.readonly && hasAnyPermission([permission]);
   const canCreate = computed(() => canManage('FOLLOW_RECORD:ADD'));
   const canEdit = computed(() => canManage('FOLLOW_RECORD:UPDATE'));
+  const canEditDetail = computed(() =>
+    props.independentDetail ? hasAnyPermission(['FOLLOW_RECORD:UPDATE']) : canEdit.value
+  );
   const canDelete = computed(() => canManage('FOLLOW_RECORD:DELETE'));
 
   const showCustomerDrawer = ref(false);
