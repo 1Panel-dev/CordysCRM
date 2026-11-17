@@ -576,7 +576,7 @@ public class ModuleFormService {
     /** 自定义表单以表单 ID 作为 formKey，查询前必须限制在当前组织。 */
     private boolean isCustomFormInOrganization(String formId, String organizationId) {
         CustomForm form = customFormMapper.selectByPrimaryKey(formId);
-        return form != null && StringUtils.equals(form.getOrganizationId(), organizationId);
+        return form != null && Strings.CS.equals(form.getOrganizationId(), organizationId);
     }
 
     /**

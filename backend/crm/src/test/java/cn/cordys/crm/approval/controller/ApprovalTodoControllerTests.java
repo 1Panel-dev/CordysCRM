@@ -59,9 +59,9 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertEquals(2, pager.getTotal());
         Assertions.assertEquals(2, pager.getList().size());
         Assertions.assertTrue(pager.getList().stream()
-                .allMatch(item -> StringUtils.equals("APPROVING", item.getApprovalOperation())));
+                .allMatch(item -> Strings.CS.equals("APPROVING", item.getApprovalOperation())));
         Assertions.assertTrue(pager.getList().stream()
-                .noneMatch(item -> StringUtils.equals("node_contract_old", item.getApprovalNodeId())));
+                .noneMatch(item -> Strings.CS.equals("node_contract_old", item.getApprovalNodeId())));
     }
 
     @Sql(scripts = {
@@ -99,7 +99,7 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertEquals(4, pager.getTotal());
         Assertions.assertEquals(4, pager.getList().size());
         Assertions.assertTrue(pager.getList().stream()
-                .anyMatch(item -> StringUtils.equals("todo_processed_resource_001", item.getResourceId())));
+                .anyMatch(item -> Strings.CS.equals("todo_processed_resource_001", item.getResourceId())));
     }
 
     @Sql(scripts = {
@@ -133,7 +133,7 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertEquals(2, pager.getTotal());
         Assertions.assertEquals(2, pager.getList().size());
         Assertions.assertTrue(
-                pager.getList().stream().allMatch(item -> StringUtils.equals("READ", item.getApprovalOperation())));
+                pager.getList().stream().allMatch(item -> Strings.CS.equals("READ", item.getApprovalOperation())));
     }
 
     @Sql(scripts = {
