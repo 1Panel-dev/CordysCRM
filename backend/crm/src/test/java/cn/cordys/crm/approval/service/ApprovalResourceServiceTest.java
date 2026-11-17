@@ -21,6 +21,9 @@ import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceState;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerCollaboration;
+import cn.cordys.crm.customer.service.CustomerResourceAccessContextProvider;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.mybatis.BaseMapper;
@@ -33,6 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
@@ -52,6 +56,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -573,6 +578,60 @@ class ApprovalResourceServiceTest {
         }
         verify(customFormDataService).hasViewPermission("resource-a", "reader", "org-a");
         verifyNoInteractions(extTaskMapper, dataScopeService);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({
+            "协作成员,true,true,org-a,resource-owner,false,true",
+            "无协作关系,false,true,org-a,resource-owner,false,false",
+            "无查看功能权限,true,false,org-a,resource-owner,false,false",
+            "异组织客户,true,true,org-b,resource-owner,false,false",
+            "客户不存在,true,true,,resource-owner,false,false",
+            "客户无负责人,true,true,org-a,,false,false",
+            "关联数据被隔离,true,true,org-a,resource-owner,true,false"
+    })
+    @SuppressWarnings("unchecked")
+    void customerApprovalReadReusesCollaborationWithoutBypassingAccessChecks(String scenario, boolean collaborator,
+            boolean readPermitted, String customerOrg, String owner, boolean isolated, boolean expected) {
+        ApprovalInstance instance = instanceForView();
+        instance.setType("customer");
+        instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
+        when(extTaskMapper.selectLatestInstanceByResourceId("resource-a")).thenReturn(instance);
+        CustomerResourceAccessContextProvider provider = new CustomerResourceAccessContextProvider();
+        BaseMapper<Customer> customers = mock(BaseMapper.class);
+        BaseMapper<CustomerCollaboration> members = mock(BaseMapper.class);
+        ReflectionTestUtils.setField(provider, "customerMapper", customers);
+        ReflectionTestUtils.setField(provider, "collaborationMapper", members);
+        Customer customer = new Customer();
+        customer.setOrganizationId(customerOrg);
+        customer.setOwner(owner);
+        customer.setApprovalStatus(instance.getApprovalStatus());
+        when(customers.selectByPrimaryKey("resource-a")).thenReturn(customerOrg == null ? null : customer);
+        when(members.countByExample(any(CustomerCollaboration.class))).thenAnswer(invocation -> {
+            CustomerCollaboration query = invocation.getArgument(0);
+            assertEquals("resource-a", query.getCustomerId());
+            assertEquals("reader", query.getUserId());
+            assertNull(query.getExpireTime(), "到期协作仍可读取客户信息");
+            return collaborator ? 1L : 0L;
+        });
+        RelatedResourcePermissionService related = mock(RelatedResourcePermissionService.class);
+        when(related.isIsolatedData("customer", "resource-a", "reader", "org-a")).thenReturn(isolated);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", related);
+
+        try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class,
+                withSettings().mockMaker(MockMakers.INLINE));
+                MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class,
+                        withSettings().mockMaker(MockMakers.INLINE))) {
+            permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+                    .thenReturn(readPermitted);
+            beans.when(() -> CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class))
+                    .thenReturn(Map.of("customer", provider));
+
+            assertEquals(expected, service.hasViewPermission("resource-a", "reader", "org-a"), scenario);
+            assertEquals(expected, service.hasInstanceViewPermission(instance, "reader", "org-a"), scenario);
+            when(extTaskMapper.selectLatestInstanceByResourceId("resource-a")).thenReturn(null);
+            assertEquals(expected, service.hasViewPermission("resource-a", "reader", "org-a"), scenario);
+        }
     }
 
     @Test
