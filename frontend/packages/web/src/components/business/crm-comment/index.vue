@@ -8,6 +8,7 @@
     :submit-loading="submitLoading"
     :can-create="props.canCreate"
     :can-reply="props.canReply"
+    :readonly="props.readonly"
     :enable-attachment="props.enableAttachment"
     :collapsible="props.collapsible"
     :actions-in-more="props.actionsInMore"
@@ -33,6 +34,7 @@
       sourceId: string;
       canCreate?: boolean;
       canReply?: boolean;
+      readonly?: boolean;
       enableAttachment?: boolean;
       showTimeSort?: boolean;
       collapsible?: boolean;

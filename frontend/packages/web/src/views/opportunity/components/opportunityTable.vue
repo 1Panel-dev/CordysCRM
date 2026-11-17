@@ -752,7 +752,7 @@
             ? createNameButton()
             : h(CrmNameTooltip, { text: row.name });
         }
-        return !props.readonly && hasApprovalScopedPermission(row, ['OPPORTUNITY_MANAGEMENT:READ'])
+        return hasApprovalScopedPermission(row, ['OPPORTUNITY_MANAGEMENT:READ'])
           ? createNameButton()
           : h(CrmNameTooltip, { text: row.name });
       },

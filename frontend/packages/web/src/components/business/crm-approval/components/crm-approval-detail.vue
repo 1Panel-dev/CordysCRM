@@ -157,6 +157,7 @@
                   v-model:expanded="commentExpanded"
                   v-model:count="approvalInfo.commentCount"
                   type="approval"
+                  :readonly="props.readonly"
                   :can-create="approvalInfo.commentable"
                   :can-reply="approvalInfo.commentable"
                   :collapsible="false"
@@ -170,6 +171,7 @@
             </n-scrollbar>
             <div
               v-if="
+                !props.readonly &&
                 !leftSlotEditing &&
                 approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
                 (isApprover || canCancelApply || canCancelApproval)
@@ -355,7 +357,12 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { ApprovalTaskExecuteTimeEnum, MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import {
+    ApprovalFieldPermissionModeEnum,
+    ApprovalTaskExecuteTimeEnum,
+    MultiApproverModeEnum,
+    ProcessStatusEnum,
+  } from '@lib/shared/enums/process';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum.js';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatBadgeCount } from '@lib/shared/method';
@@ -410,6 +417,7 @@
     layout?: 'horizontal' | 'vertical';
     approvalStatus: ProcessStatusEnum;
     leftLoading?: boolean;
+    readonly?: boolean;
   }>();
   const splitContainerRef = ref<HTMLElement>();
   const maxSplitSize = ref<number | string>(0.63);
@@ -600,7 +608,17 @@
   // 只有当前审批中的人才展示编辑权限，其他节点展示只读权限
   const filedPermission = computed(() => {
     if (currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
-      return (JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]) || [];
+      const permissions =
+        (JSON.parse(approvalInfo.value.currentNodeFieldPermissions) as ApprovalFieldPermission[]) || [];
+      return props.readonly
+        ? permissions.map((permission) => ({
+            ...permission,
+            permissionType:
+              permission.permissionType === ApprovalFieldPermissionModeEnum.EDIT
+                ? ApprovalFieldPermissionModeEnum.VIEW
+                : permission.permissionType,
+          }))
+        : permissions;
     }
     return [];
   });

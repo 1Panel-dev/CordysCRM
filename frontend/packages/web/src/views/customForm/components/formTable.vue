@@ -306,6 +306,7 @@
   // 关联详情 Tab 使用独立列缓存，避免继承普通自定义表格的操作列配置。
   const currentTableKey = computed(() => props.tableKey || customFormId.value);
   const operationColumn = computed<CrmDataTableColumn | undefined>(() => {
+    if (props.readonly) return undefined;
     return {
       key: 'operation',
       width: 180,
@@ -330,6 +331,7 @@
 
   const { useTableRes, customFieldsFilterConfig, initFormConfig, columns, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOM_FORM,
+    readonly: props.readonly,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
     detailTabPageFormId: props.detailTabPageFormId,
@@ -463,14 +465,17 @@
     getApprovalActionTip([CUSTOM_FORM_DATA_PERMISSIONS.delete], 'common.batchDeleteApprovalTip')
   );
   // CUSTOM_FORM_DATA:* 只用于审批状态权限，不在角色权限树中，批量按钮需要绕开通用 permission 过滤。
-  const canExportCustomFormData = computed(() =>
-    enableApproval.value ? getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.export]).length > 0 : !props.readonly
+  const canExportCustomFormData = computed(
+    () =>
+      !props.readonly && (!enableApproval.value || getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.export]).length > 0)
   );
-  const canUpdateCustomFormData = computed(() =>
-    enableApproval.value ? getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.update]).length > 0 : !props.readonly
+  const canUpdateCustomFormData = computed(
+    () =>
+      !props.readonly && (!enableApproval.value || getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.update]).length > 0)
   );
-  const canDeleteCustomFormData = computed(() =>
-    enableApproval.value ? getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.delete]).length > 0 : !props.readonly
+  const canDeleteCustomFormData = computed(
+    () =>
+      !props.readonly && (!enableApproval.value || getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.delete]).length > 0)
   );
 
   const actionConfig = computed<BatchActionConfig>(() => ({

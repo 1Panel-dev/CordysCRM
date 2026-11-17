@@ -93,7 +93,7 @@
       v-if="detailDrawerVisible"
       v-model:visible="detailDrawerVisible"
       :source-id="activeContactId"
-      :readonly="props.readonly"
+      :readonly="props.readonly && !props.independentDetail"
       @edit="handleDetailEdit"
     />
     <!-- 停用 -->
@@ -216,6 +216,7 @@
     refreshKey?: number;
     initialSourceName?: string;
     readonly?: boolean;
+    independentDetail?: boolean;
     formKey:
       | FormDesignKeyEnum.CONTACT
       | FormDesignKeyEnum.CUSTOMER_CONTACT

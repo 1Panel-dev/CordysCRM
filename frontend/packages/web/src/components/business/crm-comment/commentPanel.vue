@@ -49,7 +49,7 @@
             </span>
           </span>
         </CrmTag>
-        <n-button v-if="props.canCreate" size="small" type="primary" ghost @click="handleCreate">
+        <n-button v-if="props.canCreate && !props.readonly" size="small" type="primary" ghost @click="handleCreate">
           <template #icon>
             <CrmIcon type="iconicon_add" :size="16" />
           </template>
@@ -62,7 +62,7 @@
 
     <div v-if="isExpanded" class="crm-comment__body">
       <MentionInput
-        v-if="activeEditor?.action === 'create'"
+        v-if="activeEditor?.action === 'create' && !props.readonly"
         class="mb-[12px]"
         :loading="props.submitLoading"
         :enable-attachment="props.enableAttachment"
@@ -72,10 +72,11 @@
       />
 
       <CommentList
-        :active-editor="listActiveEditor"
+        :active-editor="props.readonly ? null : listActiveEditor"
         :comments="props.comments"
         :submit-loading="props.submitLoading"
         :can-reply="props.canReply"
+        :readonly="props.readonly"
         :enable-attachment="props.enableAttachment"
         :actions-in-more="props.actionsInMore"
         @reply="handleReply"
@@ -122,6 +123,7 @@
       submitLoading?: boolean;
       canCreate?: boolean;
       canReply?: boolean;
+      readonly?: boolean;
       enableAttachment?: boolean;
       showTimeSort?: boolean;
       collapsible?: boolean;
@@ -193,7 +195,7 @@
   }
 
   function handleCreate() {
-    if (!props.canCreate) {
+    if (props.readonly || !props.canCreate) {
       return;
     }
 
@@ -209,7 +211,7 @@
   }
 
   function handleReply(comment: FollowCommentItem) {
-    if (!props.canReply) {
+    if (props.readonly || !props.canReply) {
       return;
     }
 
@@ -221,6 +223,7 @@
   }
 
   function handleEdit(comment: FollowCommentItem) {
+    if (props.readonly) return;
     expanded.value = true;
     activeEditor.value = {
       action: 'edit',
@@ -229,7 +232,7 @@
   }
 
   function handleCreateSubmit(value: FollowCommentSubmitValue) {
-    if (!props.canCreate) {
+    if (props.readonly || !props.canCreate) {
       return;
     }
 
@@ -238,7 +241,7 @@
   }
 
   function handleReplySubmit(value: FollowCommentActionValue) {
-    if (!props.canReply) {
+    if (props.readonly || !props.canReply) {
       return;
     }
 
@@ -247,6 +250,7 @@
   }
 
   function handleEditSubmit(value: FollowCommentActionValue) {
+    if (props.readonly) return;
     emit('editSubmit', value);
     closeEditor();
   }

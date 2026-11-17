@@ -76,6 +76,7 @@
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+            :readonly="detailReadonly"
             left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
@@ -101,11 +102,14 @@
           </CrmApprovalDetail>
         </div>
         <div v-if="activeTab === 'contact'" class="h-full px-[24px] pt-[24px]">
+          <!-- 协作权限变化后重新生成列表列配置，避免保留初始化时的操作列。 -->
           <ContactTable
+            :key="String(detailReadonly)"
             :refresh-key="refreshKey"
             :source-id="props.sourceId"
             :initial-source-name="sourceName"
-            :readonly="props.readonly"
+            :readonly="detailReadonly"
+            :independent-detail="!props.readonly"
             :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
           />
         </div>
@@ -118,8 +122,9 @@
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
           :initial-source-name="sourceName"
-          :show-add="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly"
+          :show-add="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !detailReadonly"
           :show-action="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly"
+          :readonly="detailReadonly"
           :parentFormKey="FormDesignKeyEnum.CUSTOMER"
         />
         <div v-if="activeTab === 'headRecord'" class="h-full px-[24px] pt-[24px]">
@@ -134,11 +139,12 @@
         </div>
         <div v-if="activeTab === 'opportunityInfo'" class="h-full px-[24px] pt-[24px]">
           <opportunityTable
+            :key="String(detailReadonly)"
             :source-id="props.sourceId"
             :customer-name="sourceName"
             is-customer-tab
             :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
-            :readonly="props.readonly"
+            :readonly="detailReadonly"
             hideBoard
           />
         </div>
@@ -152,38 +158,54 @@
         </div>
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
           <ContractTable
+            :key="String(detailReadonly)"
             :detail-tab-resource-id="props.sourceId"
             :detail-tab-page-form-id="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-query="contractTabStatisticQuery"
+            :readonly="detailReadonly"
             disable-customer-link
             hide-board
           />
         </div>
         <div v-if="activeTab === 'contractPayment'" class="h-full p-[24px]">
           <PaymentTable
+            :key="String(detailReadonly)"
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
             :customer-id="props.sourceId"
+            :readonly="detailReadonly"
+            :independent-detail="!props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
         <div v-if="activeTab === 'contractPaymentRecord'" class="h-full p-[24px]">
           <PaymentRecordTable
+            :key="String(detailReadonly)"
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
             :customer-id="props.sourceId"
+            :readonly="detailReadonly"
+            :independent-detail="!props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
         <div v-if="activeTab === 'invoice'" class="h-full p-[24px]">
-          <InvoiceTable :customer-id="props.sourceId" @open-contract-drawer="handleOpenContractDrawer" />
+          <InvoiceTable
+            :key="String(detailReadonly)"
+            :customer-id="props.sourceId"
+            :readonly="detailReadonly"
+            :independent-detail="!props.readonly"
+            @open-contract-drawer="handleOpenContractDrawer"
+          />
         </div>
         <div v-if="activeTab === 'order'" class="h-full px-[24px] pt-[24px]">
           <OrderTable
+            :key="String(detailReadonly)"
             :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
             :sourceId="props.sourceId"
             isCustomerTab
             :detail-tab-statistic-form-key="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-statistic-query="orderTabStatisticQuery"
-            :readonly="props.readonly"
+            :readonly="detailReadonly"
+            :independent-detail="!props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
@@ -195,7 +217,13 @@
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
-            <component :is="item.table.component" v-bind="item.table.props" hideBoard />
+            <component
+              :is="item.table.component"
+              :key="String(detailReadonly)"
+              v-bind="item.table.props"
+              :readonly="detailReadonly"
+              hideBoard
+            />
           </div>
         </template>
       </CrmCard>
@@ -275,6 +303,7 @@
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   const FollowDetail = defineAsyncComponent(() => import('@/components/business/crm-follow-detail/index.vue'));
@@ -296,6 +325,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const userStore = useUserStore();
   const { openModal } = useModal();
   const { getUpdateReviewExtraParams } = useUpdateReviewChange();
 
@@ -309,10 +339,16 @@
   const detailInfo = ref<Record<string, any>>({});
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
-  const customerReadonly = computed(
-    () => props.readonly || ['READ_ONLY', 'COLLABORATION'].includes(collaborationType.value ?? '')
-  );
   const collaborators = ref<CollaborationItem[]>([]);
+  const detailReadonly = computed(
+    () =>
+      props.readonly ||
+      collaborationType.value === 'READ_ONLY' ||
+      collaborators.value.some(
+        (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'READ_ONLY'
+      )
+  );
+  const customerReadonly = computed(() => detailReadonly.value || collaborationType.value === 'COLLABORATION');
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
   const customerDataActionMap = computed<Record<string, ActionsItem>>(() => ({
@@ -514,6 +550,22 @@
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
       const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.CUSTOMER);
+      if (
+        table &&
+        [
+          FormDesignKeyEnum.CONTACT,
+          FormDesignKeyEnum.CONTRACT_PAYMENT,
+          FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+          FormDesignKeyEnum.INVOICE,
+          FormDesignKeyEnum.ORDER,
+          FormDesignKeyEnum.FOLLOW_RECORD,
+          FormDesignKeyEnum.FOLLOW_PLAN,
+          FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
+          FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
+        ].includes(tab.detailTab?.relatedForm?.id as FormDesignKeyEnum)
+      ) {
+        table.props.independentDetail = !props.readonly;
+      }
       return table ? [{ tab, table }] : [];
     })
   );
