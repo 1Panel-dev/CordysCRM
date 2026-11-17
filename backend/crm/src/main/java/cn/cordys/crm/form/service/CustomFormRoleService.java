@@ -185,6 +185,10 @@ public class CustomFormRoleService {
             customFormRoleUserMapper.batchInsert(toInsert);
         }
 
+        if (CollectionUtils.isEmpty(insertUserIds)) {
+            return;
+        }
+
         CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
         List<String> userNames = extUserMapper.selectUserNameByIds(insertUserIds);
         LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.ADD_USER, LogModule.CUSTOM_FORM,
