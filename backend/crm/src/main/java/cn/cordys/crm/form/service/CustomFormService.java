@@ -226,7 +226,7 @@ public class CustomFormService {
 
     void checkRelatedReadForm(String formId, String orgId) {
         CustomForm form = customFormMapper.selectByPrimaryKey(formId);
-        if (form == null || !StringUtils.equals(form.getOrganizationId(), orgId)) {
+        if (form == null || !Strings.CS.equals(form.getOrganizationId(), orgId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
         if (BooleanUtils.isFalse(form.getEnable())) {
@@ -547,7 +547,7 @@ public class CustomFormService {
 
     private void checkCurrentOrganization(String formId, String orgId) {
         CustomForm form = customFormMapper.selectByPrimaryKey(formId);
-        if (form == null || !StringUtils.equals(form.getOrganizationId(), orgId)) {
+        if (form == null || !Strings.CS.equals(form.getOrganizationId(), orgId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
     }
