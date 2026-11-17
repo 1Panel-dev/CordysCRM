@@ -72,8 +72,7 @@ public class CustomerCollaborationService {
     private List<CustomerCollaboration> effective(List<CustomerCollaboration> collaborations) {
         long now = System.currentTimeMillis();
         return collaborations.stream().map(item -> {
-            if (CustomerCollaborationType.JOINT_FOLLOW.name().equals(item.getCollaborationType())
-                    && item.getExpireTime() != null && item.getExpireTime() <= now) {
+            if (item.getExpireTime() != null && item.getExpireTime() <= now) {
                 item.setCollaborationType(CustomerCollaborationType.COLLABORATION.name());
             }
             return item;
