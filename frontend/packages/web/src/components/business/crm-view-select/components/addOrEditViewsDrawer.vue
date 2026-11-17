@@ -3,7 +3,7 @@
     v-model:show="visible"
     :width="800"
     :title="title"
-    :show-continue="!props.customFormId && !form.id"
+    :show-continue="!form.id"
     :ok-text="form.id ? t('common.update') : undefined"
     :loading="loading"
     :footer="!props.readonly"
@@ -140,12 +140,15 @@
   }
 
   function toFilterForm(detail: CustomFormUserViewDetail): FilterForm {
+    const configMap = new Map([...props.configList, ...(props.customList || [])].map((item) => [item.dataIndex, item]));
+
     return {
       searchMode: detail.searchMode || 'AND',
       list: (detail.conditions || []).map((condition) => {
         const key = filterOptionKeyMap[condition.type as FieldTypeEnum];
         const options = detail.optionMap?.[condition.name] || [];
         return {
+          ...configMap.get(condition.name),
           ...condition,
           dataIndex: condition.name,
           ...(key
