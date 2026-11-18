@@ -26,7 +26,7 @@ import cn.cordys.crm.clue.dto.request.ClueTransferRequest;
 import cn.cordys.crm.clue.dto.request.ClueTransitionCustomerRequest;
 import cn.cordys.crm.clue.dto.request.ClueUpdateRequest;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
-import cn.cordys.crm.clue.dto.response.ClueListResponse;
+import cn.cordys.crm.clue.dto.response.CluePageResponse;
 import cn.cordys.crm.clue.dto.response.ClueTransitionCustomerListResponse;
 import cn.cordys.crm.clue.service.ClueExportService;
 import cn.cordys.crm.clue.service.ClueService;
@@ -95,12 +95,12 @@ public class ClueController {
     @PostMapping("/page")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索列表")
-    public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
+    public CluePageResponse list(@Validated @RequestBody CluePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                deptDataPermission, false);
+        return clueService.listWithApprovalStatus(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @GetMapping("/get/{id}")

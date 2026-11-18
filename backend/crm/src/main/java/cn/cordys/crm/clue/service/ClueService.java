@@ -71,6 +71,7 @@ import cn.cordys.crm.clue.dto.request.ClueTransitionCustomerRequest;
 import cn.cordys.crm.clue.dto.request.ClueUpdateRequest;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
+import cn.cordys.crm.clue.dto.response.CluePageResponse;
 import cn.cordys.crm.clue.dto.response.ClueTransitionCustomerListResponse;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.domain.Customer;
@@ -150,6 +151,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -266,6 +268,18 @@ public class ClueService implements ApprovalResourceHandler {
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
 
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
+    public CluePageResponse listWithApprovalStatus(CluePageRequest request, String userId, String orgId,
+            DeptDataPermissionDTO deptDataPermission) {
+        PagerWithOption<List<ClueListResponse>> page = list(request, userId, orgId, deptDataPermission, false);
+        boolean existApprovingData = page.getList().stream()
+                .anyMatch(clue -> ApprovalStatus.APPROVING.name().equals(clue.getApprovalStatus()));
+        if (!existApprovingData && page.getList().size() < page.getTotal()) {
+            existApprovingData = extClueMapper.existsApprovingInList(request, orgId, userId, deptDataPermission, false);
+        }
+        return new CluePageResponse(page, existApprovingData);
     }
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ClueListResponse> list,
@@ -786,9 +800,12 @@ public class ClueService implements ApprovalResourceHandler {
 
     /**
      * 校验线索尚未转化, 避免重复转化产生重复客户并覆盖原有转化关系
+     * 兼容线索表的默认转化类型 {@code NONE}。
      */
     private void checkNotTransitioned(Clue clue) {
-        if (StringUtils.isNotBlank(clue.getTransitionType()) || StringUtils.isNotBlank(clue.getTransitionId())) {
+        String transitionType = clue.getTransitionType();
+        if (StringUtils.isNotBlank(clue.getTransitionId())
+                || (StringUtils.isNotBlank(transitionType) && !"NONE".equals(transitionType))) {
             throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("clue_already_transitioned"));
         }
     }

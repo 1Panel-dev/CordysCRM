@@ -47,6 +47,7 @@
       :load-list-api="getClueList"
       :close-init-load="!activeFilter"
       :transform="transformFormData"
+      @loaded="listExistApprovingData = $event.existApprovingData"
     >
       <template #item="{ item }">
         <CrmListCommonItem
@@ -114,12 +115,22 @@
   });
 
   const refreshList = () => crmListRef.value?.loadList(true);
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
-    useApprovalOperation<ClueListItem>({
-      formType: FormDesignKeyEnum.CLUE,
-      onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
-      onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
-    });
+  const {
+    resolveRowActions,
+    hasApprovalScopedPermission,
+    initApprovalPermission,
+    deleteExecute,
+    enableApproval,
+    showApprovalStatus: configShowApprovalStatus,
+  } = useApprovalOperation<ClueListItem>({
+    formType: FormDesignKeyEnum.CLUE,
+    onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
+    onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
+  });
+  const listExistApprovingData = ref<boolean>();
+  const showApprovalStatus = computed(
+    () => enableApproval.value || (listExistApprovingData.value ?? configShowApprovalStatus.value)
+  );
 
   function handleEdit(id: string) {
     router.push({

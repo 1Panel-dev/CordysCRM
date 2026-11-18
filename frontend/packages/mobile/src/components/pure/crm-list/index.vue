@@ -49,6 +49,7 @@
   );
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'loaded', data: Record<string, any>): void;
   }>();
 
   const { t } = useI18n();
@@ -67,8 +68,10 @@
   const code = ref(0); // 状态码
 
   const originData = ref<any[]>([]);
+  let refreshVersion = 0;
   async function loadList(refresh = false) {
     if (props.closeInitLoad) return;
+    const version = refresh ? ++refreshVersion : refreshVersion;
     try {
       if (refresh) {
         list.value = [];
@@ -96,6 +99,7 @@
         pageSize: 20,
         current: currentPage.value,
       });
+      if (version !== refreshVersion) return;
       if (props?.isReturnNativeResponse) {
         code.value = res.data.code;
       }
@@ -111,10 +115,12 @@
       }
       finished.value = props.noPageNation || data.total <= currentPage.value * 20;
       error.value = false;
+      emit('loaded', data);
       nextTick(() => {
         originData.value = cloneDeep(list.value);
       });
     } catch (_error: any) {
+      if (version !== refreshVersion) return;
       // eslint-disable-next-line no-console
       console.log(_error);
       error.value = true;
@@ -122,9 +128,11 @@
         code.value = _error.code;
       }
     } finally {
-      loading.value = false;
-      refreshing.value = false;
-      closeToast();
+      if (version === refreshVersion) {
+        loading.value = false;
+        refreshing.value = false;
+        closeToast();
+      }
     }
   }
 

@@ -183,7 +183,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import convertClueModal from './convertClueModal.vue';
 
-  import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules';
+  import { batchDeleteClue, batchTransferClue, deleteClue, getClueList } from '@/api/modules';
   import { baseFilterConfigList, getLeadHomeConditions } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
@@ -338,7 +338,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
-    showApprovalStatus,
+    showApprovalStatus: showConfiguredApprovalStatus,
     updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,
@@ -347,6 +347,11 @@
     formType: FormDesignKeyEnum.CLUE,
     dataActionMap: () => clueDataActionMap.value,
   });
+  const isClueViewList = props.tableFormKey === FormDesignKeyEnum.CLUE && !props.detailTabResourceId;
+  const existApprovingData = ref<boolean>();
+  const showApprovalStatus = computed(
+    () => enableApproval.value || (existApprovingData.value ?? showConfiguredApprovalStatus.value)
+  );
   const batchEditApprovalTip = computed(() =>
     getApprovalActionTip(['CLUE_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
   );
@@ -647,6 +652,13 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.tableFormKey,
+    listApi: isClueViewList
+      ? async (params: Parameters<typeof getClueList>[0]) => {
+          const page = await getClueList(params);
+          existApprovingData.value = page.existApprovingData;
+          return page;
+        }
+      : undefined,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
     detailTabPageFormId: props.detailTabPageFormId,
@@ -885,6 +897,10 @@
   function removeItemFromList(id: string) {
     if (deleteExecute.value) {
       searchData();
+      return;
+    }
+    if (isClueViewList && !enableApproval.value && existApprovingData.value) {
+      searchData(undefined, id);
       return;
     }
 

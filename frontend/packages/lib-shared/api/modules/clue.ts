@@ -145,7 +145,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取线索列表
   function getClueList(data: CustomerTableParams) {
-    return CDR.post<CommonList<ClueListItem>>({ url: GetClueListUrl, data });
+    return CDR.post<CommonList<ClueListItem> & { existApprovingData?: boolean }>({ url: GetClueListUrl, data });
   }
 
   // 获取线索转为客户列表

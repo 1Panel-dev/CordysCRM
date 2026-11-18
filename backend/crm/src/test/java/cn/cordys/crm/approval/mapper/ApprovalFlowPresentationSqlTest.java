@@ -1,9 +1,16 @@
 package cn.cordys.crm.approval.mapper;
 
+import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.condition.CombineSearch;
+import cn.cordys.common.dto.condition.FilterDBCondition;
+import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.crm.clue.dto.request.CluePageRequest;
+import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -11,7 +18,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,11 +35,49 @@ class ApprovalFlowPresentationSqlTest {
     @BeforeAll
     static void loadMapperXml() throws Exception {
         configuration = new Configuration();
-        String resource = ExtApprovalInstanceMapper.class.getName().replace('.', '/') + ".xml";
-        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
-            assertNotNull(in, "找不到 Mapper XML：" + resource);
-            new XMLMapperBuilder(in, configuration, resource, configuration.getSqlFragments()).parse();
+        for (Class<?> mapper : List.of(CommonMapper.class, ExtApprovalInstanceMapper.class, ExtClueMapper.class)) {
+            String resource = mapper.getName().replace('.', '/') + ".xml";
+            try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+                assertNotNull(in, "找不到 Mapper XML：" + resource);
+                new XMLMapperBuilder(in, configuration, resource, configuration.getSqlFragments()).parse();
+            }
         }
+    }
+
+    @Test
+    void clueApprovingQueryReusesTheFilteredListScope() {
+        FilterDBCondition viewFilter = new FilterDBCondition();
+        viewFilter.setName("clue-source");
+        viewFilter.setCustomField(true);
+        viewFilter.setOperator("EQUALS");
+        viewFilter.setValue("referral");
+        CombineSearch viewSearch = new CombineSearch();
+        viewSearch.setConditions(List.of(viewFilter));
+
+        CluePageRequest request = new CluePageRequest();
+        request.setViewId("view-a");
+        request.setViewCombineSearch(viewSearch);
+        request.setKeyword("keyword-a");
+        DeptDataPermissionDTO dataPermission = new DeptDataPermissionDTO();
+        dataPermission.setViewId("DEPARTMENT");
+        dataPermission.setDeptIds(Set.of("department-a"));
+
+        Map<String, Object> parameters = Map.of("request", request, "orgId", "org-a",
+                "userId", "user-a", "dataPermission", dataPermission, "source", false);
+        String mapper = ExtClueMapper.class.getName();
+        BoundSql listSql = configuration.getMappedStatement(mapper + ".list").getBoundSql(parameters);
+        BoundSql existsSql = configuration.getMappedStatement(mapper + ".existsApprovingInList").getBoundSql(parameters);
+        String list = listSql.getSql().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+        String listScope = list.substring(list.indexOf("from `clue` c"), list.lastIndexOf("order by")).trim();
+
+        assertEquals("select exists ( select 1 " + listScope + " and c.approval_status = 'approving' )",
+                existsSql.getSql().replaceAll("\\s+", " ").trim().toLowerCase(Locale.ROOT));
+        assertEquals(List.of("clue-source", "department-a", "org-a", "keyword-a", "keyword-a", "referral"),
+                existsSql.getParameterMappings().stream().map(mapping -> {
+                    String property = mapping.getProperty();
+                    return existsSql.hasAdditionalParameter(property) ? existsSql.getAdditionalParameter(property)
+                            : configuration.newMetaObject(parameters).getValue(property);
+                }).toList());
     }
 
     @ParameterizedTest

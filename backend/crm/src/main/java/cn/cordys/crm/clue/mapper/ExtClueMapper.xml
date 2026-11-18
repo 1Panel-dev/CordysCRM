@@ -24,6 +24,27 @@
                <include refid="freezeColumns"/>
         from `clue` c
 
+        <include refid="listFilterJoins"/>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+        <include refid="listConditions"/>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <select id="existsApprovingInList" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM `clue` c
+            <include refid="listFilterJoins"/>
+            <include refid="listConditions"/>
+            AND c.approval_status = 'APPROVING'
+        )
+    </select>
+
+    <sql id="listFilterJoins">
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -36,10 +57,9 @@
             <property name="conditions" value="request.viewCombineSearch.conditions"/>
             <property name="tablePrefix" value="viewCombine"/>
         </include>
-        <include refid="fieldSortJoin">
-            <property name="sort" value="request.sort"/>
-        </include>
+    </sql>
 
+    <sql id="listConditions">
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on c.owner = sou.user_id
             and (
@@ -103,11 +123,7 @@
         <include refid="viewCombine">
             <property name="combineSearch" value="request.viewCombineSearch"/>
         </include>
-
-        <include refid="sort">
-            <property name="sort" value="request.sort"/>
-        </include>
-    </select>
+    </sql>
 
     <select id="chart" resultType="cn.cordys.common.dto.chart.ChartResult">
         select
@@ -848,7 +864,7 @@
             update_time = #{updateTime}
         where id = #{id}
           and organization_id = #{orgId}
-          and (transition_type is null or transition_type = '')
+          and (transition_type is null or transition_type in ('', 'NONE'))
           and (transition_id is null or transition_id = '')
     </update>
 

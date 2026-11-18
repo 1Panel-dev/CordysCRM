@@ -30,6 +30,10 @@ public interface ExtClueMapper extends StatisticSqlMapper {
             @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
             @Param("source") boolean source);
 
+    boolean existsApprovingInList(@Param("request") CluePageRequest request, @Param("orgId") String orgId,
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
+            @Param("source") boolean source);
+
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
     void batchTransfer(@Param("request") ClueBatchTransferRequest request);
