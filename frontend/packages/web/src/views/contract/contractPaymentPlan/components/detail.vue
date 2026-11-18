@@ -5,7 +5,7 @@
         <ContractStatus :status="detailInfo?.planStatus ?? ContractPaymentPlanEnum.PENDING" />
       </div>
     </template>
-    <template v-if="!props.readonly" #titleRight>
+    <template v-if="!detailReadonly" #titleRight>
       <n-button
         v-permission="['CONTRACT_PAYMENT_PLAN:UPDATE']"
         type="primary"
@@ -49,7 +49,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
-            :readonly="!hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE'])"
+            :readonly="detailReadonly || !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE'])"
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
             @refresh="emit('refresh')"
@@ -99,6 +99,7 @@
   import ContractStatus from './contractPaymentStatus.vue';
 
   import { deletePaymentPlan, getChangeLogPage } from '@/api/modules';
+  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -123,6 +124,17 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const detailInfo = ref();
+  watch(visible, (value) => {
+    if (!value) {
+      detailInfo.value = undefined;
+    }
+  });
+  const isCustomerRelatedDataReadonly = useCustomerRelatedDataReadonly();
+  const detailReadonly = computed(
+    () =>
+      props.readonly ||
+      isCustomerRelatedDataReadonly(detailInfo.value?.id === props.sourceId ? detailInfo.value : undefined)
+  );
   const formConfig = ref<FormConfig>();
   const formViewSize = ref<FormViewSize>('large');
 
@@ -148,6 +160,7 @@
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
       const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.CONTRACT_PAYMENT);
+      if (table && props.readonly) table.props.readonly = true;
       return table ? [{ tab, table }] : [];
     })
   );

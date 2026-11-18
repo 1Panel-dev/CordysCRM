@@ -70,6 +70,7 @@
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus"
+            :readonly="effectiveReadonly"
             left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
@@ -106,7 +107,7 @@
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
-            <component :is="item.table.component" v-bind="item.table.props" hideBoard />
+            <component :is="item.table.component" v-bind="item.table.props" :readonly="props.readonly" hideBoard />
           </div>
         </template>
       </CrmCard>
@@ -124,6 +125,7 @@
     <ContractDetailDrawer
       v-model:visible="showContractDetailDrawer"
       :sourceId="activeSourceId"
+      :readonly="props.readonly"
       @show-customer-drawer="handleOpenCustomerDrawer"
     />
     <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeCustomerSourceId" />
@@ -176,6 +178,7 @@
   } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -208,6 +211,12 @@
   const { t } = useI18n();
   const { getUpdateReviewExtraParams } = useUpdateReviewChange();
   const detailInfo = ref();
+  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
+  const effectiveReadonly = computed(
+    () =>
+      props.readonly ||
+      isCustomerRelatedReadonly(detailInfo.value?.id === props.sourceId ? detailInfo.value : undefined)
+  );
   const formConfig = ref<FormConfig>();
   const detailTabConfig = ref<FormConfig>();
   const { openNewPage } = useOpenNewPage();
@@ -370,7 +379,7 @@
   }
 
   const canUpdateStage = computed(() => {
-    if (!detailInfo.value) {
+    if (effectiveReadonly.value || !detailInfo.value) {
       return false;
     }
 
@@ -386,11 +395,11 @@
     }
 
     const detailAction = resolveRowOperation(detailInfo.value);
-    const filteredGroupList = props.readonly
-      ? detailAction.groupList.filter((item) => !['edit', 'delete'].includes(item.key as string))
+    const filteredGroupList = effectiveReadonly.value
+      ? detailAction.groupList.filter((item) => item.key === 'download')
       : detailAction.groupList;
-    const filteredMoreList = props.readonly
-      ? detailAction.moreList.filter((item) => !['edit', 'delete'].includes(item.key as string))
+    const filteredMoreList = effectiveReadonly.value
+      ? detailAction.moreList.filter((item) => item.key === 'download')
       : detailAction.moreList;
 
     return {

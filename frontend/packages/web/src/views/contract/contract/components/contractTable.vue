@@ -141,6 +141,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
+    :readonly="props.readonly"
     :disable-customer-link="props.disableCustomerLink"
     isContractTableDetail
     @approval-success="() => initApprovalPermission(true)"
@@ -239,6 +240,7 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -261,6 +263,7 @@
     hideOperationColumn?: boolean;
     hideBoard?: boolean;
   }>();
+  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
   const emit = defineEmits<{
     (
       e: 'openCustomerDrawer',
@@ -653,6 +656,7 @@
     detailTabPageFormId: props.detailTabPageFormId,
     detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
+    rowReadonly: isCustomerRelatedReadonly,
     operationColumn: {
       key: 'operation',
       width: 180,
@@ -706,7 +710,8 @@
             );
       },
       stage: (row: ContractItem) => {
-        const canEditStage = !props.readonly && hasApprovalScopedPermission(row, ['CONTRACT:UPDATE']);
+        const canEditStage =
+          !props.readonly && !isCustomerRelatedReadonly(row) && hasApprovalScopedPermission(row, ['CONTRACT:UPDATE']);
         return h(StatusTagSelect, {
           'status': row.stage as ContractStatusEnum,
           'noRender': true,

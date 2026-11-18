@@ -80,6 +80,7 @@
             :source-id="sourceId"
             :refresh-key="refreshKey"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
+            :readonly="effectiveReadonly"
             left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
@@ -96,7 +97,9 @@
                 :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+                :readonly="
+                  effectiveReadonly || !hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])
+                "
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
                 @refresh="emit('refresh')"
@@ -132,6 +135,7 @@
             :source-id="sourceId"
             :refresh-key="refreshKey"
             :source-name="titleName"
+            :readonly="props.readonly"
           />
         </div>
         <CrmChangeRecord
@@ -142,7 +146,7 @@
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
-            <component :is="item.table.component" v-bind="item.table.props" hideBoard />
+            <component :is="item.table.component" v-bind="item.table.props" :readonly="props.readonly" hideBoard />
           </div>
         </template>
       </CrmCard>
@@ -192,6 +196,7 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -207,6 +212,7 @@
 
   const props = defineProps<{
     detail?: Partial<OpportunityItem>;
+    readonly?: boolean;
     approvalTaskId?: string;
     commentMentionId?: string;
   }>();
@@ -251,6 +257,12 @@
 
   const transferLoading = ref(false);
   const detailInfo = ref<Record<string, any>>({});
+  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
+  const effectiveReadonly = computed(
+    () =>
+      props.readonly ||
+      isCustomerRelatedReadonly(detailInfo.value?.id === sourceId.value ? detailInfo.value : undefined)
+  );
 
   const opportunityDataActionMap = computed<Record<string, ActionsItem>>(() => ({
     edit: {
@@ -317,7 +329,7 @@
   }
 
   const canUpdateStage = computed(() => {
-    if (!detailInfo.value) {
+    if (effectiveReadonly.value || !detailInfo.value) {
       return false;
     }
 
@@ -336,6 +348,9 @@
     groupList: ActionsItem[];
     moreList: ActionsItem[];
   }>(() => {
+    if (effectiveReadonly.value) {
+      return { groupList: [], moreList: [] };
+    }
     const detailAction = resolveRowOperation(detailInfo.value);
 
     return {

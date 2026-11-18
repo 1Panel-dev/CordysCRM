@@ -139,7 +139,7 @@
         </div>
         <div v-if="activeTab === 'opportunityInfo'" class="h-full px-[24px] pt-[24px]">
           <opportunityTable
-            :key="String(detailReadonly)"
+            :key="`${detailReadonly}:${relatedOwnerOnly}`"
             :source-id="props.sourceId"
             :customer-name="sourceName"
             is-customer-tab
@@ -158,7 +158,7 @@
         </div>
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
           <ContractTable
-            :key="String(detailReadonly)"
+            :key="`${detailReadonly}:${relatedOwnerOnly}`"
             :detail-tab-resource-id="props.sourceId"
             :detail-tab-page-form-id="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-query="contractTabStatisticQuery"
@@ -169,7 +169,7 @@
         </div>
         <div v-if="activeTab === 'contractPayment'" class="h-full p-[24px]">
           <PaymentTable
-            :key="String(detailReadonly)"
+            :key="`${detailReadonly}:${relatedOwnerOnly}`"
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
@@ -179,7 +179,7 @@
         </div>
         <div v-if="activeTab === 'contractPaymentRecord'" class="h-full p-[24px]">
           <PaymentRecordTable
-            :key="String(detailReadonly)"
+            :key="`${detailReadonly}:${relatedOwnerOnly}`"
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
@@ -189,7 +189,7 @@
         </div>
         <div v-if="activeTab === 'invoice'" class="h-full p-[24px]">
           <InvoiceTable
-            :key="String(detailReadonly)"
+            :key="`${detailReadonly}:${relatedOwnerOnly}`"
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
             :independent-detail="!props.readonly"
@@ -198,7 +198,7 @@
         </div>
         <div v-if="activeTab === 'order'" class="h-full px-[24px] pt-[24px]">
           <OrderTable
-            :key="String(detailReadonly)"
+            :key="`${detailReadonly}:${relatedOwnerOnly}`"
             :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
             :sourceId="props.sourceId"
             isCustomerTab
@@ -219,7 +219,7 @@
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component
               :is="item.table.component"
-              :key="String(detailReadonly)"
+              :key="`${detailReadonly}:${relatedOwnerOnly}`"
               v-bind="item.table.props"
               :readonly="detailReadonly"
               hideBoard
@@ -298,6 +298,7 @@
   } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import { provideCustomerRelatedOwnerOnly } from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -349,6 +350,15 @@
       )
   );
   const customerReadonly = computed(() => detailReadonly.value || collaborationType.value === 'COLLABORATION');
+  const relatedOwnerOnly = computed(
+    () =>
+      detailInfo.value.owner !== userStore.userInfo.id &&
+      (collaborationType.value === 'JOINT_FOLLOW' ||
+        collaborators.value.some(
+          (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'JOINT_FOLLOW'
+        ))
+  );
+  provideCustomerRelatedOwnerOnly(relatedOwnerOnly);
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
   const customerDataActionMap = computed<Record<string, ActionsItem>>(() => ({

@@ -137,6 +137,7 @@
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
     :detail="activeOpportunity"
+    :readonly="props.readonly"
     @approval-success="() => initApprovalPermission(true)"
     @refresh="() => searchData(undefined, activeOpportunity?.id)"
     @remove="removeItemFromList(activeOpportunity?.id || '')"
@@ -232,6 +233,7 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -268,6 +270,7 @@
     hideOperationColumn?: boolean;
     hideBoard?: boolean;
   }>();
+  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
   const emit = defineEmits<{
     (
       e: 'openCustomerDrawer',
@@ -699,6 +702,7 @@
     detailTabPageFormId: props.detailTabPageFormId,
     detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
+    rowReadonly: isCustomerRelatedReadonly,
     excludeFieldIds: ['customerId'],
     containerClass: `.crm-opportunity-table-${props.formKey}`,
     operationColumn: props.readonly
