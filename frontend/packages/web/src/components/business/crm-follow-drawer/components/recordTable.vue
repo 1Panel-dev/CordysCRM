@@ -203,6 +203,7 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -471,8 +472,14 @@
       },
       customerName: (row: any) =>
         h(CrmTableButton, { onClick: () => openRelatedDrawer(row) }, { default: () => row.customerName }),
-      opportunityName: (row: any) =>
-        h(CrmTableButton, { onClick: () => openRelatedDrawer(row) }, { default: () => row.opportunityName }),
+      opportunityId: (row: any) =>
+        hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']) && row.opportunityName
+          ? h(
+              CrmTableButton,
+              { onClick: () => openRelatedDrawer(row) },
+              { default: () => row.opportunityName, trigger: () => row.opportunityName }
+            )
+          : h(CrmNameTooltip, { text: row.opportunityName }),
     },
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

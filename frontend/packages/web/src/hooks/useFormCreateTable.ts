@@ -360,7 +360,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
-              render: (row: any) => row.opportunityName ?? '-',
+              render: props.specialRender?.[field.businessKey] ?? ((row: any) => row.opportunityName ?? '-'),
               resourceFieldId: field.resourceFieldId,
             };
           }
