@@ -786,9 +786,12 @@ public class ClueService implements ApprovalResourceHandler {
 
     /**
      * 校验线索尚未转化, 避免重复转化产生重复客户并覆盖原有转化关系
+     * 兼容线索表的默认转化类型 {@code NONE}。
      */
     private void checkNotTransitioned(Clue clue) {
-        if (StringUtils.isNotBlank(clue.getTransitionType()) || StringUtils.isNotBlank(clue.getTransitionId())) {
+        String transitionType = clue.getTransitionType();
+        if (StringUtils.isNotBlank(clue.getTransitionId())
+                || (StringUtils.isNotBlank(transitionType) && !"NONE".equals(transitionType))) {
             throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("clue_already_transitioned"));
         }
     }

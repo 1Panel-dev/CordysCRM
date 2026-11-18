@@ -549,9 +549,10 @@ class ResourcePermissionServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "sales", "other-sales" })
-    void authorizedClueConversionChecksSourceBeforeCreatingCustomer(String owner) {
+    @CsvSource({ "sales,", "other-sales,", "sales,NONE" })
+    void authorizedClueConversionChecksSourceBeforeCreatingCustomer(String owner, String transitionType) {
         clue.setOwner(owner);
+        clue.setTransitionType(transitionType);
         if (!"sales".equals(owner)) {
             DeptDataPermissionDTO all = new DeptDataPermissionDTO();
             all.setAll(true);

@@ -288,13 +288,20 @@ class ClueControllerTests extends BaseTest {
     @Test
     @Order(5)
     void transitionCustomer() throws Exception {
+        Clue clue = clueMapper.selectByPrimaryKey(addClue.getId());
+        clue.setTransitionType("NONE");
+        clue.setTransitionId(null);
+        clueMapper.updateById(clue);
+
         ClueTransitionCustomerRequest request = new ClueTransitionCustomerRequest();
         request.setClueId(addClue.getId());
         request.setName("cc");
         request.setOwner("admin");
         this.requestPostWithOk(TRANSITION_CUSTOMER, request);
 
-        String transitionId = clueMapper.selectByPrimaryKey(addClue.getId()).getTransitionId();
+        Clue transitionedClue = clueMapper.selectByPrimaryKey(addClue.getId());
+        Assertions.assertEquals(FormKey.CUSTOMER.name(), transitionedClue.getTransitionType());
+        String transitionId = transitionedClue.getTransitionId();
         Assertions.assertNotNull(transitionId);
 
         // 已转化的线索不能再次转化: 否则会重复创建客户并覆盖线索原有的转化关系
