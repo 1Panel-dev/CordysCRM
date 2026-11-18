@@ -43,7 +43,10 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
     @Override
     public boolean hasAdditionalDataPermission(String permission, String resourceId, String userId) {
         if (!(PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)
-                || PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE.equals(permission))
+                || PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE.equals(permission)
+                || PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER.equals(permission)
+                || PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE.equals(permission)
+                || PermissionConstants.CUSTOMER_MANAGEMENT_DELETE.equals(permission))
                 || StringUtils.isAnyBlank(resourceId, userId)) {
             return false;
         }
@@ -52,6 +55,10 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
         example.setUserId(userId);
         if (PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)) {
             return collaborationMapper.countByExample(example) > 0;
+        }
+        Customer customer = customerMapper.selectByPrimaryKey(resourceId);
+        if (customer == null || Boolean.TRUE.equals(customer.getInSharedPool())) {
+            return false;
         }
         return collaborationMapper.select(example).stream()
                 .anyMatch(item -> "JOINT_FOLLOW".equals(item.getCollaborationType())
