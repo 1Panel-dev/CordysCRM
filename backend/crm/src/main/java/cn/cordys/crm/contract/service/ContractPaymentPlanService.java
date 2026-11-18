@@ -43,6 +43,7 @@ import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
 import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
@@ -55,6 +56,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -121,6 +123,8 @@ public class ContractPaymentPlanService {
     private BaseService baseService;
     @Resource
     private LogService logService;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
     @Resource
@@ -351,6 +355,12 @@ public class ContractPaymentPlanService {
         // 日志
         baseService.handleAddLogWithSubTable(contractPaymentPlan, request.getModuleFields(),
                 Translator.get("products_info"), getFormConfig(orgId));
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_PAYMENT_ADD, userId, orgId, true, true,
+                null, null, contractPaymentPlan, request.getModuleFields());
+
         return contractPaymentPlan;
     }
 
@@ -391,6 +401,13 @@ public class ContractPaymentPlanService {
                 originContractPaymentPlanFields, request.getModuleFields(),
                 originContractPaymentPlan.getId(), originContractPaymentPlan.getName(), Translator.get("products_info"),
                 getFormConfig(orgId));
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_PAYMENT_UPDATE, userId, orgId, true, false,
+                originContractPaymentPlan, originContractPaymentPlanFields, contractPaymentPlan,
+                request.getModuleFields());
+
         return contractPaymentPlan;
     }
 
@@ -415,9 +432,30 @@ public class ContractPaymentPlanService {
         // 关联字段覆盖前保留原宿主，写入后同时刷新新旧宿主的统计值。
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTRACT_PAYMENT_PLAN.getKey(), request.getFieldId(), request.getIds(), orgId);
+        // 通知需要改前改后的字段值: 自定义字段在下面会被整批覆盖, 先把改前的值取出来
+        Map<String, List<BaseModuleFieldValue>> originFieldMap = contractPaymentPlanFieldService
+                .getResourceFieldMap(request.getIds(), true);
         contractPaymentPlanFieldService.batchUpdate(request, field, plans, ContractPaymentPlan.class,
                 LogModule.CONTRACT_PAYMENT, extContractPaymentPlanMapper::batchUpdate, userId, orgId, true);
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+        Map<String, ContractPaymentPlan> planMap = plans.stream()
+                .collect(Collectors.toMap(ContractPaymentPlan::getId, plan -> plan));
+        Map<String, List<BaseModuleFieldValue>> fieldMap = contractPaymentPlanFieldService
+                .getResourceFieldMap(request.getIds(), true);
+        Map<String, ContractPaymentPlan> latestPlanMap = contractPaymentPlanMapper.selectByIds(request.getIds())
+                .stream().collect(Collectors.toMap(ContractPaymentPlan::getId, plan -> plan));
+        request.getIds().forEach(id -> {
+            ContractPaymentPlan oldPlan = planMap.get(id);
+            ContractPaymentPlan newPlan = latestPlanMap.get(id);
+            if (oldPlan == null || newPlan == null) {
+                return;
+            }
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                    NotificationConstants.Event.CONTRACT_PAYMENT_UPDATE, userId, orgId, true, false,
+                    oldPlan, originFieldMap.get(id), newPlan, fieldMap.get(id));
+        });
     }
 
     private void updateModuleField(ContractPaymentPlan contractPaymentPlan, List<BaseModuleFieldValue> moduleFields,
@@ -449,6 +487,11 @@ public class ContractPaymentPlanService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(resourceName);
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_PAYMENT_DELETE, userId, orgId, true, true,
+                originContractPaymentPlan, null, null, null);
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
@@ -489,6 +532,11 @@ public class ContractPaymentPlanService {
                 })
                 .toList();
         logService.batchAdd(logs);
+
+        // 消息通知
+        plans.forEach(plan -> commonNoticeSendService.sendNoticeByConfig(
+                NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_PAYMENT_DELETE,
+                userId, orgId, true, true, plan, null, null, null));
     }
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {

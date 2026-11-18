@@ -221,15 +221,16 @@ public class MessageNotificationService {
                 "CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED",
                 "CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED",
                 "CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED",
-                "CONTRACT_ARCHIVED",
+                "FOLLOW_UP_RECORD_COMMENT_MENTIONED",
+                "FOLLOW_UP_PLAN_COMMENT_MENTIONED",
+                "FOLLOW_UP_PLAN_COMMENT_ADDED",
+                "FOLLOW_UP_RECORD_COMMENT_ADDED",
                 "CLUE_IMPORT",
                 "BUSINESS_IMPORT",
                 "APPROVAL_COMMENT_MENTIONED"
         );
         messageTaskMapper.deleteByLambda(new LambdaQueryWrapper<MessageTask>()
                 .in(MessageTask::getEvent, deleteEvents));
-        messageTaskConfigMapper.deleteByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
-                .eq(MessageTaskConfig::getEvent, "CONTRACT_ARCHIVED"));
 
         List<MessageTask> messageTasks = messageTaskMapper.selectAll(null);
         Map<String, String> eventNameMap = MessageTemplateUtils.getEventMap();
@@ -469,6 +470,26 @@ public class MessageNotificationService {
                             new LambdaQueryWrapper<MessageTaskConfig>()
                                     .eq(MessageTaskConfig::getEvent,
                                             NotificationConstants.Event.CONTRACT_VOID));
+                    MessageTaskConfig config = configs.getFirst();
+                    MessageTaskConfigWithNameDTO dto = JSON.parseObject(config.getValue(),
+                            MessageTaskConfigWithNameDTO.class);
+                    List<String> scopeId = new ArrayList<>();
+                    scopeId.addAll(dto.getUserIds());
+                    scopeId.addAll(dto.getRoleIds());
+                    if (dto.getOwnerLevel() != 0) {
+                        scopeId.add("SUPERVISOR");
+                    }
+                    updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_VOID_TEXT.name()), config, eventNameMap,
+                            messageTask, scopeId, receiveMethod,
+                            TriggerTypeEnum.FIELD.name(),
+                            buildFieldConfigValue(buildCondition("stage", List.of("VOID"), true, "IN",
+                                    "SELECT_MULTIPLE")));
+                }
+                case NotificationConstants.Event.CONTRACT_ARCHIVED -> {
+                    List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
+                            new LambdaQueryWrapper<MessageTaskConfig>()
+                                    .eq(MessageTaskConfig::getEvent,
+                                            NotificationConstants.Event.CONTRACT_ARCHIVED));
                     MessageTaskConfig config = configs.getFirst();
                     MessageTaskConfigWithNameDTO dto = JSON.parseObject(config.getValue(),
                             MessageTaskConfigWithNameDTO.class);

@@ -973,9 +973,15 @@ public class OrderService implements ApprovalResourceHandler {
         updateFieldAndSnapshot(newOrder, request.getFields(), userId);
 
         Order order = orderMapper.selectByPrimaryKey(request.getId());
+        List<BaseModuleFieldValue> newFields = orderFieldService.getModuleFieldValuesByResourceId(request.getId());
         baseService.handleUpdateLogWithSubTable(oldOrder, order, originCustomerFields,
-                orderFieldService.getModuleFieldValuesByResourceId(request.getId()),
+                newFields,
                 request.getId(), order.getName(), Translator.get("products_info"), getFormConfig(orgId));
+
+        // 消息通知: 阶段变更按编辑订单发送, old 取改前实体, new 取改后实体
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.ORDER,
+                NotificationConstants.Event.ORDER_UPDATE, userId, orgId, true, false,
+                oldOrder, originCustomerFields, order, newFields);
     }
 
     private void updateFieldAndSnapshot(Order order, List<BaseModuleFieldValue> requestFields, String userId) {

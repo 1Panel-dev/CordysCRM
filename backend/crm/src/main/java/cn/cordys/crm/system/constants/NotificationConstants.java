@@ -196,6 +196,9 @@ public class NotificationConstants {
         //合同作废
         @Schema(description = "message.contract_void")
         String CONTRACT_VOID = "CONTRACT_VOID";
+        //合同归档
+        @Schema(description = "message.contract_archived")
+        String CONTRACT_ARCHIVED = "CONTRACT_ARCHIVED";
         //合同到期
         @Schema(description = "message.contract_expired")
         String CONTRACT_EXPIRED = "CONTRACT_EXPIRED";

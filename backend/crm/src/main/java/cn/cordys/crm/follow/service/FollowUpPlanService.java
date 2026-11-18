@@ -7,7 +7,6 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
-import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -42,14 +41,17 @@ import cn.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -59,6 +61,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +99,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
     private PoolCustomerService poolCustomerService;
     @Resource
     private PoolClueService poolClueService;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
 
     /**
      * 新建跟进计划
@@ -122,6 +127,11 @@ public class FollowUpPlanService extends BaseFollowUpService {
         statisticFieldService.refreshDataStatisticFields(FormKey.FOLLOW_PLAN.getKey(), followUpPlan.getId(), orgId);
         // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
         statisticFieldService.refreshByRelatedDataChange(FormKey.FOLLOW_PLAN.getKey(), followUpPlan.getId(), orgId);
+
+        // 消息通知: 模板中的 ${name} 取关联的客户/商机/线索名称
+        sendPlanNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_ADD, userId, orgId, true,
+                null, null, followUpPlan,
+                withResourceName(request.getModuleFields(), getRelatedResourceName(followUpPlan)));
         return followUpPlan;
     }
 
@@ -151,6 +161,11 @@ public class FollowUpPlanService extends BaseFollowUpService {
             statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
             baseService.handleUpdateLog(followUpPlan, updateFollowUpPlan, originCustomerFields,
                     request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
+
+            // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+            sendPlanNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_UPDATE, userId, orgId, false,
+                    followUpPlan, originCustomerFields, updateFollowUpPlan,
+                    withResourceName(request.getModuleFields(), getRelatedResourceName(updateFollowUpPlan)));
         }, () -> {
             throw new GenericException(Translator.get("plan_not_found"));
         });
@@ -377,6 +392,52 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("delete_follow_up_plan"));
+
+        // 消息通知: 删除传旧实体, 接收人按旧负责人解析
+        sendPlanNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_DELETE, SessionUtils.getUserId(),
+                followUpPlan.getOrganizationId(), true,
+                followUpPlan, withResourceName(null, getRelatedResourceName(followUpPlan)), null, null);
+    }
+
+    /*
+     * 保留空值分支: 直接 new Service 的历史单测不会注入该依赖。
+     */
+    private void sendPlanNotice(String action, String userId, String orgId, boolean eventOnly,
+            FollowUpPlan oldPlan, List<BaseModuleFieldValue> oldFields,
+            FollowUpPlan newPlan, List<BaseModuleFieldValue> newFields) {
+        if (commonNoticeSendService == null) {
+            return;
+        }
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.FOLLOW_UP, action, userId, orgId,
+                true, eventOnly, oldPlan, oldFields, newPlan, newFields);
+    }
+
+    /**
+     * 跟进计划关联的客户/商机/线索名称，用于消息模板中的 ${name}
+     */
+    private String getRelatedResourceName(FollowUpPlan plan) {
+        if (plan == null) {
+            return null;
+        }
+        if (StringUtils.isNotBlank(plan.getCustomerId())) {
+            return baseService.getCustomerMap(List.of(plan.getCustomerId())).get(plan.getCustomerId());
+        }
+        if (StringUtils.isNotBlank(plan.getOpportunityId())) {
+            return baseService.getOpportunityMap(List.of(plan.getOpportunityId())).get(plan.getOpportunityId());
+        }
+        if (StringUtils.isNotBlank(plan.getClueId())) {
+            return baseService.getClueMap(List.of(plan.getClueId())).get(plan.getClueId());
+        }
+        return null;
+    }
+
+    private List<BaseModuleFieldValue> withResourceName(List<BaseModuleFieldValue> moduleFields, String resourceName) {
+        if (StringUtils.isBlank(resourceName)) {
+            return moduleFields;
+        }
+        List<BaseModuleFieldValue> fields = moduleFields == null ? new ArrayList<>() : new ArrayList<>(moduleFields);
+        fields.add(new BaseModuleFieldValue("name", resourceName));
+        return fields;
     }
 
     /**
@@ -384,20 +445,29 @@ public class FollowUpPlanService extends BaseFollowUpService {
      */
     public void updateStatus(FollowUpPlanStatusRequest request, String userId, String orgId) {
         //检查跟进计划是否可以更新状态,如果是已完成，并且已转记录的跟进计划，则不允许更新状态
-        FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
-        if (followUpPlan == null) {
+        FollowUpPlan oldPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
+        if (oldPlan == null) {
             throw new GenericException(Translator.get("plan_not_found"));
         }
-        checkJointFollowPlanOwner(followUpPlan, followUpPlan.getOwner(), orgId, userId);
-        if (followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
+        checkJointFollowPlanOwner(oldPlan, oldPlan.getOwner(), orgId, userId);
+        if (oldPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && oldPlan.getConverted()) {
             return;
         }
-        followUpPlan = new FollowUpPlan();
-        followUpPlan.setStatus(request.getStatus());
-        followUpPlan.setId(request.getId());
-        followUpPlan.setUpdateUser(userId);
-        followUpPlan.setUpdateTime(System.currentTimeMillis());
-        followUpPlanMapper.update(followUpPlan);
+        FollowUpPlan plan = new FollowUpPlan();
+        plan.setStatus(request.getStatus());
+        plan.setId(request.getId());
+        plan.setUpdateUser(userId);
+        plan.setUpdateTime(System.currentTimeMillis());
+        followUpPlanMapper.update(plan);
+
+        // 消息通知: 状态变更按编辑跟进计划发送, old 取改前实体, new 用改后状态覆盖
+        FollowUpPlan newPlan = BeanUtils.copyBean(new FollowUpPlan(), oldPlan);
+        newPlan.setStatus(request.getStatus());
+        newPlan.setUpdateUser(userId);
+        List<BaseModuleFieldValue> moduleFields = followUpPlanFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
+        sendPlanNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_UPDATE, userId, oldPlan.getOrganizationId(), false,
+                oldPlan, moduleFields, newPlan, withResourceName(moduleFields, getRelatedResourceName(newPlan)));
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {
