@@ -60,6 +60,7 @@ import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
@@ -71,6 +72,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -140,6 +142,8 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
     private BaseMapper<Contract> contractMapper;
     @Resource
     private LogService logService;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private BusinessTitleService businessTitleService;
     @Resource
@@ -245,6 +249,11 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
         ContractInvoiceGetResponse response = get(invoice, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(invoice, saveModuleFormConfigDTO, response);
 
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.INVOICE_ADD, operatorId, orgId, true, true,
+                null, null, invoice, moduleFields);
+
         return invoice;
     }
 
@@ -333,6 +342,11 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
             // 处理日志上下文
             baseService.handleUpdateLogWithSubTable(originContractInvoice, invoice, originFields, moduleFields,
                     request.getId(), invoice.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+
+            // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                    NotificationConstants.Event.INVOICE_UPDATE, userId, orgId, true, false,
+                    originContractInvoice, originFields, invoice, moduleFields);
         }, () -> {
             throw new GenericException(Translator.get("invoice.not.exist"));
         });
@@ -379,6 +393,11 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
 
         // 添加日志上下文
         OperationLogContext.setResourceName(invoice.getName());
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.INVOICE_DELETE, userId, orgId, true, true,
+                invoice, null, null, null);
     }
 
     @HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
@@ -700,12 +719,10 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                 .toList();
         logService.batchAdd(logs);
 
-        // 消息通知 todo
-        //        invoices.forEach(invoice ->
-        //                commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-        //                        NotificationConstants.Event.CUSTOMER_DELETED, invoice.getName(), userId,
-        //                        orgId, List.of(invoice.getOwner()), true)
-        //        );
+        // 消息通知: 只对真正删除的这批发送(走审批的那批此刻并未删除)
+        deleteInvoices.forEach(invoice -> commonNoticeSendService.sendNoticeByConfig(
+                NotificationConstants.Module.CONTRACT, NotificationConstants.Event.INVOICE_DELETE,
+                userId, orgId, true, true, invoice, null, null, null));
     }
 
     public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String orgId,

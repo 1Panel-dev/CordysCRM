@@ -260,6 +260,11 @@ public class ContractService implements ApprovalResourceHandler {
         ContractGetResponse response = get(contract, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_ADD, operatorId, orgId, true, true,
+                null, null, contract, moduleFields);
+
         return contract;
     }
 
@@ -480,6 +485,11 @@ public class ContractService implements ApprovalResourceHandler {
             // 处理日志上下文
             baseService.handleUpdateLogWithSubTable(oldContract, contract, originFields, moduleFields, request.getId(),
                     contract.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+
+            // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                    NotificationConstants.Event.CONTRACT_UPDATE, userId, orgId, true, false,
+                    oldContract, originFields, contract, moduleFields);
         }, () -> {
             throw new GenericException(Translator.get("contract.not.exist"));
         });
@@ -588,6 +598,13 @@ public class ContractService implements ApprovalResourceHandler {
                         LogModule.CONTRACT_INDEX, contract.getName()))
                 .toList();
         logService.batchAdd(logs);
+
+        // 消息通知: 只对真正删除的这批发送(走审批的那批此刻并未删除)
+        permittedContracts.stream()
+                .filter(contract -> deleteIds.contains(contract.getId()))
+                .forEach(contract -> commonNoticeSendService.sendNoticeByConfig(
+                        NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_DELETE,
+                        userId, orgId, true, true, contract, null, null, null));
     }
 
     /**
@@ -620,6 +637,11 @@ public class ContractService implements ApprovalResourceHandler {
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         // 添加日志上下文
         OperationLogContext.setResourceName(contract.getName());
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_DELETE, userId, orgId, true, true,
+                contract, null, null, null);
     }
 
     @Override
@@ -795,14 +817,14 @@ public class ContractService implements ApprovalResourceHandler {
         updateFieldAndSnapshot(newContract, request.getFields(), userId);
 
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
-        if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name())
-                || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
-            String event = NotificationConstants.Event.CONTRACT_VOID;
-            sendNotice(newContract, userId, orgId, event, contract.getName());
-        }
+        List<BaseModuleFieldValue> newFields = contractFieldService
+                .getModuleFieldValuesByResourceId(request.getId());
+        // 消息通知: 阶段变更按编辑发送, old 取改前实体与改前字段值, new 取改后实体与改后字段值
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_UPDATE, userId, orgId, true, false,
+                oldContract, originCustomerFields, contract, newFields);
 
-        baseService.handleUpdateLogWithSubTable(oldContract, contract, originCustomerFields,
-                contractFieldService.getModuleFieldValuesByResourceId(request.getId()),
+        baseService.handleUpdateLogWithSubTable(oldContract, contract, originCustomerFields, newFields,
                 request.getId(), contract.getName(), Translator.get("products_info"), getFormConfig(orgId));
     }
 
@@ -1252,6 +1274,9 @@ public class ContractService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTRACT.getKey(), request.getFieldId(), permittedIds, organizationId);
+        // 通知需要改前改后的字段值: 自定义字段在下面会被整批覆盖, 先把改前的值取出来
+        Map<String, List<BaseModuleFieldValue>> originFieldMap = contractFieldService
+                .getResourceFieldMap(permittedIds, true);
         contractFieldService.batchUpdate(filteredRequest, field, permittedContracts, Contract.class,
                 LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
@@ -1303,6 +1328,20 @@ public class ContractService implements ApprovalResourceHandler {
         if (CollectionUtils.isNotEmpty(snapshots)) {
             snapshotBaseMapper.batchInsert(snapshots);
         }
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+        Map<String, Contract> originContractMap = originContracts.stream()
+                .collect(Collectors.toMap(Contract::getId, c -> c));
+        permittedIds.forEach(id -> {
+            Contract oldContract = originContractMap.get(id);
+            Contract newContract = latestContractMap.get(id);
+            if (oldContract == null || newContract == null) {
+                return;
+            }
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                    NotificationConstants.Event.CONTRACT_UPDATE, userId, organizationId, true, false,
+                    oldContract, originFieldMap.get(id), newContract, fieldMap.get(id));
+        });
 
         return BatchAffectReasonResponse.builder().success(permittedIds.size())
                 .fail(originContracts.size() - permittedIds.size()).skip(0)
@@ -1388,7 +1427,22 @@ public class ContractService implements ApprovalResourceHandler {
                 .getStageConfigList(contract.getOrganizationId()).stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
+        // 消息通知: doSort 会就地修改 contract, 先把改前实体与改前字段值记录下来
+        String orgId = contract.getOrganizationId();
+        Contract oldContract = BeanUtils.copyBean(new Contract(), contract);
+        List<BaseModuleFieldValue> originFields = contractFieldService
+                .getModuleFieldValuesByResourceId(contract.getId());
+
         doSort(request, contract, userId);
+
+        // 消息通知: 跨列换阶段按编辑发送, 阶段未实际变更(如被阶段配置拦截)则不发送
+        Contract newContract = contractMapper.selectByPrimaryKey(contract.getId());
+        if (newContract != null && !Strings.CI.equals(oldContract.getStage(), newContract.getStage())) {
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                    NotificationConstants.Event.CONTRACT_UPDATE, userId, orgId, true, false,
+                    oldContract, originFields, newContract,
+                    contractFieldService.getModuleFieldValuesByResourceId(contract.getId()));
+        }
 
         // 阶段变更记录: 审批实例按变更字段匹配节点条件时依赖此处写入的日志上下文
         final Map<String, String> originalVal = new HashMap<>(1);

@@ -48,6 +48,7 @@ import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticRespons
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -61,6 +62,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -70,6 +72,7 @@ import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import cn.idev.excel.FastExcelFactory;
 import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.github.pagehelper.Page;
@@ -115,6 +118,8 @@ public class ContractPaymentRecordService {
     private BaseService baseService;
     @Resource
     private LogService logService;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private StatisticFieldService statisticFieldService;
     @Resource
@@ -193,6 +198,12 @@ public class ContractPaymentRecordService {
         // 日志
         baseService.handleAddLogWithSubTable(paymentRecord, request.getModuleFields(), Translator.get("products_info"),
                 moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_RECORD_ADD, currentUser, currentOrg, true, true,
+                null, null, paymentRecord, request.getModuleFields());
+
         return paymentRecord;
     }
 
@@ -221,6 +232,12 @@ public class ContractPaymentRecordService {
         baseService.handleUpdateLogWithSubTable(oldRecord, contractPaymentRecord, oldFvs, request.getModuleFields(),
                 oldRecord.getId(), oldRecord.getName(), Translator.get("products_info"),
                 moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_RECORD_UPDATE, currentUser, currentOrg, true, false,
+                oldRecord, oldFvs, contractPaymentRecord, request.getModuleFields());
+
         return contractPaymentRecord;
     }
 
@@ -256,9 +273,30 @@ public class ContractPaymentRecordService {
         // 关联字段覆盖前保留原宿主，写入后同时刷新新旧宿主的统计值。
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CONTRACT_PAYMENT_RECORD.getKey(), request.getFieldId(), request.getIds(), orgId);
+        // 通知需要改前改后的字段值: 自定义字段在下面会被整批覆盖, 先把改前的值取出来
+        Map<String, List<BaseModuleFieldValue>> originFieldMap = contractPaymentRecordFieldService
+                .getResourceFieldMap(request.getIds(), true);
         contractPaymentRecordFieldService.batchUpdate(request, field, records, ContractPaymentRecord.class,
                 LogModule.CONTRACT_PAYMENT_RECORD, extContractPaymentRecordMapper::batchUpdate, userId, orgId, true);
         statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+        Map<String, ContractPaymentRecord> recordMap = records.stream()
+                .collect(Collectors.toMap(ContractPaymentRecord::getId, record -> record));
+        Map<String, List<BaseModuleFieldValue>> fieldMap = contractPaymentRecordFieldService
+                .getResourceFieldMap(request.getIds(), true);
+        Map<String, ContractPaymentRecord> latestRecordMap = contractPaymentRecordMapper.selectByIds(request.getIds())
+                .stream().collect(Collectors.toMap(ContractPaymentRecord::getId, record -> record));
+        request.getIds().forEach(id -> {
+            ContractPaymentRecord oldRecord = recordMap.get(id);
+            ContractPaymentRecord newRecord = latestRecordMap.get(id);
+            if (oldRecord == null || newRecord == null) {
+                return;
+            }
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                    NotificationConstants.Event.CONTRACT_RECORD_UPDATE, userId, orgId, true, false,
+                    oldRecord, originFieldMap.get(id), newRecord, fieldMap.get(id));
+        });
     }
 
     @OperationLog(module = LogModule.CONTRACT_PAYMENT_RECORD, type = LogType.DELETE, resourceId = "{#id}")
@@ -276,6 +314,11 @@ public class ContractPaymentRecordService {
         // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         OperationLogContext.setResourceName(oldRecord.getName());
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
+                NotificationConstants.Event.CONTRACT_RECORD_DELETE, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), true, true, oldRecord, null, null, null);
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
@@ -303,6 +346,11 @@ public class ContractPaymentRecordService {
                 })
                 .toList();
         logService.batchAdd(logs);
+
+        // 消息通知
+        records.forEach(record -> commonNoticeSendService.sendNoticeByConfig(
+                NotificationConstants.Module.CONTRACT, NotificationConstants.Event.CONTRACT_RECORD_DELETE,
+                userId, orgId, true, true, record, null, null, null));
     }
 
     public ContractPaymentRecordGetResponse get(String id) {

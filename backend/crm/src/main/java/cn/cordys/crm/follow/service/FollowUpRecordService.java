@@ -37,14 +37,17 @@ import cn.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -54,6 +57,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +89,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
     @Resource
     private ModuleFormService moduleFormService;
     @Resource
+    private CommonNoticeSendService commonNoticeSendService;
+    @Resource
     private PermissionCache permissionCache;
 
     /**
@@ -115,7 +121,42 @@ public class FollowUpRecordService extends BaseFollowUpService {
         statisticFieldService.refreshByRelatedDataChange(FormKey.FOLLOW_RECORD.getKey(), followUpRecord.getId(), orgId);
         handleFollowTimeAndFollower(request.getCustomerId(), request.getOpportunityId(), request.getClueId(),
                 request.getFollowTime(), request.getOwner());
+
+        // 消息通知: 模板中的 ${name} 取关联的客户/商机/线索名称
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.FOLLOW_UP,
+                NotificationConstants.Event.FOLLOW_UP_RECORD_ADD, userId, orgId, true, true,
+                null, null, followUpRecord,
+                withResourceName(request.getModuleFields(), getRelatedResourceName(followUpRecord)));
+
         return followUpRecord;
+    }
+
+    /**
+     * 跟进记录关联的客户/商机/线索名称，用于消息模板中的 ${name}
+     */
+    private String getRelatedResourceName(FollowUpRecord record) {
+        if (record == null) {
+            return null;
+        }
+        if (StringUtils.isNotBlank(record.getCustomerId())) {
+            return baseService.getCustomerMap(List.of(record.getCustomerId())).get(record.getCustomerId());
+        }
+        if (StringUtils.isNotBlank(record.getOpportunityId())) {
+            return baseService.getOpportunityMap(List.of(record.getOpportunityId())).get(record.getOpportunityId());
+        }
+        if (StringUtils.isNotBlank(record.getClueId())) {
+            return baseService.getClueMap(List.of(record.getClueId())).get(record.getClueId());
+        }
+        return null;
+    }
+
+    private List<BaseModuleFieldValue> withResourceName(List<BaseModuleFieldValue> moduleFields, String resourceName) {
+        if (StringUtils.isBlank(resourceName)) {
+            return moduleFields;
+        }
+        List<BaseModuleFieldValue> fields = moduleFields == null ? new ArrayList<>() : new ArrayList<>(moduleFields);
+        fields.add(new BaseModuleFieldValue("name", resourceName));
+        return fields;
     }
 
     /**
@@ -175,6 +216,12 @@ public class FollowUpRecordService extends BaseFollowUpService {
                     updateFollowUpRecord.getOwner());
             baseService.handleUpdateLog(followUpRecord, updateFollowUpRecord, originCustomerFields,
                     request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
+
+            // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.FOLLOW_UP,
+                    NotificationConstants.Event.FOLLOW_UP_RECORD_UPDATE, userId, orgId, true, false,
+                    followUpRecord, originCustomerFields, updateFollowUpRecord,
+                    withResourceName(request.getModuleFields(), getRelatedResourceName(updateFollowUpRecord)));
         }, () -> {
             throw new GenericException("record_not_found");
         });
@@ -423,6 +470,12 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("delete_follow_up_record"));
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.FOLLOW_UP,
+                NotificationConstants.Event.FOLLOW_UP_RECORD_DELETE, SessionUtils.getUserId(),
+                followUpRecord.getOrganizationId(), true, true,
+                followUpRecord, withResourceName(null, getRelatedResourceName(followUpRecord)), null, null);
     }
 
     /**

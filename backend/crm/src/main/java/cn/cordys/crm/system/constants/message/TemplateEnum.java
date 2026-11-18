@@ -74,6 +74,7 @@ public enum TemplateEnum {
     CONTRACT_UPDATE_TEXT("message.contract_update_text"),
     CONTRACT_DELETE_TEXT("message.contract_delete_text"),
     CONTRACT_VOID_TEXT("message.contract_void_text"),
+    CONTRACT_ARCHIVED_TEXT("message.contract_archived_text"),
     CONTRACT_EXPIRED_TEXT("message.contract_expired_text"),
     CONTRACT_EXPIRING_TEXT("message.contract_expiring_text"),
     CONTRACT_APPROVAL_TEXT("message.contract_approval_text"),
