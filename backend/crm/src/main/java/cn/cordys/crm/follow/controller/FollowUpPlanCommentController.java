@@ -44,7 +44,6 @@ public class FollowUpPlanCommentController {
     }
 
     @PostMapping("/add")
-    @CsPermission(value = PermissionConstants.FOLLOW_PLAN_UPDATE, resourceId = "{#request.resourceId}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "添加跟进计划评论")
     public FollowUpPlanComment add(@Validated @RequestBody CommentAddRequest request) {
         return commentService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

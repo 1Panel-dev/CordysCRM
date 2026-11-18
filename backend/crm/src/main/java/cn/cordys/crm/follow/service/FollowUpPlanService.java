@@ -114,6 +114,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (StringUtils.isBlank(request.getOwner())) {
             followUpPlan.setOwner(userId);
         }
+        checkJointFollowPlanOwner(followUpPlan, followUpPlan.getOwner(), orgId, userId);
         //保存自定义字段
         followUpPlanFieldService.saveModuleField(followUpPlan, orgId, userId, request.getModuleFields(), false);
         followUpPlanMapper.insert(followUpPlan);
@@ -134,6 +135,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
             //更新跟进计划
             FollowUpPlan newPlan = BeanUtils.copyBean(new FollowUpPlan(), plan);
             FollowUpPlan updateFollowUpPlan = newPlan(newPlan, request, userId);
+            checkJointFollowPlanOwner(plan, updateFollowUpPlan.getOwner(), orgId, userId);
+            checkJointFollowPlanOwner(updateFollowUpPlan, updateFollowUpPlan.getOwner(), orgId, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService
                     .getModuleFieldValuesByResourceId(request.getId());
@@ -379,12 +382,13 @@ public class FollowUpPlanService extends BaseFollowUpService {
     /**
      * 更新状态
      */
-    public void updateStatus(FollowUpPlanStatusRequest request, String userId) {
+    public void updateStatus(FollowUpPlanStatusRequest request, String userId, String orgId) {
         //检查跟进计划是否可以更新状态,如果是已完成，并且已转记录的跟进计划，则不允许更新状态
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
         if (followUpPlan == null) {
             throw new GenericException(Translator.get("plan_not_found"));
         }
+        checkJointFollowPlanOwner(followUpPlan, followUpPlan.getOwner(), orgId, userId);
         if (followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
             return;
         }
