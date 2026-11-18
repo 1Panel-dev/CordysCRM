@@ -55,7 +55,9 @@ const useViewStore = defineStore('view', {
     async getActiveView(key: string) {
       const { getItem } = useLocalForage();
       const data = await getItem<string>(`active-view-${key}`);
-      return data;
+      return key === FormDesignKeyEnum.CUSTOMER && data === 'VISIBLE'
+        ? CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
+        : data;
     },
 
     async setActiveView(key: string, viewId: string) {
@@ -178,6 +180,17 @@ const useViewStore = defineStore('view', {
               } as ViewItem)
           ),
       ];
+      if (
+        type === FormDesignKeyEnum.CUSTOMER &&
+        stored.some((item) => item.id === 'VISIBLE' && item.fixed && item.enable) &&
+        !merged.some((item) => item.fixed && item.enable)
+      ) {
+        const collaborationView = merged.find((item) => item.id === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION);
+        if (collaborationView) {
+          collaborationView.fixed = true;
+          collaborationView.enable = true;
+        }
+      }
       // admin 不显示部门视图
       if (userStore.userInfo.id === 'admin') {
         // @ts-ignore-next-line

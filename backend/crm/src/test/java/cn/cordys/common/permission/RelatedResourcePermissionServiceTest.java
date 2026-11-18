@@ -7,6 +7,10 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.service.CustomerCollaborationService;
+import cn.cordys.crm.system.constants.InternalDetailTab;
+import cn.cordys.crm.system.dto.form.FormDetailTab;
+import cn.cordys.crm.system.dto.form.FormProp;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtStatisticMapper;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.mybatis.BaseMapper;
@@ -35,6 +39,7 @@ class RelatedResourcePermissionServiceTest {
     private static final String ORG = "org-example";
     private static final String CUSTOMER = "customer-example";
     private static final String CONTACT = "contact-example";
+    private static final String BUSINESS = "business-example";
     private static final String BEFORE = "owner-before";
     private static final String AFTER = "owner-after";
     private static final String MEMBER = "collaborator";
@@ -42,6 +47,7 @@ class RelatedResourcePermissionServiceTest {
     private final CustomerCollaborationService collaborations = new CustomerCollaborationService();
     private final ExtStatisticMapper fields = mock(ExtStatisticMapper.class);
     private final PermissionCache permissions = mock(PermissionCache.class);
+    private final ModuleFormCacheService forms = mock(ModuleFormCacheService.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<CustomerCollaboration> members = mock(BaseMapper.class);
     private String customerOwner = BEFORE;
@@ -55,7 +61,7 @@ class RelatedResourcePermissionServiceTest {
     void 配置真实协作类型降级与关联客户() {
         ReflectionTestUtils.setField(service, "customerCollaborationService", collaborations);
         ReflectionTestUtils.setField(service, "extStatisticMapper", fields);
-        ReflectionTestUtils.setField(service, "moduleFormCacheService", mock(ModuleFormCacheService.class));
+        ReflectionTestUtils.setField(service, "moduleFormCacheService", forms);
         ReflectionTestUtils.setField(service, "permissionCache", permissions);
         ReflectionTestUtils.setField(collaborations, "customerCollaborationMapper", members);
         when(members.select(any(CustomerCollaboration.class))).thenAnswer(invocation -> {
@@ -212,5 +218,100 @@ class RelatedResourcePermissionServiceTest {
                 .thenReturn(Set.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ));
         assertFalse(service.hasRelatedReadPermission(FormKey.CONTACT.getKey(), CONTACT, MEMBER, ORG));
         assertTrue(service.hasRelatedReadPermission(FormKey.CONTACT.getKey(), CONTACT, BEFORE, ORG));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "opportunity,opportunity,OPPORTUNITY_MANAGEMENT:READ,CUSTOMER_OPPORTUNITY",
+            "contract,contract,CONTRACT:READ,CUSTOMER_CONTRACT",
+            "order,sales_order,ORDER:READ,CUSTOMER_ORDER"
+    })
+    void 协作详情授权不依赖客户查看权限或标签但保留有效类型限制(String formKey, String table,
+            String permission, InternalDetailTab internalTab) {
+        配置业务字段(table, CUSTOMER, BEFORE);
+        FormDetailTab tab = new FormDetailTab();
+        tab.setInternalKey(internalTab.name());
+        tab.setEnable(false);
+        FormProp prop = new FormProp();
+        prop.setDetailTabs(List.of(tab));
+        ModuleFormConfigDTO config = new ModuleFormConfigDTO();
+        config.setFormProp(prop);
+        when(forms.getConfig(FormKey.CUSTOMER.getKey(), ORG)).thenReturn(config);
+        for (CustomerCollaborationType memberType : List.of(CustomerCollaborationType.READ_ONLY,
+                CustomerCollaborationType.JOINT_FOLLOW)) {
+            type = memberType;
+            when(permissions.getPermissionIds(MEMBER, ORG)).thenReturn(Set.of(permission));
+            assertTrue(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+            when(permissions.getPermissionIds(MEMBER, ORG))
+                    .thenReturn(Set.of(permission, PermissionConstants.CUSTOMER_MANAGEMENT_READ));
+            assertTrue(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+            expireTime = 1L;
+            assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+            expireTime = null;
+        }
+        type = CustomerCollaborationType.COLLABORATION;
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        type = CustomerCollaborationType.READ_ONLY;
+        when(permissions.getPermissionIds(MEMBER, ORG)).thenReturn(Set.of());
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "opportunity,opportunity,OPPORTUNITY_MANAGEMENT:READ",
+            "contract,contract,CONTRACT:READ",
+            "order,sales_order,ORDER:READ"
+    })
+    void 协作详情不授权无成员关系已删除客户公海或异组织资源(String formKey, String table, String permission) {
+        配置业务字段(table, CUSTOMER, BEFORE);
+        type = CustomerCollaborationType.READ_ONLY;
+        when(permissions.getPermissionIds(MEMBER, ORG)).thenReturn(Set.of(permission));
+        assertTrue(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        memberId = "other-member";
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        customerOwner = MEMBER;
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        memberId = MEMBER;
+        type = CustomerCollaborationType.COLLABORATION;
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        type = CustomerCollaborationType.READ_ONLY;
+        inSharedPool = true;
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        inSharedPool = false;
+        配置业务字段(table, "deleted-customer", BEFORE);
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        配置业务字段(table, CUSTOMER, BEFORE);
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, "other-org"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "opportunity,opportunity,OPPORTUNITY_MANAGEMENT:READ",
+            "contract,contract,CONTRACT:READ",
+            "order,sales_order,ORDER:READ"
+    })
+    void 协作详情隔离仅客户信息成员数据并保留客户负责人数据(String formKey, String table, String permission) {
+        CustomerCollaboration viewer = new CustomerCollaboration();
+        viewer.setUserId(MEMBER);
+        viewer.setCollaborationType(CustomerCollaborationType.READ_ONLY.name());
+        CustomerCollaboration isolated = new CustomerCollaboration();
+        isolated.setUserId("private-member");
+        isolated.setCollaborationType(CustomerCollaborationType.COLLABORATION.name());
+        when(members.select(any(CustomerCollaboration.class))).thenReturn(List.of(viewer, isolated));
+        when(permissions.getPermissionIds(MEMBER, ORG)).thenReturn(Set.of(permission));
+        配置业务字段(table, CUSTOMER, "private-member");
+        assertFalse(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+        customerOwner = "private-member";
+        assertTrue(service.hasRelatedReadPermission(formKey, BUSINESS, MEMBER, ORG));
+    }
+
+    private void 配置业务字段(String table, String customerId, String owner) {
+        when(fields.selectBusinessFieldValue(eq(table), anyString(), eq(BUSINESS))).thenAnswer(invocation ->
+                switch ((String) invocation.getArgument(1)) {
+                case "organization_id" -> ORG;
+                case "customer_id" -> customerId;
+                case "owner" -> owner;
+                default -> null;
+                });
     }
 }

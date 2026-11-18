@@ -1,4 +1,5 @@
 export default {
+  'common.collaborationVisible': '协作可见',
   'common.newCustomer': '新建客户',
   'common.editCustomer': '更新客户',
   'common.newContact': '新建联系人',

@@ -50,7 +50,7 @@ public class DataScopeService {
 
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String viewId, String permission) {
         if (InternalUserView.isVisible(viewId, permission)) {
-            // 查看设置为可见的数据
+            // 协作视图由查询中的实时协作关系确定范围。
             DeptDataPermissionDTO dto = new DeptDataPermissionDTO();
             dto.setViewId(viewId);
             dto.setVisible(true);

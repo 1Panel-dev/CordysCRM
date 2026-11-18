@@ -72,6 +72,11 @@ public class RelatedResourcePermissionService {
 
     /** 客户详情标签优先按协作关系确定数据范围，无有效关系时由调用方保留普通角色范围。 */
     public DeptDataPermissionDTO getCustomerTabDataPermission(String customerId, String userId, String orgId) {
+        return getCustomerDataPermission(customerId, userId, orgId, false);
+    }
+
+    private DeptDataPermissionDTO getCustomerDataPermission(String customerId, String userId, String orgId,
+            boolean collaborationOnly) {
         if (StringUtils.isAnyBlank(customerId, userId, orgId)
                 || !orgId.equals(value("customer", "organization_id", customerId))) {
             return null;
@@ -82,7 +87,7 @@ public class RelatedResourcePermissionService {
         }
         String customerOwner = value("customer", "owner", customerId);
         List<CustomerCollaboration> members = customerCollaborationService.selectByCustomerId(customerId);
-        boolean owner = userId.equals(customerOwner);
+        boolean owner = !collaborationOnly && userId.equals(customerOwner);
         boolean collaborator = members.stream().anyMatch(member -> userId.equals(member.getUserId()));
         if (!owner && !collaborator) {
             return null;
@@ -207,6 +212,21 @@ public class RelatedResourcePermissionService {
             }
         }
         Set<String> permissions = permissionCache.getPermissionIds(userId, orgId);
+        String collaborationPermission = switch (FormKey.ofKey(formKey)) {
+        case OPPORTUNITY -> PermissionConstants.OPPORTUNITY_MANAGEMENT_READ;
+        case CONTRACT -> PermissionConstants.CONTRACT_READ;
+        case ORDER -> PermissionConstants.ORDER_READ;
+        case null, default -> null;
+        };
+        // 协作视图的只读授权不依赖客户详情标签的启用状态。
+        if (collaborationPermission != null && permissions.contains(collaborationPermission)) {
+            DeptDataPermissionDTO scope = getCustomerDataPermission(value(table, "customer_id", resourceId),
+                    userId, orgId, true);
+            if (scope != null && scope.getAll()
+                    && !scope.getExcludedOwnerIds().contains(value(table, "owner", resourceId))) {
+                return true;
+            }
+        }
         boolean admin = InternalUser.ADMIN.getValue().equals(userId);
         for (var parent : PARENT_PERMISSIONS.entrySet()) {
             if (!admin && !permissions.contains(parent.getValue())) {

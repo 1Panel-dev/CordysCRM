@@ -1,4 +1,5 @@
 export default {
+  'common.collaborationVisible': 'Visible Through Collaboration',
   'common.changeRecord': 'Change record',
   'common.pleaseSelectMember': 'Please select a member',
   'common.add': 'Add',

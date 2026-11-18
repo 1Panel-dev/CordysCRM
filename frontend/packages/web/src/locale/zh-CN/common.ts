@@ -1,4 +1,5 @@
 export default {
+  'common.collaborationVisible': '协作可见',
   'common.changeRecord': '变更记录',
   'common.pleaseSelectMember': '请选择成员',
   'common.add': '添加',
