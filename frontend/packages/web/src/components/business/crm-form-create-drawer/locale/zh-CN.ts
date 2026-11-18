@@ -20,4 +20,5 @@ export default {
   'crmFormCreate.drawer.invoice': '发票',
   'crmFormCreate.drawer.businessTitle': '工商抬头',
   'crmFormCreate.drawer.order': '订单',
+  'crmFormCreate.drawer.customForm': '自定义表单',
 };

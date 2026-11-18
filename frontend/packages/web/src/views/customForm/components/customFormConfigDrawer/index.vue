@@ -173,19 +173,19 @@
     };
   }
 
-  function disableSavedDataSourceType() {
-    const addDisabledProp = (field: FormCreateField) => {
+  function markFieldsAsSaved() {
+    const markSaved = (field: FormCreateField) => {
+      field.isNew = false;
       if (![FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
+        field.subFields?.forEach(markSaved);
         return;
       }
 
       field.disabledProps = Array.from(new Set([...(field.disabledProps || []), 'dataSourceType']));
+      field.subFields?.forEach(markSaved);
     };
 
-    fieldList.value.forEach((field) => {
-      addDisabledProp(field);
-      field.subFields?.forEach(addDisabledProp);
-    });
+    fieldList.value.forEach(markSaved);
   }
 
   const customFormNameDraft = ref('');
@@ -208,7 +208,7 @@
       if (result?.id) {
         currentSourceId.value = result.id;
       }
-      disableSavedDataSourceType();
+      markFieldsAsSaved();
       nextTick(() => {
         unsaved.value = false;
       });

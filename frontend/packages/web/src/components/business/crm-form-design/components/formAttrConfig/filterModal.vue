@@ -76,7 +76,7 @@
   const fieldSource = computed(() => props.fieldSource || 'dataSource');
   const dataSourceType = computed(() =>
     fieldSource.value === 'statisticTarget'
-      ? getDataSourceType(props.fieldConfig.targetFormId, dataSourceFilterFormKeyMap)
+      ? getDataSourceType(props.fieldConfig.targetFormId, dataSourceFilterFormKeyMap) || props.fieldConfig.targetFormId
       : props.fieldConfig.dataSourceType
   );
   const isCustomForm = computed(() => isCustomDataSourceType(dataSourceType.value));
