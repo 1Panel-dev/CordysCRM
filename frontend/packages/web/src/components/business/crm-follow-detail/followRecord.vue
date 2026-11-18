@@ -21,7 +21,7 @@
               <StatusTagSelect
                 v-if="item.status"
                 v-model:status="item.status"
-                :disabled="props.readonly || !props.getDisabledFun?.(item) || !!item.converted || !isOwner(item)"
+                :disabled="props.readonly || !props.getDisabledFun?.(item) || !!item.converted"
                 @change="() => emit('change', item)"
               />
               <CrmTag v-if="item.status && item.converted"> {{ t('common.hasConvertToRecord') }} </CrmTag>
@@ -150,8 +150,6 @@
   }
 
   const userStore = useUserStore();
-  const isOwner = (item: FollowDetailItem) => item.owner === userStore.userInfo.id;
-
   function getShowTime(item: FollowDetailItem) {
     const time = (item as CustomerFollowPlanListItem).estimatedTime ?? item.followTime;
     return time && dayjs(time).isValid() ? dayjs(time).format('YYYY-MM-DD') : '-';
