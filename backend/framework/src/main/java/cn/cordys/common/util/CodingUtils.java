@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.HexFormat;
 
 /**
@@ -31,6 +32,7 @@ public class CodingUtils {
     private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 128; // GCM 标签长度（以位为单位）
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    public static final String TOKEN_PREFIX = "v2.";
 
     /**
      * MD5加密（默认UTF-8字符集）
@@ -136,6 +138,33 @@ public class CodingUtils {
         } catch (Exception e) {
             throw new RuntimeException("AES-GCM decrypt error:", e);
         }
+    }
+
+    /**
+     * 使用随机 IV 加密临时令牌；格式为版本前缀加 Base64URL(IV + 密文)。
+     */
+    public static String encryptToken(String payload, String secretKey) {
+        byte[] iv = generateIv();
+        byte[] ciphertext = Base64.decodeBase64(aesEncrypt(payload, secretKey, iv));
+        byte[] token = Arrays.copyOf(iv, iv.length + ciphertext.length);
+        System.arraycopy(ciphertext, 0, token, iv.length, ciphertext.length);
+        return TOKEN_PREFIX + Base64.encodeBase64URLSafeString(token);
+    }
+
+    /**
+     * 解密随机 IV 令牌，不接受历史固定 IV 令牌。
+     */
+    public static String decryptToken(String token, String secretKey) {
+        if (token == null || !token.startsWith(TOKEN_PREFIX)) {
+            throw new IllegalArgumentException("Invalid token version");
+        }
+        byte[] bytes = java.util.Base64.getUrlDecoder().decode(token.substring(TOKEN_PREFIX.length()));
+        if (bytes.length <= GCM_IV_LENGTH + GCM_TAG_LENGTH / Byte.SIZE) {
+            throw new IllegalArgumentException("Invalid token length");
+        }
+        byte[] iv = Arrays.copyOfRange(bytes, 0, GCM_IV_LENGTH);
+        byte[] ciphertext = Arrays.copyOfRange(bytes, GCM_IV_LENGTH, bytes.length);
+        return aesDecrypt(Base64.encodeBase64String(ciphertext), secretKey, iv);
     }
 
     /**

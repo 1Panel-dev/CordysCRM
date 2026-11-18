@@ -29,6 +29,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
+import org.springframework.core.env.Environment;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
@@ -42,11 +44,13 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -73,6 +77,7 @@ class AuthenticationSecurityTest {
         previousSecret = SessionUser.secret;
         SessionUser.secret = "synthetic-secret";
         beans = mockStatic(CommonBeanFactory.class);
+        beans.when(() -> CommonBeanFactory.getBean(Environment.class)).thenReturn(new MockEnvironment());
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
         users = mock(UserLoginService.class);
         UserDTO admin = new UserDTO();
@@ -163,9 +168,51 @@ class AuthenticationSecurityTest {
         String currentSessionId = subject.getSession().getId().toString();
         assertNotEquals(previousSessionId, currentSessionId);
         assertEquals(currentSessionId, user.getSessionId());
-        String csrfPayload = CodingUtils.aesDecrypt(user.getCsrfToken(), SessionUser.secret,
-                CodingUtils.generateLegacyIv());
+        String csrfPayload = CodingUtils.decryptToken(user.getCsrfToken(), SessionUser.secret);
         assertEquals(currentSessionId, csrfPayload.split("\\|")[2]);
+    }
+
+    @Test
+    void legacySessionRefreshesTokensWithoutChangingItsSessionId() throws Exception {
+        MockHttpSession session = createLegacySession();
+        String sessionId = session.getId();
+        SessionUser legacyUser = (SessionUser) session.getAttribute(SessionConstants.ATTR_USER);
+
+        mvc.perform(get("/language").session(session))
+                .andExpect(status().isOk()).andExpect(content().string("admin"));
+        mvc.perform(get("/department/tree").session(session)
+                .header(SessionConstants.CSRF_TOKEN, legacyUser.getCsrfToken()))
+                .andExpect(status().isOk()).andExpect(content().string("admin"));
+
+        MvcResult result = mvc.perform(get("/is-login").session(session))
+                .andExpect(status().isOk()).andReturn();
+
+        assertFalse(session.isInvalid());
+        assertEquals(sessionId, session.getId());
+        SessionUser refreshed = (SessionUser) session.getAttribute(SessionConstants.ATTR_USER);
+        assertEquals(sessionId, refreshed.getSessionId());
+        assertTrue(refreshed.getCsrfToken().startsWith(CodingUtils.TOKEN_PREFIX));
+        assertEquals("CSRF|admin|" + sessionId, CodingUtils.decryptToken(refreshed.getCsrfToken(), SessionUser.secret));
+        assertNotNull(result.getResponse().getCookie("F_A_TOKEN"));
+        assertEquals("F_A|" + sessionId,
+                CodingUtils.decryptToken(result.getResponse().getCookie("F_A_TOKEN").getValue(), SessionUser.secret));
+        mvc.perform(get("/department/tree").session(session)
+                .header(SessionConstants.CSRF_TOKEN, refreshed.getCsrfToken()))
+                .andExpect(status().isOk()).andExpect(content().string("admin"));
+        verify(users).authenticateUser("admin");
+    }
+
+    @Test
+    void loggingOutALegacySessionPreventsFurtherAccessOrTokenRefresh() throws Exception {
+        MockHttpSession session = createLegacySession();
+
+        mvc.perform(get("/logout").session(session))
+                .andExpect(status().isOk()).andExpect(content().string("logout success"));
+
+        assertTrue(session.isInvalid());
+        mvc.perform(get("/language").session(session)).andExpect(status().isUnauthorized());
+        mvc.perform(get("/is-login").session(session)).andExpect(content().string(""));
+        verify(users, never()).authenticateUser(anyString());
     }
 
     @Test
@@ -277,6 +324,20 @@ class AuthenticationSecurityTest {
                 .buildWebSubject();
         ThreadContext.bind(subject);
         return subject;
+    }
+
+    private MockHttpSession createLegacySession() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        Subject subject = new WebSubject.Builder(manager, request, new MockHttpServletResponse()).buildWebSubject();
+        ThreadContext.bind(subject);
+        subject.login(new VerifiedUserToken("admin"));
+        SessionUser user = (SessionUser) subject.getSession().getAttribute(SessionConstants.ATTR_USER);
+        user.setCsrfToken(CodingUtils.aesEncrypt("admin|abcdef|" + user.getSessionId() + "|0",
+                "9a9rdqPlTqhpZzkq", CodingUtils.generateLegacyIv()));
+        subject.getSession().setAttribute(SessionConstants.ATTR_USER, user);
+        ThreadContext.remove();
+        clearInvocations(users);
+        return (MockHttpSession) request.getSession(false);
     }
 
     @RestController

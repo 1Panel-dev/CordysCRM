@@ -4,10 +4,7 @@ import cn.cordys.common.util.CodingUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
 
 /**
  * 文件访问 Token 工具类
@@ -19,7 +16,6 @@ public class FileAccessTokenUtils {
 
     private static final String COOKIE_NAME = "F_A_TOKEN";
     private static final String TOKEN_PURPOSE = "F_A";
-    private static final int IV_LENGTH = 12;
 
     /**
      * 生成附件访问令牌（加密 SessionId）
@@ -30,12 +26,7 @@ public class FileAccessTokenUtils {
         }
 
         String payload = String.join("|", TOKEN_PURPOSE, sessionId);
-        byte[] iv = CodingUtils.generateIv();
-        byte[] ciphertext = Base64.decodeBase64(CodingUtils.aesEncrypt(payload, SessionUser.secret, iv));
-        byte[] token = new byte[iv.length + ciphertext.length];
-        System.arraycopy(iv, 0, token, 0, iv.length);
-        System.arraycopy(ciphertext, 0, token, iv.length, ciphertext.length);
-        return Base64.encodeBase64URLSafeString(token);
+        return CodingUtils.encryptToken(payload, SessionUser.secret);
     }
 
     /**
@@ -73,14 +64,7 @@ public class FileAccessTokenUtils {
 
     static String getSessionId(String token) {
         try {
-            byte[] tokenBytes = Base64.decodeBase64(token);
-            if (tokenBytes.length <= IV_LENGTH) {
-                return null;
-            }
-
-            byte[] iv = Arrays.copyOfRange(tokenBytes, 0, IV_LENGTH);
-            byte[] ciphertext = Arrays.copyOfRange(tokenBytes, IV_LENGTH, tokenBytes.length);
-            String payload = CodingUtils.aesDecrypt(Base64.encodeBase64String(ciphertext), SessionUser.secret, iv);
+            String payload = CodingUtils.decryptToken(token, SessionUser.secret);
             String[] parts = payload.split("\\|", 2);
             if (parts.length != 2 || !TOKEN_PURPOSE.equals(parts[0]) || StringUtils.isBlank(parts[1])) {
                 return null;
