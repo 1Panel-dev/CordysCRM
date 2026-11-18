@@ -10,7 +10,6 @@ import cn.cordys.common.utils.SqlInjectionChecker;
 import cn.cordys.crm.system.service.ExportTaskStopService;
 import cn.cordys.crm.system.service.ExtScheduleService;
 import cn.cordys.crm.system.service.SystemService;
-import cn.cordys.security.SessionUser;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -40,9 +39,6 @@ class AppListener implements ApplicationRunner {
     @Resource
     private SystemService systemService;
 
-    @Value("${cordys.secret.key}")
-    private String secretInstance;
-
     @Value("${sql.injection.dangerous-pattern:}")
     private String configuredPattern;
 
@@ -57,7 +53,6 @@ class AppListener implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         log.info("===== 开始初始化配置 =====");
-        SessionUser.secret = secretInstance;
         SqlInjectionChecker.setDangerousPattern(configuredPattern);
 
         // 初始化唯一ID生成器

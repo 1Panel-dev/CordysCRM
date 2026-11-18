@@ -1,22 +1,17 @@
 package cn.cordys.security;
 
 import cn.cordys.common.util.CodingUtils;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,7 +25,7 @@ import java.util.Objects;
 public class SessionUser extends UserDTO implements Serializable {
 
     /**
-     * 加密密钥，用于生成 CSRF Token。建议从配置或环境变量中读取。
+     * 会话令牌密钥，启动时从 Redis 加载，与历史业务数据加密无关。
      */
     public static String secret;
 
@@ -60,22 +55,8 @@ public class SessionUser extends UserDTO implements Serializable {
         // 拷贝 UserDTO 的属性到 SessionUser
         BeanUtils.copyProperties(user, sessionUser);
 
-        // 构建用于生成 CSRF Token 的信息
-        List<String> infos = Arrays.asList(
-                user.getId(),
-                RandomStringUtils.secure().nextAlphabetic(6), // 随机字符串增加多样性
-                sessionId,
-                String.valueOf(System.currentTimeMillis()) // 当前时间戳
-        );
-
-        try {
-            // 使用 AES 加密生成 CSRF Token
-            sessionUser.csrfToken = CodingUtils.aesEncrypt(
-                    StringUtils.join(infos, "|"), secret, CodingUtils.generateLegacyIv());
-        } catch (Exception e) {
-            // 异常处理：加密失败时可以记录日志或者返回默认值
-            sessionUser.csrfToken = StringUtils.EMPTY;
-        }
+        // 随机 IV 保证每次签发不同；用途和会话绑定防止跨令牌复用，有效期随会话。
+        sessionUser.csrfToken = CodingUtils.encryptToken(String.join("|", "CSRF", user.getId(), sessionId), secret);
 
         // 设置 sessionId
         sessionUser.sessionId = sessionId;

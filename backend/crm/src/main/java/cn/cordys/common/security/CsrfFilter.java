@@ -18,6 +18,9 @@ import org.apache.shiro.web.util.WebUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
 /**
  * 自定义过滤器，用于处理 CSRF 校验。
  * 该过滤器确保只有认证用户才能访问非公开资源，并对请求中的 CSRF token 和 Referer 进行校验。
@@ -66,12 +69,10 @@ public class CsrfFilter extends AnonymousFilter {
             return true;
         }
 
-        // 获取请求头中的 CSRF token 和 X-Auth-Token
+        // 获取请求头中的 CSRF token
         String csrfToken = httpServletRequest.getHeader(SessionConstants.CSRF_TOKEN);
-        String xAuthToken = httpServletRequest.getHeader(SessionConstants.HEADER_TOKEN);
 
-        // 校验 CSRF token 和 X-Auth-Token
-        validateToken(csrfToken, xAuthToken);
+        validateToken(csrfToken);
 
         // 校验 Referer
         validateReferer(httpServletRequest);
@@ -105,33 +106,42 @@ public class CsrfFilter extends AnonymousFilter {
     }
 
     /**
-     * 校验请求中的 CSRF token 和 X-Auth-Token 是否有效。
+     * 校验请求中的 CSRF token 是否属于当前认证会话。
      * 如果 token 无效，抛出异常。
      *
      * @param csrfToken  CSRF token
-     * @param xAuthToken X-Auth-Token
      */
-    private void validateToken(String csrfToken, String xAuthToken) {
+    private void validateToken(String csrfToken) {
         if (StringUtils.isBlank(csrfToken)) {
             throw new RuntimeException("CSRF token is empty");
         }
 
-        // 解密 CSRF token
-        csrfToken = CodingUtils.aesDecrypt(csrfToken, SessionUser.secret, CodingUtils.generateLegacyIv());
+        if (!csrfToken.startsWith(CodingUtils.TOKEN_PREFIX)) {
+            // 仅兼容当前会话已保存的旧令牌，禁止用公开旧密钥解密后放行伪造令牌。
+            SessionUser user = SessionUtils.getUser();
+            if (user != null && StringUtils.isNotBlank(user.getCsrfToken())
+                    && Strings.CS.equals(user.getSessionId(), SessionUtils.getSessionId())
+                    && MessageDigest.isEqual(user.getCsrfToken().getBytes(StandardCharsets.UTF_8),
+                            csrfToken.getBytes(StandardCharsets.UTF_8))) {
+                return;
+            }
+            throw new RuntimeException("CSRF token does not match the current session");
+        }
 
-        String[] signatureArray = StringUtils.split(StringUtils.trimToNull(csrfToken), "|");
-        if (signatureArray.length != 4) {
+        // 解密 CSRF token
+        csrfToken = CodingUtils.decryptToken(csrfToken, SessionUser.secret);
+
+        String[] signatureArray = csrfToken.split("\\|", -1);
+        if (signatureArray.length != 3 || !"CSRF".equals(signatureArray[0])) {
             throw new RuntimeException("Invalid CSRF token format");
         }
 
         // 校验用户 ID 和会话 ID 是否匹配
-        if (!Strings.CS.equals(SessionUtils.getUserId(), signatureArray[0])) {
+        if (!Strings.CS.equals(SessionUtils.getUserId(), signatureArray[1])) {
             throw new RuntimeException("CSRF token does not match the current user");
         }
 
-        // 校验 sessionId 或 X-Auth-Token 是否匹配
-        if (!Strings.CS.equals(SessionUtils.getSessionId(), signatureArray[2]) &&
-                !Strings.CS.equals(xAuthToken, signatureArray[2])) {
+        if (!Strings.CS.equals(SessionUtils.getSessionId(), signatureArray[2])) {
             throw new RuntimeException("CSRF token does not match the current session");
         }
     }
