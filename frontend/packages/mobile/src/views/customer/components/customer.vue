@@ -102,10 +102,6 @@
       name: CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
       tab: t('customer.cooperationCustomer'),
     },
-    {
-      name: CustomerSearchTypeEnum.VISIBLE,
-      tab: t('customer.visibleData'),
-    },
   ];
   const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.CUSTOMER);
 

@@ -125,6 +125,10 @@
       name: OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS,
       tab: t('opportunity.convertedOpportunities'),
     },
+    {
+      name: OpportunitySearchTypeEnum.COLLABORATION_VISIBLE,
+      tab: t('common.collaborationVisible'),
+    },
   ];
   const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.BUSINESS);
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({

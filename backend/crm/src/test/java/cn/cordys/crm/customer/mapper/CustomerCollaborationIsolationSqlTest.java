@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -158,6 +159,34 @@ class CustomerCollaborationIsolationSqlTest {
         assertTrue(isolated(expired, type, now - 1, values));
         assertEquals("COLLABORATION", value((Expression) branches.get(1), type, now, values));
         assertEquals(type, value((Expression) branches.get(2), type, now + 1, values));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "list", "chart" })
+    void customerCollaborationViewKeepsMembershipAndExcludesCustomerOwner(String statement) throws Exception {
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setVisible(true);
+        scope.setViewId("CUSTOMER_COLLABORATION");
+        Map<String, Object> request = new HashMap<>();
+        request.put("transition", false);
+        Map<String, Object> axis = Map.of("businessField", true, "businessFieldName", "owner",
+                "blob", false, "aggregateMethod", "COUNT");
+        request.put("categoryAxisParam", axis);
+        request.put("valueAxisParam", axis);
+        Map<String, Object> parameters = Map.of("request", request, "orgId", "org-a", "userId", "reader-a",
+                "dataPermission", scope);
+        BoundSql bound = configuration.getMappedStatement(ExtCustomerMapper.class.getName() + "." + statement)
+                .getBoundSql(parameters);
+        CCJSqlParserUtil.parse(bound.getSql());
+        String sql = bound.getSql().replaceAll("\\s+", "");
+
+        assertTrue(sql.contains("joincustomer_collaborationcconc.id=cc.customer_id"));
+        assertTrue(sql.contains("cc.user_id=?"), "协作关系解除后客户应立即离开该视图");
+        assertTrue(sql.contains("c.organization_id=?"));
+        assertTrue(sql.contains("c.in_shared_poolisfalse"));
+        assertTrue(sql.contains("c.owner!=?"), "本人负责的客户归我的数据视图");
+        assertFalse(sql.contains("cc.collaboration_typeIN"), "客户协作视图包含仅客户信息成员");
+        assertFalse(sql.contains("andc.owner=?"));
     }
 
     private static boolean isolated(Expression expression, String type, Long expires, List<Object> values) {

@@ -29,9 +29,13 @@ public enum InternalUserView {
      */
     CLUE_TRANSITION,
     /**
-     * 协作客户视图
+     * 我协作的客户视图
      */
     CUSTOMER_COLLABORATION,
+    /**
+     * 客户协作范围内的业务数据视图
+     */
+    COLLABORATION_VISIBLE,
     /**
      * 赢单视图
      */
@@ -67,8 +71,11 @@ public enum InternalUserView {
     }
 
     public static boolean isVisible(String searchType, String permission) {
-        // 目前只有客户协作人视图有可见权限
-        return Strings.CS.startsWith(permission, "CUSTOMER_MANAGEMENT")
-                && Strings.CS.equals(CUSTOMER_COLLABORATION.name(), searchType);
+        return (Strings.CS.equals(PermissionConstants.CUSTOMER_MANAGEMENT_READ, permission)
+                && Strings.CS.equals(CUSTOMER_COLLABORATION.name(), searchType))
+                || (permission != null
+                        && List.of(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.CONTRACT_READ,
+                                PermissionConstants.ORDER_READ).contains(permission)
+                        && Strings.CS.equals(COLLABORATION_VISIBLE.name(), searchType));
     }
 }

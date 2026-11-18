@@ -11,6 +11,7 @@ import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRe
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
@@ -106,6 +107,78 @@ class CustomerBusinessTabSqlTest {
             assertFalse(sql.contains("c.ownernotin("), "回款记录不能再按父合同负责人剔除");
             assertFalse(sql.contains("andc.owner=?"));
         }
+    }
+
+    static Stream<Arguments> collaborationViewQueries() {
+        return Stream.of(
+                new Object[] { ExtOpportunityMapper.class, "o" },
+                new Object[] { ExtContractMapper.class, "ct" },
+                new Object[] { ExtOrderMapper.class, "so" })
+                .flatMap(query -> (query[0] == ExtOpportunityMapper.class
+                        ? Stream.of("list", "searchStatistic", "chart") : Stream.of("list", "searchStatistic"))
+                        .flatMap(statement -> Stream.of("COLLABORATION_VISIBLE", "ALL")
+                                .map(view -> Arguments.of(query[0], statement, query[1], view))));
+    }
+
+    @ParameterizedTest
+    @MethodSource("collaborationViewQueries")
+    void collaborationViewUsesCurrentCustomerMembershipAndExcludesOwnAndIsolatedData(Class<?> mapper,
+            String statement, String alias, String view) throws Exception {
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setViewId(view);
+        scope.setVisible("COLLABORATION_VISIBLE".equals(view));
+        scope.setAll(!scope.getVisible());
+        Map<String, Object> parameters = new HashMap<>();
+        Map<String, Object> request = new HashMap<>();
+        if ("chart".equals(statement)) {
+            Map<String, Object> axis = Map.of("businessField", true, "businessFieldName", "owner",
+                    "blob", false, "aggregateMethod", "COUNT");
+            request.put("categoryAxisParam", axis);
+            request.put("valueAxisParam", axis);
+        }
+        parameters.put("request", request);
+        parameters.put("userId", "reader-a");
+        parameters.put("orgId", "org-a");
+        parameters.put("source", false);
+        parameters.put("approved", false);
+        parameters.put("dataPermission", scope);
+        long before = System.currentTimeMillis();
+        BoundSql bound = configuration.getMappedStatement(mapper.getName() + "." + statement)
+                .getBoundSql(parameters);
+        long after = System.currentTimeMillis();
+        CCJSqlParserUtil.parse(bound.getSql());
+        String sql = bound.getSql().replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+        if (!scope.getVisible()) {
+            assertFalse(sql.contains("collaboration_member"), "普通列表仍按原角色范围查询");
+            assertFalse(sql.contains(alias + ".owner!=?"));
+            return;
+        }
+
+        assertTrue(sql.contains("and" + alias + ".owner!=?"), "协作视图必须排除本人负责的数据");
+        assertTrue(sql.contains("collaboration_customer.id=" + alias + ".customer_id"));
+        assertTrue(sql.contains("collaboration_customer.organization_id=?"));
+        assertTrue(sql.contains("collaboration_customer.in_shared_poolisfalse"));
+        assertTrue(sql.contains("joincustomer_collaborationcollaboration_member"));
+        assertTrue(sql.contains("collaboration_member.user_id=?"));
+        assertTrue(sql.contains("collaboration_member.collaboration_typein('read_only','joint_follow')"));
+        assertTrue(sql.contains("and(collaboration_member.expire_timeisnullorcollaboration_member.expire_time>?)"));
+        assertTrue(sql.contains("notexists("), "仅客户信息成员负责的数据也必须隔离");
+        assertTrue(sql.contains("isolated_member.user_id=" + alias + ".owner"));
+        assertTrue(sql.contains("coalesce(collaboration_customer.owner,'')"), "客户负责人不能被成员隔离规则剔除");
+        assertTrue(sql.contains("isolated_member.collaboration_type=?"));
+        assertTrue(sql.contains("isolated_member.expire_time<=?"));
+        assertFalse(sql.contains("and" + alias + ".owner=?"));
+
+        long now = (Long) bound.getAdditionalParameter("collaborationCurrentTime");
+        assertTrue(before <= now && now <= after);
+        List<Object> values = bound.getParameterMappings().stream().map(mapping -> {
+            String property = mapping.getProperty();
+            return bound.hasAdditionalParameter(property) ? bound.getAdditionalParameter(property)
+                    : configuration.newMetaObject(parameters).getValue(property);
+        }).toList();
+        assertTrue(values.containsAll(List.of("reader-a", "org-a", "COLLABORATION")));
+        assertEquals(2, values.stream().filter(value -> Long.valueOf(now).equals(value)).count(),
+                "访问者与记录负责人的到期判断应使用同一时间");
     }
 
     @Test

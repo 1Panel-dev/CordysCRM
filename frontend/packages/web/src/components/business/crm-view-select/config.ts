@@ -134,13 +134,13 @@ const userStore = useUserStore();
 export const nonFixedInternalViewIds = new Set<string>([
   CustomerSearchTypeEnum.CLUE_TRANSITION,
   CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
-  CustomerSearchTypeEnum.VISIBLE,
+  CustomerSearchTypeEnum.COLLABORATION_VISIBLE,
 ]);
 
 export const nonCopyableInternalViewIds = new Set<string>([
   CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
   CustomerSearchTypeEnum.CLUE_TRANSITION,
-  CustomerSearchTypeEnum.VISIBLE,
+  CustomerSearchTypeEnum.COLLABORATION_VISIBLE,
 ]);
 
 type ViewAction = 'list' | 'add' | 'update' | 'delete' | 'detail' | 'fixed' | 'enable' | 'drag';

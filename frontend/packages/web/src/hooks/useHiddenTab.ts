@@ -111,10 +111,6 @@ export default function useHiddenTab(type?: TabType, customFormId?: string) {
       name: CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
       tab: t('customer.cooperationCustomer'),
     },
-    {
-      name: CustomerSearchTypeEnum.VISIBLE,
-      tab: t('customer.visibleData'),
-    },
   ];
 
   const allCustomFormTabList: TabPaneProps[] = [
@@ -148,6 +144,10 @@ export default function useHiddenTab(type?: TabType, customFormId?: string) {
     {
       name: OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS,
       tab: t('opportunity.convertedOpportunities'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.COLLABORATION_VISIBLE,
+      tab: t('common.collaborationVisible'),
     },
   ];
 
@@ -208,6 +208,10 @@ export default function useHiddenTab(type?: TabType, customFormId?: string) {
       name: OpportunitySearchTypeEnum.DEPARTMENT,
       tab: t('contract.depart'),
     },
+    {
+      name: OpportunitySearchTypeEnum.COLLABORATION_VISIBLE,
+      tab: t('common.collaborationVisible'),
+    },
   ];
 
   const allQuotationTabList: TabPaneProps[] = [
@@ -252,6 +256,10 @@ export default function useHiddenTab(type?: TabType, customFormId?: string) {
     {
       name: OpportunitySearchTypeEnum.DEPARTMENT,
       tab: t('order.depart'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.COLLABORATION_VISIBLE,
+      tab: t('common.collaborationVisible'),
     },
   ];
 

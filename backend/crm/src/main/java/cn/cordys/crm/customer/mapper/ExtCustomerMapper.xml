@@ -66,6 +66,7 @@
         <if test="dataPermission != null and dataPermission.visible">
             join customer_collaboration cc on c.id = cc.customer_id
             and cc.user_id = #{userId}
+            and c.owner != #{userId}
         </if>
 
         <if test="request.transition and !request.transitionDataPermission.all">
@@ -181,6 +182,7 @@
         <if test="dataPermission != null and dataPermission.visible">
             join customer_collaboration cc on c.id = cc.customer_id
             and cc.user_id = #{userId}
+            and c.owner != #{userId}
         </if>
 
         where c.organization_id = #{orgId}
@@ -940,8 +942,33 @@
         )
     </sql>
 
-    <!-- 客户详情标签按协作范围排除仅客户信息成员负责的数据。 -->
+    <!-- 客户详情标签及协作视图按协作范围隔离业务数据。 -->
     <sql id="isolatedBusinessRead">
+        <if test="dataPermission != null and dataPermission.visible and dataPermission.viewId == 'COLLABORATION_VISIBLE'">
+            <bind name="collaborationCurrentTime" value="@java.lang.System@currentTimeMillis()"/>
+            AND ${ownerColumn} != #{${userParameter}}
+            AND EXISTS (
+                SELECT 1 FROM customer collaboration_customer
+                JOIN customer_collaboration collaboration_member
+                    ON collaboration_member.customer_id = collaboration_customer.id
+                WHERE collaboration_customer.id = ${customerColumn}
+                    AND collaboration_customer.organization_id = #{${orgParameter}}
+                    AND collaboration_customer.in_shared_pool IS FALSE
+                    AND collaboration_member.user_id = #{${userParameter}}
+                    AND collaboration_member.collaboration_type IN ('READ_ONLY', 'JOINT_FOLLOW')
+                    AND (collaboration_member.expire_time IS NULL
+                        OR collaboration_member.expire_time &gt; #{collaborationCurrentTime})
+                    AND NOT EXISTS (
+                        SELECT 1 FROM customer_collaboration isolated_member
+                        WHERE isolated_member.customer_id = collaboration_customer.id
+                            AND isolated_member.user_id = ${ownerColumn}
+                            AND isolated_member.user_id != COALESCE(collaboration_customer.owner, '')
+                            AND <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedCollaboration">
+                                <property name="collaborationAlias" value="isolated_member"/>
+                            </include>
+                    )
+            )
+        </if>
         <if test="dataPermission != null and dataPermission.excludedOwnerIds != null and !dataPermission.excludedOwnerIds.isEmpty()">
             AND ${ownerColumn} NOT IN
             <foreach collection="dataPermission.excludedOwnerIds" item="excludedOwnerId" open="(" close=")" separator=",">

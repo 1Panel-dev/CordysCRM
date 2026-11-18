@@ -1,4 +1,5 @@
 export default {
+  'common.collaborationVisible': 'Visible Through Collaboration',
   'common.newCustomer': 'New Account',
   'common.editCustomer': 'Update Account',
   'common.newContact': 'New Contact',
