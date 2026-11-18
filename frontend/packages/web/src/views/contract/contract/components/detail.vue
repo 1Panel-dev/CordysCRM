@@ -64,6 +64,7 @@
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus"
+            :readonly="effectiveReadonly"
             left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
@@ -100,6 +101,7 @@
             :form-key="FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT"
             :sourceId="props.sourceId"
             :sourceName="title"
+            :readonly="props.readonly"
             isContractTab
           />
         </div>
@@ -108,6 +110,7 @@
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
             :sourceId="props.sourceId"
             :sourceName="title"
+            :readonly="props.readonly"
             isContractTab
             @refresh="handleSaved()"
           />
@@ -116,6 +119,7 @@
           <InvoiceTable
             :sourceId="props.sourceId"
             :sourceName="title"
+            :readonly="props.readonly"
             is-contract-tab
             @open-business-title-drawer="showBusinessTitleDetail"
           />
@@ -125,6 +129,7 @@
             :formKey="FormDesignKeyEnum.CONTRACT_ORDER"
             :sourceId="props.sourceId"
             :sourceName="title"
+            :readonly="props.readonly"
             is-contract-tab
             :detail-tab-statistic-form-key="FormDesignKeyEnum.CONTRACT"
             :detail-tab-statistic-query="orderTabStatisticQuery"
@@ -139,7 +144,7 @@
         />
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
-            <component :is="item.table.component" v-bind="item.table.props" hideBoard />
+            <component :is="item.table.component" v-bind="item.table.props" :readonly="props.readonly" hideBoard />
           </div>
         </template>
       </CrmCard>
@@ -164,6 +169,7 @@
     <OptOverviewDrawer
       v-model:show="showOptOverviewDrawer"
       :detail="activeOpportunity"
+      :readonly="props.readonly"
       @refresh="handleSaved()"
       @open-customer-drawer="emit('showCustomerDrawer', $event)"
     />
@@ -213,6 +219,7 @@
   } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
@@ -222,6 +229,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    readonly?: boolean;
     isContractTableDetail?: boolean;
     disableCustomerLink?: boolean;
     approvalTaskId?: string;
@@ -245,6 +253,12 @@
   const { getUpdateReviewExtraParams } = useUpdateReviewChange();
   const title = ref('');
   const detailInfo = ref();
+  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
+  const effectiveReadonly = computed(
+    () =>
+      props.readonly ||
+      isCustomerRelatedReadonly(detailInfo.value?.id === props.sourceId ? detailInfo.value : undefined)
+  );
   const detailTabConfig = ref<FormConfig>();
 
   const activeTab = ref('contract');
@@ -379,7 +393,7 @@
     groupList: ActionsItem[];
     moreList: ActionsItem[];
   }>(() => {
-    if (!detailInfo.value) {
+    if (effectiveReadonly.value || !detailInfo.value) {
       return { groupList: [], moreList: [] };
     }
 
@@ -445,7 +459,7 @@
   }
 
   const canUpdateStage = computed(() => {
-    if (!detailInfo.value) {
+    if (effectiveReadonly.value || !detailInfo.value) {
       return false;
     }
 
