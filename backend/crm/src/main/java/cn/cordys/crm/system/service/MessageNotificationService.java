@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -853,22 +854,22 @@ public class MessageNotificationService {
             }
             //新建
             buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_ADD_TEXT.name()), customForm,
-                    Translator.get("message.create"), List.of("OWNER"),
+                    "create", List.of("OWNER"),
                     receiveMethod, TriggerTypeEnum.ACTION.name(),
                     buildActionConfigValue("CUSTOM_FORM_ADD"));
             //编辑
             buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_UPDATE_TEXT.name()), customForm,
-                    Translator.get("message.update"), List.of("OWNER"), receiveMethod,
+                   "update", List.of("OWNER"), receiveMethod,
                     TriggerTypeEnum.ACTION.name(),
                     buildActionConfigValue("CUSTOM_FORM_UPDATE"));
             //删除
             buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_DELETED_TEXT.name()), customForm,
-                    Translator.get("message.delete"), List.of("OLD_OWNER"), receiveMethod,
+                    "delete", List.of("OLD_OWNER"), receiveMethod,
                     TriggerTypeEnum.ACTION.name(),
                     buildActionConfigValue("CUSTOM_FORM_DELETE"));
             //审批
             buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_APPROVAL_TEXT.name()), customForm,
-                    Translator.get("message.approve"), List.of("SUBMITTER", "OWNER"),
+                    "approve", List.of("SUBMITTER", "OWNER"),
                     receiveMethod,
                     TriggerTypeEnum.FIELD.name(),
                     buildFieldConfigValue(
@@ -886,7 +887,7 @@ public class MessageNotificationService {
         String taskId = IDGenerator.nextStr();
         MessageTask messageTask = new MessageTask();
         messageTask.setId(taskId);
-        messageTask.setName(event + customForm.getName());
+        messageTask.setName(Translator.get("message." + event, Locale.CHINA) + customForm.getName());
         messageTask.setEnable(true);
         messageTask.setSysEnable(true);
         messageTask.setScopeId(JSON.toJSONString(owners));

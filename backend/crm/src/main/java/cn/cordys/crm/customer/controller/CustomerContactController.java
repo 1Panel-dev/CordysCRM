@@ -155,7 +155,7 @@ public class CustomerContactController {
             PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE }, logical = Logical.OR)
     @Operation(summary = "删除客户联系人")
     public void delete(@PathVariable String id) {
-        customerContactService.delete(id);
+        customerContactService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/delete")

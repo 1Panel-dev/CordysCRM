@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,6 +48,11 @@ public class NoticeSendContext implements Serializable {
      * 模板附加参数
      */
     private Map<String, Object> paramMap;
+
+    /**
+     * 本次操作涉及的协作人ID，如客户新增的协作人
+     */
+    private List<String> collaborationUserIds;
 
     /**
      * 更新前的字段值(fieldId -> value)
