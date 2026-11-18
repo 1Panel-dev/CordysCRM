@@ -288,7 +288,10 @@ public class ResourcePermissionService {
                     .anyMatch(id -> StringUtils.isBlank(id) || StringUtils.isBlank(ownerMap.get(id)))) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-            List<String> ownerIds = resourceIds.stream().map(ownerMap::get)
+            // 协作授权逐条判断，不能传播给同一负责人名下的其他资源。
+            List<String> ownerIds = resourceIds.stream()
+                    .filter(id -> !provider.hasAdditionalDataPermission(permission, id, userId))
+                    .map(ownerMap::get)
                     .distinct()
                     .toList();
             if (!ownerIds.isEmpty()) {
@@ -316,7 +319,7 @@ public class ResourcePermissionService {
         String ownerId = context != null ? context.getOwnerId() : null;
         String approvalStatus = context != null ? context.getApprovalStatus() : null;
 
-        // 关联数据仅补充读取授权，写操作仍按原角色和数据范围校验。
+        // 写操作仍要求角色功能权限，数据范围可由对应资源的有效协作关系补充。
         boolean roleAndDataPermitted = PermissionUtils.hasPermission(permission)
                 && (!requiresOwner || ownerId == null
                         || dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)

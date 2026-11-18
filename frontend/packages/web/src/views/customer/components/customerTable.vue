@@ -4,9 +4,9 @@
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
     class="crm-customer-table"
-    :columns="tableColumns"
+    :columns="propsRes.columns"
     :not-show-table-filter="isAdvancedSearchMode"
-    :action-config="props.readonly ? undefined : actionConfig"
+    :action-config="tableActionConfig"
     @row-key-change="handleRowKeyChange"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
@@ -21,7 +21,7 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="!isReadonlyView && hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) && !props.readonly"
+          v-if="!isCollaborationView && hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) && !props.readonly"
           type="primary"
           @click="handleNewClick"
         >
@@ -34,7 +34,7 @@
           @import-success="() => searchData()"
         />
         <n-button
-          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && !isReadonlyView && !props.readonly"
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && !isCollaborationView && !props.readonly"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -277,12 +277,22 @@
   const tableRemoveRefreshId = ref('');
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferLoading = ref(false);
-  const isReadonlyView = computed(() => [CustomerSearchTypeEnum.CUSTOMER_COLLABORATION].includes(activeTab.value));
+  const isCollaborationView = computed(() => activeTab.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION);
+  const tableActionConfig = computed(() => {
+    if (props.readonly) return undefined;
+    if (!isCollaborationView.value) return actionConfig;
+    return {
+      ...actionConfig,
+      baseAction: actionConfig.baseAction.filter(
+        (action) => !['exportChecked', 'merge'].includes(action.key as string)
+      ),
+    };
+  });
   const transferForm = ref<any>({
     owner: null,
   });
 
-  const customerDataActionMap = computed<Record<string, ActionsItem>>(() => {
+  const customerDataActionMap = (row: Record<string, any>): Record<string, ActionsItem> => {
     const actions: Record<string, ActionsItem> = {
       followUp: {
         label: t('opportunity.followUp'),
@@ -291,7 +301,7 @@
       },
     };
 
-    if (!isReadonlyView.value) {
+    if (!isCollaborationView.value || row.collaborationType === 'JOINT_FOLLOW') {
       actions.edit = {
         label: t('common.edit'),
         key: 'edit',
@@ -323,7 +333,7 @@
     }
 
     return actions;
-  });
+  };
 
   const {
     initApprovalPermission,
@@ -336,7 +346,7 @@
     getApprovalActionTip,
   } = useApprovalOperation<Record<string, any>>({
     formType: FormDesignKeyEnum.CUSTOMER,
-    dataActionMap: () => customerDataActionMap.value,
+    dataActionMap: customerDataActionMap,
     specialActionFilter: (row, actionKeys) =>
       row.collaborationType === 'COLLABORATION' ? actionKeys.filter((key) => key === 'followUp') : actionKeys,
   });
@@ -590,7 +600,10 @@
     detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     disabledSelection: (row: any) => {
-      return ['READ_ONLY', 'COLLABORATION'].includes(row.collaborationType);
+      return (
+        ['READ_ONLY', 'COLLABORATION'].includes(row.collaborationType) ||
+        (isCollaborationView.value && row.collaborationType !== 'JOINT_FOLLOW')
+      );
     },
     operationColumn: props.readonly
       ? undefined
@@ -710,22 +723,6 @@
     showApprovalStatus,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  const tableColumns = computed(() => {
-    if (isReadonlyView.value) {
-      return propsRes.value.columns
-        .filter((item: any) => item.type !== 'selection')
-        .map((e) => {
-          if (e.key === 'operation') {
-            return {
-              ...e,
-              width: 150,
-            };
-          }
-          return e;
-        });
-    }
-    return propsRes.value.columns;
-  });
 
   const exportParams = computed(() => {
     return {

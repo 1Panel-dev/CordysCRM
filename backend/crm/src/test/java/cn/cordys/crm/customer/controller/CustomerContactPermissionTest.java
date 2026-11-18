@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -460,9 +461,9 @@ class CustomerContactPermissionTest {
     @ParameterizedTest
     @CsvSource({ "false,CUSTOMER_MANAGEMENT:UPDATE", "false,CUSTOMER_MANAGEMENT:DELETE",
             "false,CUSTOMER_MANAGEMENT:EXPORT", "false,CUSTOMER_MANAGEMENT:TRANSFER",
-            "true,CUSTOMER_MANAGEMENT:READ", "true,CUSTOMER_MANAGEMENT:UPDATE",
+            "false,CUSTOMER_MANAGEMENT:RECYCLE", "true,CUSTOMER_MANAGEMENT:UPDATE",
             "true,CUSTOMER_MANAGEMENT:DELETE", "true,CUSTOMER_MANAGEMENT:EXPORT",
-            "true,CUSTOMER_MANAGEMENT:TRANSFER" })
+            "true,CUSTOMER_MANAGEMENT:TRANSFER", "true,CUSTOMER_MANAGEMENT:RECYCLE" })
     void 协作读取不能扩大客户写操作或批量权限(boolean batch, String permission) {
         configureCollaboration("COLLABORATION");
         when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(permission));
@@ -474,11 +475,23 @@ class CustomerContactPermissionTest {
                 resourcePermissions.checkResourcePermission(permission, CUSTOMER, FormKeyConstants.CUSTOMER, USER, ORG);
             }
         });
-        if (!batch && PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE.equals(permission)) {
-            verify(collaborationMapper).select(any(CustomerCollaboration.class));
-        } else {
+        if (PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT.equals(permission)) {
             verifyNoInteractions(collaborationMapper);
+        } else {
+            verify(collaborationMapper).select(any(CustomerCollaboration.class));
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "COLLABORATION", "READ_ONLY", "JOINT_FOLLOW" })
+    void 批量查看客户复用当前用户的协作读取授权(String type) {
+        configureCollaboration(type);
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(READ));
+
+        assertDoesNotThrow(() -> resourcePermissions.checkBatchResourcePermission(READ, List.of(CUSTOMER),
+                FormKeyConstants.CUSTOMER, USER, ORG));
+
+        verify(collaborationMapper).countByExample(any(CustomerCollaboration.class));
     }
 
     @ParameterizedTest

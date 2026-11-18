@@ -404,7 +404,10 @@ class ResourcePermissionServiceTest {
                 Runnable check = () -> service.checkResourcePermissionWithoutApprovalTask(permission, customer.getId(),
                         FormKeyConstants.CUSTOMER, "sales", "org");
                 if (PermissionConstants.CUSTOMER_MANAGEMENT_READ.equals(permission)
-                        || (canUpdate && PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE.equals(permission))) {
+                        || (canUpdate && List.of(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+                                PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER,
+                                PermissionConstants.CUSTOMER_MANAGEMENT_DELETE,
+                                PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE).contains(permission))) {
                     assertDoesNotThrow(check::run);
                 } else {
                     assertThrows(GenericException.class, check::run);
