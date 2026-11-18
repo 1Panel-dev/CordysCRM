@@ -33,6 +33,7 @@
         </n-button>
         <n-button
           v-if="
+            props.allowConvert !== false &&
             canUpdate &&
             props.detail?.status &&
             [CustomerFollowPlanStatusEnum.COMPLETED].includes(props.detail?.status) &&
@@ -102,6 +103,7 @@
     sourceName: string;
     refreshKey: number;
     readonly?: boolean;
+    allowConvert?: boolean;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {

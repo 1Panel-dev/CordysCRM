@@ -34,7 +34,7 @@
         :disabled-open-detail="props.followApiKey !== 'myPlan'"
         :type="props.activeType"
         :empty-text="emptyText"
-        :get-disabled-fun="getShowAction"
+        :get-disabled-fun="(item) => canEdit && getShowAction(item)"
         :readonly="props.readonly"
         @reach-bottom="handleReachBottom"
         @change="changePlanStatus"
@@ -45,7 +45,7 @@
               {{ t('common.detail') }}
             </n-button>
             <n-button
-              v-if="!props.readonly && isOwner(item)"
+              v-if="canEdit && isOwner(item)"
               type="primary"
               class="text-btn-primary"
               quaternary
@@ -55,8 +55,7 @@
             </n-button>
             <n-button
               v-if="
-                !props.readonly &&
-                props.activeType === 'followPlan' &&
+                canConvert &&
                 [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) &&
                 !item.converted &&
                 isOwner(item)
@@ -69,7 +68,7 @@
               {{ t('common.convertPlanToRecord') }}
             </n-button>
             <n-button
-              v-if="!props.readonly && isOwner(item)"
+              v-if="canDelete && isOwner(item)"
               type="error"
               class="text-btn-error"
               quaternary
@@ -110,7 +109,8 @@
       :source-id="sourceId"
       :source-name="sourceName"
       :refresh-key="refreshDetailKey"
-      :readonly="!detailIsOwner"
+      :readonly="props.readonly || !detailIsOwner"
+      :allow-convert="canConvert"
       :detail="activeItem"
       @delete="handleDelete(activeItem as FollowDetailItem)"
       @edit="handleEdit(activeItem as FollowDetailItem)"
@@ -167,6 +167,12 @@
   const props = withDefaults(defineProps<FollowDetailProps>(), {
     showAction: true,
   });
+  const permissionPrefix = computed(() => (props.activeType === 'followPlan' ? 'FOLLOW_PLAN' : 'FOLLOW_RECORD'));
+  const canEdit = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:UPDATE`]));
+  const canDelete = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:DELETE`]));
+  const canConvert = computed(
+    () => props.activeType === 'followPlan' && canEdit.value && hasAnyPermission(['FOLLOW_RECORD:ADD'])
+  );
 
   const userStore = useUserStore();
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
@@ -343,6 +349,7 @@
   }
 
   async function handleConvert(item: FollowDetailItem) {
+    if (!canConvert.value || !isOwner(item)) return;
     linkScenario.value = FormLinkScenarioEnum.PLAN_TO_RECORD;
     activePlan.value = item;
     isConverted.value = true;

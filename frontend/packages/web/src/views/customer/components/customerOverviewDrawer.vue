@@ -122,8 +122,9 @@
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
           :initial-source-name="sourceName"
-          :show-add="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !detailReadonly"
-          :show-action="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly"
+          :show-add="
+            hasAnyPermission([activeTab === 'followPlan' ? 'FOLLOW_PLAN:ADD' : 'FOLLOW_RECORD:ADD']) && !detailReadonly
+          "
           :readonly="detailReadonly"
           :parentFormKey="FormDesignKeyEnum.CUSTOMER"
         />

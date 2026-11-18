@@ -27,9 +27,9 @@
         @change-editor="commentEditing = Boolean($event)"
       />
     </div>
-    <template v-if="canEditDetail && !commentEditing" #footer>
+    <template v-if="(canEditDetail || canDeleteDetail) && !commentEditing" #footer>
       <div class="flex items-center justify-center gap-[16px]">
-        <div class="flex w-[100px] items-center">
+        <div v-if="canDeleteDetail" class="flex w-[100px] items-center">
           <CrmTextButton
             color="var(--text-n1)"
             icon="iconicon_delete"
@@ -41,6 +41,7 @@
           />
         </div>
         <van-button
+          v-if="canEditDetail"
           type="primary"
           class="flex-1 !rounded-[var(--border-radius-small)] !text-[16px]"
           plain
@@ -68,19 +69,20 @@
 
   import { followPlanApiMap, followRecordApiMap, PlanEnumType, RecordEnumType } from '@/config/follow';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useUserStore from '@/store/modules/user';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
   import { hasAnyPermission } from '@/utils/permission';
 
   const route = useRoute();
   const router = useRouter();
+  const userStore = useUserStore();
   const { t } = useI18n();
 
   const formKey = computed(() => (route.query.formKey?.toString() as RecordEnumType | PlanEnumType) || '');
   const isPlan = computed(() => formKey.value.toLowerCase().includes('plan'));
   const sourceId = computed(() => route.query.id?.toString() || '');
   const commentType = computed<MobileCommentResourceType>(() => (isPlan.value ? 'plan' : 'record'));
-  const canEditDetail = computed(() => route.query.readonly?.toString() !== 'true');
   const canComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
   const commentEditing = ref(false);
 
@@ -89,6 +91,15 @@
     sourceId,
     needInitDetail: route.query.needInitDetail === 'Y',
   });
+
+  const permissionPrefix = computed(() => (isPlan.value ? 'FOLLOW_PLAN' : 'FOLLOW_RECORD'));
+  const canManageDetail = computed(
+    () => route.query.readonly?.toString() !== 'true' && detail.value.owner === userStore.userInfo.id
+  );
+  const canEditDetail = computed(() => canManageDetail.value && hasAnyPermission([`${permissionPrefix.value}:UPDATE`]));
+  const canDeleteDetail = computed(
+    () => canManageDetail.value && hasAnyPermission([`${permissionPrefix.value}:DELETE`])
+  );
 
   const commentCount = computed({
     get: () => detail.value.commentCount || 0,
