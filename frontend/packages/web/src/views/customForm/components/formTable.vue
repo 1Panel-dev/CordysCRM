@@ -428,9 +428,10 @@
   }
   handleSearchData.value = searchData;
 
-  function handleViewChange(viewId: string, filter: FilterResult) {
+  function handleViewChange(viewId: string) {
     activeViewId.value = viewId;
-    setAdvanceFilter(filter);
+    // 视图筛选条件由后端按 viewId 拼装，这里只清空前端的临时筛选条件
+    setAdvanceFilter({ searchMode: 'AND', conditions: [] });
     searchData();
   }
 

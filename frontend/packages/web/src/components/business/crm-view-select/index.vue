@@ -181,7 +181,7 @@
   const emit = defineEmits<{
     (e: 'refreshTableData'): void;
     (e: 'generatedChart', filterResult: FilterResult, filterForm: FilterForm): void;
-    (e: 'viewChange', viewId: string, filterResult: FilterResult): void;
+    (e: 'viewChange', viewId: string): void;
   }>();
 
   const activeTab = defineModel<string>('activeTab', { default: '' });
@@ -234,35 +234,11 @@
 
   watch(
     () => activeTab.value,
-    async (val) => {
+    (val) => {
       viewStore.setActiveView(props.customFormId ? `custom-form-${props.customFormId}` : props.type, val);
+      // 视图筛选条件由后端按 viewId 拼装，前端只同步选中的视图
       if (!props.customFormId || !val) return;
-      const selectedView = sortData.value.find((item) => item.id === val);
-      if (!selectedView) return;
-      let filterResult: FilterResult = { searchMode: 'AND', conditions: [] };
-      if (selectedView.type !== 'internal') {
-        try {
-          const detail = await viewStore.getViewDetail(viewType.value, selectedView, props.customFormId);
-          filterResult = {
-            searchMode: detail.searchMode || 'AND',
-            conditions: (detail.list || []).map((condition) => {
-              const viewCondition = condition as FilterFormItem & { multipleValue?: boolean };
-              return {
-                name: condition.dataIndex ?? '',
-                value: condition.value,
-                operator: condition.operator as NonNullable<FilterResult['conditions']>[number]['operator'],
-                multipleValue: viewCondition.multipleValue ?? false,
-                type: condition.type as NonNullable<FilterResult['conditions']>[number]['type'],
-              };
-            }),
-          };
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-          return;
-        }
-      }
-      if (activeTab.value === val) emit('viewChange', val, filterResult);
+      emit('viewChange', val);
     }
   );
 
