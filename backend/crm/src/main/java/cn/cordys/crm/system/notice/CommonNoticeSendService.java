@@ -353,6 +353,19 @@ public class CommonNoticeSendService {
             boolean excludeSelf, boolean eventOnly,
             Object oldRecord, List<BaseModuleFieldValue> oldFields,
             Object newRecord, List<BaseModuleFieldValue> newFields) {
+        sendNoticeByConfig(taskType, action, operatorId, organizationId, excludeSelf, eventOnly,
+                oldRecord, oldFields, newRecord, newFields, null);
+    }
+
+    /**
+     * 通用发送入口，额外传入本次操作涉及的协作人(如客户新增的协作人)，
+     * 供 COLLABORATION 接收人解析使用
+     */
+    public void sendNoticeByConfig(String taskType, String action, String operatorId, String organizationId,
+            boolean excludeSelf, boolean eventOnly,
+            Object oldRecord, List<BaseModuleFieldValue> oldFields,
+            Object newRecord, List<BaseModuleFieldValue> newFields,
+            List<String> collaborationUserIds) {
         Map<String, Object> oldValues = buildFieldValues(oldRecord, oldFields);
         Map<String, Object> newValues = buildFieldValues(newRecord, newFields);
         Map<String, Object> resourceValues = newRecord != null ? newValues : oldValues;
@@ -370,6 +383,7 @@ public class CommonNoticeSendService {
                 .newValues(newValues)
                 .excludeSelf(excludeSelf)
                 .eventOnly(eventOnly)
+                .collaborationUserIds(collaborationUserIds)
                 .build());
     }
 
@@ -606,6 +620,10 @@ public class CommonNoticeSendService {
     }
 
     private List<String> getCollaborationUserIds(NoticeSendContext context) {
+        // 新增协作人等场景直接指定本次涉及的协作人，避免通知到客户全部协作人
+        if (CollectionUtils.isNotEmpty(context.getCollaborationUserIds())) {
+            return context.getCollaborationUserIds();
+        }
         if (!Strings.CS.equals(context.getTaskType(), NotificationConstants.Module.CUSTOMER)
                 || StringUtils.isBlank(context.getResourceId())) {
             return List.of();

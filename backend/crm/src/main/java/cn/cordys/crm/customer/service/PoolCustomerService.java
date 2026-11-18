@@ -636,11 +636,15 @@ public class PoolCustomerService {
                 LogModule.CUSTOMER_POOL, customer.getName()));
 
         if (Strings.CS.equals(logType, LogType.ASSIGN)) {
-            commonNoticeSendService.sendNotice(
-                    NotificationConstants.Module.CUSTOMER,
-                    NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED,
-                    customer.getName(), operateUserId, currentOrgId,
-                    List.of(ownerId), true);
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED, operateUserId, currentOrgId, true, true,
+                    customer, null, customer, null);
+        }
+
+        if (Strings.CS.equals(logType, LogType.PICK)) {
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.CUSTOMER_RECEIVE, operateUserId, currentOrgId, true, true,
+                    customer, null, customer, null);
         }
     }
 

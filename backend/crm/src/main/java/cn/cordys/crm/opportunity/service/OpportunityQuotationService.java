@@ -208,6 +208,10 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 
         saveSnapshot(opportunityQuotation, saveModuleFormConfigDTO, response);
 
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_QUOTATION_ADD, userId, orgId, true, true,
+                null, null, opportunityQuotation, request.getModuleFields());
+
         return opportunityQuotation;
     }
 
@@ -808,8 +812,9 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         saveSateChangeLog(organizationId, null, userId, LogType.DELETE, opportunityQuotation);
 
         //发送通知
-        sendNotice(null, opportunityQuotation, userId, organizationId,
-                NotificationConstants.Event.BUSINESS_QUOTATION_DELETED);
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_QUOTATION_DELETED, userId, organizationId, true, true,
+                opportunityQuotation, null, null, null);
     }
 
     @HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
@@ -954,6 +959,11 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         // 处理日志上下文
         baseService.handleUpdateLogWithSubTable(oldOpportunityQuotation, opportunityQuotation, originFields,
                 moduleFields, id, opportunityQuotation.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE, userId, orgId, true, false,
+                oldOpportunityQuotation, originFields, opportunityQuotation, moduleFields);
         return opportunityQuotationMapper.selectByPrimaryKey(id);
     }
 
@@ -1153,6 +1163,9 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.QUOTATION.getKey(), request.getFieldId(), permittedIds, organizationId);
+        // 通知需要改前改后的字段值: 自定义字段在下面会被整批覆盖, 先把改前的值取出来
+        Map<String, List<BaseModuleFieldValue>> originFieldMap = opportunityQuotationFieldService
+                .getResourceFieldMap(permittedIds, true);
         opportunityQuotationFieldService.batchUpdate(
                 filteredRequest,
                 field,
@@ -1212,6 +1225,20 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         if (CollectionUtils.isNotEmpty(snapshots)) {
             snapshotBaseMapper.batchInsert(snapshots);
         }
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值, 供动作/字段两类触发判断
+        Map<String, OpportunityQuotation> originQuotationMap = originQuotations.stream()
+                .collect(Collectors.toMap(OpportunityQuotation::getId, item -> item));
+        permittedIds.forEach(id -> {
+            OpportunityQuotation oldQuotation = originQuotationMap.get(id);
+            OpportunityQuotation newQuotation = latestQuotationMap.get(id);
+            if (oldQuotation == null || newQuotation == null) {
+                return;
+            }
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                    NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE, userId, organizationId, true, false,
+                    oldQuotation, originFieldMap.get(id), newQuotation, fieldMap.get(id));
+        });
 
         return BatchAffectReasonResponse.builder().success(permittedIds.size())
                 .fail(originQuotations.size() - permittedIds.size()).skip(0)

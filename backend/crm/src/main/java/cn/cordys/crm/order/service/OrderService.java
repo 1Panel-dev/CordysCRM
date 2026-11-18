@@ -70,6 +70,7 @@ import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.system.constants.CirculationFieldValueTypeEnum;
 import cn.cordys.crm.system.constants.CirculationTypeEnum;
 import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -86,6 +87,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -176,6 +178,8 @@ public class OrderService implements ApprovalResourceHandler {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private SerialNumGenerator serialNumGenerator;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -229,6 +233,11 @@ public class OrderService implements ApprovalResourceHandler {
                 moduleFormConfigDTO, orderFieldService, order.getId());
         OrderGetResponse response = get(order, resolveFieldValues, moduleFormConfigDTO);
         saveSnapshot(order, saveModuleFormConfigDTO, response);
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.ORDER,
+                NotificationConstants.Event.ORDER_ADD, operatorId, orgId, true, true,
+                null, null, order, moduleFields);
 
         return order;
     }
@@ -464,6 +473,12 @@ public class OrderService implements ApprovalResourceHandler {
             // 处理日志上下文
             baseService.handleUpdateLogWithSubTable(oldOrder, order, originFields, moduleFields, request.getId(),
                     order.getName(), Translator.get("products_info"), moduleFormConfigDTO);
+
+            // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+            List<BaseModuleFieldValue> newFields = moduleFields == null ? originFields : moduleFields;
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.ORDER,
+                    NotificationConstants.Event.ORDER_UPDATE, userId, orgId, true, false,
+                    oldOrder, originFields, order, newFields);
         }, () -> {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         });
@@ -521,6 +536,11 @@ public class OrderService implements ApprovalResourceHandler {
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         // 添加日志上下文
         OperationLogContext.setResourceName(order.getName());
+
+        // 消息通知
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.ORDER,
+                NotificationConstants.Event.ORDER_DELETE, userId, orgId, true, true,
+                order, null, null, null);
     }
 
     @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
@@ -580,6 +600,13 @@ public class OrderService implements ApprovalResourceHandler {
                         LogModule.ORDER_INDEX, order.getName()))
                 .toList();
         logService.batchAdd(logs);
+
+        // 消息通知: 只对真正删除的这批发送(走审批的那批此刻并未删除)
+        permittedOrders.stream()
+                .filter(order -> deleteIds.contains(order.getId()))
+                .forEach(order -> commonNoticeSendService.sendNoticeByConfig(
+                        NotificationConstants.Module.ORDER, NotificationConstants.Event.ORDER_DELETE,
+                        userId, orgId, true, true, order, null, null, null));
     }
 
     @Override
@@ -1034,6 +1061,9 @@ public class OrderService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.ORDER.getKey(), request.getFieldId(), permittedIds, orgId);
+        // 通知需要改前改后的字段值: 自定义字段在下面会被整批覆盖, 先把改前的值取出来
+        Map<String, List<BaseModuleFieldValue>> originFieldMap = orderFieldService
+                .getResourceFieldMap(permittedIds, true);
         orderFieldService.batchUpdate(filteredRequest, field, permittedOrders, Order.class, LogModule.ORDER_INDEX,
                 extOrderMapper::batchUpdate, userId, orgId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
@@ -1078,6 +1108,20 @@ public class OrderService implements ApprovalResourceHandler {
         if (CollectionUtils.isNotEmpty(snapshots)) {
             snapshotBaseMapper.batchInsert(snapshots);
         }
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值
+        Map<String, Order> originOrderMap = originOrders.stream()
+                .collect(Collectors.toMap(Order::getId, item -> item));
+        permittedIds.forEach(id -> {
+            Order oldOrder = originOrderMap.get(id);
+            Order newOrder = latestOrderMap.get(id);
+            if (oldOrder == null || newOrder == null) {
+                return;
+            }
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.ORDER,
+                    NotificationConstants.Event.ORDER_UPDATE, userId, orgId, true, false,
+                    oldOrder, originFieldMap.get(id), newOrder, fieldMap.get(id));
+        });
 
         return BatchAffectReasonResponse.builder().success(permittedIds.size())
                 .fail(originOrders.size() - permittedIds.size()).skip(0)

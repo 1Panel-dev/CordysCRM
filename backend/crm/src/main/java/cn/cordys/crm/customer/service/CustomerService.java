@@ -1359,10 +1359,31 @@ public class CustomerService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CUSTOMER.getKey(), request.getFieldId(), permittedIds, organizationId);
+        // 通知需要改前改后的字段值: 自定义字段在下面会被整批覆盖, 先把改前的值取出来
+        Map<String, List<BaseModuleFieldValue>> originFieldMap = customerFieldService
+                .getResourceFieldMap(permittedIds, true);
         customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class,
                 LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值, 供动作/字段两类触发判断
+        Map<String, Customer> latestCustomerMap = customerMapper.selectByIds(permittedIds).stream()
+                .collect(Collectors.toMap(Customer::getId, item -> item));
+        Map<String, List<BaseModuleFieldValue>> fieldMap = customerFieldService
+                .getResourceFieldMap(permittedIds, true);
+        Map<String, Customer> originCustomerMap = originCustomers.stream()
+                .collect(Collectors.toMap(Customer::getId, item -> item));
+        permittedIds.forEach(id -> {
+            Customer oldCustomer = originCustomerMap.get(id);
+            Customer newCustomer = latestCustomerMap.get(id);
+            if (oldCustomer == null || newCustomer == null) {
+                return;
+            }
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_UPDATE, userId, organizationId, true, false,
+                    oldCustomer, originFieldMap.get(id), newCustomer, fieldMap.get(id));
+        });
 
         return BatchAffectReasonResponse.builder()
                 .success(permittedIds.size())

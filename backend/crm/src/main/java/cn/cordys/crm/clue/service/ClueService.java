@@ -1842,10 +1842,31 @@ public class ClueService implements ApprovalResourceHandler {
         // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
                 FormKey.CLUE.getKey(), request.getFieldId(), permittedIds, organizationId);
+        // 通知需要改前改后的字段值: 自定义字段在下面会被整批覆盖, 先把改前的值取出来
+        Map<String, List<BaseModuleFieldValue>> originFieldMap = clueFieldService
+                .getResourceFieldMap(permittedIds, true);
         clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_INDEX,
                 extClueMapper::batchUpdate, userId, organizationId, true);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
+
+        // 消息通知: old 取改前实体与改前字段值, new 取改后实体与改后字段值, 供动作/字段两类触发判断
+        Map<String, Clue> latestClueMap = clueMapper.selectByIds(permittedIds).stream()
+                .collect(Collectors.toMap(Clue::getId, item -> item));
+        Map<String, List<BaseModuleFieldValue>> fieldMap = clueFieldService
+                .getResourceFieldMap(permittedIds, true);
+        Map<String, Clue> originClueMap = originClues.stream()
+                .collect(Collectors.toMap(Clue::getId, item -> item));
+        permittedIds.forEach(id -> {
+            Clue oldClue = originClueMap.get(id);
+            Clue newClue = latestClueMap.get(id);
+            if (oldClue == null || newClue == null) {
+                return;
+            }
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.CLUE_UPDATE, userId, organizationId, true, false,
+                    oldClue, originFieldMap.get(id), newClue, fieldMap.get(id));
+        });
 
         return BatchAffectReasonResponse.builder()
                 .success(permittedIds.size())

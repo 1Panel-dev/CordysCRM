@@ -412,16 +412,9 @@ public class CustomerContactService {
         // 添加联系人通知
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
         if (customer != null && StringUtils.isNotEmpty(customer.getOwner())) {
-            Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId));
-            var paramMap = new HashMap<String, Object>(4);
-            paramMap.put("useTemplate", "true");
-            paramMap.put("template", Translator.get("message.customer.contact.add.text"));
-            paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
-            paramMap.put("cName", customerContact.getName());
-            paramMap.put("name", customer.getName());
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                    NotificationConstants.Event.CUSTOMER_CONCAT_ADD,
-                    paramMap, userId, orgId, List.of(customer.getOwner()), true);
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_CONCAT_ADD, userId, orgId, true, true,
+                    null, null, customerContact, request.getModuleFields());
         }
         return customerContact;
     }
@@ -457,6 +450,10 @@ public class CustomerContactService {
         customerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
         baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields,
                 request.getModuleFields(), originCustomerContact.getId(), originCustomerContact.getName());
+
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_CONCAT_UPDATE, userId, orgId, true, false,
+                originCustomerContact, originCustomerFields, customerContact, request.getModuleFields());
         return customerContact;
     }
 
@@ -473,7 +470,7 @@ public class CustomerContactService {
     }
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id) {
+    public void delete(String id, String userId, String orgId) {
         CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(id);
         if (originCustomerContact == null) {
             return;
@@ -484,6 +481,10 @@ public class CustomerContactService {
         customerContactMapper.deleteByPrimaryKey(id);
         customerContactFieldService.deleteByResourceId(id);
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
+
+        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_CONCAT_DELETE, userId, orgId, true, true,
+                originCustomerContact, null, null, null);
 
         // 设置操作对象
         OperationLogContext.setResourceName(originCustomerContact.getName());

@@ -4,7 +4,6 @@ import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -128,16 +126,9 @@ public class CustomerCollaborationService {
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
         if (StringUtils.isNotBlank(customer.getOwner()) && !customer.getInSharedPool()) {
             // 公海客户添加协作人无需通知
-            Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId, request.getUserId()));
-            var paramMap = new HashMap<String, Object>(4);
-            paramMap.put("useTemplate", "true");
-            paramMap.put("template", Translator.get("message.customer.collaboration.add.text"));
-            paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
-            paramMap.put("uName", userNameMap.getOrDefault(request.getUserId(), request.getUserId()));
-            paramMap.put("name", customer.getName());
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                    NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD,
-                    paramMap, userId, orgId, List.of(customer.getOwner()), true);
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                    NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL, userId, orgId, true, true,
+                    customer, null, customer, null, List.of(request.getUserId()));
         }
         return customerCollaborationMapper.selectByPrimaryKey(customerCollaboration.getId());
     }
