@@ -48,7 +48,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
           :initial-source-name="sourceName"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
+          :readonly="collaborationType === 'READ_ONLY'"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
@@ -56,7 +56,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
           :initial-source-name="sourceName"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
+          :readonly="collaborationType === 'READ_ONLY'"
         />
         <relation
           v-else-if="tab.name === 'relation'"
