@@ -2047,7 +2047,7 @@
   const statisticRelatedForms = ref<FormDetailTabOption[]>([]);
   const statisticTargetFormOptions = computed<SelectOption[]>(() => {
     return statisticRelatedForms.value
-      .filter((form) => !form.internalKey && form.sourceTypeFields.length > 0)
+      .filter((form) => form.sourceTypeFields.length > 0)
       .map((form) => ({ label: form.name, value: form.id }));
   });
 
