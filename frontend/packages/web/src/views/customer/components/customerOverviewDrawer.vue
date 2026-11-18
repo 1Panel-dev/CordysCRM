@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
+  <CrmDrawer
+    v-model:show="show"
+    :minWidth="600"
+    resizable
+    no-padding
+    :footer="false"
+    :title="sourceName"
+    :view-size="formViewSize"
+  >
     <template #titleLeft>
       <CrmApprovalStatus
         v-if="enableApproval"
@@ -8,26 +16,40 @@
       />
     </template>
     <template #title>
-      <div class="flex min-w-0 items-center gap-[12px]">
-        <div class="one-line-text !leading-[20px]" :title="sourceName">{{ sourceName }}</div>
-        <div
-          v-if="collaborators.length"
-          class="flex flex-shrink-0 cursor-pointer items-center -space-x-[4px]"
-          @click="activeTab = 'collaborator'"
-        >
-          <n-avatar round :size="24" class="bg-[var(--primary-1)] text-white ring-2 ring-white">
-            {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
-          </n-avatar>
-          <n-avatar
-            v-for="person in collaborators"
-            :key="person.id"
-            round
-            :size="24"
-            class="bg-[var(--text-n5)] text-white ring-2 ring-white"
-          >
-            {{ person.userName?.slice(0, 1) || '?' }}
-          </n-avatar>
+      <div class="flex w-full min-w-0 flex-1 items-center gap-[12px]">
+        <div class="one-line-text min-w-0 max-w-[300px] flex-1 !leading-[20px]" :title="sourceName">
+          {{ sourceName }}
         </div>
+        <n-tooltip v-if="collaborators.length" placement="bottom-start" :delay="300">
+          <template #trigger>
+            <div
+              class="flex flex-shrink-0 cursor-pointer items-center -space-x-[4px]"
+              @click="activeTab = 'collaborator'"
+            >
+              <n-avatar round :size="24" class="bg-[var(--primary-1)] text-white ring-2 ring-white">
+                {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
+              </n-avatar>
+              <n-avatar
+                v-for="person in displayedCollaborators"
+                :key="person.id"
+                round
+                :size="24"
+                class="bg-[var(--text-n5)] text-white ring-2 ring-white"
+              >
+                {{ person.userName?.slice(0, 1) || '?' }}
+              </n-avatar>
+              <n-avatar
+                v-if="hiddenCollaboratorCount"
+                round
+                :size="24"
+                class="bg-[var(--text-n5)] text-[10px] text-white ring-2 ring-white"
+              >
+                +{{ hiddenCollaboratorCount }}
+              </n-avatar>
+            </div>
+          </template>
+          <div class="max-w-[320px] break-all">{{ collaboratorNames }}</div>
+        </n-tooltip>
       </div>
     </template>
     <template #titleRight>
@@ -254,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NAvatar, NButton, useMessage } from 'naive-ui';
+  import { NAvatar, NButton, NTooltip, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -341,6 +363,11 @@
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
   const collaborators = ref<CollaborationItem[]>([]);
+  const displayedCollaborators = computed(() => collaborators.value.slice(0, 5));
+  const hiddenCollaboratorCount = computed(() => collaborators.value.length - displayedCollaborators.value.length);
+  const collaboratorNames = computed(() =>
+    [detailInfo.value.ownerName, ...collaborators.value.map((item) => item.userName)].filter(Boolean).join('、')
+  );
   const detailReadonly = computed(
     () =>
       props.readonly ||
@@ -523,9 +550,6 @@
       },
       { name: 'changeRecord', tab: t('common.changeRecord'), enable: true, internalKey: 'CHANGE_LOG' },
     ];
-    if (collaborationType.value) {
-      return fullList.filter((item) => item.name !== 'collaborator');
-    }
     return fullList;
   });
   const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.CUSTOMER);

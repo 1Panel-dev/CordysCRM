@@ -44,22 +44,11 @@
             <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
               {{ t('common.detail') }}
             </n-button>
-            <n-button
-              v-if="canEdit && isOwner(item)"
-              type="primary"
-              class="text-btn-primary"
-              quaternary
-              @click="handleEdit(item)"
-            >
+            <n-button v-if="canEdit" type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
               {{ t('common.edit') }}
             </n-button>
             <n-button
-              v-if="
-                canConvert &&
-                [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) &&
-                !item.converted &&
-                isOwner(item)
-              "
+              v-if="canConvert && [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) && !item.converted"
               type="primary"
               class="text-btn-primary"
               quaternary
@@ -67,13 +56,7 @@
             >
               {{ t('common.convertPlanToRecord') }}
             </n-button>
-            <n-button
-              v-if="canDelete && isOwner(item)"
-              type="error"
-              class="text-btn-error"
-              quaternary
-              @click="handleDelete(item)"
-            >
+            <n-button v-if="canDelete" type="error" class="text-btn-error" quaternary @click="handleDelete(item)">
               {{ t('common.delete') }}
             </n-button>
           </div>
@@ -109,7 +92,7 @@
       :source-id="sourceId"
       :source-name="sourceName"
       :refresh-key="refreshDetailKey"
-      :readonly="props.readonly || !detailIsOwner"
+      :readonly="detailReadonly"
       :allow-convert="canConvert"
       :detail="activeItem"
       @delete="handleDelete(activeItem as FollowDetailItem)"
@@ -139,7 +122,6 @@
   import FollowRecord from './followRecord.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { descriptionList, statusTabList } from './config';
@@ -174,7 +156,6 @@
     () => props.activeType === 'followPlan' && canEdit.value && hasAnyPermission(['FOLLOW_RECORD:ADD'])
   );
 
-  const userStore = useUserStore();
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
   const refreshDetailKey = ref(0);
 
@@ -182,7 +163,7 @@
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
   const activeItem = ref<FollowDetailItem>();
-  const detailIsOwner = ref(false);
+  const detailReadonly = computed(() => props.readonly);
   function handleDetail(row: FollowDetailItem) {
     sourceId.value = row.id;
     realFormKey.value =
@@ -190,7 +171,6 @@
     sourceName.value = row.type === 'CLUE' && row.clueId?.length ? row.clueName : row.customerName;
     activeItem.value = row;
     showDetailDrawer.value = true;
-    detailIsOwner.value = row.owner === userStore.userInfo.id;
   }
 
   const formDrawerVisible = ref(false);
@@ -276,7 +256,6 @@
     return activePlan.value?.id;
   });
 
-  const isOwner = (item: FollowDetailItem) => item.owner === userStore.userInfo.id;
   const { fieldList, formDetail, initFormDetail, initFormConfig, linkFormFieldMap, saveForm } = useFormCreateApi({
     formKey: computed(() => linkFormKey.value),
     sourceId: linkSourceId,
@@ -349,7 +328,7 @@
   }
 
   async function handleConvert(item: FollowDetailItem) {
-    if (!canConvert.value || !isOwner(item)) return;
+    if (!canConvert.value) return;
     linkScenario.value = FormLinkScenarioEnum.PLAN_TO_RECORD;
     activePlan.value = item;
     isConverted.value = true;
