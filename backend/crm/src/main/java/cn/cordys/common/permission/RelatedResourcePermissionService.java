@@ -193,6 +193,32 @@ public class RelatedResourcePermissionService {
         return !"1".equals(inSharedPool) && !Boolean.parseBoolean(inSharedPool);
     }
 
+    public boolean hasJointFollowCommentPermission(String formKey, String resourceId, String userId, String orgId) {
+        if (StringUtils.isAnyBlank(formKey, resourceId, userId, orgId)) {
+            return false;
+        }
+        FormKey form = FormKey.ofKey(formKey);
+        if (form != FormKey.FOLLOW_RECORD && form != FormKey.FOLLOW_PLAN) {
+            return false;
+        }
+        String table = tableName(formKey);
+        if (!orgId.equals(value(table, "organization_id", resourceId))
+                || !"CUSTOMER".equals(value(table, "type", resourceId))
+                || !permissionCache.getPermissionIds(userId, orgId)
+                        .contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ)) {
+            return false;
+        }
+        String customerId = value(table, "customer_id", resourceId);
+        String owner = value(table, "owner", resourceId);
+        DeptDataPermissionDTO scope = getCustomerDataPermission(customerId, userId, orgId, true);
+        return scope != null && scope.getAll() && StringUtils.isNotBlank(owner)
+                && !scope.getExcludedOwnerIds().contains(owner)
+                && customerCollaborationService.selectByCustomerIdAndUserId(customerId, userId).stream()
+                        .anyMatch(member -> CustomerCollaborationType.JOINT_FOLLOW.name()
+                                .equals(member.getCollaborationType()))
+                && !isIsolatedData(formKey, resourceId, userId, orgId);
+    }
+
     public boolean hasRelatedReadPermission(String formKey, String resourceId, String userId, String orgId) {
         if (StringUtils.isAnyBlank(formKey, resourceId, userId, orgId)) {
             return false;

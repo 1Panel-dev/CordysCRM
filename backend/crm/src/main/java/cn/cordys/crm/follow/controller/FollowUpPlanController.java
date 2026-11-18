@@ -101,7 +101,7 @@ public class FollowUpPlanController {
     @CsPermission(value = PermissionConstants.FOLLOW_PLAN_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "更新跟进计划状态")
     public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
-        followUpPlanService.updateStatus(request, SessionUtils.getUserId());
+        followUpPlanService.updateStatus(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")

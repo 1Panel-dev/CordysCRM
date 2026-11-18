@@ -1,6 +1,9 @@
 package cn.cordys.crm.follow.service;
 
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
+import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpCommentTargetType;
@@ -29,6 +32,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -44,6 +48,7 @@ class BaseCommentServiceTest {
     private ExtMessageTaskMapper messageTaskMapper;
     private CommonNoticeSendService noticeSender;
     private MockedStatic<Translator> translator;
+    private MockedStatic<IDGenerator> ids;
     private CommentAddRequest request;
     private String addedEvent;
     private String mentionedEvent;
@@ -55,6 +60,9 @@ class BaseCommentServiceTest {
         messageTaskMapper = mock(ExtMessageTaskMapper.class);
         noticeSender = mock(CommonNoticeSendService.class);
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
+        ids = mockStatic(IDGenerator.class);
+        AtomicInteger sequence = new AtomicInteger();
+        ids.when(IDGenerator::nextStr).thenAnswer(invocation -> "generated-" + sequence.incrementAndGet());
         request = new CommentAddRequest();
         request.setResourceId("resource-a");
         request.setContent("评论内容");
@@ -66,6 +74,7 @@ class BaseCommentServiceTest {
     void tearDown() {
         OperationLogContext.clear();
         translator.close();
+        ids.close();
     }
 
     @ParameterizedTest
@@ -185,6 +194,9 @@ class BaseCommentServiceTest {
         ReflectionTestUtils.setField(service, "extCommentMapper", mock(ExtCommentMapper.class));
         ReflectionTestUtils.setField(service, "extMessageTaskMapper", messageTaskMapper);
         ReflectionTestUtils.setField(service, "commonNoticeSendService", noticeSender);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService",
+                mock(RelatedResourcePermissionService.class));
+        ReflectionTestUtils.setField(service, "resourcePermissionService", mock(ResourcePermissionService.class));
         MessageTask messageTask = new MessageTask();
         messageTask.setTaskType("CUSTOMER");
         when(messageTaskMapper.getMessageByEvent(addedEvent, "org-a")).thenReturn(messageTask);

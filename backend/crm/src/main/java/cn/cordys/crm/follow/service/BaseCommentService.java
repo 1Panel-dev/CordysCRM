@@ -2,10 +2,14 @@ package cn.cordys.crm.follow.service;
 
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.ModuleKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithCommentCount;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.domain.Clue;
@@ -60,6 +64,10 @@ public abstract class BaseCommentService<C extends Comment> {
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private ExtMessageTaskMapper extMessageTaskMapper;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     protected abstract BaseMapper<C> getCommentMapper();
 
@@ -104,6 +112,16 @@ public abstract class BaseCommentService<C extends Comment> {
     }
 
     public C add(CommentAddRequest request, String userId, String orgId) {
+        CommentResourceInfo resourceInfo = getNoticeResource(request.getResourceId(), orgId);
+        boolean plan = getTargetType() == FollowUpCommentTargetType.PLAN;
+        String formKey = plan ? FormKey.FOLLOW_PLAN.getKey() : FormKey.FOLLOW_RECORD.getKey();
+        // 共同跟进仅补充评论授权，不扩大跟进本体的编辑权限。
+        if (!relatedResourcePermissionService.hasJointFollowCommentPermission(
+                formKey, request.getResourceId(), userId, orgId)) {
+            resourcePermissionService.checkResourcePermission(
+                    plan ? PermissionConstants.FOLLOW_PLAN_UPDATE : PermissionConstants.FOLLOW_RECORD_UPDATE,
+                    request.getResourceId(), formKey, userId, orgId);
+        }
         long now = System.currentTimeMillis();
         C comment = newComment();
         comment.setId(IDGenerator.nextStr());
@@ -120,8 +138,8 @@ public abstract class BaseCommentService<C extends Comment> {
         saveMentionUsers(comment.getId(), request.getMentionedUserIds());
         updateCommentCount(request.getResourceId(), orgId);
 
-        sendNotifications(request.getResourceId(), request.getReplyToUserId(), request.getMentionedUserIds(), userId,
-                orgId);
+        sendNotifications(resourceInfo, request.getResourceId(), request.getReplyToUserId(),
+                request.getMentionedUserIds(), userId, orgId);
 
         // 设置日志上下文
         OperationLogContext.setContext(
