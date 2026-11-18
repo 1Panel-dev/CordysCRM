@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
       <CrmApprovalStatus
-        v-if="enableApproval"
+        v-if="showApprovalStatus"
         :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
         hide-if-no-status
       />
@@ -227,7 +227,7 @@
     );
   });
 
-  const { initApprovalPermission, resolveRowActions, enableApproval, deleteExecute } = useApprovalOperation<
+  const { initApprovalPermission, resolveRowActions, showApprovalStatus, deleteExecute } = useApprovalOperation<
     Record<string, any>
   >({
     formType: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,

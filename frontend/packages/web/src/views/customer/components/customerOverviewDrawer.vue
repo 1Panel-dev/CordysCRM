@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
     <template #titleLeft>
       <CrmApprovalStatus
-        v-if="enableApproval"
+        v-if="showApprovalStatus"
         :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
         hide-if-no-status
       />
@@ -408,7 +408,7 @@
   const {
     initApprovalPermission,
     resolveRowOperation,
-    enableApproval,
+    showApprovalStatus,
     updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,

@@ -377,7 +377,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return splitActions(resolveRowActions(row));
   }
 
-  async function initApprovalPermission(forceRefresh = false) {
+  async function initApprovalPermission(forceRefresh = Boolean(options.isDetail)) {
     const requestToken = ++approvalPermissionRequestToken;
     try {
       const result = await loadApprovalConfig(unref(options.formType), forceRefresh, unref(options.poolId));

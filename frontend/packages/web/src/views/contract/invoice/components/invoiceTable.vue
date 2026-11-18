@@ -550,7 +550,7 @@
         containChildIds: [],
       },
     },
-    ...(enableApproval.value
+    ...(showApprovalStatus.value
       ? [
           {
             title: t('contract.approvalStatus'),

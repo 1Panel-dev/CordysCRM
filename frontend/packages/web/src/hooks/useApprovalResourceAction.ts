@@ -44,6 +44,7 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
         resourceId,
         formKey: unref(options.formKey),
       });
+      clearApprovalConfigCache(unref(options.formKey));
       Message.success(t('common.reviewSuccess'));
       await callback?.onSuccess?.(resourceId);
     } catch (error) {

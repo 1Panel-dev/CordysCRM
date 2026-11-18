@@ -11,7 +11,7 @@
     <template #titleLeft>
       <div class="text-[14px] font-normal">
         <CrmApprovalStatus
-          v-if="enableApproval"
+          v-if="showApprovalStatus"
           :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE"
           hide-if-no-status
         />
@@ -340,7 +340,7 @@
   const {
     initApprovalPermission,
     resolveRowOperation,
-    enableApproval,
+    showApprovalStatus,
     updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,

@@ -731,7 +731,7 @@
           })) || [],
       },
     },
-    ...(enableApproval.value
+    ...(showApprovalStatus.value
       ? [
           {
             title: t('common.approvalStatus'),
