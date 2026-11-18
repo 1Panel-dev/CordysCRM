@@ -388,7 +388,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams, tableQueryParams, setAdvanceFilter } = useTableRes;
   const formColumns = computed(() => columns.value);
   const customFormFilterConfigList = computed<FilterFormItem[]>(() => [
-    ...(enableApproval.value
+    ...(showApprovalStatus.value
       ? [
           {
             title: t('common.approvalStatus'),

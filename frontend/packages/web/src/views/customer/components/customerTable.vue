@@ -737,7 +737,7 @@
   }
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
-    ...(enableApproval.value
+    ...(showApprovalStatus.value
       ? [
           {
             title: t('common.approvalStatus'),

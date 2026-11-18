@@ -287,22 +287,27 @@
     emit('refresh');
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute, hasApprovalScopedPermission } =
-    useApprovalOperation<Record<string, any>>({
-      formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
-      dataActionMap: quotationDataActionMap,
-      isDetail: true,
-      identityResolver: {
-        isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-      },
-      shouldUseRolePermissionOnly: (row) => row.invalid,
-      specialActionFilter: (row, actionKeys) => {
-        if (row.invalid) {
-          return actionKeys.filter((key) => key === 'delete');
-        }
-        return actionKeys;
-      },
-    });
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    showApprovalStatus,
+    deleteExecute,
+    hasApprovalScopedPermission,
+  } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    dataActionMap: quotationDataActionMap,
+    isDetail: true,
+    identityResolver: {
+      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+    },
+    shouldUseRolePermissionOnly: (row) => row.invalid,
+    specialActionFilter: (row, actionKeys) => {
+      if (row.invalid) {
+        return actionKeys.filter((key) => key === 'delete');
+      }
+      return actionKeys;
+    },
+  });
 
   function handleRevoke() {
     revokeByResourceId(props.sourceId, {
@@ -386,7 +391,7 @@
     };
   });
   const isShowApprovalStatus = computed(() => {
-    return enableApproval.value && !detailInfo.value?.invalid;
+    return showApprovalStatus.value && !detailInfo.value?.invalid;
   });
 
   const formDescriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();

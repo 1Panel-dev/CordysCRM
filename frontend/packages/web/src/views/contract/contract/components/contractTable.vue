@@ -903,7 +903,7 @@
     //   dataIndex: 'alreadyPayAmount',
     //   type: FieldTypeEnum.INPUT_NUMBER,
     // },
-    ...(enableApproval.value
+    ...(showApprovalStatus.value
       ? [
           {
             title: t('contract.approvalStatus'),

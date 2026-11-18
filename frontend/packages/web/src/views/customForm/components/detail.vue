@@ -9,7 +9,7 @@
     :view-size="formViewSize"
   >
     <template #titleLeft>
-      <CrmApprovalStatus v-if="enableApproval" :status="currentApprovalStatus" hide-if-no-status />
+      <CrmApprovalStatus v-if="showApprovalStatus" :status="currentApprovalStatus" hide-if-no-status />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -174,20 +174,25 @@
       danger: true,
     },
   };
-  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute, hasApprovalScopedPermission } =
-    useApprovalOperation<Record<string, any>>({
-      formType: approvalFormKey,
-      dataActionMap: customFormActionMap,
-      isDetail: true,
-      specialActionFilter: (row, actionKeys) => {
-        if (row.isAdmin) {
-          return actionKeys;
-        }
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    showApprovalStatus,
+    deleteExecute,
+    hasApprovalScopedPermission,
+  } = useApprovalOperation<Record<string, any>>({
+    formType: approvalFormKey,
+    dataActionMap: customFormActionMap,
+    isDetail: true,
+    specialActionFilter: (row, actionKeys) => {
+      if (row.isAdmin) {
+        return actionKeys;
+      }
 
-        return actionKeys.filter((key) => !['edit', 'delete'].includes(key));
-      },
-      ignoreRolePermissionCheck: true,
-    });
+      return actionKeys.filter((key) => !['edit', 'delete'].includes(key));
+    },
+    ignoreRolePermissionCheck: true,
+  });
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: approvalFormKey,
   });
@@ -239,7 +244,8 @@
   );
 
   const formDescriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
-  function handleSavedRefresh() {
+  async function handleSavedRefresh() {
+    await initApprovalPermission();
     refreshKey.value += 1;
     emit('refresh');
   }
@@ -367,12 +373,12 @@
   }
 
   watch(
-    () => props.customFormId,
-    () => {
-      initApprovalPermission(true);
+    [() => visible.value, () => props.customFormId, () => props.sourceId],
+    ([isVisible]) => {
+      if (isVisible) {
+        initApprovalPermission();
+      }
     },
-    {
-      immediate: true,
-    }
+    { immediate: true }
   );
 </script>

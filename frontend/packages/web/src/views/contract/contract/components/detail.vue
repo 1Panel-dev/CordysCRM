@@ -3,7 +3,7 @@
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
         <CrmApprovalStatus
-          v-if="enableApproval"
+          v-if="showApprovalStatus"
           :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
           hide-if-no-status
         />
@@ -346,6 +346,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    showApprovalStatus,
     updateExecute,
     deleteExecute,
     hasApprovalScopedPermission,
