@@ -108,6 +108,7 @@
     v-model:visible="addOrEditViewsDrawerVisible"
     :type="props.type"
     :custom-form-id="props.customFormId"
+    :copy="copyMode"
     :row="detail"
     :config-list="props.filterConfigList"
     :custom-list="props.customFieldsConfigList"
@@ -289,8 +290,10 @@
   ]);
 
   const addOrEditViewsDrawerVisible = ref(false);
+  const copyMode = ref(false);
   const detail = ref();
   function handleAdd() {
+    copyMode.value = false;
     detail.value = undefined;
     addOrEditViewsDrawerVisible.value = true;
   }
@@ -302,7 +305,8 @@
 
   async function handleCopy(option: ViewItem) {
     const res = await viewStore.getViewDetail(viewType.value, option, props.customFormId);
-    detail.value = { ...res, name: getCopiedName(res.name as string) };
+    copyMode.value = true;
+    detail.value = { ...res, type: option.type, name: getCopiedName(res.name as string) };
     addOrEditViewsDrawerVisible.value = true;
   }
 

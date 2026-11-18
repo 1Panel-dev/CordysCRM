@@ -51,6 +51,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getCopiedName } from '@lib/shared/method';
   import type { CustomFormUserViewDetail } from '@lib/shared/models/customForm';
   import type { ViewItem } from '@lib/shared/models/view';
 
@@ -71,6 +72,7 @@
     customFormId?: string;
     row?: ViewItem;
     readonly?: boolean;
+    copy?: boolean;
     configList: FilterFormItem[];
     customList?: FilterFormItem[]; // 自定义字段
   }>();
@@ -231,10 +233,20 @@
       if (!row) return;
 
       if (props.customFormId) {
+        // 自定义表单的系统视图只在本地维护、没有后端视图记录，不能请求详情接口
+        if (row.type === 'internal') {
+          form.value = { name: props.copy ? getCopiedName(row.name) : row.name };
+          formModel.value = {
+            searchMode: row.searchMode,
+            list: cloneDeep(row.list),
+          };
+          return;
+        }
+
         try {
           loading.value = true;
           const detail = await viewApiMap.detail[FormDesignKeyEnum.CUSTOM_FORM](props.customFormId, row.id);
-          form.value = { id: detail.id, name: detail.name };
+          form.value = props.copy ? { name: getCopiedName(detail.name) } : { id: detail.id, name: detail.name };
           formModel.value = toFilterForm(detail);
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -246,7 +258,7 @@
         return;
       }
 
-      form.value = { id: row.id, name: row.name };
+      form.value = { id: props.copy ? undefined : row.id, name: row.name };
       formModel.value = {
         searchMode: row.searchMode,
         list: cloneDeep(row.list),

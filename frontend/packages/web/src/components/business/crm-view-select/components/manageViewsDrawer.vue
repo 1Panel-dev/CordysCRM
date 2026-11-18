@@ -31,6 +31,7 @@
     :type="props.type"
     :custom-form-id="props.customFormId"
     :readonly="readonly"
+    :copy="copyMode"
     :row="detail"
     :config-list="props.configList"
     :custom-list="props.customList"
@@ -94,10 +95,12 @@
 
   const addOrEditViewsDrawerVisible = ref(false);
   const readonly = ref(false);
+  const copyMode = ref(false);
   const detail = ref();
 
   function handleAdd() {
     readonly.value = false;
+    copyMode.value = false;
     detail.value = undefined;
     addOrEditViewsDrawerVisible.value = true;
   }
@@ -129,17 +132,20 @@
     switch (actionKey) {
       case 'readOnly':
         readonly.value = true;
-        detail.value = { id: row.id, ...res };
+        copyMode.value = false;
+        detail.value = { id: row.id, type: row.type, ...res };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'edit':
         readonly.value = false;
-        detail.value = { id: row.id, ...res };
+        copyMode.value = false;
+        detail.value = { id: row.id, type: row.type, ...res };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'copy':
         readonly.value = false;
-        detail.value = { ...res, name: getCopiedName(res?.name as string) };
+        copyMode.value = true;
+        detail.value = { id: row.id, type: row.type, ...res, name: getCopiedName(res?.name as string) };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'delete':
