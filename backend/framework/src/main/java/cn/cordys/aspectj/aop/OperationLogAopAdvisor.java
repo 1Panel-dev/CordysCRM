@@ -51,6 +51,8 @@ public class OperationLogAopAdvisor extends AbstractBeanFactoryPointcutAdvisor i
      */
     private static class LogRecordPointcut extends StaticMethodMatcherPointcut implements Serializable {
 
+        private static final Pattern SERVICE_PACKAGE_PATTERN = Pattern.compile("cn.cordys\\..*\\.service");
+
         private final OperationLogSource operationLogSource;
 
         public LogRecordPointcut(OperationLogSource operationLogSource) {
@@ -59,19 +61,11 @@ public class OperationLogAopAdvisor extends AbstractBeanFactoryPointcutAdvisor i
 
         @Override
         public boolean matches(Method method, Class<?> targetClass) {
-            // 定义支持通配符的包名模式
-            // todo: 后续需要修改
-            String packagePattern = "cn.cordys\\..*\\.service";
-
-            // 获取目标类的包名
             String targetPackage = targetClass.getPackage().getName();
-
-            // 使用正则表达式匹配包名
-            if (!Pattern.matches(packagePattern, targetPackage)) {
+            if (!SERVICE_PACKAGE_PATTERN.matcher(targetPackage).matches()) {
                 return false;
             }
 
-            // 检查方法是否有日志操作配置
             return !CollectionUtils.isEmpty(operationLogSource.computeLogRecordOperations(method, targetClass));
         }
     }

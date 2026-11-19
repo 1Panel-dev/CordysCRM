@@ -3,7 +3,9 @@ package cn.cordys.crm.form.service;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.service.FieldReferenceService;
 import cn.cordys.common.service.FieldSourceServiceProvider;
+import cn.cordys.common.util.JSON;
 import cn.cordys.crm.form.domain.CustomFormData;
+import cn.cordys.crm.form.dto.request.CustomFormDataUpdateRequest;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.dto.field.DatasourceField;
@@ -83,6 +85,24 @@ class CustomFormReferenceContextTest {
         } else {
             assertThrows(IllegalStateException.class, hostFields::getFormKey);
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void approvalSnapshotRestoresTheOuterForm(boolean fail) {
+        CustomFormDataFieldService.setFormKey("parent-form");
+        if (fail) {
+            IllegalStateException failure = failFieldRead();
+            assertSame(failure, assertThrows(IllegalStateException.class,
+                    () -> dataService.getPreUpdateSnapshotData("child-record", "user", "org")));
+        } else {
+            String snapshot = dataService.getPreUpdateSnapshotData("child-record", "user", "org");
+            CustomFormDataUpdateRequest request = JSON.parseObject(snapshot, CustomFormDataUpdateRequest.class);
+            assertEquals("record-form", request.getCustomFormId());
+            assertEquals(values, request.getModuleFields());
+        }
+
+        assertEquals("parent-form", hostFields.getFormKey());
     }
 
     @ParameterizedTest

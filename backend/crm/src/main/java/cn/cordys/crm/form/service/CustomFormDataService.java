@@ -909,9 +909,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (customFormData == null) {
             return null;
         }
-        CustomFormDataFieldService.setFormKey(customFormData.getCustomFormId());
-        List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService
-                .getModuleFieldValuesByResourceId(resourceId);
+        List<BaseModuleFieldValue> customFormDataFields = CustomFormDataFieldService.withFormKey(
+                customFormData.getCustomFormId(),
+                () -> customFormDataFieldService.getModuleFieldValuesByResourceId(resourceId));
         CustomFormDataUpdateRequest snapshotReq = BeanUtils.copyBean(new CustomFormDataUpdateRequest(), customFormData);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         snapshotReq.setCustomFormId(customFormData.getCustomFormId());

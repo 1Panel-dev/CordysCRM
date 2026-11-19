@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -31,14 +32,15 @@ public class NoticeSendService {
     private final MessageDetailService messageDetailService;
 
     private void doSend(String module, NoticeModel noticeModel, String organizationId) {
-        setLanguage(noticeModel.getParamMap().get("Language"));
-        boolean useTemplate = Boolean.parseBoolean(
-                (String) noticeModel.getParamMap().getOrDefault("useTemplate", "false"));
-        String template = (String) noticeModel.getParamMap().get("template");
-        if (useTemplate && noticeModel.getParamMap().get("templateKey") instanceof String templateKey) {
-            template = Translator.get(templateKey);
-        }
+        LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
         try {
+            setLanguage(noticeModel.getParamMap().get("Language"));
+            boolean useTemplate = Boolean.parseBoolean(
+                    (String) noticeModel.getParamMap().getOrDefault("useTemplate", "false"));
+            String template = (String) noticeModel.getParamMap().get("template");
+            if (useTemplate && noticeModel.getParamMap().get("templateKey") instanceof String templateKey) {
+                template = Translator.get(templateKey);
+            }
             List<MessageDetailDTO> messageDetails = messageDetailService
                     .searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
@@ -47,13 +49,9 @@ public class NoticeSendService {
                     .forEach(md -> sendNotification(md, noticeModel));
         } catch (Exception e) {
             log.error("Error sending notification", e);
+        } finally {
+            LocaleContextHolder.setLocaleContext(previousLocaleContext);
         }
-    }
-
-    @Async("threadPoolTaskExecutor")
-    public void send(String module, NoticeModel noticeModel) {
-        String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-        doSend(module, noticeModel, organizationId);
     }
 
     private void setLanguage(Object languageObj) {
@@ -67,8 +65,13 @@ public class NoticeSendService {
 
     @Async("threadPoolTaskExecutor")
     public void sendNotificationAsync(MessageDetailDTO messageDetail, NoticeModel noticeModel) {
-        setLanguage(noticeModel.getParamMap().get("Language"));
-        sendNotification(messageDetail, noticeModel);
+        LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
+        try {
+            setLanguage(noticeModel.getParamMap().get("Language"));
+            sendNotification(messageDetail, noticeModel);
+        } finally {
+            LocaleContextHolder.setLocaleContext(previousLocaleContext);
+        }
     }
 
     public void sendNotification(MessageDetailDTO messageDetail, NoticeModel noticeModel) {
@@ -108,11 +111,6 @@ public class NoticeSendService {
         } catch (Exception e) {
             log.error("Error sending individual notification", e);
         }
-    }
-
-    @Async("threadPoolTaskExecutor")
-    public void send(String organizationId, String module, NoticeModel noticeModel) {
-        doSend(module, noticeModel, organizationId);
     }
 
     @Async("threadPoolTaskExecutor")

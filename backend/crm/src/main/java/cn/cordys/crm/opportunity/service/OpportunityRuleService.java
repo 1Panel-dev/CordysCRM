@@ -184,6 +184,7 @@ public class OpportunityRuleService {
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#id}")
     public void switchStatus(String id, String currentUserId) {
         OpportunityRule rule = checkRuleExit(id);
+        OpportunityRule originalValue = BeanUtils.copyBean(new OpportunityRule(), rule);
         rule.setEnable(!rule.getEnable());
         rule.setUpdateUser(currentUserId);
         rule.setUpdateTime(System.currentTimeMillis());
@@ -192,7 +193,7 @@ public class OpportunityRuleService {
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(Translator.get("module.opportunity.rule.setting") + ": " + rule.getName())
-                        .originalValue(rule)
+                        .originalValue(originalValue)
                         .modifiedValue(opportunityRuleMapper.selectByPrimaryKey(id))
                         .build());
     }

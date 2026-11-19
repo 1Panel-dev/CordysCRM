@@ -14,8 +14,12 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 该类负责解析和计算基于注解的日志记录操作。
@@ -67,24 +71,23 @@ public class OperationLogSource {
 
         Method specificMethod = ClassUtils.getMostSpecificMethod(method, targetClass);
         specificMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);
-
-        Collection<OperationLogBuilder> logRecordOps = parseLogRecordAnnotations(specificMethod);
-        Collection<OperationLogBuilder> logRecordsOps = parseLogRecordsAnnotations(specificMethod);
-        Collection<OperationLogBuilder> abstractLogRecordOps = parseLogRecordAnnotations(
-                getInterfaceMethodIfPossible(method));
-        Collection<OperationLogBuilder> abstractLogRecordsOps = parseLogRecordsAnnotations(
-                getInterfaceMethodIfPossible(method));
+        Method interfaceMethod = getInterfaceMethodIfPossible(method);
+        boolean distinctInterfaceMethod = !specificMethod.equals(interfaceMethod);
 
         Set<OperationLogBuilder> result = new HashSet<>();
-        result.addAll(logRecordOps);
-        result.addAll(abstractLogRecordOps);
-        result.addAll(logRecordsOps);
-        result.addAll(abstractLogRecordsOps);
+        result.addAll(parseLogRecordAnnotations(specificMethod));
+        if (distinctInterfaceMethod) {
+            result.addAll(parseLogRecordAnnotations(interfaceMethod));
+        }
+        result.addAll(parseLogRecordsAnnotations(specificMethod));
+        if (distinctInterfaceMethod) {
+            result.addAll(parseLogRecordsAnnotations(interfaceMethod));
+        }
         return result;
     }
 
     /**
-     * 解析方法上的 {@code LogRecords} 注解。
+     * 解析方法上的 {@link OperationLogs} 注解。
      *
      * @param ae 被注解的元素
      * @return 日志记录构建器的集合
@@ -92,30 +95,29 @@ public class OperationLogSource {
     private Collection<OperationLogBuilder> parseLogRecordsAnnotations(AnnotatedElement ae) {
         return AnnotatedElementUtils.findAllMergedAnnotations(ae, OperationLogs.class).stream()
                 .flatMap(operationLogs -> Arrays.stream(operationLogs.value())
-                        .map(logRecord -> parseLogRecordAnnotation(ae, logRecord)))
-                .collect(Collectors.toList());
+                        .map(this::parseLogRecordAnnotation))
+                .toList();
     }
 
     /**
-     * 解析方法上的 {@code LogRecord} 注解。
+     * 解析方法上的 {@link OperationLog} 注解。
      *
      * @param ae 被注解的元素
      * @return 日志记录构建器的集合
      */
     private Collection<OperationLogBuilder> parseLogRecordAnnotations(AnnotatedElement ae) {
         return AnnotatedElementUtils.findAllMergedAnnotations(ae, OperationLog.class).stream()
-                .map(recordAnnotation -> parseLogRecordAnnotation(ae, recordAnnotation))
-                .collect(Collectors.toList());
+                .map(this::parseLogRecordAnnotation)
+                .toList();
     }
 
     /**
-     * 将 {@code LogRecord} 注解转换为日志记录构建器。
+     * 将 {@link OperationLog} 注解转换为日志记录构建器。
      *
-     * @param ae               被注解的元素
-     * @param recordAnnotation {@code LogRecord} 注解
+     * @param recordAnnotation 操作日志注解
      * @return 日志记录构建器
      */
-    private OperationLogBuilder parseLogRecordAnnotation(AnnotatedElement ae, OperationLog recordAnnotation) {
+    private OperationLogBuilder parseLogRecordAnnotation(OperationLog recordAnnotation) {
         return OperationLogBuilder.builder()
                 .resourceName(recordAnnotation.resourceName())
                 .type(recordAnnotation.type())

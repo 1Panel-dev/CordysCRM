@@ -7,6 +7,7 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.CustomerCapacity;
@@ -111,6 +112,7 @@ public class CustomerCapacityService {
         if (duplicate) {
             throw new GenericException(Translator.get("capacity.scope.duplicate"));
         }
+        CustomerCapacity originalValue = BeanUtils.copyBean(new CustomerCapacity(), oldCapacity);
         oldCapacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
         oldCapacity.setCapacity(request.getCapacity());
         oldCapacity.setFilter(
@@ -123,7 +125,7 @@ public class CustomerCapacityService {
                 LogContextInfo.builder()
                         .resourceId(request.getId())
                         .resourceName(Translator.get("module.customer.capacity.setting"))
-                        .originalValue(oldCapacity)
+                        .originalValue(originalValue)
                         .modifiedValue(customerCapacityMapper.selectByPrimaryKey(request.getId()))
                         .build());
     }

@@ -39,12 +39,13 @@ public class CustomFormDataExportService extends BaseExportService {
             return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
         }
         String customFormId = exportList.getFirst().getCustomFormId();
-        CustomFormDataFieldService.setFormKey(customFormId);
-        var dataList = customFormDataService.buildList(exportList, customFormId, exportParam.getOrgId());
-        return buildExportMergeResult(taskId, exportParam, dataList,
-                CustomFormDataListResponse::getModuleFields,
-                (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        getSystemFieldMap(detail, exportParam.getLocale()), cache));
+        return CustomFormDataFieldService.withFormKey(customFormId, () -> {
+            var dataList = customFormDataService.buildList(exportList, customFormId, exportParam.getOrgId());
+            return buildExportMergeResult(taskId, exportParam, dataList,
+                    CustomFormDataListResponse::getModuleFields,
+                    (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
+                            getSystemFieldMap(detail, exportParam.getLocale()), cache));
+        });
     }
 
     private List<CustomFormDataListResponse> collectExportList(ExportDTO exportParam) {
