@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.1</version>
+        <version>4.1.2</version>
         <relativePath/>
     </parent>
 
@@ -24,15 +24,16 @@
         <java.version>21</java.version>
 
         <!-- Library versions -->
-        <shiro.version>3.0.1</shiro.version>
+        <shiro.version>3.0.2</shiro.version>
         <fastexcel.version>1.3.0</fastexcel.version>
         <pagehelper.version>6.1.1</pagehelper.version>
         <quartz-starter.version>1.0.1</quartz-starter.version>
         <redisson-starter.version>4.8.0</redisson-starter.version>
         <mybatis-starter.version>4.1.0</mybatis-starter.version>
-        <springdoc-openapi-ui.version>3.1.1</springdoc-openapi-ui.version>
+        <springdoc-openapi-ui.version>3.2.0</springdoc-openapi-ui.version>
         <flatten.version>1.8.0</flatten.version>
         <embedded.version>4.1.0</embedded.version>
+        <flyway.version>13.12.2</flyway.version>
         <mail.version>2.0.5</mail.version>
         <mockito.version>5.24.0</mockito.version>
 
@@ -52,7 +53,7 @@
         <commons-collections4.version>4.6.0</commons-collections4.version>
         <commons-text.version>1.15.0</commons-text.version>
         <commons-io.version>2.22.0</commons-io.version>
-        <commons-lang3.version>3.21.0</commons-lang3.version>
+        <commons-lang3.version>3.22.0</commons-lang3.version>
         <commons-codec.version>1.23.0</commons-codec.version>
         <testcontainers.version>2.0.5</testcontainers.version>
         <persistence-api.version>3.2.0</persistence-api.version>
@@ -115,17 +116,17 @@
             <dependency>
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_annotations</artifactId>
-                <version>2.50.0</version>
+                <version>2.53.0</version>
             </dependency>
             <dependency>
                 <groupId>com.redis</groupId>
                 <artifactId>testcontainers-redis</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>com.redis</groupId>
                 <artifactId>testcontainers-redis-common</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>redis.clients.authentication</groupId>
@@ -145,17 +146,17 @@
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi</artifactId>
-                <version>5.5.1</version>
+                <version>6.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
-                <version>5.5.1</version>
+                <version>6.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml-lite</artifactId>
-                <version>5.5.1</version>
+                <version>6.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
@@ -180,7 +181,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.86</version>
+                <version>1.87</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
