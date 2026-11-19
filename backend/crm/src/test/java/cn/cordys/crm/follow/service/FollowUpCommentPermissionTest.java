@@ -27,8 +27,8 @@ import cn.cordys.crm.follow.dto.request.CommentUpdateRequest;
 import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
-import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.mapper.ExtStatisticMapper;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -289,7 +289,7 @@ class FollowUpCommentPermissionTest {
         ReflectionTestUtils.setField(service, "opportunityMapper", mock(BaseMapper.class));
         ReflectionTestUtils.setField(service, "commentMapper", comments);
         ReflectionTestUtils.setField(service, "extCommentMapper", mock(ExtCommentMapper.class));
-        ReflectionTestUtils.setField(service, "extMessageTaskMapper", mock(ExtMessageTaskMapper.class));
+        ReflectionTestUtils.setField(service, "commonNoticeSendService", mock(CommonNoticeSendService.class));
         ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(service, "resourcePermissionService", resourcePermissions);
     }

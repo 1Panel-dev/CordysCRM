@@ -6,8 +6,6 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.follow.constants.FollowUpCommentTargetType;
-import cn.cordys.crm.follow.domain.Comment;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.domain.FollowUpRecordComment;
@@ -17,48 +15,44 @@ import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
-import cn.cordys.crm.system.domain.MessageTask;
-import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class BaseCommentServiceTest {
 
-    private BaseCommentService<? extends Comment> service;
-    private BaseMapper<Comment> commentMapper;
-    private ExtMessageTaskMapper messageTaskMapper;
+    private BaseMapper<FollowUpRecordComment> commentMapper;
     private CommonNoticeSendService noticeSender;
+    private ExtCommentMapper extCommentMapper;
     private MockedStatic<Translator> translator;
     private MockedStatic<IDGenerator> ids;
     private CommentAddRequest request;
-    private String addedEvent;
-    private String mentionedEvent;
+    private final List<NoticeSendContext> sent = new ArrayList<>();
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() {
         commentMapper = mock(BaseMapper.class);
-        messageTaskMapper = mock(ExtMessageTaskMapper.class);
         noticeSender = mock(CommonNoticeSendService.class);
+        extCommentMapper = mock(ExtCommentMapper.class);
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
         ids = mockStatic(IDGenerator.class);
         AtomicInteger sequence = new AtomicInteger();
@@ -66,7 +60,11 @@ class BaseCommentServiceTest {
         request = new CommentAddRequest();
         request.setResourceId("resource-a");
         request.setContent("评论内容");
-        configureTarget(FollowUpCommentTargetType.RECORD);
+        // 记录新版通知下发的上下文
+        doAnswer(invocation -> {
+            sent.add(invocation.getArgument(0));
+            return null;
+        }).when(noticeSender).sendNoticeByConfig(any(NoticeSendContext.class));
         OperationLogContext.putEmptySpan();
     }
 
@@ -77,135 +75,149 @@ class BaseCommentServiceTest {
         ids.close();
     }
 
-    @ParameterizedTest
-    @EnumSource(FollowUpCommentTargetType.class)
-    void ownerAndMentionedUsersReceiveSeparateEvents(FollowUpCommentTargetType targetType) {
-        configureTarget(targetType);
-        request.setMentionedUserIds(List.of("mentioned", "mentioned"));
+    @Test
+    void recordCommentWithoutReplyOrMentionNotifiesOwner() {
+        recordService("owner").add(request, "operator", "org-a");
 
-        service.add(request, "operator", "org-a");
-
-        verifyNotice(addedEvent, targetType, List.of("owner"));
-        verifyNotice(mentionedEvent, targetType, List.of("mentioned"));
-        verifyNoMoreInteractions(noticeSender);
+        assertEquals(1, sent.size());
+        NoticeSendContext context = sent.get(0);
+        assertEquals(NotificationConstants.Module.FOLLOW_UP, context.getTaskType());
+        assertEquals(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT, context.getAction());
+        assertEquals(Map.of("owner", "owner"), context.getNewValues());
+        assertEquals("客户甲", context.getResourceName());
+        assertEquals("resource-a", context.getResourceId());
+        assertEquals("operator", context.getOperatorId());
+        assertEquals("org-a", context.getOrganizationId());
+        assertTrue(context.isExcludeSelf());
+        assertTrue(context.isEventOnly());
     }
 
     @Test
-    void mentionedOwnerReceivesOnlyMentionEvent() {
-        request.setMentionedUserIds(List.of("owner", "owner"));
-        request.setReplyToUserId("owner");
+    void recordCommentReplyNotifiesReplyUser() {
+        request.setReplyToUserId("replied");
 
-        service.add(request, "operator", "org-a");
+        recordService("owner").add(request, "operator", "org-a");
 
-        verifyNotice(mentionedEvent, FollowUpCommentTargetType.RECORD, List.of("owner"));
-        verifyNoMoreInteractions(noticeSender);
+        assertEquals(2, sent.size());
+        NoticeSendContext reply = find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_REPALY);
+        assertEquals("replied", reply.getReplyToUserId());
+        assertEquals(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT, sent.get(0).getAction());
     }
 
     @Test
-    void commentWithoutMentionsOnlyNotifiesOwner() {
-        service.add(request, "operator", "org-a");
+    void recordCommentMentionNotifiesMentionedUsers() {
+        request.setMentionedUserIds(List.of("m1", "m2"));
 
-        verifyNotice(addedEvent, FollowUpCommentTargetType.RECORD, List.of("owner"));
-        verifyNoMoreInteractions(noticeSender);
+        recordService("owner").add(request, "operator", "org-a");
+
+        assertEquals(2, sent.size());
+        NoticeSendContext mentioned = find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_MENTIONED);
+        assertEquals(List.of("m1", "m2"), mentioned.getMentionedUserIds());
     }
 
     @Test
-    void replyRecipientWithoutMentionReceivesOrdinaryNotice() {
-        request.setReplyToUserId("replied-user");
-        request.setMentionedUserIds(List.of("mentioned"));
+    void recordCommentReplyAndMentionSendAllThreeNotices() {
+        request.setReplyToUserId("replied");
+        request.setMentionedUserIds(List.of("m1"));
 
-        service.add(request, "operator", "org-a");
+        recordService("owner").add(request, "operator", "org-a");
 
-        verifyNotice(addedEvent, FollowUpCommentTargetType.RECORD, List.of("owner", "replied-user"));
-        verifyNotice(mentionedEvent, FollowUpCommentTargetType.RECORD, List.of("mentioned"));
-        verifyNoMoreInteractions(noticeSender);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void missingConfigurationDoesNotSuppressOtherGroup(boolean missingAdded) {
-        request.setMentionedUserIds(List.of("mentioned"));
-        when(messageTaskMapper.getMessageByEvent(missingAdded ? addedEvent : mentionedEvent, "org-a"))
-                .thenReturn(null);
-
-        service.add(request, "operator", "org-a");
-
-        /*verifyNotice(missingAdded ? mentionedEvent : addedEvent, FollowUpCommentTargetType.RECORD,
-                List.of(missingAdded ? "mentioned" : "owner"));*/
-        verifyNoMoreInteractions(noticeSender);
+        assertEquals(3, sent.size());
+        find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT);
+        find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_REPALY);
+        find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_MENTIONED);
     }
 
     @Test
-    void editingCommentKeepsOwnerAndMentionedUsersSeparate() {
-        Comment comment = new FollowUpRecordComment();
+    void recordCommentWithoutOwnerSkipsCommentNotice() {
+        recordService("").add(request, "operator", "org-a");
+
+        assertEquals(0, sent.size());
+    }
+
+    @Test
+    void planCommentIsNotMigratedToNewNotice() {
+        planService().add(request, "operator", "org-a");
+
+        assertEquals(0, sent.size());
+    }
+
+    @Test
+    void editingRecordCommentSendsNewNotice() {
+        FollowUpRecordCommentService service = recordService("owner");
+        FollowUpRecordComment comment = new FollowUpRecordComment();
         comment.setId("comment-a");
         comment.setResourceId("resource-a");
         comment.setOrganizationId("org-a");
         comment.setCreateUser("operator");
+        comment.setReplyToUserId("replied");
         comment.setContent("原评论");
         when(commentMapper.selectByPrimaryKey("comment-a")).thenReturn(comment);
         CommentUpdateRequest update = new CommentUpdateRequest();
         update.setId("comment-a");
         update.setContent("修改后评论");
-        update.setMentionedUserIds(List.of("mentioned"));
+        update.setMentionedUserIds(List.of("m1"));
 
         service.update(update, "operator", "org-a");
 
-        verifyNotice(addedEvent, FollowUpCommentTargetType.RECORD, List.of("owner"));
-        verifyNotice(mentionedEvent, FollowUpCommentTargetType.RECORD, List.of("mentioned"));
-        verifyNoMoreInteractions(noticeSender);
+        assertEquals(3, sent.size());
+        find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT);
+        assertEquals("replied", find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_REPALY).getReplyToUserId());
+        assertEquals(List.of("m1"), find(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_MENTIONED)
+                .getMentionedUserIds());
+    }
+
+    private NoticeSendContext find(String action) {
+        return sent.stream()
+                .filter(context -> action.equals(context.getAction()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("未找到事件为 " + action + " 的通知"));
+    }
+
+    private FollowUpRecordCommentService recordService(String owner) {
+        FollowUpRecordCommentService service = new FollowUpRecordCommentService();
+        BaseMapper<FollowUpRecord> resourceMapper = mock(BaseMapper.class);
+        FollowUpRecord record = new FollowUpRecord();
+        record.setOrganizationId("org-a");
+        record.setType("CUSTOMER");
+        record.setOwner(owner);
+        record.setCustomerId("customer-a");
+        when(resourceMapper.selectByPrimaryKey("resource-a")).thenReturn(record);
+        ReflectionTestUtils.setField(service, "recordMapper", resourceMapper);
+        ReflectionTestUtils.setField(service, "extRecordMapper", mock(ExtFollowUpRecordMapper.class));
+        ReflectionTestUtils.setField(service, "commentMapper", commentMapper);
+        wireCommon(service);
+        return service;
     }
 
     @SuppressWarnings("unchecked")
-    private void configureTarget(FollowUpCommentTargetType targetType) {
-        if (targetType == FollowUpCommentTargetType.PLAN) {
-            service = new FollowUpPlanCommentService();
-            BaseMapper<FollowUpPlan> resourceMapper = mock(BaseMapper.class);
-            FollowUpPlan plan = new FollowUpPlan();
-            plan.setOrganizationId("org-a");
-            plan.setType("CUSTOMER");
-            plan.setOwner("owner");
-            plan.setCustomerId("customer-a");
-            when(resourceMapper.selectByPrimaryKey("resource-a")).thenReturn(plan);
-            ReflectionTestUtils.setField(service, "planMapper", resourceMapper);
-            ReflectionTestUtils.setField(service, "extPlanMapper", mock(ExtFollowUpPlanMapper.class));
-            //addedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED;
-            //mentionedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED;
-        } else {
-            service = new FollowUpRecordCommentService();
-            BaseMapper<FollowUpRecord> resourceMapper = mock(BaseMapper.class);
-            FollowUpRecord record = new FollowUpRecord();
-            record.setOrganizationId("org-a");
-            record.setType("CUSTOMER");
-            record.setOwner("owner");
-            record.setCustomerId("customer-a");
-            when(resourceMapper.selectByPrimaryKey("resource-a")).thenReturn(record);
-            ReflectionTestUtils.setField(service, "recordMapper", resourceMapper);
-            ReflectionTestUtils.setField(service, "extRecordMapper", mock(ExtFollowUpRecordMapper.class));
-            //addedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;
-            //mentionedEvent = NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
-        }
+    private FollowUpPlanCommentService planService() {
+        FollowUpPlanCommentService service = new FollowUpPlanCommentService();
+        BaseMapper<FollowUpPlan> resourceMapper = mock(BaseMapper.class);
+        FollowUpPlan plan = new FollowUpPlan();
+        plan.setOrganizationId("org-a");
+        plan.setType("CUSTOMER");
+        plan.setOwner("owner");
+        plan.setCustomerId("customer-a");
+        when(resourceMapper.selectByPrimaryKey("resource-a")).thenReturn(plan);
+        ReflectionTestUtils.setField(service, "planMapper", resourceMapper);
+        ReflectionTestUtils.setField(service, "extPlanMapper", mock(ExtFollowUpPlanMapper.class));
+        ReflectionTestUtils.setField(service, "commentMapper", mock(BaseMapper.class));
+        wireCommon(service);
+        return service;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void wireCommon(BaseCommentService<?> service) {
         BaseMapper<Customer> customerMapper = mock(BaseMapper.class);
         Customer customer = new Customer();
         customer.setName("客户甲");
         when(customerMapper.selectByPrimaryKey("customer-a")).thenReturn(customer);
-        ReflectionTestUtils.setField(service, "commentMapper", commentMapper);
         ReflectionTestUtils.setField(service, "customerMapper", customerMapper);
-        ReflectionTestUtils.setField(service, "extCommentMapper", mock(ExtCommentMapper.class));
-        ReflectionTestUtils.setField(service, "extMessageTaskMapper", messageTaskMapper);
+        ReflectionTestUtils.setField(service, "extCommentMapper", extCommentMapper);
         ReflectionTestUtils.setField(service, "commonNoticeSendService", noticeSender);
         ReflectionTestUtils.setField(service, "relatedResourcePermissionService",
                 mock(RelatedResourcePermissionService.class));
         ReflectionTestUtils.setField(service, "resourcePermissionService", mock(ResourcePermissionService.class));
-        MessageTask messageTask = new MessageTask();
-        messageTask.setTaskType("CUSTOMER");
-        when(messageTaskMapper.getMessageByEvent(addedEvent, "org-a")).thenReturn(messageTask);
-        when(messageTaskMapper.getMessageByEvent(mentionedEvent, "org-a")).thenReturn(messageTask);
-    }
-
-    private void verifyNotice(String event, FollowUpCommentTargetType targetType, List<String> users) {
-        verify(noticeSender).sendNotice(eq("CUSTOMER"), eq(event),
-                eq(Map.of("name", "客户甲", "resourceId", "resource-a", "targetType", targetType.name())),
-                eq("operator"), eq("org-a"), eq(users), eq(true));
     }
 }
