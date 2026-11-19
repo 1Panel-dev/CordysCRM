@@ -12,20 +12,28 @@ public class SubListUtils {
     public static int DEFAULT_QUERY_BATCH_SIZE = 200;
 
     /**
-     * 将较长的数组截断成较短的数组进行批处理
+     * 按原有顺序分批处理列表，批次的修改不会影响传入的列表结构。
+     *
+     * @param totalList 原始列表
+     * @param batchSize 每批最多处理的元素数
+     * @param subFunc 批次处理函数
+     * @throws IllegalArgumentException 列表非空且批次大小小于 1
      */
     public static <T> void dealForSubList(List<T> totalList, int batchSize, Consumer<List<T>> subFunc) {
         if (CollectionUtils.isEmpty(totalList)) {
             return;
         }
-        List<T> dealList = new ArrayList<>(totalList);
-        while (dealList.size() > batchSize) {
-            List<T> subList = dealList.subList(0, batchSize);
-            subFunc.accept(subList);
-            dealList = dealList.subList(subList.size(), dealList.size());
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("Batch size must be positive");
         }
-        if (CollectionUtils.isNotEmpty(dealList)) {
-            subFunc.accept(dealList);
+
+        List<T> dealList = new ArrayList<>(totalList);
+        int start = 0;
+        while (start < dealList.size()) {
+            int end = start + Math.min(batchSize, dealList.size() - start);
+            List<T> batch = dealList.subList(start, end);
+            subFunc.accept(batch);
+            start += batch.size();
         }
     }
 }

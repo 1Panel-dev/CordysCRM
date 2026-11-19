@@ -37,13 +37,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,35 +99,6 @@ public class CommonNoticeSendService {
             locale = Locale.TAIWAN;
         }
         LocaleContextHolder.setLocale(locale);
-    }
-
-    @Async("threadPoolTaskExecutor")
-    public void sendNotice(String module, String event, List<Map> resources, String userId,
-            String currentOrganizationId) {
-        User operator = userBaseMapper.selectByPrimaryKey(userId);
-        setLanguage(operator.getLanguage());
-        // 有批量操作发送多次
-        for (Map resource : resources) {
-            Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put(NotificationConstants.RelatedUser.OPERATOR, operator.getName());
-            paramMap.put("Language", operator.getLanguage());
-            paramMap.putAll(resource);
-            paramMap.putIfAbsent("organizationId", currentOrganizationId);
-
-            String context = getContext(event);
-            List<String> relatedUsers = getRelatedUsers(resource.get("relatedUsers"));
-            List<Receiver> receivers = getReceivers(relatedUsers);
-            NoticeModel noticeModel = NoticeModel.builder()
-                    .operator(operator.getId())
-                    .context(context)
-                    .paramMap(paramMap)
-                    .event(event)
-                    .status((String) paramMap.get("status"))
-                    .excludeSelf(true)
-                    .receivers(receivers)
-                    .build();
-            noticeSendService.send(module, noticeModel);
-        }
     }
 
     private List<Receiver> getReceivers(List<String> relatedUsers) {
@@ -193,15 +163,6 @@ public class CommonNoticeSendService {
                 .receivers(receivers)
                 .build();
         noticeSendService.sendOther(taskType, noticeModel, excludeSelf);
-    }
-
-    private List<String> getRelatedUsers(Object relatedUsers) {
-        String relatedUser = (String) relatedUsers;
-        List<String> relatedUserList = new ArrayList<>();
-        if (StringUtils.isNotBlank(relatedUser)) {
-            relatedUserList = Arrays.asList(relatedUser.split(";"));
-        }
-        return relatedUserList;
     }
 
     private String getContext(String event) {
@@ -301,6 +262,7 @@ public class CommonNoticeSendService {
                 || StringUtils.isBlank(context.getOrganizationId())) {
             return;
         }
+        LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
         try {
             LambdaQueryWrapper<MessageTask> taskQuery = new LambdaQueryWrapper<MessageTask>()
                     .eq(MessageTask::getTaskType, context.getTaskType())
@@ -339,6 +301,8 @@ public class CommonNoticeSendService {
             }
         } catch (Exception e) {
             log.error("sendNoticeNew error, taskType: {}, action: {}", context.getTaskType(), context.getAction(), e);
+        } finally {
+            LocaleContextHolder.setLocaleContext(previousLocaleContext);
         }
     }
 
@@ -696,10 +660,6 @@ public class CommonNoticeSendService {
         messageDetail.setWeComEnable(methods.contains(ReceiveMethodEnum.WECOM.name()));
         messageDetail.setDingTalkEnable(methods.contains(ReceiveMethodEnum.DINGTALK.name()));
         messageDetail.setLarkEnable(methods.contains(ReceiveMethodEnum.LARK.name()));
-    }
-
-    private String buildContent(String templateJson, Map<String, Object> paramMap) {
-        return buildContent(parseStringList(templateJson), paramMap);
     }
 
     private String buildContent(List<String> templateNames, Map<String, Object> paramMap) {
