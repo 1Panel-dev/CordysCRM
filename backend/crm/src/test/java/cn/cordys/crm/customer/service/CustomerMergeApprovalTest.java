@@ -6,6 +6,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
@@ -20,6 +21,7 @@ import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -77,6 +79,8 @@ class CustomerMergeApprovalTest {
     private final ApprovalFlowService approvalFlowService = mock(ApprovalFlowService.class);
     private final ResourcePermissionService resourcePermissionService = new ResourcePermissionService();
     private final DataScopeService dataScopeService = spy(new DataScopeService());
+    private final BaseService baseService = mock(BaseService.class);
+    private final CommonNoticeSendService commonNoticeSendService = mock(CommonNoticeSendService.class);
     private final Map<String, Customer> customers = new HashMap<>();
     private final CustomerContactService customerContactService = mock(CustomerContactService.class);
     @SuppressWarnings("unchecked")
@@ -118,6 +122,8 @@ class CustomerMergeApprovalTest {
         ReflectionTestUtils.setField(service, "customerContactMapper", customerContactMapper);
         ReflectionTestUtils.setField(service, "customerCollaborationMapper", customerCollaborationMapper);
         ReflectionTestUtils.setField(service, "customerCollaborationService", customerCollaborationService);
+        ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "commonNoticeSendService", commonNoticeSendService);
         ReflectionTestUtils.setField(service, "extCustomerContactMapper", extCustomerContactMapper);
         ReflectionTestUtils.setField(service, "extOpportunityMapper", extOpportunityMapper);
         ReflectionTestUtils.setField(service, "extContractMapper", extContractMapper);

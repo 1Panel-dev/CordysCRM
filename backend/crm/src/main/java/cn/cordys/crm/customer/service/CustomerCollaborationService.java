@@ -114,13 +114,7 @@ public class CustomerCollaborationService {
     }
 
     public CustomerCollaboration add(CustomerCollaborationAddRequest request, String userId, String orgId) {
-        CustomerCollaboration customerCollaboration = BeanUtils.copyBean(new CustomerCollaboration(), request);
-        customerCollaboration.setCreateTime(System.currentTimeMillis());
-        customerCollaboration.setUpdateTime(System.currentTimeMillis());
-        customerCollaboration.setUpdateUser(userId);
-        customerCollaboration.setCreateUser(userId);
-        customerCollaboration.setId(IDGenerator.nextStr());
-        customerCollaborationMapper.insert(customerCollaboration);
+        CustomerCollaboration customerCollaboration = insert(request, userId);
 
         // 添加协作人通知
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
@@ -131,6 +125,24 @@ public class CustomerCollaborationService {
                     customer, null, customer, null, List.of(request.getUserId()));
         }
         return customerCollaborationMapper.selectByPrimaryKey(customerCollaboration.getId());
+    }
+
+    /**
+     * 仅插入协作关系, 不发送通知。用于客户合并等由调用方统一发送系统通知的场景
+     */
+    public void insertWithoutNotice(CustomerCollaborationAddRequest request, String userId) {
+        insert(request, userId);
+    }
+
+    private CustomerCollaboration insert(CustomerCollaborationAddRequest request, String userId) {
+        CustomerCollaboration customerCollaboration = BeanUtils.copyBean(new CustomerCollaboration(), request);
+        customerCollaboration.setCreateTime(System.currentTimeMillis());
+        customerCollaboration.setUpdateTime(System.currentTimeMillis());
+        customerCollaboration.setUpdateUser(userId);
+        customerCollaboration.setCreateUser(userId);
+        customerCollaboration.setId(IDGenerator.nextStr());
+        customerCollaborationMapper.insert(customerCollaboration);
+        return customerCollaboration;
     }
 
     public CustomerCollaboration update(CustomerCollaborationUpdateRequest request, String userId) {

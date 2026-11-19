@@ -427,7 +427,9 @@ public class CommonNoticeSendService {
 
         // 一个任务可能配置多条模板，如转移通知分别给原负责人、新负责人各一条；
         // 按接收人类型匹配各自模板，未匹配到类型的模板作为默认内容发给其余接收人
-        List<String> templateNames = parseStringList(task.getTemplate());
+        List<String> templateNames = CollectionUtils.isNotEmpty(context.getTemplateNames())
+                ? context.getTemplateNames()
+                : parseStringList(task.getTemplate());
         Map<ScopeIdTypeEnum, List<String>> templateByScope = groupTemplateByScope(templateNames);
         List<String> defaultTemplates = templateByScope.remove(null);
 

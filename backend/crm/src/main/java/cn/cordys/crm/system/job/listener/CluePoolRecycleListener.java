@@ -143,15 +143,14 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
      * 将线索回收到线索池
      */
     private void recycleClueToPool(Clue clue, CluePool pool) {
-        // 发送消息通知
-        commonNoticeSendService.sendNotice(
+        // 发送消息通知(按消息任务配置读取接收人/模板/接收方式), 接收人默认取原负责人
+        commonNoticeSendService.sendNoticeByConfig(
                 NotificationConstants.Module.CLUE,
                 NotificationConstants.Event.CLUE_AUTOMATIC_MOVE_POOL,
-                clue.getName(),
                 InternalUser.ADMIN.getValue(),
                 clue.getOrganizationId(),
-                List.of(clue.getOwner()),
-                true);
+                true, true,
+                clue, null, clue, null);
 
         // 记录责任人历史
         clueOwnerHistoryService.add(clue, InternalUser.ADMIN.getValue(), false);

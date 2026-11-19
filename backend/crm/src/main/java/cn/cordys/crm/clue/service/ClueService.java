@@ -105,6 +105,7 @@ import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.constants.message.TemplateEnum;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
@@ -125,6 +126,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -1287,13 +1289,16 @@ public class ClueService implements ApprovalResourceHandler {
         List<Customer> customers = customerMapper.selectListByLambda(wrapper);
         boolean uniqueCheck = moduleFormService.hasFieldUniqueCheck(FormKey.CUSTOMER.getKey(), orgId,
                 BusinessModuleField.CUSTOMER_NAME.getKey());
+        boolean createNewCustomer;
         Customer transformCustomer;
         if (uniqueCheck && CollectionUtils.isNotEmpty(customers)) {
-            // 表单存在唯一性校验, 且同名客户存在, 根据规则选取
+            // 表单存在唯一性校验, 且同名客户存在, 根据规则选取(关联已有客户)
             transformCustomer = selectorCs(customers, clue.getOwner());
+            createNewCustomer = false;
         } else {
             // 根据表单联动来创建客户
             transformCustomer = generateCustomerByLinkForm(clue, currentUser, orgId);
+            createNewCustomer = true;
         }
         // 刷新转换过程中同名客户的最新跟进时间
         refreshCsFollowTime(clue, transformCustomer);
@@ -1302,14 +1307,29 @@ public class ClueService implements ApprovalResourceHandler {
                 orgId);
         markTransitioned(clue.getId(), transformCustomer.getId(), currentUser, orgId);
 
-        // 客户转换通知
-        Map<String, Object> paramMap = new HashMap<>(4);
-        paramMap.put("useTemplate", "true");
-        paramMap.put("template", Translator.get("message.clue_convert_customer_text"));
-        paramMap.put("name", clue.getName());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
-                paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
+        // 客户转换通知: 由 sendNoticeByConfig 读取消息任务配置发送, 新建客户与关联已有客户使用不同模板, 接收人取任务配置的负责人范围
+        Map<String, Object> clueValues = new HashMap<>(3);
+        clueValues.put("id", clue.getId());
+        clueValues.put("name", clue.getName());
+        clueValues.put("owner", clue.getOwner());
+        Map<String, Object> customerParamMap = new HashMap<>(2);
+        customerParamMap.put("name", clue.getName());
+        customerParamMap.put("customerName", transformCustomer.getName());
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.CLUE)
+                .action(NotificationConstants.Event.CLUE_CONVERT_CUSTOMER)
+                .operatorId(currentUser)
+                .organizationId(orgId)
+                .resourceId(clue.getId())
+                .resourceName(clue.getName())
+                .paramMap(customerParamMap)
+                .newValues(clueValues)
+                .templateNames(List.of(createNewCustomer
+                        ? TemplateEnum.CLUE_CONVERT_CUSTOMER_ADD_TEXT.name()
+                        : TemplateEnum.CLUE_CONVERT_CUSTOMER_RELATE_TEXT.name()))
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
 
         // 是否转换商机
         if (request.getOppCreated()) {
@@ -1319,11 +1339,21 @@ public class ClueService implements ApprovalResourceHandler {
             // 转移线索的计划&记录
             batchCopyCluePlanAndRecord(clue.getId(), transformCustomer.getId(), transformOpportunity.getId(),
                     transformCsAssociateDTO.getContactId());
-            paramMap.put("template", Translator.get("message.clue_convert_business_text"));
-            paramMap.put("name", clue.getName());
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                    NotificationConstants.Event.CLUE_CONVERT_BUSINESS,
-                    paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
+            Map<String, Object> businessParamMap = new HashMap<>(1);
+            businessParamMap.put("name", clue.getName());
+            commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                    .taskType(NotificationConstants.Module.CLUE)
+                    .action(NotificationConstants.Event.CLUE_CONVERT_BUSINESS)
+                    .operatorId(currentUser)
+                    .organizationId(orgId)
+                    .resourceId(clue.getId())
+                    .resourceName(clue.getName())
+                    .paramMap(businessParamMap)
+                    .newValues(clueValues)
+                    .templateNames(List.of(TemplateEnum.CLUE_CONVERT_BUSINESS_TEXT.name()))
+                    .excludeSelf(true)
+                    .eventOnly(true)
+                    .build());
             return transformOpportunity.getId();
         } else {
             // 转移线索的计划&记录
@@ -1487,6 +1517,8 @@ public class ClueService implements ApprovalResourceHandler {
         addRequest.setModuleFields(customerLinkFillDTO.getFields());
         addRequest.setFollower(clue.getFollower());
         addRequest.setFollowTime(clue.getFollowTime());
+        // 转换场景不发送"新建客户"通知, 由 transform 发送"转为客户"通知
+        addRequest.setSendNotice(false);
         return customerService.add(addRequest, currentUser, orgId);
     }
 
@@ -1530,6 +1562,8 @@ public class ClueService implements ApprovalResourceHandler {
         addRequest.setModuleFields(opportunityLinkFillDTO.getFields());
         addRequest.setFollower(clue.getFollower());
         addRequest.setFollowTime(clue.getFollowTime());
+        // 转换场景不发送"新建商机"通知, 由 transform 发送"转为商机"通知
+        addRequest.setSendNotice(false);
         return opportunityService.add(addRequest, currentUser, orgId);
     }
 

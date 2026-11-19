@@ -256,13 +256,13 @@ public class MessageNotificationService {
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
                                 buildActionConfigValue(NotificationConstants.Event.CUSTOMER_DELETED));
-                // 新建写作人(系统)
+                // 新建协作人(系统)
                 case NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_COLLABORATION_ADD_TEXT.name()),
                                 eventNameMap, messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
                                 buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD));
-                // 新建写作人(手动)
+                // 新建协作人(手动)
                 case NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_COLLABORATION_ADD_MANUAL_TEXT.name()),
                                 eventNameMap, messageTask, List.of("COLLABORATION"), receiveMethod,
