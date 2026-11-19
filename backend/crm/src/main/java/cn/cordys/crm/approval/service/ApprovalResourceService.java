@@ -454,6 +454,28 @@ public class ApprovalResourceService {
     }
 
     /**
+     * 获取审批资源负责人，用于审批结果通知中解析 OWNER 接收人
+     *
+     * @param formType   表单类型（系统表单为 FormKey key，自定义表单为表单ID）
+     * @param resourceId 资源ID
+     * @param orgId      组织ID
+     * @return 资源负责人ID
+     */
+    public String getResourceOwner(String formType, String resourceId, String orgId) {
+        if (StringUtils.isAnyBlank(formType, resourceId, orgId)) {
+            return null;
+        }
+        if (FormKey.ofKey(formType) == null) {
+            // 自定义表单
+            CustomFormData data = customFormDataMapper.selectByPrimaryKey(resourceId);
+            return data == null ? null : data.getOwner();
+        }
+        ResourceAccessContextProvider provider = getResourceAccessContextProvider(formType);
+        ResourceAccessContext context = provider == null ? null : provider.getAccessContext(resourceId, orgId);
+        return context == null ? null : context.getOwnerId();
+    }
+
+    /**
      * 更新业务快照审批状态值
      *
      * @param formKey        表单类型

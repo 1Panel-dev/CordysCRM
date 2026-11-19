@@ -581,6 +581,16 @@ public class CommonNoticeSendService {
             case SUPERVISOR -> users.addAll(getSupervisors(owner, context.getOrganizationId()));
             case COLLABORATION -> users.addAll(getCollaborationUserIds(context));
             case SUBMITTER -> users.addAll(getApprovalSubmitters(context.getResourceId()));
+            case APPROVER -> {
+                if (CollectionUtils.isNotEmpty(context.getApproverIds())) {
+                    users.addAll(context.getApproverIds());
+                }
+            }
+            case CC -> {
+                if (CollectionUtils.isNotEmpty(context.getCcUserIds())) {
+                    users.addAll(context.getCcUserIds());
+                }
+            }
             case CUSTOMER_SEAS_OWNER -> addIfNotBlank(users, getPoolOwner(context, true));
             case CLUE_SEAS_OWNER -> addIfNotBlank(users, getPoolOwner(context, false));
             default -> {

@@ -50,6 +50,7 @@ import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.mybatis.BaseMapper;
@@ -1398,7 +1399,7 @@ public class ApprovalActionService {
     }
 
     /**
-     * 发送抄送消息通知
+     * 发送抄送消息通知：按消息任务配置(APPROVAL_CC)发送，接收人取 CC 类型的抄送人
      *
      * @param ccTasks      抄送任务集合
      * @param instance     审批实例
@@ -1406,28 +1407,41 @@ public class ApprovalActionService {
      */
     public void sendCcNotice(List<ApprovalTask> ccTasks, ApprovalInstance instance, String currentOrgId) {
         ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-        if (resourceService != null) {
-            List<String> ccUserIds = ccTasks.stream().map(ApprovalTask::getApproverId).toList();
-            String type = Translator.get(instance.getType(), instance.getType());
-            if (Strings.CS.equals(type, instance.getType())) {
-                // 自定义表单
-                CustomForm customForm = customFormMapper.selectByPrimaryKey(instance.getType());
-                if (customForm != null) {
-                    type = customForm.getName();
-                }
-            }
-
-            String name = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()),
-                    instance.getResourceId());
-            String state = Translator.get("contract.approval_status." + instance.getApprovalStatus().toLowerCase());
-            Map<String, Object> paramMap = new HashMap<>(3);
-            paramMap.put("type", type);
-            paramMap.put("name", name);
-            paramMap.put("state", state);
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL,
-                    NotificationConstants.Event.APPROVAL_CC, paramMap, instance.getSubmitterId(), currentOrgId,
-                    ccUserIds, true);
+        if (resourceService == null) {
+            return;
         }
+        List<String> ccUserIds = ccTasks.stream().map(ApprovalTask::getApproverId)
+                .filter(StringUtils::isNotBlank).distinct().toList();
+        if (ccUserIds.isEmpty()) {
+            return;
+        }
+        String type = Translator.get(instance.getType(), instance.getType());
+        if (Strings.CS.equals(type, instance.getType())) {
+            // 自定义表单
+            CustomForm customForm = customFormMapper.selectByPrimaryKey(instance.getType());
+            if (customForm != null) {
+                type = customForm.getName();
+            }
+        }
+        String name = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()),
+                instance.getResourceId());
+        String state = Translator.get("contract.approval_status." + instance.getApprovalStatus().toLowerCase());
+        Map<String, Object> paramMap = new HashMap<>(3);
+        paramMap.put("type", type);
+        paramMap.put("name", StringUtils.defaultString(name));
+        paramMap.put("state", state);
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.APPROVAL)
+                .action(NotificationConstants.Event.APPROVAL_CC)
+                .operatorId(instance.getSubmitterId())
+                .organizationId(currentOrgId)
+                .resourceId(instance.getResourceId())
+                .resourceName(name)
+                .paramMap(paramMap)
+                .ccUserIds(ccUserIds)
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
     }
 
     /**
@@ -1748,10 +1762,9 @@ public class ApprovalActionService {
         String module;
         String event;
         if (formKey == null) {
-            // 自定义表单（非 FormKey 枚举），统一发送到审批待办通知
-            module = NotificationConstants.Module.APPROVAL;
-            //event = NotificationConstants.Event.CUSTOM_FORM_DATA_APPROVAL;
-            event= null;
+            // 自定义表单（非 FormKey 枚举）：任务类型为表单ID，事件与初始化任务 approve_<formId> 对应
+            module = instance.getType();
+            event = "approve_" + instance.getType();
         } else {
             switch (formKey) {
             case CLUE -> {
@@ -1788,14 +1801,28 @@ public class ApprovalActionService {
             }
         }
 
-        commonNoticeSendService.sendNotice(
-                module,
-                event,
-                Map.of("name", StringUtils.defaultString(resourceName), "state", state, "type", type),
-                userId,
-                orgId,
-                List.of(instance.getSubmitterId()),
-                true);
+        // 审批结果按配置化任务发送: 精确匹配 *_APPROVAL 事件, 接收人/模板由任务配置决定
+        ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        String owner = resourceService == null ? null
+                : resourceService.getResourceOwner(instance.getType(), instance.getResourceId(), orgId);
+        Map<String, Object> values = new HashMap<>(3);
+        values.put("approvalStatus", instance.getApprovalStatus());
+        values.put("name", resourceName);
+        values.put("owner", owner);
+
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(module)
+                .action(event)
+                .operatorId(userId)
+                .organizationId(orgId)
+                .resourceId(instance.getResourceId())
+                .resourceName(resourceName)
+                .paramMap(Map.of("type", type, "state", state))
+                .oldValues(values)
+                .newValues(values)
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
     }
 
     /**
@@ -1837,31 +1864,52 @@ public class ApprovalActionService {
         }
     }
 
+    /**
+     * 审批待办通知：按消息任务配置(APPROVAL_TODO)发送，接收人取 APPROVER 类型的待办任务审批人
+     *
+     * @param tasks        待办任务
+     * @param instance     审批实例
+     * @param currentOrgId 当前组织ID
+     */
     private void sendApprovalTaskNotice(List<ApprovalTask> tasks, ApprovalInstance instance, String currentOrgId) {
-        tasks = tasks.stream().filter(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus())).toList();
-        if (tasks.isEmpty()) {
+        List<String> approvers = tasks.stream()
+                .filter(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus()))
+                .map(ApprovalTask::getApproverId)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        if (approvers.isEmpty()) {
             return;
         }
-        // 发送待办消息通知
         ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-        if (resourceService != null) {
-            List<String> approvers = tasks.stream().map(ApprovalTask::getApproverId).toList();
-            Map<String, Object> paramMap = new HashMap<>(2);
-            String formName = Translator.get(instance.getType(), Locale.SIMPLIFIED_CHINESE, instance.getType());
-            if (Strings.CS.equals(formName, instance.getType())) {
-                // 自定义表单
-                CustomForm customForm = customFormMapper.selectByPrimaryKey(instance.getType());
-                if (customForm != null) {
-                    formName = customForm.getName();
-                }
-            }
-            paramMap.put("type", formName);
-            paramMap.put("name", resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()),
-                    instance.getResourceId()));
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL,
-                    NotificationConstants.Event.APPROVAL_TODO, paramMap, instance.getSubmitterId(), currentOrgId,
-                    approvers, true);
+        if (resourceService == null) {
+            return;
         }
+        String formName = Translator.get(instance.getType(), Locale.SIMPLIFIED_CHINESE, instance.getType());
+        if (Strings.CS.equals(formName, instance.getType())) {
+            // 自定义表单
+            CustomForm customForm = customFormMapper.selectByPrimaryKey(instance.getType());
+            if (customForm != null) {
+                formName = customForm.getName();
+            }
+        }
+        String resourceName = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()),
+                instance.getResourceId());
+        Map<String, Object> paramMap = new HashMap<>(2);
+        paramMap.put("type", formName);
+        paramMap.put("name", StringUtils.defaultString(resourceName));
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.APPROVAL)
+                .action(NotificationConstants.Event.APPROVAL_TODO)
+                .operatorId(instance.getSubmitterId())
+                .organizationId(currentOrgId)
+                .resourceId(instance.getResourceId())
+                .resourceName(resourceName)
+                .paramMap(paramMap)
+                .approverIds(approvers)
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
     }
 
     /**

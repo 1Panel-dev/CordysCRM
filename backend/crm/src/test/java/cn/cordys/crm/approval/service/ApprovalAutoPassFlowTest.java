@@ -61,9 +61,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
@@ -372,9 +372,7 @@ class ApprovalAutoPassFlowTest {
         process(first);
 
         assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
-        verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
-                eq(NotificationConstants.Event.APPROVAL_TODO),
-                anyMap(), eq("submitter"), eq("org-1"), eq(List.of("approver-b")), eq(true));
+        verifyTodoNotice("approver-b");
     }
 
     @ParameterizedTest
@@ -394,9 +392,7 @@ class ApprovalAutoPassFlowTest {
             List<ApprovalTask> pending = tasks.stream()
                     .filter(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus())).toList();
             assertEquals(List.of(approver), pending.stream().map(ApprovalTask::getApproverId).toList());
-            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
-                    eq(NotificationConstants.Event.APPROVAL_TODO),
-                    anyMap(), eq("submitter"), eq("org-1"), eq(List.of(approver)), eq(true));
+            verifyTodoNotice(approver);
             verifyNoMoreInteractions(notices);
             clearInvocations(notices);
             pending.getFirst().setStatus(ApprovalStatus.APPROVED.name());
@@ -424,9 +420,7 @@ class ApprovalAutoPassFlowTest {
         ApprovalTask pending = tasks.getLast();
         assertEquals("approver-b", pending.getApproverId());
         assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
-        verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
-                eq(NotificationConstants.Event.APPROVAL_TODO),
-                anyMap(), eq("submitter"), eq("org-1"), eq(List.of("approver-b")), eq(true));
+        verifyTodoNotice("approver-b");
         verifyNoMoreInteractions(notices);
 
         pending.setStatus(ApprovalStatus.APPROVED.name());
@@ -456,9 +450,7 @@ class ApprovalAutoPassFlowTest {
             ApprovalTask pending = tasks.getLast();
             assertEquals(approver, pending.getApproverId());
             assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
-            verify(notices).sendNotice(eq(NotificationConstants.Module.APPROVAL),
-                    eq(NotificationConstants.Event.APPROVAL_TODO),
-                    anyMap(), eq("submitter"), eq("org-1"), eq(List.of(approver)), eq(true));
+            verifyTodoNotice(approver);
             clearInvocations(notices);
             pending.setStatus(ApprovalStatus.APPROVED.name());
             process(pending);
@@ -585,6 +577,17 @@ class ApprovalAutoPassFlowTest {
     private void process(ApprovalTask task) {
         ReflectionTestUtils.invokeMethod(actionService, "approvedProcess", instance, task, task.getApproverId(),
                 "org-1", "示例商机");
+    }
+
+    private void verifyTodoNotice(String approver) {
+        verify(notices).sendNoticeByConfig(argThat(context ->
+                NotificationConstants.Module.APPROVAL.equals(context.getTaskType())
+                        && NotificationConstants.Event.APPROVAL_TODO.equals(context.getAction())
+                        && "submitter".equals(context.getOperatorId())
+                        && "org-1".equals(context.getOrganizationId())
+                        && List.of(approver).equals(context.getApproverIds())
+                        && context.isExcludeSelf()
+                        && context.isEventOnly()));
     }
 
     private void assertCompleted() {
