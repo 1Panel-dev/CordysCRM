@@ -608,13 +608,13 @@ public class MessageNotificationService {
                 // 代办提醒
                 case NotificationConstants.Event.APPROVAL_TODO ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.APPROVAL_TODO_TEXT.name()), eventNameMap,
-                                messageTask, List.of("OWNER"), receiveMethod,
+                                messageTask, List.of("APPROVER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
                                 buildActionConfigValue(NotificationConstants.Event.APPROVAL_TODO));
                 // 抄送代办
                 case NotificationConstants.Event.APPROVAL_CC ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.APPROVAL_CC_TEXT.name()), eventNameMap, messageTask,
-                                List.of("OWNER"), receiveMethod,
+                                List.of("CC"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
                                 buildActionConfigValue(NotificationConstants.Event.APPROVAL_CC));
 

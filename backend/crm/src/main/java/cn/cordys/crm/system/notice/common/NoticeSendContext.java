@@ -55,6 +55,16 @@ public class NoticeSendContext implements Serializable {
     private List<String> collaborationUserIds;
 
     /**
+     * 待办任务的审批人ID，供 APPROVER 接收人解析
+     */
+    private List<String> approverIds;
+
+    /**
+     * 抄送人ID，供 CC 接收人解析
+     */
+    private List<String> ccUserIds;
+
+    /**
      * 更新前的字段值(fieldId -> value)
      */
     private Map<String, Object> oldValues;

@@ -18,6 +18,8 @@ public enum ScopeIdTypeEnum {
     COLLABORATION("message.scope.collaboration"),              //协作人
     CUSTOMER_SEAS_OWNER("message.scope.customer_seas_owner"),  //公海管理员
     SUBMITTER("message.scope.submitter"),                      //审批发起人
+    APPROVER("message.scope.approver"),                        //审批人
+    CC("message.scope.cc"),                                    //抄送人
     CLUE_SEAS_OWNER("message.scope.clue_seas_owner"),          //线索池管理员
     REPLY_USER("message.scope.reply_user"),                    //被回复的人
     MENTION_USER("message.scope.mention_user"),                //被@的人
