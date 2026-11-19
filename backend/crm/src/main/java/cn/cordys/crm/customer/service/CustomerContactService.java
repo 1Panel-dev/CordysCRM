@@ -475,6 +475,15 @@ public class CustomerContactService {
         if (originCustomerContact == null) {
             return;
         }
+        checkContactDeleteScope(originCustomerContact, userId, orgId);
+        String contactDelete = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE;
+        String owner = originCustomerContact.getOwner();
+        if (!PermissionUtils.hasPermission(contactDelete) || StringUtils.isBlank(owner)
+                || !dataScopeService.hasDataPermission(userId, orgId, owner, contactDelete)) {
+            resourcePermissionService.checkResourcePermissionWithoutApprovalStatus(
+                    PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, originCustomerContact.getCustomerId(),
+                    FormKeyConstants.CUSTOMER, userId, orgId);
+        }
         // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等删完才准
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.CONTACT.getKey(), List.of(id), OrganizationContext.getOrganizationId());
@@ -499,6 +508,7 @@ public class CustomerContactService {
         if (CollectionUtils.isEmpty(contacts)) {
             return;
         }
+        contacts.forEach(contact -> checkContactDeleteScope(contact, userId, orgId));
 
         List<String> contactIds = contacts.stream().map(CustomerContact::getId).toList();
         List<Opportunity> relatedOpportunities = opportunityMapper.selectListByLambda(
@@ -530,6 +540,24 @@ public class CustomerContactService {
                 })
                 .toList();
         logService.batchAdd(logs);
+    }
+
+    private void checkContactDeleteScope(CustomerContact contact, String userId, String orgId) {
+        String customerId = contact.getCustomerId();
+        if (StringUtils.isAnyBlank(userId, orgId, customerId) || !orgId.equals(contact.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (customer == null || !orgId.equals(customer.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        if (!userId.equals(customer.getOwner())
+                && customerCollaborationService.selectByCustomerIdAndUserId(customerId, userId).stream()
+                        .anyMatch(member -> CustomerCollaborationType.READ_ONLY.name()
+                                .equals(member.getCollaborationType()))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        relatedResourcePermissionService.checkIsolatedData(FormKeyConstants.CONTACT, contact.getId(), userId, orgId);
     }
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.UPDATE, resourceId = "{#id}")

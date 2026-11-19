@@ -1,5 +1,6 @@
 package cn.cordys.crm.customer.controller;
 
+import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
@@ -10,11 +11,13 @@ import cn.cordys.common.permission.CsPermissionAspect;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourcePermissionService;
+import cn.cordys.common.response.handler.RestControllerExceptionHandler;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
@@ -37,8 +40,10 @@ import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.service.OpportunityResourceAccessContextProvider;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtStatisticMapper;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionConstants;
 import cn.cordys.security.SessionUser;
@@ -55,8 +60,11 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -79,10 +87,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * 真实权限切面与服务共同校验客户联系人，协作读授权不能扩大原有联系人集合或绕过组织与审批限制。
@@ -90,6 +102,8 @@ import static org.mockito.Mockito.when;
 class CustomerContactPermissionTest {
     private static final String READ = PermissionConstants.CUSTOMER_MANAGEMENT_READ;
     private static final String CONTACT_READ = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ;
+    private static final String DELETE = PermissionConstants.CUSTOMER_MANAGEMENT_DELETE;
+    private static final String CONTACT_DELETE = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE;
     private static final String USER = "reader";
     private static final String ORG = "org-example";
     private static final String CUSTOMER = "customer-example";
@@ -113,6 +127,8 @@ class CustomerContactPermissionTest {
     private final PermissionCache permissions = mock(PermissionCache.class);
     private final CustomerContactService service = spy(new CustomerContactService());
     private final CustomerContactFieldService contactFields = mock(CustomerContactFieldService.class);
+    private final StatisticFieldService statistics = mock(StatisticFieldService.class);
+    private final CommonNoticeSendService notices = mock(CommonNoticeSendService.class);
     private final ModuleFormCacheService formCache = mock(ModuleFormCacheService.class);
     private final ModuleFormService forms = mock(ModuleFormService.class);
     private final DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
@@ -186,6 +202,8 @@ class CustomerContactPermissionTest {
         ReflectionTestUtils.setField(service, "resourcePermissionService", resourcePermissions);
         ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(service, "customerContactFieldService", contactFields);
+        ReflectionTestUtils.setField(service, "statisticFieldService", statistics);
+        ReflectionTestUtils.setField(service, "commonNoticeSendService", notices);
         ReflectionTestUtils.setField(service, "moduleFormCacheService", formCache);
         ReflectionTestUtils.setField(service, "moduleFormService", forms);
         ReflectionTestUtils.setField(service, "extCustomerContactMapper", contacts);
@@ -202,6 +220,87 @@ class CustomerContactPermissionTest {
         AspectJProxyFactory factory = new AspectJProxyFactory(target);
         factory.addAspect(aspect);
         controller = factory.getProxy();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { DELETE, CONTACT_DELETE })
+    void 只读协作人即使拥有删除角色和全部数据范围也返回403(String permission) throws Exception {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(permission));
+        scope.setAll(true);
+        configureCollaboration("READ_ONLY");
+        CustomerContact record = detail("owner", "owner");
+        MessageSource previous = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+        ReflectionTestUtils.setField(Translator.class, "messageSource", new StaticMessageSource());
+        try {
+            MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new RestControllerExceptionHandler())
+                    .build().perform(get("/account/contact/delete/{id}", record.getId()))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code").value(CrmHttpResultCode.FORBIDDEN.getCode()));
+        } finally {
+            ReflectionTestUtils.setField(Translator.class, "messageSource", previous);
+        }
+
+        verify(contactRecords, never()).deleteByPrimaryKey(anyString());
+        verifyNoInteractions(contactFields, statistics, notices);
+    }
+
+    @Test
+    void 批量删除含只读协作客户的联系人时整批拦截() {
+        configureCollaboration("READ_ONLY");
+        Customer otherCustomer = new Customer();
+        otherCustomer.setId("owned-customer");
+        otherCustomer.setOrganizationId(ORG);
+        otherCustomer.setOwner(USER);
+        CustomerContact allowed = detail("allowed", USER);
+        allowed.setCustomerId(otherCustomer.getId());
+        CustomerContact readOnly = detail("owner", "owner");
+        List<String> ids = List.of(allowed.getId(), readOnly.getId());
+        when(customers.selectByPrimaryKey(otherCustomer.getId())).thenReturn(otherCustomer);
+        when(contactRecords.selectByIds(ids)).thenReturn(List.of(allowed, readOnly));
+
+        GenericException error = assertThrows(GenericException.class, () -> service.batchDelete(ids, USER, ORG));
+
+        assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
+        verify(contactRecords, never()).deleteByIds(anyList());
+        verifyNoInteractions(contactFields, statistics, notices);
+    }
+
+    @Test
+    void 删除联系人拒绝组织或数据范围不匹配的记录() {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(CONTACT_DELETE));
+        CustomerContact record = detail("owner", "owner");
+        assertForbidden(() -> controller.delete(record.getId()));
+
+        scope.setAll(true);
+        record.setOrganizationId("foreign-org");
+        assertForbidden(() -> controller.delete(record.getId()));
+
+        verify(contactRecords, never()).deleteByPrimaryKey(anyString());
+        verifyNoInteractions(contactFields, statistics, notices);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "CONTACT", "CUSTOMER", "BOTH" })
+    void 删除联系人保留两种角色各自的数据范围(String access) {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(switch (access) {
+        case "CONTACT" -> Set.of(CONTACT_DELETE);
+        case "CUSTOMER" -> Set.of(DELETE);
+        default -> Set.of(CONTACT_DELETE, DELETE);
+        });
+        CustomerContact record = detail("example", "CONTACT".equals(access) ? USER : "owner");
+        if (!"CONTACT".equals(access)) {
+            customer.setOwner(USER);
+        }
+
+        OperationLogContext.putEmptySpan();
+        try {
+            controller.delete(record.getId());
+        } finally {
+            OperationLogContext.clear();
+        }
+
+        verify(contactRecords).deleteByPrimaryKey(record.getId());
+        verify(contactFields).deleteByResourceId(record.getId());
     }
 
     @AfterEach
@@ -578,6 +677,9 @@ class CustomerContactPermissionTest {
         when(collaborations.selectByCustomerId(CUSTOMER)).thenReturn("NONE".equals(type)
                 ? List.of(other, readOnly)
                 : List.of(other, readOnly, collaboration(USER, type)));
+        when(collaborations.selectByCustomerIdAndUserId(CUSTOMER, USER)).thenReturn("NONE".equals(type)
+                ? List.of()
+                : List.of(collaboration(USER, type)));
         when(relatedPermissions.getIsolatedOwnerIds(CUSTOMER, USER, ORG)).thenReturn(Set.of("collaborator"));
     }
 
