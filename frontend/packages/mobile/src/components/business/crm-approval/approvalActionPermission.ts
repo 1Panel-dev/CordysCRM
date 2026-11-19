@@ -11,7 +11,7 @@ interface ApprovalActionPermissionParams {
 
 export default function resolveApprovalActionPermission(params: ApprovalActionPermissionParams) {
   const { approvalInfo, approvalConfig, currentApprovalNode, currentApprovalNodeIndex, userId } = params;
-  const completedStatuses = [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE];
+  const completedStatuses = [ProcessStatusEnum.APPROVED];
   const isApprover =
     currentApprovalNode?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL
       ? currentApprovalNode.taskNodes?.find((item) => item.approvalStatus === ProcessStatusEnum.APPROVING)
