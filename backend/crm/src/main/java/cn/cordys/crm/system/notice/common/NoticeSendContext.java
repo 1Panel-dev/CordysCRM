@@ -50,6 +50,11 @@ public class NoticeSendContext implements Serializable {
     private Map<String, Object> paramMap;
 
     /**
+     * 本次发送使用的模板名单：非空时优先于任务配置的全部模板，仅发送这些模板
+     */
+    private List<String> templateNames;
+
+    /**
      * 本次操作涉及的协作人ID，如客户新增的协作人
      */
     private List<String> collaborationUserIds;

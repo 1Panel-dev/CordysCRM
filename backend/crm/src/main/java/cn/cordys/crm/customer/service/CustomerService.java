@@ -112,6 +112,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -598,10 +599,12 @@ public class CustomerService implements ApprovalResourceHandler {
         // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
         statisticFieldService.refreshByRelatedDataChange(FormKey.CUSTOMER.getKey(), customer.getId(), orgId);
         baseService.handleAddLogWithResourceName(customer, request.getModuleFields());
-        // 通知
-        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
-                NotificationConstants.Event.CUSTOMER_ADD, userId, orgId, true, true,
-                null, null, customer, request.getModuleFields());
+        // 通知(线索转客户新建时, 由 ClueService 抑制"新建客户"通知, 仅发"转为客户"通知)
+        if (!Boolean.FALSE.equals(request.getSendNotice())) {
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_ADD, userId, orgId, true, true,
+                    null, null, customer, request.getModuleFields());
+        }
         return customer;
     }
 
@@ -1553,6 +1556,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 .selectListByLambda(collaborationWrapper);
         List<String> collaborationUserIds = customerCollaborations.stream().map(CustomerCollaboration::getUserId)
                 .toList();
+        List<String> addedUserIds = new ArrayList<>();
         for (String mergeId : mergeIds) {
             if (collaborationUserIds.contains(mergeId) || Strings.CS.equals(mergeId, request.getOwnerId())) {
                 // 已经是协作人或者是合并客户的负责人，跳过
@@ -1563,13 +1567,59 @@ public class CustomerService implements ApprovalResourceHandler {
             // 如果被合并客户的协作人中有该用户，则继承该协作类型，否则使用默认类型
             collaborationAddRequest.setCollaborationType(toCollaborationMap.getOrDefault(mergeId, "COLLABORATION"));
             collaborationAddRequest.setUserId(mergeId);
-            customerCollaborationService.add(collaborationAddRequest, currentUser, currentOrgId);
+            // 合并场景由下方统一发送系统通知, 逐个插入时不再发送
+            customerCollaborationService.insertWithoutNotice(collaborationAddRequest, currentUser);
+            addedUserIds.add(mergeId);
         }
 
         // 删除被合并客户的协作人关系
         var delCollaborationWrapper = new LambdaQueryWrapper<CustomerCollaboration>();
         delCollaborationWrapper.in(CustomerCollaboration::getCustomerId, request.getMergeIds());
         customerCollaborationMapper.deleteByLambda(delCollaborationWrapper);
+
+        // 新建协作人(系统)通知: 合并过程中新增的协作人需告知合并后的客户负责人
+        sendMergeCollaborationNotice(request, currentUser, currentOrgId, addedUserIds);
+    }
+
+    /**
+     * 合并客户新增协作人后发送"新建协作人(系统)"通知
+     *
+     * @param addedUserIds 合并过程中新增的协作人ID
+     */
+    private void sendMergeCollaborationNotice(CustomerMergeRequest request, String currentUser, String currentOrgId,
+            List<String> addedUserIds) {
+        List<String> collaboratorIds = addedUserIds.stream().filter(StringUtils::isNotBlank).distinct().toList();
+        Customer customer = customerMapper.selectByPrimaryKey(request.getToMergeId());
+        if (CollectionUtils.isEmpty(collaboratorIds) || customer == null
+                || Boolean.TRUE.equals(customer.getInSharedPool())) {
+            // 未新增协作人或是公海客户时无需通知
+            return;
+        }
+        List<String> userIds = new ArrayList<>(collaboratorIds);
+        userIds.add(currentUser);
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+        String collaboratorNames = collaboratorIds.stream()
+                .map(userId -> userNameMap.getOrDefault(userId, userId))
+                .collect(Collectors.joining("、"));
+        // 系统模板使用小写 ${operator}/${uName}/${name}
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("operator", userNameMap.getOrDefault(currentUser, currentUser));
+        paramMap.put("uName", collaboratorNames);
+        // 接收人(OWNER)取合并后的负责人
+        Map<String, Object> newValues = new HashMap<>();
+        newValues.put("owner", request.getOwnerId());
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.CUSTOMER)
+                .action(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD)
+                .operatorId(currentUser)
+                .organizationId(currentOrgId)
+                .resourceId(customer.getId())
+                .resourceName(customer.getName())
+                .paramMap(paramMap)
+                .newValues(newValues)
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
     }
 
     /**

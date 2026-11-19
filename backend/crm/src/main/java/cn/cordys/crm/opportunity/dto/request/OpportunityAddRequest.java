@@ -50,4 +50,7 @@ public class OpportunityAddRequest {
     @Schema(description = "最新跟进时间(转商机时需录入)")
     private Long followTime;
 
+    @Schema(hidden = true)
+    private Boolean sendNotice;
+
 }

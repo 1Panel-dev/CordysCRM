@@ -394,10 +394,12 @@ public class OpportunityService implements ApprovalResourceHandler {
         baseService.handleAddLogWithSubTable(opportunity, request.getModuleFields(), Translator.get("products_info"),
                 getFormConfig(orgId));
 
-        // 消息通知
-        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
-                NotificationConstants.Event.BUSINESS_ADD, operatorId, orgId, true, true,
-                null, null, opportunity, request.getModuleFields());
+        // 消息通知(线索转商机新建时, 由 ClueService 抑制"新建商机"通知, 仅发"转为商机"通知)
+        if (!Boolean.FALSE.equals(request.getSendNotice())) {
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+                    NotificationConstants.Event.BUSINESS_ADD, operatorId, orgId, true, true,
+                    null, null, opportunity, request.getModuleFields());
+        }
         return opportunity;
     }
 

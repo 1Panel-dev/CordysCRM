@@ -31,4 +31,7 @@ public class CustomerAddRequest {
 
     @Schema(description = "最新跟进时间(转客户时需录入)")
     private Long followTime;
+
+    @Schema(hidden = true)
+    private Boolean sendNotice;
 }
