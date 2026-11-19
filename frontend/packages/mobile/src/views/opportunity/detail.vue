@@ -106,7 +106,6 @@
         @delete-approved="router.back()"
       >
         <CrmActionButtons
-          :show-edit-button="showDetailActions && showEditButton"
           :actions="getFooterActions(approvalActions)"
           @select="
             (key) => {
@@ -344,7 +343,11 @@
       ? operationActions.value.filter((action) => action.key !== 'revoke' || !hasCancelApplyAction)
       : [];
 
-    return [...approvalActions, ...detailActions];
+    return [
+      ...approvalActions,
+      ...(showEditButton.value ? [{ key: 'edit', text: t('common.edit') }] : []),
+      ...detailActions,
+    ];
   }
 
   function handleTransfer(id: string) {

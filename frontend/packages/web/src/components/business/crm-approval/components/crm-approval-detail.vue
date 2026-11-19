@@ -578,7 +578,7 @@
     if (!currentApprovalNode.value || !approvalInfo.value) return -1;
     return approvalInfo.value.nodes.findIndex((node) => node.nodeRound === currentApprovalNode.value?.nodeRound);
   });
-  const hasApprovalStatus = [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE];
+  const hasApprovalStatus = [ProcessStatusEnum.APPROVED];
   // 我审批的上一个节点
   const prevMineApprovalNode = computed(() => {
     if (!currentApprovalNode.value) {
