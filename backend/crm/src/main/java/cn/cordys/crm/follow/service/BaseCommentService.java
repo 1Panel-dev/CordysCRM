@@ -24,8 +24,6 @@ import cn.cordys.crm.follow.dto.response.CommentMentionUserResponse;
 import cn.cordys.crm.follow.dto.response.CommentResponse;
 import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
-import cn.cordys.crm.system.domain.MessageTask;
-import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -37,13 +35,10 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -61,9 +56,7 @@ public abstract class BaseCommentService<C extends Comment> {
     @Resource
     private ExtCommentMapper extCommentMapper;
     @Resource
-    private CommonNoticeSendService commonNoticeSendService;
-    @Resource
-    private ExtMessageTaskMapper extMessageTaskMapper;
+    protected CommonNoticeSendService commonNoticeSendService;
     @Resource
     private RelatedResourcePermissionService relatedResourcePermissionService;
     @Resource
@@ -76,10 +69,6 @@ public abstract class BaseCommentService<C extends Comment> {
     protected abstract FollowUpCommentTargetType getTargetType();
 
     protected abstract String getCommentMentionTable();
-
-    protected abstract String getCommentAddedEvent(String resourceId);
-
-    protected abstract String getCommentMentionedEvent(String resourceId);
 
     protected abstract void updateResourceCommentCount(String resourceId, String orgId, long commentCount);
 
@@ -138,7 +127,7 @@ public abstract class BaseCommentService<C extends Comment> {
         saveMentionUsers(comment.getId(), request.getMentionedUserIds());
         updateCommentCount(request.getResourceId(), orgId);
 
-        sendNotifications(resourceInfo, request.getResourceId(), request.getReplyToUserId(),
+        sendCommentAddedNotifications(resourceInfo, request.getResourceId(), request.getReplyToUserId(),
                 request.getMentionedUserIds(), userId, orgId);
 
         // 设置日志上下文
@@ -151,10 +140,18 @@ public abstract class BaseCommentService<C extends Comment> {
         return comment;
     }
 
-    private void sendNotifications(String resourceId, String replyToUserId, List<String> mentionedUserIds,
-            String userId, String orgId) {
-        CommentResourceInfo resourceInfo = getNoticeResource(resourceId, orgId);
-        sendNotifications(resourceInfo, resourceId, replyToUserId, mentionedUserIds, userId, orgId);
+    /**
+     * 新增评论后的通知发送。默认不发送, 子类按需覆写为按新版消息任务配置发送
+     */
+    protected void sendCommentAddedNotifications(CommentResourceInfo resourceInfo, String resourceId,
+            String replyToUserId, List<String> mentionedUserIds, String operator, String orgId) {
+    }
+
+    /**
+     * 编辑评论后的通知发送。默认不发送, 子类按需覆写为按新版消息任务配置发送
+     */
+    protected void sendCommentUpdatedNotifications(CommentResourceInfo resourceInfo, String resourceId,
+            String replyToUserId, List<String> mentionedUserIds, String operator, String orgId) {
     }
 
     public C update(CommentUpdateRequest request, String userId, String orgId) {
@@ -166,8 +163,9 @@ public abstract class BaseCommentService<C extends Comment> {
         getCommentMapper().update(comment);
         replaceMentionUsers(comment.getId(), request.getMentionedUserIds());
 
-        sendNotifications(comment.getResourceId(), comment.getReplyToUserId(), request.getMentionedUserIds(), userId,
-                orgId);
+        CommentResourceInfo resourceInfo = getNoticeResource(comment.getResourceId(), orgId);
+        sendCommentUpdatedNotifications(resourceInfo, comment.getResourceId(), comment.getReplyToUserId(),
+                request.getMentionedUserIds(), userId, orgId);
 
         // 设置日志上下文
         OperationLogContext.setContext(
@@ -292,41 +290,6 @@ public abstract class BaseCommentService<C extends Comment> {
                         LinkedHashMap::new, Collectors.toList()));
         comments.forEach(comment -> comment.setMentionUsers(
                 mentionUserMap.getOrDefault(comment.getId(), List.of())));
-    }
-
-    private void sendNotifications(CommentResourceInfo resourceInfo, String resourceId, String replyToUserId,
-            List<String> mentionedUserIds, String operator, String orgId) {
-        Map<String, Object> resource = new HashMap<>();
-        resource.put("name", resourceInfo.name());
-        resource.put("resourceId", resourceId);
-        resource.put("targetType", getTargetType().name());
-
-        Set<String> mentioned = mentionedUserIds == null ? Set.of() : mentionedUserIds.stream()
-                .filter(StringUtils::isNotBlank).collect(Collectors.toCollection(LinkedHashSet::new));
-        Set<String> noticeUsers = new LinkedHashSet<>();
-
-        if (StringUtils.isNotBlank(resourceInfo.owner())) {
-            noticeUsers.add(resourceInfo.owner());
-        }
-        if (StringUtils.isNotBlank(replyToUserId)) {
-            noticeUsers.add(replyToUserId);
-        }
-        noticeUsers.removeAll(mentioned);
-        if (!noticeUsers.isEmpty()) {
-            sendNotification(getCommentAddedEvent(resourceId), resource, operator, orgId, noticeUsers);
-        }
-        if (!mentioned.isEmpty()) {
-            sendNotification(getCommentMentionedEvent(resourceId), resource, operator, orgId, mentioned);
-        }
-    }
-
-    private void sendNotification(String event, Map<String, Object> resource, String operator, String orgId,
-            Set<String> users) {
-        MessageTask messageByEvent = extMessageTaskMapper.getMessageByEvent(event, orgId);
-        if (messageByEvent != null) {
-            commonNoticeSendService.sendNotice(messageByEvent.getTaskType(), event,
-                    resource, operator, orgId, List.copyOf(users), true);
-        }
     }
 
     protected record CommentResourceInfo(String owner, String name) {

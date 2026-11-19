@@ -70,6 +70,16 @@ public class NoticeSendContext implements Serializable {
     private List<String> ccUserIds;
 
     /**
+     * 被回复人ID，供 REPLY_USER 接收人解析
+     */
+    private String replyToUserId;
+
+    /**
+     * 被@的用户ID，供 MENTION_USER 接收人解析
+     */
+    private List<String> mentionedUserIds;
+
+    /**
      * 更新前的字段值(fieldId -> value)
      */
     private Map<String, Object> oldValues;

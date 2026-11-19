@@ -557,6 +557,12 @@ public class CommonNoticeSendService {
                     users.addAll(context.getCcUserIds());
                 }
             }
+            case REPLY_USER -> addIfNotBlank(users, context.getReplyToUserId());
+            case MENTION_USER -> {
+                if (CollectionUtils.isNotEmpty(context.getMentionedUserIds())) {
+                    users.addAll(context.getMentionedUserIds());
+                }
+            }
             case CUSTOMER_SEAS_OWNER -> addIfNotBlank(users, getPoolOwner(context, true));
             case CLUE_SEAS_OWNER -> addIfNotBlank(users, getPoolOwner(context, false));
             default -> {

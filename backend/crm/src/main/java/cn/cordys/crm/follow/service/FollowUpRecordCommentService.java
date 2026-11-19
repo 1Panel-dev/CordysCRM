@@ -3,7 +3,6 @@ package cn.cordys.crm.follow.service;
 import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
-import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.util.Translator;
@@ -16,13 +15,15 @@ import cn.cordys.crm.follow.dto.request.CommentUpdateRequest;
 import cn.cordys.crm.follow.dto.response.CommentResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -79,38 +80,6 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
     }
 
     @Override
-    protected String getCommentAddedEvent(String resourceId) {
-        FollowUpRecord record = recordMapper.selectByPrimaryKey(resourceId);
-        /*if (record != null) {
-            if (Strings.CI.equals(record.getType(), ModuleKey.CLUE.name())) {
-                return NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT;
-            } else if (StringUtils.isNotBlank(record.getOpportunityId())) {
-                return NotificationConstants.Event.OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_ADDED;
-            } else {
-                return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;
-            }
-        }
-        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED;*/
-        return null;
-    }
-
-    @Override
-    protected String getCommentMentionedEvent(String resourceId) {
-        FollowUpRecord record = recordMapper.selectByPrimaryKey(resourceId);
-        /*if (record != null) {
-            if (Strings.CI.equals(record.getType(), ModuleKey.CLUE.name())) {
-                return NotificationConstants.Event.CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
-            } else if (StringUtils.isNotBlank(record.getOpportunityId())) {
-                return NotificationConstants.Event.OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
-            } else {
-                return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;
-            }
-        }
-        return NotificationConstants.Event.CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED;*/
-        return null;
-    }
-
-    @Override
     protected void updateResourceCommentCount(String resourceId, String orgId, long commentCount) {
         extRecordMapper.updateCommentCount(resourceId, orgId, commentCount);
     }
@@ -123,5 +92,58 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
         }
         return buildTargetInfo(record.getType(), record.getOwner(), record.getClueId(), record.getCustomerId(),
                 record.getOpportunityId());
+    }
+
+    /**
+     * 新增跟进记录评论后, 按新版消息任务配置发送通知
+     */
+    @Override
+    protected void sendCommentAddedNotifications(CommentResourceInfo resourceInfo, String resourceId,
+            String replyToUserId, List<String> mentionedUserIds, String operator, String orgId) {
+        sendRecordCommentNotices(resourceInfo, resourceId, replyToUserId, mentionedUserIds, operator, orgId);
+    }
+
+    /**
+     * 编辑跟进记录评论后, 按新版消息任务配置发送通知
+     */
+    @Override
+    protected void sendCommentUpdatedNotifications(CommentResourceInfo resourceInfo, String resourceId,
+            String replyToUserId, List<String> mentionedUserIds, String operator, String orgId) {
+        sendRecordCommentNotices(resourceInfo, resourceId, replyToUserId, mentionedUserIds, operator, orgId);
+    }
+
+    /**
+     * 1. 跟进记录被评论(FOLLOW_UP_RECORD_COMMENT) -> 记录负责人;
+     * 2. 评论被回复(FOLLOW_UP_RECORD_COMMENT_REPALY) -> 被回复人;
+     * 3. 评论@用户(FOLLOW_UP_RECORD_COMMENT_MENTIONED) -> 被@的人。
+     */
+    private void sendRecordCommentNotices(CommentResourceInfo resourceInfo, String resourceId, String replyToUserId,
+            List<String> mentionedUserIds, String operator, String orgId) {
+        if (StringUtils.isNotBlank(resourceInfo.owner())) {
+            sendCommentNotice(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT, resourceId, resourceInfo,
+                    operator, orgId, NoticeSendContext.builder().newValues(Map.of("owner", resourceInfo.owner())));
+        }
+        if (StringUtils.isNotBlank(replyToUserId)) {
+            sendCommentNotice(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_REPALY, resourceId, resourceInfo,
+                    operator, orgId, NoticeSendContext.builder().replyToUserId(replyToUserId));
+        }
+        if (CollectionUtils.isNotEmpty(mentionedUserIds)) {
+            sendCommentNotice(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_MENTIONED, resourceId,
+                    resourceInfo, operator, orgId, NoticeSendContext.builder().mentionedUserIds(mentionedUserIds));
+        }
+    }
+
+    private void sendCommentNotice(String event, String resourceId, CommentResourceInfo resourceInfo,
+            String operator, String orgId, NoticeSendContext.NoticeSendContextBuilder builder) {
+        commonNoticeSendService.sendNoticeByConfig(builder
+                .taskType(NotificationConstants.Module.FOLLOW_UP)
+                .action(event)
+                .operatorId(operator)
+                .organizationId(orgId)
+                .resourceId(resourceId)
+                .resourceName(resourceInfo.name())
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
     }
 }
