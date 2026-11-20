@@ -25,7 +25,7 @@ export default {
   'customer.group': 'Group',
   'customer.subsidiary': 'Subsidiary',
   'customer.selectCustomer': 'Select account',
-  'customer.readOnly': 'Read only',
+  'customer.readOnly': 'Full Read Only',
   'customer.cooperation': 'Cooperation',
   'customer.customerInfoOnly': 'Account Info Only',
   'customer.jointFollow': 'Joint Follow-up',

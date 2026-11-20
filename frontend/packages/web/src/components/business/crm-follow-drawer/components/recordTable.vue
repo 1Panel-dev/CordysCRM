@@ -13,6 +13,7 @@
       @sorter-change="handleSorterChange"
       @filter-change="handleFilterChange"
       @batch-action="handleBatchAction"
+      @refresh="handleCurrentViewRefresh"
     >
       <template #actionLeft>
         <div class="flex items-center gap-[12px]">
@@ -435,7 +436,6 @@
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.FOLLOW_RECORD,
     containerClass: '.crm-record-table',
-    hiddenRefresh: true,
     readonly: props.readonly,
     detailTabResourceId: props.detailTabResourceId,
     detailTabPageFormId: props.detailTabPageFormId,
@@ -615,6 +615,14 @@
     await loadList();
     refreshTimeline();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  async function handleCurrentViewRefresh() {
+    if (activeShowType.value === 'timeline') {
+      await loadTimelineData(true);
+      return;
+    }
+    await searchData();
   }
 
   function handleDetailInit(detail?: Record<string, any>) {

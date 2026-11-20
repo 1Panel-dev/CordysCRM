@@ -9,11 +9,12 @@
     :footer="false"
   >
     <template #titleLeft>
-      <StatusTag
+      <StatusTagSelect
         v-if="props.formKey === FormDesignKeyEnum.FOLLOW_PLAN && props.detail?.status"
-        :status="props.detail.status"
-        hiddenDownIcon
+        v-model:status="planStatus"
+        :disabled="!canUpdate || !!props.detail?.converted"
         class="font-normal"
+        @change="handleStatusChange"
       />
       <CrmTag
         v-if="
@@ -33,8 +34,7 @@
         </n-button>
         <n-button
           v-if="
-            props.allowConvert !== false &&
-            canUpdate &&
+            canConvert &&
             props.detail?.status &&
             [CustomerFollowPlanStatusEnum.COMPLETED].includes(props.detail?.status) &&
             !props.detail?.converted
@@ -91,7 +91,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmComment from '@/components/business/crm-comment/index.vue';
-  import StatusTag from '@/components/business/crm-follow-detail/statusTag.vue';
+  import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
 
   import { hasAnyPermission } from '@/utils/permission';
@@ -103,7 +103,6 @@
     sourceName: string;
     refreshKey: number;
     readonly?: boolean;
-    allowConvert?: boolean;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
@@ -116,6 +115,7 @@
     (e: 'convert', detail?: any): void;
     (e: 'detailInit', detail?: Record<string, any>): void;
     (e: 'countChange', count: number): void;
+    (e: 'statusChange'): void;
   }>();
 
   const { t } = useI18n();
@@ -125,6 +125,17 @@
   );
   const canUpdate = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:UPDATE`]));
   const canDelete = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:DELETE`]));
+  const canConvert = computed(
+    () => props.formKey === FormDesignKeyEnum.FOLLOW_PLAN && canUpdate.value && hasAnyPermission(['FOLLOW_RECORD:ADD'])
+  );
+  const planStatus = computed({
+    get: () => props.detail?.status,
+    set: (status) => {
+      if (props.detail) {
+        props.detail.status = status;
+      }
+    },
+  });
 
   const commentExpanded = ref(false);
   const commentResourceType = computed(() =>
@@ -168,5 +179,9 @@
 
   function handleConvert() {
     emit('convert', props.detail);
+  }
+
+  function handleStatusChange() {
+    emit('statusChange');
   }
 </script>
