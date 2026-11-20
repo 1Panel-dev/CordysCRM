@@ -1,81 +1,58 @@
 package cn.cordys.crm.approval.service;
 
-import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalComment;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.mapper.ExtApprovalCommentMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
-import cn.cordys.crm.system.domain.MessageTask;
-import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
-import cn.cordys.crm.system.notice.NoticeSendService;
-import cn.cordys.crm.system.notice.common.NoticeModel;
-import cn.cordys.crm.system.notice.message.MessageDetailService;
-import cn.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
-import cn.cordys.crm.system.notice.sender.mail.MailNoticeSender;
-import cn.cordys.crm.system.utils.MessageTemplateUtils;
-import org.junit.jupiter.api.AfterEach;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.ArgumentCaptor;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContext;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.ResourceBundleMessageSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.apache.commons.text.StringSubstitutor;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class ApprovalCommentNoticeServiceTest {
 
     private static final String MODULE = NotificationConstants.Module.APPROVAL;
-    private static final String EVENT = NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED;
 
     private ApprovalCommentNoticeService service;
     private ExtApprovalCommentMapper commentMapper;
     private ExtApprovalInstanceMapper instanceMapper;
-    private ExtMessageTaskMapper messageTaskMapper;
     private CommonNoticeSendService noticeSender;
     private ApprovalInstance instance;
-    private MessageSource previousMessageSource;
-    private LocaleContext previousLocaleContext;
+    private final List<NoticeSendContext> sent = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
-        previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
-        previousLocaleContext = LocaleContextHolder.getLocaleContext();
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("i18n/cordys-crm");
-        messageSource.setDefaultEncoding("UTF-8");
-        ReflectionTestUtils.setField(Translator.class, "messageSource", messageSource);
         service = new ApprovalCommentNoticeService();
         commentMapper = mock(ExtApprovalCommentMapper.class);
         instanceMapper = mock(ExtApprovalInstanceMapper.class);
-        messageTaskMapper = mock(ExtMessageTaskMapper.class);
         noticeSender = mock(CommonNoticeSendService.class);
         ReflectionTestUtils.setField(service, "extApprovalCommentMapper", commentMapper);
         ReflectionTestUtils.setField(service, "extApprovalInstanceMapper", instanceMapper);
-        ReflectionTestUtils.setField(service, "extMessageTaskMapper", messageTaskMapper);
         ReflectionTestUtils.setField(service, "commonNoticeSendService", noticeSender);
+        doAnswer(invocation -> {
+            sent.add(invocation.getArgument(0));
+            return null;
+        }).when(noticeSender).sendNoticeByConfig(any(NoticeSendContext.class));
         instance = new ApprovalInstance();
         instance.setId("instance-a");
         instance.setType("contract");
@@ -83,242 +60,167 @@ class ApprovalCommentNoticeServiceTest {
         instance.setApprovalStatus("APPROVED");
     }
 
-    @AfterEach
-    void tearDown() {
-        ReflectionTestUtils.setField(Translator.class, "messageSource", previousMessageSource);
-        LocaleContextHolder.setLocaleContext(previousLocaleContext);
+    @Test
+    void topLevelCommentNotifiesOwnerWithBusinessConfig() {
+        stubInstance();
+        when(instanceMapper.getResourceOwner("contract", "resource-a", "org-a")).thenReturn("owner");
+
+        service.sendNotice(comment("comment-a"), List.of(), true);
+
+        assertEquals(1, sent.size());
+        NoticeSendContext context = sent.get(0);
+        assertEquals(MODULE, context.getTaskType());
+        assertEquals(NotificationConstants.Event.APPROVAL_COMMENT, context.getAction());
+        assertEquals(Map.of("owner", "owner"), context.getNewValues());
+        assertEquals("resource-a", context.getResourceId());
+        assertEquals("comment-a", context.getParamMap().get("resourceId"));
+        assertEquals("CONTRACT", context.getParamMap().get("resourceType"));
+        assertEquals("合同甲", context.getParamMap().get("name"));
+        assertEquals("editor", context.getOperatorId());
+        assertEquals("org-a", context.getOrganizationId());
+        assertTrue(context.isExcludeSelf());
+        assertTrue(context.isEventOnly());
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void skipsNoticeWhenConfigurationOrScopedInstanceIsMissing(boolean configured) {
-        if (configured) {
-            when(messageTaskMapper.getMessageByModuleAndEvent(MODULE, EVENT, "org-a")).thenReturn(new MessageTask());
-        }
+    @Test
+    void replyOnAddNotifiesOwnerAndReplyTarget() {
+        stubInstance();
+        when(instanceMapper.getResourceOwner("contract", "resource-a", "org-a")).thenReturn("owner");
+        ApprovalComment comment = comment("comment-a");
+        comment.setParentId("parent-a");
+        comment.setReplyToUserId("replied");
 
-        assertDoesNotThrow(() -> service.sendNotice(comment("comment-a"), List.of("editor"), false));
+        service.sendNotice(comment, List.of(), true);
 
-        verifyNoInteractions(noticeSender);
-        if (configured) {
-            verify(commentMapper).selectLatestInstance("resource-a", "org-a");
-        } else {
-            verifyNoInteractions(commentMapper);
-        }
+        assertEquals(2, sent.size());
+        find(NotificationConstants.Event.APPROVAL_COMMENT);
+        assertEquals("replied", find(NotificationConstants.Event.APPROVAL_COMMENT_REPALY).getReplyToUserId());
+    }
+
+    @Test
+    void mentionNotifiesDistinctMentionedUsers() {
+        instance.setType("quotation");
+        stubInstance();
+
+        service.sendNotice(comment("comment-a"), List.of("m1", "m2", "m1"), true);
+
+        assertEquals(1, sent.size());
+        assertEquals(List.of("m1", "m2"), find(NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED)
+                .getMentionedUserIds());
+        // 报价单没有业务负责人，不应查询负责人
         verifyNoInteractions(instanceMapper);
     }
 
     @Test
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void differentCommentsInSameResourceSendSeparateNoticesIncludingSelfMentions() {
-        enableNotice();
+    void ownerAlsoMentionedReceivesOnlyMentionNotice() {
+        stubInstance();
+        when(instanceMapper.getResourceOwner("contract", "resource-a", "org-a")).thenReturn("owner");
 
-        service.sendNotice(comment("comment-a"), List.of("editor"), false);
-        service.sendNotice(comment("comment-b"), List.of("editor"), false);
+        service.sendNotice(comment("comment-a"), List.of("owner"), true);
 
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender, times(2)).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("editor")), eq(false));
-        assertEquals(List.of("comment-a", "comment-b"), params.getAllValues().stream().map(map -> map.get("resourceId")).toList());
-        assertEquals("合同甲", params.getValue().get("name"));
-        assertFalse(params.getValue().containsKey("commentSummary"));
-        assertEquals("CONTRACT", params.getValue().get("resourceType"));
-        assertFalse(params.getValue().containsKey("type"));
-        assertFalse(params.getValue().containsKey("state"));
-        verify(commentMapper, times(2)).selectLatestInstance("resource-a", "org-a");
+        assertEquals(1, sent.size());
+        assertEquals(NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, sent.get(0).getAction());
+        assertEquals(List.of("owner"), sent.get(0).getMentionedUserIds());
+    }
+
+    @Test
+    void editNotifiesOnlyNewlyAddedMentions() {
+        stubInstance();
+        ApprovalComment comment = comment("comment-a");
+        comment.setParentId("parent-a");
+        comment.setReplyToUserId("replied");
+
+        service.sendNotice(comment, List.of("newMention"), false);
+
+        assertEquals(1, sent.size());
+        assertEquals(NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, sent.get(0).getAction());
+        assertEquals(List.of("newMention"), sent.get(0).getMentionedUserIds());
+        // 编辑不重复提醒负责人
+        verifyNoInteractions(instanceMapper);
+    }
+
+    @Test
+    void editWithoutNewMentionSendsNothing() {
+        service.sendNotice(comment("comment-a"), List.of(), false);
+
+        verifyNoInteractions(commentMapper);
+        verifyNoInteractions(noticeSender);
+    }
+
+    @Test
+    void noOwnerAndNoMentionSendsNothingOnAdd() {
+        stubInstance();
+
+        service.sendNotice(comment("comment-a"), List.of(), true);
+
+        verify(instanceMapper).getResourceOwner("contract", "resource-a", "org-a");
+        verifyNoInteractions(noticeSender);
+    }
+
+    @Test
+    void missingInstanceSendsNothing() {
+        service.sendNotice(comment("comment-a"), List.of("m1"), true);
+
+        verify(noticeSender, never()).sendNoticeByConfig(any(NoticeSendContext.class));
+    }
+
+    @Test
+    void customFormUsesCustomTableAndApprovalResourceType() {
+        instance.setType("custom-form-a");
+        stubInstance();
+        when(instanceMapper.getResourceOwner("custom_form_data", "resource-a", "org-a")).thenReturn("owner");
+
+        service.sendNotice(comment("comment-a"), List.of(), true);
+
+        assertEquals(1, sent.size());
+        assertEquals("APPROVAL", sent.get(0).getParamMap().get("resourceType"));
+        verify(instanceMapper).getResourceOwner("custom_form_data", "resource-a", "org-a");
     }
 
     @ParameterizedTest
     @CsvSource({"clue,CLUE", "customer,CUSTOMER", "opportunity,OPPORTUNITY", "quotation,OPPORTUNITY",
             "contract,CONTRACT", "invoice,CONTRACT", "order,ORDER", "custom-form-a,APPROVAL"})
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void groupsMessagesByBusinessWhileKeepingApprovalNotificationConfiguration(String formType, String resourceType) {
-        enableNotice();
+    void resourceTypeMapsToBusinessModule(String formType, String resourceType) {
         instance.setType(formType);
-        instance.setResourceName(null);
+        stubInstance();
 
-        service.sendNotice(comment("comment-a"), List.of("receiver"), false);
+        service.sendNotice(comment("comment-a"), List.of("receiver"), true);
 
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("receiver")), eq(false));
-        assertEquals(resourceType, params.getValue().get("resourceType"));
-        assertEquals("", params.getValue().get("name"));
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "zh-CN,false,true,【评论提醒】张三 在【合同甲】的审批记录添加了评论并@了你",
-            "zh-CN,true,true,【评论提醒】张三 在【合同甲】的审批记录回复了评论并@了你",
-            "en-US,false,true,[Comment Reminder] Zhang added a comment to the approval record for [合同甲] and @ed you as well",
-            "en-US,true,true,[Comment Reminder] Zhang replied to a comment on the approval record for [合同甲] and @ed you as well",
-            "zh-CN,false,false,【评论提醒】张三 在【合同甲】的审批记录添加了评论",
-            "zh-CN,true,false,【评论提醒】张三 在【合同甲】的审批记录回复了评论",
-            "en-US,false,false,[Comment Reminder] Zhang added a comment to the approval record for [合同甲]",
-            "en-US,true,false,[Comment Reminder] Zhang replied to a comment on the approval record for [合同甲]"
-    })
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void noticeTemplateMatchesRecipientAndCommentActionWithoutIncludingContent(String language, boolean reply,
-            boolean mentioned, String expected) {
-        enableNotice();
-        when(instanceMapper.getResourceOwner("contract", "resource-a", "org-a")).thenReturn("receiver");
-        LocaleContextHolder.setLocale(Locale.forLanguageTag(language));
-        ApprovalComment comment = comment("comment-a");
-        comment.setParentId(reply ? "parent-a" : null);
-        comment.setContent("@其他成员 请确认付款条款。");
-
-        service.sendNotice(comment, mentioned ? List.of("receiver") : List.of(), !mentioned);
-
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("receiver")), eq(false));
-        Map<String, Object> variables = new HashMap<>(params.getValue());
-        variables.put("OPERATOR", language.startsWith("zh") ? "张三" : "Zhang");
-        variables.put("Language", language);
-        variables.put("organizationId", "org-a");
-        assertEquals("true", variables.get("useTemplate"));
-        String action = reply ? "reply_" : "";
-        assertEquals("message.approval_comment_" + action + (mentioned ? "mentioned_text" : "added_text"),
-                variables.get("templateKey"));
-        assertFalse(variables.containsKey("commentSummary"));
-
-        MessageDetailService messageDetails = mock(MessageDetailService.class);
-        NoticeSendService sender = new NoticeSendService(mock(MailNoticeSender.class), mock(InSiteNoticeSender.class),
-                messageDetails);
-        LocaleContextHolder.setLocale(language.startsWith("zh") ? Locale.US : Locale.SIMPLIFIED_CHINESE);
-        sender.sendOther(MODULE, NoticeModel.builder().event(EVENT).paramMap(variables).build(), false);
-
-        ArgumentCaptor<String> template = ArgumentCaptor.forClass(String.class);
-        verify(messageDetails).searchMessageByTypeAndOrgId(eq(MODULE), eq(true), template.capture(), eq("org-a"));
-        /*assertEquals(expected, StringSubstitutor.replace(template.getValue(), variables));
-        assertEquals(language.startsWith("zh") ? "审批评论提醒" : "Approval comment reminder",
-                MessageTemplateUtils.getEventMap().get(EVENT));*/
-    }
-
-    @Test
-    void notificationFailureDoesNotFailCommittedComment() {
-        when(messageTaskMapper.getMessageByModuleAndEvent(MODULE, EVENT, "org-a"))
-                .thenThrow(new IllegalStateException("通知配置读取失败"));
-
-        assertDoesNotThrow(() -> service.sendNotice(comment("comment-a"), List.of("receiver"), false));
-
-        verifyNoInteractions(noticeSender);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void ownerReceivesCommentOrReplyTemplateWithoutMentions(boolean reply) {
-        enableNotice();
-        when(instanceMapper.getResourceOwner("contract", "resource-a", "org-a")).thenReturn("owner");
-        ApprovalComment comment = comment("comment-a");
-        comment.setParentId(reply ? "parent-a" : null);
-
-        service.sendNotice(comment, List.of(), true);
-
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("owner")), eq(false));
-        verify(instanceMapper).getResourceOwner("contract", "resource-a", "org-a");
-        assertEquals(reply ? "message.approval_comment_reply_added_text" : "message.approval_comment_added_text",
-                params.getValue().get("templateKey"));
-        assertEquals("true", params.getValue().get("useTemplate"));
-        assertEquals("comment-a", params.getValue().get("resourceId"));
-        assertEquals("CONTRACT", params.getValue().get("resourceType"));
-        verifyNoMoreInteractions(noticeSender);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void ownerAndMentionedUsersReceiveDifferentTemplates(boolean reply) {
-        enableNotice();
-        when(instanceMapper.getResourceOwner("contract", "resource-a", "org-a")).thenReturn("owner");
-        ApprovalComment comment = comment("comment-a");
-        comment.setParentId(reply ? "parent-a" : null);
-
-        service.sendNotice(comment, List.of("receiver"), true);
-
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("receiver")), eq(false));
-        assertEquals(reply ? "message.approval_comment_reply_mentioned_text" : "message.approval_comment_mentioned_text",
-                params.getValue().get("templateKey"));
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("owner")), eq(false));
-        assertEquals(reply ? "message.approval_comment_reply_added_text" : "message.approval_comment_added_text",
-                params.getValue().get("templateKey"));
-        verifyNoMoreInteractions(noticeSender);
-    }
-
-    @ParameterizedTest
-    @CsvSource({"true,owner", "false,receiver"})
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void duplicateMentionsReceiveOneNoticeIncludingMentionedOwner(boolean notifyOwner, String mentionedUser) {
-        enableNotice();
-        when(instanceMapper.getResourceOwner("contract", "resource-a", "org-a")).thenReturn("owner");
-
-        service.sendNotice(comment("comment-a"), List.of(mentionedUser, mentionedUser), notifyOwner);
-
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of(mentionedUser)), eq(false));
-        assertEquals("message.approval_comment_mentioned_text", params.getValue().get("templateKey"));
-        verifyNoMoreInteractions(noticeSender);
-        if (!notifyOwner) {
-            verifyNoInteractions(instanceMapper);
-        }
-    }
-
-    @ParameterizedTest
-    @CsvSource({"clue,clue", "customer,customer", "opportunity,opportunity", "contract,contract",
-            "invoice,contract_invoice", "order,sales_order", "custom-form-a,custom_form_data"})
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void currentOwnerQueryUsesBusinessTableAndCommentOrganization(String formType, String table) {
-        enableNotice();
-        instance.setType(formType);
-        when(instanceMapper.getResourceOwner(table, "resource-a", "org-a")).thenReturn("editor");
-
-        service.sendNotice(comment("comment-a"), List.of(), true);
-
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("editor")), eq(false));
-        verify(instanceMapper).getResourceOwner(table, "resource-a", "org-a");
+        assertEquals(1, sent.size());
+        assertEquals(resourceType, sent.get(0).getParamMap().get("resourceType"));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"contract", "quotation"})
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    void resourcesWithoutOwnerKeepMentionNotice(String formType) {
-        enableNotice();
+    void resourcesWithoutResolvedOwnerKeepMentionNotice(String formType) {
         instance.setType(formType);
+        stubInstance();
 
         service.sendNotice(comment("comment-a"), List.of("receiver"), true);
 
-        ArgumentCaptor<Map<String, Object>> params = ArgumentCaptor.forClass((Class) Map.class);
-        verify(noticeSender).sendNotice(eq(MODULE), eq(EVENT), params.capture(),
-                eq("editor"), eq("org-a"), eq(List.of("receiver")), eq(false));
-        verifyNoMoreInteractions(noticeSender);
-        if ("quotation".equals(formType)) {
-            verifyNoInteractions(instanceMapper);
-        } else {
-            verify(instanceMapper).getResourceOwner("contract", "resource-a", "org-a");
-        }
+        assertEquals(1, sent.size());
+        assertEquals(NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, sent.get(0).getAction());
     }
 
     @Test
-    void noOwnerAndNoMentionDoesNotSendNotice() {
-        enableNotice();
+    void notificationFailureDoesNotFailCommittedComment() {
+        when(commentMapper.selectLatestInstance("resource-a", "org-a"))
+                .thenThrow(new IllegalStateException("通知配置读取失败"));
 
-        service.sendNotice(comment("comment-a"), List.of(), true);
+        assertDoesNotThrow(() -> service.sendNotice(comment("comment-a"), List.of("receiver"), true));
 
-        verify(instanceMapper).getResourceOwner("contract", "resource-a", "org-a");
         verifyNoInteractions(noticeSender);
     }
 
-    private void enableNotice() {
-        when(messageTaskMapper.getMessageByModuleAndEvent(MODULE, EVENT, "org-a")).thenReturn(new MessageTask());
+    private void stubInstance() {
         when(commentMapper.selectLatestInstance("resource-a", "org-a")).thenReturn(instance);
+    }
+
+    private NoticeSendContext find(String action) {
+        return sent.stream()
+                .filter(context -> action.equals(context.getAction()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("未找到事件为 " + action + " 的通知"));
     }
 
     private ApprovalComment comment(String id) {

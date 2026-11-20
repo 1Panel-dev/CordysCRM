@@ -1083,9 +1083,6 @@ public class OpportunityService implements ApprovalResourceHandler {
                             opportunity.setApprovalStatus(initialApprovalStatus);
                             logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD,
                                     LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
-                            commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                                    NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
-                                    currentOrg, List.of(opportunity.getOwner()), true);
                         }
                         opportunityMapper.batchInsert(opportunities);
                         opportunityFieldMapper.batchInsert(opportunityFields.stream()

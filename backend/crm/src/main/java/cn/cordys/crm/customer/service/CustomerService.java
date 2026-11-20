@@ -891,14 +891,14 @@ public class CustomerService implements ApprovalResourceHandler {
     }
 
     private void sendTransferNotice(List<Customer> originCustomers, String toUser, String userId, String orgId) {
-        originCustomers.forEach(customer -> commonNoticeSendService.sendNotice(
-                NotificationConstants.Module.CUSTOMER,
-                NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER,
-                customer.getName(),
-                userId,
-                orgId,
-                List.of(toUser),
-                true));
+        // 转移任务分别给原负责人、新负责人各发一条模板: 旧值取原客户, 新值取改派后客户
+        originCustomers.forEach(customer -> {
+            Customer transferredCustomer = BeanUtils.copyBean(new Customer(), customer);
+            transferredCustomer.setOwner(toUser);
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER, userId, orgId, true, true,
+                    customer, null, transferredCustomer, null);
+        });
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {

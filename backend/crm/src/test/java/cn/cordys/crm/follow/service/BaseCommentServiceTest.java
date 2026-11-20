@@ -136,10 +136,34 @@ class BaseCommentServiceTest {
     }
 
     @Test
-    void planCommentIsNotMigratedToNewNotice() {
+    void planCommentNotifiesOwner() {
         planService().add(request, "operator", "org-a");
 
-        assertEquals(0, sent.size());
+        assertEquals(1, sent.size());
+        NoticeSendContext context = sent.get(0);
+        assertEquals(NotificationConstants.Module.FOLLOW_UP, context.getTaskType());
+        assertEquals(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT, context.getAction());
+        assertEquals(Map.of("owner", "owner"), context.getNewValues());
+        assertEquals("客户甲", context.getResourceName());
+        assertEquals("resource-a", context.getResourceId());
+        assertEquals("operator", context.getOperatorId());
+        assertEquals("org-a", context.getOrganizationId());
+        assertTrue(context.isExcludeSelf());
+        assertTrue(context.isEventOnly());
+    }
+
+    @Test
+    void planCommentReplyAndMentionSendAllThreeNotices() {
+        request.setReplyToUserId("replied");
+        request.setMentionedUserIds(List.of("m1"));
+
+        planService().add(request, "operator", "org-a");
+
+        assertEquals(3, sent.size());
+        find(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT);
+        assertEquals("replied", find(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_REPALY).getReplyToUserId());
+        assertEquals(List.of("m1"), find(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_MENTIONED)
+                .getMentionedUserIds());
     }
 
     @Test
