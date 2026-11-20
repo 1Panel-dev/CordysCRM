@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden bg-[var(--text-n9)]">
-    <div class="flex-1 p-[16px]">
+    <div class="min-h-0 flex-1 overflow-y-auto p-[16px]">
       <div
         v-for="item in collaborators"
         :key="item.id"

@@ -26,7 +26,7 @@ export default {
   'customer.group': '集团',
   'customer.subsidiary': '子公司',
   'customer.selectCustomer': '选择客户',
-  'customer.readOnly': '只读',
+  'customer.readOnly': '全部只读',
   'customer.cooperation': '协作',
   'customer.customerInfoOnly': '仅客户信息',
   'customer.jointFollow': '共同跟进',

@@ -93,13 +93,13 @@
       :source-name="sourceName"
       :refresh-key="refreshDetailKey"
       :readonly="detailReadonly"
-      :allow-convert="canConvert"
       :detail="activeItem"
       @delete="handleDelete(activeItem as FollowDetailItem)"
       @edit="handleEdit(activeItem as FollowDetailItem)"
       @convert="(activeItem)=>handleConvert(activeItem as FollowDetailItem)"
       @detail-init="handleDetailInit"
       @count-change="handleCommentCountChange"
+      @status-change="handleStatusChange"
     />
     />
   </div>
@@ -221,6 +221,12 @@
     const currentItem = data.value.find((item) => item.id === activeItem.value?.id);
     if (currentItem) {
       currentItem.commentCount = commentCount;
+    }
+  }
+
+  function handleStatusChange() {
+    if (activeItem.value) {
+      changePlanStatus(activeItem.value);
     }
   }
 
