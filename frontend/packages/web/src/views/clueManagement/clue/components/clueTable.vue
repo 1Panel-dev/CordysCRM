@@ -303,7 +303,7 @@
     followUp: {
       label: t('opportunity.followUp'),
       key: 'followUp',
-      permission: ['CLUE_MANAGEMENT:UPDATE'],
+      permission: ['FOLLOW_RECORD:ADD'],
     },
     convert: {
       label: t('clue.convert'),

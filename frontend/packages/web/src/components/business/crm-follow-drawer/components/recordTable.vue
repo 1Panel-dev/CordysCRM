@@ -34,7 +34,7 @@
             :disabled="propsRes.data.length === 0"
             @click="handleExportAllClick"
           >
-            {{ t('eventDrawer.exportRecord') }}
+            {{ t('common.exportAll') }}
           </n-button>
         </div>
       </template>
@@ -134,7 +134,7 @@
       :source-id="sourceId"
       :refresh-key="refreshKey"
       :source-name="sourceName"
-      :readonly="!canEditDetail"
+      :readonly="props.independentDetail ? false : props.readonly"
       :detail="activeItem"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
@@ -318,9 +318,6 @@
   const canManage = (permission: string) => !props.readonly && hasAnyPermission([permission]);
   const canCreate = computed(() => canManage('FOLLOW_RECORD:ADD'));
   const canEdit = computed(() => canManage('FOLLOW_RECORD:UPDATE'));
-  const canEditDetail = computed(() =>
-    props.independentDetail ? hasAnyPermission(['FOLLOW_RECORD:UPDATE']) : canEdit.value
-  );
   const canDelete = computed(() => canManage('FOLLOW_RECORD:DELETE'));
 
   const showCustomerDrawer = ref(false);

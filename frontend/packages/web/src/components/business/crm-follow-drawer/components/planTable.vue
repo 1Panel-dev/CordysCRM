@@ -34,7 +34,7 @@
             :disabled="propsRes.data.length === 0"
             @click="handleExportAllClick"
           >
-            {{ t('eventDrawer.exportPlan') }}
+            {{ t('common.exportAll') }}
           </n-button>
         </div>
       </template>
@@ -150,7 +150,7 @@
       :source-name="sourceName"
       :refresh-key="refreshKey"
       :detail="activeItem"
-      :readonly="!canEditDetail"
+      :readonly="props.independentDetail ? false : props.readonly"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
       @convert="(detail) => handleConvert(detail)"
@@ -370,9 +370,6 @@
   const canManage = (permission: string) => !props.readonly && canRead.value && hasAnyPermission([permission]);
   const canCreate = computed(() => canManage('FOLLOW_PLAN:ADD'));
   const canEdit = computed(() => canManage('FOLLOW_PLAN:UPDATE'));
-  const canEditDetail = computed(() =>
-    props.independentDetail ? canRead.value && hasAnyPermission(['FOLLOW_PLAN:UPDATE']) : canEdit.value
-  );
   const canDelete = computed(() => canManage('FOLLOW_PLAN:DELETE'));
 
   function handleDetailStatusChange() {
