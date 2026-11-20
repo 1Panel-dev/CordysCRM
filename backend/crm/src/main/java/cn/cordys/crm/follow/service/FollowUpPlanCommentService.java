@@ -14,11 +14,16 @@ import cn.cordys.crm.follow.dto.request.CommentPageRequest;
 import cn.cordys.crm.follow.dto.request.CommentUpdateRequest;
 import cn.cordys.crm.follow.dto.response.CommentResponse;
 import cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -87,5 +92,58 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
         }
         return buildTargetInfo(plan.getType(), plan.getOwner(), plan.getClueId(), plan.getCustomerId(),
                 plan.getOpportunityId());
+    }
+
+    /**
+     * 新增跟进计划评论后, 按新版消息任务配置发送通知
+     */
+    @Override
+    protected void sendCommentAddedNotifications(CommentResourceInfo resourceInfo, String resourceId,
+            String replyToUserId, List<String> mentionedUserIds, String operator, String orgId) {
+        sendPlanCommentNotices(resourceInfo, resourceId, replyToUserId, mentionedUserIds, operator, orgId);
+    }
+
+    /**
+     * 编辑跟进计划评论后, 按新版消息任务配置发送通知
+     */
+    @Override
+    protected void sendCommentUpdatedNotifications(CommentResourceInfo resourceInfo, String resourceId,
+            String replyToUserId, List<String> mentionedUserIds, String operator, String orgId) {
+        sendPlanCommentNotices(resourceInfo, resourceId, replyToUserId, mentionedUserIds, operator, orgId);
+    }
+
+    /**
+     * 1. 跟进计划被评论(FOLLOW_UP_PLAN_COMMENT) -> 计划负责人;
+     * 2. 评论被回复(FOLLOW_UP_PLAN_COMMENT_REPALY) -> 被回复人;
+     * 3. 评论@用户(FOLLOW_UP_PLAN_COMMENT_MENTIONED) -> 被@的人。
+     */
+    private void sendPlanCommentNotices(CommentResourceInfo resourceInfo, String resourceId, String replyToUserId,
+            List<String> mentionedUserIds, String operator, String orgId) {
+        if (StringUtils.isNotBlank(resourceInfo.owner())) {
+            sendCommentNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT, resourceId, resourceInfo,
+                    operator, orgId, NoticeSendContext.builder().newValues(Map.of("owner", resourceInfo.owner())));
+        }
+        if (StringUtils.isNotBlank(replyToUserId)) {
+            sendCommentNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_REPALY, resourceId, resourceInfo,
+                    operator, orgId, NoticeSendContext.builder().replyToUserId(replyToUserId));
+        }
+        if (CollectionUtils.isNotEmpty(mentionedUserIds)) {
+            sendCommentNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_MENTIONED, resourceId,
+                    resourceInfo, operator, orgId, NoticeSendContext.builder().mentionedUserIds(mentionedUserIds));
+        }
+    }
+
+    private void sendCommentNotice(String event, String resourceId, CommentResourceInfo resourceInfo,
+            String operator, String orgId, NoticeSendContext.NoticeSendContextBuilder builder) {
+        commonNoticeSendService.sendNoticeByConfig(builder
+                .taskType(NotificationConstants.Module.FOLLOW_UP)
+                .action(event)
+                .operatorId(operator)
+                .organizationId(orgId)
+                .resourceId(resourceId)
+                .resourceName(resourceInfo.name())
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
     }
 }

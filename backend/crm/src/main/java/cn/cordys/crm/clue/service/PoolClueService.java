@@ -66,6 +66,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -95,6 +96,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -587,11 +589,28 @@ public class PoolClueService {
                 clue.getName());
         logService.add(logDTO);
 
-        // 分配通知
-        if (Strings.CS.equals(logType, LogType.ASSIGN)) {
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                    NotificationConstants.Event.CLUE_DISTRIBUTED,
-                    clue.getName(), operateUserId, currentOrgId, List.of(clue.getOwner()), true);
+        // 领取/分配通知: 分配通知新负责人(CLUE_DISTRIBUTED), 领取通知线索池管理员(CLUE_RECEIVE)
+        if (Strings.CS.equals(logType, LogType.ASSIGN) || Strings.CS.equals(logType, LogType.PICK)) {
+            String event = Strings.CS.equals(logType, LogType.ASSIGN)
+                    ? NotificationConstants.Event.CLUE_DISTRIBUTED
+                    : NotificationConstants.Event.CLUE_RECEIVE;
+            Map<String, Object> values = new HashMap<>(4);
+            values.put("id", clue.getId());
+            values.put("name", clue.getName());
+            values.put("owner", clue.getOwner());
+            // 线索已移出池, 保留原池ID供线索池管理员(CLUE_SEAS_OWNER)接收人解析
+            values.put("poolId", poolId);
+            commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                    .taskType(NotificationConstants.Module.CLUE)
+                    .action(event)
+                    .operatorId(operateUserId)
+                    .organizationId(currentOrgId)
+                    .resourceId(clue.getId())
+                    .resourceName(clue.getName())
+                    .newValues(values)
+                    .excludeSelf(true)
+                    .eventOnly(true)
+                    .build());
         }
     }
 
