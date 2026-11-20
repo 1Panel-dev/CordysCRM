@@ -29,6 +29,7 @@
     >
       <template #item="{ item }">
         <listItem
+          v-model:value="item.status"
           :item="item"
           type="plan"
           class="workbench-follow-item"
@@ -37,6 +38,7 @@
           @click="goDetail(item)"
           @delete="handleDelete(item)"
           @edit="handleEdit(item)"
+          @change="handleChangeStatus(item)"
         />
       </template>
     </CrmList>
@@ -50,13 +52,13 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FollowDetailItem } from '@lib/shared/models/customer';
+  import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import listItem from '@/components/business/crm-follow-list/components/listItem.vue';
   import useFollowApi from '@/components/business/crm-follow-list/useFollowApi';
 
-  import { deleteFollowPlan, getFollowPLanPage } from '@/api/modules';
+  import { deleteFollowPlan, getFollowPLanPage, updateFollowPlanStatus } from '@/api/modules';
   import useHiddenTab from '@/hooks/useHiddenTab';
 
   const { t } = useI18n();
@@ -106,6 +108,21 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    }
+  }
+
+  async function handleChangeStatus(item: FollowDetailItem) {
+    try {
+      await updateFollowPlanStatus({
+        id: item.id,
+        status: (item as CustomerFollowPlanListItem).status,
+      });
+      showSuccessToast(t('common.operationSuccess'));
+      crmListRef.value?.loadList(true);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      crmListRef.value?.loadList(true);
     }
   }
 

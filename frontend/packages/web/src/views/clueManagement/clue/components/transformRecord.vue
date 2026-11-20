@@ -119,7 +119,7 @@
       followUp: {
         label: t('opportunity.followUp'),
         key: 'followUp',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+        permission: ['FOLLOW_RECORD:ADD'],
       },
       edit: {
         label: t('common.edit'),

@@ -2,7 +2,7 @@
   <div :class="`crm-follow-detail p-[24px] ${props.wrapperClass}`">
     <div class="mb-[16px] flex items-center justify-between">
       <div>
-        <n-button v-if="showAdd && !props.readonly" type="primary" @click="handleAdd">
+        <n-button v-if="showAdd && canAdd" type="primary" @click="handleAdd">
           {{ t(props.activeType === 'followPlan' ? 'crmFollowRecord.writePlan' : 'crmFollowRecord.writeRecord') }}
         </n-button>
       </div>
@@ -150,6 +150,7 @@
     showAction: true,
   });
   const permissionPrefix = computed(() => (props.activeType === 'followPlan' ? 'FOLLOW_PLAN' : 'FOLLOW_RECORD'));
+  const canAdd = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:ADD`]));
   const canEdit = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:UPDATE`]));
   const canDelete = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:DELETE`]));
   const canConvert = computed(

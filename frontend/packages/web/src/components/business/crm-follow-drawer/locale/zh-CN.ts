@@ -1,8 +1,6 @@
 export default {
   'eventDrawer.record': '记录',
   'eventDrawer.plan': '计划',
-  'eventDrawer.exportRecord': '导出记录',
-  'eventDrawer.exportPlan': '导出计划',
   'eventDrawer.record.all': '所有记录',
   'eventDrawer.record.my': '我的记录',
   'eventDrawer.record.depart': '部门记录',

@@ -328,7 +328,7 @@
     followUp: {
       label: t('opportunity.followUp'),
       key: 'followUp',
-      permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+      permission: ['FOLLOW_RECORD:ADD'],
     },
     transfer: {
       label: t('common.transfer'),
