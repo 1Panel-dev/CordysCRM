@@ -36,6 +36,7 @@ import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigLogDTO;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
+import cn.cordys.crm.system.service.MessageNotificationService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -93,6 +94,8 @@ public class CustomFormService {
     private ResourcePermissionService resourcePermissionService;
     @Resource
     private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
+    private MessageNotificationService messageNotificationService;
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
@@ -324,6 +327,11 @@ public class CustomFormService {
         // 将当前用户设置为管理员
         createFormAdmin(userId, formId);
 
+        // 初始化消息通知: 新建/编辑/删除/审批(直接 new Service 的历史单测不会注入该依赖, 保留空值分支)
+        if (messageNotificationService != null) {
+            messageNotificationService.initCustomFormMessage(form, userId, orgId);
+        }
+
         return form;
     }
 
@@ -440,6 +448,11 @@ public class CustomFormService {
 
         // 删除表单
         customFormMapper.deleteByIds(List.of(id));
+
+        // 删除该表单对应的全部消息通知(任务及配置)
+        if (messageNotificationService != null) {
+            messageNotificationService.deleteCustomFormMessage(id);
+        }
     }
 
     private void deleteCustomFormRoleAndUser(String formId) {
