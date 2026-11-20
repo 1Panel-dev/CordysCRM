@@ -780,10 +780,6 @@ public class ClueService implements ApprovalResourceHandler {
             contact.setUpdateTime(System.currentTimeMillis());
             customerContactMapper.insert(contact);
         }
-
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.CLUE_CONVERT_CUSTOMER, clue.getName(), userId,
-                orgId, List.of(clue.getOwner()), true);
     }
 
     /**
@@ -1252,15 +1248,29 @@ public class ClueService implements ApprovalResourceHandler {
         // 刷新转换过程中同名客户的最新跟进时间
         refreshCsFollowTime(clue, transitionCs);
 
-        // 只通知线索负责人
-        Map<String, Object> paramMap = new HashMap<>(8);
-        paramMap.put("useTemplate", "true");
-        paramMap.put("template", Translator.get("message.clue_relate_customer"));
-        paramMap.put("customerName", transitionCs.getName());
-        paramMap.put("name", clue.getName());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
-                paramMap, currentUser, orgId, List.of(clue.getOwner()), true);
+        // 关联已有客户通知: 由消息任务配置发送, 使用"关联已有客户"模板, 接收人取任务配置的负责人范围
+        // 线索 owner 前后不变, old/new 都放同一份值, 保证 OLD_OWNER 接收人能解析到线索负责人
+        Map<String, Object> clueValues = new HashMap<>(3);
+        clueValues.put("id", clue.getId());
+        clueValues.put("name", clue.getName());
+        clueValues.put("owner", clue.getOwner());
+        Map<String, Object> customerParamMap = new HashMap<>(2);
+        customerParamMap.put("name", clue.getName());
+        customerParamMap.put("customerName", transitionCs.getName());
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.CLUE)
+                .action(NotificationConstants.Event.CLUE_CONVERT_CUSTOMER)
+                .operatorId(currentUser)
+                .organizationId(orgId)
+                .resourceId(clue.getId())
+                .resourceName(clue.getName())
+                .paramMap(customerParamMap)
+                .oldValues(clueValues)
+                .newValues(clueValues)
+                .templateNames(List.of(TemplateEnum.CLUE_CONVERT_CUSTOMER_RELATE_TEXT.name()))
+                .excludeSelf(true)
+                .eventOnly(true)
+                .build());
         return true;
     }
 
