@@ -149,7 +149,7 @@
       key: 'writeRecord',
       label: t('common.writeRecord'),
       icon: 'iconicon_edit1',
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      permission: ['FOLLOW_RECORD:ADD'],
       action: (item: CustomerListItem) => {
         router.push({
           name: CommonRouteEnum.FORM_CREATE,

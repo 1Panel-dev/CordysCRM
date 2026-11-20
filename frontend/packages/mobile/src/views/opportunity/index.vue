@@ -212,7 +212,7 @@
           key: 'writeRecord',
           label: t('common.writeRecord'),
           icon: 'iconicon_handwritten_signature',
-          permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+          permission: ['FOLLOW_RECORD:ADD'],
           action: (item: OpportunityItem) => {
             const { customerName, customerId, name } = item;
             const initialSourceName = JSON.stringify({

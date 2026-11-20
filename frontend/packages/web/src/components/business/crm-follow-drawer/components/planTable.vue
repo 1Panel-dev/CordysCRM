@@ -246,6 +246,7 @@
 
   import { deleteFollowPlan, updateFollowPlanStatus } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { followPlanStatus } from '@/config/follow';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -304,6 +305,14 @@
         dataIndex: 'phone',
         title: t('common.phoneNumber'),
         type: FieldTypeEnum.PHONE,
+      },
+      {
+        title: t('common.status'),
+        dataIndex: 'status',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options: followPlanStatus.value,
+        },
       },
       {
         title: t('eventDrawer.record.converted'),
