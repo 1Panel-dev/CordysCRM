@@ -88,7 +88,7 @@
 
     <DetailDrawer
       v-model:show="showDetailDrawer"
-      :form-key="realFormKey"
+      :form-key="detailFormKey"
       :source-id="sourceId"
       :source-name="sourceName"
       :refresh-key="refreshDetailKey"
@@ -158,6 +158,9 @@
   );
 
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
+  const detailFormKey = computed(() =>
+    props.activeType === 'followPlan' ? FormDesignKeyEnum.FOLLOW_PLAN : FormDesignKeyEnum.FOLLOW_RECORD
+  );
   const refreshDetailKey = ref(0);
 
   const sourceId = ref('');
