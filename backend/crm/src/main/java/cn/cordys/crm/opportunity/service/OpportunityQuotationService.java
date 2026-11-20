@@ -483,9 +483,6 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         LogDTO logDTO = new LogDTO(orgId, opportunityQuotation.getId(), userId, LogType.VOIDED,
                 LogModule.OPPORTUNITY_QUOTATION, opportunityQuotation.getName());
         logService.add(logDTO);
-        // 通知
-        sendNotice(Translator.get("opportunity.quotation.status.voided"), opportunityQuotation, userId, orgId,
-                NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL);
     }
 
     /**
@@ -536,8 +533,6 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         //更新快照状态
         updateSnapshot(request.getId(), request.getApprovalStatus(), moduleFormConfigDTO);
         saveSateChangeLog(orgId, oldApprovalStatus, userId, LogType.APPROVAL, opportunityQuotation);
-        sendNotice(noticeKey, opportunityQuotation, userId, orgId,
-                NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL);
         return opportunityQuotation.getApprovalStatus();
     }
 
@@ -733,25 +728,6 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         return opportunityQuotation;
     }
 
-    /**
-     * 发送通知
-     *
-     * @param key                  通知内容key
-     * @param opportunityQuotation 报价单实体
-     * @param userId               用户ID
-     * @param orgId                组织ID
-     * @param event                事件类型
-     */
-    private void sendNotice(String key, OpportunityQuotation opportunityQuotation, String userId, String orgId,
-            String event) {
-        Map<String, Object> paramMap = new HashMap<>();
-        if (StringUtils.isNotBlank(key)) {
-            paramMap.put("state", key);
-        }
-        paramMap.put("name", opportunityQuotation.getName());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY, event,
-                paramMap, userId, orgId, List.of(opportunityQuotation.getCreateUser()), true);
-    }
 
     /**
      * 保存状态变更日志
@@ -1104,12 +1080,6 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
         logService.batchAdd(logs);
-        list.forEach(
-                item -> sendNotice(
-                        (Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString())
-                                ? Translator.get("opportunity.quotation.status.approved")
-                                : Translator.get("opportunity.quotation.status.unapproved")),
-                        item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL));
         return BatchAffectSkipResponse.builder().success(approvingIds.size()).fail(permissionDeniedCount.get())
                 .skip(skipCount.get()).build();
     }
@@ -1339,9 +1309,6 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
             sqlSession.flushStatements();
             SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
             logService.batchAdd(logs);
-            successList.forEach(
-                    item -> sendNotice(Translator.get("opportunity.quotation.status.voided"), item, userId,
-                            organizationId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL));
         }
 
         return BatchAffectReasonResponse.builder().success(successIds.size())

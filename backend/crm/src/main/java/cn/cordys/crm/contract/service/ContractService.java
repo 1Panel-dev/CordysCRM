@@ -884,40 +884,6 @@ public class ContractService implements ApprovalResourceHandler {
         }
     }
 
-    /**
-     * 发送通知
-     *
-     * @param contract 合同实体
-     * @param userId   用户ID
-     * @param orgId    组织ID
-     * @param event    事件类型
-     */
-    private void sendNotice(Contract contract, String userId, String orgId, String event, String customerName) {
-        //查询通知配置的接收范围
-        List<String> receiveUserIds = new ArrayList<>();
-        List<MessageTaskConfig> messageTaskConfigList = messageTaskConfigMapper
-                .selectListByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
-                        .eq(MessageTaskConfig::getOrganizationId, orgId)
-                        //.eq(MessageTaskConfig::getTaskType, NotificationConstants.Module.CONTRACT)
-                        .eq(MessageTaskConfig::getEvent, event));
-        if (CollectionUtils.isNotEmpty(messageTaskConfigList)) {
-            MessageTaskConfig messageTaskConfig = messageTaskConfigList.getFirst();
-            MessageTaskConfigDTO messageTaskConfigDTO = JSON.parseObject(messageTaskConfig.getValue(),
-                    MessageTaskConfigDTO.class);
-            receiveUserIds = commonNoticeSendService.getNoticeReceiveUserIds(messageTaskConfigDTO,
-                    contract.getCreateUser(), contract.getOwner(), orgId);
-        } else {
-            //默认通知创建人
-            receiveUserIds.add(contract.getOwner());
-        }
-
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("customerName", customerName);
-        paramMap.put("name", contract.getName());
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CONTRACT, event,
-                paramMap, userId, orgId, receiveUserIds, true);
-    }
-
     private void updateStatusSnapshot(String id, String stage, String approvalStatus) {
         LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
         delWrapper.eq(ContractSnapshot::getContractId, id);
