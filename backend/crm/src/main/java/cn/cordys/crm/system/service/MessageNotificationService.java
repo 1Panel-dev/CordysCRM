@@ -199,6 +199,21 @@ public class MessageNotificationService {
     }
 
     /**
+     * 删除自定义表单下的全部消息通知(任务及配置)。自定义表单以表单ID作为任务类型。
+     */
+    public void deleteCustomFormMessage(String customFormId) {
+        List<MessageTask> tasks = messageTaskMapper.selectListByLambda(
+                new LambdaQueryWrapper<MessageTask>().eq(MessageTask::getTaskType, customFormId));
+        if (CollectionUtils.isEmpty(tasks)) {
+            return;
+        }
+        List<String> taskIds = tasks.stream().map(MessageTask::getId).toList();
+        messageTaskConfigMapper.deleteByLambda(
+                new LambdaQueryWrapper<MessageTaskConfig>().in(MessageTaskConfig::getMessageTaskId, taskIds));
+        messageTaskMapper.deleteByLambda(new LambdaQueryWrapper<MessageTask>().in(MessageTask::getId, taskIds));
+    }
+
+    /**
      * 新版本消息通知
      * 处理初始化数据
      */
@@ -873,38 +888,43 @@ public class MessageNotificationService {
             if (eventMaps.containsKey(customForm.getId())) {
                 continue;
             }
-            //新建
-            buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_ADD_TEXT.name()), customForm,
-                    "create", List.of("OWNER"),
-                    receiveMethod, TriggerTypeEnum.ACTION.name(),
-                    buildActionConfigValue("CUSTOM_FORM_ADD"));
-            //编辑
-            buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_UPDATE_TEXT.name()), customForm,
-                   "update", List.of("OWNER"), receiveMethod,
-                    TriggerTypeEnum.ACTION.name(),
-                    buildActionConfigValue("CUSTOM_FORM_UPDATE"));
-            //删除
-            buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_DELETED_TEXT.name()), customForm,
-                    "delete", List.of("OLD_OWNER"), receiveMethod,
-                    TriggerTypeEnum.ACTION.name(),
-                    buildActionConfigValue("CUSTOM_FORM_DELETE"));
-            //审批
-            buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_APPROVAL_TEXT.name()), customForm,
-                    "approve", List.of("SUBMITTER", "OWNER"),
-                    receiveMethod,
-                    TriggerTypeEnum.FIELD.name(),
-                    buildFieldConfigValue(
-                            buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                    "SELECT_MULTIPLE")));
+            initCustomFormMessage(customForm, InternalUser.ADMIN.getValue(), "100001");
         }
+    }
+
+    /**
+     * 自定义表单默认消息通知初始化：新建/编辑/删除/审批
+     */
+    public void initCustomFormMessage(CustomForm customForm, String userId, String orgId) {
+        String receiveMethod = JSON.toJSONString(List.of(ReceiveMethodEnum.SYSTEM.name(),
+                ReceiveMethodEnum.WECOM.name(), ReceiveMethodEnum.DINGTALK.name(), ReceiveMethodEnum.LARK.name()));
+        // 动作配置值与运行时发送的 action 保持一致(均为 event: create_<formId> 等), 否则 matchTrigger 精确比较无法命中
+        //新建
+        buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_ADD_TEXT.name()), customForm,
+                "create", List.of("OWNER"), receiveMethod, orgId, userId,
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue("create_" + customForm.getId()));
+        //编辑
+        buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_UPDATE_TEXT.name()), customForm,
+                "update", List.of("OWNER"), receiveMethod, orgId, userId,
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue("update_" + customForm.getId()));
+        //删除
+        buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_DELETED_TEXT.name()), customForm,
+                "delete", List.of("OLD_OWNER"), receiveMethod, orgId, userId,
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue("delete_" + customForm.getId()));
+        //审批
+        buildCustomFormMessage(List.of(TemplateEnum.CUSTOM_APPROVAL_TEXT.name()), customForm,
+                "approve", List.of("SUBMITTER", "OWNER"), receiveMethod, orgId, userId,
+                TriggerTypeEnum.FIELD.name(),
+                buildFieldConfigValue(buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
+                        "SELECT_MULTIPLE")));
     }
 
     /**
      * 自定义表单 初始化 消息
      */
-    private void buildCustomFormMessage(List<String> templates, CustomForm customForm, String event,
+    public void buildCustomFormMessage(List<String> templates, CustomForm customForm, String event,
             List<String> owners,
-            String receiveMethod, String triggerType, String value) {
+            String receiveMethod, String organizationId, String userId, String triggerType, String value) {
         String taskId = IDGenerator.nextStr();
         MessageTask messageTask = new MessageTask();
         messageTask.setId(taskId);
@@ -912,14 +932,14 @@ public class MessageNotificationService {
         messageTask.setEnable(true);
         messageTask.setSysEnable(true);
         messageTask.setScopeId(JSON.toJSONString(owners));
-        messageTask.setOrganizationId("100001");
+        messageTask.setOrganizationId(organizationId);
         messageTask.setReceiveMethod(receiveMethod);
         messageTask.setTaskType(customForm.getId());
         messageTask.setType("CUSTOM");
         messageTask.setEvent(event + "_" + customForm.getId());
-        messageTask.setCreateUser(InternalUser.ADMIN.getValue());
+        messageTask.setCreateUser(userId);
         messageTask.setCreateTime(System.currentTimeMillis());
-        messageTask.setUpdateUser(InternalUser.ADMIN.getValue());
+        messageTask.setUpdateUser(userId);
         messageTask.setUpdateTime(System.currentTimeMillis());
         messageTask.setTemplate(JSON.toJSONString(templates));
         messageTaskMapper.insert(messageTask);
@@ -928,7 +948,7 @@ public class MessageNotificationService {
         messageTaskConfig.setId(IDGenerator.nextStr());
         messageTaskConfig.setMessageTaskId(taskId);
         messageTaskConfig.setEvent(event + "_" + customForm.getId());
-        messageTaskConfig.setOrganizationId("100001");
+        messageTaskConfig.setOrganizationId(organizationId);
         messageTaskConfig.setTriggerType(triggerType);
         messageTaskConfig.setValue(value);
         messageTaskConfigMapper.insert(messageTaskConfig);
