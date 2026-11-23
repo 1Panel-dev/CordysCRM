@@ -65,6 +65,19 @@ public class BaseFollowUpService {
         return false;
     }
 
+    protected void checkCustomerFollowRecordPermission(String customerId, String userId, String orgId) {
+        if (StringUtils.isBlank(customerId)) {
+            return;
+        }
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (customer == null || !orgId.equals(customer.getOrganizationId())
+                || BooleanUtils.isTrue(customer.getInSharedPool())
+                || (!userId.equals(customer.getOwner())
+                        && !hasCustomerCollaborationPermission(customerId, userId, false))) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
     /**
      * 共同跟进成员只能维护自己负责的计划，客户负责人保留原角色范围。
      */
