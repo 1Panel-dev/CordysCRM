@@ -322,11 +322,14 @@
     {
       title: t('common.createTime'),
       key: 'createTime',
-      width: 150,
+      width: 200,
+      ellipsis: {
+        tooltip: true,
+      },
     },
     {
       key: 'operation',
-      width: 80,
+      width: 100,
       fixed: 'right',
       render: (row) =>
         h(CrmOperationButton, {
