@@ -222,6 +222,7 @@
             :readonly="detailReadonly"
             :independent-detail="!props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
+            @open-business-title-drawer="handleOpenBusinessTitleDrawer"
           />
         </div>
         <div v-if="activeTab === 'order'" class="h-full px-[24px] pt-[24px]">
@@ -268,6 +269,7 @@
         :sourceId="activeSourceId"
         @showCustomerDrawer="handleOpenCustomerDrawer"
       />
+      <businessTitleDrawer v-model:visible="showBusinessTitleDetailDrawer" :source-id="activeBusinessTitleSourceId" />
     </div>
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
@@ -309,6 +311,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
+  import businessTitleDrawer from '@/views/contract/businessTitle/components/detail.vue';
   import ContractTable from '@/views/contract/contract/components/contractTable.vue';
   import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
@@ -787,6 +790,13 @@
   function handleOpenContractDrawer(params: { id: string }) {
     activeSourceId.value = params.id;
     showContractDetailDrawer.value = true;
+  }
+
+  const showBusinessTitleDetailDrawer = ref(false);
+  const activeBusinessTitleSourceId = ref<string>('');
+  function handleOpenBusinessTitleDrawer(params: { id: string }) {
+    activeBusinessTitleSourceId.value = params.id;
+    showBusinessTitleDetailDrawer.value = true;
   }
 
   function handleRemoveSuccess() {
