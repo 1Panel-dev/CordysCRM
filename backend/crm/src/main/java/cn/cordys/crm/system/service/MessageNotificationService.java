@@ -538,7 +538,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRED_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")));
                 }
                 // 合同即将到期
                 case NotificationConstants.Event.CONTRACT_EXPIRING -> {
@@ -558,7 +558,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRING_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")));
                 }
                 // 合同审批
                 case NotificationConstants.Event.CONTRACT_APPROVAL ->
@@ -586,7 +586,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_PAYMENT_EXPIRED_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("plan_end_time", "0", "08：00：00", "ONLY_ONE")));
                 }
                 // 回款计划即将到期
                 case NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING -> {
@@ -606,7 +606,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_PAYMENT_EXPIRING_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("plan_end_time", "0", "08：00：00", "ONLY_ONE")));
                 }
                 // 审批发票
                 case NotificationConstants.Event.INVOICE_APPROVAL ->
@@ -858,7 +858,7 @@ public class MessageNotificationService {
                 NotificationConstants.Event.FOLLOW_UP_PLAN_DUE, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")));
+                buildScheduleConfigValue(buildScheduleValue("estimated_time", "0", "08：00：00", "ONLY_ONE")));
 
         //-----代办-------
         // 单据被评论

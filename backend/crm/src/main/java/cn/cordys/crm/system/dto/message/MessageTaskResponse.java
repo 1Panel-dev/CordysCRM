@@ -23,6 +23,9 @@ public class MessageTaskResponse {
     @Schema(description = "所属分类")
     private String taskType;
 
+    @Schema(description = "类型(系统SYSTEM/自定义CUSTOM)")
+    private String type;
+
     @Schema(description = "触发类型")
     private String triggerType;
 
