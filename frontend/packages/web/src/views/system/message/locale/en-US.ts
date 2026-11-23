@@ -24,6 +24,12 @@ export default {
   'system.message.confirmCloseSystemNotifyContent':
     'After closing, members will no longer receive notifications for this feature',
   'system.message.allMessages': 'All',
+  'system.message.atMe': 'Mentions',
+  'system.message.public': 'Public',
+  'system.message.triggerType.all': 'All trigger types',
+  'system.message.triggerType.action': 'Action',
+  'system.message.triggerType.condition': 'Condition',
+  'system.message.triggerType.schedule': 'Scheduled',
   'system.message.last3Days': 'Last 3 days',
   'system.message.last5Days': 'Last 5 days',
   'system.message.last7Days': 'Last 7 days',

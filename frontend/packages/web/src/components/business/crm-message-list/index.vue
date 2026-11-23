@@ -14,12 +14,8 @@
           <div class="crm-message-item-content h-full w-full gap-[24px] p-[16px]">
             <div class="mb-[8px] flex w-full items-center justify-between gap-[24px]">
               <div class="flex min-w-0 items-center gap-[8px]">
-                <CrmTag theme="light" :type="item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? 'info' : 'warning'">
-                  {{
-                    item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
-                      ? t('system.message.system')
-                      : t('system.message.announcement')
-                  }}
+                <CrmTag v-if="getMessageTag(item)" theme="light" :type="getMessageTag(item)?.type">
+                  {{ getMessageTag(item)?.label }}
                 </CrmTag>
                 <n-badge class="crm-message-item__badge" dot :show="item.status === SystemMessageStatusEnum.UNREAD">
                   <n-tooltip :delay="300">
@@ -29,18 +25,10 @@
                           item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'
                         } font-medium`"
                       >
-                        {{
-                          item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
-                            ? t('system.message.systemNotification')
-                            : item.subject
-                        }}
+                        {{ item.subject || t('system.message.systemNotification') }}
                       </div>
                     </template>
-                    {{
-                      item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
-                        ? t('system.message.systemNotification')
-                        : item.subject
-                    }}
+                    {{ item.subject || t('system.message.systemNotification') }}
                   </n-tooltip>
                 </n-badge>
               </div>
@@ -55,21 +43,29 @@
               </n-button>
             </div>
             <div class="flex flex-col pl-[48px]">
-              <div :class="getMessageContentClass(item)" @click="goDetail(item)">
-                {{
-                  item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
-                    ? item.contentText
-                    : parseMessageContent(item)?.content ?? '-'
-                }}
+              <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
+                <template v-for="(part, index) in getMessageContentParts(item)" :key="index">
+                  <n-button
+                    v-if="part.isResourceName"
+                    class="!h-auto !p-0"
+                    type="primary"
+                    text
+                    @click.stop="openResourceDetail(item)"
+                  >
+                    {{ part.text }}
+                  </n-button>
+                  <span v-else>{{ part.text }}</span>
+                </template>
                 <span
                   v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
                   class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
-                  @click="goUrl(item.contentText)"
+                  @click.stop="goUrl(item.contentText)"
                 >
                   {{ parseMessageContent(item)?.renameUrl ?? parseMessageContent(item)?.url }}
                 </span>
               </div>
-              <div class="text-[var(--text-n4)]">
+              <div class="mt-[8px] flex items-center justify-between gap-[12px] text-[12px] text-[var(--text-n4)]">
+                <span class="one-line-text">{{ getResourceTypeLabel(item.resourceType) }}</span>
                 {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
               </div>
             </div>
@@ -92,6 +88,35 @@
     :refresh-key="followDetailRefreshKey"
     readonly
   />
+  <ClueOverviewDrawer
+    v-if="resourceDrawerType === 'CLUE'"
+    v-model:show="showResourceDetailDrawer"
+    :detail="resourceDetail"
+  />
+  <CustomerOverviewDrawer
+    v-if="resourceDrawerType === 'CUSTOMER'"
+    v-model:show="showResourceDetailDrawer"
+    :source-id="activeResourceItem?.resourceId ?? ''"
+    readonly
+  />
+  <OptOverviewDrawer
+    v-if="resourceDrawerType === 'OPPORTUNITY'"
+    v-model:show="showResourceDetailDrawer"
+    :detail="resourceDetail"
+    readonly
+  />
+  <ContractDetailDrawer
+    v-if="resourceDrawerType === 'CONTRACT'"
+    v-model:visible="showResourceDetailDrawer"
+    :source-id="activeResourceItem?.resourceId ?? ''"
+    readonly
+  />
+  <OrderDetailDrawer
+    v-if="resourceDrawerType === 'ORDER'"
+    v-model:visible="showResourceDetailDrawer"
+    :source-id="activeResourceItem?.resourceId ?? ''"
+    readonly
+  />
 </template>
 
 <script lang="ts" setup>
@@ -106,6 +131,11 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import DetailDrawer from '@/components/business/crm-follow-drawer/components/detailDrawer.vue';
+  import ClueOverviewDrawer from '@/views/clueManagement/clue/components/clueOverviewDrawer.vue';
+  import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
+  import CustomerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import OptOverviewDrawer from '@/views/opportunity/components/optOverviewDrawer.vue';
+  import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
 
   import { getNotificationList, setNotificationRead } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
@@ -134,6 +164,8 @@
 
   const emit = defineEmits<{
     (e: 'refreshCount'): void;
+    (e: 'resourceTypesChange', resourceTypes: string[]): void;
+    (e: 'openApprovalTodo'): void;
   }>();
 
   function openNewPageQuotation(item: MessageCenterItem) {
@@ -159,6 +191,12 @@
   const followDetailSourceName = ref('');
   const followDetailRefreshKey = ref(0);
   const followDetailFormKey = ref(FormDesignKeyEnum.FOLLOW_RECORD);
+  const activeResourceItem = ref<MessageCenterItem>();
+  const resourceDrawerType = ref('');
+  const showResourceDetailDrawer = ref(false);
+  const resourceDetail = computed(() =>
+    activeResourceItem.value ? { id: activeResourceItem.value.resourceId } : undefined
+  );
 
   function openFollowDetail(
     item: MessageCenterItem,
@@ -178,8 +216,46 @@
   function openFollowPlanDetail(item: MessageCenterItem) {
     openFollowDetail(item, FormDesignKeyEnum.FOLLOW_PLAN);
   }
-
   const followPermission = ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'];
+
+  const resourceTypeLabelMap: Record<string, string> = {
+    CLUE: 'system.message.settings.category.lead',
+    CLUE_POOL: 'system.message.cluePoolMessage',
+    CUSTOMER: 'system.message.customerMessage',
+    CUSTOMER_POOL: 'system.message.openSeaMessage',
+    CUSTOMER_CONTACT: 'system.message.contactMessage',
+    OPPORTUNITY: 'system.message.opportunityMessage',
+    CONTRACT: 'module.contract',
+    ORDER: 'module.order',
+    FOLLOW_RECORD: 'system.message.settings.category.followRecord',
+    FOLLOW_PLAN: 'system.message.settings.category.followPlan',
+    CONTRACT_PAYMENT_PLAN: 'system.message.settings.category.paymentPlan',
+    CONTRACT_PAYMENT_RECORD: 'system.message.settings.category.paymentRecord',
+    CONTRACT_INVOICE: 'system.message.settings.category.invoice',
+    BUSINESS_TITLE: 'system.message.settings.category.quotation',
+  };
+
+  function getResourceTypeLabel(resourceType: string) {
+    const labelKey = resourceTypeLabelMap[resourceType.toUpperCase()];
+    return labelKey ? t(labelKey) : '';
+  }
+
+  function getMessageTag(item: MessageCenterItem) {
+    if (item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE) {
+      return { label: t('system.message.announcement'), type: 'warning' as const };
+    }
+    if (item.operation.toUpperCase().includes('MENTION') || item.triggerType?.toUpperCase() === 'MENTION') {
+      return { label: t('system.message.atMe'), type: 'primary' as const };
+    }
+    const triggerType = item.triggerType?.toUpperCase();
+    if (triggerType === 'ACTION') {
+      return { label: t('system.message.triggerType.action'), type: 'info' as const };
+    }
+    if (triggerType === 'FIELD' || triggerType === 'CONDITION') {
+      return { label: t('system.message.triggerType.condition'), type: 'success' as const };
+    }
+    return undefined;
+  }
 
   const permissionConfig = {
     OPPORTUNITY_QUOTATION_READ: ['OPPORTUNITY_QUOTATION:READ'],
@@ -233,13 +309,37 @@
     );
   }
 
-  function getMessageContentClass(item: MessageCenterItem) {
-    const detailAction = getMessageDetailAction(item.operation);
-    if (detailAction && hasAnyPermission(detailAction.permission)) {
-      return 'cursor-pointer text-[var(--primary-8)]';
+  function openResourceDetail(item: MessageCenterItem) {
+    const resourceType = item.resourceType?.toUpperCase() ?? '';
+    if (resourceType === 'APPROVAL') {
+      emit('openApprovalTodo');
+      return;
     }
-
-    return `message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`;
+    const drawerConfig: Record<string, { type: string; permission: string[] }> = {
+      CLUE: { type: 'CLUE', permission: ['CLUE_MANAGEMENT:READ'] },
+      CUSTOMER: { type: 'CUSTOMER', permission: ['CUSTOMER_MANAGEMENT:READ'] },
+      OPPORTUNITY: { type: 'OPPORTUNITY', permission: ['OPPORTUNITY_MANAGEMENT:READ'] },
+      CONTRACT: { type: 'CONTRACT', permission: ['CONTRACT:READ'] },
+      ORDER: { type: 'ORDER', permission: ['ORDER:READ'] },
+    };
+    if (resourceType === 'FOLLOW_RECORD' || resourceType === 'FOLLOW_PLAN') {
+      if (!hasAnyPermission(followPermission)) return;
+      openFollowDetail(
+        item,
+        resourceType === 'FOLLOW_RECORD' ? FormDesignKeyEnum.FOLLOW_RECORD : FormDesignKeyEnum.FOLLOW_PLAN
+      );
+      return;
+    }
+    const config = drawerConfig[resourceType];
+    if (config) {
+      if (!hasAnyPermission(config.permission)) return;
+      activeResourceItem.value = item;
+      resourceDrawerType.value = config.type;
+      showResourceDetailDrawer.value = true;
+      return;
+    }
+    const detailAction = getMessageDetailAction(item.operation);
+    if (detailAction && hasAnyPermission(detailAction.permission)) detailAction.action(item);
   }
 
   const innerKeyword = defineModel<string>('keyword', {
@@ -257,7 +357,32 @@
   });
 
   function parseMessageContent(item: MessageCenterItem) {
-    return JSON.parse(item.contentText || '{}');
+    try {
+      return JSON.parse(item.contentText || '{}');
+    } catch {
+      return { content: item.contentText || item.content || '' };
+    }
+  }
+
+  function getMessageContentParts(item: MessageCenterItem) {
+    const content = String(parseMessageContent(item)?.content ?? item.content ?? item.contentText ?? '');
+    const resourceName = item.resourceName?.trim();
+    if (!resourceName) return [{ text: content }];
+
+    const parts: { text: string; isResourceName?: boolean }[] = [];
+    let remainingContent = content;
+    let matchIndex = remainingContent.indexOf(resourceName);
+    while (matchIndex >= 0) {
+      if (matchIndex > 0) parts.push({ text: remainingContent.slice(0, matchIndex) });
+      parts.push({ text: resourceName, isResourceName: true });
+      remainingContent = remainingContent.slice(matchIndex + resourceName.length);
+      matchIndex = remainingContent.indexOf(resourceName);
+    }
+    if (remainingContent) parts.push({ text: remainingContent });
+    if (!parts.some((part) => part.isResourceName)) {
+      parts.push({ text: ` ${resourceName}`, isResourceName: true });
+    }
+    return parts;
   }
 
   const finished = ref(false);
@@ -278,8 +403,19 @@
         ...props.loadParams,
       });
       if (res) {
-        list.value = list.value.concat(res.list);
         pageNation.value.total = res.total;
+        const { triggerType } = props.loadParams;
+        const filteredList = res.list.filter((item) => {
+          if (triggerType === 'MENTION') {
+            return item.triggerType?.toUpperCase() === 'MENTION' || item.operation.toUpperCase().includes('MENTION');
+          }
+          if (!triggerType || !item.triggerType) return true;
+          return item.triggerType.toUpperCase() === triggerType;
+        });
+        list.value = list.value.concat(filteredList);
+        if (triggerType === 'MENTION') {
+          emit('resourceTypesChange', [...new Set(list.value.map((item) => item.resourceType).filter(Boolean))]);
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -312,16 +448,10 @@
   }
 
   function goUrl(context: string) {
-    const url = JSON.parse(context)?.url;
+    const url = parseMessageContent({ contentText: context } as MessageCenterItem)?.url;
     if (url) {
       window.open(url, '_blank');
     }
-  }
-
-  function goDetail(item: MessageCenterItem) {
-    const detailAction = getMessageDetailAction(item.operation);
-    if (!detailAction || !hasAnyPermission(detailAction.permission)) return;
-    detailAction.action(item);
   }
 
   onBeforeMount(() => {

@@ -98,12 +98,16 @@
                   :message-list="messageList"
                   :virtual-scroll-height="`calc(100vh - ${!showAlert ? 168 : 230}px)`"
                   key-field="id"
+                  @open-approval-todo="openTaskDrawer(ApprovalListTypeEnum.PENDING)"
                 />
               </div>
             </CrmCard>
           </div>
           <PersonalInfoDrawer v-model:visible="showPersonalInfo" v-model:active-tab-value="personalTab" />
-          <MessageDrawer v-model:show="showMessageDrawer" />
+          <MessageDrawer
+            v-model:show="showMessageDrawer"
+            @open-approval-todo="openTaskDrawer(ApprovalListTypeEnum.PENDING)"
+          />
         </div>
       </div>
     </n-scrollbar>

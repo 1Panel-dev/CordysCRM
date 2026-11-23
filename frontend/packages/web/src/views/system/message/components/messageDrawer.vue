@@ -20,7 +20,7 @@
     <div class="message-wrapper">
       <div class="message-count">
         <div class="p-[24px]">
-          <div class="overflow-hidden">
+          <div class="w-full overflow-hidden">
             <CrmTab
               v-model:active-tab="activeTab"
               class="mb-[16px]"
@@ -39,7 +39,7 @@
             @click="changeMessageType(item.value)"
           >
             <div>{{ item.label }}</div>
-            <div class="text-[var(--text-n4)]">{{ item.count }}</div>
+            <div v-if="item.count !== undefined" class="text-[var(--text-n4)]">{{ item.count }}</div>
           </div>
         </div>
         <div class="message-footer flex items-center px-[24px]">
@@ -54,6 +54,13 @@
         <div class="mb-[16px] flex items-center justify-between">
           <div class="flex items-center gap-[8px]">
             <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+            <n-select
+              v-model:value="triggerType"
+              class="w-[160px]"
+              :options="triggerTypeOptions"
+              :disabled="activeTab === 'PUBLIC'"
+              @update:value="refresh"
+            />
             <n-select
               v-model:value="timeDays"
               class="w-[180px]"
@@ -82,6 +89,7 @@
           :load-params="loadParams"
           virtual-scroll-height="calc(100vh - 162px)"
           key-field="id"
+          @open-approval-todo="emit('openApprovalTodo')"
           @refresh-count="() => initMessageCount()"
         />
       </div>
@@ -94,11 +102,8 @@
   import { NButton, NDatePicker, NDivider, NSelect, NSwitch, SelectOption } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import {
-    SystemMessageStatusEnum,
-    SystemMessageTypeEnum,
-    SystemResourceMessageTypeEnum,
-  } from '@lib/shared/enums/systemEnum';
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { SystemMessageStatusEnum, SystemMessageTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MessageCenterSubsetParams } from '@lib/shared/models/system/message';
 
@@ -109,6 +114,7 @@
 
   import { getNotificationCount, setAllNotificationRead } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
+  import { findRouteByName, hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -121,6 +127,9 @@
   const showMessageDrawer = defineModel<boolean>('show', {
     required: true,
   });
+  const emit = defineEmits<{
+    (e: 'openApprovalTodo'): void;
+  }>();
 
   const keyword = ref('');
 
@@ -130,12 +139,12 @@
       tab: t('system.message.allMessages'),
     },
     {
-      name: SystemMessageTypeEnum.SYSTEM_NOTICE,
-      tab: t('system.message.systemMessage'),
+      name: 'MENTION',
+      tab: t('system.message.atMe'),
     },
     {
-      name: SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE,
-      tab: t('system.message.announcement'),
+      name: 'PUBLIC',
+      tab: t('system.message.public'),
     },
   ];
 
@@ -167,6 +176,25 @@
   ];
   const activeTab = ref('');
   const activeMessageType = ref('');
+  const triggerType = ref('');
+  const triggerTypeOptions = computed(() => [
+    { label: t('system.message.triggerType.all'), value: '' },
+    { label: t('system.message.triggerType.action'), value: 'ACTION' },
+    { label: t('system.message.triggerType.condition'), value: 'FIELD' },
+    { label: t('system.message.triggerType.schedule'), value: 'SCHEDULE' },
+    { label: t('system.message.atMe'), value: 'MENTION' },
+  ]);
+
+  const moduleCategoryConfig: Partial<Record<ModuleConfigEnum, { resourceType: string; label: string }>> = {
+    [ModuleConfigEnum.CUSTOMER_MANAGEMENT]: { resourceType: 'CUSTOMER', label: 'system.message.customerMessage' },
+    [ModuleConfigEnum.FOLLOW_MANAGEMENT]: { resourceType: 'FOLLOW', label: 'module.followManagement' },
+    [ModuleConfigEnum.CLUE_MANAGEMENT]: { resourceType: 'CLUE', label: 'menu.clue' },
+    [ModuleConfigEnum.BUSINESS_MANAGEMENT]: { resourceType: 'OPPORTUNITY', label: 'module.businessManagement' },
+    [ModuleConfigEnum.CONTRACT]: { resourceType: 'CONTRACT', label: 'module.contract' },
+    [ModuleConfigEnum.ORDER]: { resourceType: 'ORDER', label: 'module.order' },
+    [ModuleConfigEnum.PRODUCT_MANAGEMENT]: { resourceType: 'PRODUCT', label: 'module.productManagement' },
+    [ModuleConfigEnum.CUSTOM_FORM]: { resourceType: 'CUSTOM_FORM', label: 'module.customForm' },
+  };
 
   const messageListRef = ref<InstanceType<typeof CrmMessageList>>();
 
@@ -199,14 +227,21 @@
     showMessageDrawer.value = false;
   }
 
+  function getActiveMessageType() {
+    if (activeTab.value === 'PUBLIC') return SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE;
+    if (activeTab.value === 'MENTION') return SystemMessageTypeEnum.SYSTEM_NOTICE;
+    return '';
+  }
+
   const loadParams = computed<MessageCenterSubsetParams>(() => {
     const timeRange = getTimeRange.value;
     return {
-      type: activeTab.value,
+      type: getActiveMessageType(),
       resourceType: activeMessageType.value,
       status: unReadEnable.value ? SystemMessageStatusEnum.UNREAD : '',
       endTime: timeRange?.endTime ?? null,
       createTime: timeRange?.startTime ?? null,
+      triggerType: activeTab.value === 'MENTION' ? 'MENTION' : triggerType.value,
     };
   });
 
@@ -217,82 +252,73 @@
 
   const messageCount = ref<Record<string, string>>({});
 
+  function getModuleRouteName(moduleKey: string) {
+    const routeNames: Partial<Record<ModuleConfigEnum, string>> = {
+      [ModuleConfigEnum.CUSTOMER_MANAGEMENT]: 'account',
+      [ModuleConfigEnum.FOLLOW_MANAGEMENT]: 'followManagement',
+      [ModuleConfigEnum.CLUE_MANAGEMENT]: 'leadManagement',
+      [ModuleConfigEnum.BUSINESS_MANAGEMENT]: 'opportunity',
+      [ModuleConfigEnum.PRODUCT_MANAGEMENT]: 'product',
+      [ModuleConfigEnum.SYSTEM_SETTINGS]: 'system',
+      [ModuleConfigEnum.DASHBOARD]: 'dashboard',
+      [ModuleConfigEnum.AGENT]: 'agent',
+      [ModuleConfigEnum.CONTRACT]: 'contract',
+      [ModuleConfigEnum.ORDER]: 'order',
+      [ModuleConfigEnum.TENDER]: 'tender',
+      [ModuleConfigEnum.CUSTOM_FORM]: 'customForm',
+    };
+    return routeNames[moduleKey as ModuleConfigEnum] ?? moduleKey;
+  }
+
+  function getCategoryCount(isPublic: boolean) {
+    if (activeTab.value === 'MENTION') return undefined;
+    if (isPublic) return messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE];
+    return messageCount.value.total;
+  }
+
   const messageTypeList = computed(() => {
-    const enabledModuleKeys = new Set(
-      appStore.moduleConfigList.filter((module) => module.enable).map((module) => module.moduleKey.toUpperCase())
-    );
+    const isPublic = activeTab.value === 'PUBLIC';
+    const allCategory = {
+      value: '',
+      label: isPublic ? t('system.message.public') : t('system.message.allMessage'),
+      count: getCategoryCount(isPublic),
+    };
+    if (isPublic) return [allCategory];
 
-    const isAnnouncementTab = activeTab.value === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE;
-
-    const allMessage = [
-      {
-        value: '',
-        label: t('system.message.allMessage'),
-        count: isAnnouncementTab
-          ? messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE]
-          : messageCount.value?.total,
-      },
-    ];
-
-    const todoListMessage = [
+    return [
+      allCategory,
       {
         value: 'APPROVAL',
-        label: t('system.message.todoList'),
-        count: messageCount.value?.APPROVAL || 0,
+        label: t('system.message.settings.category.todo'),
+        count: activeTab.value === 'MENTION' ? undefined : messageCount.value.APPROVAL ?? 0,
       },
-    ];
-
-    const baseMessageTypes = [
-      {
-        value: SystemResourceMessageTypeEnum.CLUE,
-        label: t('menu.clue'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.CLUE] || 0,
-      },
-      {
-        value: SystemResourceMessageTypeEnum.CUSTOMER,
-        label: t('system.message.customerMessage'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.CUSTOMER] || 0,
-      },
-      {
-        value: SystemResourceMessageTypeEnum.OPPORTUNITY,
-        label: t('system.message.opportunityMessage'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.OPPORTUNITY] || 0,
-      },
-      {
-        value: SystemResourceMessageTypeEnum.CONTRACT,
-        label: t('module.contract'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.CONTRACT] || 0,
-      },
-      {
-        value: SystemResourceMessageTypeEnum.ORDER,
-        label: t('module.order'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.ORDER] || 0,
-      },
-      {
-        value: SystemResourceMessageTypeEnum.SYSTEM,
-        label: t('system.message.system'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.SYSTEM] || 0,
-      },
-    ];
-
-    if (isAnnouncementTab) {
-      return allMessage;
-    }
-    return [
-      ...allMessage,
-      ...todoListMessage,
-      ...baseMessageTypes.filter(({ value }) => enabledModuleKeys.has(value) || value),
+      ...appStore.moduleConfigList.flatMap((module) => {
+        const category = moduleCategoryConfig[module.moduleKey as ModuleConfigEnum];
+        const route = findRouteByName(getModuleRouteName(module.moduleKey));
+        if ((!module.enable && activeTab.value !== 'MENTION') || !category) return [];
+        if (activeTab.value !== 'MENTION' && (!route || !hasAnyPermission(route.meta?.permissions as string[]))) {
+          return [];
+        }
+        return [
+          {
+            value: category.resourceType,
+            label: t(category.label),
+            count: activeTab.value === 'MENTION' ? undefined : messageCount.value[category.resourceType] ?? 0,
+          },
+        ];
+      }),
     ];
   });
 
   async function initMessageCount() {
     try {
       const result = await getNotificationCount({
-        type: activeTab.value,
+        type: loadParams.value.type,
         status: '',
         resourceType: activeMessageType.value,
         createTime: null,
         endTime: null,
+        triggerType: loadParams.value.triggerType,
       });
       if (result) {
         result.forEach(({ key, count }) => {
@@ -321,6 +347,7 @@
 
   function handleChangeType() {
     activeMessageType.value = '';
+    triggerType.value = '';
     refresh(true);
   }
 
@@ -380,5 +407,8 @@
       width: calc(100% - 268px);
       @apply h-full;
     }
+  }
+  :deep(.n-tabs-rail) {
+    width: 100%;
   }
 </style>

@@ -10,8 +10,8 @@ import {
   AdvancedSearchOptPageUrl,
   ApprovalQuotationUrl,
   BatchApproveUrl,
-  BatchUpdateQuotationUrl,
   BatchUpdateOpportunityUrl,
+  BatchUpdateQuotationUrl,
   BatchVoidedUrl,
   DeleteBusinessViewUrl,
   DeleteOpportunityStageUrl,
@@ -61,8 +61,10 @@ import {
   PreCheckOptImportUrl,
   QuotationPageUrl,
   RevokeQuotationUrl,
+  SaveOpportunityStageAdvancedConfigUrl,
   SortOpportunityStageUrl,
   SortOpportunityUrl,
+  SwitchOpportunityCirculationTypeUrl,
   UpdateBusinessViewUrl,
   UpdateOpportunityStageRollbackUrl,
   UpdateOpportunityStageUrl,
@@ -72,10 +74,9 @@ import {
   UpdateQuotationUrl,
   UpdateQuotationViewUrl,
   VoidQuotationUrl,
-  SaveOpportunityStageAdvancedConfigUrl,
-  SwitchOpportunityCirculationTypeUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+import type { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum';
 import type {
   ChartResponseDataItem,
   CommonList,
@@ -106,25 +107,24 @@ import type {
   BatchOperationResult,
   BatchUpdateQuotationStatusParams,
   BatchVoidQuotationStatusParams,
-  StageBoardPageQueryParams,
-  StageBoardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
   OpportunityStageConfig,
   QuotationItem,
   QuotationQueryParams,
+  SaveCirculationConfigParams,
   SaveOpportunityParams,
   SaveQuotationParams,
+  StageBoardDraggedParams,
+  StageBoardPageQueryParams,
   UpdateOpportunityParams,
   UpdateOpportunityStageParams,
   UpdateOpportunityStageRollbackParams,
   UpdateQuotationParams,
-  SaveCirculationConfigParams,
 } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
-import type { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 商机列表
@@ -213,6 +213,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<FollowDetailItem>({ url: `${GetOptFollowPlanUrl}/${id}` });
   }
 
+  // 更新商机跟进计划状态
+  function updateOptFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
+    return CDR.post({ url: UpdateOptFollowPlanStatusUrl, data });
+  }
+
   // 取消商机跟进计划
   function cancelOptFollowPlan(id: string) {
     return updateOptFollowPlanStatus({ id, status: CustomerFollowPlanStatusEnum.CANCELLED });
@@ -246,11 +251,6 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取商机联系人列表
   function getOpportunityContactList(data: CustomerContractTableParams) {
     return CDR.get({ url: `${GetOpportunityContactListUrl}/${data.id}` });
-  }
-
-  // 更新商机跟进计划状态
-  function updateOptFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
-    return CDR.post({ url: UpdateOptFollowPlanStatusUrl, data });
   }
 
   // 导出全量商机列表
