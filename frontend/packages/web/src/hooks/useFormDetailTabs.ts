@@ -4,6 +4,7 @@ import type { FormConfig, FormDetailTabConfig } from '@lib/shared/models/system/
 
 import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
+import { getDetailTabAvailabilityKey } from '@/hooks/useFormDetailTabAvailability';
 import { systemDetailTabTableConfigMap } from '@/hooks/useFormDetailTabTable';
 import { hasAllPermission } from '@/utils/permission';
 
@@ -59,11 +60,11 @@ export default function useFormDetailTabs(
           detailTab.relatedForm?.id &&
           detailTab.relatedField?.id &&
           detailTab.name.trim() &&
-          (!availableIds || availableIds.has(detailTab.id))
+          (!availableIds || availableIds.has(getDetailTabAvailabilityKey(detailTab)))
       )
       .map((detailTab) => ({
         // 同一关联表单下的关联字段不可重复，可作为运行态 Tab 的稳定唯一标识。
-        name: `detail-tab:${detailTab.relatedForm!.id}:${detailTab.relatedField!.id}`,
+        name: getDetailTabAvailabilityKey(detailTab),
         tab: detailTab.name,
         enable: detailTab.enable,
         disabled: !detailTab.enable,
