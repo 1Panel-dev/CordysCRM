@@ -55,6 +55,7 @@
             smt.task_type,
             smt.template,
             smt.`enable`,
+            smt.type,
             smt.create_user,
             smt.create_time,
             smt.update_user,
