@@ -3,6 +3,8 @@ package cn.cordys.crm.system.dto.message;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class MessageAddRequest {
 
@@ -13,7 +15,7 @@ public class MessageAddRequest {
     private String taskType;
 
     @Schema(description = "接收人")
-    private String scopeId;
+    private List<String> scopeId;
 
     @Schema(description = "接收方式")
     private String receiveMethod;
