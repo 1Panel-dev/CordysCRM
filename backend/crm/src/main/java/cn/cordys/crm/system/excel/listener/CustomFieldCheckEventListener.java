@@ -10,6 +10,9 @@ import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.ControlRuleProp;
+import cn.cordys.crm.system.dto.field.base.HasOption;
+import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.excel.domain.ExcelErrData;
 import cn.idev.excel.context.AnalysisContext;
@@ -27,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -107,6 +111,19 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
 
     protected Map<String, String> subTable = new HashMap<>();
 
+    /**
+     * 可导入字段缓存(字段ID -> 字段), 用于解析显隐规则控制字段的选项
+     */
+    private final Map<String, BaseField> fieldsById = new HashMap<>();
+    /**
+     * 显隐规则缓存: 被控字段ID -> (控制字段ID -> 触发显示的控制字段值集合)
+     */
+    private final Map<String, Map<String, Set<String>>> showControlMap = new HashMap<>();
+    /**
+     * 字段ID -> 表头列下标, 表头解析完成后构建, 用于按行判断被控字段是否显示
+     */
+    private final Map<String, Integer> fieldColumnIndexMap = new HashMap<>();
+
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable,
             String currentOrg, String importType) {
         this(fields, sourceTable, fieldTable, currentOrg, null, null, importType);
@@ -120,11 +137,13 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             if (isInvalidField(field)) {
                 continue;
             }
+            registerField(field);
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 for (BaseField f : subField.getSubFields()) {
                     if (isInvalidField(f)) {
                         continue;
                     }
+                    registerField(f);
                     this.fieldMap.put(subField.getName() + "_" + f.getName(), f);
                     refSubMap.put(subField.getName() + "_" + f.getName(), subField.getId());
                     setCheckLimit(f, subField.getName());
@@ -202,6 +221,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             this.headMap = realHeadMap;
         }
         this.checkHeadMap = headMap;
+        cacheFieldColumnIndex();
         this.businessFieldMap = Arrays.stream(BusinessModuleField.values())
                 .collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
         cacheUniqueSet();
@@ -286,7 +306,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 checkId(checkHeadMap.get(k), sourceId, errText);
             }
 
-            if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
+            if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k)) && isFieldVisible(v, rowData)) {
                 if (subFields.contains(v)) {
                     errText.append(v).append(Translator.get("cannot_be_null")).append(";");
                 } else {
@@ -435,6 +455,106 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     }
 
     /**
+     * 缓存可导入字段及其显隐规则
+     *
+     * @param field 字段
+     */
+    private void registerField(BaseField field) {
+        if (StringUtils.isEmpty(field.getId())) {
+            return;
+        }
+        fieldsById.put(field.getId(), field);
+        if (CollectionUtils.isEmpty(field.getShowControlRules())) {
+            return;
+        }
+        for (ControlRuleProp rule : field.getShowControlRules()) {
+            if (rule == null || StringUtils.isEmpty(rule.getValue())
+                    || CollectionUtils.isEmpty(rule.getFieldIds())) {
+                continue;
+            }
+            for (String targetFieldId : rule.getFieldIds()) {
+                if (StringUtils.isEmpty(targetFieldId)) {
+                    continue;
+                }
+                showControlMap.computeIfAbsent(targetFieldId, key -> new HashMap<>())
+                        .computeIfAbsent(field.getId(), key -> new HashSet<>())
+                        .add(rule.getValue());
+            }
+        }
+    }
+
+    /**
+     * 表头解析完成后缓存字段所在列, 用于按行计算显隐规则
+     */
+    private void cacheFieldColumnIndex() {
+        fieldColumnIndexMap.clear();
+        if (headMap == null) {
+            return;
+        }
+        headMap.forEach((columnIndex, columnKey) -> {
+            BaseField field = fieldMap.get(columnKey);
+            if (field != null && StringUtils.isNotEmpty(field.getId())) {
+                fieldColumnIndexMap.putIfAbsent(field.getId(), columnIndex);
+            }
+        });
+    }
+
+    /**
+     * 判断指定列对应字段在当前行是否显示(命中显隐规则)。
+     * 无显隐规则的字段始终显示; 被控字段需其控制字段当前行取值命中规则值才显示。
+     *
+     * @param columnKey 列Key (字段名_字段名)
+     * @param rowData   行数据
+     * @return 是否显示
+     */
+    private boolean isFieldVisible(String columnKey, Map<Integer, String> rowData) {
+        BaseField field = fieldMap.get(columnKey);
+        if (field == null) {
+            return true;
+        }
+        Map<String, Set<String>> controlRules = showControlMap.get(field.getId());
+        if (controlRules == null || controlRules.isEmpty()) {
+            return true;
+        }
+        for (Map.Entry<String, Set<String>> entry : controlRules.entrySet()) {
+            Integer columnIndex = fieldColumnIndexMap.get(entry.getKey());
+            if (columnIndex == null) {
+                continue;
+            }
+            String cellText = rowData.get(columnIndex);
+            if (StringUtils.isEmpty(cellText)) {
+                continue;
+            }
+            // 导入模板中选项列填写的是选项文本, 需转换为选项值后再与规则值比较
+            if (entry.getValue().contains(resolveControlValue(fieldsById.get(entry.getKey()), cellText))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 将控制字段的单元格文本转换为选项值
+     *
+     * @param controlField 控制字段
+     * @param cellText     单元格文本
+     * @return 选项值, 无法匹配选项时返回原文本
+     */
+    private String resolveControlValue(BaseField controlField, String cellText) {
+        if (controlField instanceof HasOption optionField
+                && CollectionUtils.isNotEmpty(optionField.getOptions())) {
+            return optionField.getOptions().stream()
+                    .filter(option -> option.getLabel() != null && Strings.CS.equals(option.getLabel(), cellText))
+                    .map(OptionProp::getValue)
+                    .filter(Objects::nonNull)
+                    .map(String::valueOf)
+                    .findFirst()
+                    .orElse(cellText);
+        }
+        return cellText;
+    }
+
+    /**
      * 表头是否非法
      *
      * @param headMap 表头集合
@@ -443,6 +563,10 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     private String checkIllegalHead(Map<Integer, String> headMap) {
         for (BaseField field : fieldMap.values()) {
             if (!field.canImport(field) || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
+                continue;
+            }
+            // 受显隐规则控制的字段可能因隐藏而缺失对应表头, 不强制要求其表头存在
+            if (showControlMap.containsKey(field.getId())) {
                 continue;
             }
             if (!headMap.containsValue(field.getName())) {
