@@ -736,9 +736,14 @@ export const {
 } = businessApi;
 
 export const {
-  getMessageTask,
+  getMessageTaskSystemTypes,
+  getMessageTaskCustomFormTypes,
+  getMessageTaskPage,
+  addMessageTask,
+  updateMessageTask,
+  deleteMessageTask,
+  enableMessageTask,
   addAnnouncement,
-  saveMessageTask,
   updateAnnouncement,
   deleteAnnouncement,
   getHomeMessageList,
@@ -746,12 +751,10 @@ export const {
   getNotificationList,
   setNotificationRead,
   getNotificationCount,
-  batchSaveMessageTask,
   getAnnouncementDetail,
   closeMessageSubscribe,
   getUnReadAnnouncement,
   setAllNotificationRead,
-  getMessageTaskConfigDetail,
 } = messageApi;
 
 export const {

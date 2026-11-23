@@ -1,21 +1,24 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddAnnouncementUrl,
-  BatchSaveMessageTaskUrl,
+  AddMessageTaskUrl,
   CloseMessageUrl,
   DeleteAnnouncementUrl,
+  DeleteMessageTaskUrl,
+  EnableMessageTaskUrl,
   GetAnnouncementDetailUrl,
   GetAnnouncementListUrl,
   GetHomeMessageUrl,
-  getMessageTaskConfigDetailUrl,
-  GetMessageTaskUrl,
+  GetMessageTaskCustomFormTypesUrl,
+  GetMessageTaskPageUrl,
+  GetMessageTaskSystemTypesUrl,
   GetNotificationCountUrl,
   GetNotificationListUrl,
   GetUnReadAnnouncement,
-  SaveMessageTaskUrl,
   SetAllNotificationReadUrl,
   SetNotificationReadUrl,
   UpdateAnnouncementUrl,
+  UpdateMessageTaskUrl,
 } from '@lib/shared/api/requrls/system/message';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
@@ -24,9 +27,10 @@ import type {
   AnnouncementTableQueryParams,
   MessageCenterItem,
   MessageCenterQueryParams,
-  MessageConfigItem,
-  MessageSettingsConfig,
-  SaveMessageConfigParams,
+  MessageTaskCountDTO,
+  MessageTaskPageParams,
+  MessageTaskResponse,
+  MessageTaskSaveParams,
 } from '@lib/shared/models/system/message';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -77,24 +81,37 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: SetAllNotificationReadUrl });
   }
 
-  // 获取消息设置
-  function getMessageTask() {
-    return CDR.get<MessageConfigItem[]>({ url: GetMessageTaskUrl });
+  function getMessageTaskSystemTypes() {
+    return CDR.get<MessageTaskCountDTO[]>({ url: GetMessageTaskSystemTypesUrl });
+  }
+
+  function getMessageTaskCustomFormTypes() {
+    return CDR.get<MessageTaskCountDTO[]>({ url: GetMessageTaskCustomFormTypesUrl });
+  }
+
+  function getMessageTaskPage(data: MessageTaskPageParams) {
+    return CDR.post<CommonList<MessageTaskResponse>>({ url: GetMessageTaskPageUrl, data });
+  }
+
+  function addMessageTask(data: MessageTaskSaveParams) {
+    return CDR.post({ url: AddMessageTaskUrl, data });
+  }
+
+  function updateMessageTask(data: MessageTaskSaveParams & { id: string }) {
+    return CDR.post({ url: UpdateMessageTaskUrl, data });
+  }
+
+  function deleteMessageTask(id: string) {
+    return CDR.get({ url: `${DeleteMessageTaskUrl}/${id}` });
+  }
+
+  function enableMessageTask(id: string) {
+    return CDR.get({ url: `${EnableMessageTaskUrl}/${id}` });
   }
 
   // 获取首页消息列表
   function getHomeMessageList() {
     return CDR.get<MessageCenterItem[]>({ url: GetHomeMessageUrl });
-  }
-
-  // 保存消息设置
-  function saveMessageTask(data: SaveMessageConfigParams) {
-    return CDR.post({ url: SaveMessageTaskUrl, data });
-  }
-
-  // 批量编辑消息设置
-  function batchSaveMessageTask(data: Pick<SaveMessageConfigParams, 'emailEnable' | 'sysEnable' | 'weComEnable'>) {
-    return CDR.post({ url: BatchSaveMessageTaskUrl, data });
   }
 
   // 关闭订阅消息SSE事件流
@@ -107,11 +124,6 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<MessageCenterItem[]>({ url: GetUnReadAnnouncement });
   }
 
-  // 获取消息任务配置详情
-  function getMessageTaskConfigDetail(data: { module: string ,event:string}) {
-    return CDR.post<MessageSettingsConfig>({ url: getMessageTaskConfigDetailUrl, data });
-  }
-
   return {
     addAnnouncement,
     updateAnnouncement,
@@ -122,12 +134,15 @@ export default function useProductApi(CDR: CordysAxios) {
     getNotificationCount,
     setNotificationRead,
     setAllNotificationRead,
-    getMessageTask,
-    saveMessageTask,
-    batchSaveMessageTask,
+    getMessageTaskSystemTypes,
+    getMessageTaskCustomFormTypes,
+    getMessageTaskPage,
+    addMessageTask,
+    updateMessageTask,
+    deleteMessageTask,
+    enableMessageTask,
     getHomeMessageList,
     closeMessageSubscribe,
     getUnReadAnnouncement,
-    getMessageTaskConfigDetail,
   };
 }

@@ -226,19 +226,13 @@ export const pathMap: PathMapItem[] = [
         children: [
           {
             key: 'SYSTEM_MESSAGE_MESSAGE',
-            route: AppRouteEnum.SYSTEM_MESSAGE,
+            route: AppRouteEnum.SYSTEM_MESSAGE_NOTIFY,
             locale: 'system.message.notify',
-            routeQuery: {
-              tab: 'notify',
-            },
           },
           {
             key: 'SYSTEM_MESSAGE_ANNOUNCEMENT',
-            route: AppRouteEnum.SYSTEM_MESSAGE,
+            route: AppRouteEnum.SYSTEM_MESSAGE_ANNOUNCEMENT,
             locale: 'system.message.announcement',
-            routeQuery: {
-              tab: 'announcement',
-            },
           },
         ],
       },

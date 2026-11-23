@@ -43,47 +43,82 @@ export interface AnnouncementItemDetail {
   userIdName: SelectedUsersItem[]; // 用户
 }
 
-export interface MessageTaskDetailDTOItem {
-  event: string;
-  eventName: string;
-  sysEnable: boolean;
-  emailEnable: boolean;
-  weComEnable: boolean;
-  dingTalkEnable: boolean;
-  larkEnable: boolean;
+export interface MessageTaskCountDTO {
+  taskType: string;
+  count: number;
+  name?: string;
 }
 
-export interface MessageConfigItem extends MessageTaskDetailDTOItem {
+export interface MessageTaskPageParams {
+  current: number;
+  pageSize: number;
+  taskType: string;
+  sort: Record<string, unknown>;
+  combineSearch: {
+    searchMode: string;
+    conditions: unknown[];
+  };
+  keyword: string;
+  viewId: string;
+  filters: unknown[];
+}
+
+export interface MessageTaskScopeMember {
   id: string;
-  module: string; // 消息配置功能
-  moduleName: string; // 消息配置功能名称
-  messageTaskDetailDTOList: MessageTaskDetailDTOItem[];
+  scope: string;
+  name: string;
 }
 
-export interface MessageSettingsConfig {
-  timeList: {
-    timeValue: number;
-    timeUnit: string;
+export interface MessageTaskTriggerConfig {
+  actionTypeConfig?: string;
+  scheduleTypeConfig?: {
+    fieldId?: string;
+    day?: string;
+    time?: string;
+    remindType?: string;
+  };
+  fieldTypeConfig?: {
+    name: string;
+    value: unknown;
+    operator: string;
+    multipleValue?: boolean;
+    type?: string;
+    containChildIds?: string[];
   }[];
-  userIds: string[];
-  roleIds: string[];
-  ownerEnable: boolean;
-  ownerLevel: number;
-  roleEnable: boolean;
-  userIdNames: { id: string; name: string }[];
-  roleIdNames: { id: string; name: string }[];
 }
 
+export interface MessageTaskResponse {
+  id: string;
+  name: string;
+  taskType: string;
+  type: 'SYSTEM' | 'CUSTOM';
+  triggerType: string;
+  scopeId: string[];
+  members: MessageTaskScopeMember[];
+  receiveMethod: string;
+  value: string;
+  config: MessageTaskTriggerConfig;
+  createUser?: string;
+  createUserName?: string;
+  updateUser?: string;
+  updateUserName?: string;
+  createTime?: number;
+  updateTime?: number;
+  template: string;
+  templateValue: string[];
+  enable: boolean;
+}
 
-export interface SaveMessageConfigParams {
-  module: string;
-  event: string;
-  emailEnable?: boolean;
-  sysEnable?: boolean;
-  weComEnable?: boolean;
-  dingTalkEnable?: boolean;
-  larkEnable?: boolean;
-  config?:MessageSettingsConfig;
+export interface MessageTaskSaveParams {
+  id?: string;
+  name: string;
+  taskType: string;
+  scopeId: string[];
+  receiveMethod: string;
+  triggerType: string;
+  config: MessageTaskTriggerConfig;
+  template: string;
+  type: 'SYSTEM' | 'CUSTOM';
 }
 
 export interface MessageCenterItem {

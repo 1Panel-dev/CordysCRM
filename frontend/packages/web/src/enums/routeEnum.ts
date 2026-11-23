@@ -7,6 +7,8 @@ export enum SystemRouteEnum {
   SYSTEM_LICENSE = 'systemLicense',
   SYSTEM_LOG = 'systemLog',
   SYSTEM_MESSAGE = 'systemMessage',
+  SYSTEM_MESSAGE_NOTIFY = 'systemMessageNotify',
+  SYSTEM_MESSAGE_ANNOUNCEMENT = 'systemMessageAnnouncement',
   SYSTEM_PROCESS = 'systemProcess',
   SYSTEM_PROCESS_INDEX = 'systemProcessIndex',
   SYSTEM_PROCESS_WORKFLOW = 'systemProcessWorkflow',

@@ -1,8 +1,11 @@
 <template>
-  <div class="w-full rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+  <div
+    class="w-full rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
+    :class="{ 'filter-content-single-compact': props.hideActionsWhenSingle && formModel.list.length === 1 }"
+  >
     <slot name="header"></slot>
     <div class="flex w-full">
-      <div class="and-or">
+      <div v-if="!props.hideLogicOperator" class="and-or">
         <CrmTag
           type="primary"
           theme="light"
@@ -13,7 +16,7 @@
           {{ formModel.searchMode === 'AND' ? 'and' : 'or' }}
         </CrmTag>
       </div>
-      <div class="min-w-0 flex-1">
+      <div class="min-w-0 flex-1" :class="hideActionsWhenSingle ? 'h-[34px]' : ''">
         <n-form ref="formRef" :model="formModel">
           <div
             v-for="(item, listIndex) in formModel.list"
@@ -237,6 +240,7 @@
               />
             </n-form-item>
             <n-button
+              v-if="!(props.hideActionsWhenSingle && formModel.list.length === 1)"
               :disabled="(props.keepOneLine && formModel.list.length === 1) || props.readonly"
               class="outline--secondary px-[7px]"
               @click="handleDeleteItem(listIndex)"
@@ -247,8 +251,15 @@
             </n-button>
           </div>
         </n-form>
-        <div class="flex items-center justify-between">
-          <n-tooltip v-if="!props.readonly" :delay="300" :disabled="!props.maxFilterFieldAddTooltip || !isDisabledAdd">
+        <div
+          v-if="!props.hideActionsWhenSingle || formModel.list.length !== 1 || $slots.addButtonRight"
+          class="flex items-center justify-between"
+        >
+          <n-tooltip
+            v-if="!props.readonly && !(props.hideActionsWhenSingle && formModel.list.length === 1)"
+            :delay="300"
+            :disabled="!props.maxFilterFieldAddTooltip || !isDisabledAdd"
+          >
             <template #trigger>
               <n-button type="primary" :disabled="isDisabledAdd" text class="w-[fit-content]" @click="handleAddItem">
                 <template #icon>
@@ -304,11 +315,14 @@
     noFilterOption?: boolean; // 第一列取消过滤
     maxFilterFieldNumber?: number; // 最大限制条件数量
     maxFilterFieldAddTooltip?: string; // 添加最大限制文本提示
+    hideLogicOperator?: boolean; // 隐藏左侧 AND/OR 控件
+    hideActionsWhenSingle?: boolean; // 单条条件时隐藏添加和删除按钮
   }>();
 
   const formModel = defineModel<FilterForm>('formModel', {
     required: true,
   });
+  const isSingleConditionCompact = computed(() => props.hideActionsWhenSingle && formModel.value.list.length === 1);
   // 过滤
   const formRef = ref<FormInst | null>(null);
 
@@ -574,5 +588,16 @@
   }
   :deep(.n-form-item-feedback-wrapper) {
     min-height: 8px;
+  }
+  .filter-content-single-compact {
+    :deep(.n-form-item:not(.n-form-item--error)) {
+      margin-bottom: 0;
+
+      --n-feedback-height: 0 !important;
+      --n-feedback-padding: 0 !important;
+    }
+    :deep(.n-form-item:not(.n-form-item--error) .n-form-item-feedback-wrapper) {
+      min-height: 0;
+    }
   }
 </style>
