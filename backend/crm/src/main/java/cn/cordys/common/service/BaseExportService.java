@@ -28,6 +28,7 @@ import cn.cordys.crm.system.dto.field.DepartmentField;
 import cn.cordys.crm.system.dto.field.MemberField;
 import cn.cordys.crm.system.dto.field.SelectField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -380,7 +381,8 @@ public abstract class BaseExportService {
             if (meta.isNoResource()) {
                 value = sysFieldValMap.get(businessKey);
                 if (value != null) {
-                    dataList.add(value);
+                    // 系统字段跳过后续常规解析, 选项类字段需在此按字段配置转换为选项名称
+                    dataList.add(transformSystemFieldValue(meta, value, cacheMap));
                     continue;
                 }
                 value = normalFieldMap.get(businessKey);
@@ -412,6 +414,72 @@ public abstract class BaseExportService {
         return dataList;
     }
 
+    /**
+     * 转换系统字段值
+     * <p>
+     * 系统字段不经过常规字段解析, 选项类字段的值可能直接是选项值(code), 这里按字段选项配置统一转换为选项名称;
+     * 若值已是选项名称(如其他导出服务已转换), 则保持原值, 避免重复解析为空.
+     *
+     * @param meta     导出字段元数据
+     * @param value    系统字段原始值
+     * @param cacheMap 缓存
+     * @return 转换后的值
+     */
+    private Object transformSystemFieldValue(FieldExportMeta meta, Object value, Map<Object, Object> cacheMap) {
+        BaseField field = meta.getField();
+        AbstractModuleFieldResolver<?> resolver = meta.getResolver();
+        if (field instanceof HasOption hasOption && resolver != null
+                && isAllOptionValue(hasOption.getOptions(), value)) {
+            return transformFieldValue(resolver, field, value, cacheMap);
+        }
+        return value;
+    }
+
+    /**
+     * 判断值是否全部为字段选项值(code)
+     *
+     * @param options 选项集合
+     * @param value   字段值
+     * @return 是否全部匹配选项值
+     */
+    private boolean isAllOptionValue(List<OptionProp> options, Object value) {
+        List<String> values = parseOptionValues(value);
+        if (CollectionUtils.isEmpty(options) || CollectionUtils.isEmpty(values)) {
+            return false;
+        }
+        return values.stream().allMatch(item -> options.stream()
+                .anyMatch(option -> option.getValue() != null
+                        && Strings.CI.equals(option.getValue().toString(), item)));
+    }
+
+    /**
+     * 解析选项字段的原始值, 兼容单值、集合与 JSON 数组字符串
+     *
+     * @param value 字段值
+     * @return 选项值集合
+     */
+    private List<String> parseOptionValues(Object value) {
+        if (value == null) {
+            return List.of();
+        }
+        if (value instanceof List<?> list) {
+            return list.stream().filter(Objects::nonNull).map(Object::toString)
+                    .filter(StringUtils::isNotBlank).toList();
+        }
+        String str = value.toString().trim();
+        if (StringUtils.isBlank(str)) {
+            return List.of();
+        }
+        if (str.startsWith("[") && str.endsWith("]")) {
+            try {
+                return JSON.parseArray(str, String.class).stream().filter(StringUtils::isNotBlank).toList();
+            } catch (Exception e) {
+                return List.of();
+            }
+        }
+        return List.of(str);
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object transformFieldValue(AbstractModuleFieldResolver resolver, BaseField field, Object value,
             Map<Object, Object> cacheMap) {
@@ -421,8 +489,10 @@ public abstract class BaseExportService {
         // 部分单选类型的字段值可走缓存
         boolean cacheable = field instanceof DatasourceField || field instanceof DepartmentField
                 || field instanceof SelectField || field instanceof MemberField;
+        // 缓存key需包含字段标识, 避免不同选项字段相同选项值(cache key)时串值
+        Object cacheKey = StringUtils.defaultString(field.idOrBusinessKey()) + ":" + value;
         if (cacheable && MapUtils.isNotEmpty(cacheMap)) {
-            Object cached = cacheMap.get(value);
+            Object cached = cacheMap.get(cacheKey);
             if (cached != null) {
                 return cached;
             }
@@ -432,7 +502,7 @@ public abstract class BaseExportService {
         try {
             Object data = resolver.transformToValue(field, parseVal);
             if (cacheable && MapUtils.isNotEmpty(cacheMap) && data != null) {
-                cacheMap.put(value, data);
+                cacheMap.put(cacheKey, data);
             }
             return data;
         } catch (Exception e) {
