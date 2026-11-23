@@ -1621,11 +1621,6 @@
       "fieldWidth": 1,
       "numberFormat": "number",
       "showThousandsSeparator": true,
-      "rules": [
-        {
-          "key": "required"
-        }
-      ],
       "mobile": true
     },
     {
@@ -1637,11 +1632,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "rules": [
-        {
-          "key": "required"
-        }
-      ],
       "mobile": true
     }
   ],
