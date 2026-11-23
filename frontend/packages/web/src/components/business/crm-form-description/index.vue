@@ -152,11 +152,11 @@
               showLabel: false,
             }"
             :path="item.fieldInfo?.id"
-            :disabled="!item.fieldInfo?.editable"
+            :disabled="!canEditOpportunityEndDate(item.fieldInfo)"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo?.id]"
             needInitDetail
-            @change="handleFormChange()"
+            @change="canEditOpportunityEndDate(item.fieldInfo) && handleFormChange()"
           />
           <div v-else>{{ item.value || '-' }}</div>
         </div>
@@ -431,6 +431,13 @@
     return (
       props.formKey === FormDesignKeyEnum.BUSINESS && field?.businessKey === 'expectedEndTime' && !field.resourceFieldId
     );
+  }
+
+  function canEditOpportunityEndDate(field?: FormCreateField) {
+    if (props.readonly || !field?.editable) return false;
+    // 审批权限
+    const permission = props.fieldPermissions?.find((item) => item.fieldId === field.id);
+    return !permission || permission.permissionType === ApprovalFieldPermissionModeEnum.EDIT;
   }
 
   function validateField(field: FormCreateField) {
