@@ -280,12 +280,6 @@ public class CommonNoticeSendService {
                 return;
             }
 
-            // 事件直发：不再比较触发配置，命中即发送
-            if (context.isEventOnly()) {
-                tasks.forEach(task -> sendTaskNotice(task, context));
-                return;
-            }
-
             List<String> taskIds = tasks.stream().map(MessageTask::getId).toList();
             Map<String, MessageTaskConfig> configMap = messageTaskConfigMapper.selectListByLambda(
                             new LambdaQueryWrapper<MessageTaskConfig>()
@@ -295,7 +289,12 @@ public class CommonNoticeSendService {
 
             for (MessageTask task : tasks) {
                 MessageTaskConfig config = configMap.get(task.getId());
-                if (config != null && matchTrigger(config, context)) {
+                // 事件直发：不再比较触发配置，命中即发送；否则比较触发配置后发送
+                if (context.isEventOnly()) {
+                    context.setTriggerType(config == null ? null : config.getTriggerType());
+                    sendTaskNotice(task, context);
+                } else if (config != null && matchTrigger(config, context)) {
+                    context.setTriggerType(config.getTriggerType());
                     sendTaskNotice(task, context);
                 }
             }
@@ -462,6 +461,7 @@ public class CommonNoticeSendService {
         messageDetail.setId(task.getId());
         messageDetail.setEvent(task.getEvent());
         messageDetail.setTaskType(task.getTaskType());
+        messageDetail.setTriggerType(context.getTriggerType());
         messageDetail.setOrganizationId(task.getOrganizationId());
         messageDetail.setTemplate(content);
         applyReceiveMethod(messageDetail, task.getReceiveMethod());

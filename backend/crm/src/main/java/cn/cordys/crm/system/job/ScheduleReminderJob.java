@@ -148,6 +148,7 @@ public class ScheduleReminderJob {
         NoticeSendContext context = NoticeSendContext.builder()
                 .taskType(task.getTaskType())
                 .action(task.getEvent())
+                .triggerType(TriggerTypeEnum.SCHEDULE.name())
                 .operatorId(hit.createUser())
                 .organizationId(task.getOrganizationId())
                 .resourceId(hit.id())

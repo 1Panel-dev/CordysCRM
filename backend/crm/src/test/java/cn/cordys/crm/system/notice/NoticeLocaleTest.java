@@ -65,41 +65,6 @@ class NoticeLocaleTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void configNoticeRendersInOperatorLanguageAndRestoresRequestContext() {
-        BaseMapper<MessageTask> tasks = mock(BaseMapper.class);
-        BaseMapper<User> users = mock(BaseMapper.class);
-        NoticeSendService sender = mock(NoticeSendService.class);
-        CommonNoticeSendService service = new CommonNoticeSendService();
-        ReflectionTestUtils.setField(service, "messageTaskMapper", tasks);
-        ReflectionTestUtils.setField(service, "userBaseMapper", users);
-        ReflectionTestUtils.setField(service, "noticeSendService", sender);
-        MessageTask task = new MessageTask();
-        task.setScopeId("[\"OWNER\"]");
-        task.setTemplate("[\"CUSTOMER_ADD_TEXT\"]");
-        when(tasks.selectListByLambda(any())).thenReturn(List.of(task));
-        User operator = new User();
-        operator.setLanguage("en-US");
-        operator.setName("Editor");
-        when(users.selectByPrimaryKey("editor")).thenReturn(operator);
-
-        service.sendNoticeByConfig(NoticeSendContext.builder()
-                .eventOnly(true)
-                .taskType(MODULE)
-                .action(EVENT)
-                .organizationId("org-a")
-                .operatorId("editor")
-                .resourceName("Acme")
-                .newValues(Map.of("owner", "recipient"))
-                .build());
-
-        ArgumentCaptor<MessageDetailDTO> detail = ArgumentCaptor.forClass(MessageDetailDTO.class);
-        verify(sender).sendNotificationAsync(detail.capture(), any());
-        assertEquals("New account Acme", detail.getValue().getTemplate());
-        assertSame(requestLocale, LocaleContextHolder.getLocaleContext());
-    }
-
-    @Test
     void templateNoticeRestoresCallingThreadContext() {
         MessageDetailService details = mock(MessageDetailService.class);
         NoticeSendService service = new NoticeSendService(

@@ -25,6 +25,11 @@ public class NoticeSendContext implements Serializable {
     private String action;
 
     /**
+     * 本次发送的触发类型(ACTION/SCHEDULE/FIELD)，取自任务配置
+     */
+    private String triggerType;
+
+    /**
      * 操作人
      */
     private String operatorId;

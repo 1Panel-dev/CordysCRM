@@ -156,6 +156,7 @@ public class MessageNotificationService {
         MessageTask task = new MessageTask();
         task.setId(taskId);
         task.setEvent("CUSTOM_EVENT_" + taskId);
+        task.setName(request.getName());
         task.setTaskType(request.getTaskType());
         task.setSysEnable(false);
         task.setOrganizationId(orgId);

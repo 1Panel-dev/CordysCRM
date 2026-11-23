@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,41 +43,15 @@ public class NotificationService {
     private MessagePublisher messagePublisher;
 
     private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionCountDTO> options) {
-        Map<String, Integer> countMap = new HashMap<>();
-        Map<String, List<Notification>> resourceMap = notifications.stream()
-                .collect(Collectors.groupingBy(Notification::getResourceType));
-        resourceMap.forEach((k, v) -> {
-            if (k.contains(NotificationConstants.Module.CUSTOMER)) {
-                countMap.merge(NotificationConstants.Module.CUSTOMER, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.APPROVAL)) {
-                countMap.merge(NotificationConstants.Module.APPROVAL, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.CLUE)) {
-                countMap.merge(NotificationConstants.Module.CLUE, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.OPPORTUNITY)) {
-                countMap.merge(NotificationConstants.Module.OPPORTUNITY, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.CONTRACT)) {
-                countMap.merge(NotificationConstants.Module.CONTRACT, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.SYSTEM)) {
-                countMap.merge(NotificationConstants.Module.SYSTEM, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.ORDER)) {
-                countMap.merge(NotificationConstants.Module.ORDER, v.size(), Integer::sum);
-            } else {
-                countMap.merge(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), v.size(), Integer::sum);
-            }
-        });
-        countMap.putIfAbsent(NotificationConstants.Module.CUSTOMER, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.APPROVAL, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.CLUE, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.OPPORTUNITY, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.CONTRACT, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.SYSTEM, 0);
-        countMap.putIfAbsent(NotificationConstants.Module.ORDER, 0);
-        countMap.putIfAbsent(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), 0);
-
-        countMap.forEach((k, v) -> {
+        // 直接按 resource_type 分类统计：系统模块为模块标识(如 CUSTOMER/CLUE/FOLLOW_UP)，
+        // 自定义表单为表单ID，公告为 ANNOUNCEMENT_NOTICE
+        Map<String, Long> countMap = notifications.stream()
+                .filter(notification -> StringUtils.isNotBlank(notification.getResourceType()))
+                .collect(Collectors.groupingBy(Notification::getResourceType, Collectors.counting()));
+        countMap.forEach((resourceType, count) -> {
             OptionCountDTO optionDTO = new OptionCountDTO();
-            optionDTO.setKey(k);
-            optionDTO.setCount(v);
+            optionDTO.setKey(resourceType);
+            optionDTO.setCount(count.intValue());
             options.add(optionDTO);
         });
     }
