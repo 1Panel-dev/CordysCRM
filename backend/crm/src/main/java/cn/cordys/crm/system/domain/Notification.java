@@ -14,6 +14,9 @@ public class Notification {
     @Schema(description = "通知类型")
     private String type;
 
+    @Schema(description = "触发类型")
+    private String triggerType;
+
     @Schema(description = "接收人")
     private String receiver;
 

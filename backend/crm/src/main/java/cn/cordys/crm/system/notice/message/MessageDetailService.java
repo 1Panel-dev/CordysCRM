@@ -2,9 +2,12 @@ package cn.cordys.crm.system.notice.message;
 
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.system.domain.MessageTask;
+import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
 import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.utils.MessageTemplateUtils;
+import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,8 @@ public class MessageDetailService {
 
     @Resource
     private ExtMessageTaskMapper extMessageTaskMapper;
+    @Resource
+    private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
 
     /**
      * 获取唯一的消息任务
@@ -62,6 +67,15 @@ public class MessageDetailService {
 
     private void buildMessageDetails(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetails,
             List<MessageTask> messageTaskLists) {
+        // 取出任务对应的触发类型，随消息一起写入 sys_notification
+        Map<String, String> triggerTypeMap = messageTaskLists.isEmpty() ? Map.<String, String>of()
+                : messageTaskConfigMapper.selectListByLambda(
+                                new LambdaQueryWrapper<MessageTaskConfig>()
+                                        .in(MessageTaskConfig::getMessageTaskId,
+                                                messageTaskLists.stream().map(MessageTask::getId).toList()))
+                        .stream()
+                        .collect(Collectors.toMap(MessageTaskConfig::getMessageTaskId, MessageTaskConfig::getTriggerType,
+                                (a, b) -> a));
         //消息通知任务以消息类型事件接收类型唯一进行分组
         Map<String, List<MessageTask>> messageTaskGroup = messageTaskLists.stream()
                 .collect(Collectors.groupingBy(t -> (t.getTaskType() + t.getEvent())));
@@ -70,6 +84,7 @@ public class MessageDetailService {
             MessageTask messageTask = messageTaskList.getFirst();
             MessageDetailDTO messageDetailDTO = new MessageDetailDTO();
             BeanUtils.copyBean(messageDetailDTO, messageTask);
+            messageDetailDTO.setTriggerType(triggerTypeMap.get(messageTask.getId()));
             if (!useTemplate) {
                 String template = MessageTemplateUtils.getTemplate(messageTask.getEvent());
                 messageDetailDTO.setTemplate(template);

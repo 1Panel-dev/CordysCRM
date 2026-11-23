@@ -73,6 +73,7 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
                 notification.setResourceName((String) paramMap.get("title"));
             }
             notification.setType(receiver.getType());
+            notification.setTriggerType(messageDetailDTO.getTriggerType());
             notification.setStatus(NotificationConstants.Status.UNREAD.name());
             notification.setReceiver(receiver.getUserId());
             notification.setContent(context.getBytes());
