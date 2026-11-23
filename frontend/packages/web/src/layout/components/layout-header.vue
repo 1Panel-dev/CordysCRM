@@ -190,7 +190,7 @@
         </CrmButtonGroup>
       </div>
     </div>
-    <MessageDrawer v-model:show="showMessageDrawer" />
+    <MessageDrawer v-model:show="showMessageDrawer" @open-approval-todo="openApprovalTodo" />
     <licenseDrawer v-model:visible="showLicenseDrawer" />
     <Suspense>
       <CrmDuplicateCheckDrawer v-if="initDuplicateCheckDrawer" v-model:visible="showDuplicateCheckDrawer" />
@@ -332,6 +332,11 @@
   const showFollowDrawer = ref(false);
   const initTaskDrawer = ref(false);
   const showTaskDrawer = ref(false);
+
+  function openApprovalTodo() {
+    initTaskDrawer.value = true;
+    showTaskDrawer.value = true;
+  }
 
   const { legacyCopy } = useLegacyCopy();
   function copyVersion(version: string) {

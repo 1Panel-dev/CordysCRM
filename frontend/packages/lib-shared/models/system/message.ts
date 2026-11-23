@@ -139,6 +139,7 @@ export interface MessageCenterItem {
   createTime: number;
   updateTime: number;
   contentText: string;
+  triggerType?: string;
 }
 
 export interface MessageCenterQueryParams extends TableQueryParams {
@@ -147,9 +148,10 @@ export interface MessageCenterQueryParams extends TableQueryParams {
   resourceType: string;
   createTime: number | null;
   endTime: number | null;
+  triggerType?: string;
 }
 
 export type MessageCenterSubsetParams = Pick<
   MessageCenterQueryParams,
-  'type' | 'status' | 'resourceType' | 'createTime' | 'endTime'
+  'type' | 'status' | 'resourceType' | 'createTime' | 'endTime' | 'triggerType'
 >;
