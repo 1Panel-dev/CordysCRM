@@ -1,9 +1,11 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.handler.ResultResponseBodyAdvice;
 import cn.cordys.common.uid.SerialNumGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.controller.ModuleFormController;
 import cn.cordys.crm.system.domain.ModuleField;
@@ -326,6 +328,32 @@ class ModuleFormServiceTest {
         missingRules.setSerialNumberRules(null);
         assertThrows(GenericException.class,
                 () -> service.preCheckForFieldSave("custom-form-id", List.of(missingRules), "org"));
+    }
+
+    @Test
+    void expectedPaymentFieldsUseCustomFieldSettings() throws Exception {
+        ModuleFormService service = new ModuleFormService();
+        String formKey = FormKey.CONTRACT_PAYMENT_PLAN.getKey();
+        List<BaseField> fields = new ArrayList<>();
+        try (var template = getClass().getResourceAsStream("/form/field.json")) {
+            for (var field : JSON.MAPPER.readTree(template).path(formKey)) {
+                BaseField config = JSON.parseObject(field.toString(), BaseField.class);
+                service.setFieldBusinessParam(config);
+                fields.add(config);
+            }
+        }
+
+        var customFields = fields.stream().filter(field -> field.getBusinessKey() == null).toList();
+        assertEquals(List.of("contractPaymentPlanPlanAmount", "contractPaymentPlanPlanEndTime"),
+                customFields.stream().map(BaseField::getInternalKey).toList());
+        for (BaseField field : customFields) {
+            assertNull(field.getDisabledProps());
+            assertTrue(field.getRules().isEmpty());
+        }
+        fields.removeAll(customFields);
+        assertDoesNotThrow(() -> service.preCheckForFieldSave(formKey, fields, "org"));
+        fields.removeFirst();
+        assertThrows(GenericException.class, () -> service.preCheckForFieldSave(formKey, fields, "org"));
     }
 
     private static List<BaseField> formFields(SerialNumberField serial) {

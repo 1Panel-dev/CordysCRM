@@ -241,16 +241,6 @@ public enum BusinessModuleField {
     CONTRACT_PAYMENT_PLAN_CONTRACT("contractPaymentPlanContract", "contractId",
             Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
     /**
-     * 计划回款金额
-     */
-    CONTRACT_PAYMENT_PLAN_PLAN_AMOUNT("contractPaymentPlanPlanAmount", "planAmount",
-            Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
-    /**
-     * 计划回款时间
-     */
-    CONTRACT_PAYMENT_PLAN_PLAN_END_TIME("contractPaymentPlanPlanEndTime", "planEndTime",
-            Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_PLAN.getKey()),
-    /**
      * 回款计划名称
      */
     CONTRACT_PAYMENT_PLAN_NAME("contractPaymentPlanName", "name", Set.of("rules.required", "mobile", "readable"),

@@ -1,10 +1,6 @@
 package cn.cordys.crm.contract.service;
 
-import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.dto.ExportDTO;
-import cn.cordys.common.dto.FieldExportMeta;
-import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
-import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
@@ -16,16 +12,12 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -52,7 +44,7 @@ public class ContractPaymentPlanExportService extends BaseExportService {
         return buildExportMergeResult(taskId, exportParam, dataList,
                 ContractPaymentPlanListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        getSystemFieldMap(detail, metas, exportParam.getLocale()), cache));
+                        getSystemFieldMap(detail, exportParam.getLocale()), cache));
     }
 
     private List<ContractPaymentPlanListResponse> collectExportList(ExportDTO exportParam) {
@@ -68,28 +60,13 @@ public class ContractPaymentPlanExportService extends BaseExportService {
         return extContractPaymentPlanMapper.list(request, userId, orgId, deptDataPermission);
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data,
-            List<FieldExportMeta> exportMetas, Locale locale) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
         systemFieldMap.put("contractId", data.getContractName());
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
-        Map<String, FieldExportMeta> metaMap = exportMetas.stream()
-                .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
-        resolveAndPutTimeField(systemFieldMap, metaMap, "planAmount", data.getPlanAmount());
-
-        FieldExportMeta planEndTime = metaMap.values().stream()
-                .filter(meta -> Strings.CI.equals(meta.getBusinessKey(),
-                        BusinessModuleField.CONTRACT_PAYMENT_PLAN_PLAN_END_TIME.getBusinessKey()))
-                .findFirst().orElse(null);
-        if (planEndTime != null) {
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
-                    .getResolver(planEndTime.getField().getType());
-            systemFieldMap.put("planEndTime", customFieldResolver.transformToValue(planEndTime.getField(),
-                    String.valueOf(data.getPlanEndTime())));
-        }
         systemFieldMap.put("planStatus",
                 Translator.get("contract.payment_plan.status." + data.getPlanStatus().toLowerCase(), locale));
 
