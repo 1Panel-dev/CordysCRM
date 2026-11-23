@@ -1,0 +1,211 @@
+package cn.cordys.crm.follow.service;
+
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.BaseService;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.crm.clue.domain.Clue;
+import cn.cordys.crm.customer.constants.CustomerCollaborationType;
+import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerCollaboration;
+import cn.cordys.crm.customer.service.CustomerCollaborationService;
+import cn.cordys.crm.follow.domain.FollowUpRecord;
+import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
+import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.mybatis.BaseMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+@SuppressWarnings("unchecked")
+class FollowUpRecordAddPermissionTest {
+    private static final String USER = "user-a";
+    private static final String ORG = "org-a";
+    private static final String CUSTOMER = "customer-a";
+    private static final String CLUE = "clue-a";
+    private static final String OPPORTUNITY = "opportunity-a";
+
+    private final FollowUpRecordService service = new FollowUpRecordService();
+    private final CustomerCollaborationService collaborations = mock(CustomerCollaborationService.class);
+    private final BaseMapper<FollowUpRecord> records = mock(BaseMapper.class);
+    private final BaseMapper<Customer> customers = mock(BaseMapper.class);
+    private final BaseMapper<Clue> clues = mock(BaseMapper.class);
+    private final BaseMapper<Opportunity> opportunities = mock(BaseMapper.class);
+    private final FollowUpRecordFieldService fields = mock(FollowUpRecordFieldService.class);
+    private final StatisticFieldService statistics = mock(StatisticFieldService.class);
+    private final CommonNoticeSendService notices = mock(CommonNoticeSendService.class);
+
+    @BeforeEach
+    void configureDependencies() {
+        ReflectionTestUtils.setField(service, "customerCollaborationService", collaborations);
+        ReflectionTestUtils.setField(service, BaseFollowUpService.class, "customerMapper", customers, null);
+        ReflectionTestUtils.setField(service, "followUpRecordMapper", records);
+        ReflectionTestUtils.setField(service, "customerMapper", customers);
+        ReflectionTestUtils.setField(service, "clueMapper", clues);
+        ReflectionTestUtils.setField(service, "opportunityMapper", opportunities);
+        ReflectionTestUtils.setField(service, "followUpRecordFieldService", fields);
+        ReflectionTestUtils.setField(service, "statisticFieldService", statistics);
+        ReflectionTestUtils.setField(service, "commonNoticeSendService", notices);
+        ReflectionTestUtils.setField(service, "baseService", mock(BaseService.class));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "other-user,org-a,false", "user-a,other-org,false", "user-a,org-a,true" })
+    void rejectsCustomerWithoutWriteAccess(String owner, String orgId, boolean sharedPool) {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setOwner(USER);
+        stubCustomer(owner, orgId, sharedPool);
+
+        assertForbiddenBeforeWrites(request);
+    }
+
+    @Test
+    void rejectsReadOnlyCollaboratorForAnotherUsersCustomer() {
+        stubCustomer("other-user", ORG, false);
+        stubCollaboration(CustomerCollaborationType.READ_ONLY);
+
+        assertForbiddenBeforeWrites(customerRequest());
+    }
+
+    @Test
+    void rejectsForeignClueEvenWhenCustomerIsOwnedByCurrentUser() {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setClueId(CLUE);
+        stubCustomer(USER, ORG, false);
+        stubClue("other-user");
+
+        assertForbiddenBeforeWrites(request);
+    }
+
+    @Test
+    void rejectsForeignOpportunityEvenWhenCustomerIsOwnedByCurrentUser() {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setOpportunityId(OPPORTUNITY);
+        stubCustomer(USER, ORG, false);
+        stubOpportunity("other-user", CUSTOMER);
+
+        assertForbiddenBeforeWrites(request);
+    }
+
+    @Test
+    void checksCustomerAssociatedWithOwnedOpportunity() {
+        FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
+        request.setType("CUSTOMER");
+        request.setOpportunityId(OPPORTUNITY);
+        stubOpportunity(USER, CUSTOMER);
+        stubCustomer("other-user", ORG, false);
+        stubCollaboration(CustomerCollaborationType.READ_ONLY);
+
+        assertForbiddenBeforeWrites(request);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "", CUSTOMER })
+    void rejectsMissingRelatedResource(String customerId) {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setCustomerId(customerId);
+
+        assertForbiddenBeforeWrites(request);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "COLLABORATION", "JOINT_FOLLOW" })
+    void addsRecordForWritableCollaboratingCustomer(String collaborationType) {
+        stubCustomer("other-user", ORG, false);
+        stubCollaboration(CustomerCollaborationType.valueOf(collaborationType));
+
+        assertRecordAdded(customerRequest());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "CUSTOMER", "CLUE" })
+    void addsRecordForMyRelatedResources(String type) {
+        FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
+        request.setType(type);
+        if ("CUSTOMER".equals(type)) {
+            request.setCustomerId(CUSTOMER);
+            request.setOpportunityId(OPPORTUNITY);
+            stubCustomer(USER, ORG, false);
+            stubOpportunity(USER, CUSTOMER);
+        } else {
+            request.setClueId(CLUE);
+            stubClue(USER);
+        }
+
+        assertRecordAdded(request);
+    }
+
+    private void assertRecordAdded(FollowUpRecordAddRequest request) {
+        try (var ids = mockStatic(IDGenerator.class)) {
+            ids.when(IDGenerator::nextStr).thenReturn("record-a");
+            FollowUpRecord result = service.add(request, USER, ORG);
+
+            assertEquals(USER, result.getOwner());
+            verify(records).insert(result);
+        }
+    }
+
+    private FollowUpRecordAddRequest customerRequest() {
+        FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
+        request.setType("CUSTOMER");
+        request.setCustomerId(CUSTOMER);
+        return request;
+    }
+
+    private void stubCustomer(String owner, String orgId, boolean sharedPool) {
+        Customer customer = new Customer();
+        customer.setOrganizationId(orgId);
+        customer.setOwner(owner);
+        customer.setInSharedPool(sharedPool);
+        when(customers.selectByPrimaryKey(CUSTOMER)).thenReturn(customer);
+    }
+
+    private void stubClue(String owner) {
+        Clue clue = new Clue();
+        clue.setOrganizationId(ORG);
+        clue.setOwner(owner);
+        when(clues.selectByPrimaryKey(CLUE)).thenReturn(clue);
+    }
+
+    private void stubCollaboration(CustomerCollaborationType type) {
+        CustomerCollaboration member = new CustomerCollaboration();
+        member.setUserId(USER);
+        member.setCollaborationType(type.name());
+        when(collaborations.selectByCustomerId(CUSTOMER)).thenReturn(List.of(member));
+    }
+
+    private void stubOpportunity(String owner, String customerId) {
+        Opportunity opportunity = new Opportunity();
+        opportunity.setOrganizationId(ORG);
+        opportunity.setOwner(owner);
+        opportunity.setCustomerId(customerId);
+        when(opportunities.selectByPrimaryKey(OPPORTUNITY)).thenReturn(opportunity);
+    }
+
+    private void assertForbiddenBeforeWrites(FollowUpRecordAddRequest request) {
+        GenericException exception = assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
+
+        assertEquals(CrmHttpResultCode.FORBIDDEN, exception.getErrorCode());
+        verifyNoInteractions(records, fields, statistics, notices);
+        verify(customers, never()).update(any());
+        verify(clues, never()).update(any());
+        verify(opportunities, never()).update(any());
+    }
+}

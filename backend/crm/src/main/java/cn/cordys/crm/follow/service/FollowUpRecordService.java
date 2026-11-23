@@ -52,6 +52,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -97,6 +98,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * 添加跟进记录
      */
     public FollowUpRecord add(FollowUpRecordAddRequest request, String userId, String orgId) {
+        checkAddResourcePermission(request, userId, orgId);
         FollowUpRecord followUpRecord = BeanUtils.copyBean(new FollowUpRecord(), request);
         long time = System.currentTimeMillis();
         followUpRecord.setCreateTime(time);
@@ -129,6 +131,34 @@ public class FollowUpRecordService extends BaseFollowUpService {
                 withResourceName(request.getModuleFields(), getRelatedResourceName(followUpRecord)));
 
         return followUpRecord;
+    }
+
+    private void checkAddResourcePermission(FollowUpRecordAddRequest request, String userId, String orgId) {
+        String customerId = request.getCustomerId();
+        String clueId = request.getClueId();
+        String opportunityId = request.getOpportunityId();
+        if (StringUtils.isAnyBlank(userId, orgId) || StringUtils.isAllBlank(customerId, clueId, opportunityId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+
+        checkCustomerFollowRecordPermission(customerId, userId, orgId);
+        if (StringUtils.isNotBlank(clueId)) {
+            Clue clue = clueMapper.selectByPrimaryKey(clueId);
+            if (clue == null || !orgId.equals(clue.getOrganizationId()) || !userId.equals(clue.getOwner())
+                    || BooleanUtils.isTrue(clue.getInSharedPool())) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+        }
+        if (StringUtils.isNotBlank(opportunityId)) {
+            Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
+            if (opportunity == null || !orgId.equals(opportunity.getOrganizationId())
+                    || !userId.equals(opportunity.getOwner())) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+            if (!Strings.CS.equals(customerId, opportunity.getCustomerId())) {
+                checkCustomerFollowRecordPermission(opportunity.getCustomerId(), userId, orgId);
+            }
+        }
     }
 
     /**
