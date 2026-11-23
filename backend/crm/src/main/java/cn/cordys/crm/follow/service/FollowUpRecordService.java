@@ -208,6 +208,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
                     FormKey.FOLLOW_RECORD.getKey(), List.of(request.getId()), orgId);
             //更新模块字段
             updateModuleField(updateFollowUpRecord, request.getModuleFields(), orgId, userId);
+            updateFollowUpRecord.setUpdateTime(System.currentTimeMillis());
             followUpRecordMapper.update(updateFollowUpRecord);
             // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
             statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
