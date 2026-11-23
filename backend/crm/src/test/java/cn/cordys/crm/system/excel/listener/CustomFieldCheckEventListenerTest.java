@@ -5,6 +5,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.SelectField;
+import cn.cordys.crm.system.dto.field.TextAreaField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.ControlRuleProp;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
@@ -98,6 +99,44 @@ class CustomFieldCheckEventListenerTest {
         assertFalse(listener.getErrRows().contains(2));
     }
 
+    @Test
+    void rejectsMissingHeaderForRequiredTextArea() {
+        CustomFieldCheckEventListener listener = newTextAreaListener(true);
+        AnalysisContext context = headRowContext();
+
+        Map<Integer, String> headMap = new LinkedHashMap<>();
+        headMap.put(0, "Other");
+
+        assertThrows(GenericException.class, () -> listener.invokeHeadMap(headMap, context));
+    }
+
+    @Test
+    void allowsMissingHeaderForOptionalTextArea() {
+        CustomFieldCheckEventListener listener = newTextAreaListener(false);
+        AnalysisContext context = headRowContext();
+
+        Map<Integer, String> headMap = new LinkedHashMap<>();
+        headMap.put(0, "Other");
+
+        assertDoesNotThrow(() -> listener.invokeHeadMap(headMap, context));
+    }
+
+    @Test
+    void rejectsBlankRequiredTextAreaCell() {
+        CustomFieldCheckEventListener listener = newTextAreaListener(true);
+        AnalysisContext context = headRowContext(1);
+
+        Map<Integer, String> headMap = new LinkedHashMap<>();
+        headMap.put(0, "Content");
+        listener.invokeHeadMap(headMap, context);
+
+        Map<Integer, String> row = new LinkedHashMap<>();
+        row.put(0, "");
+        listener.invoke(row, context);
+
+        assertTrue(listener.getErrRows().contains(1));
+    }
+
     private CustomFieldCheckEventListener newListener() {
         List<BaseField> fields = new ArrayList<>();
         fields.add(controlField());
@@ -140,6 +179,18 @@ class CustomFieldCheckEventListenerTest {
         field.setEditable(true);
         field.setRules(new ArrayList<>(List.of(new RuleProp("required"))));
         return field;
+    }
+
+    private CustomFieldCheckEventListener newTextAreaListener(boolean required) {
+        TextAreaField field = new TextAreaField();
+        field.setId("content-id");
+        field.setName("Content");
+        field.setType("TEXTAREA");
+        field.setReadable(true);
+        field.setEditable(true);
+        field.setRules(required ? new ArrayList<>(List.of(new RuleProp("required"))) : new ArrayList<>());
+        return new CustomFieldCheckEventListener(List.of(field), "follow_up_record", "follow_up_record_field",
+                "org-id", ImportType.ADD.name());
     }
 
     private Map<Integer, String> row(String type, String customer, String clue) {
