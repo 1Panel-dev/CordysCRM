@@ -398,6 +398,17 @@ public class CommonNoticeSendService {
         return false;
     }
 
+    /**
+     * 定时提醒发送入口：由定时任务在命中配置后调用，跳过触发配置比较，
+     * 直接按任务的接收人(scope_id)、模板(template)、接收方式(receive_method)发送。
+     */
+    public void sendScheduleNotice(MessageTask task, NoticeSendContext context) {
+        if (task == null || context == null) {
+            return;
+        }
+        sendTaskNotice(task, context);
+    }
+
     private void sendTaskNotice(MessageTask task, NoticeSendContext context) {
         List<ReceiverGroup> receiverGroups = resolveReceiverGroups(task.getScopeId(), context);
         if (CollectionUtils.isEmpty(receiverGroups)) {

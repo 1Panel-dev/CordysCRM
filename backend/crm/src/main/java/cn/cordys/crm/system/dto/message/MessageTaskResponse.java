@@ -68,6 +68,9 @@ public class MessageTaskResponse {
     @Schema(description = "模板值")
     private List<String> templateValue;
 
+    @Schema(description = "启用/禁用")
+    private Boolean enable;
+
     /**
      * 将 template 中存储的模板枚举名(如 ["BUSINESS_TRANSFER_OLD_OWNER_TEXT",...])转换为对应的 i18n 文案
      */

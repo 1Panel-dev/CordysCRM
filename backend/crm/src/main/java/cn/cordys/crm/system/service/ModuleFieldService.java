@@ -80,6 +80,13 @@ public class ModuleFieldService {
         SOURCE_REF_CLASS.put(FieldSourceType.BUSINESS_TITLE.name(), BusinessTitleService.class);
     }
 
+    /**
+     * 根据表单key获取对应的业务主表名；自定义表单返回 null
+     */
+    public String getTableByFormKey(String formKey) {
+        return FORM_TABLE.get(formKey);
+    }
+
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
