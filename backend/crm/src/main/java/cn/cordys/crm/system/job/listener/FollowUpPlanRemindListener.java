@@ -1,3 +1,4 @@
+/*
 package cn.cordys.crm.system.job.listener;
 
 import cn.cordys.common.dto.OptionDTO;
@@ -22,13 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+*/
 /**
  * 跟进计划提醒监听器
  * <p>
  * 该监听器负责监听执行事件，当触发时检查并提醒到期的跟进计划。
  * 支持客户、商机和线索三种类型的跟进计划提醒。
  * </p>
- */
+ *//*
+
 @Component
 @Slf4j
 public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEvent> {
@@ -44,14 +47,16 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
     @Resource
     private ExtClueMapper extClueMapper;
 
-    /**
+    */
+/**
      * 处理执行事件
      * <p>
      * 当接收到执行事件时，触发跟进计划提醒功能
      * </p>
      *
      * @param event 执行事件对象
-     */
+     *//*
+
     @Override
     public void onApplicationEvent(ExecuteEvent event) {
         try {
@@ -61,12 +66,14 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
         }
     }
 
-    /**
+    */
+/**
      * 跟进计划到期自动通知
      * <p>
      * 查询当天到期的跟进计划，并向相关负责人发送通知提醒。
      * </p>
-     */
+     *//*
+
     public void followUpPlanRemind() {
         log.info("跟进计划到期提醒");
         // 获取当天零点的时间戳（毫秒）
@@ -150,3 +157,4 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
         log.info("跟进计划到期提醒完成");
     }
 }
+*/

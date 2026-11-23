@@ -1,3 +1,4 @@
+/*
 package cn.cordys.crm.system.job;
 
 import cn.cordys.common.util.JSON;
@@ -33,12 +34,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+*/
 /**
  * 商机报价单/合同/回款计划到期及即将到期提醒监听器
  * <p>
  * 该监听器每天8点执行，检查并提醒到期的业务对象。
  * </p>
- */
+ *//*
+
 @Component
 @Slf4j
 public class NoticeExpireJob {
@@ -68,10 +71,12 @@ public class NoticeExpireJob {
     private static final String MODULE_CONTRACT = NotificationConstants.Module.CONTRACT;
     private static final String MODULE_OPPORTUNITY = NotificationConstants.Module.OPPORTUNITY;
 
-    /**
+    */
+/**
      * 定时检查到期或即将到期的消息通知任务
      * 每天8点执行一次
-     */
+     *//*
+
     @QuartzScheduled(cron = "0 0 8 * * ?")
     public void onEvent() {
         try {
@@ -194,9 +199,11 @@ public class NoticeExpireJob {
                 this::buildContractNoticeContext);
     }
 
-    /**
+    */
+/**
      * 处理到期提醒（当天到期）
-     */
+     *//*
+
     private <T> void processExpiredRemind(
             String module,
             String event,
@@ -246,9 +253,11 @@ public class NoticeExpireJob {
         }
     }
 
-    /**
+    */
+/**
      * 处理即将到期提醒（按配置的天数提前提醒）
-     */
+     *//*
+
     private <T> void processExpiringRemind(
             String module,
             String event,
@@ -307,24 +316,30 @@ public class NoticeExpireJob {
         }
     }
 
-    /**
+    */
+/**
      * 判断通知渠道是否至少开启一种
-     */
+     *//*
+
     private boolean isNotificationEnabled(MessageTask task) {
         if (task == null) {
             return true;
         }
-        /*return !Boolean.TRUE.equals(task.getDingTalkEnable())
+        */
+/*return !Boolean.TRUE.equals(task.getDingTalkEnable())
                 && !Boolean.TRUE.equals(task.getEmailEnable())
                 && !Boolean.TRUE.equals(task.getSysEnable())
                 && !Boolean.TRUE.equals(task.getWeComEnable())
-                && !Boolean.TRUE.equals(task.getLarkEnable());*/
+                && !Boolean.TRUE.equals(task.getLarkEnable());*//*
+
         return false;
     }
 
-    /**
+    */
+/**
      * 发送通知
-     */
+     *//*
+
     private void sendNotice(MessageTaskConfigDTO configDTO, String model,
             NoticeContext ctx, String event, Integer days) {
         List<String> receiveUserIds = commonNoticeSendService.getNoticeReceiveUserIds(
@@ -356,9 +371,11 @@ public class NoticeExpireJob {
         return extContractPaymentPlanMapper.selectByTimestamp(timestamp, timestampOld, orgId);
     }
 
-    /**
+    */
+/**
      * 时间计算工具
-     */
+     *//*
+
     private static final class TimeUtils {
         private static final ZoneId ZONE = ZoneId.systemDefault();
 
@@ -370,17 +387,21 @@ public class NoticeExpireJob {
         }
     }
 
-    /**
+    */
+/**
      * 函数式接口：三个参数，一个返回值
-     */
+     *//*
+
     @FunctionalInterface
     private interface TriFunction<T, U, V, R> {
         R apply(T t, U u, V v);
     }
 
-    /**
+    */
+/**
      * 通知上下文数据对象
-     */
+     *//*
+
     @lombok.Builder
     @lombok.Getter
     private static class NoticeContext {
@@ -396,3 +417,4 @@ public class NoticeExpireJob {
         }
     }
 }
+*/

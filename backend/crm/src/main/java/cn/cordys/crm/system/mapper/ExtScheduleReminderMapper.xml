@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtScheduleReminderMapper">
+
+    <select id="selectRowsByColumn" resultType="java.util.Map">
+        select t.*
+        from ${mainTable} t
+        where t.organization_id = #{orgId}
+        <if test="formColumn != null and formColumn != ''">
+            and t.${formColumn} = #{formValue}
+        </if>
+          and t.${column} <![CDATA[>=]]> #{start}
+          and t.${column} <![CDATA[<]]> #{end}
+    </select>
+
+    <select id="selectRowsByCustomField" resultType="java.util.Map">
+        select t.*,
+               cast(f.field_value as signed) as due_time
+        from ${mainTable} t
+        inner join ${fieldTable} f on f.resource_id = t.id and f.field_id = #{fieldId}
+        where t.organization_id = #{orgId}
+        <if test="formColumn != null and formColumn != ''">
+            and t.${formColumn} = #{formValue}
+        </if>
+          and cast(f.field_value as signed) <![CDATA[>=]]> #{start}
+          and cast(f.field_value as signed) <![CDATA[<]]> #{end}
+    </select>
+
+</mapper>

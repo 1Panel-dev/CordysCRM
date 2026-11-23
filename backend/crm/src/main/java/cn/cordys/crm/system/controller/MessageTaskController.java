@@ -79,4 +79,13 @@ public class MessageTaskController {
     public void delete(@PathVariable String id) {
         messageNotificationService.delete(id);
     }
+
+
+
+    @GetMapping("/enable/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
+    @Operation(summary = "启用/禁用")
+    public void enable(@PathVariable String id) {
+        messageNotificationService.enable(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

@@ -1115,4 +1115,20 @@ public class MessageNotificationService {
         config.setRemindType(remindType);
         return config;
     }
+
+    /**
+     * 启用/禁用
+     * @param id
+     * @param userId
+     * @param orgId
+     */
+    public void enable(String id, String userId, String orgId) {
+        MessageTask messageTask = messageTaskMapper.selectByPrimaryKey(id);
+        if (messageTask != null) {
+            MessageTask task = new MessageTask();
+            task.setId(id);
+            task.setEnable(!messageTask.getEnable());
+            messageTaskMapper.update(messageTask);
+        }
+    }
 }
