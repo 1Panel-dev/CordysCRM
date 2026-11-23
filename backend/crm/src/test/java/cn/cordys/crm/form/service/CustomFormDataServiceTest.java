@@ -2,6 +2,7 @@ package cn.cordys.crm.form.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.constants.InternalUserView;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
@@ -16,9 +17,11 @@ import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormRoleKey;
 import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
+import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
+import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
 import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.TextAreaField;
@@ -28,6 +31,7 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.mybatis.BaseMapper;
+import com.github.pagehelper.PageHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +66,60 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class CustomFormDataServiceTest {
+
+    @ParameterizedTest
+    @CsvSource({
+            "MANAGE_OWN, true, false, true, false",
+            "MANAGE_ALL, true, false, true, true",
+            "VIEW_ALL, true, false, false, false",
+            "MANAGE_ALL, false, false, false, false",
+            "MANAGE_ALL, true, true, false, false"
+    })
+    void relatedPageKeepsRecordManagementPermissionIndependentOfReadScope(CustomFormRoleKey scope,
+            boolean hasModulePermission, boolean noFormRole, boolean canManageOwn, boolean canManageOther) {
+        CustomFormDataService service = spy(serviceWithPermission(scope));
+        ResourcePermissionService permissions = mock(ResourcePermissionService.class);
+        if (!hasModulePermission) {
+            doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(permissions)
+                    .checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+        }
+        if (noFormRole) {
+            doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(service)
+                    .getManageDataScope("form-1", "owner", "org-1");
+        }
+        BaseService baseService = mock(BaseService.class);
+        ExtCustomFormDataMapper mapper = mock(ExtCustomFormDataMapper.class);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
+        ReflectionTestUtils.setField(service, "customFormService", mock(CustomFormService.class));
+        ReflectionTestUtils.setField(service, "extCustomFormDataMapper", mapper);
+        ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "moduleFormMapper", mock(BaseMapper.class));
+        ReflectionTestUtils.setField(service, "customFormDataFieldService", mock(CustomFormDataFieldService.class));
+        ReflectionTestUtils.setField(service, "moduleFormService", mock(ModuleFormService.class));
+
+        CustomFormDataListResponse own = new CustomFormDataListResponse();
+        own.setId("record-1");
+        own.setOwner("owner");
+        CustomFormDataListResponse other = new CustomFormDataListResponse();
+        other.setId("record-2");
+        other.setOwner("other");
+        var rows = List.of(own, other);
+        CustomFormDataPageRequest request = new CustomFormDataPageRequest();
+        request.setCustomFormId("form-1");
+        request.setCurrent(1);
+        request.setPageSize(10);
+        when(mapper.list(request, "org-1", "owner", false, null)).thenReturn(rows);
+        when(baseService.setCreateUpdateOwnerUserName(rows)).thenReturn(rows);
+
+        try {
+            var result = service.page(request, "owner", "org-1", false, true).getList();
+
+            assertEquals(List.of(canManageOwn, canManageOther),
+                    result.stream().map(CustomFormDataListResponse::getIsAdmin).toList());
+        } finally {
+            PageHelper.clearPage();
+        }
+    }
 
     @ParameterizedTest
     @EnumSource(CustomFormRoleKey.class)
