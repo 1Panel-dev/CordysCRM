@@ -275,7 +275,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
         try {
 
-            CustomFormRoleKey manageDataScope = relatedOwner ? null : getManageDataScope(formId, userId, orgId);
+            CustomFormRoleKey manageDataScope = getPageManageDataScope(formId, userId, orgId, relatedOwner);
             list = buildList(list, formId, orgId);
             Map<String, List<OptionDTO>> optionMap = buildOptionMap(formId, orgId, list);
             list.forEach(item -> {
@@ -286,6 +286,20 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             return PageUtils.setPageInfoWithOption(page, list, optionMap);
         } finally {
             CustomFormDataFieldService.clearFormKey();
+        }
+    }
+
+    private CustomFormRoleKey getPageManageDataScope(String formId, String userId, String orgId, boolean relatedOwner) {
+        try {
+            if (relatedOwner) {
+                resourcePermissionService.checkPermission(PermissionConstants.CUSTOM_FORM_READ);
+            }
+            return getManageDataScope(formId, userId, orgId);
+        } catch (GenericException e) {
+            if (relatedOwner && e.getErrorCode() == CrmHttpResultCode.FORBIDDEN) {
+                return null;
+            }
+            throw e;
         }
     }
 
