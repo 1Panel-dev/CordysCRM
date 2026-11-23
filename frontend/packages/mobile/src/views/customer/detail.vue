@@ -8,12 +8,24 @@
       >
         <CrmAvatar :size="24" :text="ownerName" class="customer-owner-avatar ring-2 ring-[var(--text-n10)]" />
         <CrmAvatar
-          v-for="person in collaborators"
+          v-for="person in displayedCollaborators"
           :key="person.id"
           :size="24"
           :text="person.userName"
           class="!bg-[var(--text-n5)] text-white ring-2 ring-[var(--text-n10)]"
         />
+        <van-image
+          v-if="hiddenCollaboratorCount"
+          round
+          :width="24"
+          :height="24"
+          src="no-res"
+          class="!bg-[var(--text-n5)] text-white ring-2 ring-[var(--text-n10)]"
+        >
+          <template #error>
+            <div class="text-[10px]">+{{ hiddenCollaboratorCount }}</div>
+          </template>
+        </van-image>
       </div>
     </template>
     <van-tabs v-model:active="activeTab" border :ellipsis="false" class="detail-tabs">
@@ -194,6 +206,8 @@
     needInitDetail: true,
   });
   const ownerName = computed(() => (detail.value as { ownerName?: string }).ownerName || '');
+  const displayedCollaborators = computed(() => collaborators.value.slice(0, 1));
+  const hiddenCollaboratorCount = computed(() => collaborators.value.length - displayedCollaborators.value.length);
   const changeRecordTab = computed(() =>
     formConfig.value.detailTabs?.find((tab) => tab.internalKey === 'CHANGE_LOG' && tab.enable)
   );
@@ -264,7 +278,6 @@
     if (collaborationType.value) {
       return fullTabList.filter(
         (item) =>
-          item.name !== 'collaborator' &&
           (item.name !== 'record' || hasAnyPermission(['FOLLOW_RECORD:READ'])) &&
           (item.name !== 'plan' || hasAnyPermission(['FOLLOW_PLAN:READ']))
       );

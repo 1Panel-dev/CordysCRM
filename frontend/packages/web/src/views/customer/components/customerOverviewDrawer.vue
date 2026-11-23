@@ -16,10 +16,15 @@
       />
     </template>
     <template #title>
-      <div class="flex w-full min-w-0 flex-1 items-center gap-[12px]">
-        <div class="one-line-text min-w-0 max-w-[300px] flex-1 !leading-[20px]" :title="sourceName">
+      <div class="flex min-w-0 items-center gap-[12px]">
+        <n-tooltip trigger="hover" :delay="300">
+          <template #trigger>
+            <div class="one-line-text min-w-0 max-w-[300px] !leading-[20px]">
+              {{ sourceName }}
+            </div>
+          </template>
           {{ sourceName }}
-        </div>
+        </n-tooltip>
         <n-tooltip v-if="collaborators.length" placement="bottom-start" :delay="300">
           <template #trigger>
             <div
