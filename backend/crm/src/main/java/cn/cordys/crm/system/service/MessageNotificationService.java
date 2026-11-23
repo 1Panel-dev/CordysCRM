@@ -154,7 +154,7 @@ public class MessageNotificationService {
         task.setUpdateTime(System.currentTimeMillis());
         task.setType(request.getType());
         task.setEnable(true);
-        task.setScopeId(request.getScopeId());
+        task.setScopeId(JSON.toJSONString(request.getScopeId()));
         task.setReceiveMethod(request.getReceiveMethod());
         messageTaskMapper.insert(task);
 
@@ -176,6 +176,10 @@ public class MessageNotificationService {
         MessageTask oldTask = messageTaskMapper.selectByPrimaryKey(request.getId());
 
         MessageTask task = BeanUtils.copyBean(new MessageTask(), request);
+        // 接收人在请求里是 List<String>，与实体 scopeId(String) 类型不一致，copyBean 不会拷贝，需显式序列化
+        if (request.getScopeId() != null) {
+            task.setScopeId(JSON.toJSONString(request.getScopeId()));
+        }
         task.setUpdateTime(System.currentTimeMillis());
         task.setUpdateUser(userId);
         messageTaskMapper.update(task);
