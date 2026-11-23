@@ -5,6 +5,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.message.MessageAddRequest;
+import cn.cordys.crm.system.dto.message.MessageBatchRequest;
 import cn.cordys.crm.system.dto.message.MessageRequest;
 import cn.cordys.crm.system.dto.message.MessageTaskCountDTO;
 import cn.cordys.crm.system.dto.message.MessageTaskResponse;
@@ -80,12 +81,18 @@ public class MessageTaskController {
         messageNotificationService.delete(id);
     }
 
-
-
     @GetMapping("/enable/{id}")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     @Operation(summary = "启用/禁用")
     public void enable(@PathVariable String id) {
         messageNotificationService.enable(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/update")
+    @RequiresPermissions(value = PermissionConstants.SYSTEM_NOTICE_UPDATE)
+    @Operation(summary = "批量更新接收方式")
+    public void batchUpdate(@Validated @RequestBody MessageBatchRequest request) {
+        messageNotificationService.batchUpdate(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 }

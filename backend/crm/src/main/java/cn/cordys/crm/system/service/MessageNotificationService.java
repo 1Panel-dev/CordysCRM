@@ -1,5 +1,11 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.aspectj.annotation.OperationLog;
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.uid.IDGenerator;
@@ -17,7 +23,10 @@ import cn.cordys.crm.system.domain.MessageTask;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigWithNameDTO;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
+import cn.cordys.crm.system.dto.log.MessageTaskLogDTO;
 import cn.cordys.crm.system.dto.message.MessageAddRequest;
+import cn.cordys.crm.system.dto.message.MessageBatchRequest;
+import cn.cordys.crm.system.dto.message.MessageLogDTO;
 import cn.cordys.crm.system.dto.message.MessageRequest;
 import cn.cordys.crm.system.dto.message.MessageTaskCountDTO;
 import cn.cordys.crm.system.dto.message.MessageTaskResponse;
@@ -30,10 +39,12 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -139,6 +150,7 @@ public class MessageNotificationService {
     /**
      * 添加通知场景
      */
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.ADD, operator = "{#userId}")
     public void add(MessageAddRequest request, String userId, String orgId) {
         String taskId = IDGenerator.nextStr();
         MessageTask task = new MessageTask();
@@ -167,13 +179,27 @@ public class MessageNotificationService {
         taskConfig.setValue(JSON.toJSONString(request.getConfig()));
         messageTaskConfigMapper.insert(taskConfig);
 
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(null)
+                .modifiedValue(task)
+                .resourceName(task.getName())
+                .resourceId(task.getId())
+                .build());
+
     }
 
     /**
      * 编辑通知场景
      */
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.UPDATE, operator = "{#userId}")
     public void update(MessageUpdateRequest request, String userId, String orgId) {
         MessageTask oldTask = messageTaskMapper.selectByPrimaryKey(request.getId());
+        MessageTaskConfig oldConfig = messageTaskConfigMapper.selectListByLambda(
+                new LambdaQueryWrapper<MessageTaskConfig>()
+                        .eq(MessageTaskConfig::getMessageTaskId, request.getId())).getFirst();
+        MessageLogDTO messageLogDTO = new MessageLogDTO();
+        messageLogDTO.setTask(oldTask);
+        messageLogDTO.setTaskConfig(oldConfig);
 
         MessageTask task = BeanUtils.copyBean(new MessageTask(), request);
         // 接收人在请求里是 List<String>，与实体 scopeId(String) 类型不一致，copyBean 不会拷贝，需显式序列化
@@ -189,17 +215,42 @@ public class MessageNotificationService {
                         .eq(MessageTaskConfig::getMessageTaskId, request.getId())).getFirst();
         config.setValue(JSON.toJSONString(request.getConfig()));
         messageTaskConfigMapper.update(config);
+
+        MessageTask newTask = messageTaskMapper.selectByPrimaryKey(request.getId());
+        MessageTaskConfig newConfig = messageTaskConfigMapper.selectListByLambda(
+                new LambdaQueryWrapper<MessageTaskConfig>()
+                        .eq(MessageTaskConfig::getMessageTaskId, request.getId())).getFirst();
+        MessageLogDTO newLogDTO = new MessageLogDTO();
+        newLogDTO.setTask(newTask);
+        newLogDTO.setTaskConfig(newConfig);
+
+        //添加日志上下文
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(messageLogDTO)
+                .resourceName(oldTask.getName())
+                .modifiedValue(newLogDTO)
+                .resourceId(oldTask.getId())
+                .build());
     }
 
     /**
      * 删除
      */
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
+        MessageTask task = messageTaskMapper.selectByPrimaryKey(id);
+
+        if (task == null) {
+            return;
+        }
         messageTaskMapper.deleteByPrimaryKey(id);
 
         LambdaQueryWrapper<MessageTaskConfig> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(MessageTaskConfig::getMessageTaskId, id);
         messageTaskConfigMapper.deleteByLambda(queryWrapper);
+
+        // 设置日志上下文
+        OperationLogContext.setResourceName(task.getName());
     }
 
     /**
@@ -962,7 +1013,7 @@ public class MessageNotificationService {
      * 保存任务及初始化配置
      *
      * @param templates     模板枚举名称
-     * @param eventNameMap   事件与任务名称的映射
+     * @param eventNameMap  事件与任务名称的映射
      * @param event         通知事件类型（新建客户、更新客户等）
      * @param owners        接收人
      * @param taskType      任务类型（客户、商机等）
@@ -1006,7 +1057,7 @@ public class MessageNotificationService {
      * 更新任务并保存任务配置
      *
      * @param templates     模板枚举名称
-     * @param eventNameMap   任务名称
+     * @param eventNameMap  任务名称
      * @param messageTask   任务
      * @param owners        接收人
      * @param receiveMethod 接收方式（站内、邮件、企微等）
@@ -1039,7 +1090,7 @@ public class MessageNotificationService {
      *
      * @param templates     模板枚举名称
      * @param config        消息通知配置
-     * @param eventNameMap   任务名称
+     * @param eventNameMap  任务名称
      * @param messageTask   任务
      * @param owners        接收人
      * @param receiveMethod 接收方式（站内、邮件、企微等）
@@ -1122,17 +1173,52 @@ public class MessageNotificationService {
 
     /**
      * 启用/禁用
-     * @param id
-     * @param userId
-     * @param orgId
      */
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.UPDATE, resourceId = "{#id}")
     public void enable(String id, String userId, String orgId) {
         MessageTask messageTask = messageTaskMapper.selectByPrimaryKey(id);
         if (messageTask != null) {
             MessageTask task = new MessageTask();
             task.setId(id);
+            task.setUpdateUser(userId);
+            task.setUpdateTime(System.currentTimeMillis());
             task.setEnable(!messageTask.getEnable());
             messageTaskMapper.update(messageTask);
+
+            Map<String, Object> oldMap = new HashMap<>();
+            oldMap.put("enable", messageTask.getEnable());
+            Map<String, Object> newMap = new HashMap<>();
+            newMap.put("enable", !messageTask.getEnable());
+            OperationLogContext.setContext(
+                    LogContextInfo.builder()
+                            .resourceName(messageTask.getName())
+                            .originalValue(oldMap)
+                            .modifiedValue(newMap)
+                            .build());
         }
+    }
+
+    /**
+     * 批量更新接收方式
+     */
+    public void batchUpdate(MessageBatchRequest request, String userId, String orgId) {
+        if (CollectionUtils.isEmpty(request.getIds()) || StringUtils.isBlank(request.getReceiveMethod())) {
+            return;
+        }
+        List<MessageTask> oldMessageTasks = messageTaskMapper.selectByIds(request.getIds());
+        List<LogDTO> logs = new ArrayList<>();
+        long now = System.currentTimeMillis();
+        for (MessageTask oldMessageTask : oldMessageTasks) {
+            MessageTask task = BeanUtils.copyBean(new MessageTask(), oldMessageTask);
+            task.setReceiveMethod(request.getReceiveMethod());
+            task.setUpdateUser(userId);
+            task.setUpdateTime(now);
+            messageTaskMapper.update(task);
+            LogDTO logDTO = new LogDTO(orgId, task.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, task.getName());
+            logDTO.setOriginalValue(oldMessageTask);
+            logDTO.setModifiedValue(task);
+            logs.add(logDTO);
+        }
+        logService.batchAdd(logs);
     }
 }
