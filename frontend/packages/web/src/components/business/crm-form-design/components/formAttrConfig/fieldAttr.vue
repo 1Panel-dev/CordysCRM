@@ -1274,7 +1274,7 @@
             :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
             :options="statisticFieldOptions"
             :status="!fieldConfig.statisticFieldId ? 'error' : undefined"
-            :fallback-option="fallbackOption"
+            :fallback-option="fieldConfig.statisticFieldId ? fallbackOption : false"
           />
           <div v-if="!fieldConfig.statisticFieldId" class="text-[12px] text-[var(--error-red)]">
             {{ t('common.notNull', { value: t('crmFormDesign.statisticsField') }) }}
@@ -2103,7 +2103,6 @@
       !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId)
     ) {
       fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as string;
-      initTargetFormFields();
     }
     initDefaultStatisticRelatedField();
   }
@@ -2112,6 +2111,9 @@
     try {
       statisticRelatedForms.value = (await getFormDetailTabOptions(currentStatisticFormId.value)) || [];
       initDefaultStatisticTargetForm();
+      if (fieldConfig.value?.type === FieldTypeEnum.STATISTIC) {
+        initTargetFormFields();
+      }
     } catch (error) {
       statisticRelatedForms.value = [];
       // eslint-disable-next-line no-console
