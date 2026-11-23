@@ -346,8 +346,12 @@
     const hideChildrenRoute = [..._route.matched].reverse().find((item) => item.meta?.hideChildrenInMenu && item.name);
 
     if (_route.meta.isTopMenu) {
-      menuValue.value = _route.matched[_route.matched.length - 2]
-        ?.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+      const parentMenuRoute = _route.matched[_route.matched.length - 2];
+      menuValue.value = parentMenuRoute?.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+      expandedKeys.value = _route.matched
+        .slice(0, -2)
+        .map((matchedRoute) => matchedRoute.name)
+        .filter((name): name is string => typeof name === 'string');
     } else if (hideChildrenRoute) {
       menuValue.value = hideChildrenRoute.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     } else {

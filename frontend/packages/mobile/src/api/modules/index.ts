@@ -371,13 +371,9 @@ export const {
   getNotificationCount,
   setNotificationRead,
   setAllNotificationRead,
-  getMessageTask,
-  saveMessageTask,
-  batchSaveMessageTask,
   getHomeMessageList,
   closeMessageSubscribe,
   getUnReadAnnouncement,
-  getMessageTaskConfigDetail,
 } = messageApi;
 
 export const {

@@ -53,11 +53,35 @@ const system: AppRouteRecordRaw = {
     {
       path: 'message',
       name: SystemRouteEnum.SYSTEM_MESSAGE,
-      component: () => import('@/views/system/message/index.vue'),
+      redirect: '/system/message/notify',
+      component: () => import('@/views/system/message/routeContainer.vue'),
       meta: {
+        hideChildrenInMenu: true,
         locale: 'menu.settings.messageSetting',
         permissions: ['SYSTEM_NOTICE:READ'],
       },
+      children: [
+        {
+          path: 'notify',
+          name: SystemRouteEnum.SYSTEM_MESSAGE_NOTIFY,
+          component: () => import('@/views/system/message/components/messageList.vue'),
+          meta: {
+            locale: 'system.message.notify',
+            isTopMenu: true,
+            permissions: ['SYSTEM_NOTICE:READ'],
+          },
+        },
+        {
+          path: 'announcement',
+          name: SystemRouteEnum.SYSTEM_MESSAGE_ANNOUNCEMENT,
+          component: () => import('@/views/system/message/components/announcementList.vue'),
+          meta: {
+            locale: 'system.message.announcement',
+            isTopMenu: true,
+            permissions: ['SYSTEM_NOTICE:READ'],
+          },
+        },
+      ],
     },
     {
       path: 'process',
