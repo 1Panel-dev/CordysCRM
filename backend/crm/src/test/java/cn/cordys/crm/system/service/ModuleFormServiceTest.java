@@ -2,6 +2,7 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.handler.ResultResponseBodyAdvice;
 import cn.cordys.common.uid.SerialNumGenerator;
@@ -354,6 +355,51 @@ class ModuleFormServiceTest {
         assertDoesNotThrow(() -> service.preCheckForFieldSave(formKey, fields, "org"));
         fields.removeFirst();
         assertThrows(GenericException.class, () -> service.preCheckForFieldSave(formKey, fields, "org"));
+    }
+
+    @Test
+    void followResourceNameFieldsRemainSeparateForImportAndExport() throws Exception {
+        ModuleFormService service = spy(new ModuleFormService());
+
+        for (FormKey formKey : List.of(FormKey.FOLLOW_RECORD, FormKey.FOLLOW_PLAN)) {
+            List<BaseField> fields = new ArrayList<>();
+            try (var template = getClass().getResourceAsStream("/form/field.json")) {
+                for (var field : JSON.MAPPER.readTree(template).path(formKey.getKey())) {
+                    BaseField config = JSON.parseObject(field.toString(), BaseField.class);
+                    service.setFieldBusinessParam(config);
+                    fields.add(config);
+                }
+            }
+
+            List<String> resourceInternalKeys = formKey == FormKey.FOLLOW_RECORD
+                    ? List.of("recordCustomer", "recordClue")
+                    : List.of("planCustomer", "planClue");
+            assertEquals(List.of("customerId", "clueId"),
+                    resourceInternalKeys.stream()
+                            .map(internalKey -> fieldByInternalKey(fields, internalKey).getBusinessKey()).toList());
+            assertEquals(List.of("客户名称", "公司名称"),
+                    resourceInternalKeys.stream()
+                            .map(internalKey -> fieldByInternalKey(fields, internalKey).getName()).toList());
+
+            doReturn(fields).when(service).getAllFields(formKey.getKey(), "org");
+            List<List<String>> importHeads = service.getCustomImportHeadsNoRef(formKey.getKey(), "org");
+            assertTrue(importHeads.contains(List.of("客户名称")));
+            assertTrue(importHeads.contains(List.of("公司名称")));
+            assertTrue(importHeads.stream().flatMap(List::stream).noneMatch("客户名称/公司名称"::equals));
+            assertEquals(fields, service.getAllCustomImportFields(formKey.getKey(), "org"));
+
+            List<ExportHeadDTO> exportHeads = List.of(
+                    new ExportHeadDTO("customerId", "客户名称", ModuleFormService.EXPORT_SYSTEM_TYPE),
+                    new ExportHeadDTO("clueId", "公司名称", ModuleFormService.EXPORT_SYSTEM_TYPE));
+            assertEquals(List.of(List.of("客户名称"), List.of("公司名称")),
+                    service.getAllExportHeads(exportHeads, formKey.getKey(), "org"));
+            assertEquals(List.of("customerId", "clueId"),
+                    service.getExportMergeHeads(formKey.getKey(), "org", exportHeads));
+        }
+    }
+
+    private static BaseField fieldByInternalKey(List<BaseField> fields, String internalKey) {
+        return fields.stream().filter(field -> internalKey.equals(field.getInternalKey())).findFirst().orElseThrow();
     }
 
     private static List<BaseField> formFields(SerialNumberField serial) {
