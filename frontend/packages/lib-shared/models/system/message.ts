@@ -92,6 +92,7 @@ export interface MessageTaskResponse {
   name: string;
   taskType: string;
   type: 'SYSTEM' | 'CUSTOM';
+  sysEnable?: boolean;
   triggerType: string;
   scopeId: string[];
   members: MessageTaskScopeMember[];
@@ -118,7 +119,13 @@ export interface MessageTaskSaveParams {
   triggerType: string;
   config: MessageTaskTriggerConfig;
   template: string;
+  templateValue?: string[];
   type: 'SYSTEM' | 'CUSTOM';
+}
+
+export interface MessageTaskBatchUpdateReceiveMethodParams {
+  ids: string[];
+  receiveMethod: string;
 }
 
 export interface MessageCenterItem {

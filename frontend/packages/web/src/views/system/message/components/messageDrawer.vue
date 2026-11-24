@@ -229,7 +229,7 @@
 
   function getActiveMessageType() {
     if (activeTab.value === 'PUBLIC') return SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE;
-    if (activeTab.value === 'MENTION') return SystemMessageTypeEnum.SYSTEM_NOTICE;
+    if (activeTab.value === 'MENTION') return SystemMessageTypeEnum.COMMENT_MENTIONED;
     return '';
   }
 
@@ -280,7 +280,7 @@
     const isPublic = activeTab.value === 'PUBLIC';
     const allCategory = {
       value: '',
-      label: isPublic ? t('system.message.public') : t('system.message.allMessage'),
+      label: isPublic ? t('system.message.announcement') : t('system.message.allMessage'),
       count: getCategoryCount(isPublic),
     };
     if (isPublic) return [allCategory];

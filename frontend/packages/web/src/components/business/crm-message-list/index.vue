@@ -251,6 +251,9 @@
     if (triggerType === 'ACTION') {
       return { label: t('system.message.triggerType.action'), type: 'info' as const };
     }
+    if (triggerType === 'SCHEDULE') {
+      return { label: t('system.message.triggerType.schedule'), type: 'warning' as const };
+    }
     if (triggerType === 'FIELD' || triggerType === 'CONDITION') {
       return { label: t('system.message.triggerType.condition'), type: 'success' as const };
     }

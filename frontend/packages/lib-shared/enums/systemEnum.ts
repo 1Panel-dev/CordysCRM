@@ -14,7 +14,7 @@ export enum PersonalEnum {
 
 export enum SystemMessageTypeEnum {
   ANNOUNCEMENT_NOTICE = 'ANNOUNCEMENT_NOTICE', // 系统公告
-  SYSTEM_NOTICE = 'SYSTEM_NOTICE', // 系统消息
+  COMMENT_MENTIONED = 'COMMENT_MENTIONED', // 评论提及
 }
 
 export enum SystemResourceMessageTypeEnum {

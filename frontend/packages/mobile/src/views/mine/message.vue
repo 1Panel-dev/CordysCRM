@@ -78,7 +78,7 @@
       title: t('mine.allMessage'),
     },
     {
-      name: SystemMessageTypeEnum.SYSTEM_NOTICE,
+      name: SystemMessageTypeEnum.COMMENT_MENTIONED,
       title: t('mine.systemMessage'),
     },
     {

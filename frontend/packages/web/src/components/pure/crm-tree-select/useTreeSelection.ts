@@ -187,7 +187,9 @@ export default function useTreeSelection(selectedModuleProps: SelectedModuleProp
       delete selectedModulesMaps.value[key];
     });
     checkedKeys.value = [];
+    halfCheckedKeys.value = [];
     isCheckedAll.value = false;
+    indeterminate.value = false;
   }
 
   watch(

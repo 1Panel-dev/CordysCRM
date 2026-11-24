@@ -17,6 +17,7 @@ export const GetMessageTaskCustomFormTypesUrl = '/message/task/custom-form';
 export const GetMessageTaskPageUrl = '/message/task/page';
 export const AddMessageTaskUrl = '/message/task/add';
 export const UpdateMessageTaskUrl = '/message/task/update';
+export const BatchUpdateMessageTaskReceiveMethodUrl = '/message/task/batch/update';
 export const DeleteMessageTaskUrl = '/message/task/delete';
 export const SubscribeMessageUrl = '/sse/subscribe'; // 客户端订阅 SSE 事件流
 export const CloseMessageUrl = '/sse/close'; // 客户端关闭 SSE 事件流
