@@ -111,12 +111,18 @@
           <span class="text-[var(--text-n4)]">- {{ getCategoryLabel(editor.taskType) }}</span>
         </div>
       </template>
-      <n-form :model="editor" class="message-scene-form" label-placement="top">
-        <n-form-item :label="t('system.message.settings.sceneName')" required>
+      <n-form
+        ref="sceneFormRef"
+        :model="editor"
+        :rules="sceneFormRules"
+        class="message-scene-form"
+        label-placement="top"
+      >
+        <n-form-item :label="t('system.message.settings.sceneName')" path="name" required>
           <n-input v-model:value="editor.name" maxlength="100" :disabled="!editorEditable" />
         </n-form-item>
         <div class="message-scene-basic-fields">
-          <n-form-item :label="t('system.message.settings.category')" required>
+          <n-form-item :label="t('system.message.settings.category')" path="taskType" required>
             <n-select
               v-model:value="editor.taskType"
               :options="editorCategoryOptions"
@@ -148,7 +154,7 @@
             />
           </n-form-item>
         </div>
-        <n-form-item :label="t('system.message.settings.triggerType')" required>
+        <n-form-item :label="t('system.message.settings.triggerType')" path="triggerType" required>
           <n-radio-group
             v-model:value="editor.triggerType"
             class="message-trigger-options"
@@ -172,6 +178,7 @@
         <n-form-item
           v-if="editor.triggerType === MessageNotificationTriggerEnum.ACTION"
           :label="t('system.message.settings.basisAction')"
+          path="actionTypeConfig"
           required
         >
           <n-select
@@ -184,6 +191,7 @@
         <n-form-item
           v-else-if="editor.triggerType === MessageNotificationTriggerEnum.SCHEDULE"
           :label="t('system.message.settings.triggerCondition')"
+          path="scheduleFieldId"
           required
         >
           <div class="message-rule-panel message-reminder-rule">
@@ -221,7 +229,7 @@
             />
           </div>
         </n-form-item>
-        <n-form-item v-else :label="t('system.message.settings.triggerCondition')" required>
+        <n-form-item v-else :label="t('system.message.settings.triggerCondition')" path="conditionFilter" required>
           <FilterContent
             v-model:form-model="editor.conditionFilter"
             class="message-scene-condition-filter"
@@ -259,6 +267,7 @@
 
 <script lang="ts" setup>
   import {
+    type FormRules,
     NButton,
     NCheckbox,
     NCheckboxGroup,
@@ -272,7 +281,6 @@
     NSwitch,
     NTimePicker,
     NTooltip,
-    useDialog,
     useMessage,
   } from 'naive-ui';
   import dayjs from 'dayjs';
@@ -334,6 +342,7 @@
     updateMessageTask,
   } from '@/api/modules/index.js';
   import { processStatusOptions } from '@/config/process';
+  import useModal from '@/hooks/useModal';
   import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -353,7 +362,7 @@
   }
 
   interface SceneActionOption {
-    value: MessageNotificationEventEnum | 'create' | 'update' | 'delete';
+    value: MessageNotificationEventEnum | 'CUSTOM_FORM_ADD' | 'CUSTOM_FORM_UPDATE' | 'CUSTOM_FORM_DELETE';
     labelKey?: string;
     categoryLabelKey?: string;
   }
@@ -384,7 +393,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
-  const dialog = useDialog();
+  const { openModal } = useModal();
   const licenseStore = useLicenseStore();
   const canUpdate = computed(() => hasAnyPermission(['SYSTEM_NOTICE:UPDATE']));
   const canAdd = computed(() => hasAnyPermission(['SYSTEM_NOTICE:ADD']));
@@ -398,6 +407,7 @@
   const showEditor = ref(false);
   const editorMode = ref<EditorMode>('update');
   const editorSource = ref<SceneRow | null>(null);
+  const isCustomScene = ref(true);
   const editor = reactive<SceneEditor>({
     name: '',
     taskType: '',
@@ -424,6 +434,54 @@
     channelKeys: [],
     preservedReceiveMethods: [],
   });
+  const sceneFormRef = ref<InstanceType<typeof NForm> | null>(null);
+  const sceneFormRules = computed<FormRules>(() => ({
+    name: [
+      {
+        required: true,
+        whitespace: true,
+        message: t('system.message.settings.sceneNameRequired'),
+        trigger: 'blur',
+      },
+    ],
+    taskType: [{ required: true, message: t('common.pleaseSelect'), trigger: 'change' }],
+    triggerType: [{ required: true, message: t('common.pleaseSelect'), trigger: 'change' }],
+    actionTypeConfig: [
+      {
+        validator: () =>
+          editor.triggerType !== MessageNotificationTriggerEnum.ACTION || Boolean(editor.actionTypeConfig),
+        message: t('system.message.settings.sceneActionRequired'),
+        trigger: 'change',
+      },
+    ],
+    scheduleFieldId: [
+      {
+        validator: () =>
+          editor.triggerType !== MessageNotificationTriggerEnum.SCHEDULE ||
+          Boolean(
+            editor.scheduleFieldId && editor.scheduleDay >= 0 && editor.scheduleTime !== null && editor.remindType
+          ),
+        message: t('system.message.settings.sceneConditionRequired'),
+        trigger: 'change',
+      },
+    ],
+    conditionFilter: [
+      {
+        validator: () =>
+          editor.triggerType !== MessageNotificationTriggerEnum.FIELD ||
+          editor.conditionFilter.list.some((condition) => {
+            const emptyOperator = [
+              OperatorEnum.EMPTY,
+              OperatorEnum.NOT_EMPTY,
+              OperatorEnum.NEW_NOT_EQUALS_OLD,
+            ].includes(condition.operator as OperatorEnum);
+            return condition.dataIndex && condition.operator && (emptyOperator || condition.value !== null);
+          }),
+        message: t('system.message.settings.sceneConditionRequired'),
+        trigger: 'change',
+      },
+    ],
+  }));
   const triggerFields = ref<FormCreateField[]>([]);
 
   const groupTabs = computed(() => [
@@ -657,9 +715,9 @@
     todo: ['APPROVAL_'],
   };
   const customActionOptions: SceneActionOption[] = [
-    { value: 'create', labelKey: 'create' },
-    { value: 'update', labelKey: 'update' },
-    { value: 'delete', labelKey: 'delete' },
+    { value: 'CUSTOM_FORM_ADD', labelKey: 'create' },
+    { value: 'CUSTOM_FORM_UPDATE', labelKey: 'update' },
+    { value: 'CUSTOM_FORM_DELETE', labelKey: 'delete' },
   ];
   const actionOptions = computed(() => {
     const categoryKey = systemCategoryLabelKeyMap[editor.taskType.toUpperCase()] ?? editor.taskType.toLowerCase();
@@ -1057,6 +1115,7 @@
   async function openEditor(task: SceneRow, mode: EditorMode) {
     editorSource.value = task;
     editorMode.value = mode;
+    isCustomScene.value = mode === 'copy' || !task.sysEnable;
     editor.taskType = task.taskType;
     editor.group = task.group;
     await loadTriggerFields();
@@ -1149,7 +1208,7 @@
     return [
       { label: t('system.message.settings.configure'), key: 'configure', permission: ['SYSTEM_NOTICE:UPDATE'] },
       { label: t('system.message.settings.copy'), key: 'copy', permission: ['SYSTEM_NOTICE:ADD'] },
-      ...(task.sysEnable
+      ...(!task.sysEnable
         ? [
             {
               label: t('system.message.settings.delete'),
@@ -1187,7 +1246,8 @@
   }
 
   function deleteScene(task: SceneRow) {
-    dialog.warning({
+    openModal({
+      type: 'error',
       title: t('system.message.settings.deleteConfirm', { name: task.name }),
       content: t('system.message.settings.deleteConfirmContent'),
       positiveText: t('common.confirm'),
@@ -1231,26 +1291,22 @@
           'loading': enableLoadingIds.value.has(row.id),
           'size': 'small',
           'rubberBand': false,
-          'beforeChange': async () => {
-            if (enableLoadingIds.value.has(row.id)) return false;
+          'onUpdate:value': async (enabled: boolean) => {
+            if (enableLoadingIds.value.has(row.id)) return;
             const loadingIds = new Set(enableLoadingIds.value);
             loadingIds.add(row.id);
             enableLoadingIds.value = loadingIds;
 
             try {
               await enableMessageTask(row.id);
-              return true;
+              row.enabled = enabled;
             } catch {
               Message.error(t('common.saveFailed'));
-              return false;
             } finally {
               const finishedIds = new Set(enableLoadingIds.value);
               finishedIds.delete(row.id);
               enableLoadingIds.value = finishedIds;
             }
-          },
-          'onUpdate:value': (enabled: boolean) => {
-            row.enabled = enabled;
           },
         }),
     },
@@ -1258,7 +1314,7 @@
       title: t('system.message.notificationScenario'),
       key: 'name',
       fixed: 'left',
-      width: 136,
+      width: 150,
       ellipsis: { tooltip: true },
       render: (row) =>
         h('div', { class: 'flex min-w-0 items-center gap-[8px]' }, [
@@ -1377,7 +1433,7 @@
     {
       title: t('common.operation'),
       key: 'operation',
-      width: 116,
+      width: 140,
       fixed: 'right',
       render: (row) =>
         h(CrmOperationButton, {
@@ -1431,13 +1487,13 @@
   onMounted(loadTaskCategories);
 
   function fillCustomTemplateForAction() {
-    if (editorMode.value !== 'create' || editor.triggerType !== MessageNotificationTriggerEnum.ACTION) {
+    if (editor.triggerType !== MessageNotificationTriggerEnum.ACTION) {
       return;
     }
 
     const matchedScene = tableProps.value.data.find(
       (task) =>
-        !task.sysEnable &&
+        task.sysEnable &&
         task.taskType === editor.taskType &&
         task.config?.actionTypeConfig === editor.actionTypeConfig &&
         task.templateValue?.length
@@ -1454,6 +1510,7 @@
     }
     editorSource.value = null;
     editorMode.value = 'create';
+    isCustomScene.value = true;
     Object.assign(editor, {
       name: '',
       taskType,
@@ -1577,40 +1634,9 @@
   async function saveEditor() {
     const source = editorSource.value;
     const name = editor.name.trim();
-    if (!name) {
-      Message.warning(t('system.message.settings.sceneNameRequired'));
-      return;
-    }
-    if (!editor.channelKeys.length) {
-      Message.warning(t('system.message.settings.receiveMethods'));
-      return;
-    }
-    if (!editor.taskType) {
-      Message.warning(t('common.pleaseSelect'));
-      return;
-    }
-
-    if (editor.triggerType === MessageNotificationTriggerEnum.ACTION && !editor.actionTypeConfig) {
-      Message.warning(t('system.message.settings.sceneActionRequired'));
-      return;
-    }
-    if (
-      editor.triggerType === MessageNotificationTriggerEnum.SCHEDULE &&
-      (!editor.scheduleFieldId || editor.scheduleDay < 0 || editor.scheduleTime === null || !editor.remindType)
-    ) {
-      Message.warning(t('system.message.settings.sceneConditionRequired'));
-      return;
-    }
-    if (
-      editor.triggerType === MessageNotificationTriggerEnum.FIELD &&
-      !editor.conditionFilter.list.some((condition) => {
-        const emptyOperator = [OperatorEnum.EMPTY, OperatorEnum.NOT_EMPTY, OperatorEnum.NEW_NOT_EQUALS_OLD].includes(
-          condition.operator as OperatorEnum
-        );
-        return condition.dataIndex && condition.operator && (emptyOperator || condition.value !== null);
-      })
-    ) {
-      Message.warning(t('system.message.settings.sceneConditionRequired'));
+    try {
+      await sceneFormRef.value?.validate();
+    } catch {
       return;
     }
 
@@ -1630,7 +1656,7 @@
       triggerType: editorMode.value === 'update' && source?.sysEnable ? source.triggerType : editor.triggerType,
       config: editorMode.value === 'update' && source?.sysEnable ? source.config : getEditorConfig(),
       template: editorMode.value === 'update' && source?.sysEnable ? source.template : editor.template || '[]',
-      ...(editor.group === 'custom' ? { templateValue: editor.templateValue } : {}),
+      ...(isCustomScene.value ? { templateValue: editor.templateValue } : {}),
       type: saveType,
     };
     try {
