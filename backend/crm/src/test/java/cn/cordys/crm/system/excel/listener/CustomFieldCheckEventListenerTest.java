@@ -1,6 +1,8 @@
 package cn.cordys.crm.system.excel.listener;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.dto.field.InputField;
@@ -14,6 +16,7 @@ import cn.idev.excel.context.AnalysisContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -24,11 +27,13 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class CustomFieldCheckEventListenerTest {
@@ -124,6 +129,38 @@ class CustomFieldCheckEventListenerTest {
         listener.invoke(row, context);
 
         assertTrue(listener.getErrRows().contains(1));
+    }
+
+    @Test
+    void rejectsMissingUniqueIdHeaderForUpdate() {
+        CustomFieldCheckEventListener listener = newUpdateListener();
+
+        assertThrows(GenericException.class, () -> listener.invokeHeadMap(Map.of(0, "内容"), headRowContext()));
+    }
+
+    @Test
+    void validatesUniqueIdPerUpdateRow() {
+        CommonMapper commonMapper = mock(CommonMapper.class);
+        when(commonMapper.checkIdCount("existing", "follow_up_record")).thenReturn(1);
+        try (MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class)) {
+            beans.when(() -> CommonBeanFactory.getBean(CommonMapper.class)).thenReturn(commonMapper);
+            CustomFieldCheckEventListener listener = newUpdateListener();
+            AnalysisContext context = headRowContext(1, 2, 3, 4);
+            listener.invokeHeadMap(Map.of(0, "唯一ID", 1, "内容"), context);
+
+            listener.invoke(Map.of(1, "缺少ID"), context);
+            listener.invoke(Map.of(0, " ", 1, "空白ID"), context);
+            listener.invoke(Map.of(0, "unknown", 1, "不存在的ID"), context);
+            listener.invoke(Map.of(0, "existing", 1, "有效ID"), context);
+
+            assertEquals(List.of(1, 2, 3), listener.getErrRows());
+            assertEquals(1, listener.getSuccess());
+        }
+    }
+
+    private CustomFieldCheckEventListener newUpdateListener() {
+        return new CustomFieldCheckEventListener(List.of(), "follow_up_record", "follow_up_record_field",
+                "org-id", ImportType.UPDATE.name());
     }
 
     private CustomFieldCheckEventListener newListener() {
