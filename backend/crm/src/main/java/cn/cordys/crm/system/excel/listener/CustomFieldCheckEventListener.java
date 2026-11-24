@@ -104,6 +104,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     protected int maxHeadRow;
     protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
     protected Map<Integer, String> firstHeadMap = new HashMap<>();
+    protected static final String RESOURCE_ID_COLUMN_KEY = "唯一ID_唯一ID";
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     protected Map<String, BaseField> priceSubRefFieldMap = new HashMap<>();
 
@@ -234,7 +235,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         }
         String sourceId = "";
         Integer key = headMap.entrySet().stream()
-                .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID_唯一ID"))
+                .filter(entry -> Strings.CI.equals(entry.getValue(), RESOURCE_ID_COLUMN_KEY))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(null);
@@ -297,13 +298,13 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             if (!isValidateCell(rowIndex, k)) {
                 return;
             }
-            if (Strings.CI.equals("唯一ID", v) && Strings.CI.equals(importType, ImportType.UPDATE.name())
-                    && StringUtils.isBlank(sourceId)) {
-                errText.append(checkHeadMap.get(k)).append(Translator.get("cannot_be_null")).append(";");
-            }
-            if (Strings.CI.equals("唯一ID", v) && Strings.CI.equals(importType, ImportType.UPDATE.name())
-                    && StringUtils.isNotBlank(sourceId)) {
-                checkId(checkHeadMap.get(k), sourceId, errText);
+            if (Strings.CI.equals(RESOURCE_ID_COLUMN_KEY, v) && Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+                String columnName = checkHeadMap.get(k);
+                if (StringUtils.isBlank(sourceId)) {
+                    errText.append(columnName).append(Translator.get("cannot_be_null")).append(";");
+                } else {
+                    checkId(columnName, sourceId, errText);
+                }
             }
 
             if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k)) && isFieldVisible(v, rowData)) {

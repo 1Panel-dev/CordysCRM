@@ -429,7 +429,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         String rowKey = IDGenerator.nextStr();
         if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
             Integer key = headMap.entrySet().stream()
-                    .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID_唯一ID"))
+                    .filter(entry -> Strings.CI.equals(entry.getValue(), RESOURCE_ID_COLUMN_KEY))
                     .map(Map.Entry::getKey)
                     .findFirst()
                     .orElse(null);
