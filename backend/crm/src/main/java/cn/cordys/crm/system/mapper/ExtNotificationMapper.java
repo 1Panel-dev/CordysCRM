@@ -28,7 +28,7 @@ public interface ExtNotificationMapper {
             @Param("modules") List<String> modules);
 
     List<NotificationDTO> selectLastAnnouncementList(@Param("userId") String userId,
-            @Param("organizationId") String organizationId);
+            @Param("organizationId") String organizationId, @Param("announcement") boolean announcement);
 
     void deleteByReceivers(@Param("receivers") List<String> receivers, @Param("organizationId") String organizationId);
 

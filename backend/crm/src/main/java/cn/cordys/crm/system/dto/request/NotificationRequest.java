@@ -37,4 +37,7 @@ public class NotificationRequest extends BasePageRequest {
     @Schema(description = "操作")
     private String operation;
 
+    @Schema(description = "触发类型")
+    private String triggerType;
+
 }
