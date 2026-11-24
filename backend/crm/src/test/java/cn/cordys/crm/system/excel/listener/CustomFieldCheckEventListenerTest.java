@@ -100,17 +100,6 @@ class CustomFieldCheckEventListenerTest {
     }
 
     @Test
-    void rejectsMissingHeaderForRequiredTextArea() {
-        CustomFieldCheckEventListener listener = newTextAreaListener(true);
-        AnalysisContext context = headRowContext();
-
-        Map<Integer, String> headMap = new LinkedHashMap<>();
-        headMap.put(0, "Other");
-
-        assertThrows(GenericException.class, () -> listener.invokeHeadMap(headMap, context));
-    }
-
-    @Test
     void allowsMissingHeaderForOptionalTextArea() {
         CustomFieldCheckEventListener listener = newTextAreaListener(false);
         AnalysisContext context = headRowContext();

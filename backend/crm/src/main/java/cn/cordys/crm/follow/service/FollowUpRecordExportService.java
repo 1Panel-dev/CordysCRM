@@ -63,6 +63,7 @@ public class FollowUpRecordExportService extends BaseExportService {
         result.put("followTime", TimeUtils.getDateTimeStr(data.getFollowTime()));
         result.put("followMethod", data.getFollowMethod());
         result.put("owner", data.getOwnerName());
+        result.put("departmentId", data.getDepartmentName());
         result.put("contactId", data.getContactName());
         result.put("createUser", data.getCreateUserName());
         result.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
