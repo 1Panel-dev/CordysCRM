@@ -40,6 +40,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -272,8 +273,21 @@ public class MessageNotificationService {
     /**
      * 新版本消息通知
      * 处理初始化数据
+     * <p>
+     * 该初始化在应用启动时执行，不在 HTTP 请求线程中，无法通过 Accept-Language 解析语言。
+     * 因此显式指定简体中文，避免任务名称按 JVM 默认语言（通常为英文）入库。
      */
     public void modifyMessageNotification() {
+        Locale previousLocale = LocaleContextHolder.getLocale();
+        try {
+            LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
+            doModifyMessageNotification();
+        } finally {
+            LocaleContextHolder.setLocale(previousLocale);
+        }
+    }
+
+    private void doModifyMessageNotification() {
         // 删除旧通知
         List<String> deleteEvents = List.of("CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED",
                 "CUSTOMER_FOLLOW_UP_PLAN_DUE",
