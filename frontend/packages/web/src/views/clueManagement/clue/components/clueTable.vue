@@ -12,7 +12,7 @@
     @sorter-change="propsEvent.sorterChange"
     @filter-change="propsEvent.filterChange"
     @batch-action="handleBatchAction"
-    @refresh="searchData"
+    @refresh="handleTableRefresh"
   >
     <template v-if="props.readonly" #tableTop>
       <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
@@ -817,6 +817,11 @@
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
     }
+  }
+
+  async function handleTableRefresh() {
+    searchData();
+    await initApprovalPermission(true);
   }
 
   handleSearchData.value = searchData;

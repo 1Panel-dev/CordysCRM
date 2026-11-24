@@ -168,7 +168,7 @@ public class UserViewService {
         List<FilterCondition> conditions = request.getConditions();
         List<FilterCondition> storedConditions = getStoredFilterConditions(request.getId());
         if (isApprovalConditionDisabled(request.getId(), storedConditions)) {
-            // 关闭期间隐藏的审批条件仍需保留，重新开启后继续生效。
+            // 暂时隐藏的条件仍需保留，恢复可用时继续生效。
             conditions.removeIf(condition -> APPROVAL_STATUS.equals(condition.getName()));
             storedConditions.stream().filter(condition -> APPROVAL_STATUS.equals(condition.getName()))
                     .forEach(conditions::add);
@@ -317,7 +317,14 @@ public class UserViewService {
                 .filter(key -> Strings.CI.equalsAny(resourceType, key.name(), key.getKey()))
                 .map(FormKey::getKey).findFirst().orElse(resourceType);
         };
-        return approvalFlowService.getEnabledFlow(formKey, view.getOrganizationId()) == null;
+        String dataFormType = switch (resourceType) {
+        case "CUSTOMER_POOL" -> "customerOpenSea";
+        case "CLUE_POOL" -> "cluePool";
+        default -> formKey;
+        };
+        String orgId = view.getOrganizationId();
+        return approvalFlowService.getEnabledFlow(formKey, orgId) == null
+                && !approvalFlowService.existsApprovingData(dataFormType, orgId, null);
     }
 
     private List<FilterCondition> getStoredFilterConditions(String viewId) {
