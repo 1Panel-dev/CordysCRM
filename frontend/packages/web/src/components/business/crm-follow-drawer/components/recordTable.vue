@@ -229,7 +229,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
-  import { getExportColumns } from '@/utils/export';
+  import { getExportColumns, splitFollowResourceNameColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -495,7 +495,16 @@
     ids: checkedRowKeys.value,
   }));
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
-    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
+    // 列表合并展示客户名称、公司名称, 导出仍按两个字段处理
+    splitFollowResourceNameColumns(
+      getExportColumns(
+        propsRes.value.columns,
+        customFieldsFilterConfig.value as FilterFormItem[],
+        fieldList.value,
+        true
+      ),
+      fieldList.value
+    )
   );
 
   function handleExportAllClick() {
