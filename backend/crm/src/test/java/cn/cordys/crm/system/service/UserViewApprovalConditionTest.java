@@ -75,12 +75,17 @@ class UserViewApprovalConditionTest {
         when(formService.getOptionMap(any(), anyList())).thenReturn(Map.of());
     }
 
-    @Test
-    void detailHidesDisabledApprovalConditionAndRestoresItWhenEnabled() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void detailKeepsApprovalConditionWhenFlowIsEnabledOrRecordsAreApproving(boolean flowEnabled) {
         assertEquals(List.of("name"), names(service.getViewDetail("view-1", "user-1", "org-1", "customer")
                 .getConditions()));
 
-        when(flows.getEnabledFlow("customer", "org-1")).thenReturn(new ApprovalFlow());
+        if (flowEnabled) {
+            when(flows.getEnabledFlow("customer", "org-1")).thenReturn(new ApprovalFlow());
+        } else {
+            when(flows.existsApprovingData("customer", "org-1", null)).thenReturn(true);
+        }
 
         List<FilterCondition> restored = service.getViewDetail("view-1", "user-1", "org-1", "customer")
                 .getConditions();
@@ -118,8 +123,20 @@ class UserViewApprovalConditionTest {
         verify(flows).getEnabledFlow(formKey, "org-1");
     }
 
+    @ParameterizedTest
+    @CsvSource({ "CLUE_POOL,clue,cluePool", "CUSTOMER_POOL,customer,customerOpenSea" })
+    void disabledPoolViewUsesPoolRecordsToKeepApprovalCondition(String resourceType, String configFormType,
+            String dataFormType) {
+        view.setResourceType(resourceType);
+        when(flows.existsApprovingData(dataFormType, "org-1", null)).thenReturn(true);
+
+        assertEquals(List.of("approvalStatus", "name"), names(service.getFilterConditions("view-1")));
+        verify(flows).getEnabledFlow(configFormType, "org-1");
+        verify(flows).existsApprovingData(dataFormType, "org-1", null);
+    }
+
     @Test
-    void savingWhileDisabledPreservesOneHiddenConditionAndEnabledViewCanDeleteIt() {
+    void savingPreservesHiddenConditionAndAllowsDeletionWhenRecordsAreApproving() {
         doAnswer(ignored -> {
             stored.clear();
             return null;
@@ -142,7 +159,7 @@ class UserViewApprovalConditionTest {
             assertEquals(1, stored.stream().filter(condition -> "approvalStatus".equals(condition.getName())).count());
             assertEquals(List.of("name"), names(service.getFilterConditions("view-1")));
 
-            when(flows.getEnabledFlow("customer", "org-1")).thenReturn(new ApprovalFlow());
+            when(flows.existsApprovingData("customer", "org-1", null)).thenReturn(true);
             List<FilterCondition> restored = service.getFilterConditions("view-1");
             assertEquals(List.of("name", "approvalStatus"), names(restored));
             assertEquals(List.of("APPROVING"), restored.getLast().getValue());
@@ -155,9 +172,14 @@ class UserViewApprovalConditionTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "AND", "OR" })
-    void queryIgnoresDisabledApprovalConditionAndRestoresItWithoutChangingSearchMode(String searchMode) {
+    @CsvSource({ "AND,true", "AND,false", "OR,true", "OR,false" })
+    void clueQueryUsesApprovalConditionWhenFlowIsEnabledOrRecordsAreApproving(String searchMode,
+            boolean flowEnabled) {
+        view.setResourceType("CLUE");
         view.setSearchMode(searchMode);
+        ModuleFormConfigDTO config = new ModuleFormConfigDTO();
+        config.setFields(List.of());
+        when(forms.getBusinessFormConfig("clue", "org-1")).thenReturn(config);
         DepartmentService departments = mock(DepartmentService.class);
         when(departments.getTree("org-1")).thenReturn(List.of());
         try (MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class);
@@ -169,12 +191,16 @@ class UserViewApprovalConditionTest {
 
             BaseCondition request = new BaseCondition();
             request.setViewId("view-1");
-            ConditionFilterUtils.parseCondition(request, "customer");
+            ConditionFilterUtils.parseCondition(request, "clue");
             assertEquals(List.of("name"), names(request.getViewCombineSearch().getConditions()));
             assertEquals(searchMode, request.getViewCombineSearch().getSearchMode());
 
-            when(flows.getEnabledFlow("customer", "org-1")).thenReturn(new ApprovalFlow());
-            ConditionFilterUtils.parseCondition(request, "customer");
+            if (flowEnabled) {
+                when(flows.getEnabledFlow("clue", "org-1")).thenReturn(new ApprovalFlow());
+            } else {
+                when(flows.existsApprovingData("clue", "org-1", null)).thenReturn(true);
+            }
+            ConditionFilterUtils.parseCondition(request, "clue");
             assertEquals(List.of("approvalStatus", "name"), names(request.getViewCombineSearch().getConditions()));
             assertEquals(searchMode, request.getViewCombineSearch().getSearchMode());
             assertEquals(List.of("APPROVING"), request.getViewCombineSearch().getConditions().getFirst().getValue());

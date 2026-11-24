@@ -398,23 +398,13 @@ public class ApprovalFlowService {
      * 根据表单类型获取审批流信息（不含节点配置）
      */
     public ApprovalFlowByFormTypeResponse getByFormType(String formType, String organizationId, String poolId) {
-        // 池表单共用普通表单的审批配置，数据范围仍按请求的表单类型区分。
-        String configFormType = switch (formType) {
-        case "cluePool" -> FormKey.CLUE.getKey();
-        case "customerOpenSea" -> FormKey.CUSTOMER.getKey();
-        default -> formType;
-        };
-        ApprovalFlow targetFlow = selectApprovalFlowByFormType(configFormType, organizationId);
+        ApprovalFlow targetFlow = selectApprovalFlowByFormType(resolveConfigFormType(formType), organizationId);
         if (targetFlow == null) {
             return null;
         }
 
         ApprovalFlowByFormTypeResponse response = BeanUtils.copyBean(new ApprovalFlowByFormTypeResponse(), targetFlow);
-        String tableName = ApprovalResourceService.resolveApprovalTableName(
-                ApprovalResourceService.resolveApprovalFormKey(configFormType));
-        response.setExistApprovingData(StringUtils.isNotBlank(tableName)
-                && extApprovalInstanceMapper.existsApprovingResource(tableName, formType, organizationId,
-                        StringUtils.trimToNull(poolId)));
+        response.setExistApprovingData(existsApprovingData(formType, organizationId, poolId));
 
         List<Permission> permissions = getPermissionsByFormType(targetFlow.getFormType());
         response.setPermissions(getResourcePermissions(permissions));
@@ -424,6 +414,23 @@ public class ApprovalFlowService {
                 parseStatusPermissions(response.getPermissions(), targetFlow.getStatusPermissions()));
 
         return response;
+    }
+
+    public boolean existsApprovingData(String formType, String organizationId, String poolId) {
+        String tableName = ApprovalResourceService.resolveApprovalTableName(
+                ApprovalResourceService.resolveApprovalFormKey(resolveConfigFormType(formType)));
+        return StringUtils.isNotBlank(tableName)
+                && extApprovalInstanceMapper.existsApprovingResource(tableName, formType, organizationId,
+                        StringUtils.trimToNull(poolId));
+    }
+
+    private static String resolveConfigFormType(String formType) {
+        // 池表单共用普通表单的审批配置，数据范围仍按请求的表单类型区分。
+        return switch (formType) {
+        case "cluePool" -> FormKey.CLUE.getKey();
+        case "customerOpenSea" -> FormKey.CUSTOMER.getKey();
+        default -> formType;
+        };
     }
 
     /**

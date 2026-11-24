@@ -479,6 +479,7 @@
     revokeByResourceId(sourceId.value, {
       onSuccess: async () => {
         await initApprovalPermission();
+        emit('approvalSuccess');
         handleSaved();
       },
     });
