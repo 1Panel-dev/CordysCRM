@@ -233,8 +233,8 @@
         </div>
       </template>
       <template #[FieldTypeEnum.STATISTIC]="{ item }">
-        <div class="field-line flex w-full flex-wrap items-center">
-          <div class="pr-[16px] text-[var(--text-n2)]">
+        <div class="field-line group flex w-full flex-wrap items-center">
+          <div class="flex items-center pr-[16px] text-[var(--text-n2)]">
             {{ item.label }}
           </div>
           <div class="flex items-center gap-[8px]">
@@ -251,9 +251,15 @@
               placement="bottom-end"
               @confirm="handleReCalculation(item.fieldInfo, item)"
             >
-              <n-button type="warning" quaternary>
-                <template #icon><CrmIcon type="iconicon_error_circle_filled" /></template>
-                {{ t('crmFormCreate.reCalculation') }}
+              <n-button
+                plain
+                ghost
+                circle
+                size="tiny"
+                class="opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+                :aria-label="t('crmFormCreate.reCalculation')"
+              >
+                <template #icon><CrmIcon type="iconicon_arithmetic" :size="16" /></template>
               </n-button>
             </CrmPopConfirm>
           </div>

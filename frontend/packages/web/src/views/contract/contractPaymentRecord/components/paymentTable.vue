@@ -65,7 +65,7 @@
         @refresh-table-data="searchData"
       />
     </template>
-    <template v-if="!props.customerId" #totalRight>
+    <template #totalRight>
       <div class="ml-[24px]">
         {{ t('opportunity.averageAmount') }}
         <span class="ml-[4px]">
@@ -542,13 +542,17 @@
         return;
       }
       if (props.customerId) {
-        statisticInfo.value = await getAccountPaymentRecordStatistic({
+        const res = await getAccountPaymentRecordStatistic({
           customerId: props.customerId,
           keyword: _keyword ?? keyword.value,
           viewId: activeTab.value,
           combineSearch: advanceFilter,
           filters: filterItem.value,
         });
+        statisticInfo.value = {
+          amount: res.receivedAmount,
+          averageAmount: res.receivedAmount / (propsRes.value.crmPagination?.itemCount || 1),
+        };
         return;
       }
       const res = await getPaymentRecordStatistic({

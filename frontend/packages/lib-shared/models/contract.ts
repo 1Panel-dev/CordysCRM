@@ -1,7 +1,7 @@
-import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
-import { ContractBusinessTitleStatusEnum } from '@lib/shared/enums/contractEnum';
 import type { ModuleField, TableQueryParams } from './common';
 import type { FormDesignConfigDetailParams } from './system/module';
+import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
+import { ContractBusinessTitleStatusEnum } from '@lib/shared/enums/contractEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 
 // 合同列表项
@@ -184,7 +184,7 @@ export interface SaveBusinessTitleParams {
   phoneNumber: string; // 注册电话
   registeredCapital: string; // 注册资本
   companySize: string; // 公司规模
-  registrationNumber: string; //工商注册号
+  registrationNumber: string; // 工商注册号
   type: string; // 来源类型
   province: string; // 省
   city: string; // 市
@@ -254,4 +254,10 @@ export interface UpdateContractInvoiceParams extends SaveContractInvoiceParams {
 export interface ContractInvoiceDetail extends ContractInvoiceItem {
   optionMap?: Record<string, any[]>;
   attachmentMap?: Record<string, AttachmentInfo[]>; // 附件信息映射
+}
+
+export interface ContractPaymentRecordStatisticInfo {
+  pendingAmount: number;
+  receivedAmount: number;
+  totalAmount: number;
 }

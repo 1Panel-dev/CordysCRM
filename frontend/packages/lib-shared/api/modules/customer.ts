@@ -58,6 +58,16 @@ import {
   GenerateCustomerChartUrl,
   generateCustomerContactChartUrl,
   generateCustomerPoolChartUrl,
+  GetAccountContractListUrl,
+  GetAccountContractStatisticUrl,
+  GetAccountInvoiceListUrl,
+  GetAccountInvoiceStatisticUrl,
+  GetAccountOrderListUrl,
+  GetAccountOrderStatisticUrl,
+  GetAccountPaymentListUrl,
+  GetAccountPaymentRecordListUrl,
+  GetAccountPaymentRecordStatisticUrl,
+  GetAccountPaymentStatisticUrl,
   GetAccountPoolViewDetailUrl,
   GetAccountPoolViewListUrl,
   GetAdvancedCustomerContactListUrl,
@@ -110,6 +120,7 @@ import {
   SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
   TransferCustomerUrl,
+  UnfreezeOpenSeaCustomerUrl,
   UpdateAccountPoolViewUrl,
   UpdateContactViewUrl,
   UpdateCustomerCollaborationUrl,
@@ -121,17 +132,6 @@ import {
   UpdateCustomerRelationItemUrl,
   UpdateCustomerUrl,
   UpdateCustomerViewUrl,
-  UnfreezeOpenSeaCustomerUrl,
-  GetAccountContractListUrl,
-  GetAccountContractStatisticUrl,
-  GetAccountPaymentListUrl,
-  GetAccountPaymentStatisticUrl,
-  GetAccountPaymentRecordStatisticUrl,
-  GetAccountPaymentRecordListUrl,
-  GetAccountInvoiceListUrl,
-  GetAccountInvoiceStatisticUrl,
-  GetAccountOrderListUrl,
-  GetAccountOrderStatisticUrl,
 } from '@lib/shared/api/requrls/customer';
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import type {
@@ -144,6 +144,12 @@ import type {
   TableExportSelectedParams,
   TableQueryParams,
 } from '@lib/shared/models/common';
+import type {
+  ContractItem,
+  ContractPaymentRecordStatisticInfo,
+  PaymentPlanItem,
+  PaymentRecordItem,
+} from '@lib/shared/models/contract';
 import type {
   AddCustomerCollaborationParams,
   AddCustomerRelationItemParams,
@@ -170,8 +176,8 @@ import type {
   CustomerTabHidden,
   CustomerTableParams,
   CustomerTransferParams,
-  FreezeOpenSeaCustomerParams,
   FollowDetailItem,
+  FreezeOpenSeaCustomerParams,
   MergeAccountParams,
   MoveToPublicPoolParams,
   OpenSeaCustomerTableParams,
@@ -185,6 +191,7 @@ import type {
   SaveCustomerOpenSeaParams,
   SaveCustomerParams,
   TransferParams,
+  UnfreezeOpenSeaCustomerParams,
   UpdateCustomerCollaborationParams,
   UpdateCustomerContractParams,
   UpdateCustomerFollowPlanParams,
@@ -193,13 +200,12 @@ import type {
   UpdateCustomerParams,
   UpdateCustomerRelationItemParams,
   UpdateFollowPlanStatusParams,
-  UnfreezeOpenSeaCustomerParams,
 } from '@lib/shared/models/customer';
 import type { OrderItem } from '@lib/shared/models/order';
 import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
-import type { ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
+
 export default function useProductApi(CDR: CordysAxios) {
   // 添加客户
   function addCustomer(data: SaveCustomerParams) {
@@ -326,6 +332,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取客户跟进计划列表
   function getCustomerFollowPlanList(data: CustomerFollowPlanTableParams) {
     return CDR.post<CommonList<CustomerFollowPlanListItem>>({ url: GetCustomerFollowPlanListUrl, data });
+  }
+
+  // 更新客户跟进计划状态
+  function updateCustomerFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
+    return CDR.post({ url: UpdateCustomerFollowPlanStatusUrl, data });
   }
 
   // 取消客户跟进计划
@@ -601,11 +612,6 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<CustomerTabHidden>({ url: GetCustomerContactTabUrl });
   }
 
-  // 更新客户跟进计划状态
-  function updateCustomerFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
-    return CDR.post({ url: UpdateCustomerFollowPlanStatusUrl, data });
-  }
-
   // 获取客户商机列表
   function getCustomerOpportunityPage(data: CustomerOpportunityTableParams) {
     return CDR.post<CommonList<OpportunityItem>>({ url: GetCustomerOpportunityListUrl, data });
@@ -860,7 +866,10 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getAccountPaymentRecordStatistic(data: TableQueryParams) {
-    return CDR.post({ url: GetAccountPaymentRecordStatisticUrl, data }, { ignoreCancelToken: true });
+    return CDR.post<ContractPaymentRecordStatisticInfo>(
+      { url: GetAccountPaymentRecordStatisticUrl, data },
+      { ignoreCancelToken: true }
+    );
   }
 
   return {
