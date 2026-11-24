@@ -239,7 +239,7 @@
     initApprovalPermission,
     updateExecute,
     deleteExecute,
-    enableApproval,
+    showApprovalStatus,
   } = useApprovalOperation({
     formType: FormDesignKeyEnum.BUSINESS,
     onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
@@ -318,7 +318,7 @@
   });
   const approvalStatus = computed(() => approvalInfo.value?.approvalStatus ?? detail.value.approvalStatus);
   const renderDescriptions = computed(() => {
-    const approvalStatusDescription = enableApproval.value
+    const approvalStatusDescription = showApprovalStatus.value
       ? [
           {
             label: t('workbench.approvalStatus'),

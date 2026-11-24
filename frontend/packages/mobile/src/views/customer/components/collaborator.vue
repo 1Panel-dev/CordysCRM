@@ -6,7 +6,7 @@
         :key="item.id"
         class="mb-[16px] flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
       >
-        <CrmAvatar :text="item.userName" />
+        <CrmAvatar :avatar="item.avatar ?? undefined" :text="item.userName" />
         <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
           <div class="flex items-center justify-between">
             <div class="one-line-text flex-1 text-[16px] text-[var(--text-n1)]">{{ item.userName }}</div>

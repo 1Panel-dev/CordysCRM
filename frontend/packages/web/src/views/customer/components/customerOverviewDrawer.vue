@@ -34,16 +34,15 @@
               <n-avatar round :size="24" class="bg-[var(--primary-1)] text-white ring-2 ring-white">
                 {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
               </n-avatar>
-              <n-avatar
+              <CrmAvatar
                 v-for="person in displayedCollaborators"
                 :key="person.id"
-                :src="person.avatar ?? undefined"
-                round
+                :avatar="person.avatar ?? undefined"
+                :is-user="false"
                 :size="24"
+                :word="person.userName"
                 class="bg-[var(--text-n5)] text-white ring-2 ring-white"
-              >
-                <template v-if="!person.avatar">{{ person.userName?.slice(0, 1) || '?' }}</template>
-              </n-avatar>
+              />
               <n-avatar
                 v-if="hiddenCollaboratorCount"
                 round
@@ -301,6 +300,7 @@
   import ApprovalFieldEditor from '@/components/business/crm-approval/components/approvalFieldEditor.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import CrmChangeRecord from '@/components/business/crm-change-record/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';

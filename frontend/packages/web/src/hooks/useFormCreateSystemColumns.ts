@@ -766,13 +766,6 @@ export default async function useFormCreateSystemColumns(
           tooltip: true,
         },
       },
-      {
-        title: t('contract.alreadyPayAmount'),
-        width: 120,
-        key: 'alreadyPayAmount',
-        sortOrder: false,
-        sorter: true,
-      },
       ...approvalStatusColumn,
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: paymentInternalColumns,

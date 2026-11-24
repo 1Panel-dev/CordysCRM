@@ -61,19 +61,6 @@
     <n-tooltip trigger="hover" :delay="300">
       <template #trigger>
         <div class="crm-stage-board-item-desc-label">
-          {{ fieldLabelMap.alreadyPayAmount }}
-        </div>
-      </template>
-      {{ fieldLabelMap.alreadyPayAmount }}
-    </n-tooltip>
-    <div class="crm-stage-board-item-desc-value">
-      {{ formatThousands(props.item.alreadyPayAmount) || '-' }}
-    </div>
-  </div>
-  <div class="crm-stage-board-item-desc crm-stage-board-item-desc--wide">
-    <n-tooltip trigger="hover" :delay="300">
-      <template #trigger>
-        <div class="crm-stage-board-item-desc-label">
           {{ fieldLabelMap.startTime }}
         </div>
       </template>
@@ -106,7 +93,6 @@
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { formatThousands } from '@lib/shared/method';
   import { formatNumberValue } from '@lib/shared/method/formCreate';
 
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
@@ -131,7 +117,6 @@
       amount: t('contract.contractAmount'),
       customerId: t('module.customerManagement'),
       owner: t('common.owner'),
-      alreadyPayAmount: t('contract.alreadyPayAmount'),
       createTime: t('common.createTime'),
     };
     props.fieldList.forEach((field) => {
