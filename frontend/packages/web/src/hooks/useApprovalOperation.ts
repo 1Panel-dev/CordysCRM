@@ -147,6 +147,12 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
   function createApprovalActions(row: Row): ActionsItem[] {
     const approvalStatus = getApprovalStatus(row);
+
+    // 审批流关闭后，只有仍在审批中的历史数据允许撤销；其他数据回退为常规表单操作
+    if (!enableApproval.value && approvalStatus !== ProcessStatusEnum.APPROVING) {
+      return [];
+    }
+
     const reviewActionState = getReviewActionState();
     const canReview = canShowReviewAction(row);
 
