@@ -480,8 +480,12 @@ public class CustomerContactService {
         String owner = originCustomerContact.getOwner();
         if (!PermissionUtils.hasPermission(contactDelete) || StringUtils.isBlank(owner)
                 || !dataScopeService.hasDataPermission(userId, orgId, owner, contactDelete)) {
+            String customerId = originCustomerContact.getCustomerId();
+            if (StringUtils.isBlank(customerId)) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
             resourcePermissionService.checkResourcePermissionWithoutApprovalStatus(
-                    PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, originCustomerContact.getCustomerId(),
+                    PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, customerId,
                     FormKeyConstants.CUSTOMER, userId, orgId);
         }
         // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等删完才准
@@ -543,19 +547,15 @@ public class CustomerContactService {
     }
 
     private void checkContactDeleteScope(CustomerContact contact, String userId, String orgId) {
+        if (StringUtils.isAnyBlank(userId, orgId) || !orgId.equals(contact.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
         String customerId = contact.getCustomerId();
-        if (StringUtils.isAnyBlank(userId, orgId, customerId) || !orgId.equals(contact.getOrganizationId())) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
-        Customer customer = customerMapper.selectByPrimaryKey(customerId);
-        if (customer == null || !orgId.equals(customer.getOrganizationId())) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
-        if (!userId.equals(customer.getOwner())
-                && customerCollaborationService.selectByCustomerIdAndUserId(customerId, userId).stream()
-                        .anyMatch(member -> CustomerCollaborationType.READ_ONLY.name()
-                                .equals(member.getCollaborationType()))) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        if (StringUtils.isNotBlank(customerId)) {
+            Customer customer = customerMapper.selectByPrimaryKey(customerId);
+            if (customer == null || !orgId.equals(customer.getOrganizationId())) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
         }
         relatedResourcePermissionService.checkIsolatedData(FormKeyConstants.CONTACT, contact.getId(), userId, orgId);
     }
