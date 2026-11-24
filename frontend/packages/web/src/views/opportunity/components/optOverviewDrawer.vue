@@ -98,7 +98,9 @@
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="
-                  effectiveReadonly || !hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])
+                  effectiveReadonly ||
+                  !canEditOpportunity ||
+                  !hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])
                 "
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
@@ -264,6 +266,18 @@
       isCustomerRelatedReadonly(detailInfo.value?.id === sourceId.value ? detailInfo.value : undefined)
   );
 
+  function hasOperationPermission(permission: string) {
+    if (detailInfo.value.id !== sourceId.value) {
+      return false;
+    }
+    return (
+      (permission === 'OPPORTUNITY_MANAGEMENT:UPDATE' && !!props.approvalTaskId) ||
+      detailInfo.value.operationPermissions?.includes(permission) === true
+    );
+  }
+
+  const canEditOpportunity = computed(() => hasOperationPermission('OPPORTUNITY_MANAGEMENT:UPDATE'));
+
   const opportunityDataActionMap = computed<Record<string, ActionsItem>>(() => ({
     edit: {
       label: t('common.edit'),
@@ -312,15 +326,18 @@
     dataActionMap: () => opportunityDataActionMap.value,
     isDetail: true,
     specialActionFilter: (_row: Record<string, any>, actionKeys: string[]) => {
+      const permittedActions = actionKeys.filter(
+        (key) => opportunityDataActionMap.value[key]?.permission?.every(hasOperationPermission) ?? true
+      );
       if (isFail.value) {
-        return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+        return permittedActions.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
       }
 
       if (isSuccess.value && !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])) {
-        return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
+        return permittedActions.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));
       }
 
-      return actionKeys;
+      return permittedActions;
     },
   });
 
@@ -329,7 +346,7 @@
   }
 
   const canUpdateStage = computed(() => {
-    if (effectiveReadonly.value || !detailInfo.value) {
+    if (effectiveReadonly.value || !canEditOpportunity.value) {
       return false;
     }
 

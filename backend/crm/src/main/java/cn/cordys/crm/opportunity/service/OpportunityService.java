@@ -26,6 +26,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -194,6 +195,8 @@ public class OpportunityService implements ApprovalResourceHandler {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private StageAdvancedConfigService stageAdvancedConfigService;
     @Resource
@@ -719,8 +722,20 @@ public class OpportunityService implements ApprovalResourceHandler {
         if (getResponse == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
         }
-        dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(),
-                PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        List<String> operationPermissions = new ArrayList<>();
+        for (String permission : List.of(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE,
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER, PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)) {
+            try {
+                resourcePermissionService.checkResourcePermissionWithoutApprovalTask(permission, id,
+                        FormKey.OPPORTUNITY.getKey(), userId, orgId);
+                operationPermissions.add(permission);
+            } catch (GenericException exception) {
+                if (exception.getErrorCode() != CrmHttpResultCode.FORBIDDEN) {
+                    throw exception;
+                }
+            }
+        }
+        getResponse.setOperationPermissions(operationPermissions);
         return getResponse;
     }
 

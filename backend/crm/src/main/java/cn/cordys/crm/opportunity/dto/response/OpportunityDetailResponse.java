@@ -132,4 +132,7 @@ public class OpportunityDetailResponse {
 
     @Schema(description = "提审人ID")
     private String submitterId;
+
+    @Schema(description = "可执行的普通操作权限")
+    private List<String> operationPermissions;
 }
