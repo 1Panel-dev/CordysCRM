@@ -37,11 +37,12 @@
               <n-avatar
                 v-for="person in displayedCollaborators"
                 :key="person.id"
+                :src="person.avatar ?? undefined"
                 round
                 :size="24"
                 class="bg-[var(--text-n5)] text-white ring-2 ring-white"
               >
-                {{ person.userName?.slice(0, 1) || '?' }}
+                <template v-if="!person.avatar">{{ person.userName?.slice(0, 1) || '?' }}</template>
               </n-avatar>
               <n-avatar
                 v-if="hiddenCollaboratorCount"

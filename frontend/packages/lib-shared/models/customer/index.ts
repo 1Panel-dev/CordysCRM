@@ -340,6 +340,7 @@ export interface CollaborationItem {
   collaborationType: CollaborationType;
   expireTime?: number | null;
   userName: string;
+  avatar?: string | null;
   createUserName: string;
   updateUserName: string;
   departmentId: string;
