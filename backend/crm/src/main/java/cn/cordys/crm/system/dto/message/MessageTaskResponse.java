@@ -71,6 +71,9 @@ public class MessageTaskResponse {
     @Schema(description = "启用/禁用")
     private Boolean enable;
 
+    @Schema(description = "系统/自定义")
+    private Boolean sysEnable;
+
     /**
      * 将 template 中存储的模板枚举名(如 ["BUSINESS_TRANSFER_OLD_OWNER_TEXT",...])转换为对应的 i18n 文案
      */
