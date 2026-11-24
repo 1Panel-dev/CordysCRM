@@ -314,41 +314,46 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   ];
 
   function initFormShowControl(value?: any) {
+    function clearFieldValue(field: FormCreateField) {
+      if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) || getRuleType(field) === 'array') {
+        formDetail.value[field.id] = [];
+      } else if (
+        [FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.STATISTIC].includes(field.type) ||
+        (field.type === FieldTypeEnum.FORMULA && field.formulaResultFormat === 'number')
+      ) {
+        formDetail.value[field.id] = null;
+      } else {
+        formDetail.value[field.id] = '';
+      }
+    }
+
     // 读取整个显隐控制映射
     Object.keys(fieldShowControlMap.value).forEach((fieldId) => {
       // 取出当前字段的所有规则
       const ruleIds = Object.keys(fieldShowControlMap.value[fieldId]);
       const field = fieldList.value.find((f) => f.id === fieldId);
       if (field) {
-        // 当前字段存在，则遍历它的全部控制规则
-        for (let i = 0; i < ruleIds.length; i++) {
-          const ruleId = ruleIds[i];
+        const validRuleIds = ruleIds.filter((ruleId) => fieldList.value.some((f) => f.id === ruleId));
+        if (!validRuleIds.length) return;
+
+        const isVisible = validRuleIds.some((ruleId) => {
           const controlField = fieldList.value.find((f) => f.id === ruleId);
-          if (controlField) {
-            // 处理显示规则
-            if (fieldShowControlMap.value[fieldId][ruleId].includes(formDetail.value[controlField.id])) {
-              field.show = true;
-              if (field.showFields?.length) {
-                // 显示数据源字段也显示该数据源的显示字段
-                fieldList.value.forEach((f) => {
-                  if (f.resourceFieldId === field.id) {
-                    f.show = true;
-                  }
-                });
-              }
-              break; // 满足显示规则就停止，因为只需要满足一个规则字段即显示
-            } else {
-              field.show = false;
-              if (field.showFields?.length) {
-                // 隐藏数据源字段也隐藏该数据源的显示字段
-                fieldList.value.forEach((f) => {
-                  if (f.resourceFieldId === field.id) {
-                    f.show = false;
-                  }
-                });
-              }
-            }
-          }
+          return Boolean(
+            controlField && fieldShowControlMap.value[fieldId][ruleId].includes(formDetail.value[controlField.id])
+          );
+        });
+        field.show = isVisible;
+
+        const displayFields = field.showFields?.length
+          ? fieldList.value.filter((f) => f.resourceFieldId === field.id)
+          : [];
+        displayFields.forEach((displayField) => {
+          displayField.show = isVisible;
+        });
+
+        if (!isVisible) {
+          clearFieldValue(field);
+          displayFields.forEach(clearFieldValue);
         }
       }
     });
