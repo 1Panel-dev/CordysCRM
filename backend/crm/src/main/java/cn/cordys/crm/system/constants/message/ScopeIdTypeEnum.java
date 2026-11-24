@@ -15,6 +15,7 @@ public enum ScopeIdTypeEnum {
 
     OWNER("message.scope.owner"),                              //记录所有人
     OLD_OWNER("message.scope.old_owner"),                      //(前)记录所有人
+    CREATE_USER("message.scope.create_user"),                  //创建人
     COLLABORATION("message.scope.collaboration"),              //协作人
     CUSTOMER_SEAS_OWNER("message.scope.customer_seas_owner"),  //公海管理员
     SUBMITTER("message.scope.submitter"),                      //审批发起人

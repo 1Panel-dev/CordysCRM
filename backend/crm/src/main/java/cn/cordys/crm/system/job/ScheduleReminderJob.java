@@ -53,10 +53,7 @@ public class ScheduleReminderJob {
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
 
-    //@QuartzScheduled(cron = "0 0 * * * ?")
-
-    //todo 测试11111111111111111111111111111
-    @QuartzScheduled(cron = "0 * * * * ?")
+    @QuartzScheduled(cron = "0 0 * * * ?")
     public void onEvent() {
         try {
             process();

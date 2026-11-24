@@ -87,6 +87,7 @@ public class CommonNoticeSendService {
 
     private static final int RANGE_SIZE = 2;
     private static final String OWNER_FIELD = "owner";
+    private static final String CREATE_USER_FIELD = "createUser";
     private static final String POOL_ID_FIELD = "poolId";
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
@@ -550,10 +551,16 @@ public class CommonNoticeSendService {
     private List<String> resolveSpecialReceivers(ScopeIdTypeEnum scopeType, NoticeSendContext context) {
         String owner = getStringValue(context.getNewValues(), OWNER_FIELD);
         String oldOwner = getStringValue(context.getOldValues(), OWNER_FIELD);
+        String createUser = getStringValue(context.getNewValues(), CREATE_USER_FIELD);
+        if (StringUtils.isBlank(createUser)) {
+            // 删除场景没有 newValues，回退到旧值
+            createUser = getStringValue(context.getOldValues(), CREATE_USER_FIELD);
+        }
         List<String> users = new ArrayList<>();
         switch (scopeType) {
             case OWNER -> addIfNotBlank(users, owner);
             case OLD_OWNER -> addIfNotBlank(users, oldOwner);
+            case CREATE_USER -> addIfNotBlank(users, createUser);
             case COMMANDER -> users.addAll(getDepartmentCommanders(owner));
             case SUPERVISOR -> users.addAll(getSupervisors(owner, context.getOrganizationId()));
             case COLLABORATION -> users.addAll(getCollaborationUserIds(context));

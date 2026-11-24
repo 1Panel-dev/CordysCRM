@@ -312,10 +312,15 @@ public class MessageNotificationService {
                 "FOLLOW_UP_RECORD_COMMENT_ADDED",
                 "CLUE_IMPORT",
                 "BUSINESS_IMPORT",
-                "APPROVAL_COMMENT_MENTIONED"
+                "APPROVAL_COMMENT_MENTIONED",
+                "CONTRACT_PAYMENT_EXPIRED",
+                "CONTRACT_PAYMENT_EXPIRING"
         );
         messageTaskMapper.deleteByLambda(new LambdaQueryWrapper<MessageTask>()
                 .in(MessageTask::getEvent, deleteEvents));
+
+        messageTaskConfigMapper.deleteByLambda(new LambdaQueryWrapper<MessageTaskConfig>()
+                .in(MessageTaskConfig::getEvent, List.of("CONTRACT_PAYMENT_EXPIRED", "CONTRACT_PAYMENT_EXPIRING")));
 
         List<MessageTask> messageTasks = messageTaskMapper.selectAll(null);
         Map<String, String> eventNameMap = MessageTemplateUtils.getEventMap();
@@ -639,7 +644,7 @@ public class MessageNotificationService {
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
                                                 "SELECT_MULTIPLE")));
                 // 回款计划到期
-                case NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED -> {
+                /*case NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED -> {
                     List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
                             new LambdaQueryWrapper<MessageTaskConfig>()
                                     .eq(MessageTaskConfig::getEvent,
@@ -657,9 +662,9 @@ public class MessageNotificationService {
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
                             buildScheduleConfigValue(buildScheduleValue("plan_end_time", "0", "08：00：00", "ONLY_ONE")));
-                }
+                }*/
                 // 回款计划即将到期
-                case NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING -> {
+                /*case NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING -> {
                     List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
                             new LambdaQueryWrapper<MessageTaskConfig>()
                                     .eq(MessageTaskConfig::getEvent,
@@ -677,7 +682,7 @@ public class MessageNotificationService {
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
                             buildScheduleConfigValue(buildScheduleValue("plan_end_time", "0", "08：00：00", "ONLY_ONE")));
-                }
+                }*/
                 // 审批发票
                 case NotificationConstants.Event.INVOICE_APPROVAL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.INVOICE_APPROVAL_TEXT.name()), eventNameMap,
@@ -1229,7 +1234,8 @@ public class MessageNotificationService {
             task.setUpdateUser(userId);
             task.setUpdateTime(now);
             messageTaskMapper.update(task);
-            LogDTO logDTO = new LogDTO(orgId, task.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, task.getName());
+            LogDTO logDTO = new LogDTO(orgId, task.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE,
+                    task.getName());
             logDTO.setOriginalValue(oldMessageTask);
             logDTO.setModifiedValue(task);
             logs.add(logDTO);
