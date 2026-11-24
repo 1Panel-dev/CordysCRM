@@ -5,8 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * 合同回款计划
  *
@@ -27,12 +25,6 @@ public class ContractPaymentPlan extends BaseModel {
 
     @Schema(description = "计划状态")
     private String planStatus;
-
-    @Schema(description = "计划回款金额")
-    private BigDecimal planAmount;
-
-    @Schema(description = "计划回款时间")
-    private Long planEndTime;
 
     @Schema(description = "组织id")
     private String organizationId;

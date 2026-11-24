@@ -23,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -72,7 +71,6 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         // 请求成功
         ContractPaymentPlanAddRequest request = new ContractPaymentPlanAddRequest();
         request.setName("test");
-        request.setPlanAmount(BigDecimal.valueOf(111));
         request.setOwner(InternalUser.ADMIN.getValue());
         request.setPlanStatus(ContractPaymentPlanStatus.PENDING.name());
         request.setContractId("test");
@@ -82,7 +80,7 @@ class ContractPaymentPlanControllerTests extends BaseTest {
 
         // 校验请求成功数据
         addContractPaymentPlan = contractPaymentPlan;
-        Assertions.assertEquals(request.getPlanAmount().intValue(), contractPaymentPlan.getPlanAmount().intValue());
+        Assertions.assertEquals(request.getName(), contractPaymentPlan.getName());
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_ADD, DEFAULT_ADD, request);
@@ -94,19 +92,17 @@ class ContractPaymentPlanControllerTests extends BaseTest {
         // 请求成功
         ContractPaymentPlanUpdateRequest request = new ContractPaymentPlanUpdateRequest();
         request.setId(addContractPaymentPlan.getId());
-        request.setName("test");
-        request.setPlanAmount(BigDecimal.valueOf(222));
+        request.setName("updated-test");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
         ContractPaymentPlan userContractPaymentPlanResult = contractPaymentPlanMapper
                 .selectByPrimaryKey(request.getId());
-        Assertions.assertEquals(request.getPlanAmount().intValue(),
-                userContractPaymentPlanResult.getPlanAmount().intValue());
+        Assertions.assertEquals(request.getName(), userContractPaymentPlanResult.getName());
 
         // 不修改信息
         ContractPaymentPlanUpdateRequest emptyRequest = new ContractPaymentPlanUpdateRequest();
         emptyRequest.setId(addContractPaymentPlan.getId());
-        emptyRequest.setName("test");
+        emptyRequest.setName(request.getName());
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // 校验权限

@@ -39,8 +39,6 @@ import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
-import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
-import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.NotificationConstants;
@@ -543,13 +541,6 @@ public class ContractPaymentPlanService {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ,
                 rolePermissions);
-    }
-
-    public CustomerPaymentPlanStatisticResponse calculateCustomerPaymentPlanStatistic(
-            CustomerContractPaymentPlanStatisticRequest request, String userId, String organizationId,
-            DeptDataPermissionDTO deptDataPermission) {
-        return extContractPaymentPlanMapper.calculateCustomerPaymentPlanStatistic(request, userId, organizationId,
-                deptDataPermission);
     }
 
     /**

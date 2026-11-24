@@ -53,8 +53,6 @@ public class ScheduleReminderResolver {
             NotificationConstants.Event.CONTRACT_EXPIRING, "contract",
             NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED, "opportunity_quotation",
             NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRING, "opportunity_quotation",
-            // NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED, "contract_payment_plan",
-            // NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING, "contract_payment_plan",
             NotificationConstants.Event.FOLLOW_UP_PLAN_DUE, "follow_up_plan");
 
     @Resource
@@ -67,7 +65,9 @@ public class ScheduleReminderResolver {
     private ExtScheduleReminderMapper extScheduleReminderMapper;
 
     public List<ScheduleHit> findDue(MessageTask task, String fieldId, long start, long end) {
-        if (StringUtils.isBlank(fieldId)) {
+        if (StringUtils.isBlank(fieldId)
+                || NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED.equals(task.getEvent())
+                || NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING.equals(task.getEvent())) {
             return List.of();
         }
         Target target = resolveTarget(task, fieldId);

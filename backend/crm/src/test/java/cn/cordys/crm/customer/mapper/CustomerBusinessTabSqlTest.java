@@ -9,7 +9,6 @@ import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
-import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
@@ -62,7 +61,6 @@ class CustomerBusinessTabSqlTest {
                 new Object[] { ExtContractInvoiceMapper.class, "list", "ci" },
                 new Object[] { ExtOrderMapper.class, "list", "so" },
                 new Object[] { ExtContractMapper.class, "calculateContractStatisticByCustomerId", "ct" },
-                new Object[] { ExtContractPaymentPlanMapper.class, "calculateCustomerPaymentPlanStatistic", "cpp" },
                 new Object[] { ExtContractPaymentRecordMapper.class, "sumCustomerRecordAmount", "cpr" },
                 new Object[] { ExtContractInvoiceMapper.class, "calculateCustomerInvoiceAmount", "ci" },
                 new Object[] { ExtOrderMapper.class, "searchStatistic", "so" })
@@ -184,16 +182,7 @@ class CustomerBusinessTabSqlTest {
     }
 
     @Test
-    void customerPaymentStatisticsUseListFilters() {
-        CustomerContractPaymentPlanStatisticRequest planRequest = new CustomerContractPaymentPlanStatisticRequest();
-        planRequest.setCustomerId("customer-a");
-        planRequest.setContractId("contract-a");
-        planRequest.setFilters(List.of(filter("planStatus", "COMPLETED")));
-        String planSql = querySql(ExtContractPaymentPlanMapper.class, "calculateCustomerPaymentPlanStatistic",
-                planRequest);
-        assertTrue(planSql.contains("cpp.contract_id=?"));
-        assertTrue(planSql.contains("cpp.plan_status=?"));
-
+    void customerPaymentRecordStatisticUsesListFilters() {
         CustomerContractPaymentRecordStatisticRequest recordRequest = new CustomerContractPaymentRecordStatisticRequest();
         recordRequest.setCustomerId("customer-a");
         recordRequest.setFilters(List.of(filter("recordAmount", "100")));
