@@ -18,7 +18,7 @@
       <template #actionLeft>
         <div class="flex items-center gap-[12px]">
           <n-button v-if="canCreate" type="primary" @click="handleAdd">
-            {{ t('common.create') }}
+            {{ t('crmFollowRecord.writePlan') }}
           </n-button>
           <CrmImportButton
             v-if="!props.detailTabResourceId && !props.readonly && hasAnyPermission(['FOLLOW_PLAN:IMPORT'])"
@@ -330,26 +330,6 @@
     ] as FilterFormItem[];
   });
 
-  const operationGroupList: ActionsItem[] = [
-    {
-      label: t('common.detail'),
-      key: 'detail',
-    },
-    {
-      label: t('common.edit'),
-      key: 'edit',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-    },
-    {
-      label: 'more',
-      key: 'more',
-      slotName: 'more',
-    },
-  ];
-
   const tableRefreshId = ref(0);
   function handleRefresh() {
     checkedRowKeys.value = [];
@@ -406,7 +386,16 @@
       showCustomerDrawer.value = true;
     }
   }
-  function openRelatedDrawer(row: any) {
+  function openCustomerDrawer(row: any) {
+    customerId.value = row.customerId;
+    if (row.poolId) {
+      poolId.value = row.poolId;
+      showOpenSeaDrawer.value = true;
+    } else {
+      showCustomerDrawer.value = true;
+    }
+  }
+  function openSourceDrawer(row: any) {
     if (row.resourceType === 'CLUE') {
       if (row.poolId) {
         poolId.value = row.poolId;
@@ -416,18 +405,13 @@
         activeClue.value = { id: row.clueId, name: row.clueName };
         showClueDrawer.value = true;
       }
-    } else if (row.opportunityId) {
-      activeOpportunity.value = { id: row.opportunityId, name: row.opportunityName };
-      showOpportunityDrawer.value = true;
     } else {
-      customerId.value = row.customerId;
-      if (row.poolId) {
-        poolId.value = row.poolId;
-        showOpenSeaDrawer.value = true;
-      } else {
-        showCustomerDrawer.value = true;
-      }
+      openCustomerDrawer(row);
     }
+  }
+  function openOpportunityDrawer(row: any) {
+    activeOpportunity.value = { id: row.opportunityId, name: row.opportunityName };
+    showOpportunityDrawer.value = true;
   }
 
   function handleDetail(row: any) {
@@ -570,6 +554,31 @@
     }
   }
 
+  function getOperationActions(row: any) {
+    const showConvert =
+      canEdit.value && [CustomerFollowPlanStatusEnum.COMPLETED].includes(row.status) && !row.converted;
+    const actions: ActionsItem[] = [
+      ...(canRead.value ? [{ label: t('common.detail'), key: 'detail' }] : []),
+      ...(canEdit.value ? [{ label: t('common.edit'), key: 'edit' }] : []),
+      ...(canDelete.value ? [{ label: t('common.delete'), key: 'delete' }] : []),
+      ...(showConvert ? [{ label: t('common.convertPlanToRecord'), key: 'convert' }] : []),
+    ];
+    const maxVisibleActions = 3;
+    const visibleActionCount = maxVisibleActions - 1;
+    const moreList = actions.slice(visibleActionCount);
+    const groupList = actions.slice(0, visibleActionCount);
+    if (moreList.length === 1) {
+      groupList.push(...moreList);
+    } else if (moreList.length > 1) {
+      groupList.push({ label: 'more', key: 'more', slotName: 'more' });
+    }
+
+    return {
+      groupList,
+      moreList: moreList.length > 1 ? moreList : [],
+    };
+  }
+
   const {
     useTableRes,
     customFieldsFilterConfig,
@@ -589,23 +598,10 @@
       width: 190,
       fixed: 'right',
       render: (row: any) => {
-        const showConvert =
-          canEdit.value && [CustomerFollowPlanStatusEnum.COMPLETED].includes(row.status) && !row.converted;
+        const operation = getOperationActions(row);
         return h(CrmOperationButton, {
-          groupList: operationGroupList.filter((item) => {
-            if (item.key === 'detail') return canRead.value;
-            if (item.key === 'more') return showConvert;
-            if (item.key === 'edit') return canEdit.value;
-            return canDelete.value;
-          }),
-          moreList: showConvert
-            ? [
-                {
-                  label: t('common.convertPlanToRecord'),
-                  key: 'convert',
-                },
-              ]
-            : undefined,
+          groupList: operation.groupList,
+          moreList: operation.moreList,
           onSelect: (key: string) => handleActionSelect(row, key),
         });
       },
@@ -615,7 +611,7 @@
         return h(
           CrmTableButton,
           {
-            onClick: () => openRelatedDrawer(row),
+            onClick: () => openSourceDrawer(row),
           },
           {
             default: () => (row.resourceType === 'CLUE' ? row.clueName : row.customerName),
@@ -624,12 +620,12 @@
         );
       },
       customerName: (row: any) =>
-        h(CrmTableButton, { onClick: () => openRelatedDrawer(row) }, { default: () => row.customerName }),
+        h(CrmTableButton, { onClick: () => openCustomerDrawer(row) }, { default: () => row.customerName }),
       opportunityId: (row: any) =>
         hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']) && row.opportunityName
           ? h(
               CrmTableButton,
-              { onClick: () => openRelatedDrawer(row) },
+              { onClick: () => openOpportunityDrawer(row) },
               { default: () => row.opportunityName, trigger: () => row.opportunityName }
             )
           : h(CrmNameTooltip, { text: row.opportunityName }),

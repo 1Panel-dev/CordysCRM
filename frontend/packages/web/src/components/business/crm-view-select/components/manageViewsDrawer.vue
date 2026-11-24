@@ -145,7 +145,13 @@
       case 'copy':
         readonly.value = false;
         copyMode.value = true;
-        detail.value = { id: row.id, type: row.type, ...res, name: getCopiedName(res?.name as string) };
+        detail.value = {
+          id: row.id,
+          type: row.type,
+          ...res,
+          // 防止自定义表单视图重复拼接两个 copy
+          name: props.customFormId ? res?.name : getCopiedName(res?.name as string),
+        };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'delete':
