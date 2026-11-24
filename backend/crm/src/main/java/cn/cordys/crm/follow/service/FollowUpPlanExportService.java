@@ -67,6 +67,7 @@ public class FollowUpPlanExportService extends BaseExportService {
         result.put("method", data.getMethod());
         result.put("status", getStatusName(data.getStatus(), locale));
         result.put("owner", data.getOwnerName());
+        result.put("departmentId", data.getDepartmentName());
         result.put("contactId", data.getContactName());
         result.put("createUser", data.getCreateUserName());
         result.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
@@ -86,16 +87,6 @@ public class FollowUpPlanExportService extends BaseExportService {
         if (StringUtils.isBlank(status)) {
             return status;
         }
-        try {
-            String key = switch (FollowUpPlanStatusType.valueOf(status)) {
-                case PREPARED -> "common.notStarted";
-                case UNDERWAY -> "common.inProgress";
-                case COMPLETED -> "common.completed";
-                case CANCELLED -> "common.canceled";
-            };
-            return Translator.get(key, locale != null ? locale : Locale.getDefault(), status);
-        } catch (IllegalArgumentException e) {
-            return status;
-        }
+        return FollowUpPlanStatusType.labelOf(status, locale, status);
     }
 }

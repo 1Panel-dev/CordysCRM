@@ -562,10 +562,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private String checkIllegalHead(Map<Integer, String> headMap) {
         for (BaseField field : fieldMap.values()) {
-            if (!field.canImport(field)) {
-                continue;
-            }
-            if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name()) && !field.needRequireCheck()) {
+            if (!field.canImport(field) || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
                 continue;
             }
             // 受显隐规则控制的字段可能因隐藏而缺失对应表头, 不强制要求其表头存在
