@@ -72,7 +72,7 @@
               </template>
             </CrmDetailCard>
           </div>
-          <div class="crm-follow-record-content" v-html="item.content.replace(/\n/g, '<br />')"></div>
+          <div class="crm-follow-record-content" v-html="(item.content ?? '').replace(/\n/g, '<br />')"></div>
           <CrmComment
             v-model:expanded="commentExpandedMap[item.id]"
             v-model:count="item.commentCount"
