@@ -209,7 +209,7 @@
     await initApprovalDetail();
     approvalHistoryRefreshKey.value += 1;
   };
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, enableApproval } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation({
       formType: FormDesignKeyEnum.CLUE,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
@@ -247,7 +247,7 @@
   const hasTransitioned = computed(() => Boolean(detail.value.transitionType || route.query.transitionType));
   const approvalStatus = computed(() => approvalInfo.value?.approvalStatus ?? detail.value.approvalStatus);
   const renderDescriptions = computed(() => {
-    const approvalStatusDescription = enableApproval.value
+    const approvalStatusDescription = showApprovalStatus.value
       ? [
           {
             label: t('workbench.approvalStatus'),

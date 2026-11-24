@@ -232,10 +232,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         title: t('common.department'),
         key: 'departmentName',
       },
-      {
-        title: t('common.alreadyPayAmount'),
-        key: 'alreadyPayAmount',
-      },
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: [
       {

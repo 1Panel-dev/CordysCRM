@@ -903,12 +903,6 @@
       dataIndex: 'voidReason',
       type: FieldTypeEnum.INPUT,
     },
-    // 先去掉
-    // {
-    //   title: t('contract.alreadyPayAmount'),
-    //   dataIndex: 'alreadyPayAmount',
-    //   type: FieldTypeEnum.INPUT_NUMBER,
-    // },
     ...(showApprovalStatus.value
       ? [
           {

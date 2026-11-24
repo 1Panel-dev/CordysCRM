@@ -32,7 +32,6 @@ export default {
   'contract.paymentRecord.new': 'Create payment record',
   'contract.payment': 'Payment',
   'contract.paymentName': 'Payment name',
-  'contract.alreadyPayAmount': 'Amount repaid',
   'contract.noPaymentRequired': 'Payment has been received, no payment is required',
   'contract.paymentRecord.accountsPayable': 'Amount due',
   'contract.paymentRecord.paymentReceived': 'Amount received',

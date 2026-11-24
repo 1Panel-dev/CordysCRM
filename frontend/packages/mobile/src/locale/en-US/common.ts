@@ -127,7 +127,6 @@ export default {
   'common.updateUserName': 'Updated by',
   'common.updateTime': 'Update time',
   'common.department': 'Department',
-  'common.alreadyPayAmount': 'Amount received',
   'common.status': 'Status',
   'common.OR_APPROVAL': 'OR approval',
   'common.COUNTERSIGNATURE': 'Countersignature',

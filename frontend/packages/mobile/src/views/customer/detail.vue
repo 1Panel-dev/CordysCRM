@@ -10,6 +10,7 @@
         <CrmAvatar
           v-for="person in displayedCollaborators"
           :key="person.id"
+          :avatar="person.avatar ?? undefined"
           :size="24"
           :text="person.userName"
           class="!bg-[var(--text-n5)] text-white ring-2 ring-[var(--text-n10)]"
@@ -223,7 +224,7 @@
     await initApprovalDetail();
     approvalHistoryRefreshKey.value += 1;
   };
-  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, enableApproval } =
+  const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation({
       formType: FormDesignKeyEnum.CUSTOMER,
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshDetail }),
@@ -312,7 +313,7 @@
   ]);
   const approvalStatus = computed(() => approvalInfo.value?.approvalStatus ?? detail.value.approvalStatus);
   const renderDescriptions = computed(() => {
-    const approvalStatusDescription = enableApproval.value
+    const approvalStatusDescription = showApprovalStatus.value
       ? [
           {
             label: t('workbench.approvalStatus'),
