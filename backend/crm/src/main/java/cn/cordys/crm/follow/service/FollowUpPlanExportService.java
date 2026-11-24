@@ -66,6 +66,8 @@ public class FollowUpPlanExportService extends BaseExportService {
         result.put("estimatedTime", TimeUtils.getDateTimeStr(data.getEstimatedTime()));
         result.put("method", data.getMethod());
         result.put("status", getStatusName(data.getStatus(), locale));
+        String convertedKey = Boolean.TRUE.equals(data.getConverted()) ? "common.yes" : "common.no";
+        result.put("converted", Translator.get(convertedKey, locale != null ? locale : Locale.getDefault()));
         result.put("owner", data.getOwnerName());
         result.put("departmentId", data.getDepartmentName());
         result.put("contactId", data.getContactName());
