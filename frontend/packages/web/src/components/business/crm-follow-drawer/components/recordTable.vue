@@ -229,6 +229,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import { getExportColumns, splitFollowResourceNameColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -770,6 +771,7 @@
     await propsEvent.value.filterChange(filters);
     await refreshTimeline();
   }
+  useRelatedTableChanges(props, [() => tableRefreshId.value]);
 </script>
 
 <style lang="less" scoped>

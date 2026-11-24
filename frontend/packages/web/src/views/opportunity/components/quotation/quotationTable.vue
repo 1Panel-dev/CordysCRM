@@ -140,6 +140,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { FullPageEnum } from '@/enums/routeEnum';
@@ -157,6 +158,8 @@
     readonly?: boolean;
     openseaHiddenColumns?: string[];
     refreshKey?: number;
+    parentFormId?: string;
+    parentResourceId?: string;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -664,12 +667,19 @@
     });
   }
 
+  const notifyRelatedDataChange = useRelatedTableChanges(props, [
+    () => tableRefreshId.value,
+    () => tableRemoveRefreshSignal.value,
+    () => tableRefreshItemId.value,
+  ]);
+
   function handleFormCreateSaved() {
     if (needInitDetail.value) {
       searchData(undefined, activeSourceId.value);
     } else {
       searchData();
     }
+    notifyRelatedDataChange();
   }
 
   function handleFormReview(res: any) {

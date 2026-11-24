@@ -142,6 +142,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
 
   const props = defineProps<{
     sourceId: string;
@@ -329,15 +330,6 @@
     emit('refresh');
   }
 
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'invoice') {
-        formDescriptionRef.value?.initFormDescription();
-      }
-    }
-  );
-
   function handleRevoke() {
     revokeByResourceId(props.sourceId, {
       onSuccess: async () => {
@@ -404,4 +396,10 @@
       }
     }
   );
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.INVOICE,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'invoice',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>

@@ -127,6 +127,8 @@
             :refresh-key="refreshKey"
             readonly
             :source-id="sourceId"
+            :parent-resource-id="sourceId"
+            :parent-form-id="FormDesignKeyEnum.BUSINESS"
           />
         </div>
         <div v-if="activeTab === 'quotation'" class="h-full px-[24px] pt-[24px]">
@@ -136,6 +138,8 @@
             :refresh-key="refreshKey"
             :source-name="titleName"
             :readonly="props.readonly"
+            :parent-resource-id="sourceId"
+            :parent-form-id="FormDesignKeyEnum.BUSINESS"
           />
         </div>
         <CrmChangeRecord
@@ -201,6 +205,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
@@ -431,14 +436,6 @@
   );
 
   const formDescriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'opportunity') {
-        formDescriptionRef.value?.initFormDescription();
-      }
-    }
-  );
 
   const titleName = ref('');
   const subTitleName = ref('');
@@ -613,4 +610,10 @@
     },
     { immediate: true }
   );
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.BUSINESS,
+    resourceId: () => props.detail?.id || '',
+    active: () => activeTab.value === 'opportunity',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>

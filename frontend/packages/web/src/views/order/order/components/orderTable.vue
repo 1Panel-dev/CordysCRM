@@ -222,6 +222,7 @@
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -246,6 +247,8 @@
     readonly?: boolean;
     independentDetail?: boolean;
     formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER | FormDesignKeyEnum.CUSTOMER_ORDER;
+    parentFormId?: string;
+    parentResourceId?: string;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -882,12 +885,19 @@
     }
   });
 
+  const notifyRelatedDataChange = useRelatedTableChanges(props, [
+    () => tableRefreshId.value,
+    () => tableItemRefreshId.value,
+    () => tableRemoveRefreshSignal.value,
+  ]);
+
   function handleFormCreateSaved(res: any) {
     if (needInitDetail.value) {
       searchData(undefined, res.id);
     } else {
       searchData();
     }
+    notifyRelatedDataChange();
   }
 
   function handleFormReview(res: any) {

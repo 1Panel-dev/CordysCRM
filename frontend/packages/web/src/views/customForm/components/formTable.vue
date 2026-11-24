@@ -25,7 +25,7 @@
           v-if="!props.readonly"
           :api-type="FormDesignKeyEnum.CUSTOM_FORM"
           :custom-form-id="props.formKey"
-          @import-success="() => searchData()"
+          @import-success="handleDataChanged"
         />
         <n-button
           v-if="canExportCustomFormData"
@@ -73,7 +73,7 @@
     :otherSaveParams="{
       customFormId: props.formKey,
     }"
-    @refresh="() => (tableRefreshId += 1)"
+    @refresh="handleDataChanged"
   />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
@@ -92,7 +92,7 @@
     :refreshId="refreshKey"
     @edit="handleEdit"
     @approval-success="() => initApprovalPermission(true)"
-    @refresh="searchData(undefined, activeSourceId)"
+    @refresh="handleDataChanged"
     @delete="removeItemFromList(activeSourceId)"
   />
 
@@ -162,6 +162,7 @@
 
   const emit = defineEmits<{
     (e: 'init'): void;
+    (e: 'dataChanged'): void;
     (e: 'showCountDetail', row: Record<string, any>, type: 'opportunity' | 'clue'): void;
   }>();
 
@@ -553,6 +554,7 @@
             await initApprovalPermission(true);
           }
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          emit('dataChanged');
           tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -586,6 +588,7 @@
   }
 
   function handleFormCreateSaved(res: any) {
+    emit('dataChanged');
     refreshOpenedDetail();
     if (needInitDetail.value) {
       searchData(undefined, res?.id);
@@ -603,6 +606,7 @@
   }
 
   function removeItemFromList(id: string) {
+    emit('dataChanged');
     if (deleteExecute.value) {
       searchData();
       return;
@@ -612,6 +616,11 @@
       ...propsRes.value.crmPagination,
       itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
     };
+  }
+
+  function handleDataChanged() {
+    emit('dataChanged');
+    searchData();
   }
 
   watch(

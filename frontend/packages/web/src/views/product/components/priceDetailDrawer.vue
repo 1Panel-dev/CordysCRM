@@ -67,6 +67,7 @@
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -77,6 +78,7 @@
   }>();
 
   const { t } = useI18n();
+  const descriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
 
   const show = defineModel<boolean>('show', {
     default: false,
@@ -134,6 +136,12 @@
     emit('edit', props.id);
     show.value = false;
   }
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.PRICE,
+    resourceId: () => props.id || '',
+    active: () => activeTab.value === 'price',
+    refresh: () => descriptionRef.value?.initFormDescription(),
+  });
 </script>
 
 <style lang="less" scoped></style>

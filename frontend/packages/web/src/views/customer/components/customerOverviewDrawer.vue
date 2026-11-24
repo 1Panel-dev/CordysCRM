@@ -139,6 +139,8 @@
             :readonly="detailReadonly"
             :independent-detail="!props.readonly"
             :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CUSTOMER"
           />
         </div>
         <FollowDetail
@@ -174,6 +176,8 @@
             is-customer-tab
             :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
             :readonly="detailReadonly"
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             hideBoard
           />
         </div>
@@ -188,8 +192,8 @@
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
           <ContractTable
             :key="`${detailReadonly}:${relatedOwnerOnly}`"
-            :detail-tab-resource-id="props.sourceId"
-            :detail-tab-page-form-id="FormDesignKeyEnum.CUSTOMER"
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-query="contractTabStatisticQuery"
             :readonly="detailReadonly"
             disable-customer-link
@@ -203,6 +207,8 @@
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
             :independent-detail="!props.readonly"
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
@@ -213,6 +219,8 @@
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
             :independent-detail="!props.readonly"
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
@@ -222,6 +230,8 @@
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
             :independent-detail="!props.readonly"
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             @open-contract-drawer="handleOpenContractDrawer"
             @open-business-title-drawer="handleOpenBusinessTitleDrawer"
           />
@@ -234,6 +244,8 @@
             isCustomerTab
             :detail-tab-statistic-form-key="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-statistic-query="orderTabStatisticQuery"
+            :detail-tab-resource-id="props.sourceId"
+            :detail-tab-page-form-id="FormDesignKeyEnum.CUSTOMER"
             :readonly="detailReadonly"
             :independent-detail="!props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
@@ -335,6 +347,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
@@ -631,15 +644,6 @@
     }
   );
 
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'customer') {
-        descriptionRef.value?.initFormDescription();
-      }
-    }
-  );
-
   const formCreateDrawerVisible = ref(false);
   const transferForm = ref<any>({
     owner: null,
@@ -842,6 +846,12 @@
     },
     { immediate: true }
   );
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.CUSTOMER,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'customer',
+    refresh: () => descriptionRef.value?.initFormDescription(),
+  });
 </script>
 
 <style lang="less" scoped></style>

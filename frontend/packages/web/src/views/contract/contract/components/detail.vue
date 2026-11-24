@@ -103,6 +103,8 @@
             :sourceName="title"
             :readonly="props.readonly"
             isContractTab
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CONTRACT"
           />
         </div>
         <div v-if="activeTab === 'paymentRecord'" class="h-full px-[24px] pt-[24px]">
@@ -112,6 +114,8 @@
             :sourceName="title"
             :readonly="props.readonly"
             isContractTab
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CONTRACT"
             @refresh="handleSaved()"
           />
         </div>
@@ -121,6 +125,8 @@
             :sourceName="title"
             :readonly="props.readonly"
             is-contract-tab
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CONTRACT"
             @open-business-title-drawer="showBusinessTitleDetail"
           />
         </div>
@@ -133,6 +139,8 @@
             is-contract-tab
             :detail-tab-statistic-form-key="FormDesignKeyEnum.CONTRACT"
             :detail-tab-statistic-query="orderTabStatisticQuery"
+            :parent-resource-id="props.sourceId"
+            :parent-form-id="FormDesignKeyEnum.CONTRACT"
             @open-customer-drawer="emit('showCustomerDrawer', $event)"
           />
         </div>
@@ -225,6 +233,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
 
   const props = defineProps<{
@@ -598,15 +607,6 @@
     emit('refresh');
   }
 
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'contract') {
-        formDescriptionRef.value?.initFormDescription();
-      }
-    }
-  );
-
   async function initStageConfig() {
     try {
       stageConfig.value = await getContractStatusConfig();
@@ -643,4 +643,10 @@
   function showBusinessTitleDetail(params: { id: string }) {
     emit('openBusinessTitleDrawer', params);
   }
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.CONTRACT,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'contract',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>

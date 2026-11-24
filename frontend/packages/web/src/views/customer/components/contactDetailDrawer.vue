@@ -26,6 +26,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
         <div v-show="activeTab === 'contact'" class="h-full p-[24px]">
           <CrmFormDescription
+            ref="formDescriptionRef"
             :form-key="FormDesignKeyEnum.CONTACT"
             :source-id="props.sourceId"
             :column="2"
@@ -71,6 +72,7 @@
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -86,6 +88,7 @@
   });
 
   const { t } = useI18n();
+  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
   const title = ref('');
   const formConfig = ref<FormConfig>();
   const formViewSize = ref<FormViewSize>('large');
@@ -132,4 +135,11 @@
       }
     }
   );
+
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.CONTACT,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'contact',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>

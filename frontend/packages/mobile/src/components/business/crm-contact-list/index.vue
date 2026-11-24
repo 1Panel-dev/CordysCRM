@@ -136,6 +136,9 @@
     formKey: ContactFormKey;
     readonly?: boolean;
   }>();
+  const emit = defineEmits<{
+    (e: 'dataChanged'): void;
+  }>();
 
   const { t } = useI18n();
   const router = useRouter();
@@ -206,6 +209,7 @@
             showSuccessToast(t('common.deleteSuccess'));
             await sleep(300);
             crmListRef.value?.loadList(true);
+            emit('dataChanged');
             return Promise.resolve(true);
           } catch (error) {
             // eslint-disable-next-line no-console

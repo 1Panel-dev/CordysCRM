@@ -238,6 +238,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { useUserStore } from '@/store';
@@ -263,6 +264,8 @@
     hiddenAdvanceFilter?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
+    parentFormId?: string;
+    parentResourceId?: string;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -1177,12 +1180,18 @@
     billboardTotalCount.value = total;
   }
 
+  const notifyRelatedDataChange = useRelatedTableChanges(props, [
+    () => tableRefreshId.value,
+    () => tableRemoveRefreshId.value,
+  ]);
+
   function handleFormCreateSaved(res: any) {
     if (needInitDetail.value || realFormKey.value === FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS) {
       searchData(undefined, res.id);
     } else {
       searchData();
     }
+    notifyRelatedDataChange();
   }
 
   function handleFormReview(res: any) {

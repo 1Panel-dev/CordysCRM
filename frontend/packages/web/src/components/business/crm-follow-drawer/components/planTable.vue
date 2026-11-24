@@ -251,6 +251,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import { getExportColumns, splitFollowResourceNameColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -962,6 +963,7 @@
     }
     tableRefreshId.value += 1;
   }
+  useRelatedTableChanges(props, [() => tableRefreshId.value]);
 </script>
 
 <style lang="less" scoped>

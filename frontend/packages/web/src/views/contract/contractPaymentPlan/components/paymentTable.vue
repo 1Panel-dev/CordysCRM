@@ -146,6 +146,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -168,6 +169,8 @@
     readonly?: boolean;
     independentDetail?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT;
+    parentFormId?: string;
+    parentResourceId?: string;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -544,12 +547,19 @@
     }
   });
 
+  const notifyRelatedDataChange = useRelatedTableChanges(props, [
+    () => tableRefreshId.value,
+    () => tableRemoveRefreshId.value,
+    () => tableItemRefreshId.value,
+  ]);
+
   function handleFormCreateSaved(res: any) {
     if (needInitDetail.value) {
       searchData(undefined, res.id);
     } else {
       searchData();
     }
+    notifyRelatedDataChange();
   }
 
   function removeItemFromList(id: string) {
