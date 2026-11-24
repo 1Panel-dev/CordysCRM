@@ -57,6 +57,7 @@
           <formTable
             v-if="activeForm"
             ref="formTableRef"
+            :key="activeForm"
             :form-key="activeForm"
             :form-key-name="activeFormName"
             :readonly="!hasCreateDataPermission"
@@ -81,7 +82,8 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NEmpty, NScrollbar, NSwitch, NTooltip, useMessage } from 'naive-ui';
+  import { useRoute } from 'vue-router';
+  import { NButton, NEmpty, NScrollbar, NTooltip, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n.js';
@@ -101,6 +103,7 @@
   import useModal from '@/hooks/useModal.js';
 
   const { t } = useI18n();
+  const route = useRoute();
   const Message = useMessage();
   const { openModal } = useModal();
   const { getItem, setItem } = useLocalForage();
@@ -114,6 +117,7 @@
   const activeForm = ref('');
   const activeFormName = ref('');
   const focusItemKey = ref('');
+  const routeTemplateId = computed(() => String(route.query.customFormId ?? route.query.templateId ?? ''));
   const hasCreateDataPermission = computed(
     () =>
       formList.value.find((e) => e.id === activeForm.value)?.isAdmin ||
@@ -144,7 +148,11 @@
       }
       formList.value = applyFormListOrder(items, orderedIds);
       formListBackup.value = cloneDeep(formList.value);
-      if (activeForm.value === '') {
+      if (routeTemplateId.value) {
+        const targetForm = formList.value.find((item) => item.id === routeTemplateId.value);
+        activeForm.value = targetForm?.id || '';
+        activeFormName.value = targetForm?.name || '';
+      } else if (activeForm.value === '') {
         activeForm.value = formList.value[0]?.id || '';
         activeFormName.value = formList.value[0]?.name || '';
       }
@@ -156,6 +164,13 @@
       finished.value = true;
     }
   }
+
+  watch(routeTemplateId, (templateId) => {
+    if (!finished.value || !templateId) return;
+    const targetForm = formList.value.find((item) => item.id === templateId);
+    activeForm.value = targetForm?.id || '';
+    activeFormName.value = targetForm?.name || '';
+  });
 
   watch(
     () => formList.value.map((item) => item.id),
