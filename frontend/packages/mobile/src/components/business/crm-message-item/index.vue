@@ -7,7 +7,9 @@
           :text-color="isSystemMessage ? 'var(--info-blue)' : 'var(--warning-yellow)'"
           class="flex-shrink-0 !p-[2px_8px]"
         >
-          {{ item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? t('common.system') : t('common.announcementMessage') }}
+          {{
+            item.type === SystemMessageTypeEnum.COMMENT_MENTIONED ? t('common.system') : t('common.announcementMessage')
+          }}
         </van-tag>
         <div class="flex max-w-[calc(100%-40px)] items-center">
           <van-badge :dot="item.status === SystemMessageStatusEnum.UNREAD" class="w-full">
@@ -17,7 +19,9 @@
               } font-medium`"
             >
               {{
-                item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? t('common.systemNotification') : item.subject ?? '-'
+                item.type === SystemMessageTypeEnum.COMMENT_MENTIONED
+                  ? t('common.systemNotification')
+                  : item.subject ?? '-'
               }}
             </div>
           </van-badge>
@@ -33,7 +37,9 @@
     </div>
     <div class="flex flex-col gap-[4px] text-[12px]">
       <div :class="`break-words message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
-        {{ item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? item.contentText : parseMessageContent?.content ?? '-' }}
+        {{
+          item.type === SystemMessageTypeEnum.COMMENT_MENTIONED ? item.contentText : parseMessageContent?.content ?? '-'
+        }}
         <span
           v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
           class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
@@ -71,7 +77,7 @@
     (e: 'loadList'): void;
   }>();
 
-  const isSystemMessage = computed(() => props.item.type === SystemMessageTypeEnum.SYSTEM_NOTICE);
+  const isSystemMessage = computed(() => props.item.type === SystemMessageTypeEnum.COMMENT_MENTIONED);
 
   const parseMessageContent = computed(() => JSON.parse(props.item.contentText || '{}'));
 

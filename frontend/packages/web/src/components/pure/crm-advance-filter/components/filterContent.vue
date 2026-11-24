@@ -338,6 +338,7 @@
         FieldTypeEnum.MEMBER_MULTIPLE,
         FieldTypeEnum.DATA_SOURCE_MULTIPLE,
         FieldTypeEnum.DATA_SOURCE,
+        FieldTypeEnum.TREE_SELECT,
       ].includes(listItem.type) ||
       listItem.selectProps?.multiple ||
       listItem.cascaderProps?.multiple ||
@@ -450,6 +451,7 @@
     const currentListItem: FilterFormItem = {
       ...listItem,
       value: isArray ? [] : undefined,
+      ...(listItem.type === FieldTypeEnum.TREE_SELECT ? { containChildIds: [] } : undefined),
       ...(listItem.showScope ? { scope: listItem.scope } : undefined),
     };
 

@@ -138,14 +138,19 @@
     checkNode(_checkedKeys, checkedNodes);
   }
 
-  function handleClear() {
-    if (props.showContainChildModule) {
-      treeData.value = mapTree<TreeSelectOption>(treeData.value, (node) => ({
-        ...node,
-        containChildModule: false,
-        disabled: false,
-      }));
+  function clearContainChildSelection() {
+    if (containChildIds.value?.length) {
+      containChildIds.value = [];
     }
+    if (!props.showContainChildModule) return;
+
+    treeData.value = mapTree<TreeSelectOption>(treeData.value, (node) =>
+      node.containChildModule ? { ...node, containChildModule: false, disabled: false } : node
+    );
+  }
+
+  function handleClear() {
+    clearContainChildSelection();
     clearSelector();
   }
 
@@ -200,7 +205,7 @@
     realNode.containChildModule = containChildModule;
     if (containChildModule) {
       handleCheck(selectValue.value as string[], { checked: true, node: realNode, id: realNode.id });
-      containChildIds.value.push(realNode.id as string);
+      containChildIds.value = [...(containChildIds.value ?? []), realNode.id as string];
     } else {
       realNode.children?.forEach((child) => {
         child.disabled = false;
@@ -415,6 +420,12 @@
   watch(
     () => selectValue.value,
     (newValue) => {
+      if (newValue == null || (Array.isArray(newValue) && newValue.length === 0)) {
+        skipSelectValueWatch.value = false;
+        clearSelector();
+        clearContainChildSelection();
+        return;
+      }
       if (attrs.multiple) {
         if (!skipSelectValueWatch.value && !isEqual(checkedKeys.value, newValue)) {
           clearSelector();
@@ -432,6 +443,7 @@
     },
     {
       immediate: true,
+      deep: true,
     }
   );
 

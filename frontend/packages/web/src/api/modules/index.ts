@@ -741,6 +741,7 @@ export const {
   getMessageTaskPage,
   addMessageTask,
   updateMessageTask,
+  batchUpdateMessageTaskReceiveMethod,
   deleteMessageTask,
   enableMessageTask,
   addAnnouncement,

@@ -2,6 +2,7 @@ import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddAnnouncementUrl,
   AddMessageTaskUrl,
+  BatchUpdateMessageTaskReceiveMethodUrl,
   CloseMessageUrl,
   DeleteAnnouncementUrl,
   DeleteMessageTaskUrl,
@@ -27,6 +28,7 @@ import type {
   AnnouncementTableQueryParams,
   MessageCenterItem,
   MessageCenterQueryParams,
+  MessageTaskBatchUpdateReceiveMethodParams,
   MessageTaskCountDTO,
   MessageTaskPageParams,
   MessageTaskResponse,
@@ -101,6 +103,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateMessageTaskUrl, data });
   }
 
+  function batchUpdateMessageTaskReceiveMethod(data: MessageTaskBatchUpdateReceiveMethodParams) {
+    return CDR.post({ url: BatchUpdateMessageTaskReceiveMethodUrl, data });
+  }
+
   function deleteMessageTask(id: string) {
     return CDR.get({ url: `${DeleteMessageTaskUrl}/${id}` });
   }
@@ -139,6 +145,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getMessageTaskPage,
     addMessageTask,
     updateMessageTask,
+    batchUpdateMessageTaskReceiveMethod,
     deleteMessageTask,
     enableMessageTask,
     getHomeMessageList,

@@ -32,6 +32,7 @@
         </n-form-item>
         <FilterContent
           ref="filterContentRef"
+          :key="filterContentKey"
           v-model:form-model="formModel as FilterForm"
           keep-one-line
           no-filter-option
@@ -115,10 +116,12 @@
     list: [{ dataIndex: null, operator: undefined, value: null, type: FieldTypeEnum.INPUT }],
   };
   const formModel = ref<FilterForm>(cloneDeep(defaultFormModel));
+  const filterContentKey = ref(0);
 
   function cancelHandler() {
     form.value = cloneDeep(initForm);
     formModel.value = cloneDeep(defaultFormModel);
+    filterContentKey.value += 1;
     visible.value = false;
   }
 
