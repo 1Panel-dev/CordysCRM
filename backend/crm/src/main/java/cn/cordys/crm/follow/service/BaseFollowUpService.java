@@ -65,7 +65,7 @@ public class BaseFollowUpService {
         return false;
     }
 
-    protected void checkCustomerFollowRecordPermission(String customerId, String userId, String orgId) {
+    protected void checkCustomerFollowWritePermission(String customerId, String userId, String orgId) {
         if (StringUtils.isBlank(customerId)) {
             return;
         }

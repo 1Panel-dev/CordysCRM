@@ -107,6 +107,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * 新建跟进计划
      */
     public FollowUpPlan add(FollowUpPlanAddRequest request, String userId, String orgId) {
+        checkAddCustomerPermission(request, userId, orgId);
         FollowUpPlan followUpPlan = BeanUtils.copyBean(new FollowUpPlan(), request);
         followUpPlan.setCreateTime(System.currentTimeMillis());
         followUpPlan.setUpdateTime(System.currentTimeMillis());
@@ -134,6 +135,25 @@ public class FollowUpPlanService extends BaseFollowUpService {
                 null, null, followUpPlan,
                 withResourceName(request.getModuleFields(), getRelatedResourceName(followUpPlan)));
         return followUpPlan;
+    }
+
+    private void checkAddCustomerPermission(FollowUpPlanAddRequest request, String userId, String orgId) {
+        if (StringUtils.isAnyBlank(userId, orgId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        String customerId = request.getCustomerId();
+        checkCustomerFollowWritePermission(customerId, userId, orgId);
+        String opportunityId = request.getOpportunityId();
+        if (StringUtils.isBlank(opportunityId)) {
+            return;
+        }
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
+        if (opportunity == null || !orgId.equals(opportunity.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        if (!Strings.CS.equals(customerId, opportunity.getCustomerId())) {
+            checkCustomerFollowWritePermission(opportunity.getCustomerId(), userId, orgId);
+        }
     }
 
     /**

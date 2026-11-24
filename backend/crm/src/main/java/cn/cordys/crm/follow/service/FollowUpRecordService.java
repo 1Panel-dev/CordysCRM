@@ -141,7 +141,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
-        checkCustomerFollowRecordPermission(customerId, userId, orgId);
+        checkCustomerFollowWritePermission(customerId, userId, orgId);
         if (StringUtils.isNotBlank(clueId)) {
             Clue clue = clueMapper.selectByPrimaryKey(clueId);
             if (clue == null || !orgId.equals(clue.getOrganizationId()) || !userId.equals(clue.getOwner())
@@ -156,7 +156,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
             if (!Strings.CS.equals(customerId, opportunity.getCustomerId())) {
-                checkCustomerFollowRecordPermission(opportunity.getCustomerId(), userId, orgId);
+                checkCustomerFollowWritePermission(opportunity.getCustomerId(), userId, orgId);
             }
         }
     }

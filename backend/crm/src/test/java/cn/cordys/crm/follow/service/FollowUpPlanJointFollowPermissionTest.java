@@ -1,6 +1,7 @@
 package cn.cordys.crm.follow.service;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
@@ -11,6 +12,7 @@ import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -47,6 +49,8 @@ class FollowUpPlanJointFollowPermissionTest {
     private final BaseMapper<Customer> customers = mock(BaseMapper.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<CustomerCollaboration> members = mock(BaseMapper.class);
+    @SuppressWarnings("unchecked")
+    private final BaseMapper<Opportunity> opportunities = mock(BaseMapper.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<FollowUpPlan> plans = mock(BaseMapper.class);
     private final FollowUpPlanFieldService fields = mock(FollowUpPlanFieldService.class);
@@ -87,6 +91,7 @@ class FollowUpPlanJointFollowPermissionTest {
         ReflectionTestUtils.setField(collaborations, "customerCollaborationMapper", members);
         ReflectionTestUtils.setField(service, "customerCollaborationService", collaborations);
         ReflectionTestUtils.setField(service, BaseFollowUpService.class, "customerMapper", customers, null);
+        ReflectionTestUtils.setField(service, "opportunityMapper", opportunities);
         ReflectionTestUtils.setField(service, "followUpPlanMapper", plans);
         ReflectionTestUtils.setField(service, "followUpPlanFieldService", fields);
         ReflectionTestUtils.setField(service, "statisticFieldService", statistics);
@@ -147,8 +152,12 @@ class FollowUpPlanJointFollowPermissionTest {
                 () -> service.checkJointFollowPlanOwner(plan, "other-user", ORG, USER));
     }
 
-    @Test
-    void creatingPlanWithoutOwnerDefaultsToCurrentUserBeforeCheckingScope() {
+    @ParameterizedTest
+    @ValueSource(strings = { "OWNER", "JOINT_FOLLOW" })
+    void creatingPlanWithoutOwnerDefaultsToCurrentUserBeforeCheckingScope(String access) {
+        if ("OWNER".equals(access)) {
+            customer.setOwner(USER);
+        }
         FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
         request.setCustomerId(CUSTOMER);
         request.setType("CUSTOMER");
@@ -157,6 +166,32 @@ class FollowUpPlanJointFollowPermissionTest {
 
         assertEquals(USER, result.getOwner());
         verify(plans).insert(result);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "READ_ONLY,true", "READ_ONLY,false", "NO_RELATION,true" })
+    void creatingPlanRequiresWriteAccessToAssociatedCustomer(String collaboration, boolean direct) {
+        if ("NO_RELATION".equals(collaboration)) {
+            when(members.select(any(CustomerCollaboration.class))).thenReturn(List.of());
+        } else {
+            member.setCollaborationType(collaboration);
+        }
+        FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
+        request.setType("CUSTOMER");
+        if (direct) {
+            request.setCustomerId(CUSTOMER);
+        } else {
+            Opportunity opportunity = new Opportunity();
+            opportunity.setOrganizationId(ORG);
+            opportunity.setCustomerId(CUSTOMER);
+            when(opportunities.selectByPrimaryKey("opportunity-a")).thenReturn(opportunity);
+            request.setOpportunityId("opportunity-a");
+        }
+
+        GenericException exception = assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
+
+        assertEquals(CrmHttpResultCode.FORBIDDEN, exception.getErrorCode());
+        verifyNoInteractions(plans, fields, statistics);
     }
 
     @Test
