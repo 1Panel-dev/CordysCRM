@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
@@ -444,6 +445,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
     /**
      * 更新状态
      */
+    @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void updateStatus(FollowUpPlanStatusRequest request, String userId, String orgId) {
         //检查跟进计划是否可以更新状态,如果是已完成，并且已转记录的跟进计划，则不允许更新状态
         FollowUpPlan oldPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
@@ -461,14 +463,33 @@ public class FollowUpPlanService extends BaseFollowUpService {
         plan.setUpdateTime(System.currentTimeMillis());
         followUpPlanMapper.update(plan);
 
-        // 消息通知: 状态变更按编辑跟进计划发送, old 取改前实体, new 用改后状态覆盖
+        // 状态变更按编辑跟进计划发送, old 取改前实体, new 用改后状态覆盖
         FollowUpPlan newPlan = BeanUtils.copyBean(new FollowUpPlan(), oldPlan);
         newPlan.setStatus(request.getStatus());
         newPlan.setUpdateUser(userId);
+        String relatedName = getRelatedResourceName(newPlan);
+        // 操作日志: 只有状态真正变化才写日志上下文; 状态没变时上下文为空, 切面按资源名为空丢弃这条日志
+        setStatusUpdateLog(oldPlan, newPlan, relatedName);
         List<BaseModuleFieldValue> moduleFields = followUpPlanFieldService
                 .getModuleFieldValuesByResourceId(request.getId());
         sendPlanNotice(NotificationConstants.Event.FOLLOW_UP_PLAN_UPDATE, userId, oldPlan.getOrganizationId(), false,
-                oldPlan, moduleFields, newPlan, withResourceName(moduleFields, getRelatedResourceName(newPlan)));
+                oldPlan, moduleFields, newPlan, withResourceName(moduleFields, relatedName));
+    }
+
+    /**
+     * 写入状态变更的日志快照: 改前改后都取完整实体, 差异计算后只会剩下 status 一列
+     */
+    private void setStatusUpdateLog(FollowUpPlan oldPlan, FollowUpPlan newPlan, String relatedName) {
+        if (StringUtils.isBlank(newPlan.getStatus()) || Strings.CS.equals(oldPlan.getStatus(), newPlan.getStatus())) {
+            return;
+        }
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(StringUtils.defaultIfBlank(relatedName,
+                                Translator.get("update_follow_up_plan")))
+                        .originalValue(oldPlan)
+                        .modifiedValue(newPlan)
+                        .build());
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {
