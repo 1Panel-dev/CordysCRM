@@ -1,9 +1,9 @@
-import type { CommonList, ModuleField } from '../models/common';
-import { FieldTypeEnum, FieldDataSourceTypeEnum, FormDesignKeyEnum } from '../enums/formDesignEnum';
-import type { FormCreateField, FormDetail } from '@cordys/web/src/components/business/crm-form-create/types';
-import { formatTimeValue, getCityPath, getIndustryPath } from './index';
+import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '../enums/formDesignEnum';
 import { useI18n } from '../hooks/useI18n';
 import type { LeadTransitionCustomerRecordRes } from '../models/clue';
+import type { CommonList, ModuleField } from '../models/common';
+import { formatTimeValue, getCityPath, getIndustryPath } from './index';
+import type { FormCreateField, FormDetail } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export const linkAllAcceptTypes = [FieldTypeEnum.INPUT, FieldTypeEnum.TEXTAREA];
 export const dataSourceTypes = [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE];
@@ -101,6 +101,9 @@ export function getNormalFieldValue(item: FormCreateField, value: any) {
  */
 export function formatNumberValue(value: string | number, item: FormCreateField) {
   if (value !== undefined && value !== null && value !== '') {
+    if (item.type === FieldTypeEnum.STATISTIC && item.statisticType === 'COUNT') {
+      return value.toString();
+    }
     if (item.numberFormat === 'percent') {
       return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
     }
@@ -119,6 +122,9 @@ export function formatNumberValue(value: string | number, item: FormCreateField)
  */
 export function formatNumberValueToString(value: number, item: FormCreateField) {
   if (value !== undefined && value !== null) {
+    if (item.type === FieldTypeEnum.STATISTIC && item.statisticType === 'COUNT') {
+      return value.toString();
+    }
     if (item.numberFormat === 'percent') {
       return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
     }
@@ -349,25 +355,25 @@ export function transformData({
   const fieldOptionMap: Record<string, any[]> = {};
 
   fields.forEach((field) => {
-    const fieldId = field.resourceFieldId ? field.id : field.businessKey || field.id;
+    const resolvedFieldId = field.resourceFieldId ? field.id : field.businessKey || field.id;
     if (field.type === FieldTypeEnum.LOCATION) {
-      addressFieldIds.push(fieldId);
+      addressFieldIds.push(resolvedFieldId);
     } else if (field.type === FieldTypeEnum.INDUSTRY) {
-      industryFieldIds.push(fieldId);
+      industryFieldIds.push(resolvedFieldId);
     } else if (field.type === FieldTypeEnum.DATA_SOURCE || field.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE) {
-      dataSourceFieldIds.push(fieldId);
+      dataSourceFieldIds.push(resolvedFieldId);
     } else if (field.type === FieldTypeEnum.MEMBER || field.type === FieldTypeEnum.MEMBER_MULTIPLE) {
-      memberFieldIds.push(fieldId);
+      memberFieldIds.push(resolvedFieldId);
     } else if (field.type === FieldTypeEnum.DEPARTMENT || field.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
-      departmentFieldIds.push(fieldId);
+      departmentFieldIds.push(resolvedFieldId);
     } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.STATISTIC].includes(field.type)) {
-      numberFieldIds.push(fieldId);
+      numberFieldIds.push(resolvedFieldId);
     } else if (field.type === FieldTypeEnum.DATE_TIME) {
-      timeFieldIds.push(fieldId);
+      timeFieldIds.push(resolvedFieldId);
     } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && needParseSubTable) {
       field.subFields?.forEach((subField) => {
         const subFieldData = (
-          item[fieldId] || item.moduleFields?.find((mf: any) => mf.fieldId === fieldId)?.fieldValue
+          item[resolvedFieldId] || item.moduleFields?.find((mf: any) => mf.fieldId === resolvedFieldId)?.fieldValue
         )?.map((subItem: Record<string, any>) => {
           if (subField.resourceFieldId) {
             subItem[`${subField.id}_original`] = subItem[field.id]; // 备份原始值以供编辑时填充数据源
@@ -395,8 +401,8 @@ export function transformData({
           }
           return subItem;
         });
-        item[fieldId] = subFieldData;
-        if (fieldId === field.businessKey) {
+        item[resolvedFieldId] = subFieldData;
+        if (resolvedFieldId === field.businessKey) {
           // 子表格字段可能会被设置为数据源的显示字段，而数据源显示字段都通过 id 读取，所以这里需要用 id 备份一份数据以供数据源显示字段场景读取
           item[field.id] = subFieldData;
         }
