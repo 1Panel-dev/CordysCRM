@@ -157,6 +157,12 @@
                     <property name="column" value="smt.name"/>
                 </include>
             </when>
+            <when test="condition.name == 'triggerType'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="smtc.trigger_type"/>
+                </include>
+            </when>
             <when test="condition.name == 'updateUser'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
