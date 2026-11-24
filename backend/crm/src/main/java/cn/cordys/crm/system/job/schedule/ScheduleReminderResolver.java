@@ -53,8 +53,8 @@ public class ScheduleReminderResolver {
             NotificationConstants.Event.CONTRACT_EXPIRING, "contract",
             NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED, "opportunity_quotation",
             NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRING, "opportunity_quotation",
-            NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED, "contract_payment_plan",
-            NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING, "contract_payment_plan",
+            // NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED, "contract_payment_plan",
+            // NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRING, "contract_payment_plan",
             NotificationConstants.Event.FOLLOW_UP_PLAN_DUE, "follow_up_plan");
 
     @Resource
