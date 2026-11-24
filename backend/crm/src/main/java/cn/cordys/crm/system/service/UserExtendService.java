@@ -366,6 +366,12 @@ public class UserExtendService {
         }
     }
 
+    public Map<String, String> getUserAvatarMap(List<String> userIds) {
+        return userExtendMapper.selectByIds(userIds).stream()
+                .filter(userExtend -> StringUtils.isNotBlank(userExtend.getAvatar()))
+                .collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
+    }
+
     /**
      * 获取用户头像集合
      *

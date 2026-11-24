@@ -13,6 +13,7 @@ import cn.cordys.crm.customer.dto.response.CustomerCollaborationListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerCollaborationMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -42,6 +43,8 @@ public class CustomerCollaborationService {
     private ExtCustomerCollaborationMapper extCustomerCollaborationMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private UserExtendService userExtendService;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
@@ -92,9 +95,11 @@ public class CustomerCollaborationService {
             ownerIds.add(collaboration.getUserId());
         }
 
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(new ArrayList<>(ownerIds), orgId);
+        List<String> memberIds = new ArrayList<>(ownerIds);
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(memberIds, orgId);
 
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+        Map<String, String> userAvatarMap = userExtendService.getUserAvatarMap(memberIds);
 
         return collaborations
                 .stream()
@@ -109,6 +114,7 @@ public class CustomerCollaborationService {
                     customerCollaboration.setCreateUserName(userNameMap.get(customerCollaboration.getCreateUser()));
                     customerCollaboration.setUpdateUserName(userNameMap.get(customerCollaboration.getUpdateUser()));
                     customerCollaboration.setUserName(userNameMap.get(customerCollaboration.getUserId()));
+                    customerCollaboration.setAvatar(userAvatarMap.get(customerCollaboration.getUserId()));
                     return customerCollaboration;
                 }).toList();
     }

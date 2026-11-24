@@ -3,6 +3,8 @@ package cn.cordys.crm.customer.service;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
+import cn.cordys.crm.system.domain.UserExtend;
+import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,15 +29,24 @@ class CustomerCollaborationServiceTest {
     private final CustomerCollaborationService service = new CustomerCollaborationService();
     @SuppressWarnings("unchecked")
     private final BaseMapper<CustomerCollaboration> mapper = mock(BaseMapper.class);
+    @SuppressWarnings("unchecked")
+    private final BaseMapper<UserExtend> userExtendMapper = mock(BaseMapper.class);
     private final BaseService baseService = mock(BaseService.class);
+    private final UserExtendService userExtendService = new UserExtendService();
 
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(service, "customerCollaborationMapper", mapper);
         ReflectionTestUtils.setField(service, "baseService", baseService);
+        ReflectionTestUtils.setField(service, "userExtendService", userExtendService);
+        ReflectionTestUtils.setField(userExtendService, "userExtendMapper", userExtendMapper);
         when(baseService.getUserDeptMapByUserIds(anyList(), eq("org")))
                 .thenReturn(Map.of("member", new UserDeptDTO("member", "dept", "部门")));
         when(baseService.getUserNameMap(anySet())).thenReturn(Map.of("member", "协作人", "operator", "操作人"));
+        UserExtend member = new UserExtend();
+        member.setId("member");
+        member.setAvatar("https://example.com/avatar.png");
+        when(userExtendMapper.selectByIds(List.of("member"))).thenReturn(List.of(member));
     }
 
     @ParameterizedTest
@@ -53,6 +64,7 @@ class CustomerCollaborationServiceTest {
         assertEquals(expectedType, listed.getCollaborationType());
         assertEquals(expireTime, listed.getExpireTime());
         assertEquals("协作人", listed.getUserName());
+        assertEquals("https://example.com/avatar.png", listed.getAvatar());
         assertEquals("部门", listed.getDepartmentName());
         assertEquals(expectedType, service.selectByCustomerId("customer").getFirst().getCollaborationType());
         assertEquals(expectedType, service.selectByCustomerIdAndUserId("customer", "member")

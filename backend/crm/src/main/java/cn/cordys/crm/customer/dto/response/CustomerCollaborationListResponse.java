@@ -12,6 +12,9 @@ public class CustomerCollaborationListResponse extends CustomerCollaboration {
     @Schema(description = "用户名称")
     private String userName;
 
+    @Schema(description = "协作人头像地址")
+    private String avatar;
+
     @Schema(description = "创建人名称")
     private String createUserName;
 
