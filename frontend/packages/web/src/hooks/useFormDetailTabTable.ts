@@ -3,6 +3,8 @@ import { type Component, defineAsyncComponent } from 'vue';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { FormDetailTabConfig } from '@lib/shared/models/system/module';
 
+import { notifyRelatedDataChanged } from '@/hooks/useRelatedDataRefresh';
+
 type SystemDetailTabTableConfig = {
   component: Component;
   permission: string[];
@@ -106,6 +108,7 @@ export default function useFormDetailTabTable() {
 
     const commonProps = {
       readonly: false,
+      onDataChanged: () => notifyRelatedDataChanged(pageFormId, resourceId),
       hideOperationColumn: false,
       detailTabResourceId: resourceId,
       detailTabPageFormId: pageFormId,

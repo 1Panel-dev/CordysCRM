@@ -43,6 +43,7 @@
           :source-id="route.query.id?.toString()"
           :form-key="FormDesignKeyEnum.BUSINESS_CONTACT"
           readonly
+          @data-changed="refreshDetail"
         />
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
@@ -51,6 +52,7 @@
           :type="FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS"
           :readonly="readonly"
           :initial-source-name="initialSourceName"
+          @data-changed="refreshDetail"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
@@ -59,6 +61,7 @@
           :type="FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS"
           :readonly="readonly"
           :initial-source-name="initialSourceName"
+          @data-changed="refreshDetail"
         />
         <CrmChangeRecord
           v-else-if="tab.name === 'changeRecord'"
@@ -445,12 +448,11 @@
   }
 
   onActivated(() => {
+    refreshDetail();
     if (activeTab.value === 'record') {
       recordListRef.value?.[0].loadList();
     } else if (activeTab.value === 'plan') {
       planListRef.value?.[0].loadList();
-    } else if (['info', 'approval'].includes(activeTab.value)) {
-      refreshDetail();
     }
   });
 

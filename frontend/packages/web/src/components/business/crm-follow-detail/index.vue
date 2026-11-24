@@ -122,6 +122,7 @@
   import FollowRecord from './followRecord.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { notifyRelatedDataChanged } from '@/hooks/useRelatedDataRefresh';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { descriptionList, statusTabList } from './config';
@@ -168,6 +169,11 @@
   const showDetailDrawer = ref(false);
   const activeItem = ref<FollowDetailItem>();
   const detailReadonly = computed(() => props.readonly);
+  function notifyParentDataChanged() {
+    if (props.parentFormKey && props.sourceId) {
+      notifyRelatedDataChanged(props.parentFormKey, props.sourceId);
+    }
+  }
   function handleDetail(row: FollowDetailItem) {
     sourceId.value = row.id;
     realFormKey.value =
@@ -196,6 +202,7 @@
     followApiKey: props.followApiKey,
     sourceId: toRef(props, 'sourceId'),
     onDeleteSuccess: () => {
+      notifyParentDataChanged();
       // 确认删除成功后关闭详情弹窗
       if (showDetailDrawer.value) {
         showDetailDrawer.value = false;
@@ -414,9 +421,11 @@
       await updatePlan();
       showDetailDrawer.value = false;
       loadFollowList();
+      notifyParentDataChanged();
       return;
     }
     loadFollowList();
+    notifyParentDataChanged();
     if (showDetailDrawer.value) {
       refreshDetailKey.value += 1;
     }

@@ -182,6 +182,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
@@ -926,6 +927,7 @@
   onBeforeUnmount(() => {
     sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
   });
+  useRelatedTableChanges(props, [() => tableRefreshId.value, () => tableRemoveRefreshId.value]);
 </script>
 
 <style lang="less" scoped>

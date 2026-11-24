@@ -169,6 +169,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -189,6 +190,8 @@
     readonly?: boolean;
     independentDetail?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD;
+    parentFormId?: string;
+    parentResourceId?: string;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;
@@ -632,12 +635,18 @@
     }
   );
 
+  const notifyRelatedDataChange = useRelatedTableChanges(props, [
+    () => tableRefreshId.value,
+    () => tableRemoveRefreshId.value,
+  ]);
+
   function handleFormCreateSaved(res: any) {
     if (needInitDetail.value) {
       searchData(undefined, res.id);
     } else {
       searchData();
     }
+    notifyRelatedDataChange();
     emit('refresh');
   }
 

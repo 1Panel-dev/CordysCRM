@@ -107,6 +107,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -193,14 +194,6 @@
   );
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'paymentRecord') {
-        formDescriptionRef.value?.initFormDescription();
-      }
-    }
-  );
 
   const refreshKey = ref(0);
   function handleSaved() {
@@ -233,4 +226,10 @@
   function handleEdit(id: string) {
     formCreateDrawerVisible.value = true;
   }
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'paymentRecord',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>

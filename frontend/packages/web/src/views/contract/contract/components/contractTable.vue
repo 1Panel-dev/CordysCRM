@@ -245,6 +245,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -985,12 +986,19 @@
     showBusinessTitleDetailDrawer.value = true;
   }
 
+  const notifyRelatedDataChange = useRelatedTableChanges(props, [
+    () => tableRefreshId.value,
+    () => tableRemoveRefreshSignal.value,
+    () => tableItemRefreshId.value,
+  ]);
+
   function handleFormCreateSaved(res: any) {
     if (needInitDetail.value || activeFormKey.value === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
       searchData(undefined, res.id);
     } else {
       searchData();
     }
+    notifyRelatedDataChange();
   }
 
   function handleFormReview(res: any) {

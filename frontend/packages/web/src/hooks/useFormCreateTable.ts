@@ -23,6 +23,7 @@ import { formatFormulaResultValue } from '@/components/business/crm-formula/util
 import { getFormDetailTabPage } from '@/api/modules';
 import { followPlanStatus } from '@/config/follow';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
+import { useRelatedDataListener } from '@/hooks/useRelatedDataRefresh';
 import useUserStore from '@/store/modules/user';
 
 import useFormCreateSystemColumns from './useFormCreateSystemColumns';
@@ -636,6 +637,18 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       });
     }
   );
+
+  const relatedDataDirty = ref(false);
+  useRelatedDataListener((formId) => {
+    const currentFormId = props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? props.customFormId?.value : props.formKey;
+    if (formId === currentFormId) relatedDataDirty.value = true;
+  });
+  watch([relatedDataDirty, () => useTableRes.propsRes.value.loading], ([dirty, tableLoading]) => {
+    if (dirty && !tableLoading) {
+      relatedDataDirty.value = false;
+      useTableRes.loadList();
+    }
+  });
 
   watch(
     () => props.showApprovalStatus?.value,

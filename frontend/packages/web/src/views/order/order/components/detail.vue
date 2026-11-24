@@ -184,6 +184,7 @@
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -508,15 +509,6 @@
 
   const formDescriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
 
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'order') {
-        formDescriptionRef.value?.initFormDescription();
-      }
-    }
-  );
-
   async function handleSaveApproval(callback: () => Promise<any>, _hasFieldPermission: boolean) {
     await callback();
     emit('approvalSuccess');
@@ -543,4 +535,10 @@
       }
     }
   );
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.ORDER,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'order',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>

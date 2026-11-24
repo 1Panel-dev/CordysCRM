@@ -63,6 +63,9 @@
     readonly?: boolean;
     initialSourceName?: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'dataChanged'): void;
+  }>();
 
   const { t } = useI18n();
   const keyword = ref('');
@@ -83,6 +86,7 @@
       await followPlanApiMap.delete?.[props.type]?.(item.id);
       showSuccessToast(t('common.deleteSuccess'));
       crmListRef.value?.loadList(true);
+      emit('dataChanged');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -97,6 +101,7 @@
       });
       showSuccessToast(t('common.operationSuccess'));
       crmListRef.value?.loadList(true);
+      emit('dataChanged');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

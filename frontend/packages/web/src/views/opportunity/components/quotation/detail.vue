@@ -144,6 +144,7 @@
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
 
   import { FullPageEnum } from '@/enums/routeEnum';
 
@@ -395,6 +396,7 @@
   });
 
   const formDescriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
+
   async function handleSaveApproval(callback: () => Promise<any>, _hasFieldPermission: boolean) {
     await callback();
     emit('approvalSuccess');
@@ -417,6 +419,12 @@
       }
     }
   );
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'quotation',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>
 
 <style scoped></style>

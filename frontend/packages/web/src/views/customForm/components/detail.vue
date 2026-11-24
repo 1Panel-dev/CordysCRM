@@ -125,6 +125,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
 
   const props = defineProps<{
     sourceId: string;
@@ -312,15 +313,6 @@
     }
   );
 
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'customForm') {
-        formDescriptionRef.value?.initFormDescription();
-      }
-    }
-  );
-
   // 删除
   function handleDelete() {
     openModal({
@@ -381,4 +373,10 @@
     },
     { immediate: true }
   );
+  useRelatedDetailRefresh({
+    formId: () => props.customFormId,
+    resourceId: () => props.sourceId || '',
+    active: () => activeTab.value === 'customForm',
+    refresh: () => formDescriptionRef.value?.initFormDescription(),
+  });
 </script>

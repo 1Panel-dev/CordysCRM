@@ -172,6 +172,7 @@
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedDetailRefresh } from '@/hooks/useRelatedDataRefresh';
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -438,14 +439,6 @@
   );
 
   const descriptionRef = ref<InstanceType<typeof ApprovalFieldEditor>>();
-  watch(
-    () => activeTab.value,
-    () => {
-      if (activeTab.value === 'clue') {
-        descriptionRef.value?.initFormDescription();
-      }
-    }
-  );
 
   function handleMovedSuccess() {
     show.value = false;
@@ -566,4 +559,10 @@
     },
     { immediate: true }
   );
+  useRelatedDetailRefresh({
+    formId: () => FormDesignKeyEnum.CLUE,
+    resourceId: () => props.detail?.id || '',
+    active: () => activeTab.value === 'clue',
+    refresh: () => descriptionRef.value?.initFormDescription(),
+  });
 </script>

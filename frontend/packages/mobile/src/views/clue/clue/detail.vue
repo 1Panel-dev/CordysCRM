@@ -26,6 +26,7 @@
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CLUE"
           :readonly="readonly"
           :initial-source-name="sourceName"
+          @data-changed="refreshDetail"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
@@ -34,6 +35,7 @@
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CLUE"
           :readonly="readonly"
           :initial-source-name="sourceName"
+          @data-changed="refreshDetail"
         />
         <CrmHeaderList v-else-if="tab.name === 'header'" :load-list-api="getClueHeaderList" :source-id="sourceId" />
         <transitionRecord v-else-if="tab.name === 'transitionRecord'" :source-id="sourceId" />
@@ -413,12 +415,11 @@
   }
 
   onActivated(() => {
+    refreshDetail();
     if (activeTab.value === 'record') {
       recordListRef.value?.[0].loadList();
     } else if (activeTab.value === 'plan') {
       planListRef.value?.[0].loadList();
-    } else if (['info', 'approval'].includes(activeTab.value)) {
-      refreshDetail();
     }
   });
 </script>

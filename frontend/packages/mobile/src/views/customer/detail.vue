@@ -53,6 +53,7 @@
           :customer-name="route.query.name?.toString()"
           :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
           :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
+          @data-changed="refreshDetail"
         />
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
@@ -61,6 +62,7 @@
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
           :initial-source-name="sourceName"
           :readonly="collaborationType === 'READ_ONLY'"
+          @data-changed="refreshDetail"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
@@ -69,6 +71,7 @@
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
           :initial-source-name="sourceName"
           :readonly="collaborationType === 'READ_ONLY'"
+          @data-changed="refreshDetail"
         />
         <relation
           v-else-if="tab.name === 'relation'"
@@ -483,6 +486,7 @@
   });
 
   onActivated(() => {
+    refreshDetail();
     refreshCollaborators();
     if (activeTab.value === 'record') {
       recordListRef.value?.[0].loadList();
@@ -492,8 +496,6 @@
       relationListRef.value?.[0].initList();
     } else if (activeTab.value === 'collaborator') {
       collaboratorListRef.value?.[0].initList();
-    } else if (['info', 'approval'].includes(activeTab.value)) {
-      refreshDetail();
     }
   });
 </script>

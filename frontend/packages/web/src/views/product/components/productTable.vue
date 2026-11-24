@@ -110,6 +110,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { useRelatedTableChanges } from '@/hooks/useRelatedDataRefresh';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -351,6 +352,7 @@
   onMounted(() => {
     searchData();
   });
+  useRelatedTableChanges(props, [() => tableRefreshId.value, () => tableRefreshIdKey.value]);
 </script>
 
 <style lang="less" scoped></style>
