@@ -182,7 +182,6 @@
     { label: t('system.message.triggerType.action'), value: 'ACTION' },
     { label: t('system.message.triggerType.condition'), value: 'FIELD' },
     { label: t('system.message.triggerType.schedule'), value: 'SCHEDULE' },
-    { label: t('system.message.atMe'), value: 'MENTION' },
   ]);
 
   const moduleCategoryConfig: Partial<Record<ModuleConfigEnum, { resourceType: string; label: string }>> = {
