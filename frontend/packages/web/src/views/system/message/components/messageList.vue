@@ -1348,10 +1348,11 @@
     },
     {
       title: t('common.creator'),
-      key: 'createUserName',
+      key: 'createUser',
       width: 120,
       sorter: true,
       ellipsis: { tooltip: true },
+      render: (row) => row.createUserName || '-',
     },
     {
       title: t('common.createTime'),
@@ -1361,10 +1362,11 @@
     },
     {
       title: t('common.updateUserName'),
-      key: 'updateUserName',
+      key: 'updateUser',
       width: 120,
       sorter: true,
       ellipsis: { tooltip: true },
+      render: (row) => row.updateUserName || '-',
     },
     {
       title: t('common.updateTime'),

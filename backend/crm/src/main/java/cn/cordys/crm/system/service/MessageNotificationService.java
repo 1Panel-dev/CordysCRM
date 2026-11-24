@@ -8,11 +8,13 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomForm;
+import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.ScopeKey;
 import cn.cordys.crm.system.constants.message.ReceiveMethodEnum;
@@ -45,12 +47,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -68,6 +72,8 @@ public class MessageNotificationService {
     private BaseMapper<CustomForm> customFormMapper;
     @Resource
     private UserExtendService userExtendService;
+    @Resource
+    private BaseService baseService;
 
     /**
      * 获取系统类型通知和数量
@@ -108,10 +114,26 @@ public class MessageNotificationService {
     @Transactional(readOnly = true)
     public List<MessageTaskResponse> getMessageList(MessageRequest request) {
         List<MessageTaskResponse> messageList = extMessageTaskMapper.getMessageList(request);
+
+        List<String> createUserIds = messageList.stream()
+                .map(MessageTaskResponse::getCreateUser)
+                .distinct()
+                .toList();
+        List<String> updateUserIds = messageList.stream()
+                .map(MessageTaskResponse::getUpdateUser)
+                .distinct()
+                .toList();
+        List<String> userIds = Stream.of(createUserIds, updateUserIds)
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
         for (MessageTaskResponse response : messageList) {
             response.setMembers(buildMembers(response.getScopeId()));
             response.setConfig(JSON.parseObject(response.getValue(), TriggerTypeConfigDTO.class));
             response.setTemplateValue();
+            response.setCreateUserName(userNameMap.get(response.getCreateUser()));
+            response.setUpdateUserName(userNameMap.get(response.getUpdateUser()));
         }
         return messageList;
     }
