@@ -3,6 +3,8 @@ package cn.cordys.crm.customer.mapper;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.crm.clue.dto.request.ContractDetailPaymentPlanPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentPlanMapper;
@@ -187,7 +189,7 @@ class CustomerBusinessTabSqlTest {
         planRequest.setCustomerId("customer-a");
         planRequest.setContractId("contract-a");
         planRequest.setFilters(List.of(filter("planStatus", "COMPLETED")));
-        String planSql = statisticSql(ExtContractPaymentPlanMapper.class, "calculateCustomerPaymentPlanStatistic",
+        String planSql = querySql(ExtContractPaymentPlanMapper.class, "calculateCustomerPaymentPlanStatistic",
                 planRequest);
         assertTrue(planSql.contains("cpp.contract_id=?"));
         assertTrue(planSql.contains("cpp.plan_status=?"));
@@ -195,11 +197,21 @@ class CustomerBusinessTabSqlTest {
         CustomerContractPaymentRecordStatisticRequest recordRequest = new CustomerContractPaymentRecordStatisticRequest();
         recordRequest.setCustomerId("customer-a");
         recordRequest.setFilters(List.of(filter("recordAmount", "100")));
-        assertTrue(statisticSql(ExtContractPaymentRecordMapper.class, "sumCustomerRecordAmount", recordRequest)
+        assertTrue(querySql(ExtContractPaymentRecordMapper.class, "sumCustomerRecordAmount", recordRequest)
                 .contains("cpr.record_amount=?"));
     }
 
-    private String statisticSql(Class<?> mapper, String statement, Object request) {
+    @Test
+    void paymentPlanListFiltersByContractWhenProvided() {
+        ContractDetailPaymentPlanPageRequest detailRequest = new ContractDetailPaymentPlanPageRequest();
+        detailRequest.setContractId("contract-a");
+        assertTrue(querySql(ExtContractPaymentPlanMapper.class, "list", detailRequest)
+                .contains("cpp.contract_id=?"));
+        assertFalse(querySql(ExtContractPaymentPlanMapper.class, "list", new ContractPaymentPlanPageRequest())
+                .contains("cpp.contract_id=?"));
+    }
+
+    private String querySql(Class<?> mapper, String statement, Object request) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("request", request);
         parameters.put("userId", "reader-a");
