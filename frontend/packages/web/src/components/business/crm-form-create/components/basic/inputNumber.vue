@@ -14,7 +14,7 @@
     class="w-full"
     @update-value="($event:number | null) => emit('change', $event)"
   >
-    <template v-if="props.fieldConfig.numberFormat === 'percent'" #suffix> % </template>
+    <template v-if="showPercentSuffix" #suffix> % </template>
   </CrmInputNumber>
   <n-form-item
     v-else
@@ -52,7 +52,7 @@
       class="w-full"
       @update-value="($event:number | null) => emit('change', $event)"
     >
-      <template v-if="props.fieldConfig.numberFormat === 'percent'" #suffix> % </template>
+      <template v-if="showPercentSuffix" #suffix> % </template>
     </CrmInputNumber>
   </n-form-item>
 </template>
@@ -60,6 +60,7 @@
 <script setup lang="ts">
   import { NDivider, NFormItem } from 'naive-ui';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
@@ -90,6 +91,11 @@
     default: null,
   });
 
+  const isCountStatistic = computed(
+    () => props.fieldConfig.type === FieldTypeEnum.STATISTIC && props.fieldConfig.statisticType === 'COUNT'
+  );
+  const showPercentSuffix = computed(() => props.fieldConfig.numberFormat === 'percent' && !isCountStatistic.value);
+
   const formItemRules = computed(() => {
     if (props.ignoreRule) return [];
     return props.fieldConfig.rules || [];
@@ -116,6 +122,7 @@
 
   function format(val?: number | null) {
     if (val === null || val === undefined) return '';
+    if (isCountStatistic.value) return val.toString();
     if (props.fieldConfig.formulaResultFormat === 'number') {
       return formatFormulaResultValue(val, props.fieldConfig, '', props.longFloat);
     }
