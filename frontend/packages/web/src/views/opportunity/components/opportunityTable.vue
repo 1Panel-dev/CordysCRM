@@ -6,6 +6,7 @@
     :class="`crm-opportunity-table-${props.formKey}`"
     :not-show-table="activeShowType === 'billboard'"
     :not-show-table-filter="isAdvancedSearchMode"
+    :hide-operation-column="activeTab === OpportunitySearchTypeEnum.COLLABORATION_VISIBLE"
     :action-config="actionConfig"
     :fullscreen-target-ref="props.fullscreenTargetRef"
     :hiddenBackToTop="activeShowType === 'billboard'"
