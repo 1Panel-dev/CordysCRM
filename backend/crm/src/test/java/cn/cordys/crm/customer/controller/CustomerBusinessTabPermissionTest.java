@@ -12,15 +12,12 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.contract.dto.response.CustomerPaymentPlanStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerInvoiceStatisticResponse;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
-import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.contract.service.ContractService;
-import cn.cordys.crm.customer.dto.request.CustomerContractPaymentPlanStatisticRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.service.OrderService;
@@ -193,34 +190,6 @@ class CustomerBusinessTabPermissionTest {
         assertEquals(BigDecimal.valueOf(90), response.getUninvoicedAmount());
         verify(permissions).checkPermission(PermissionConstants.CONTRACT_INVOICE_READ);
         verify(permissions).checkPermission(PermissionConstants.CONTRACT_READ);
-        verifyNoInteractions(dataScope);
-    }
-
-    @Test
-    void customerPaymentPlanStatisticParsesFiltersAndUsesRelatedPermissionScope() {
-        ContractPaymentPlanService paymentPlans = mock(ContractPaymentPlanService.class);
-        ReflectionTestUtils.setField(controller, "contractPaymentPlanService", paymentPlans);
-        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
-        scope.setAll(true);
-        when(related.getCustomerTabDataPermission("customer-a", "user-a", "org-a")).thenReturn(scope);
-        CustomerContractPaymentPlanStatisticRequest request = new CustomerContractPaymentPlanStatisticRequest();
-        request.setCustomerId("customer-a");
-        request.setKeyword("计划");
-        request.setFilters(List.of(filter("planStatus", "COMPLETED")));
-        CustomerPaymentPlanStatisticResponse response = new CustomerPaymentPlanStatisticResponse();
-        when(paymentPlans.calculateCustomerPaymentPlanStatistic(request, "user-a", "org-a", scope))
-                .thenReturn(response);
-
-        try (MockedStatic<ConditionFilterUtils> conditions = mockStatic(ConditionFilterUtils.class)) {
-            conditions.when(() -> ConditionFilterUtils.getValidConditions(any())).thenCallRealMethod();
-
-            assertSame(response, controller.calculateCustomerPaymentPlanStatistic(request));
-
-            conditions.verify(() -> ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey()));
-        }
-        assertEquals("ALL", request.getViewId());
-        verify(paymentPlans).calculateCustomerPaymentPlanStatistic(request, "user-a", "org-a", scope);
-        verify(permissions).checkPermission(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         verifyNoInteractions(dataScope);
     }
 

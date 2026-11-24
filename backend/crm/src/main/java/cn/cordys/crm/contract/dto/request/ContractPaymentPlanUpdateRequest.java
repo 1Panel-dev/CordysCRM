@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -38,12 +37,6 @@ public class ContractPaymentPlanUpdateRequest {
     @Schema(description = "计划状态")
     @EnumValue(enumClass = ContractPaymentPlanStatus.class)
     private String planStatus;
-
-    @Schema(description = "计划回款金额")
-    private BigDecimal planAmount;
-
-    @Schema(description = "计划回款时间")
-    private Long planEndTime;
 
     @Schema(description = "模块字段值")
     private List<BaseModuleFieldValue> moduleFields;
