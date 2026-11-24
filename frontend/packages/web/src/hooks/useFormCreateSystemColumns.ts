@@ -842,7 +842,7 @@ export default async function useFormCreateSystemColumns(
       },
       sortOrder: false,
       sorter: columnsSorter,
-      render: (row: any) => (row.createTime ? dayjs(row.createTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+      render: (row: any) => (row.updateTime ? dayjs(row.updateTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
     },
   ];
   return {
