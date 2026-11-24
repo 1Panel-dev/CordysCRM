@@ -15,6 +15,16 @@
         <if test='request.type != null and request.type != ""'>
             AND sys_notification.type = #{request.type}
         </if>
+        <if test='request.triggerType != null and request.triggerType != ""'>
+          <choose>
+              <when test="request.triggerType == 'COMMENT_MENTIONED'">
+                  AND sys_notification.trigger_type IN ('FOLLOW_UP_RECORD_COMMENT_MENTIONED', 'FOLLOW_UP_PLAN_COMMENT_MENTIONED', 'APPROVAL_COMMENT_MENTIONED')
+              </when>
+              <otherwise>
+                  AND sys_notification.trigger_type = #{request.triggerType}
+              </otherwise>
+          </choose>
+        </if>
         <if test='request.status != null and request.status != ""'>
             AND sys_notification.status = #{request.status}
         </if>
@@ -118,7 +128,9 @@
         SELECT * FROM sys_notification
         WHERE sys_notification.receiver = #{userId} and sys_notification.organization_id = #{organizationId}
         and sys_notification.status='UNREAD'
-        and sys_notification.resource_type = 'ANNOUNCEMENT_NOTICE'
+        <if test="announcement">
+            and sys_notification.resource_type = 'ANNOUNCEMENT_NOTICE'
+        </if>
         order by sys_notification.create_time DESC
 
 

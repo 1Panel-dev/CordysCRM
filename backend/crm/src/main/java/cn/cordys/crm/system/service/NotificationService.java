@@ -165,18 +165,15 @@ public class NotificationService {
     }
 
     public List<NotificationDTO> listLastNotification(String userId, String organizationId) {
-        //获取已开启的模块
-        List<String> modules = sendModuleService.getNoticeModules();
-        if (CollectionUtils.isEmpty(modules)) {
-            return new ArrayList<>();
-        }
-        List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId, modules);
+        List<NotificationDTO> notifications = extNotificationMapper.selectLastAnnouncementList(userId, organizationId,
+                false);
         notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
         return notifications;
     }
 
     public List<NotificationDTO> listLastAnnouncement(String userId, String organizationId) {
-        List<NotificationDTO> notifications = extNotificationMapper.selectLastAnnouncementList(userId, organizationId);
+        List<NotificationDTO> notifications = extNotificationMapper.selectLastAnnouncementList(userId, organizationId,
+                true);
         notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
         return notifications;
     }
