@@ -63,7 +63,6 @@ export interface OpportunityDetail extends OpportunityItem {
   owner: string;
   ownerName: string;
   lastStage: string; // 上一个阶段
-  operationPermissions?: string[];
 }
 
 export interface UpdateStageParams {

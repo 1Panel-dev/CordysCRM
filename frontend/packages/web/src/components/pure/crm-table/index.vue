@@ -91,7 +91,7 @@
         ref="tableRef"
         v-bind="{ scrollX: scrollXWidth, ...$attrs }"
         v-model:checked-row-keys="checkedRowKeys"
-        :columns="visibleColumns as TableColumns"
+        :columns="currentColumns as TableColumns"
         :row-key="getRowKey"
         flex-height
         :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} ${
@@ -205,7 +205,6 @@
     actionConfig?: BatchActionConfig; // 批量操作
     notShowTable?: boolean; // 不展示表格
     notShowTableFilter?: boolean; // 不显示表头筛选
-    hideOperationColumn?: boolean;
     draggable?: boolean; // 允许拖拽
     dragMoveValidator?: (fromRow: any, toRow: any) => boolean; // 拖拽限制
     notVirtualScroll?: boolean; // 不开启竖向虚拟滚动
@@ -267,11 +266,6 @@
 
   const checkFilterMap = ref<Record<string, (string | number)[]>>({});
   const currentColumns = ref<CrmDataTableColumn[]>([]);
-  const visibleColumns = computed(() =>
-    props.hideOperationColumn
-      ? currentColumns.value.filter((column) => column.key !== SpecialColumnEnum.OPERATION)
-      : currentColumns.value
-  );
 
   // 处理排序和过滤图标
   function sorterAndFilterColumn(column: CrmDataTableColumn) {
@@ -605,10 +599,10 @@
   function patchColKeys() {
     if (!realTableKey.value) return;
     const colElements = tableFullRef.value?.querySelectorAll('table col');
-    if (!colElements) return;
+    if (!colElements || !currentColumns.value) return;
 
     colElements.forEach((colEl, index) => {
-      const colKey = (visibleColumns.value[index] as CrmDataTableColumn)?.key;
+      const colKey = (currentColumns.value[index] as CrmDataTableColumn)?.key;
       if (colKey !== undefined && colKey !== null) {
         colEl.setAttribute('data-col-key', String(colKey));
       }
@@ -679,8 +673,6 @@
       }
     }
   );
-
-  watch(() => props.hideOperationColumn, patchColKeys, { flush: 'post' });
 
   function handleSorterChange(sorter?: DataTableSortState) {
     currentColumns.value.forEach((column) => {
@@ -895,7 +887,7 @@
   });
 
   const scrollXWidth = computed(() =>
-    visibleColumns.value.reduce((prev, curr) => {
+    currentColumns.value.reduce((prev, curr) => {
       const width = typeof curr.width === 'number' ? curr.width : 0;
       const minWidth = typeof curr.minWidth === 'number' ? curr.minWidth : calculateColumnMinWidth(curr);
       return prev + Math.max(width, typeof minWidth === 'number' ? minWidth : 0);
