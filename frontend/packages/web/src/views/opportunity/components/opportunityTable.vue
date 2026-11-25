@@ -233,7 +233,7 @@
     getOptStatistic,
     transferOpt,
   } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import { defaultTransferForm, getOptHomeConditions } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
@@ -918,70 +918,13 @@
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
 
-  const filterConfigList = computed<FilterFormItem[]>(() => {
-    return [
-      ...(showApprovalStatus.value
-        ? [
-            {
-              title: t('common.approvalStatus'),
-              dataIndex: 'approvalStatus',
-              type: FieldTypeEnum.SELECT_MULTIPLE,
-              selectProps: { options: processStatusOptions },
-            },
-          ]
-        : []),
-      {
-        title: t('opportunity.opportunityStage'),
-        dataIndex: 'stage',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options:
-            stageConfig.value?.stageConfigList.map((e) => ({
-              label: e.name,
-              value: e.id,
-            })) || [],
-        },
-      },
-      {
-        title: t('opportunity.failureReason'),
-        dataIndex: 'failureReason',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options: reasonOptions.value,
-        },
-      },
-      {
-        title: t('opportunity.department'),
-        dataIndex: 'departmentId',
-        type: FieldTypeEnum.TREE_SELECT,
-        treeSelectProps: {
-          labelField: 'name',
-          keyField: 'id',
-          multiple: true,
-          clearFilterAfterSelect: false,
-          checkable: true,
-          showContainChildModule: true,
-          type: 'department',
-        },
-      },
-      {
-        title: t('customer.lastFollowUps'),
-        dataIndex: 'follower',
-        type: FieldTypeEnum.USER_SELECT,
-      },
-      {
-        title: t('customer.lastFollowUpDate'),
-        dataIndex: 'followTime',
-        type: FieldTypeEnum.TIME_RANGE_PICKER,
-      },
-      {
-        title: t('opportunity.actualEndTime'),
-        dataIndex: 'actualEndTime',
-        type: FieldTypeEnum.TIME_RANGE_PICKER,
-      },
-      ...baseFilterConfigList,
-    ] as FilterFormItem[];
-  });
+  const filterConfigList = computed<FilterFormItem[]>(() =>
+    getModuleFilterConfigList('opportunity', {
+      approvalStatusOptions: showApprovalStatus.value ? processStatusOptions : undefined,
+      stageOptions: stageConfig.value?.stageConfigList.map((stage) => ({ label: stage.name, value: stage.id })) || [],
+      failureReasonOptions: reasonOptions.value as NonNullable<FilterFormItem['selectProps']>['options'],
+    })
+  );
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)

@@ -145,8 +145,8 @@
   import DetailDrawer from './detail.vue';
 
   import { batchDeletePaymentPlan, deletePaymentPlan, getAccountPayment, updatePaymentPlan } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -310,33 +310,9 @@
   }
 
   // 表格
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        type: 'department',
-        checkable: true,
-        showContainChildModule: true,
-        containChildIds: [],
-      },
-    },
-    {
-      title: t('contract.planStatus'),
-      dataIndex: 'planStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      selectProps: {
-        options: contractPaymentPlanStatusOptions,
-      },
-    },
-    ...baseFilterConfigList,
-  ]);
+  const filterConfigList = computed<FilterFormItem[]>(() =>
+    getModuleFilterConfigList('paymentPlan', { selectionOperators: COMMON_SELECTION_OPERATORS })
+  );
 
   const operationGroupList = computed<ActionsItem[]>(() => {
     return [

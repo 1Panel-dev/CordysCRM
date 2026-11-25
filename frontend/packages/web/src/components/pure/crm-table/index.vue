@@ -232,6 +232,7 @@
 
   const tableFullRef = ref<HTMLElement | null>(null);
   const tableRef = ref();
+  let pendingSortScrollLeft: number | null = null;
   // 实际使用的全屏目标
   const actualTargetRef = computed<HTMLElement | null>(() => {
     return props.fullscreenTargetRef ?? tableFullRef.value;
@@ -694,8 +695,13 @@
       sortOrder = 'desc';
     }
     if (!attrs.showPagination) return;
+    const scrollLeft =
+      tableFullRef.value?.querySelector<HTMLElement>('.n-data-table-base-table-body .n-scrollbar-container')
+        ?.scrollLeft ?? 0;
+    pendingSortScrollLeft = scrollLeft;
     scrollTo({
       top: 0,
+      left: scrollLeft,
     });
     emit('sorterChange', !sorter?.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
   }
@@ -868,8 +874,13 @@
     });
   }
 
-  watch([() => attrs.data, () => props.draggable], () => {
+  watch([() => attrs.data, () => props.draggable], async () => {
     ensureDraggable();
+    if (pendingSortScrollLeft === null) return;
+    const scrollLeft = pendingSortScrollLeft;
+    await nextTick();
+    scrollTo({ left: scrollLeft });
+    pendingSortScrollLeft = null;
   });
 
   watch(

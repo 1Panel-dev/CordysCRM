@@ -240,7 +240,7 @@
     getContractStatusConfig,
     getFormDetailTabStatistic,
   } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -888,53 +888,13 @@
   });
 
   // 表格
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        type: 'department',
-        checkable: true,
-        showContainChildModule: true,
-        containChildIds: [],
-      },
-    },
-    {
-      title: t('contract.status'),
-      dataIndex: 'stage',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      selectProps: {
-        options:
-          stageConfig.value?.stageConfigList.map((e: any) => ({
-            label: e.name,
-            value: e.id,
-          })) || [],
-      },
-    },
-    {
-      title: t('contract.voidReason'),
-      dataIndex: 'voidReason',
-      type: FieldTypeEnum.INPUT,
-    },
-    ...(showApprovalStatus.value
-      ? [
-          {
-            title: t('contract.approvalStatus'),
-            dataIndex: 'approvalStatus',
-            operatorOption: COMMON_SELECTION_OPERATORS,
-            type: FieldTypeEnum.SELECT_MULTIPLE,
-            selectProps: { options: processStatusOptions },
-          },
-        ]
-      : []),
-    ...baseFilterConfigList,
-  ]);
+  const filterConfigList = computed<FilterFormItem[]>(() =>
+    getModuleFilterConfigList('contract', {
+      stageOptions: stageConfig.value?.stageConfigList.map((stage) => ({ label: stage.name, value: stage.id })) || [],
+      approvalStatusOptions: showApprovalStatus.value ? processStatusOptions : undefined,
+      selectionOperators: COMMON_SELECTION_OPERATORS,
+    })
+  );
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 

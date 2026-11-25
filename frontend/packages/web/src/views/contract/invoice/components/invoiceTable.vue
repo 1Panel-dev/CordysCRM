@@ -135,8 +135,8 @@
   import DetailDrawer from './detail.vue';
 
   import { batchDeleteInvoiced, deleteInvoiced, getCustomerInvoiceList } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
   import { deleteInvoiceContentMap } from '@/config/contract';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -543,35 +543,12 @@
   );
 
   // 表格
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        type: 'department',
-        checkable: true,
-        showContainChildModule: true,
-        containChildIds: [],
-      },
-    },
-    ...(showApprovalStatus.value
-      ? [
-          {
-            title: t('contract.approvalStatus'),
-            dataIndex: 'approvalStatus',
-            type: FieldTypeEnum.SELECT_MULTIPLE,
-            operatorOption: COMMON_SELECTION_OPERATORS,
-            selectProps: { options: processStatusOptions },
-          },
-        ]
-      : []),
-    ...baseFilterConfigList,
-  ]);
+  const filterConfigList = computed<FilterFormItem[]>(() =>
+    getModuleFilterConfigList('invoice', {
+      approvalStatusOptions: showApprovalStatus.value ? processStatusOptions : undefined,
+      selectionOperators: COMMON_SELECTION_OPERATORS,
+    })
+  );
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();

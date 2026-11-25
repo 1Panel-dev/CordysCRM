@@ -10,8 +10,8 @@
       <div class="flex items-center gap-[8px]">
         <n-switch v-model:value="unReadEnable" :rubber-band="false" size="small" @update:value="changeHandler" />
         <div class="text-[14px] font-normal">{{ t('system.message.unreadOnly') }}</div>
-        <n-divider v-permission="['SYSTEM_NOTICE:UPDATE']" class="!mx-0" vertical />
-        <n-button v-permission="['SYSTEM_NOTICE:UPDATE']" text type="primary" @click="setAllMessageStatus">
+        <n-divider class="!mx-0" vertical />
+        <n-button text type="primary" @click="setAllMessageStatus">
           <CrmIcon class="mr-[4px]" type="iconicon_browse" :size="16" />
           {{ t('system.message.markAllAsRead') }}
         </n-button>

@@ -131,8 +131,8 @@
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
   import { batchVoided, deleteQuotation, getOpenSeaOptions, voidQuotation } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
-  import { quotationDataActionMap, quotationStatus } from '@/config/opportunity';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
+  import { quotationDataActionMap } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -603,43 +603,11 @@
   const isAdvancedSearchMode = ref(false);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
-  const filterConfigList = computed<FilterFormItem[]>(() => {
-    return [
-      ...(showApprovalStatus.value
-        ? [
-            {
-              title: t('common.approvalStatus'),
-              dataIndex: 'approvalStatus',
-              type: FieldTypeEnum.SELECT_MULTIPLE,
-              selectProps: { options: processStatusOptions },
-            },
-          ]
-        : []),
-      {
-        title: t('common.status'),
-        dataIndex: 'invalid',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options: quotationStatus,
-        },
-      },
-      {
-        title: t('opportunity.department'),
-        dataIndex: 'departmentId',
-        type: FieldTypeEnum.TREE_SELECT,
-        treeSelectProps: {
-          labelField: 'name',
-          keyField: 'id',
-          multiple: true,
-          clearFilterAfterSelect: false,
-          checkable: true,
-          showContainChildModule: true,
-          type: 'department',
-        },
-      },
-      ...baseFilterConfigList,
-    ] as FilterFormItem[];
-  });
+  const filterConfigList = computed<FilterFormItem[]>(() =>
+    getModuleFilterConfigList('quotation', {
+      approvalStatusOptions: showApprovalStatus.value ? processStatusOptions : undefined,
+    })
+  );
 
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
     keyword.value = '';

@@ -206,7 +206,7 @@
     disableCustomerContact,
     enableCustomerContact,
   } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -505,24 +505,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter, tableQueryParams } = useTableRes;
   const backupData = ref<CustomerContractListItem[]>([]);
 
-  const filterConfigList = computed(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        checkable: true,
-        showContainChildModule: true,
-        type: 'department',
-        containChildIds: [],
-      },
-    },
-    ...baseFilterConfigList,
-  ]);
+  const filterConfigList = computed(() => getModuleFilterConfigList('contact'));
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
 
