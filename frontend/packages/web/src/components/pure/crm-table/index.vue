@@ -630,7 +630,10 @@
           const key = e.getAttribute('data-col-key');
           const col = tableColumnsMap.column.find((c) => c.key === key);
           if (col) {
-            col.width = (e.computedStyleMap()?.get('width') as any)?.value || col.width;
+            const width = Number.parseFloat(getComputedStyle(e).width);
+            if (Number.isFinite(width) && width > 0) {
+              col.width = width;
+            }
           }
         });
         setItem(realTableKey.value, tableColumnsMap);

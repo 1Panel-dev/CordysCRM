@@ -242,6 +242,7 @@
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             @open-contract-drawer="handleOpenContractDrawer"
             @open-business-title-drawer="handleOpenBusinessTitleDrawer"
+            @open-customer-drawer="handleOpenRelatedCustomerDrawer"
           />
         </div>
         <div v-if="activeTab === 'order'" class="h-full px-[24px] pt-[24px]">
@@ -293,6 +294,11 @@
         @showCustomerDrawer="handleOpenCustomerDrawer"
       />
       <businessTitleDrawer v-model:visible="showBusinessTitleDetailDrawer" :source-id="activeBusinessTitleSourceId" />
+      <CustomerOverviewDrawer
+        v-if="showRelatedCustomerDrawer"
+        v-model:show="showRelatedCustomerDrawer"
+        :source-id="relatedCustomerId"
+      />
     </div>
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
@@ -362,6 +368,10 @@
   import useUpdateReviewChange from '@/hooks/useUpdateReviewChange';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
+
+  defineOptions({
+    name: 'CustomerOverviewDrawer',
+  });
 
   const FollowDetail = defineAsyncComponent(() => import('@/components/business/crm-follow-detail/index.vue'));
 
@@ -827,6 +837,16 @@
   function handleOpenBusinessTitleDrawer(params: { id: string }) {
     activeBusinessTitleSourceId.value = params.id;
     showBusinessTitleDetailDrawer.value = true;
+  }
+
+  const showRelatedCustomerDrawer = ref(false);
+  const relatedCustomerId = ref('');
+  function handleOpenRelatedCustomerDrawer(params: { customerId: string }) {
+    if (!params.customerId || params.customerId === props.sourceId) {
+      return;
+    }
+    relatedCustomerId.value = params.customerId;
+    showRelatedCustomerDrawer.value = true;
   }
 
   function handleRemoveSuccess() {
