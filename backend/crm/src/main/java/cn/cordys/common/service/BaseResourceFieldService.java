@@ -534,9 +534,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                     AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
                             .getResolver(fieldConfig.getType());
-                    Object objectValue = customFieldResolver.convertToValue(fieldConfig,
-                            resourceFieldBlob.getFieldValue().toString());
-
+                    Object objectValue = null;
+                    try {
+                        objectValue = customFieldResolver.convertToValue(fieldConfig,
+                                resourceFieldBlob.getFieldValue().toString());
+                    } catch (Exception e) {
+                        log.error("Convert field value error: {}", e.getMessage());
+                    }
                     String resourceId = resourceFieldBlob.getResourceId();
                     resourceMap.putIfAbsent(resourceId, new ArrayList<>());
                     resourceMap.get(resourceId)
