@@ -155,6 +155,13 @@
       receiverKeys.value = [...receiverKeys.value, value];
     } else if (!checked) {
       receiverKeys.value = receiverKeys.value.filter((key) => key !== value);
+      if (value === 'specifiedUsers') {
+        receiverMemberIds.value = [];
+        receiverMembers.value = [];
+      } else if (value === 'specifiedRoles') {
+        receiverRoleIds.value = [];
+        receiverRoles.value = [];
+      }
     }
   }
 

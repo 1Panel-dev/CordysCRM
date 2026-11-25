@@ -208,6 +208,7 @@ export default {
   'system.message.settings.reminderFrequency.daily': 'Daily',
   'system.message.settings.reminderRuleTooltip':
     '{dateField}, {days} {dayUnit} before, {startTime}-{endTime}, {frequency}',
+  'system.message.settings.reminderScheduleTooltip': '{dateField}, {days} {dayUnit} before, {time}, {frequency}',
   'system.message.settings.preview.action': 'Notify relevant people when {category} has the action "{action}".',
   'system.message.settings.preview.approvalResult':
     '【Approval result】{operator} initiated {type} document {name}; approval {state}.',
