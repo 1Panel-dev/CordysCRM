@@ -7,7 +7,7 @@
         cpp.plan_status, cpp.contract_id,
         c.name as contract_name
         from contract_payment_plan cpp
-        join contract c on c.id = cpp.contract_id
+        left join contract c on c.id = cpp.contract_id
 
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
