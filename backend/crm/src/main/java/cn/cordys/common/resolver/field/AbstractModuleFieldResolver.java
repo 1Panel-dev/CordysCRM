@@ -107,7 +107,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     }
 
     protected Object parse2Array(String value) {
-        return value == null ? null : JSON.parseArray(value);
+        return StringUtils.isBlank(value) ? null : JSON.parseArray(value);
     }
 
     protected Object parse2Long(String value) {
