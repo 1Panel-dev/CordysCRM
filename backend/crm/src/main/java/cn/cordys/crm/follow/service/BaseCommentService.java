@@ -108,7 +108,7 @@ public abstract class BaseCommentService<C extends Comment> {
         if (!relatedResourcePermissionService.hasJointFollowCommentPermission(
                 formKey, request.getResourceId(), userId, orgId)) {
             resourcePermissionService.checkResourcePermission(
-                    plan ? PermissionConstants.FOLLOW_PLAN_UPDATE : PermissionConstants.FOLLOW_RECORD_UPDATE,
+                    plan ? PermissionConstants.FOLLOW_PLAN_READ : PermissionConstants.FOLLOW_RECORD_READ,
                     request.getResourceId(), formKey, userId, orgId);
         }
         long now = System.currentTimeMillis();
