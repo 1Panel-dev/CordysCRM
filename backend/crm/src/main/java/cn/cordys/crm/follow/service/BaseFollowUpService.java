@@ -138,10 +138,12 @@ public class BaseFollowUpService {
         if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
             return;
         }
-        relatedResourcePermissionService.checkIsolatedData(followFormType, record.getId(), userId, orgId);
         resourcePermissionService.checkPermission(followPermission);
-        if (hasResourceReadPermission(followPermission, record.getId(), followFormType, userId, orgId)
-                || hasClueReadPermission(record.getClueId(), userId, orgId)
+        if (hasResourceReadPermission(followPermission, record.getId(), followFormType, userId, orgId)) {
+            return;
+        }
+        relatedResourcePermissionService.checkIsolatedData(followFormType, record.getId(), userId, orgId);
+        if (hasClueReadPermission(record.getClueId(), userId, orgId)
                 || hasCustomerReadPermission(record.getCustomerId(), userId, orgId)
                 || hasResourceReadPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ,
                         record.getOpportunityId(), FormKeyConstants.OPPORTUNITY, userId, orgId)) {

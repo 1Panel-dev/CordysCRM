@@ -467,15 +467,15 @@ public class CustomerController {
         String organizationId = OrganizationContext.getOrganizationId();
         DeptDataPermissionDTO permissionScope = relatedResourcePermissionService.getCustomerTabDataPermission(
                 customerId, userId, organizationId);
-        if (permissionScope != null) {
-            if (!relatedResourcePermissionService.isOwner(FormKey.CUSTOMER.getKey(), customerId, userId,
-                    organizationId)) {
-                resourcePermissionService.checkPermission(permission);
-            }
-            return permissionScope;
+        if (permissionScope == null || !relatedResourcePermissionService.isOwner(FormKey.CUSTOMER.getKey(),
+                customerId, userId, organizationId)) {
+            resourcePermissionService.checkPermission(permission);
         }
-        resourcePermissionService.checkPermission(permission);
-        return dataScopeService.getDeptDataPermission(userId, organizationId, viewId, permission);
+        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, organizationId,
+                viewId == null ? InternalUserView.ALL.name() : viewId, permission);
+        return permissionScope == null ? roleScope
+                : relatedResourcePermissionService.mergeCustomerTabDataPermission(roleScope, permissionScope,
+                        organizationId);
     }
 
     @GetMapping("/invoice/statistic/{accountId}")

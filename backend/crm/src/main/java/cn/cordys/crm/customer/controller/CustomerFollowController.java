@@ -2,9 +2,13 @@ package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.service.PoolCustomerService;
@@ -38,6 +42,10 @@ public class CustomerFollowController {
     private FollowUpRecordService followUpRecordService;
     @Resource
     private PoolCustomerService poolCustomerService;
+    @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
+    private DataScopeService dataScopeService;
 
     @PostMapping("/plan/page")
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#request.sourceId}", formType = FormKeyConstants.CUSTOMER)
@@ -46,6 +54,7 @@ public class CustomerFollowController {
     public PagerWithOption<List<FollowUpPlanListResponse>> planPage(
             @Validated @RequestBody FollowUpPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
+        request.setCustomerTabScope(customerTabScope(request.getSourceId(), PermissionConstants.FOLLOW_PLAN_READ));
         return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
                 "CUSTOMER", "CUSTOMER");
     }
@@ -57,6 +66,7 @@ public class CustomerFollowController {
     public PagerWithOption<List<FollowUpRecordListResponse>> recordPage(
             @Validated @RequestBody FollowUpRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
+        request.setCustomerTabScope(customerTabScope(request.getSourceId(), PermissionConstants.FOLLOW_RECORD_READ));
         return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
                 "CUSTOMER", "CUSTOMER");
     }
@@ -70,6 +80,16 @@ public class CustomerFollowController {
                 OrganizationContext.getOrganizationId());
         return followUpRecordService.poolList(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
+    }
+
+    private DeptDataPermissionDTO customerTabScope(String customerId, String permission) {
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, orgId,
+                InternalUserView.ALL.name(), permission);
+        DeptDataPermissionDTO collaborationScope = relatedResourcePermissionService.getCustomerTabDataPermission(
+                customerId, userId, orgId);
+        return relatedResourcePermissionService.mergeCustomerTabDataPermission(roleScope, collaborationScope, orgId);
     }
 
 }

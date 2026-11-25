@@ -453,9 +453,6 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null || !orgId.equals(data.getOrganizationId())) {
             return false;
         }
-        if (relatedResourcePermissionService.isIsolatedData(data.getCustomFormId(), id, userId, orgId)) {
-            return false;
-        }
         try {
             CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
             if (dataScope != CustomFormRoleKey.MANAGE_OWN || userId.equals(data.getOwner())) {
@@ -488,11 +485,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-        relatedResourcePermissionService.checkIsolatedData(data.getCustomFormId(), id, userId, orgId);
-
         // 先校验是否是审批资源
         boolean approvalView = resourcePermissionService.hasApprovalViewPermission(id, userId, orgId,
-                data.getCustomFormId());
+                data.getCustomFormId())
+                && !relatedResourcePermissionService.isIsolatedData(data.getCustomFormId(), id, userId, orgId);
         boolean relatedView = false;
         if (!approvalView) {
             checkCurrentOrganization(data, orgId);
@@ -1111,6 +1107,18 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     CustomFormRoleKey getDataScope(String formId, String userId, String orgId) {
         return getDataScope(formId, userId, orgId, true, false);
+    }
+
+    /** 关联查询仍保留用户在表单角色中已有的全部查看权限。 */
+    public boolean hasFullTabReadPermission(String formId, String userId, String orgId) {
+        try {
+            return getDataScope(formId, userId, orgId) != CustomFormRoleKey.MANAGE_OWN;
+        } catch (GenericException e) {
+            if (e.getErrorCode() == CrmHttpResultCode.FORBIDDEN) {
+                return false;
+            }
+            throw e;
+        }
     }
 
     CustomFormRoleKey getManageDataScope(String formId, String userId, String orgId) {

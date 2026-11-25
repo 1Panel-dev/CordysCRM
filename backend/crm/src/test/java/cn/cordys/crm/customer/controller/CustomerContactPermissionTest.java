@@ -183,6 +183,8 @@ class CustomerContactPermissionTest {
         ReflectionTestUtils.setField(relatedPermissions, "customerCollaborationService", collaborations);
         when(relatedPermissions.getCustomerTabDataPermission(anyString(), anyString(), anyString()))
                 .thenCallRealMethod();
+        ReflectionTestUtils.setField(relatedPermissions, "userQueryService", users);
+        when(relatedPermissions.mergeCustomerTabDataPermission(any(), any(), any())).thenCallRealMethod();
 
         ReflectionTestUtils.setField(provider, "customerMapper", customers);
         ReflectionTestUtils.setField(provider, "collaborationMapper", collaborationMapper);
@@ -202,7 +204,6 @@ class CustomerContactPermissionTest {
         ReflectionTestUtils.setField(service, "moduleFormCacheService", formCache);
         ReflectionTestUtils.setField(service, "moduleFormService", forms);
         ReflectionTestUtils.setField(service, "extCustomerContactMapper", contacts);
-        ReflectionTestUtils.setField(service, "customerCollaborationService", collaborations);
         ReflectionTestUtils.setField(service, "baseService", base);
         // 仅跳过字段展示组装，联系人过滤与权限判断全部执行真实代码。
         doAnswer(invocation -> invocation.getArgument(0)).when(service).buildListData(anyList(), eq(ORG));
@@ -475,19 +476,23 @@ class CustomerContactPermissionTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "OWNER", "ALL", "DEPARTMENT", "DEPARTMENT_COLLABORATOR", "ADMIN" })
-    void 客户联系人各读取范围均隔离仅客户信息成员数据(String access) {
+    void 客户联系人合并角色和协作读取范围(String access) {
         String expected = "mine|owner|read-only";
         switch (access) {
         case "OWNER" -> customer.setOwner(USER);
         case "ALL" -> {
             scope.setAll(true);
+            expected = "mine|owner|collaboration|read-only";
         }
         case "ADMIN" -> {
             user.setId(InternalUser.ADMIN.getValue());
+            scope.setAll(true);
+            expected = "mine|owner|collaboration|read-only";
         }
         default -> {
             scope.setSelf(false);
             scope.setDeptIds(Set.of("dept-a"));
+            expected = "mine|owner";
             if ("DEPARTMENT_COLLABORATOR".equals(access)) {
                 configureCollaboration("COLLABORATION");
                 ownerDepartment.setDeptId("dept-b");
@@ -500,11 +505,12 @@ class CustomerContactPermissionTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "READ_ONLY", "JOINT_FOLLOW" })
-    void 联系人查看权限不能绕过仅客户信息成员的数据隔离(String access) {
+    void 角色查看范围允许时可打开协作范围之外的联系人详情(String access) {
         configureCollaboration(access);
         when(dataScope.hasDataPermission(USER, ORG, "collaborator", CONTACT_READ)).thenReturn(true);
         CustomerContact record = detail("collaboration", "collaborator");
-        assertDetailForbidden(record.getId());
+        prepareDetailDisplay();
+        assertEquals(record.getId(), controller.get(record.getId()).getId());
     }
 
     @Test
@@ -517,16 +523,24 @@ class CustomerContactPermissionTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "SELF", "ALL", "DEPARTMENT" })
-    void 仅客户信息成员的联系人范围始终为本人负责而非创建人(String roleScope) {
+    void 仅客户信息成员获得角色可见的联系人以及自己负责的联系人(String roleScope) {
         configureCollaboration("COLLABORATION");
         scope.setSelf("SELF".equals(roleScope));
         scope.setAll("ALL".equals(roleScope));
         scope.setDeptIds("DEPARTMENT".equals(roleScope) ? Set.of("dept-a") : Set.of());
-        assertContacts("mine");
-        when(dataScope.hasDataPermission(USER, ORG, "owner", CONTACT_READ)).thenReturn(true);
+        assertContacts(switch (roleScope) {
+        case "ALL" -> "mine|owner|collaboration|read-only";
+        case "DEPARTMENT" -> "mine|owner";
+        default -> "mine";
+        });
         CustomerContact record = detail("owner", "owner");
         record.setCreateUser(USER);
-        assertDetailForbidden(record.getId());
+        if ("SELF".equals(roleScope)) {
+            assertDetailForbidden(record.getId());
+        } else {
+            prepareDetailDisplay();
+            assertEquals(record.getId(), controller.get(record.getId()).getId());
+        }
     }
 
     @ParameterizedTest

@@ -1,9 +1,12 @@
 package cn.cordys.common.permission;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.service.UserQueryService;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.service.CustomerCollaborationService;
@@ -21,12 +24,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +52,7 @@ class RelatedResourcePermissionServiceTest {
     private final CustomerCollaborationService collaborations = new CustomerCollaborationService();
     private final ExtStatisticMapper fields = mock(ExtStatisticMapper.class);
     private final PermissionCache permissions = mock(PermissionCache.class);
+    private final UserQueryService users = mock(UserQueryService.class);
     private final ModuleFormCacheService forms = mock(ModuleFormCacheService.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<CustomerCollaboration> members = mock(BaseMapper.class);
@@ -63,6 +69,7 @@ class RelatedResourcePermissionServiceTest {
         ReflectionTestUtils.setField(service, "extStatisticMapper", fields);
         ReflectionTestUtils.setField(service, "moduleFormCacheService", forms);
         ReflectionTestUtils.setField(service, "permissionCache", permissions);
+        ReflectionTestUtils.setField(service, "userQueryService", users);
         ReflectionTestUtils.setField(collaborations, "customerCollaborationMapper", members);
         when(members.select(any(CustomerCollaboration.class))).thenAnswer(invocation -> {
             CustomerCollaboration member = new CustomerCollaboration();
@@ -97,6 +104,36 @@ class RelatedResourcePermissionServiceTest {
         when(permissions.getPermissionIds(anyString(), eq(ORG)))
                 .thenReturn(Set.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ,
                         PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ));
+    }
+
+    @Test
+    void 全部角色查看权限保留完整范围() {
+        DeptDataPermissionDTO role = new DeptDataPermissionDTO();
+        role.setAll(true);
+        DeptDataPermissionDTO collaborative = service.getCustomerTabDataPermission(CUSTOMER, MEMBER, ORG);
+        assertTrue(collaborative.getSelf());
+        assertSame(role, service.mergeCustomerTabDataPermission(role, collaborative, ORG));
+    }
+
+    @Test
+    void 部门角色范围与协作范围合并() {
+        DeptDataPermissionDTO role = new DeptDataPermissionDTO();
+        role.setDeptIds(Set.of("dept-a"));
+        DeptDataPermissionDTO own = service.getCustomerTabDataPermission(CUSTOMER, MEMBER, ORG);
+        DeptDataPermissionDTO department = service.mergeCustomerTabDataPermission(role, own, ORG);
+        assertEquals(Set.of("dept-a"), department.getDeptIds());
+        assertEquals(InternalUserView.ALL.name(), department.getViewId());
+
+        DeptDataPermissionDTO collaboration = new DeptDataPermissionDTO();
+        collaboration.setAll(true);
+        collaboration.setExcludedOwnerIds(Set.of("corp-user", "external-user"));
+        when(users.getUserDeptMapByUserIds(collaboration.getExcludedOwnerIds(), ORG)).thenReturn(Map.of(
+                "corp-user", new UserDeptDTO("corp-user", "dept-a", "部门 A"),
+                "external-user", new UserDeptDTO("external-user", "dept-b", "部门 B")));
+        DeptDataPermissionDTO permitted = service.mergeCustomerTabDataPermission(role, collaboration, ORG);
+        assertTrue(permitted.getAll());
+        assertEquals(Set.of("external-user"), permitted.getExcludedOwnerIds());
+        assertEquals(Set.of("corp-user", "external-user"), collaboration.getExcludedOwnerIds());
     }
 
     @ParameterizedTest

@@ -106,7 +106,7 @@ public class CustomerContactController {
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     public CustomerContactListAllResponse list(@Validated @PathVariable String customerId) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         return customerContactService.listByCustomerId(customerId, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), deptDataPermission);
     }

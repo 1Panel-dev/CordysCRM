@@ -60,62 +60,30 @@ class CustomerCollaborationIsolationSqlTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "record", "plan" })
-    void relatedQueriesIsolateOnlyEffectiveCustomerInformationMembers(String entry) throws Exception {
-        String statement = switch (entry) {
-        case "record" -> ExtFollowUpRecordMapper.class.getName() + ".selectList";
-        default -> ExtFollowUpPlanMapper.class.getName() + ".selectList";
-        };
-        Map<String, Object> parameters = Map.of("customerId", "customer-a", "userId", "receiver-a", "orgId", "org-a",
-                "resourceType", "CUSTOMER", "type", "CUSTOMER",
-                "request", Map.of("sourceId", "customer-a", "myPlan", false));
-        long before = System.currentTimeMillis();
-        BoundSql boundSql = configuration.getMappedStatement(statement).getBoundSql(parameters);
-        long after = System.currentTimeMillis();
-        long now = assertInstanceOf(Long.class, boundSql.getAdditionalParameter("collaborationCurrentTime"));
-        assertTrue(before <= now && now <= after);
-        List<Object> values = boundSql.getParameterMappings().stream().map(mapping -> {
-            String property = mapping.getProperty();
-            return boundSql.hasAdditionalParameter(property) ? boundSql.getAdditionalParameter(property)
-                    : configuration.newMetaObject(parameters).getValue(property);
-        }).toList();
-        int occurrences = 1;
-        assertEquals(occurrences, values.stream().filter(value -> Objects.equals(value, now)).count(),
-                "同一查询的全部隔离条件应使用相同时间绑定");
-        assertEquals(occurrences, values.stream().filter("COLLABORATION"::equals).count());
-        assertTrue(values.containsAll(List.of("customer-a", "receiver-a", "org-a")));
-
-        List<OrExpression> isolationConditions = new ArrayList<>();
-        new TablesNamesFinder<Void>() {
-            @Override
-            public <S> Void visit(OrExpression expression, S context) {
-                if (expression.getLeftExpression() instanceof EqualsTo equals
-                        && equals.getLeftExpression() instanceof Column column
-                        && column.getColumnName().equals("collaboration_type")) {
-                    isolationConditions.add(expression);
-                }
-                return super.visit(expression, context);
-            }
-        }.getTables(CCJSqlParserUtil.parse(boundSql.getSql()));
-        assertEquals(occurrences, isolationConditions.size());
-        for (Expression condition : isolationConditions) {
-            assertTrue(isolated(condition, "COLLABORATION", null, values));
-            assertTrue(isolated(condition, "COLLABORATION", now + 1, values));
-            assertFalse(isolated(condition, "READ_ONLY", null, values));
-            assertFalse(isolated(condition, "READ_ONLY", now + 1, values));
-            assertTrue(isolated(condition, "READ_ONLY", now, values));
-            assertTrue(isolated(condition, "READ_ONLY", now - 1, values));
-            assertFalse(isolated(condition, "JOINT_FOLLOW", null, values));
-            assertFalse(isolated(condition, "JOINT_FOLLOW", now + 1, values));
-            assertTrue(isolated(condition, "JOINT_FOLLOW", now, values));
-            assertTrue(isolated(condition, "JOINT_FOLLOW", now - 1, values));
-        }
-
-        String sql = boundSql.getSql().replaceAll("\\s+", "");
+    void relatedFollowQueriesUseMergedOwnerScope(String entry) throws Exception {
+        String mapper = entry.equals("record") ? ExtFollowUpRecordMapper.class.getName()
+                : ExtFollowUpPlanMapper.class.getName();
         String alias = entry.equals("record") ? "fur" : "fup";
-        assertTrue(sql.contains("AND(" + alias + ".owner=?ORNOTEXISTS("));
-        assertTrue(sql.contains("privacy_customer.organization_id=?"));
-        assertTrue(sql.contains("cc.user_id!=COALESCE(privacy_customer.owner,'')"));
-        assertTrue(sql.contains("cc.user_idIN(" + alias + ".owner,?)"));
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setDeptIds(java.util.Set.of("dept-a"));
+        Map<String, Object> request = Map.of("sourceId", "customer-a", "myPlan", false, "customerTabScope", scope);
+        Map<String, Object> parameters = Map.of("userId", "reader-a", "orgId", "org-a", "resourceType", "CUSTOMER",
+                "type", "CUSTOMER", "request", request);
+        BoundSql boundSql = configuration.getMappedStatement(mapper + ".selectList").getBoundSql(parameters);
+        CCJSqlParserUtil.parse(boundSql.getSql());
+        String sql = boundSql.getSql().replaceAll("\\s+", "");
+        assertTrue(sql.contains(alias + ".customer_id=?"));
+        assertTrue(sql.contains(alias + ".owner=?OREXISTS("));
+        assertTrue(sql.contains("scope_user.organization_id=?"));
+        assertTrue(sql.contains("scope_user.department_idIN(?)"));
+
+        scope.setDeptIds(java.util.Set.of());
+        scope.setAll(true);
+        scope.setExcludedOwnerIds(java.util.Set.of("outside-dept"));
+        String unrestricted = configuration.getMappedStatement(mapper + ".selectList").getBoundSql(parameters)
+                .getSql().replaceAll("\\s+", "");
+        assertTrue(unrestricted.contains(alias + ".ownerNOTIN(?)"));
+        assertFalse(unrestricted.contains("scope_user"));
     }
 
     @ParameterizedTest
