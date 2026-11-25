@@ -265,6 +265,7 @@
 
   const props = defineProps<{
     type?: ApprovalListTypeEnum;
+    resourceType?: string;
   }>();
 
   const { t } = useI18n();
@@ -303,6 +304,15 @@
       count: 0,
     }))
   );
+  function resolveTaskResourceType(resourceType: string) {
+    const normalize = (value: string) => value.replace(/[_\-\s]/g, '').toUpperCase();
+    const aliases: Record<string, string[]> = {
+      QUOTATION: ['OPPORTUNITY_QUOTATION'],
+    };
+    const candidates = [resourceType, ...(aliases[resourceType.toUpperCase()] || [])].map(normalize);
+    return moduleItems.value.find((item) => candidates.includes(normalize(item.name)))?.name;
+  }
+
   const allItems = computed(() => [
     {
       name: 'pending',
@@ -413,11 +423,10 @@
     try {
       approvalFormOptions.value = await getApprovalFlowFormOptions();
       const targetListType = props.type || 'pending';
-      const resourceType = getTaskResourceType(activeTaskType.value);
+      const resourceType = props.resourceType || getTaskResourceType(activeTaskType.value);
 
-      if (!resourceType || !moduleItems.value.some((item) => item.name === resourceType)) {
-        activeTaskType.value = moduleItems.value.length ? `${targetListType}-${moduleItems.value[0].name}` : '';
-      }
+      const targetResourceType = resolveTaskResourceType(resourceType) || moduleItems.value[0]?.name;
+      activeTaskType.value = targetResourceType ? `${targetListType}-${targetResourceType}` : '';
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -514,9 +523,14 @@
         keyword.value = '';
         activeTaskType.value = '';
       } else if (props.type) {
-        const firstModule = moduleItems.value[0]?.name;
-        activeTaskType.value = firstModule ? `${props.type}-${firstModule}` : '';
+        const resourceType = props.resourceType
+          ? resolveTaskResourceType(props.resourceType)
+          : moduleItems.value[0]?.name;
+        activeTaskType.value = resourceType ? `${props.type}-${resourceType}` : '';
       }
+    },
+    {
+      immediate: true,
     }
   );
 

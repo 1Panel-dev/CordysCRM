@@ -114,11 +114,12 @@
 
     <EditPasswordModal v-model:show="showEditPasswordModal" />
   </div>
-  <CrmTaskDrawer v-model:show="showTaskDrawer" :type="activeTaskType" />
+  <CrmTaskDrawer v-model:show="showTaskDrawer" :type="activeTaskType" :resource-type="activeTaskResourceType" />
 </template>
 
 <script setup lang="ts">
   // import { NDatePicker } from 'naive-ui';
+  import { useRoute } from 'vue-router';
   import { NAlert, NButton, NScrollbar } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -143,6 +144,7 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
+  const route = useRoute();
   const appStore = useAppStore();
   const useStore = useUserStore();
 
@@ -201,8 +203,10 @@
   const pendingApprovalCount = computed(() => appStore.todoStatistic.total);
   const showTaskDrawer = ref(false);
   const activeTaskType = ref<ApprovalListTypeEnum>(ApprovalListTypeEnum.PENDING);
-  function openTaskDrawer(type: ApprovalListTypeEnum) {
+  const activeTaskResourceType = ref('');
+  function openTaskDrawer(type: ApprovalListTypeEnum, resourceType = '') {
     activeTaskType.value = type;
+    activeTaskResourceType.value = resourceType;
     showTaskDrawer.value = true;
   }
 
@@ -216,6 +220,13 @@
   onBeforeMount(() => {
     appStore.initMessage();
     appStore.initTodoStatistic();
+
+    const todoType = Object.values(ApprovalListTypeEnum).find(
+      (type) => type === String(route.query.todoType ?? '').toLowerCase()
+    );
+    if (todoType) {
+      openTaskDrawer(todoType, String(route.query.resourceType ?? ''));
+    }
   });
 </script>
 

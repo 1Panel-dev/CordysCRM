@@ -110,6 +110,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { type DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -166,6 +167,7 @@
   }>();
 
   const { t } = useI18n();
+  const route = useRoute();
   const Message = useMessage();
   const { openModal } = useModal();
 
@@ -303,6 +305,15 @@
   }
 
   const showOverviewDrawer = ref(false);
+  watch(
+    () => [route.query.resourceId ?? route.query.id, route.query.customFormId ?? route.query.templateId, props.formKey],
+    ([resourceId, queryTemplateId, formKey]) => {
+      if (!resourceId || String(queryTemplateId ?? '') !== formKey) return;
+      activeSourceId.value = String(resourceId);
+      showOverviewDrawer.value = true;
+    },
+    { immediate: true }
+  );
   // 关联详情 Tab 使用独立列缓存，避免继承普通自定义表格的操作列配置。
   const currentTableKey = computed(() => props.tableKey || customFormId.value);
   const operationColumn = computed<CrmDataTableColumn | undefined>(() => {
