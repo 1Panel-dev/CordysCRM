@@ -33,7 +33,7 @@
       </div>
       <div class="flex">
         <n-button
-          v-if="!props.readonly"
+          v-if="!props.readonly && !props.hideCreate"
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
           type="primary"
           text
@@ -76,6 +76,7 @@
   const props = defineProps<{
     sourceId: string;
     readonly?: boolean;
+    hideCreate?: boolean;
   }>();
 
   const { t } = useI18n();

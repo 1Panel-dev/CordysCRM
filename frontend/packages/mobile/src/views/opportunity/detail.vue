@@ -210,6 +210,7 @@
   );
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
+  const isCollaborationVisible = computed(() => route.query.collaborationVisible?.toString() === 'Y');
   const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
     try {
@@ -280,8 +281,10 @@
     () => currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id
   );
 
-  const readonly = computed(() => !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']));
+  const readonly = computed(() => isCollaborationVisible.value || !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']));
   const canUpdateOpportunity = computed(() => {
+    if (isCollaborationVisible.value) return false;
+
     const permissions = isSuccess.value
       ? ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']
       : ['OPPORTUNITY_MANAGEMENT:UPDATE'];
@@ -300,6 +303,8 @@
     return canUpdateOpportunity.value;
   });
   const actions = computed<CrmActionButtonsItem[]>(() => {
+    if (isCollaborationVisible.value) return [];
+
     const transferAction: CrmActionButtonsItem[] = [
       {
         key: 'transfer',
@@ -335,7 +340,9 @@
   });
   const operationActions = computed(() => actions.value);
   const showDetailActions = computed(() => Boolean(showEditButton.value || operationActions.value.length));
-  const showApprovalActions = computed(() => approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING);
+  const showApprovalActions = computed(
+    () => !isCollaborationVisible.value && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
+  );
   const showFooterActions = computed(
     () => ['info', 'approval'].includes(activeTab.value) && (showDetailActions.value || showApprovalActions.value)
   );

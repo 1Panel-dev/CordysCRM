@@ -25,7 +25,7 @@
       />
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) && !props.readonly"
+          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) && !props.readonly && !props.hideCreate"
           :loading="createLoading"
           type="primary"
           @click="handleCreate"
@@ -33,7 +33,12 @@
           {{ t('opportunity.createOpportunity') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:IMPORT']) && !props.isCustomerTab && !props.readonly"
+          v-if="
+            hasAnyPermission(['OPPORTUNITY_MANAGEMENT:IMPORT']) &&
+            !props.isCustomerTab &&
+            !props.readonly &&
+            !props.hideCreate
+          "
           :api-type="FormDesignKeyEnum.BUSINESS"
           :title="t('module.businessManagement')"
           @import-success="() => searchData()"
@@ -137,7 +142,7 @@
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
     :detail="activeOpportunity"
-    :readonly="props.readonly"
+    :readonly="props.readonly || isCollaborationView"
     @approval-success="() => initApprovalPermission(true)"
     @refresh="() => searchData(undefined, activeOpportunity?.id)"
     @remove="removeItemFromList(activeOpportunity?.id || '')"
@@ -256,6 +261,7 @@
     customerName?: string; // 客户名称
     fullscreenTargetRef?: HTMLElement | null;
     readonly?: boolean;
+    hideCreate?: boolean;
     openseaHiddenColumns?: string[];
     formKey:
       | FormDesignKeyEnum.CUSTOMER_OPPORTUNITY
@@ -293,6 +299,7 @@
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
+  const isCollaborationView = computed(() => activeTab.value === OpportunitySearchTypeEnum.COLLABORATION_VISIBLE);
   const keyword = ref('');
   const tableRefreshId = ref(0);
   const billboardTotalCount = ref(0);
@@ -395,7 +402,7 @@
   });
 
   const actionConfig = computed<BatchActionConfig>(() => {
-    if (props.readonly) {
+    if (props.readonly || isCollaborationView.value) {
       return {
         baseAction: [
           {
@@ -715,6 +722,8 @@
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
           render: (row: OpportunityItem) => {
+            if (isCollaborationView.value) return '-';
+
             const operation = resolveRowOperation(row);
             return operation.groupList.length
               ? h(

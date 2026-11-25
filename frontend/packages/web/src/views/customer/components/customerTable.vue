@@ -21,20 +21,20 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="!isCollaborationView && hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) && !props.readonly"
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) && !props.readonly && !props.hideCreate"
           type="primary"
           @click="handleNewClick"
         >
           {{ t('customer.new') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:IMPORT'])"
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:IMPORT']) && !props.hideCreate"
           :api-type="FormDesignKeyEnum.CUSTOMER"
           :title="t('module.customerManagement')"
           @import-success="() => searchData()"
         />
         <n-button
-          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && !isCollaborationView && !props.readonly"
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && !props.readonly"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -203,6 +203,7 @@
     formKey: FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER;
     hiddenAdvanceFilter?: boolean;
     readonly?: boolean;
+    hideCreate?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
     detailTabResourceId?: string;
@@ -281,13 +282,8 @@
   const isCollaborationView = computed(() => activeTab.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION);
   const tableActionConfig = computed(() => {
     if (props.readonly) return undefined;
-    if (!isCollaborationView.value) return actionConfig;
-    return {
-      ...actionConfig,
-      baseAction: actionConfig.baseAction.filter(
-        (action) => !['exportChecked', 'merge'].includes(action.key as string)
-      ),
-    };
+    if (isCollaborationView.value) return { baseAction: [actionConfig.baseAction[0]] };
+    return actionConfig;
   });
   const transferForm = ref<any>({
     owner: null,
@@ -601,10 +597,7 @@
     detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     disabledSelection: (row: any) => {
-      return (
-        ['READ_ONLY', 'COLLABORATION'].includes(row.collaborationType) ||
-        (isCollaborationView.value && row.collaborationType !== 'JOINT_FOLLOW')
-      );
+      return !isCollaborationView.value && ['READ_ONLY', 'COLLABORATION'].includes(row.collaborationType);
     },
     operationColumn: props.readonly
       ? undefined
@@ -615,6 +608,7 @@
           render: (row: any) => {
             if (
               ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||
+              (isCollaborationView.value && row.collaborationType !== 'JOINT_FOLLOW') ||
               row.collaborationType === 'READ_ONLY'
             ) {
               return '-';

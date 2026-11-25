@@ -56,6 +56,7 @@
   const props = defineProps<{
     type: RecordEnumType;
     readonly?: boolean;
+    hideCreate?: boolean;
     sourceId: string;
     initialSourceName?: string;
   }>();
@@ -67,7 +68,7 @@
   const keyword = ref('');
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
-  const canCreate = computed(() => !props.readonly && hasAnyPermission(['FOLLOW_RECORD:ADD']));
+  const canCreate = computed(() => !props.readonly && !props.hideCreate && hasAnyPermission(['FOLLOW_RECORD:ADD']));
 
   const { transformField, goCreate, handleEdit, goDetail } = useFollowApi({
     type: 'followRecord',

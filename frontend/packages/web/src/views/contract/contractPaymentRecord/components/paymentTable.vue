@@ -17,7 +17,7 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="!props.readonly"
+          v-if="!props.readonly && !props.hideCreate"
           v-permission="['CONTRACT_PAYMENT_RECORD:ADD']"
           :loading="createLoading"
           type="primary"
@@ -26,7 +26,12 @@
           {{ t('contract.paymentRecord.new') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CONTRACT_PAYMENT_RECORD:IMPORT']) && !isContractTab && !props.readonly"
+          v-if="
+            hasAnyPermission(['CONTRACT_PAYMENT_RECORD:IMPORT']) &&
+            !isContractTab &&
+            !props.readonly &&
+            !props.hideCreate
+          "
           :api-type="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
           :title="t('module.paymentRecord')"
           @import-success="() => searchData()"
@@ -188,6 +193,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     independentDetail?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD;
     parentFormId?: string;

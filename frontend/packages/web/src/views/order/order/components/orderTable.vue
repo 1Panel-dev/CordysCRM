@@ -20,12 +20,17 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <div class="flex items-center gap-[12px]">
-          <n-button v-if="!props.readonly" v-permission="['ORDER:ADD']" type="primary" @click="handleNewClick">
+          <n-button
+            v-if="!props.readonly && !props.hideCreate"
+            v-permission="['ORDER:ADD']"
+            type="primary"
+            @click="handleNewClick"
+          >
             {{ t('order.new') }}
           </n-button>
 
           <CrmImportButton
-            v-if="hasAnyPermission(['ORDER:IMPORT']) && !props.readonly && !props.isContractTab"
+            v-if="hasAnyPermission(['ORDER:IMPORT']) && !props.readonly && !props.isContractTab && !props.hideCreate"
             :api-type="FormDesignKeyEnum.ORDER"
             :title="t('module.order')"
             @import-success="() => searchData()"
@@ -134,7 +139,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
-    :readonly="props.readonly && !props.independentDetail"
+    :readonly="(props.readonly && !props.independentDetail) || isCollaborationView"
     @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
@@ -176,6 +181,7 @@
   import { DataTableRowKey, NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
+  import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -245,6 +251,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     independentDetail?: boolean;
     formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER | FormDesignKeyEnum.CUSTOMER_ORDER;
     parentFormId?: string;
@@ -267,6 +274,7 @@
 
   const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
+  const isCollaborationView = computed(() => activeTab.value === OpportunitySearchTypeEnum.COLLABORATION_VISIBLE);
   const keyword = ref('');
   const tableRefreshId = ref(0);
   const billboardTotalCount = ref(0);
@@ -288,31 +296,45 @@
   const showEditModal = ref(false);
   const showExportModal = ref(false);
   const isExportAll = ref(false);
-  const actionConfig = computed(() => ({
-    baseAction: props.readonly
-      ? []
-      : [
-          ...(!props.isContractTab && !props.isCustomerTab
-            ? [
-                {
-                  label: t('common.exportChecked'),
-                  key: 'exportChecked',
-                  permission: ['ORDER:EXPORT'],
-                },
-              ]
-            : []),
+  const actionConfig = computed(() => {
+    if (isCollaborationView.value) {
+      return {
+        baseAction: [
           {
-            label: t('common.batchEdit'),
-            key: 'batchEdit',
-            permission: ['ORDER:UPDATE'],
-          },
-          {
-            label: t('common.batchDelete'),
-            key: 'batchDelete',
-            permission: ['ORDER:DELETE'],
+            label: t('common.exportChecked'),
+            key: 'exportChecked',
+            permission: ['ORDER:EXPORT'],
           },
         ],
-  }));
+      };
+    }
+
+    return {
+      baseAction: props.readonly
+        ? []
+        : [
+            ...(!props.isContractTab && !props.isCustomerTab
+              ? [
+                  {
+                    label: t('common.exportChecked'),
+                    key: 'exportChecked',
+                    permission: ['ORDER:EXPORT'],
+                  },
+                ]
+              : []),
+            {
+              label: t('common.batchEdit'),
+              key: 'batchEdit',
+              permission: ['ORDER:UPDATE'],
+            },
+            {
+              label: t('common.batchDelete'),
+              key: 'batchDelete',
+              permission: ['ORDER:DELETE'],
+            },
+          ],
+    };
+  });
 
   const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
     formKey: ref(FormDesignKeyEnum.ORDER),
@@ -595,6 +617,8 @@
       width: currentLocale.value === 'en-US' ? 180 : 170,
       fixed: 'right',
       render: (row: OrderItem) => {
+        if (isCollaborationView.value) return '-';
+
         const operation = resolveRowOperation(row);
         return operation.groupList.length
           ? h(CrmOperationButton, {

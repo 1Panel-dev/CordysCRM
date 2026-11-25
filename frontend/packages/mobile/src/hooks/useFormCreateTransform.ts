@@ -82,6 +82,10 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
       } else if (options?.find((e) => e.id === data[fieldId])) {
         name = options?.find((e) => e.id === data[fieldId]).name || t('common.optionNotExist');
       }
+      if (fieldId === 'owner') {
+        formData.ownerName ||= name;
+        return;
+      }
       if (name) {
         businessFieldAttr[fieldId] = name;
       } else if (addressFieldIds.value.includes(fieldId)) {
@@ -129,7 +133,7 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
       if (item) {
         formData.description.push({
           label: item.name,
-          value: formData[key] || '-',
+          value: key === 'owner' ? formData.ownerName || formData[key] || '-' : formData[key] || '-',
         });
       } else if (systemFieldMap[key]) {
         formData.description.push({

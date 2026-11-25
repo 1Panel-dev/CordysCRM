@@ -18,11 +18,15 @@
     >
       <template #actionLeft>
         <div class="flex items-center gap-[12px]">
-          <n-button v-if="hasAnyPermission(['PRICE:ADD']) && !props.readonly" type="primary" @click="handleCreate">
+          <n-button
+            v-if="hasAnyPermission(['PRICE:ADD']) && !props.readonly && !props.hideCreate"
+            type="primary"
+            @click="handleCreate"
+          >
             {{ t('product.newPrice') }}
           </n-button>
           <CrmImportButton
-            v-if="hasAnyPermission(['PRICE:IMPORT']) && !props.readonly"
+            v-if="hasAnyPermission(['PRICE:IMPORT']) && !props.readonly && !props.hideCreate"
             :api-type="FormDesignKeyEnum.PRICE"
             :title="t('module.productManagementPrice')"
             @import-success="() => searchData()"
@@ -111,6 +115,7 @@
 
   const props = defineProps<{
     readonly?: boolean;
+    hideCreate?: boolean;
     hiddenAdvanceFilter?: boolean;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;

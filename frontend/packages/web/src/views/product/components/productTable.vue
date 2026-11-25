@@ -18,7 +18,7 @@
       <template #actionLeft>
         <div class="flex items-center gap-[12px]">
           <n-button
-            v-if="!props.readonly"
+            v-if="!props.readonly && !props.hideCreate"
             v-permission="['PRODUCT_MANAGEMENT:ADD']"
             type="primary"
             @click="
@@ -31,7 +31,7 @@
             {{ t('product.createProduct') }}
           </n-button>
           <CrmImportButton
-            v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:IMPORT']) && !props.readonly"
+            v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:IMPORT']) && !props.readonly && !props.hideCreate"
             :api-type="FormDesignKeyEnum.PRODUCT"
             :title="t('module.productManagement')"
             @import-success="() => searchData()"
@@ -116,6 +116,7 @@
 
   const props = defineProps<{
     readonly?: boolean;
+    hideCreate?: boolean;
     hiddenAdvanceFilter?: boolean;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;

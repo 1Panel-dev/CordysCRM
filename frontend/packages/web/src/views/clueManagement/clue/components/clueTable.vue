@@ -18,12 +18,17 @@
       <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
     </template>
     <template #actionLeft>
-      <div v-if="!props.readonly" class="flex items-center gap-[12px]">
-        <n-button v-permission="['CLUE_MANAGEMENT:ADD']" type="primary" @click="handleAdd">
+      <div class="flex items-center gap-[12px]">
+        <n-button
+          v-if="!props.readonly && !props.hideCreate"
+          v-permission="['CLUE_MANAGEMENT:ADD']"
+          type="primary"
+          @click="handleAdd"
+        >
           {{ t('clueManagement.newClue') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CLUE_MANAGEMENT:IMPORT'])"
+          v-if="!props.readonly && !props.hideCreate && hasAnyPermission(['CLUE_MANAGEMENT:IMPORT'])"
           :api-type="FormDesignKeyEnum.CLUE"
           :title="t('module.clueManagement')"
           @import-success="() => searchData()"
@@ -220,6 +225,7 @@
     tableFormKey: FormDesignKeyEnum.CLUE | FormDesignKeyEnum.SEARCH_ADVANCED_CLUE;
     hiddenAdvanceFilter?: boolean;
     readonly?: boolean;
+    hideCreate?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
     detailTabResourceId?: string;
