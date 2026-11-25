@@ -104,14 +104,36 @@ class FollowUpRecordAddPermissionTest {
         assertForbiddenBeforeWrites(request);
     }
 
-    @Test
-    void checksCustomerAssociatedWithOwnedOpportunity() {
-        FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
-        request.setType("CUSTOMER");
+    @ParameterizedTest
+    @ValueSource(strings = { "", CUSTOMER })
+    void addsRecordForOwnedOpportunityWithReadOnlyCustomer(String customerId) {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setCustomerId(customerId);
         request.setOpportunityId(OPPORTUNITY);
         stubOpportunity(USER, CUSTOMER);
         stubCustomer("other-user", ORG, false);
         stubCollaboration(CustomerCollaborationType.READ_ONLY);
+
+        assertRecordAdded(request);
+        verifyNoInteractions(collaborations);
+    }
+
+    @Test
+    void rejectsUnrelatedCustomerForOwnedOpportunity() {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setOpportunityId(OPPORTUNITY);
+        stubOpportunity(USER, "other-customer");
+        stubCustomer(USER, ORG, false);
+
+        assertForbiddenBeforeWrites(request);
+    }
+
+    @Test
+    void rejectsCrossOrganizationCustomerForOwnedOpportunity() {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setOpportunityId(OPPORTUNITY);
+        stubOpportunity(USER, CUSTOMER);
+        stubCustomer(USER, "other-org", false);
 
         assertForbiddenBeforeWrites(request);
     }
