@@ -183,6 +183,7 @@
         <div v-if="activeTab === 'collaborator'" class="h-full px-[24px] pt-[24px]">
           <collaborator
             :source-id="props.sourceId"
+            :owner-id="detailInfo.owner"
             :collaborators="collaborators"
             :readonly="customerReadonly"
             @refresh="initCollaborators"
@@ -391,18 +392,22 @@
   const collaboratorNames = computed(() =>
     [detailInfo.value.ownerName, ...collaborators.value.map((item) => item.userName)].filter(Boolean).join('、')
   );
+  const isCustomerOwner = computed(() => detailInfo.value.owner === userStore.userInfo.id);
   const detailReadonly = computed(
     () =>
       props.readonly ||
-      collaborationType.value === 'READ_ONLY' ||
-      collaborators.value.some(
-        (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'READ_ONLY'
-      )
+      (!isCustomerOwner.value &&
+        (collaborationType.value === 'READ_ONLY' ||
+          collaborators.value.some(
+            (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'READ_ONLY'
+          )))
   );
-  const customerReadonly = computed(() => detailReadonly.value || collaborationType.value === 'COLLABORATION');
+  const customerReadonly = computed(
+    () => detailReadonly.value || (!isCustomerOwner.value && collaborationType.value === 'COLLABORATION')
+  );
   const relatedOwnerOnly = computed(
     () =>
-      detailInfo.value.owner !== userStore.userInfo.id &&
+      !isCustomerOwner.value &&
       (collaborationType.value === 'JOINT_FOLLOW' ||
         collaborators.value.some(
           (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'JOINT_FOLLOW'

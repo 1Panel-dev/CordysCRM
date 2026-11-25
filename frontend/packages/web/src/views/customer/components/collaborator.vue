@@ -112,6 +112,7 @@
 
   const props = defineProps<{
     sourceId: string; // 资源id
+    ownerId?: string;
     collaborators: CollaborationItem[];
     readonly?: boolean; // 是否只读
   }>();
@@ -366,7 +367,10 @@
     containerClass: '.crm-collaborator-table',
   });
 
-  const disabledIds = computed(() => propsRes.value.data.map((e) => e.userId));
+  const disabledIds = computed(() => {
+    const userIds = propsRes.value.data.map((item) => item.userId);
+    return props.ownerId ? [...userIds, props.ownerId] : userIds;
+  });
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
