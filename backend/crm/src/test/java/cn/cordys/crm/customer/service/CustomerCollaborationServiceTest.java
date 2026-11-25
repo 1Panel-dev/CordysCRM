@@ -1,9 +1,16 @@
 package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.dto.UserDeptDTO;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.Translator;
+import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
+import cn.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
 import cn.cordys.crm.system.domain.UserExtend;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,13 +23,16 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class CustomerCollaborationServiceTest {
@@ -79,6 +89,34 @@ class CustomerCollaborationServiceTest {
         when(mapper.select(any(CustomerCollaboration.class))).thenReturn(List.of(collaboration(type, expireTime)));
 
         assertEquals("COLLABORATION", service.selectByCustomerId("customer").getFirst().getCollaborationType());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "owner", "operator" })
+    void rejectsAddingCustomerOwnerAsCollaborator(String operator) {
+        @SuppressWarnings("unchecked")
+        BaseMapper<Customer> customers = mock(BaseMapper.class);
+        CommonNoticeSendService notices = mock(CommonNoticeSendService.class);
+        ReflectionTestUtils.setField(service, "customerMapper", customers);
+        ReflectionTestUtils.setField(service, "commonNoticeSendService", notices);
+        Customer customer = new Customer();
+        customer.setOwner("owner");
+        customer.setInSharedPool(false);
+        when(customers.selectByPrimaryKey("customer")).thenReturn(customer);
+        var request = new CustomerCollaborationAddRequest();
+        request.setCustomerId("customer");
+        request.setUserId("owner");
+        request.setCollaborationType("READ_ONLY");
+
+        try (var translator = mockStatic(Translator.class); var ids = mockStatic(IDGenerator.class)) {
+            translator.when(() -> Translator.get("customer.collaboration.owner"))
+                    .thenReturn("客户负责人不能添加为协作成员");
+            ids.when(IDGenerator::nextStr).thenReturn("collaboration");
+            var exception = assertThrows(GenericException.class, () -> service.add(request, operator, "org"));
+            assertEquals(CrmHttpResultCode.VALIDATE_FAILED, exception.getErrorCode());
+            assertEquals("客户负责人不能添加为协作成员", exception.getMessage());
+        }
+        verifyNoInteractions(mapper, notices);
     }
 
     private CustomerCollaboration collaboration(String type, Long expireTime) {

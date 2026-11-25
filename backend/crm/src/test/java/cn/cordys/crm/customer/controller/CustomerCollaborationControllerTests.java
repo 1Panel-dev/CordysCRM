@@ -26,6 +26,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.List;
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -70,11 +72,13 @@ class CustomerCollaborationControllerTests extends BaseTest {
     @Test
     @Order(1)
     void testAdd() throws Exception {
-        // 请求成功
         CustomerCollaborationAddRequest request = new CustomerCollaborationAddRequest();
         request.setCollaborationType(CustomerCollaborationType.COLLABORATION.name());
         request.setCustomerId(customerId);
         request.setUserId(InternalUser.ADMIN.getValue());
+        requestPost(DEFAULT_ADD, request).andExpect(status().isBadRequest());
+
+        request.setUserId(PERMISSION_USER_NAME);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         CustomerCollaboration resultData = getResultData(mvcResult, CustomerCollaboration.class);
         CustomerCollaboration customerCollaboration = customerCollaborationMapper
@@ -82,7 +86,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
 
         // 校验请求成功数据
         addCustomerCollaboration = customerCollaboration;
-        Assertions.assertEquals(request.getCustomerId(), customerId);
+        Assertions.assertEquals(customerId, customerCollaboration.getCustomerId());
         Assertions.assertEquals(request.getCollaborationType(), customerCollaboration.getCollaborationType());
         Assertions.assertEquals(request.getUserId(), customerCollaboration.getUserId());
 

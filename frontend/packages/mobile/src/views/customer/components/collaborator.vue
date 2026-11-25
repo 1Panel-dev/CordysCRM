@@ -69,6 +69,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    ownerId?: string;
   }>();
 
   const { t } = useI18n();
@@ -118,13 +119,17 @@
   }
 
   function goCollaborator() {
+    const userIds = collaborators.value.map((item) => item.userId);
+    if (props.ownerId) {
+      userIds.push(props.ownerId);
+    }
     router.push({
       name: CustomerRouteEnum.CUSTOMER_COLLABORATOR,
       query: {
         sourceId: props.sourceId,
       },
       state: {
-        params: JSON.stringify({ userIds: collaborators.value.map((e) => e.userId) }),
+        params: JSON.stringify({ userIds }),
       },
     });
   }

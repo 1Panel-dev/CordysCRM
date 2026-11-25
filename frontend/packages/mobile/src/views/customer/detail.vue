@@ -80,7 +80,12 @@
           :source-id="sourceId"
           :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || isCustomerReadOnlyCollaboration"
         />
-        <collaborator v-else-if="tab.name === 'collaborator'" ref="collaboratorListRef" :source-id="sourceId" />
+        <collaborator
+          v-else-if="tab.name === 'collaborator'"
+          ref="collaboratorListRef"
+          :source-id="sourceId"
+          :owner-id="detail.owner"
+        />
         <CrmChangeRecord
           v-else-if="tab.name === 'changeRecord'"
           :source-id="sourceId"

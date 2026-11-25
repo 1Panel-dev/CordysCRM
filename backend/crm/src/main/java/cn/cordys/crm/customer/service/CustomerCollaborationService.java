@@ -1,9 +1,12 @@
 package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.dto.UserDeptDTO;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
@@ -19,6 +22,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,10 +124,17 @@ public class CustomerCollaborationService {
     }
 
     public CustomerCollaboration add(CustomerCollaborationAddRequest request, String userId, String orgId) {
+        Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
+        if (customer == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("customer.not.exist"));
+        }
+        if (Strings.CS.equals(customer.getOwner(), request.getUserId())) {
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED,
+                    Translator.get("customer.collaboration.owner"));
+        }
         CustomerCollaboration customerCollaboration = insert(request, userId);
 
         // 添加协作人通知
-        Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
         if (StringUtils.isNotBlank(customer.getOwner()) && !customer.getInSharedPool()) {
             // 公海客户添加协作人无需通知
             commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
