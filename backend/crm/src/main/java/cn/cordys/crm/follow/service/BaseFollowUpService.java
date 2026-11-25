@@ -1,6 +1,7 @@
 package cn.cordys.crm.follow.service;
 
 import cn.cordys.common.constants.FormKeyConstants;
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
@@ -133,6 +134,9 @@ public class BaseFollowUpService {
             String followPermission, String followFormType) {
         if (record == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
+        if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            return;
         }
         relatedResourcePermissionService.checkIsolatedData(followFormType, record.getId(), userId, orgId);
         resourcePermissionService.checkPermission(followPermission);

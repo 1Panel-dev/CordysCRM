@@ -134,6 +134,9 @@ public class FollowUpRecordService extends BaseFollowUpService {
     }
 
     private void checkAddResourcePermission(FollowUpRecordAddRequest request, String userId, String orgId) {
+        if (Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            return;
+        }
         String customerId = request.getCustomerId();
         String clueId = request.getClueId();
         String opportunityId = request.getOpportunityId();
