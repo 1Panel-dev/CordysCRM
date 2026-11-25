@@ -374,12 +374,6 @@ public class MessageNotificationService {
                                 eventNameMap, messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
                                 buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD));
-                // 新建协作人(手动)
-                case NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL ->
-                        updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_COLLABORATION_ADD_MANUAL_TEXT.name()),
-                                eventNameMap, messageTask, List.of("COLLABORATION"), receiveMethod,
-                                TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL));
                 // 转移客户
                 case NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER -> updateTaskAndAddConfig(
                         List.of(TemplateEnum.CUSTOMER_TRANSFERRED_CUSTOMER_OWNER_TEXT.name(),
@@ -524,8 +518,12 @@ public class MessageNotificationService {
                     MessageTaskConfigWithNameDTO dto = JSON.parseObject(config.getValue(),
                             MessageTaskConfigWithNameDTO.class);
                     List<String> scopeId = new ArrayList<>();
-                    scopeId.addAll(dto.getUserIds());
-                    scopeId.addAll(dto.getRoleIds());
+                    if (CollectionUtils.isNotEmpty(dto.getUserIds())) {
+                        scopeId.addAll(dto.getUserIds());
+                    }
+                    if (CollectionUtils.isNotEmpty(dto.getRoleIds())) {
+                        scopeId.addAll(dto.getRoleIds());
+                    }
                     if (dto.getOwnerLevel() != 0) {
                         scopeId.add("SUPERVISOR");
                     }
@@ -759,6 +757,13 @@ public class MessageNotificationService {
                 NotificationConstants.Module.CUSTOMER, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
                 buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_DELETE));
+        // 新建协作人(手动)
+        addTaskAndConfig(List.of(TemplateEnum.CUSTOMER_COLLABORATION_ADD_MANUAL_TEXT.name()), eventNameMap,
+                NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL, List.of("COLLABORATION"),
+                NotificationConstants.Module.CUSTOMER, receiveMethod,
+                TriggerTypeEnum.ACTION.name(),
+                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL));
+
 
         //------线索 -----
         // 编辑线索
@@ -1225,12 +1230,12 @@ public class MessageNotificationService {
             task.setUpdateUser(userId);
             task.setUpdateTime(System.currentTimeMillis());
             task.setEnable(!messageTask.getEnable());
-            messageTaskMapper.update(messageTask);
+            messageTaskMapper.update(task);
 
             Map<String, Object> oldMap = new HashMap<>();
-            oldMap.put("enable", messageTask.getEnable());
+            oldMap.put("enable", Translator.get("log.enable." + messageTask.getEnable()));
             Map<String, Object> newMap = new HashMap<>();
-            newMap.put("enable", !messageTask.getEnable());
+            newMap.put("enable", Translator.get("log.enable." + !messageTask.getEnable()));
             OperationLogContext.setContext(
                     LogContextInfo.builder()
                             .resourceName(messageTask.getName())

@@ -71,7 +71,7 @@
         WHERE
             smt.task_type = #{request.taskType}
         <if test="request.keyword != null and request.keyword != ''">
-            and c.name like concat('%', #{request.keyword},'%')
+            and smt.name like concat('%', #{request.keyword},'%')
         </if>
         <include refid="filters">
             <property name="filters" value="request.filters"/>
