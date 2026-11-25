@@ -82,7 +82,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @return 资源字段类型
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private Class<T> getResourceFieldClass() {
         Type type = getGenericType(0);
         if (type instanceof Class tClass) {
@@ -97,7 +97,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @return 资源大字段类型
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private Class<V> getResourceFieldBlobClass() {
         Type type = getGenericType(1);
         if (type instanceof Class vClass) {
@@ -170,7 +170,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param moduleFieldValues 自定义字段值
      * @param update            是否更新
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <K> void saveModuleField(K resource, String orgId, String userId,
             List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         List<BaseField> allFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
@@ -269,7 +269,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fields     字段值集合
      * @param fieldBlobs 大字段值集合
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void saveSubFieldValue(String resourceId, SubField subField, BaseModuleFieldValue fieldValue,
             List<T> fields, List<V> fieldBlobs) {
         List<Map<String, Object>> subValues = (List) fieldValue.getFieldValue();
@@ -438,7 +438,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param withBlob    是否包含大文本字段
      * @return 字段集合
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return new HashMap<>(2);
@@ -525,8 +525,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                     AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory
                             .getResolver(fieldConfig.getType());
-                    Object objectValue = customFieldResolver.convertToValue(fieldConfig,
-                            resourceFieldBlob.getFieldValue().toString());
+                    Object objectValue = null;
+                    try {
+                        objectValue = customFieldResolver.convertToValue(fieldConfig,
+                                resourceFieldBlob.getFieldValue().toString());
+                    } catch (Exception e) {
+                        log.error("Convert field value error: {}", e.getMessage());
+                    }
 
                     String resourceId = resourceFieldBlob.getResourceId();
                     resourceMap.putIfAbsent(resourceId, new ArrayList<>());
@@ -593,7 +598,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param moduleFieldValues 字段值集合
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void saveModuleFieldByResourceIds(List<String> resourceIds, List<BaseModuleFieldValue> moduleFieldValues) {
         if (CollectionUtils.isEmpty(moduleFieldValues)) {
             return;
@@ -646,7 +651,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param request 批量编辑参数
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void batchUpdateFieldValues(ResourceBatchEditRequest request, BaseField field, ModuleField moduleField) {
         // 获取字段解析器
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
@@ -727,7 +732,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param moduleFieldValues 字段值集合
      * @param update            是否更新操作
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <K> void updateModuleField(K resource, String orgId, String userId,
             List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         List<BaseField> allFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
@@ -818,7 +823,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fieldConfigMap 字段配置
      * @param resourceFields 值集合
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap,
             Map<String, BaseField> fieldConfigMap,
             List<? extends BaseResourceField> resourceFields) {
@@ -936,7 +941,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param fields        表单字段配置
      * @param fieldValueMap 提交的字段值(以字段ID为键)
      */
-    @SuppressWarnings({"rawtypes" })
+    @SuppressWarnings({"rawtypes"})
     public void processAttachmentFields(String orgId, String resourceId, String userId,
             List<BaseField> fields, Map<String, BaseModuleFieldValue> fieldValueMap) {
         if (CollectionUtils.isEmpty(fields) || MapUtils.isEmpty(fieldValueMap)) {
@@ -1000,9 +1005,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 // 流水号作为业务字段, 从业务资源中获取前缀值
                 Object serialNoPrefix = getResourceFieldValue(resource, field.getBusinessKey());
                 String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(
-                        serialNoPrefix != null
-                                ? serialNoPrefix.toString().replace("${" + field.getName() + "}", StringUtils.EMPTY)
-                                : StringUtils.EMPTY),
+                                serialNoPrefix != null
+                                        ? serialNoPrefix.toString().replace("${" + field.getName() + "}", StringUtils.EMPTY)
+                                        : StringUtils.EMPTY),
                         orgId, getFormKey());
                 // 业务流水号字段过长, SQL错误
                 if (serialNo.length() > MAX_NUMBER_LENGTH) {
@@ -1017,9 +1022,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 fieldValue.setFieldId(field.getId());
                 BaseModuleFieldValue fv = fieldValueMap.get(field.getId());
                 String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(
-                        (fv != null && fv.getFieldValue() != null)
-                                ? fv.getFieldValue().toString().replace("${" + field.getName() + "}", StringUtils.EMPTY)
-                                : StringUtils.EMPTY),
+                                (fv != null && fv.getFieldValue() != null)
+                                        ? fv.getFieldValue().toString().replace("${" + field.getName() + "}", StringUtils.EMPTY)
+                                        : StringUtils.EMPTY),
                         orgId, getFormKey());
                 fieldValue.setFieldValue(serialNo);
                 serialNumCache.put("${" + field.getName() + "}", serialNo);
@@ -1238,7 +1243,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     /**
      * 仅允许批量编辑顶层表单字段，并校验字段范围和字段值。
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public BaseField getAndCheckBatchUpdateField(ResourceBatchEditRequest request, String organizationId) {
         ModuleFormService forms = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class));
         // 平铺字段不保证带有子表标记，从顶层查找可避免把子表内部字段当作普通字段写入。
@@ -1251,7 +1256,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 || StringUtils.isNotBlank(field.getSubTableFieldId())
                 || StringUtils.isNotBlank(field.getResourceFieldId())
                 || Strings.CS.equalsAny(field.getType(), FieldType.FORMULA.name(), FieldType.STATISTIC.name(),
-                        FieldType.DIVIDER.name())) {
+                FieldType.DIVIDER.name())) {
             throw new GenericException(Translator.get("module.field.not_match_type"));
         }
         if (field.needRequireCheck() && !isNotBlank(request.getFieldValue())) {
