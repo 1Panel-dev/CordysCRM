@@ -26,11 +26,16 @@
       </template>
       <template #actionLeft>
         <div v-if="!props.readonly" class="flex items-center gap-[12px]">
-          <n-button v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']" type="primary" @click="handleCreate">
+          <n-button
+            v-if="!props.hideCreate"
+            v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
+            type="primary"
+            @click="handleCreate"
+          >
             {{ t('overviewDrawer.addContract') }}
           </n-button>
           <CrmImportButton
-            v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:IMPORT']) && !props.sourceId"
+            v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:IMPORT']) && !props.sourceId && !props.hideCreate"
             :api-type="FormDesignKeyEnum.CONTACT"
             :title="t('customer.contact')"
             @import-success="() => searchData()"
@@ -202,6 +207,7 @@
     enableCustomerContact,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -217,6 +223,7 @@
     refreshKey?: number;
     initialSourceName?: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     independentDetail?: boolean;
     formKey:
       | FormDesignKeyEnum.CONTACT
@@ -435,6 +442,7 @@
     handleAdvanceFilter,
     handleSearchData,
   });
+  const isCustomerRelatedDataReadonly = useCustomerRelatedDataReadonly();
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     tableKey: props.tableKey,
@@ -444,6 +452,7 @@
     hideOperationColumn: props.hideOperationColumn,
     showPagination: !props.sourceId,
     readonly: props.readonly,
+    rowReadonly: isCustomerRelatedDataReadonly,
     containerClass: '.crm-contact-table',
     hiddenTotal: ref(!!props.hiddenTotal),
     operationColumn: props.readonly
@@ -462,9 +471,17 @@
       status: (row: CustomerContractListItem) => {
         return h(NSwitch, {
           value: row.enable,
-          disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) || props.readonly,
+          disabled:
+            !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) ||
+            props.readonly ||
+            isCustomerRelatedDataReadonly(row),
           onClick: () => {
-            if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) || props.readonly) return;
+            if (
+              !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) ||
+              props.readonly ||
+              isCustomerRelatedDataReadonly(row)
+            )
+              return;
             handleToggleStatus(row);
           },
         });

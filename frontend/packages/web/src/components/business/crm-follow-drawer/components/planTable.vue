@@ -21,7 +21,12 @@
             {{ t('crmFollowRecord.writePlan') }}
           </n-button>
           <CrmImportButton
-            v-if="!props.detailTabResourceId && !props.readonly && hasAnyPermission(['FOLLOW_PLAN:IMPORT'])"
+            v-if="
+              !props.detailTabResourceId &&
+              !props.readonly &&
+              !props.hideCreate &&
+              hasAnyPermission(['FOLLOW_PLAN:IMPORT'])
+            "
             :api-type="FormDesignKeyEnum.FOLLOW_PLAN"
             :title="t('eventDrawer.plan')"
             @import-success="searchData"
@@ -257,6 +262,7 @@
 
   const props = defineProps<{
     readonly?: boolean;
+    hideCreate?: boolean;
     independentDetail?: boolean;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
@@ -358,7 +364,7 @@
   const activeItem = ref<any>();
   const canRead = computed(() => hasAnyPermission(['FOLLOW_PLAN:READ']));
   const canManage = (permission: string) => !props.readonly && canRead.value && hasAnyPermission([permission]);
-  const canCreate = computed(() => canManage('FOLLOW_PLAN:ADD'));
+  const canCreate = computed(() => !props.hideCreate && canManage('FOLLOW_PLAN:ADD'));
   const canEdit = computed(() => canManage('FOLLOW_PLAN:UPDATE'));
   const canDelete = computed(() => canManage('FOLLOW_PLAN:DELETE'));
 

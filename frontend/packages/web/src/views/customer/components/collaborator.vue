@@ -16,7 +16,7 @@
     >
       <template #actionLeft>
         <n-button
-          v-if="!props.readonly"
+          v-if="!props.readonly && !props.hideCreate"
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
           type="primary"
           @click="handleAddClick"
@@ -115,6 +115,7 @@
     ownerId?: string;
     collaborators: CollaborationItem[];
     readonly?: boolean; // 是否只读
+    hideCreate?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;

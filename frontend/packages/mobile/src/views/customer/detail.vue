@@ -53,7 +53,8 @@
           :source-id="route.query.id?.toString()"
           :customer-name="route.query.name?.toString()"
           :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+          :hide-create="collaborationReadonly"
           @data-changed="refreshDetail"
         />
         <CrmFollowRecordList
@@ -62,7 +63,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
           :initial-source-name="sourceName"
-          :readonly="collaborationType === 'READ_ONLY'"
+          :hide-create="collaborationReadonly"
           @data-changed="refreshDetail"
         />
         <CrmFollowPlanList
@@ -72,18 +73,20 @@
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
           :initial-source-name="sourceName"
           :readonly="collaborationType === 'READ_ONLY'"
+          :hide-create="collaborationReadonly"
           @data-changed="refreshDetail"
         />
         <relation
           v-else-if="tab.name === 'relation'"
           ref="relationListRef"
           :source-id="sourceId"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || isCustomerReadOnlyCollaboration"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || customerReadonly"
         />
         <collaborator
           v-else-if="tab.name === 'collaborator'"
           ref="collaboratorListRef"
           :source-id="sourceId"
+          :readonly="customerReadonly"
           :owner-id="detail.owner"
         />
         <CrmChangeRecord
@@ -183,6 +186,7 @@
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useCustomerCollaborators from '@/hooks/useCustomerCollaborators';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
@@ -193,6 +197,7 @@
   const route = useRoute();
   const router = useRouter();
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
   const {
@@ -330,20 +335,30 @@
 
     return [...approvalStatusDescription, ...descriptions.value];
   });
-  const isCustomerReadOnlyCollaboration = computed(() =>
-    ['READ_ONLY', 'COLLABORATION'].includes(collaborationType.value || '')
+  const collaborationReadonly = computed(
+    () =>
+      collaborationType.value === 'READ_ONLY' ||
+      collaborators.value.some(
+        (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'READ_ONLY'
+      )
+  );
+  const customerReadonly = computed(
+    () =>
+      collaborationType.value === 'COLLABORATION' ||
+      collaborators.value.some(
+        (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'COLLABORATION'
+      ) ||
+      collaborationReadonly.value
   );
   const showEditButton = computed(
-    () =>
-      !isCustomerReadOnlyCollaboration.value &&
-      hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE'])
+    () => !customerReadonly.value && hasApprovalScopedPermission(detail.value, ['CUSTOMER_MANAGEMENT:UPDATE'])
   );
   const operationActions = computed(() =>
-    isCustomerReadOnlyCollaboration.value ? [] : resolveRowActions(detail.value, actions.value)
+    customerReadonly.value ? [] : resolveRowActions(detail.value, actions.value)
   );
   const showDetailActions = computed(() => Boolean(showEditButton.value || operationActions.value.length));
   const showApprovalActions = computed(
-    () => !isCustomerReadOnlyCollaboration.value && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
+    () => !customerReadonly.value && approvalInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
   );
   const showFooterActions = computed(
     () => ['info', 'approval'].includes(activeTab.value) && (showDetailActions.value || showApprovalActions.value)

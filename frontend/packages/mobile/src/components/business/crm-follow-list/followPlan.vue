@@ -61,6 +61,7 @@
     type: PlanEnumType;
     sourceId: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     initialSourceName?: string;
   }>();
   const emit = defineEmits<{
@@ -71,7 +72,7 @@
   const keyword = ref('');
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
-  const canCreate = computed(() => !props.readonly && hasAnyPermission(['FOLLOW_PLAN:ADD']));
+  const canCreate = computed(() => !props.readonly && !props.hideCreate && hasAnyPermission(['FOLLOW_PLAN:ADD']));
 
   const { transformField, goCreate, handleEdit, goDetail } = useFollowApi({
     type: 'followPlan',

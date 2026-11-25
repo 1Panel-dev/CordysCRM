@@ -136,6 +136,7 @@
             :source-id="props.sourceId"
             :initial-source-name="sourceName"
             :readonly="detailReadonly"
+            :hide-create="collaborationReadonly"
             :independent-detail="!props.readonly"
             :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
             :parent-resource-id="props.sourceId"
@@ -152,7 +153,9 @@
           :refresh-key="refreshKey"
           :initial-source-name="sourceName"
           :show-add="
-            hasAnyPermission([activeTab === 'followPlan' ? 'FOLLOW_PLAN:ADD' : 'FOLLOW_RECORD:ADD']) && !detailReadonly
+            hasAnyPermission([activeTab === 'followPlan' ? 'FOLLOW_PLAN:ADD' : 'FOLLOW_RECORD:ADD']) &&
+            !detailReadonly &&
+            !collaborationReadonly
           "
           :readonly="detailReadonly"
           :parentFormKey="FormDesignKeyEnum.CUSTOMER"
@@ -177,6 +180,7 @@
             :readonly="detailReadonly"
             :parent-resource-id="props.sourceId"
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
+            :hide-create="collaborationReadonly"
             hideBoard
           />
         </div>
@@ -196,6 +200,7 @@
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-query="contractTabStatisticQuery"
             :readonly="detailReadonly"
+            :hide-create="collaborationReadonly"
             disable-customer-link
             hide-board
           />
@@ -206,6 +211,7 @@
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
+            :hide-create="collaborationReadonly"
             :independent-detail="!props.readonly"
             :parent-resource-id="props.sourceId"
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
@@ -218,6 +224,7 @@
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
+            :hide-create="collaborationReadonly"
             :independent-detail="!props.readonly"
             :parent-resource-id="props.sourceId"
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
@@ -229,6 +236,7 @@
             :key="`${detailReadonly}:${relatedOwnerOnly}`"
             :customer-id="props.sourceId"
             :readonly="detailReadonly"
+            :hide-create="collaborationReadonly"
             :independent-detail="!props.readonly"
             :parent-resource-id="props.sourceId"
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
@@ -247,6 +255,7 @@
             :detail-tab-resource-id="props.sourceId"
             :detail-tab-page-form-id="FormDesignKeyEnum.CUSTOMER"
             :readonly="detailReadonly"
+            :hide-create="collaborationReadonly"
             :independent-detail="!props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
@@ -264,6 +273,7 @@
               :key="`${detailReadonly}:${relatedOwnerOnly}`"
               v-bind="item.table.props"
               :readonly="detailReadonly"
+              :hide-create="collaborationReadonly"
               hideBoard
             />
           </div>
@@ -392,26 +402,36 @@
   const collaboratorNames = computed(() =>
     [detailInfo.value.ownerName, ...collaborators.value.map((item) => item.userName)].filter(Boolean).join('、')
   );
-  const isCustomerOwner = computed(() => detailInfo.value.owner === userStore.userInfo.id);
-  const detailReadonly = computed(
+
+  // 保留审批等外部只读场景对详情内容的完整只读语义
+  const detailReadonly = computed(() => !!props.readonly);
+
+  // 协作“全部只读”仅限制客户顶部操作和各详情标签的新建、导入
+  const collaborationReadonly = computed(
     () =>
-      props.readonly ||
-      (!isCustomerOwner.value &&
-        (collaborationType.value === 'READ_ONLY' ||
-          collaborators.value.some(
-            (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'READ_ONLY'
-          )))
+      collaborationType.value === 'READ_ONLY' ||
+      collaborators.value.some(
+        (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'READ_ONLY'
+      )
   );
+
+  // 客户操作限制
   const customerReadonly = computed(
-    () => detailReadonly.value || (!isCustomerOwner.value && collaborationType.value === 'COLLABORATION')
+    () =>
+      detailReadonly.value ||
+      collaborationType.value === 'COLLABORATION' ||
+      collaborators.value.some(
+        (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'COLLABORATION'
+      ) ||
+      collaborationReadonly.value
   );
+
+  // 三类协作成员均只能操作本人负责的关联业务数据；客户负责人保留原有操作范围
   const relatedOwnerOnly = computed(
     () =>
-      !isCustomerOwner.value &&
-      (collaborationType.value === 'JOINT_FOLLOW' ||
-        collaborators.value.some(
-          (member) => member.userId === userStore.userInfo.id && member.collaborationType === 'JOINT_FOLLOW'
-        ))
+      detailInfo.value.owner !== userStore.userInfo.id &&
+      (Boolean(collaborationType.value) ||
+        collaborators.value.some((member) => member.userId === userStore.userInfo.id))
   );
   provideCustomerRelatedOwnerOnly(relatedOwnerOnly);
   const sourceName = ref('');

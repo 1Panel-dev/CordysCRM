@@ -16,7 +16,7 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="!props.readonly && hasAnyPermission(['OPPORTUNITY_QUOTATION:ADD'])"
+          v-if="!props.readonly && !props.hideCreate && hasAnyPermission(['OPPORTUNITY_QUOTATION:ADD'])"
           type="primary"
           :loading="createLoading"
           @click="handleCreate"
@@ -156,6 +156,7 @@
     sourceName?: string;
     sourceId?: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     openseaHiddenColumns?: string[];
     refreshKey?: number;
     parentFormId?: string;

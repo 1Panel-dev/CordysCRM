@@ -12,6 +12,7 @@
             <div class="one-line-text flex-1 text-[16px] text-[var(--text-n1)]">{{ item.userName }}</div>
             <div class="flex items-center gap-[16px]">
               <CrmTextButton
+                v-if="!props.readonly"
                 v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
                 icon="iconicon_delete"
                 icon-size="16px"
@@ -19,6 +20,7 @@
                 @click="() => handleDelete(item.id)"
               />
               <CrmTextButton
+                v-if="!props.readonly"
                 v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
                 icon="iconicon_handwritten_signature"
                 color="var(--primary-8)"
@@ -43,7 +45,7 @@
         </div>
       </div>
     </div>
-    <div v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" class="bg-[var(--text-n10)] p-[16px]">
+    <div v-if="!props.readonly" v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" class="bg-[var(--text-n10)] p-[16px]">
       <van-button type="primary" class="rounded-[var(--border-radius-small)]" block plain @click="goCollaborator">
         {{ t('customer.addCollaborator') }}
       </van-button>
@@ -69,6 +71,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    readonly?: boolean;
     ownerId?: string;
   }>();
 
@@ -104,6 +107,7 @@
   }
 
   async function handleDelete(id: string) {
+    if (props.readonly) return;
     try {
       showLoadingToast(t('common.deleting'));
       await deleteCustomerCollaboration(id);
@@ -119,6 +123,7 @@
   }
 
   function goCollaborator() {
+    if (props.readonly) return;
     const userIds = collaborators.value.map((item) => item.userId);
     if (props.ownerId) {
       userIds.push(props.ownerId);
@@ -135,6 +140,7 @@
   }
 
   function handleEdit(item: CollaborationItem) {
+    if (props.readonly) return;
     router.push({
       name: CustomerRouteEnum.CUSTOMER_COLLABORATOR,
       query: {

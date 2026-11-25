@@ -18,11 +18,11 @@
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
-        <n-button v-if="!props.readonly" type="primary" @click="handleNewClick">
+        <n-button v-if="!props.readonly && !props.hideCreate" type="primary" @click="handleNewClick">
           {{ t('common.add') }}
         </n-button>
         <CrmImportButton
-          v-if="!props.readonly"
+          v-if="!props.readonly && !props.hideCreate"
           :api-type="FormDesignKeyEnum.CUSTOM_FORM"
           :custom-form-id="props.formKey"
           @import-success="handleDataChanged"
@@ -154,6 +154,7 @@
     formKey: string;
     formKeyName: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     detailTabResourceId?: string;
     detailTabQuery?: FormDetailTabQuery;
     detailTabPageFormId?: string;

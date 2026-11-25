@@ -2,7 +2,7 @@
   <div class="flex h-full flex-col overflow-hidden bg-[var(--text-n9)]">
     <div class="top-bar">
       <van-button
-        v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) && !props.readonly"
+        v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) && !props.readonly && !props.hideCreate"
         plain
         icon="plus"
         type="primary"
@@ -66,11 +66,11 @@
                 </van-tag>
               </div>
               <CrmTextButton
-                v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE']) && !props.readonly"
+                v-if="canOperate(item) && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE'])"
                 icon="iconicon_delete"
                 icon-size="16px"
                 color="var(--error-red)"
-                @click="() => handleDelete(item.id)"
+                @click="() => handleDelete(item)"
               />
             </div>
             <div class="flex items-center justify-between">
@@ -121,6 +121,7 @@
   } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
@@ -135,6 +136,7 @@
     customerName?: string;
     formKey: ContactFormKey;
     readonly?: boolean;
+    hideCreate?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'dataChanged'): void;
@@ -142,6 +144,7 @@
 
   const { t } = useI18n();
   const router = useRouter();
+  const userStore = useUserStore();
   const { copy, isSupported } = useClipboard({ legacy: true });
 
   const loadApiMap: Record<
@@ -196,7 +199,12 @@
     }
   }
 
-  function handleDelete(id: string) {
+  function canOperate(item: { owner?: string }) {
+    return !props.readonly && item.owner === userStore.userInfo.id;
+  }
+
+  function handleDelete(item: { id: string; owner?: string }) {
+    if (!canOperate(item)) return;
     showConfirmDialog({
       title: t('contact.deleteTitle'),
       message: t('contact.deleteTip'),
@@ -205,7 +213,7 @@
       beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
-            await deleteCustomerContact(id);
+            await deleteCustomerContact(item.id);
             showSuccessToast(t('common.deleteSuccess'));
             await sleep(300);
             crmListRef.value?.loadList(true);
@@ -241,7 +249,7 @@
         id: item.id,
         name: item.name,
         needInitDetail: 'Y',
-        readonly: props.readonly !== false ? 'Y' : 'N',
+        readonly: canOperate(item) ? 'N' : 'Y',
       },
     });
   }

@@ -17,7 +17,7 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="!props.readonly"
+          v-if="!props.readonly && !props.hideCreate"
           v-permission="['CONTRACT_INVOICE:ADD']"
           :loading="createLoading"
           type="primary"
@@ -26,7 +26,12 @@
           {{ t('invoice.new') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CONTRACT_INVOICE:IMPORT']) && !props.isContractTab && !props.readonly"
+          v-if="
+            hasAnyPermission(['CONTRACT_INVOICE:IMPORT']) &&
+            !props.isContractTab &&
+            !props.readonly &&
+            !props.hideCreate
+          "
           :api-type="FormDesignKeyEnum.INVOICE"
           :title="t('module.invoice')"
           @import-success="() => searchData()"
@@ -152,6 +157,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     independentDetail?: boolean;
     parentFormId?: string;
     parentResourceId?: string;

@@ -17,7 +17,7 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="!props.readonly"
+          v-if="!props.readonly && !props.hideCreate"
           v-permission="['CONTRACT_PAYMENT_PLAN:ADD']"
           :loading="createLoading"
           type="primary"
@@ -26,7 +26,12 @@
           {{ t('contract.newPlan') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:IMPORT']) && !props.isContractTab && !props.readonly"
+          v-if="
+            hasAnyPermission(['CONTRACT_PAYMENT_PLAN:IMPORT']) &&
+            !props.isContractTab &&
+            !props.readonly &&
+            !props.hideCreate
+          "
           :api-type="FormDesignKeyEnum.CONTRACT_PAYMENT"
           :title="t('module.paymentPlan')"
           @import-success="() => searchData()"
@@ -167,6 +172,7 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    hideCreate?: boolean;
     independentDetail?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT;
     parentFormId?: string;
