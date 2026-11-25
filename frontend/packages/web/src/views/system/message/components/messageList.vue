@@ -308,6 +308,7 @@
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import type { FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -329,6 +330,7 @@
     enableMessageTask,
     getClueFormConfig,
     getContractFormConfig,
+    getContractStatusConfig,
     getCustomerFollowRecordFormConfig,
     getCustomerFormConfig,
     getCustomFormDetail,
@@ -336,8 +338,10 @@
     getMessageTaskCustomFormTypes,
     getMessageTaskPage,
     getMessageTaskSystemTypes,
+    getOpportunityStageConfig,
     getOptFormConfig,
     getOrderFormConfig,
+    getOrderStatusConfig,
     getUserOptions,
     updateMessageTask,
   } from '@/api/modules/index.js';
@@ -402,6 +406,10 @@
   const activeGroup = ref<SceneGroup>('standard');
   const activeCategory = ref('');
   const editorCategoryType = ref('');
+  type StageModule = 'opportunity' | 'contract' | 'order';
+  type StageFilterOptions = NonNullable<FilterFormItem['selectProps']>['options'];
+  const stageOptionsByModule = reactive<Partial<Record<StageModule, StageFilterOptions>>>({});
+  const stageOptionsLoading = new Map<StageModule, Promise<void>>();
   const keyword = ref('');
   const selectedIds = ref<string[]>([]);
   const enableLoadingIds = ref<Set<string>>(new Set());
@@ -411,6 +419,13 @@
   const editorMode = ref<EditorMode>('update');
   const editorSource = ref<SceneRow | null>(null);
   const isCustomScene = ref(true);
+  function parseScheduleTime(value?: string) {
+    const [hours = 8, minutes = 0] = (value ?? '08:00:00').replace(/：/g, ':').split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    return date.getTime();
+  }
+
   const editor = reactive<SceneEditor>({
     name: '',
     taskType: '',
@@ -420,7 +435,7 @@
     actionTypeConfig: '',
     scheduleFieldId: 'until_time',
     scheduleDay: 0,
-    scheduleTime: 8 * 60 * 60 * 1000,
+    scheduleTime: parseScheduleTime(),
     remindType: 'ONLY_ONE',
     conditionFilter: {
       searchMode: 'AND',
@@ -654,9 +669,32 @@
   }
 
   function formatScheduleTime(value: number | null) {
-    const totalMinutes = Math.floor(((value ?? 8 * 60 * 60 * 1000) % 86400000) / 60000);
-    const hours = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+    const date = new Date(value ?? parseScheduleTime());
+    const hours = String(date.getHours()).padStart(2, '0');
     return `${hours}:00`;
+  }
+
+  function getScheduleReminderTooltip(row: SceneRow) {
+    const schedule = row.config?.scheduleTypeConfig;
+    const dateFieldId = schedule?.fieldId ?? 'until_time';
+    const dateFieldLabelMap: Record<string, string> = {
+      until_time: t('system.message.settings.dateField.expiration'),
+      nextFollowUp: t('system.message.settings.dateField.nextFollowUp'),
+      createdAt: t('system.message.settings.dateField.createdAt'),
+    };
+    const frequencyMap: Record<string, string> = {
+      ONLY_ONE: t('system.message.settings.reminderFrequency.once'),
+      EVERY_DAY: t('system.message.settings.reminderFrequency.daily'),
+    };
+    const time = schedule?.time?.slice(0, 5) || '--:--';
+
+    return t('system.message.settings.reminderScheduleTooltip', {
+      dateField: dateFieldLabelMap[dateFieldId] ?? dateFieldId,
+      days: Number(schedule?.day ?? 0),
+      dayUnit: t('system.message.settings.reminderUnit.day'),
+      time,
+      frequency: frequencyMap[schedule?.remindType ?? ''] ?? schedule?.remindType ?? '',
+    });
   }
 
   const userNameById = ref<Record<string, string>>({});
@@ -956,6 +994,46 @@
       Object.values(MessageNotificationEventEnum).find((event) => isCategoryEvent(event, selectedCategoryType)) ?? ''
     );
   }
+  function getStageModule(categoryType: string): StageModule | undefined {
+    switch (categoryType.toUpperCase()) {
+      case 'OPPORTUNITY':
+      case 'BUSINESS':
+        return 'opportunity';
+      case 'CONTRACT':
+        return 'contract';
+      case 'ORDER':
+        return 'order';
+      default:
+        return undefined;
+    }
+  }
+  async function loadNotificationStageOptions(categoryType: string) {
+    const module = getStageModule(categoryType);
+    if (!module || stageOptionsByModule[module]) return;
+    const pendingRequest = stageOptionsLoading.get(module);
+    if (pendingRequest) return pendingRequest;
+
+    const request = (async () => {
+      try {
+        let config;
+        if (module === 'opportunity') {
+          config = await getOpportunityStageConfig();
+        } else if (module === 'contract') {
+          config = await getContractStatusConfig();
+        } else {
+          config = await getOrderStatusConfig();
+        }
+        stageOptionsByModule[module] =
+          config.stageConfigList?.map((stage) => ({ label: stage.name, value: stage.id })) || [];
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    })();
+    stageOptionsLoading.set(module, request);
+    await request;
+    stageOptionsLoading.delete(module);
+  }
   const conditionFilterConfigList = computed<FilterFormItem[]>(() => {
     const fields: FilterFormItem[] = triggerFields.value.length
       ? triggerFields.value
@@ -1002,10 +1080,13 @@
           })
       : [];
 
+    const selectedCategoryType = editorCategoryType.value || editor.taskType;
+    const stageModule = getStageModule(selectedCategoryType);
     const builtInFields =
       editor.group === 'standard'
-        ? getNotificationTriggerFilterConfigList(editorCategoryType.value || editor.taskType, {
+        ? getNotificationTriggerFilterConfigList(selectedCategoryType, {
             approvalStatusOptions: processStatusOptions.filter((option) => option.value !== ProcessStatusEnum.NONE),
+            stageOptions: stageModule ? stageOptionsByModule[stageModule] : undefined,
           })
         : [];
     const fieldMap = new Map<string, FilterFormItem>();
@@ -1218,11 +1299,6 @@
     }
   }
 
-  function parseScheduleTime(value?: string) {
-    const [hours = 8] = (value ?? '08:00:00').replace(/：/g, ':').split(':').map(Number);
-    return hours * 60 * 60 * 1000;
-  }
-
   function getTriggerTagType(triggerType: string): 'default' | 'warning' | 'success' {
     if (triggerType === MessageNotificationTriggerEnum.SCHEDULE) return 'warning';
     if (triggerType === MessageNotificationTriggerEnum.FIELD) return 'success';
@@ -1388,6 +1464,7 @@
     editor.group = task.group;
     editorCategoryType.value =
       task.group === 'custom' ? task.taskType : getSceneCategoryType(task.taskType, task.config?.actionTypeConfig);
+    loadNotificationStageOptions(editorCategoryType.value);
     await loadTriggerFields();
 
     const config = task.config ?? {};
@@ -1594,6 +1671,16 @@
               default: () => row.name,
             }
           ),
+          row.triggerType === MessageNotificationTriggerEnum.SCHEDULE
+            ? h(
+                NTooltip,
+                {},
+                {
+                  trigger: () => h(CrmIcon, { type: 'iconicon_time', size: 16, class: 'message-reminder-icon' }),
+                  default: () => getScheduleReminderTooltip(row),
+                }
+              )
+            : null,
         ]),
     },
     {
@@ -1795,7 +1882,7 @@
       actionTypeConfig: '',
       scheduleFieldId: 'until_time',
       scheduleDay: 0,
-      scheduleTime: 8 * 60 * 60 * 1000,
+      scheduleTime: parseScheduleTime(),
       remindType: 'ONLY_ONE',
       conditionFilter: {
         list: [{ dataIndex: null, type: FieldTypeEnum.INPUT, value: null }],
@@ -1812,6 +1899,7 @@
       preservedReceiveMethods: [],
     });
     editorCategoryType.value = activeGroup.value === 'custom' ? taskType : getDefaultEditorCategoryType(taskType);
+    loadNotificationStageOptions(editorCategoryType.value);
     editor.actionTypeConfig = getDefaultActionTypeConfig();
     fillCustomTemplateForAction();
     showEditor.value = true;
@@ -1827,6 +1915,7 @@
 
   function handleEditorCategoryChange(categoryType: string) {
     editorCategoryType.value = categoryType;
+    loadNotificationStageOptions(categoryType);
     if (editor.group === 'custom') editor.taskType = categoryType;
     editor.config = {};
     editor.templateValue = [];
@@ -1998,6 +2087,10 @@
     flex: none;
     color: var(--text-n4);
     cursor: help;
+    transition: color 120ms ease;
+    &:hover {
+      color: var(--primary-8);
+    }
   }
   .message-settings-category-list {
     overflow-y: auto;

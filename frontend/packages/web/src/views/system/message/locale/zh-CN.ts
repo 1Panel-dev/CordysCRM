@@ -207,6 +207,7 @@ export default {
   'system.message.settings.reminderFrequency.daily': '每天提醒',
   'system.message.settings.reminderRuleTooltip':
     '{dateField} 到期前 {days} {dayUnit}，{startTime}-{endTime}，{frequency}',
+  'system.message.settings.reminderScheduleTooltip': '{dateField} 到期前 {days} {dayUnit} {time}，{frequency}',
   'system.message.settings.preview.action': '{category}发生“{action}”时，向相关人员发送通知。',
   'system.message.settings.preview.approvalResult': '【审批结果】{operator}发起的{type}单据 {name} ，审批{state}。',
   'system.message.settings.preview.nameSuffix': '名',
