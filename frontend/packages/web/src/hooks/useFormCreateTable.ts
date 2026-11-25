@@ -537,12 +537,18 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           };
         });
 
+      // 处理跟进记录和跟进计划的 content
+      const contentFieldName = isFollowModule
+        ? res.fields.find((field) => field.businessKey === 'content')?.name
+        : undefined;
+      const systemColumns = (internalColumnMap[props.formKey] || []).map((column) =>
+        column.key === 'content' && contentFieldName ? { ...column, title: contentFieldName } : column
+      );
+
       columns.value = [
         ...getFollowColumn(res.fields),
         ...columns.value,
-        ...(internalColumnMap[props.formKey] || []).filter(
-          (column) => column.key !== 'approvalStatus' || props.showApprovalStatus?.value
-        ),
+        ...systemColumns.filter((column) => column.key !== 'approvalStatus' || props.showApprovalStatus?.value),
         ...staticColumns,
       ];
       const isFollowList = [FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey);

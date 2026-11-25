@@ -30,7 +30,7 @@
                 {{ (props.type === 'followRecord' ? item.followMethod : item.method) ?? '-' }}
               </div>
               <n-tooltip
-                v-if="item.opportunityName && props.type === 'followRecord' && item.resourceType === 'CUSTOMER'"
+                v-if="item.opportunityName && item.resourceType === 'CUSTOMER'"
                 trigger="hover"
                 :disabled="!item.opportunityName"
               >

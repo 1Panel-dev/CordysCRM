@@ -107,6 +107,7 @@ export interface CustomerFollowRecordListItem {
   customerId: string;
   customerName: string;
   opportunityId: string;
+  opportunityName: string;
   type: string;
   clueId: string;
   clueName: string;

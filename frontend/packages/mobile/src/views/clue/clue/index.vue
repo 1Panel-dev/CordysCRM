@@ -226,6 +226,22 @@
           },
         },
         {
+          key: 'writeRecord',
+          label: t('common.writeRecord'),
+          icon: 'iconicon_edit1',
+          permission: ['FOLLOW_RECORD:ADD'],
+          action: (item: ClueListItem) => {
+            router.push({
+              name: CommonRouteEnum.FORM_CREATE,
+              query: {
+                id: item.id,
+                formKey: FormDesignKeyEnum.FOLLOW_RECORD_CLUE,
+                initialSourceName: item.name,
+              },
+            });
+          },
+        },
+        {
           key: 'convert',
           label: t('clue.convert'),
           icon: 'iconicon_edit1',
