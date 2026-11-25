@@ -65,13 +65,21 @@
                   {{ t('common.normal') }}
                 </van-tag>
               </div>
-              <CrmTextButton
-                v-if="canOperate(item) && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE'])"
-                icon="iconicon_delete"
-                icon-size="16px"
-                color="var(--error-red)"
-                @click="() => handleDelete(item)"
-              />
+              <div class="flex items-center gap-[16px]">
+                <CrmTextButton
+                  v-if="canOperate(item) && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])"
+                  icon="iconicon_edit"
+                  icon-size="16px"
+                  @click="() => handleEdit(item)"
+                />
+                <CrmTextButton
+                  v-if="canOperate(item) && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE'])"
+                  icon="iconicon_delete"
+                  icon-size="16px"
+                  color="var(--error-red)"
+                  @click="() => handleDelete(item)"
+                />
+              </div>
             </div>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-[4px]">
@@ -250,6 +258,17 @@
         name: item.name,
         needInitDetail: 'Y',
         readonly: canOperate(item) ? 'N' : 'Y',
+      },
+    });
+  }
+
+  function handleEdit(item: { id: string }) {
+    router.push({
+      name: CommonRouteEnum.FORM_CREATE,
+      query: {
+        id: item.id,
+        formKey: props.sourceId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT,
+        needInitDetail: 'Y',
       },
     });
   }
