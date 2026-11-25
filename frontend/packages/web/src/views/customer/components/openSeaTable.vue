@@ -176,7 +176,7 @@
     getOpenSeaOptions,
     pickOpenSeaCustomer,
   } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -896,29 +896,11 @@
     }
   }
 
-  const filterConfigList = computed(
-    () =>
-      [
-        ...(showApprovalStatus.value
-          ? [
-              {
-                title: t('common.approvalStatus'),
-                dataIndex: 'approvalStatus',
-                type: FieldTypeEnum.SELECT_MULTIPLE,
-                selectProps: { options: processStatusOptions },
-              },
-            ]
-          : []),
-        {
-          title: t('customer.recycleReason'),
-          dataIndex: 'reasonId',
-          type: FieldTypeEnum.SELECT_MULTIPLE,
-          selectProps: {
-            options: reasonOptions.value,
-          },
-        },
-        ...baseFilterConfigList,
-      ] as FilterFormItem[]
+  const filterConfigList = computed(() =>
+    getModuleFilterConfigList('customerPool', {
+      approvalStatusOptions: showApprovalStatus.value ? processStatusOptions : undefined,
+      recycleReasonOptions: reasonOptions.value as NonNullable<FilterFormItem['selectProps']>['options'],
+    })
   );
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>

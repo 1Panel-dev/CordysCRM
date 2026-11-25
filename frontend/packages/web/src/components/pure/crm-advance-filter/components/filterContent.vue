@@ -536,15 +536,23 @@
     props.maxFilterFieldNumber ? formModel.value.list?.length >= props.maxFilterFieldNumber : false
   );
 
-  function validateForm(cb: (res?: Record<string, any>) => void) {
-    formRef.value?.validate(async (errors) => {
-      if (errors) {
-        scrollIntoView(document.querySelector('.n-form-item-blank--error'), { block: 'center' });
+  function validateForm(cb?: (res?: Record<string, any>) => void): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (!formRef.value) {
+        resolve(false);
         return;
       }
-      if (typeof cb === 'function') {
-        cb();
-      }
+      formRef.value.validate(async (errors) => {
+        if (errors) {
+          scrollIntoView(document.querySelector('.n-form-item-blank--error'), { block: 'center' });
+          resolve(false);
+          return;
+        }
+        if (typeof cb === 'function') {
+          await cb();
+        }
+        resolve(true);
+      });
     });
   }
 

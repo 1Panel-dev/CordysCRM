@@ -218,7 +218,7 @@
     getOrderStatistic,
     getOrderStatusConfig,
   } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -730,46 +730,12 @@
   const billboardRef = ref<InstanceType<typeof billboard>>();
 
   // 表格
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        type: 'department',
-        checkable: true,
-        showContainChildModule: true,
-        containChildIds: [],
-      },
-    },
-    {
-      title: t('order.status'),
-      dataIndex: 'stage',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options:
-          stageConfig.value?.stageConfigList.map((e: any) => ({
-            label: e.name,
-            value: e.id,
-          })) || [],
-      },
-    },
-    ...(showApprovalStatus.value
-      ? [
-          {
-            title: t('common.approvalStatus'),
-            dataIndex: 'approvalStatus',
-            type: FieldTypeEnum.SELECT_MULTIPLE,
-            selectProps: { options: processStatusOptions },
-          },
-        ]
-      : []),
-    ...baseFilterConfigList,
-  ]);
+  const filterConfigList = computed<FilterFormItem[]>(() =>
+    getModuleFilterConfigList('order', {
+      stageOptions: stageConfig.value?.stageConfigList.map((stage) => ({ label: stage.name, value: stage.id })) || [],
+      approvalStatusOptions: showApprovalStatus.value ? processStatusOptions : undefined,
+    })
+  );
 
   const showStatisticInfo = computed(() => {
     const hasAmountColumn = !!propsRes.value.columns.find((item) => item.key === 'amount');

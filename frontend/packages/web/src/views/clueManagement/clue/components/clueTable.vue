@@ -189,7 +189,8 @@
   import convertClueModal from './convertClueModal.vue';
 
   import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules';
-  import { baseFilterConfigList, getLeadHomeConditions } from '@/config/clue';
+  import { getLeadHomeConditions } from '@/config/clue';
+  import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
   import { defaultTransferForm } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
@@ -751,49 +752,11 @@
     };
   });
 
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    ...(showApprovalStatus.value
-      ? [
-          {
-            title: t('common.approvalStatus'),
-            dataIndex: 'approvalStatus',
-            type: FieldTypeEnum.SELECT_MULTIPLE,
-            selectProps: { options: processStatusOptions },
-          },
-        ]
-      : []),
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        checkable: true,
-        showContainChildModule: true,
-        type: 'department',
-        containChildIds: [],
-      },
-    },
-    {
-      title: t('customer.lastFollowUps'),
-      dataIndex: 'follower',
-      type: FieldTypeEnum.USER_SELECT,
-    },
-    {
-      title: t('customer.lastFollowUpDate'),
-      dataIndex: 'followTime',
-      type: FieldTypeEnum.TIME_RANGE_PICKER,
-    },
-    {
-      title: t('customer.collectionTime'),
-      dataIndex: 'collectionTime',
-      type: FieldTypeEnum.TIME_RANGE_PICKER,
-    },
-    ...baseFilterConfigList,
-  ]);
+  const filterConfigList = computed<FilterFormItem[]>(() =>
+    getModuleFilterConfigList('clue', {
+      approvalStatusOptions: showApprovalStatus.value ? processStatusOptions : undefined,
+    })
+  );
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)

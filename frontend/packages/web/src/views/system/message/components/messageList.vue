@@ -9,26 +9,19 @@
           no-content
           :tab-list="groupTabs"
         />
-        <CrmList
-          v-model:active-item-key="activeCategory"
-          :data="categoryList"
-          class="message-settings-category-list"
-          virtual-scroll-height="100%"
-          key-field="key"
-          item-class="gap-[8px] px-[8px]"
-          active-item-class="bg-[var(--primary-7)]"
-          mode="static"
-          @item-click="handleCategoryClick"
-        >
-          <template #title="{ item }">
-            <div class="one-line-text" :class="activeCategory === item.key ? 'text-[var(--primary-8)]' : ''">
-              {{ item.label }}
-            </div>
-          </template>
-          <template #itemRight="{ item }">
-            <span class="message-settings-category-count">{{ item.count }}</span>
-          </template>
-        </CrmList>
+        <div class="message-settings-category-list">
+          <button
+            v-for="category in categoryList"
+            :key="category.key"
+            type="button"
+            class="message-settings-category-item"
+            :class="{ active: activeCategory === category.key }"
+            @click="handleCategoryClick(category)"
+          >
+            <span class="one-line-text">{{ category.label }}</span>
+            <span class="message-settings-category-count">{{ category.count }}</span>
+          </button>
+        </div>
       </aside>
 
       <main class="message-settings-main">
@@ -48,7 +41,7 @@
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
-          @filter-change="propsEvent.filterChange"
+          @filter-change="handleTableFilterChange"
           @batch-action="handleBatchAction"
         >
           <template #actionLeft>
@@ -108,7 +101,7 @@
                 : 'system.message.settings.addSceneTitle'
             )
           }}</span>
-          <span class="text-[var(--text-n4)]">- {{ getCategoryLabel(editor.taskType) }}</span>
+          <span class="text-[var(--text-n4)]">- {{ getEditorCategoryLabel() }}</span>
         </div>
       </template>
       <n-form
@@ -124,9 +117,11 @@
         <div class="message-scene-basic-fields">
           <n-form-item :label="t('system.message.settings.category')" path="taskType" required>
             <n-select
-              v-model:value="editor.taskType"
+              v-model:value="editorCategoryType"
               :options="editorCategoryOptions"
-              :disabled="editorMode !== 'copy' || !editorEditable"
+              :disabled="
+                (editor.group === 'custom' ? editorMode !== 'copy' : editorMode === 'update') || !editorEditable
+              "
               :placeholder="t('common.pleaseSelect')"
               @update:value="handleEditorCategoryChange"
             />
@@ -231,6 +226,7 @@
         </n-form-item>
         <n-form-item v-else :label="t('system.message.settings.triggerCondition')" path="conditionFilter" required>
           <FilterContent
+            ref="conditionFilterRef"
             v-model:form-model="editor.conditionFilter"
             class="message-scene-condition-filter"
             :config-list="conditionFilterConfigList"
@@ -249,13 +245,13 @@
                 {{ triggerOptions.find((option) => option.value === editor.triggerType)?.label }}
               </CrmTag>
               <span class="message-preview-name">
-                {{ editor.name || getCategoryLabel(editor.taskType) }}
+                {{ editor.name || getEditorCategoryLabel() }}
                 <span class="message-preview-dot"></span>
               </span>
             </div>
             <div class="message-preview-content">{{ scenePreviewText }}</div>
             <div class="message-preview-footer">
-              <span>{{ getCategoryLabel(editor.taskType) }}</span>
+              <span>{{ getEditorCategoryLabel() }}</span>
               <span>{{ dayjs().format('YYYY-MM-DD HH:mm:ss') }}</span>
             </div>
           </div>
@@ -299,6 +295,7 @@
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
   import type {
     MessageTaskCountDTO,
     MessageTaskPageParams,
@@ -322,6 +319,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import { timeOptions, unitOptions } from '@/components/business/crm-time-range-picker/config';
   import MessageReceiverSelector from './messageReceiverSelector.vue';
 
   import {
@@ -334,13 +332,16 @@
     getCustomerFollowRecordFormConfig,
     getCustomerFormConfig,
     getCustomFormDetail,
+    getFieldDeptTree,
     getMessageTaskCustomFormTypes,
     getMessageTaskPage,
     getMessageTaskSystemTypes,
     getOptFormConfig,
     getOrderFormConfig,
+    getUserOptions,
     updateMessageTask,
   } from '@/api/modules/index.js';
+  import { getNotificationTriggerFilterConfigList } from '@/config/messageFilterConfig';
   import { processStatusOptions } from '@/config/process';
   import useModal from '@/hooks/useModal';
   import useLicenseStore from '@/store/modules/setting/license';
@@ -353,6 +354,7 @@
     group: SceneGroup;
     enabled: boolean;
     channelKeys: string[];
+    sceneCategoryType: string;
   }
 
   interface SceneCategoryOption {
@@ -399,6 +401,7 @@
   const canAdd = computed(() => hasAnyPermission(['SYSTEM_NOTICE:ADD']));
   const activeGroup = ref<SceneGroup>('standard');
   const activeCategory = ref('');
+  const editorCategoryType = ref('');
   const keyword = ref('');
   const selectedIds = ref<string[]>([]);
   const enableLoadingIds = ref<Set<string>>(new Set());
@@ -435,6 +438,7 @@
     preservedReceiveMethods: [],
   });
   const sceneFormRef = ref<InstanceType<typeof NForm> | null>(null);
+  const conditionFilterRef = ref<InstanceType<typeof FilterContent> | null>(null);
   const sceneFormRules = computed<FormRules>(() => ({
     name: [
       {
@@ -490,14 +494,41 @@
   ]);
 
   const systemCategoryLabelKeyMap: Record<string, string> = {
-    [MessageNotificationCategoryEnum.CUSTOMER]: 'customer',
-    [MessageNotificationCategoryEnum.APPROVAL]: 'todo',
     [MessageNotificationCategoryEnum.CLUE]: 'lead',
+    [MessageNotificationCategoryEnum.CUSTOMER]: 'customer',
+    CUSTOMER_CONTACT: 'contact',
+    CUSTOMER_CONCAT: 'contact',
     [MessageNotificationCategoryEnum.OPPORTUNITY]: 'opportunity',
     BUSINESS: 'opportunity',
+    BUSINESS_QUOTATION: 'quotation',
+    QUOTATION: 'quotation',
     [MessageNotificationCategoryEnum.CONTRACT]: 'contract',
+    CONTRACT_PAYMENT_RECORD: 'paymentRecord',
+    CONTRACT_PAYMENT_PLAN: 'paymentPlan',
+    CONTRACT_INVOICE: 'invoice',
     [MessageNotificationCategoryEnum.ORDER]: 'order',
+    [MessageNotificationCategoryEnum.APPROVAL]: 'todo',
     [MessageNotificationCategoryEnum.FOLLOW_UP]: 'follow',
+    FOLLOW_RECORD: 'followRecord',
+    FOLLOW_PLAN: 'followPlan',
+  };
+  const systemSubcategoryMap: Record<string, string[]> = {
+    customer: ['CUSTOMER', 'CUSTOMER_CONTACT'],
+    opportunity: ['OPPORTUNITY', 'BUSINESS_QUOTATION'],
+    contract: ['CONTRACT', 'CONTRACT_PAYMENT_RECORD', 'CONTRACT_PAYMENT_PLAN', 'CONTRACT_INVOICE'],
+    follow: ['FOLLOW_RECORD', 'FOLLOW_PLAN'],
+  };
+  const sceneCategoryFilterKey = 'sceneCategoryType';
+  const systemCategoryActionKeyMap: Record<string, string> = {
+    CUSTOMER_CONTACT: 'customer',
+    CUSTOMER_CONCAT: 'customer',
+    BUSINESS_QUOTATION: 'opportunity',
+    QUOTATION: 'opportunity',
+    CONTRACT_PAYMENT_RECORD: 'contract',
+    CONTRACT_PAYMENT_PLAN: 'contract',
+    CONTRACT_INVOICE: 'contract',
+    FOLLOW_RECORD: 'follow',
+    FOLLOW_PLAN: 'follow',
   };
   const systemCategories = ref<SceneCategoryOption[]>([]);
   const customFormCategories = ref<SceneCategoryOption[]>([]);
@@ -524,6 +555,14 @@
   const channelGroups = computed(() => [
     { key: 'channels', label: t('system.message.settings.receiveMethods'), options: channelOptions.value },
   ]);
+  function getCategoryActionKey(taskType: string) {
+    const normalizedTaskType = taskType.toUpperCase();
+    return (
+      systemCategoryActionKeyMap[normalizedTaskType] ??
+      systemCategoryLabelKeyMap[normalizedTaskType] ??
+      taskType.toLowerCase()
+    );
+  }
   const receiverOptions = computed(() => [
     { label: t('system.message.settings.receiver.owner'), value: MessageNotificationReceiverEnum.OWNER },
     { label: t('system.message.settings.receiver.creator'), value: MessageNotificationReceiverEnum.CREATE_USER },
@@ -565,23 +604,53 @@
   const categoryList = computed(() =>
     activeGroup.value === 'standard' ? systemCategories.value : customFormCategories.value
   );
-  const editorCategoryOptions = computed(() => {
-    const categories = editor.group === 'standard' ? systemCategories.value : customFormCategories.value;
-    const availableCategories =
-      editorMode.value === 'create'
-        ? categories.filter((category) => category.key === activeCategory.value)
-        : categories;
-    return availableCategories.map((category) => ({
-      label: category.label,
-      value: category.key,
-    }));
-  });
-
   function getCategoryLabel(taskType: string) {
     const category = categoryList.value.find((item) => item.key === taskType);
     if (category?.label) return category.label;
     const key = systemCategoryLabelKeyMap[taskType.toUpperCase()];
     return key ? t(`system.message.settings.category.${key}`) : taskType;
+  }
+
+  const sceneCategoryFilterOptions = computed(() => {
+    if (activeGroup.value !== 'standard') return [];
+    return (systemSubcategoryMap[getCategoryActionKey(activeCategory.value)] ?? []).map((taskType) => ({
+      label: getCategoryLabel(taskType),
+      value: taskType,
+    }));
+  });
+
+  function getEditorCategoryLabel() {
+    return getCategoryLabel(editorCategoryType.value || editor.taskType);
+  }
+
+  function getDefaultEditorCategoryType(taskType: string) {
+    return systemSubcategoryMap[getCategoryActionKey(taskType)]?.[0] ?? taskType;
+  }
+
+  const editorCategoryOptions = computed(() => {
+    if (editor.group === 'custom') {
+      const categories =
+        editorMode.value === 'create'
+          ? customFormCategories.value.filter((category) => category.key === activeCategory.value)
+          : customFormCategories.value;
+      return categories.map((category) => ({ label: category.label, value: category.key }));
+    }
+
+    const categoryKey = getCategoryActionKey(editor.taskType);
+    const subcategories = systemSubcategoryMap[categoryKey] ?? [editor.taskType];
+    return subcategories.map((taskType) => ({ label: getCategoryLabel(taskType), value: taskType }));
+  });
+
+  function mapSystemCategories(items: MessageTaskCountDTO[] = []) {
+    return items.map((item) => {
+      const taskType = item.taskType.toUpperCase();
+      const categoryKey = systemCategoryLabelKeyMap[taskType];
+      return {
+        key: item.taskType,
+        label: categoryKey ? t(`system.message.settings.category.${categoryKey}`) : item.name || item.taskType,
+        count: Number(item.count ?? 0),
+      };
+    });
   }
 
   function formatScheduleTime(value: number | null) {
@@ -590,14 +659,99 @@
     return `${hours}:00`;
   }
 
-  function getConditionValueLabel(value: unknown) {
+  const userNameById = ref<Record<string, string>>({});
+  const departmentNameById = ref<Record<string, string>>({});
+
+  function getConditionValueLabel(
+    value: unknown,
+    conditionField?: FilterFormItem,
+    selectedRows: unknown[] = [],
+    selectedUserList: SelectedUsersItem[] = []
+  ) {
     if (value === null || value === undefined || value === '') return t('system.message.settings.preview.fieldValue');
-    if (Array.isArray(value)) return value.map((item) => String(item)).join(', ');
+    const dynamicField = triggerFields.value.find((field) => field.id === String(conditionField?.dataIndex));
+    const fieldType = conditionField?.type ?? dynamicField?.type;
+    const flattenTreeOptions = (items: Record<string, any>[]): Record<string, unknown>[] =>
+      items.flatMap((item) => [item, ...flattenTreeOptions((item.children ?? []) as Record<string, any>[])]);
+    const options = [
+      ...(conditionField?.selectProps?.options ?? []),
+      ...(dynamicField?.options ?? []),
+      ...(dynamicField?.initialOptions ?? []),
+      ...Object.entries(userNameById.value).map(([id, name]) => ({ id, name })),
+      ...Object.entries(departmentNameById.value).map(([id, name]) => ({ id, name })),
+      ...selectedRows,
+      ...selectedUserList,
+      ...flattenTreeOptions((conditionField?.treeSelectProps?.options ?? []) as Record<string, any>[]),
+    ] as Record<string, unknown>[];
+
+    function formatDateValue(item: unknown): string {
+      const dateValue = String(item);
+      if (fieldType === FieldTypeEnum.TIME_RANGE_PICKER && conditionField?.operator === OperatorEnum.DYNAMICS) {
+        const [rangeType, amount, unit] = dateValue.split(',');
+        if (rangeType === 'CUSTOM') {
+          const unitLabel = unitOptions.find((option) => option.value === unit)?.label ?? unit;
+          return `${t('common.custom')} (${amount} ${unitLabel})`;
+        }
+        return timeOptions.find((option) => option.value === rangeType)?.label ?? dateValue;
+      }
+
+      return dateValue
+        .split(',')
+        .map((date) => {
+          const timestamp = Number(date);
+          if (Number.isFinite(timestamp) && date.trim()) {
+            return formatTimeValue(timestamp, dynamicField?.dateType);
+          }
+          const parsedDate = dayjs(date);
+          if (!parsedDate.isValid()) return date;
+          if (dynamicField?.dateType === 'month') return parsedDate.format('YYYY-MM');
+          if (dynamicField?.dateType === 'date') return parsedDate.format('YYYY-MM-DD');
+          return parsedDate.format('YYYY-MM-DD HH:mm:ss');
+        })
+        .join(' - ');
+    }
+
+    function formatOptionValue(item: unknown): string {
+      if (item === null || item === undefined) return '';
+      const option = typeof item === 'object' ? (item as Record<string, unknown>) : undefined;
+      const optionValue = option?.value ?? option?.id ?? option?.key ?? item;
+      if (fieldType === FieldTypeEnum.LOCATION) {
+        const cityPath = getCityPath(String(optionValue), dynamicField?.scope);
+        if (cityPath) return cityPath;
+      }
+      if (fieldType === FieldTypeEnum.INDUSTRY) {
+        const industryPath = getIndustryPath(String(optionValue));
+        if (industryPath) return industryPath;
+      }
+      if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.TIME_RANGE_PICKER].includes(fieldType as FieldTypeEnum)) {
+        return formatDateValue(optionValue);
+      }
+
+      const matchedOption = options.find((candidate) => {
+        const candidateValue = candidate.value ?? candidate.id ?? candidate.key ?? candidate.code;
+        return candidateValue !== undefined && String(candidateValue) === String(optionValue);
+      });
+      const label = matchedOption?.label ?? matchedOption?.name ?? matchedOption?.title ?? matchedOption?.text;
+      if (label !== null && label !== undefined) return String(label);
+      if (option) {
+        return String(
+          option.label ?? option.name ?? option.title ?? option.text ?? option.value ?? option.id ?? option.key ?? ''
+        );
+      }
+      return String(item);
+    }
+
+    if (Array.isArray(value)) {
+      const formattedValues = value.map(formatOptionValue).filter(Boolean);
+      return [FieldTypeEnum.DATE_TIME, FieldTypeEnum.TIME_RANGE_PICKER].includes(fieldType as FieldTypeEnum)
+        ? formattedValues.join(' - ')
+        : formattedValues.join(', ');
+    }
     if (typeof value === 'object') {
       const option = value as Record<string, unknown>;
-      return String(option.label ?? option.name ?? option.value ?? t('system.message.settings.preview.fieldValue'));
+      return formatOptionValue(option);
     }
-    return String(value);
+    return formatOptionValue(value);
   }
 
   const triggerOptions = computed(() => [
@@ -714,19 +868,58 @@
     follow: ['FOLLOW_UP_'],
     todo: ['APPROVAL_'],
   };
+  const categorySpecificEventPrefixes: Record<string, string[]> = {
+    CUSTOMER_CONTACT: ['CUSTOMER_CONCAT_'],
+    CUSTOMER_CONCAT: ['CUSTOMER_CONCAT_'],
+    BUSINESS_QUOTATION: ['BUSINESS_QUOTATION_'],
+    QUOTATION: ['BUSINESS_QUOTATION_'],
+    CONTRACT_PAYMENT_RECORD: ['CONTRACT_RECORD_'],
+    CONTRACT_PAYMENT_PLAN: ['CONTRACT_PAYMENT_'],
+    CONTRACT_INVOICE: ['INVOICE_'],
+    FOLLOW_RECORD: ['FOLLOW_UP_RECORD_'],
+    FOLLOW_PLAN: ['FOLLOW_UP_PLAN_'],
+  };
+  const categoryExcludedEventPrefixes: Record<string, string[]> = {
+    CUSTOMER: ['CUSTOMER_CONCAT_'],
+    OPPORTUNITY: ['BUSINESS_QUOTATION_'],
+    CONTRACT: ['CONTRACT_PAYMENT_', 'CONTRACT_RECORD_', 'INVOICE_'],
+  };
+  function isCategoryEvent(event: string, categoryType: string) {
+    const normalizedCategory = categoryType.toUpperCase();
+    const categoryKey = getCategoryActionKey(categoryType);
+    const prefixes = categorySpecificEventPrefixes[normalizedCategory] ?? categoryEventPrefixes[categoryKey] ?? [];
+    const excludedPrefixes = categoryExcludedEventPrefixes[normalizedCategory] ?? [];
+    return (
+      prefixes.some((prefix) => event.startsWith(prefix)) &&
+      !excludedPrefixes.some((prefix) => event.startsWith(prefix))
+    );
+  }
+  function getSceneCategoryType(taskType: string, actionTypeConfig?: string) {
+    const action = actionTypeConfig?.toUpperCase() ?? '';
+    const subcategory = Object.entries(categorySpecificEventPrefixes).find(([, prefixes]) =>
+      prefixes.some((prefix) => action.startsWith(prefix))
+    )?.[0];
+    return subcategory ?? taskType;
+  }
+
+  function getSceneCategoryLabel(task: SceneRow) {
+    return getCategoryLabel(getSceneCategoryType(task.taskType, task.config?.actionTypeConfig));
+  }
+
   const customActionOptions: SceneActionOption[] = [
     { value: 'CUSTOM_FORM_ADD', labelKey: 'create' },
     { value: 'CUSTOM_FORM_UPDATE', labelKey: 'update' },
     { value: 'CUSTOM_FORM_DELETE', labelKey: 'delete' },
   ];
   const actionOptions = computed(() => {
-    const categoryKey = systemCategoryLabelKeyMap[editor.taskType.toUpperCase()] ?? editor.taskType.toLowerCase();
-    const category = getCategoryLabel(editor.taskType);
+    const selectedCategoryType = editorCategoryType.value || editor.taskType;
+    const categoryKey = getCategoryActionKey(selectedCategoryType);
+    const category = getCategoryLabel(selectedCategoryType);
     const definitions =
       editor.group === 'custom'
         ? customActionOptions
         : Object.values(MessageNotificationEventEnum)
-            .filter((event) => categoryEventPrefixes[categoryKey]?.some((prefix) => event.startsWith(prefix)))
+            .filter((event) => isCategoryEvent(event, selectedCategoryType))
             .map((value) => {
               const definition = categoryActionOptions[categoryKey]?.find((option) => option.value === value);
               return definition ?? { value, labelKey: undefined };
@@ -758,12 +951,9 @@
     if (editor.group === 'custom') {
       return customActionOptions[0]?.value ?? '';
     }
-    const categoryKey = systemCategoryLabelKeyMap[editor.taskType.toUpperCase()] ?? editor.taskType.toLowerCase();
-    const prefixes = categoryEventPrefixes[categoryKey] ?? [];
+    const selectedCategoryType = editorCategoryType.value || editor.taskType;
     return (
-      Object.values(MessageNotificationEventEnum).find((event) =>
-        prefixes.some((prefix) => event.startsWith(prefix))
-      ) ?? ''
+      Object.values(MessageNotificationEventEnum).find((event) => isCategoryEvent(event, selectedCategoryType)) ?? ''
     );
   }
   const conditionFilterConfigList = computed<FilterFormItem[]>(() => {
@@ -810,28 +1000,91 @@
               ...(dataSourceProps ? { dataSourceProps } : {}),
             };
           })
-      : [
-          {
-            dataIndex: 'followResult',
-            title: 'system.message.settings.conditionField.followResult',
-            type: FieldTypeEnum.INPUT,
-          },
-          { dataIndex: 'status', title: 'system.message.settings.conditionField.status', type: FieldTypeEnum.INPUT },
-        ];
+      : [];
 
-    if (editor.taskType.toUpperCase() !== MessageNotificationCategoryEnum.FOLLOW_UP) {
-      fields.push({
-        dataIndex: 'approvalStatus',
-        title: 'common.approvalStatus',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options: processStatusOptions.filter((option) => option.value !== ProcessStatusEnum.NONE),
-        },
-      });
-    }
-
-    return fields;
+    const builtInFields =
+      editor.group === 'standard'
+        ? getNotificationTriggerFilterConfigList(editorCategoryType.value || editor.taskType, {
+            approvalStatusOptions: processStatusOptions.filter((option) => option.value !== ProcessStatusEnum.NONE),
+          })
+        : [];
+    const fieldMap = new Map<string, FilterFormItem>();
+    [...builtInFields, ...fields].forEach((field) => {
+      if (field.dataIndex) fieldMap.set(String(field.dataIndex), field);
+    });
+    return [...fieldMap.values()];
   });
+  let userOptionsLoaded = false;
+  let userOptionsLoading = false;
+  let departmentOptionsLoaded = false;
+  let departmentOptionsLoading = false;
+
+  async function loadUserNameOptions() {
+    if (userOptionsLoaded || userOptionsLoading) return;
+    userOptionsLoading = true;
+    try {
+      const users = await getUserOptions({ includeDisabled: true });
+      userNameById.value = Object.fromEntries(
+        users.map((user: { id: string | number; name: string }) => [String(user.id), user.name])
+      );
+      userOptionsLoaded = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      userOptionsLoading = false;
+    }
+  }
+
+  async function loadDepartmentNameOptions() {
+    if (departmentOptionsLoaded || departmentOptionsLoading) return;
+    departmentOptionsLoading = true;
+    try {
+      const tree = await getFieldDeptTree();
+      const nameMap: Record<string, string> = {};
+      const collectNames = (nodes: { id?: string | number; name?: string; children?: unknown[] }[]) => {
+        nodes.forEach((node) => {
+          if (node.id !== undefined && node.name) nameMap[String(node.id)] = node.name;
+          collectNames((node.children ?? []) as { id?: string | number; name?: string; children?: unknown[] }[]);
+        });
+      };
+      collectNames(tree as unknown as { id?: string | number; name?: string; children?: unknown[] }[]);
+      departmentNameById.value = nameMap;
+      departmentOptionsLoaded = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      departmentOptionsLoading = false;
+    }
+  }
+
+  watch(
+    () => {
+      const condition = editor.conditionFilter.list[0];
+      return (
+        editor.triggerType === MessageNotificationTriggerEnum.FIELD &&
+        conditionFilterConfigList.value.find((field) => field.dataIndex === condition?.dataIndex)?.type ===
+          FieldTypeEnum.USER_SELECT
+      );
+    },
+    (isUserCondition) => {
+      if (isUserCondition) loadUserNameOptions();
+    }
+  );
+  watch(
+    () => {
+      const condition = editor.conditionFilter.list[0];
+      const conditionField = conditionFilterConfigList.value.find((field) => field.dataIndex === condition?.dataIndex);
+      return (
+        editor.triggerType === MessageNotificationTriggerEnum.FIELD &&
+        conditionField?.type === FieldTypeEnum.TREE_SELECT
+      );
+    },
+    (isDepartmentCondition) => {
+      if (isDepartmentCondition) loadDepartmentNameOptions();
+    }
+  );
   const dateFieldOptions = computed(() => {
     const options = triggerFields.value
       .filter((field) => [FieldTypeEnum.DATE_TIME, FieldTypeEnum.TIME_RANGE_PICKER].includes(field.type))
@@ -850,14 +1103,18 @@
       : [{ label: t('system.message.settings.dateField.expiration'), value: 'until_time' }];
   });
   const reminderTypeOptions = computed(() => {
-    const options = [{ label: t('system.message.settings.reminderFrequency.once'), value: 'ONLY_ONE' }];
+    const options = [
+      { label: t('system.message.settings.reminderFrequency.once'), value: 'ONLY_ONE' },
+      { label: t('system.message.settings.reminderFrequency.daily'), value: 'EVERY_DAY' },
+    ];
     if (editor.remindType && !options.some((option) => option.value === editor.remindType)) {
       options.unshift({ label: editor.remindType, value: editor.remindType });
     }
     return options;
   });
   const scenePreviewText = computed(() => {
-    const category = getCategoryLabel(editor.taskType);
+    const selectedCategoryType = editorCategoryType.value || editor.taskType;
+    const category = getCategoryLabel(selectedCategoryType);
     const templateValues = editor.templateValue.filter((value) => value.trim());
     const firstCondition = editor.conditionFilter.list[0];
     const approvalCondition = firstCondition?.dataIndex === 'approvalStatus' ? firstCondition : undefined;
@@ -880,7 +1137,7 @@
         processStatusOptions.find((option) => option.value === ProcessStatusEnum.APPROVED)?.label ||
         '';
       const resourceTypeName =
-        editorCategoryOptions.value.find((option) => option.value === editor.taskType)?.label ?? category;
+        editorCategoryOptions.value.find((option) => option.value === selectedCategoryType)?.label ?? category;
       const resourceName = `${resourceTypeName}${t('system.message.settings.preview.nameSuffix')}`;
 
       if (editorMode.value === 'create') {
@@ -906,7 +1163,7 @@
     if (editor.triggerType === MessageNotificationTriggerEnum.ACTION) {
       if (templateValues.length) {
         const resourceTypeName =
-          editorCategoryOptions.value.find((option) => option.value === editor.taskType)?.label ?? category;
+          editorCategoryOptions.value.find((option) => option.value === selectedCategoryType)?.label ?? category;
         const resourceName = `${resourceTypeName}${t('system.message.settings.preview.nameSuffix')}`;
         return templateValues
           .map((value) =>
@@ -935,7 +1192,12 @@
       conditionField: conditionField?.title
         ? t(conditionField.title)
         : t('system.message.settings.preview.conditionField'),
-      fieldValue: getConditionValueLabel(condition?.value),
+      fieldValue: getConditionValueLabel(
+        condition?.value,
+        conditionField,
+        condition?.selectedRows ?? [],
+        condition?.selectedUserList ?? []
+      ),
     });
   });
   const editorEditable = computed(() =>
@@ -1008,6 +1270,8 @@
       group,
       enabled: receiveMethods.length > 0,
       channelKeys,
+      sceneCategoryType:
+        group === 'standard' ? getSceneCategoryType(task.taskType, task.config?.actionTypeConfig) : task.taskType,
     };
   }
 
@@ -1043,6 +1307,10 @@
     hiddenAllScreen: true,
     containerClass: '.message-settings-table',
   });
+
+  function handleTableFilterChange(filters: Parameters<typeof propsEvent.value.filterChange>[0]) {
+    propsEvent.value.filterChange(filters);
+  }
 
   function searchScenes(value?: string) {
     if (value !== undefined) keyword.value = value;
@@ -1118,6 +1386,8 @@
     isCustomScene.value = mode === 'copy' || !task.sysEnable;
     editor.taskType = task.taskType;
     editor.group = task.group;
+    editorCategoryType.value =
+      task.group === 'custom' ? task.taskType : getSceneCategoryType(task.taskType, task.config?.actionTypeConfig);
     await loadTriggerFields();
 
     const config = task.config ?? {};
@@ -1135,7 +1405,7 @@
       name: mode === 'copy' ? `${task.name}${t('system.message.settings.copySuffix', { id: task.id })}` : task.name,
       triggerType: task.triggerType,
       config,
-      actionTypeConfig: config.actionTypeConfig ?? 'create',
+      actionTypeConfig: config.actionTypeConfig ?? getDefaultActionTypeConfig(),
       scheduleFieldId: config.scheduleTypeConfig?.fieldId ?? 'until_time',
       scheduleDay: Number(config.scheduleTypeConfig?.day ?? 0),
       scheduleTime: parseScheduleTime(config.scheduleTypeConfig?.time),
@@ -1226,14 +1496,7 @@
       getMessageTaskSystemTypes(),
       getMessageTaskCustomFormTypes(),
     ]);
-    systemCategories.value = (systemTypes ?? []).map((item) => {
-      const categoryKey = systemCategoryLabelKeyMap[item.taskType.toUpperCase()];
-      return {
-        key: item.taskType,
-        label: categoryKey ? t(`system.message.settings.category.${categoryKey}`) : item.name || item.taskType,
-        count: Number(item.count ?? 0),
-      };
-    });
+    systemCategories.value = mapSystemCategories(systemTypes ?? []);
     customFormCategories.value = (customTypes ?? []).map((item) => ({
       key: item.taskType,
       label: item.name || item.taskType,
@@ -1314,7 +1577,7 @@
       title: t('system.message.notificationScenario'),
       key: 'name',
       fixed: 'left',
-      width: 150,
+      width: 220,
       ellipsis: { tooltip: true },
       render: (row) =>
         h('div', { class: 'flex min-w-0 items-center gap-[8px]' }, [
@@ -1335,10 +1598,12 @@
     },
     {
       title: t('system.message.settings.category'),
-      key: 'taskType',
+      key: sceneCategoryFilterKey,
       width: 84,
       ellipsis: { tooltip: true },
-      render: (row) => getCategoryLabel(row.taskType) || '-',
+      filter: sceneCategoryFilterOptions.value.length > 1,
+      filterOptions: sceneCategoryFilterOptions.value,
+      render: (row) => getCategoryLabel(row.sceneCategoryType) || '-',
     },
     {
       title: t('system.message.settings.triggerType'),
@@ -1347,12 +1612,19 @@
       filter: true,
       filterOptions: triggerOptions.value.map(({ label, value }) => ({ label, value })),
       render: (row) =>
-        triggerOptions.value.find((option) => option.value === row.triggerType)?.label ?? row.triggerType,
+        h(
+          CrmTag,
+          { theme: 'light', type: getTriggerTagType(row.triggerType) },
+          {
+            default: () =>
+              triggerOptions.value.find((option) => option.value === row.triggerType)?.label ?? row.triggerType,
+          }
+        ),
     },
     {
       title: t('system.message.settings.receivers'),
       key: 'members',
-      width: 160,
+      width: 170,
       render: (row) => {
         const scopeState = getScopeEditorState(row);
         return h(MessageReceiverSelector, {
@@ -1383,7 +1655,7 @@
     {
       title: t('system.message.settings.receiveMethods'),
       key: 'channelKeys',
-      width: 130,
+      width: 170,
       render: (row) =>
         h(MessageReceiverSelector, {
           groups: [
@@ -1443,7 +1715,13 @@
     },
   ]);
 
-  tableProps.value.columns = columns.value;
+  watch(
+    columns,
+    (value) => {
+      tableProps.value.columns = value;
+    },
+    { immediate: true }
+  );
 
   async function loadTaskCategories() {
     try {
@@ -1451,14 +1729,7 @@
         getMessageTaskSystemTypes(),
         getMessageTaskCustomFormTypes(),
       ]);
-      systemCategories.value = (systemTypes ?? []).map((item: MessageTaskCountDTO) => {
-        const categoryKey = systemCategoryLabelKeyMap[item.taskType.toUpperCase()];
-        return {
-          key: item.taskType,
-          label: categoryKey ? t(`system.message.settings.category.${categoryKey}`) : item.name || item.taskType,
-          count: Number(item.count ?? 0),
-        };
-      });
+      systemCategories.value = mapSystemCategories(systemTypes ?? []);
       customFormCategories.value = (customTypes ?? []).map((item: MessageTaskCountDTO) => ({
         key: item.taskType,
         label: item.name || item.taskType,
@@ -1505,6 +1776,10 @@
   function openCreateScene() {
     const taskType = activeCategory.value || categoryList.value[0]?.key;
     if (!taskType) {
+      if (activeGroup.value === 'custom' && customFormCategories.value.length === 0) {
+        Message.warning(t('system.message.settings.customFormRequired'));
+        return;
+      }
       Message.warning(t('common.pleaseSelect'));
       return;
     }
@@ -1536,6 +1811,7 @@
       channelKeys: [],
       preservedReceiveMethods: [],
     });
+    editorCategoryType.value = activeGroup.value === 'custom' ? taskType : getDefaultEditorCategoryType(taskType);
     editor.actionTypeConfig = getDefaultActionTypeConfig();
     fillCustomTemplateForAction();
     showEditor.value = true;
@@ -1549,8 +1825,9 @@
     fillCustomTemplateForAction();
   }
 
-  function handleEditorCategoryChange(taskType: string) {
-    editor.taskType = taskType;
+  function handleEditorCategoryChange(categoryType: string) {
+    editorCategoryType.value = categoryType;
+    if (editor.group === 'custom') editor.taskType = categoryType;
     editor.config = {};
     editor.templateValue = [];
     editor.actionTypeConfig = getDefaultActionTypeConfig();
@@ -1639,6 +1916,10 @@
     } catch {
       return;
     }
+    if (editor.triggerType === MessageNotificationTriggerEnum.FIELD && editorTriggerEditable.value) {
+      const filterIsValid = await conditionFilterRef.value?.validateForm();
+      if (!filterIsValid) return;
+    }
 
     let saveType: MessageTaskSaveParams['type'];
     if (editorMode.value === 'update' && source) {
@@ -1719,11 +2000,34 @@
     cursor: help;
   }
   .message-settings-category-list {
+    overflow-y: auto;
     min-height: 0;
     flex: 1;
   }
-  :deep(.message-settings-category-list .v-vl-visible-items) {
-    padding-right: 0 !important;
+  .message-settings-category-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    border-radius: var(--border-radius-small);
+    text-align: left;
+    color: var(--text-n2);
+    background: transparent;
+    cursor: pointer;
+    gap: 8px;
+    &:hover {
+      background: var(--text-n9);
+    }
+    &.active {
+      color: var(--primary-8);
+      background: var(--primary-7);
+    }
+    .one-line-text {
+      min-width: 0;
+      flex: 1;
+    }
   }
   .message-settings-main {
     overflow: hidden;

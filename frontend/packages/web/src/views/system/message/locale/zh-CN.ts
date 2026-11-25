@@ -119,6 +119,7 @@ export default {
   'system.message.settings.notificationPreview': '通知预览',
   'system.message.settings.sceneNameRequired': '请输入场景名称',
   'system.message.settings.copyEmpty': '当前分类没有可复制的通知场景',
+  'system.message.settings.customFormRequired': '请先创建自定义表单模板',
   'system.message.settings.sceneDeleted': '通知场景已删除',
   'system.message.settings.sceneActionRequired': '请选择触发动作',
   'system.message.settings.sceneDateRequired': '请选择基准日期',
