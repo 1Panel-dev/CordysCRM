@@ -293,8 +293,14 @@ public class CustomerService implements ApprovalResourceHandler {
 
     public PagerWithOption<List<CustomerListResponse>> sourceList(CustomerPageRequest request, String userId,
             String orgId, DeptDataPermissionDTO deptDataPermission) {
+        return sourceList(request, userId, orgId, deptDataPermission, false);
+    }
+
+    public PagerWithOption<List<CustomerListResponse>> sourceList(CustomerPageRequest request, String userId,
+            String orgId, DeptDataPermissionDTO deptDataPermission, boolean excludeReadOnlyCollaboration) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerListResponse> list = extCustomerMapper.sourceList(request, orgId, userId, deptDataPermission);
+        List<CustomerListResponse> list = extCustomerMapper.sourceList(request, orgId, userId, deptDataPermission,
+                excludeReadOnlyCollaboration);
         List<CustomerListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);

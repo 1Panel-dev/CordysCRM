@@ -30,7 +30,8 @@ public interface ExtCustomerMapper extends StatisticSqlMapper {
             @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<CustomerListResponse> sourceList(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
-            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+            @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission,
+            @Param("excludeReadOnlyCollaboration") boolean excludeReadOnlyCollaboration);
 
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 

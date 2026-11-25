@@ -188,7 +188,7 @@ public class ModuleFieldController {
                 OrganizationContext.getOrganizationId(),
                 InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                deptDataPermission);
+                deptDataPermission, true);
     }
 
     @PostMapping("/source/contact")

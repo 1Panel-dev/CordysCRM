@@ -119,6 +119,22 @@ class CustomerCollaborationIsolationSqlTest {
     }
 
     @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void onlySourcePickerFiltersActiveReadOnlyFromCollaborationJoin(boolean picker) throws Exception {
+        DeptDataPermissionDTO role = new DeptDataPermissionDTO();
+        role.setSelf(true);
+        Map<String, Object> parameters = Map.of("request", new CustomerPageRequest(), "orgId", "org-a",
+                "userId", "reader-a", "dataPermission", role, "excludeReadOnlyCollaboration", picker);
+        BoundSql boundSql = configuration.getMappedStatement(ExtCustomerMapper.class.getName() + ".sourceList")
+                .getBoundSql(parameters);
+        CCJSqlParserUtil.parse(boundSql.getSql());
+        String sql = boundSql.getSql().replaceAll("\\s+", "");
+        assertEquals(picker, sql.contains("AND(cc.collaboration_type!='READ_ONLY'ORcc.expire_time<=?)"));
+        assertTrue(sql.contains("(c.owner=?orcc.idisnotnull)"));
+        assertEquals(picker, boundSql.hasAdditionalParameter("collaborationCurrentTime"));
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = { "READ_ONLY", "JOINT_FOLLOW" })
     void customerListReturnsEffectiveCollaborationType(String type) throws Exception {
         CustomerPageRequest request = new CustomerPageRequest();

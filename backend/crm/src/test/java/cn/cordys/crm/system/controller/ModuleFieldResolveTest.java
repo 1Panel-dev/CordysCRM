@@ -114,13 +114,13 @@ class ModuleFieldResolveTest {
         PagerWithOption<List<CustomerListResponse>> page = new PagerWithOption<>();
         page.setList(List.of(first, second));
         page.setTotal(2);
-        when(customers.sourceList(any(), eq("user-current"), eq("org-current"), same(permission)))
+        when(customers.sourceList(any(), eq("user-current"), eq("org-current"), same(permission), eq(true)))
                 .thenReturn(page);
         var result = controller.resolveBusinessId(request("CUSTOMER", "同名客户"));
         assertEquals(List.of("customer-a", "customer-b"), result.stream().map(v -> v.getIdAsString()).toList());
         ArgumentCaptor<CustomerPageRequest> requests = ArgumentCaptor.forClass(CustomerPageRequest.class);
         verify(customers, times(2)).sourceList(requests.capture(), eq("user-current"), eq("org-current"),
-                same(permission));
+                same(permission), eq(true));
         assertEquals(List.of("id", "name"), requests.getAllValues().stream()
                 .map(v -> v.getFilters().getFirst().getName()).toList());
     }
