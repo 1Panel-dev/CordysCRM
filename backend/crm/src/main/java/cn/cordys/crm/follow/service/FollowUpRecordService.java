@@ -144,7 +144,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
-        checkCustomerFollowWritePermission(customerId, userId, orgId);
         if (StringUtils.isNotBlank(clueId)) {
             Clue clue = clueMapper.selectByPrimaryKey(clueId);
             if (clue == null || !orgId.equals(clue.getOrganizationId()) || !userId.equals(clue.getOwner())
@@ -152,14 +151,25 @@ public class FollowUpRecordService extends BaseFollowUpService {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
         }
-        if (StringUtils.isNotBlank(opportunityId)) {
-            Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
-            if (opportunity == null || !orgId.equals(opportunity.getOrganizationId())
-                    || !userId.equals(opportunity.getOwner())) {
+        if (StringUtils.isBlank(opportunityId)) {
+            checkCustomerFollowWritePermission(customerId, userId, orgId);
+            return;
+        }
+
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
+        if (opportunity == null || !orgId.equals(opportunity.getOrganizationId())
+                || !userId.equals(opportunity.getOwner())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+
+        // 商机跟进只核对客户关联和组织，保留对真实关联客户的最近跟进摘要更新。
+        if (StringUtils.isNotBlank(customerId)) {
+            if (!Strings.CS.equals(customerId, opportunity.getCustomerId())) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-            if (!Strings.CS.equals(customerId, opportunity.getCustomerId())) {
-                checkCustomerFollowWritePermission(opportunity.getCustomerId(), userId, orgId);
+            Customer customer = customerMapper.selectByPrimaryKey(customerId);
+            if (customer == null || !orgId.equals(customer.getOrganizationId())) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
         }
     }
