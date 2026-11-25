@@ -943,6 +943,39 @@
     </sql>
 
     <!-- 客户详情标签及协作视图按协作范围隔离业务数据。 -->
+    <sql id="customerTabOwnerScope">
+        <choose>
+            <when test="request.customerTabScope == null or request.customerTabScope.invisible
+                    or (!request.customerTabScope.all and !request.customerTabScope.self
+                        and request.customerTabScope.deptIds.isEmpty())">
+                AND 0 = 1
+            </when>
+            <otherwise>
+                <if test="!request.customerTabScope.all">
+                    AND (${ownerColumn} = #{userId}
+                    <if test="!request.customerTabScope.deptIds.isEmpty()">
+                        OR EXISTS (
+                            SELECT 1 FROM sys_organization_user scope_user
+                            WHERE scope_user.organization_id = #{orgId}
+                            AND scope_user.user_id = ${ownerColumn}
+                            AND scope_user.department_id IN
+                            <foreach collection="request.customerTabScope.deptIds" item="deptId" open="(" close=")" separator=",">
+                                #{deptId}
+                            </foreach>
+                        )
+                    </if>
+                    )
+                </if>
+                <if test="!request.customerTabScope.excludedOwnerIds.isEmpty()">
+                    AND ${ownerColumn} NOT IN
+                    <foreach collection="request.customerTabScope.excludedOwnerIds" item="owner" open="(" close=")" separator=",">
+                        #{owner}
+                    </foreach>
+                </if>
+            </otherwise>
+        </choose>
+    </sql>
+
     <sql id="isolatedBusinessRead">
         <if test="dataPermission != null and dataPermission.visible and dataPermission.viewId == 'COLLABORATION_VISIBLE'">
             <bind name="collaborationCurrentTime" value="@java.lang.System@currentTimeMillis()"/>

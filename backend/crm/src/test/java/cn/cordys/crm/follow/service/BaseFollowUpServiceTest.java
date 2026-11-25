@@ -49,7 +49,7 @@ class BaseFollowUpServiceTest {
                 () -> service.checkRelatedReadPermission(record, "org-a", "receiver-a", permission(formType), formType));
 
         assertEquals(CrmHttpResultCode.FORBIDDEN, exception.getErrorCode());
-        verifyNoInteractions(permissions, customers);
+        verifyNoInteractions(customers);
     }
 
     @ParameterizedTest

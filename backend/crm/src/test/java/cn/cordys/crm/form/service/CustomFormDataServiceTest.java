@@ -155,25 +155,25 @@ class CustomFormDataServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @EnumSource(CustomFormRoleKey.class)
     @SuppressWarnings("unchecked")
-    void 客户关联隔离优先于表单全部数据权限(boolean isolated) {
-        CustomFormDataService service = serviceWithManageAllPermission();
+    void 客户关联隔离仍保留表单角色可读范围(CustomFormRoleKey scope) {
+        CustomFormDataService service = serviceWithPermission(scope);
         BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
         RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
         ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
         ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
         when(mapper.selectByPrimaryKey("record-1"))
                 .thenReturn(record("record-1", "form-1", "org-1", "collaborator"));
-        when(relatedPermissions.isIsolatedData("form-1", "record-1", "reader", "org-1")).thenReturn(isolated);
+        when(relatedPermissions.isIsolatedData("form-1", "record-1", "reader", "org-1")).thenReturn(true);
 
-        assertEquals(!isolated, service.hasViewPermission("record-1", "reader", "org-1"));
+        assertEquals(scope != CustomFormRoleKey.MANAGE_OWN, service.hasViewPermission("record-1", "reader", "org-1"));
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    void 隔离的关联详情不能通过普通角色或审批授权读取() {
-        CustomFormDataService service = serviceWithManageAllPermission();
+    void 协作隔离的关联详情不能仅凭审批授权读取() {
+        CustomFormDataService service = serviceWithPermission(CustomFormRoleKey.MANAGE_OWN);
         BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
         RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
         ResourcePermissionService permissions = mock(ResourcePermissionService.class);
@@ -182,12 +182,12 @@ class CustomFormDataServiceTest {
         ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
         when(mapper.selectByPrimaryKey("record-1"))
                 .thenReturn(record("record-1", "form-1", "org-1", "collaborator"));
-        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(relatedPermissions)
-                .checkIsolatedData("form-1", "record-1", "reader", "org-1");
+        when(permissions.hasApprovalViewPermission("record-1", "reader", "org-1", "form-1")).thenReturn(true);
+        when(relatedPermissions.isIsolatedData("form-1", "record-1", "reader", "org-1")).thenReturn(true);
 
         assertEquals(CrmHttpResultCode.FORBIDDEN, assertThrows(GenericException.class,
                 () -> service.get("record-1", "reader", "org-1")).getErrorCode());
-        verify(permissions, never()).hasApprovalViewPermission(anyString(), anyString(), anyString(), anyString());
+        verify(permissions).checkPermission(PermissionConstants.CUSTOM_FORM_READ);
     }
 
     @Test
@@ -484,9 +484,10 @@ class CustomFormDataServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "false,", "true,", "true,FORBIDDEN", "false,FORBIDDEN", "true,NOT_FOUND", "true,FAILED" })
+    @CsvSource({ "false,false,", "true,false,", "true,true,", "true,false,FORBIDDEN", "false,false,FORBIDDEN",
+            "true,false,NOT_FOUND", "true,false,FAILED" })
     @SuppressWarnings("unchecked")
-    void getFillsDepartmentAndKeepsApprovalViewAndManagementPermissionSeparate(boolean approvalView,
+    void getFillsDepartmentAndKeepsApprovalViewAndManagementPermissionSeparate(boolean approvalView, boolean isolated,
             CrmHttpResultCode scopeError) {
         BaseMapper<CustomFormData> dataMapper = mock(BaseMapper.class);
         CustomFormDataFieldService fieldService = mock(CustomFormDataFieldService.class);
@@ -506,6 +507,9 @@ class CustomFormDataServiceTest {
         ResourcePermissionService permissions = mock(ResourcePermissionService.class);
         ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
         when(permissions.hasApprovalViewPermission("record-1", "owner-1", "org-1", "form-1")).thenReturn(approvalView);
+        RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
+        when(relatedPermissions.isIsolatedData("form-1", "record-1", "owner-1", "org-1")).thenReturn(isolated);
 
         CustomFormData data = record("record-1", "form-1", "org-1", "owner-1");
         data.setCreateUser("owner-1");

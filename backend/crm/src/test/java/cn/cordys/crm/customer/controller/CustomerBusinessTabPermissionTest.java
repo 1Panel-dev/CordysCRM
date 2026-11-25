@@ -61,6 +61,7 @@ class CustomerBusinessTabPermissionTest {
         ReflectionTestUtils.setField(controller, "relatedResourcePermissionService", related);
         ReflectionTestUtils.setField(controller, "resourcePermissionService", permissions);
         ReflectionTestUtils.setField(controller, "dataScopeService", dataScope);
+        when(related.mergeCustomerTabDataPermission(any(), any(), any())).thenCallRealMethod();
     }
 
     @AfterEach
@@ -84,8 +85,8 @@ class CustomerBusinessTabPermissionTest {
             assertSame(scope, ReflectionTestUtils.invokeMethod(controller, "getRelatedDataPermission",
                     "customer-a", "ALL", permission));
             verify(permissions).checkPermission(permission);
+            verify(dataScope).getDeptDataPermission("user-a", "org-a", "ALL", permission);
         }
-        verifyNoInteractions(dataScope);
     }
 
     @Test
@@ -97,7 +98,8 @@ class CustomerBusinessTabPermissionTest {
 
         assertSame(scope, ReflectionTestUtils.invokeMethod(controller, "getRelatedDataPermission",
                 "customer-a", "ALL", PermissionConstants.CONTRACT_READ));
-        verifyNoInteractions(permissions, dataScope);
+        verifyNoInteractions(permissions);
+        verify(dataScope).getDeptDataPermission("user-a", "org-a", "ALL", PermissionConstants.CONTRACT_READ);
     }
 
     @Test
@@ -165,7 +167,7 @@ class CustomerBusinessTabPermissionTest {
         }
         verify(orders).searchStatistic(request, "user-a", "org-a", scope);
         verify(permissions).checkPermission(PermissionConstants.ORDER_READ);
-        verifyNoInteractions(dataScope);
+        verify(dataScope).getDeptDataPermission("user-a", "org-a", "ALL", PermissionConstants.ORDER_READ);
     }
 
     @Test
@@ -190,7 +192,8 @@ class CustomerBusinessTabPermissionTest {
         assertEquals(BigDecimal.valueOf(90), response.getUninvoicedAmount());
         verify(permissions).checkPermission(PermissionConstants.CONTRACT_INVOICE_READ);
         verify(permissions).checkPermission(PermissionConstants.CONTRACT_READ);
-        verifyNoInteractions(dataScope);
+        verify(dataScope).getDeptDataPermission("user-a", "org-a", "ALL", PermissionConstants.CONTRACT_INVOICE_READ);
+        verify(dataScope).getDeptDataPermission("user-a", "org-a", "ALL", PermissionConstants.CONTRACT_READ);
     }
 
     @Test
@@ -218,7 +221,7 @@ class CustomerBusinessTabPermissionTest {
         assertEquals("ALL", request.getViewId());
         verify(paymentRecords).sumCustomerPaymentAmount(request, "user-a", "org-a", scope);
         verify(permissions).checkPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        verifyNoInteractions(dataScope);
+        verify(dataScope).getDeptDataPermission("user-a", "org-a", "ALL", PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
     }
 
     private FilterCondition filter(String name, String value) {

@@ -306,10 +306,6 @@ public class ResourcePermissionService {
     private boolean checkRoleAndDataAndStatusPermission(String permission, String resourceId, String formType,
             String userId, String orgId, ResourceAccessContext context,
             ResourceAccessContextProvider provider, boolean checkApprovalStatus) {
-        if (permission != null && permission.endsWith(":READ")
-                && relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)) {
-            return false;
-        }
         boolean requiresOwner = provider == null || provider.requiresOwner();
         // 资源必须存在；只有明确声明为组织共享的资源才允许没有负责人。
         if (StringUtils.isNotBlank(formType)
@@ -319,11 +315,15 @@ public class ResourcePermissionService {
         String ownerId = context != null ? context.getOwnerId() : null;
         String approvalStatus = context != null ? context.getApprovalStatus() : null;
 
-        // 写操作仍要求角色功能权限，数据范围可由对应资源的有效协作关系补充。
-        boolean roleAndDataPermitted = PermissionUtils.hasPermission(permission)
-                && (!requiresOwner || ownerId == null
-                        || dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)
-                        || (provider != null && provider.hasAdditionalDataPermission(permission, resourceId, userId)));
+        boolean rolePermitted = PermissionUtils.hasPermission(permission);
+        boolean roleDataPermitted = rolePermitted && (!requiresOwner || ownerId == null
+                || dataScopeService.hasDataPermission(userId, orgId, ownerId, permission));
+        if (permission != null && permission.endsWith(":READ") && !roleDataPermitted
+                && relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)) {
+            return false;
+        }
+        boolean roleAndDataPermitted = roleDataPermitted || (rolePermitted
+                && provider != null && provider.hasAdditionalDataPermission(permission, resourceId, userId));
         if (!roleAndDataPermitted
                 && !(permission != null && permission.endsWith(":READ")
                         && relatedResourcePermissionService.hasRelatedReadPermission(

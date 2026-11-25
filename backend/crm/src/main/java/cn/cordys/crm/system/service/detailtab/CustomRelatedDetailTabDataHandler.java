@@ -81,7 +81,8 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
         request.setViewId(null);
         List<FilterCondition> filters = context.request().getFilters();
         filters.add(buildRelationFilter(relatedFieldId, context.resourceId()));
-        if (customerScope != null) {
+        if (customerScope != null && !customFormDataService.hasFullTabReadPermission(relatedFormId,
+                context.userId(), context.organizationId())) {
             if (customerScope.getSelf()) {
                 FilterCondition condition = new FilterCondition();
                 condition.setName("owner");

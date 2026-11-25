@@ -192,6 +192,9 @@ class CustomerDetailTabPermissionTest {
         doReturn(parentScope).when(dataScope).getDeptDataPermission(USER, ORG, READ);
         relatedScope.setDeptIds(Set.of("related-department"));
         doReturn(relatedScope).when(dataScope).getDeptDataPermission(USER, ORG, "ALL", RELATED_READ);
+        ReflectionTestUtils.setField(relatedPermissions, "userQueryService",
+                mock(cn.cordys.common.service.UserQueryService.class));
+        when(relatedPermissions.mergeCustomerTabDataPermission(any(), any(), any())).thenCallRealMethod();
         when(relatedPermissions.getCustomerTabDataPermission(CUSTOMER, USER, ORG)).thenAnswer(invocation -> {
             if (collaboration.getCollaborationType() == null && !USER.equals(customer.getOwner())) {
                 return null;
@@ -265,7 +268,15 @@ class CustomerDetailTabPermissionTest {
         switch (entry) {
         case "RELATION" -> verify(relations).list(CUSTOMER);
         case "COLLABORATION" -> verify(collaborations).list(CUSTOMER, ORG);
-        default -> verify(opportunities).list(any(), eq(USER), eq(ORG), same(customerTabScope), eq(false));
+        default -> {
+            ArgumentCaptor<DeptDataPermissionDTO> scope = ArgumentCaptor.forClass(DeptDataPermissionDTO.class);
+            verify(opportunities).list(any(), eq(USER), eq(ORG), scope.capture(), eq(false));
+            if ("COLLABORATION".equals(type)) {
+                assertEquals(relatedScope.getDeptIds(), scope.getValue().getDeptIds());
+            } else {
+                assertSame(customerTabScope, scope.getValue());
+            }
+        }
         }
     }
 
@@ -305,19 +316,24 @@ class CustomerDetailTabPermissionTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "OWNER", "READ_ONLY", "JOINT_FOLLOW", "COLLABORATION" })
-    void 标准关联标签优先采用客户关系范围而不是角色部门范围(String access) {
+    void 标准关联标签合并客户关系与角色部门范围(String access) {
         if ("OWNER".equals(access)) {
             customer.setOwner(USER);
         } else {
             collaboration.setCollaborationType(access);
         }
-        when(relatedPermissions.getIsolatedOwnerIds(CUSTOMER, USER, ORG)).thenReturn(Set.of("private-owner"));
+        customerTabScope.getExcludedOwnerIds().add("private-owner");
         tabController.customerPage(CUSTOMER, pageRequest("opportunity"));
         ArgumentCaptor<OpportunityPageRequest> query = ArgumentCaptor.forClass(OpportunityPageRequest.class);
-        verify(opportunities).list(query.capture(), eq(USER), eq(ORG), same(customerTabScope), eq(false));
-        assertEquals("COLLABORATION".equals(access), customerTabScope.getSelf());
-        assertEquals(!"COLLABORATION".equals(access), customerTabScope.getAll());
-        assertTrue(customerTabScope.getDeptIds().isEmpty());
+        ArgumentCaptor<DeptDataPermissionDTO> permissionScope = ArgumentCaptor.forClass(DeptDataPermissionDTO.class);
+        verify(opportunities).list(query.capture(), eq(USER), eq(ORG), permissionScope.capture(), eq(false));
+        DeptDataPermissionDTO scope = permissionScope.getValue();
+        if ("COLLABORATION".equals(access)) {
+            assertEquals(Set.of("related-department"), scope.getDeptIds());
+            assertFixedRelation(query.getValue());
+            return;
+        }
+        assertTrue(scope.getAll());
         FilterCondition isolation = query.getValue().getFilters().getLast();
         assertEquals("owner", isolation.getName());
         assertEquals("NOT_IN", isolation.getOperator());
@@ -519,6 +535,17 @@ class CustomerDetailTabPermissionTest {
             assertEquals("NOT_IN", isolation.getOperator());
             assertEquals(List.of("private-owner"), isolation.getValue());
         }
+    }
+
+    @Test
+    void 自定义表单全量角色范围保留协作范围之外的记录() {
+        collaboration.setCollaborationType("COLLABORATION");
+        savedTab(CUSTOM_FORM);
+        when(customData.hasFullTabReadPermission(CUSTOM_FORM, USER, ORG)).thenReturn(true);
+        tabController.customerPage(CUSTOMER, pageRequest(CUSTOM_FORM));
+        ArgumentCaptor<CustomFormDataPageRequest> query = ArgumentCaptor.forClass(CustomFormDataPageRequest.class);
+        verify(customData).page(query.capture(), eq(USER), eq(ORG), eq(false), eq(true));
+        assertFixedRelation(query.getValue());
     }
 
     private Object invoke(String entry) {

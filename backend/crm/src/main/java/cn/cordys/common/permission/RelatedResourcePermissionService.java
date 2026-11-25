@@ -3,10 +3,13 @@ package cn.cordys.common.permission;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.UserQueryService;
 import cn.cordys.common.util.CaseFormatUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.clue.domain.Clue;
@@ -52,6 +55,8 @@ public class RelatedResourcePermissionService {
     @Resource
     private PermissionCache permissionCache;
     @Resource
+    private UserQueryService userQueryService;
+    @Resource
     private BaseMapper<Clue> clueMapper;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
@@ -70,9 +75,41 @@ public class RelatedResourcePermissionService {
         return scope == null ? Set.of() : scope.getExcludedOwnerIds();
     }
 
-    /** 客户详情标签优先按协作关系确定数据范围，无有效关系时由调用方保留普通角色范围。 */
+    /** 返回客户关联关系提供的额外读取范围。 */
     public DeptDataPermissionDTO getCustomerTabDataPermission(String customerId, String userId, String orgId) {
         return getCustomerDataPermission(customerId, userId, orgId, false);
+    }
+
+    /** 合并角色和协作的读取范围，由调用方继续应用当前客户和关联字段条件。 */
+    public DeptDataPermissionDTO mergeCustomerTabDataPermission(DeptDataPermissionDTO roleScope,
+            DeptDataPermissionDTO collaborationScope, String orgId) {
+        if (roleScope == null) {
+            return collaborationScope;
+        }
+        if (collaborationScope == null || roleScope.getAll()) {
+            return roleScope;
+        }
+        if (roleScope.getDeptIds().isEmpty()) {
+            // 角色仅本人可见时，协作权限已包含本人负责的记录。
+            return collaborationScope;
+        }
+        DeptDataPermissionDTO merged = new DeptDataPermissionDTO();
+        if (collaborationScope.getSelf()) {
+            // ALL 视图的部门范围也包含本人负责的记录。
+            merged.setViewId(InternalUserView.ALL.name());
+            merged.getDeptIds().addAll(roleScope.getDeptIds());
+            return merged;
+        }
+        Set<String> excludedOwners = collaborationScope.getExcludedOwnerIds();
+        if (excludedOwners.isEmpty()) {
+            return collaborationScope;
+        }
+        merged.setAll(true);
+        merged.getExcludedOwnerIds().addAll(excludedOwners);
+        Map<String, UserDeptDTO> departments = userQueryService.getUserDeptMapByUserIds(excludedOwners, orgId);
+        merged.getExcludedOwnerIds().removeIf(owner -> departments.containsKey(owner)
+                && roleScope.getDeptIds().contains(departments.get(owner).getDeptId()));
+        return merged;
     }
 
     private DeptDataPermissionDTO getCustomerDataPermission(String customerId, String userId, String orgId,

@@ -353,6 +353,22 @@ class ResourcePermissionServiceTest {
     }
 
     @Test
+    void roleReadScopeAllowsViewingRelatedDataOutsideCollaborationScope() {
+        String permission = PermissionConstants.OPPORTUNITY_MANAGEMENT_READ;
+        String form = FormKey.OPPORTUNITY.getKey();
+        doReturn(true).when(dataScope).hasDataPermission("reader", "org", "sales", permission);
+        when(relatedPermissions.isIsolatedData(form, opportunity.getId(), "reader", "org")).thenReturn(true);
+        try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
+            roles.when(() -> PermissionUtils.hasPermission(permission)).thenReturn(true);
+            assertDoesNotThrow(() -> service.checkResourcePermissionWithoutApprovalTask(
+                    permission, opportunity.getId(), form, "reader", "org"));
+            doReturn(false).when(dataScope).hasDataPermission("reader", "org", "sales", permission);
+            assertThrows(GenericException.class, () -> service.checkResourcePermissionWithoutApprovalTask(
+                    permission, opportunity.getId(), form, "reader", "org"));
+        }
+    }
+
+    @Test
     void rolePermissionIsStillRequired() {
         try (MockedStatic<PermissionUtils> ignored = mockPermissions()) {
             assertThrows(GenericException.class, () -> single("opportunity"));

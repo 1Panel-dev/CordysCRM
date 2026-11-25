@@ -91,22 +91,10 @@
             <if test="request.keyword != null and request.keyword != ''">
                 AND fur.content like concat('%', #{request.keyword},'%')
             </if>
-            <!-- 仅客户信息成员按负责人隔离，全部只读成员的数据可由客户负责人接收。 -->
             <if test="resourceType == 'CUSTOMER'">
-                AND (
-                    fur.owner = #{userId}
-                    OR NOT EXISTS (
-                        SELECT 1 FROM customer_collaboration cc
-                        INNER JOIN customer privacy_customer ON privacy_customer.id = cc.customer_id
-                        WHERE cc.customer_id = fur.customer_id
-                        AND privacy_customer.organization_id = #{orgId}
-                        AND <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedCollaboration">
-                            <property name="collaborationAlias" value="cc"/>
-                        </include>
-                        AND cc.user_id != COALESCE(privacy_customer.owner, '')
-                        AND cc.user_id IN (fur.owner, #{userId})
-                    )
-                )
+                <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.customerTabOwnerScope">
+                    <property name="ownerColumn" value="fur.owner"/>
+                </include>
             </if>
         </where>
         ORDER BY fur.follow_time DESC, fur.create_time DESC

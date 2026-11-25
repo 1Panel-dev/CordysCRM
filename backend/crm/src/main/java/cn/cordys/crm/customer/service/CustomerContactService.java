@@ -9,7 +9,6 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
-import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.constants.RuleValidatorConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
@@ -41,9 +40,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.domain.CustomerContactField;
 import cn.cordys.crm.customer.domain.CustomerContactFieldBlob;
@@ -142,8 +139,6 @@ public class CustomerContactService {
     private CustomerContactFieldService customerContactFieldService;
     @Resource
     private BaseChartService baseChartService;
-    @Resource
-    private CustomerCollaborationService customerCollaborationService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
@@ -266,24 +261,26 @@ public class CustomerContactService {
         }
         String userId = SessionUtils.getUserId();
         Customer customer = customerMapper.selectByPrimaryKey(customerContact.getCustomerId());
-        DeptDataPermissionDTO tabScope = relatedResourcePermissionService.getCustomerTabDataPermission(
-                customerContact.getCustomerId(), userId, orgId);
-        if (tabScope != null && ((tabScope.getSelf() && !userId.equals(customerContact.getOwner()))
-                || tabScope.getExcludedOwnerIds().contains(customerContact.getOwner()))) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
-        relatedResourcePermissionService.checkIsolatedData(FormKey.CONTACT.getKey(), id, userId, orgId);
         boolean hasContactPermission = PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
                 && StringUtils.isNotBlank(customerContact.getOwner())
                 && dataScopeService.hasDataPermission(userId, orgId, customerContact.getOwner(),
                         PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        if (!hasContactPermission) {
+            DeptDataPermissionDTO tabScope = relatedResourcePermissionService.getCustomerTabDataPermission(
+                    customerContact.getCustomerId(), userId, orgId);
+            if (tabScope != null && ((tabScope.getSelf() && !userId.equals(customerContact.getOwner()))
+                    || tabScope.getExcludedOwnerIds().contains(customerContact.getOwner()))) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+            relatedResourcePermissionService.checkIsolatedData(FormKey.CONTACT.getKey(), id, userId, orgId);
+        }
         if (!hasContactPermission && !relatedResourcePermissionService.hasRelatedReadPermission(
                 FormKey.CONTACT.getKey(), id, userId, orgId)) {
             String customerId = customerContact.getCustomerId();
             resourcePermissionService.checkResourcePermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ,
                     customerId, FormKeyConstants.CUSTOMER, userId, orgId);
             DeptDataPermissionDTO dataPermission = dataScopeService.getDeptDataPermission(userId, orgId,
-                    PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+                    PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
             if (listByCustomerId(customerId, userId, orgId, dataPermission).getList().stream()
                     .noneMatch(contact -> id.equals(contact.getId()))) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -604,113 +601,30 @@ public class CustomerContactService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
-        DeptDataPermissionDTO tabScope = relatedResourcePermissionService.getCustomerTabDataPermission(
+        DeptDataPermissionDTO collaborationScope = relatedResourcePermissionService.getCustomerTabDataPermission(
                 customerId, userId, orgId);
-        if (tabScope != null) {
-            List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId).stream()
-                    .filter(item -> !tabScope.getSelf() || userId.equals(item.getOwner()))
-                    .filter(item -> !tabScope.getExcludedOwnerIds().contains(item.getOwner())).toList();
-            list = buildListData(list, orgId);
-            CustomerContactListAllResponse response = new CustomerContactListAllResponse();
-            response.setList(list);
-            response.setOptionMap(getListOptionMap(orgId, list));
-            return response;
+        DeptDataPermissionDTO scope = collaborationScope == null ? deptDataPermission
+                : relatedResourcePermissionService.mergeCustomerTabDataPermission(deptDataPermission,
+                        collaborationScope, orgId);
+        List<CustomerContactListResponse> visibleContacts = List.of();
+        if (scope != null && !scope.getInvisible()) {
+            List<CustomerContactListResponse> contacts = extCustomerContactMapper.listByCustomerId(customerId);
+            Map<String, UserDeptDTO> ownerDepartments = scope.getDeptIds().isEmpty() ? Map.of()
+                    : baseService.getUserDeptMapByUserIds(contacts.stream().map(CustomerContactListResponse::getOwner)
+                            .filter(StringUtils::isNotBlank).collect(Collectors.toSet()), orgId);
+            visibleContacts = contacts.stream()
+                    .filter(item -> !scope.getExcludedOwnerIds().contains(item.getOwner()))
+                    .filter(item -> scope.getAll()
+                            || (scope.getSelf() || !scope.getDeptIds().isEmpty()) && userId.equals(item.getOwner())
+                            || StringUtils.isNotBlank(item.getOwner()) && ownerDepartments.containsKey(item.getOwner())
+                                    && scope.getDeptIds().contains(ownerDepartments.get(item.getOwner()).getDeptId()))
+                    .toList();
         }
-        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(customerId);
-        Set<String> isolatedOwnerIds = getIsolatedContactOwnerIds(customer, userId, collaborations);
-        List<CustomerContactListResponse> visibleContacts = extCustomerContactMapper.listByCustomerId(customerId).stream()
-                .filter(item -> !isolatedOwnerIds.contains(item.getOwner())).toList();
+        List<CustomerContactListResponse> list = buildListData(visibleContacts, orgId);
         CustomerContactListAllResponse response = new CustomerContactListAllResponse();
-        boolean isCustomerOwner = Strings.CS.equals(customer.getOwner(), userId);
-        if (deptDataPermission.getAll() || Strings.CS.equals(userId, InternalUser.ADMIN.getValue()) || isCustomerOwner) {
-            List<CustomerContactListResponse> list = buildListData(visibleContacts, orgId);
-            Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
-            response.setList(list);
-            response.setOptionMap(optionMap);
-            return response;
-        }
-
-        List<CustomerContactListResponse> list = List.of();
-
-        boolean fullDataCollaborator = collaborations.stream()
-                .anyMatch(item -> Strings.CS.equals(item.getUserId(), userId)
-                        && Strings.CS.equalsAny(item.getCollaborationType(),
-                                CustomerCollaborationType.READ_ONLY.name(),
-                                CustomerCollaborationType.JOINT_FOLLOW.name()));
-        if (fullDataCollaborator) {
-            List<CustomerContactListResponse> all = buildListData(visibleContacts, orgId);
-            response.setList(all);
-            response.setOptionMap(getListOptionMap(orgId, all));
-            return response;
-        }
-
-        // 获取协作类型的协作的联系人
-        Set<String> collaborationUserIds = collaborations.stream()
-                .filter(collaboration -> Strings.CS.equals(collaboration.getCollaborationType(),
-                        CustomerCollaborationType.COLLABORATION.name())
-                        || Strings.CS.equals(collaboration.getCollaborationType(),
-                                CustomerCollaborationType.JOINT_FOLLOW.name()))
-                .map(CustomerCollaboration::getUserId)
-                .collect(Collectors.toSet());
-
-        boolean isCollaborationUser = collaborationUserIds.contains(userId);
-
-        // 部门数据权限
-        if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
-            UserDeptDTO customerOwnerDept = baseService.getUserDeptMapByUserId(customer.getOwner(), orgId);
-            // 部门权限是否有该客户的权限
-            boolean hasDeptCustomerPermission = customerOwnerDept != null
-                    && deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId());
-
-            list = visibleContacts;
-            if (hasDeptCustomerPermission) {
-                Map<String, UserDeptDTO> userDeptMapByUserIds = baseService
-                        .getUserDeptMapByUserIds(collaborationUserIds, orgId);
-                list = list.stream()
-                        .filter(item -> {
-                            if (!collaborationUserIds.contains(item.getOwner())) {
-                                // 不是协作人的联系人，则不过滤
-                                return true;
-                            }
-                            UserDeptDTO userDeptDTO = userDeptMapByUserIds.get(item.getOwner());
-                            // 部门数据权限，则过滤掉非本部门的协作人的联系人
-                            return userDeptDTO != null
-                                    && deptDataPermission.getDeptIds().contains(userDeptDTO.getDeptId());
-                        })
-                        .toList();
-            } else if (isCollaborationUser) {
-                // 没有权限，只是协作人，则只能看自己的
-                list = list.stream()
-                        .filter(item -> Strings.CS.equals(item.getOwner(), userId))
-                        .toList();
-            }
-        }
-
-        if (deptDataPermission.getSelf()) {
-            list = visibleContacts;
-            if (isCollaborationUser) {
-                // 没有权限，只是协作人，则只能看自己的
-                list = list.stream()
-                        .filter(item -> Strings.CS.equals(item.getOwner(), userId))
-                        .toList();
-            }
-        }
-
-        list = buildListData(list, orgId);
-        Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
         response.setList(list);
-        response.setOptionMap(optionMap);
+        response.setOptionMap(getListOptionMap(orgId, list));
         return response;
-    }
-
-    private Set<String> getIsolatedContactOwnerIds(Customer customer, String userId,
-            List<CustomerCollaboration> collaborations) {
-        // 有效协作类型已处理到期降级；客户负责人和本人负责的联系人始终保留。
-        return collaborations.stream()
-                .filter(item -> CustomerCollaborationType.COLLABORATION.name().equals(item.getCollaborationType())
-                        && !Strings.CS.equalsAny(item.getUserId(), customer.getOwner(), userId))
-                .map(CustomerCollaboration::getUserId)
-                .collect(Collectors.toSet());
     }
 
     public boolean checkOpportunity(String id) {
