@@ -208,8 +208,8 @@ class FollowUpCommentPermissionTest {
         configureTarget(target);
         String form = target == FollowUpCommentTargetType.RECORD ? FormKey.FOLLOW_RECORD.getKey()
                 : FormKey.FOLLOW_PLAN.getKey();
-        String permission = target == FollowUpCommentTargetType.RECORD ? PermissionConstants.FOLLOW_RECORD_UPDATE
-                : PermissionConstants.FOLLOW_PLAN_UPDATE;
+        String permission = target == FollowUpCommentTargetType.RECORD ? PermissionConstants.FOLLOW_RECORD_READ
+                : PermissionConstants.FOLLOW_PLAN_READ;
         doNothing().when(resourcePermissions).checkResourcePermission(permission, RESOURCE, form, USER, ORG);
 
         Comment result = service.add(addRequest, USER, ORG);
