@@ -1224,16 +1224,23 @@
       <template v-if="fieldConfig.type === FieldTypeEnum.STATISTIC">
         <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
-            {{ t('crmFormDesign.statisticsTargetForm') }}
+            <div>
+              <span class="text-[var(--error-red)]">*</span>
+              {{ t('crmFormDesign.statisticsTargetForm') }}
+            </div>
           </div>
           <n-select
             v-model:value="fieldConfig.targetFormId"
             :options="statisticTargetFormOptions"
             filterable
             :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+            :status="!fieldConfig.targetFormId ? 'error' : undefined"
             :fallback-option="fieldConfig.targetFormId ? fallbackOption : false"
             @update-value="handleStatisticTargetFormChange"
           />
+          <div v-if="!fieldConfig.targetFormId" class="text-[12px] text-[var(--error-red)]">
+            {{ t('common.notNull', { value: t('crmFormDesign.statisticsTargetForm') }) }}
+          </div>
         </div>
         <div v-if="fieldConfig.targetFormId" class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
@@ -1631,7 +1638,7 @@
     :field-config="fieldConfig"
     :form-fields="list.filter((field) => !field.resourceFieldId)"
     :form-key="props.formKey"
-    :custom-data-source-forms="[]"
+    :custom-data-source-forms="statisticTargetForms"
     combineSearchFieldKey="combineSearch"
     field-source="statisticTarget"
     match-value-only
@@ -1643,7 +1650,8 @@
     :field-config="fieldConfig"
     :form-fields="list.filter((field) => !field.resourceFieldId)"
     :form-key="props.formKey"
-    :custom-data-source-forms="[]"
+    :custom-data-source-forms="customDataSourceForms"
+    :current-custom-form-id="customFormSourceId"
     combineSearchFieldKey="updateScopeCondition"
     field-source="currentForm"
     match-value-only
@@ -2050,6 +2058,9 @@
       .filter((form) => form.sourceTypeFields.length > 0)
       .map((form) => ({ label: form.name, value: form.id }));
   });
+  const statisticTargetForms = computed(() =>
+    statisticRelatedForms.value.map((form) => ({ id: form.id, name: form.name }))
+  );
 
   // 当前表单作为数据源字段在统计表单中的所有字段
   const statisticRelatedFieldOptions = computed<SelectOption[]>(() => {

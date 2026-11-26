@@ -133,7 +133,10 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
     let pass: boolean | FormCreateField = true;
     for (let i = 0; i < fieldList.value.length; i++) {
       const field = fieldList.value[i];
-      if (field.type === FieldTypeEnum.STATISTIC && field.statisticType !== 'COUNT' && !field.statisticFieldId) {
+      if (
+        field.type === FieldTypeEnum.STATISTIC &&
+        (!field.targetFormId || (field.statisticType !== 'COUNT' && !field.statisticFieldId))
+      ) {
         message.error(t('crmFormDesign.requiredFieldAttrNotEmpty'));
         pass = field;
         break;
