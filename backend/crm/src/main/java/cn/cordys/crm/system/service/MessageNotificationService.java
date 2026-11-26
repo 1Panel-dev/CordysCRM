@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -48,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +61,16 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class MessageNotificationService {
+
+    // 系统通知类型展示顺序：线索、客户、商机、合同、订单、代办(审批)、跟进
+    private static final List<String> SYS_TASK_TYPE_ORDER = List.of(
+            NotificationConstants.Module.CLUE,
+            NotificationConstants.Module.CUSTOMER,
+            NotificationConstants.Module.OPPORTUNITY,
+            NotificationConstants.Module.CONTRACT,
+            NotificationConstants.Module.ORDER,
+            NotificationConstants.Module.APPROVAL,
+            NotificationConstants.Module.FOLLOW_UP);
 
     @Resource
     private ExtMessageTaskMapper extMessageTaskMapper;
@@ -85,7 +97,12 @@ public class MessageNotificationService {
         Map<String, String> moduleMap = MessageTemplateUtils.getModuleMap();
         taskTypeCount.forEach(dto -> dto.setName(moduleMap.get(dto.getTaskType())));
 
-        return taskTypeCount;
+        return taskTypeCount.stream()
+                .sorted(Comparator.comparingInt((MessageTaskCountDTO dto) -> {
+                    int index = SYS_TASK_TYPE_ORDER.indexOf(dto.getTaskType());
+                    return index < 0 ? Integer.MAX_VALUE : index;
+                }))
+                .toList();
     }
 
     /**
@@ -175,6 +192,7 @@ public class MessageNotificationService {
      */
     @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.ADD, operator = "{#userId}")
     public void add(MessageAddRequest request, String userId, String orgId) {
+        checkNameUnique(orgId, request.getTaskType(), request.getName(), null);
         String taskId = IDGenerator.nextStr();
         MessageTask task = new MessageTask();
         task.setId(taskId);
@@ -219,6 +237,8 @@ public class MessageNotificationService {
     @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.UPDATE, operator = "{#userId}")
     public void update(MessageUpdateRequest request, String userId, String orgId) {
         MessageTask oldTask = messageTaskMapper.selectByPrimaryKey(request.getId());
+        String taskType = StringUtils.isNotBlank(request.getTaskType()) ? request.getTaskType() : oldTask.getTaskType();
+        checkNameUnique(orgId, taskType, request.getName(), request.getId());
         MessageTaskConfig oldConfig = messageTaskConfigMapper.selectListByLambda(
                 new LambdaQueryWrapper<MessageTaskConfig>()
                         .eq(MessageTaskConfig::getMessageTaskId, request.getId())).getFirst();
@@ -256,6 +276,25 @@ public class MessageNotificationService {
                 .modifiedValue(newLogDTO)
                 .resourceId(oldTask.getId())
                 .build());
+    }
+
+    /**
+     * 校验同一模块(taskType)下通知场景名称唯一，excludeId 用于编辑时排除自身
+     */
+    private void checkNameUnique(String organizationId, String taskType, String name, String excludeId) {
+        if (StringUtils.isAnyBlank(organizationId, taskType, name)) {
+            return;
+        }
+        boolean duplicate = messageTaskMapper.selectListByLambda(
+                        new LambdaQueryWrapper<MessageTask>()
+                                .eq(MessageTask::getOrganizationId, organizationId)
+                                .eq(MessageTask::getTaskType, taskType)
+                                .eq(MessageTask::getName, name))
+                .stream()
+                .anyMatch(task -> !StringUtils.equals(task.getId(), excludeId));
+        if (duplicate) {
+            throw new GenericException(Translator.get("message.name_repeat"));
+        }
     }
 
     /**
