@@ -462,6 +462,7 @@ public class CommonNoticeSendService {
         messageDetail.setId(task.getId());
         messageDetail.setEvent(task.getEvent());
         messageDetail.setTaskType(task.getTaskType());
+        messageDetail.setFormType(task.getFormType());
         messageDetail.setTriggerType(context.getTriggerType());
         messageDetail.setOrganizationId(task.getOrganizationId());
         messageDetail.setTemplate(content);

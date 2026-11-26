@@ -9,6 +9,7 @@ public class MessageDetailDTO implements Serializable {
     private String id;
     private String event;
     private String taskType;
+    private String formType;
     private String triggerType;
     private Long createTime;
     private String template;

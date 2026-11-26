@@ -53,6 +53,7 @@
             smt.sys_enable,
             smt.`event`,
             smt.task_type,
+            smt.form_type,
             smt.template,
             smt.`enable`,
             smt.type,

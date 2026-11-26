@@ -11,8 +11,11 @@ public class MessageAddRequest {
     @Schema(description = "场景名称")
     private String name;
 
-    @Schema(description = "所属分类")
+    @Schema(description = "类型")
     private String taskType;
+
+    @Schema(description = "表单类型(所属分类)")
+    private String formType;
 
     @Schema(description = "接收人")
     private List<String> scopeId;
