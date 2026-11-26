@@ -77,7 +77,9 @@ public interface ExtCustomerMapper extends StatisticSqlMapper {
      */
     long filterOwnerCount(@Param("ownerId") String ownerId, @Param("filters") List<FilterConditionDTO> filters);
 
-    List<CustomerListResponse> getListByIds(@Param("ids") List<String> ids);
+    List<CustomerListResponse> getListByIds(@Param("ids") List<String> ids, @Param("orgId") String orgId,
+            @Param("userId") String userId, @Param("pool") boolean pool,
+            @Param("collaborationView") boolean collaborationView);
 
     Long selectCustomerCount(@Param("request") HomeStatisticSearchWrapperRequest request,
             @Param("unfollowed") boolean unfollowed);

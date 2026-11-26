@@ -1,7 +1,6 @@
 package cn.cordys.crm.order.service;
 
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.FieldExportMeta;
 import cn.cordys.common.dto.stage.StageConfigResponse;
@@ -75,9 +74,7 @@ public class OrderExportService extends BaseExportService {
         var deptDataPermission = exportParam.getDeptDataPermission();
         List<OrderListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            var request = new OrderPageRequest();
-            exportList = loadSelectedVisibleRows(exportParam, request, InternalUserView.COLLABORATION_VISIBLE,
-                    scope -> extOrderMapper.list(request, orgId, userId, scope, false), OrderListResponse::getId);
+            exportList = extOrderMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
             List<OrderListResponse> orderListResponses = filterExportPermission(exportList, orgId);
             return Pair.of(orderListResponses, orderListResponses.size());
         } else {

@@ -52,6 +52,9 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
 
     List<OptionDTO> getOpportunityOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
+    List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId,
+            @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+
     Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request,
             @Param("amount") boolean amount);
 

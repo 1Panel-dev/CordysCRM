@@ -3,6 +3,7 @@ package cn.cordys.crm.opportunity.controller;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -222,16 +223,21 @@ public class OpportunityController {
     @Operation(summary = "导出选中商机")
     @RequiresPermissions({ PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT })
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        DeptDataPermissionDTO deptDataPermission = InternalUserView.isVisible(request.getViewId(),
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+                ? dataScopeService.getDeptDataPermission(userId, orgId, request.getViewId(),
+                        PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+                : dataScopeService.getDeptDataPermission(userId, orgId, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.OPPORTUNITY.name())
                 .fileName(request.getFileName())
                 .headList(request.getHeadList())
                 .logModule(LogModule.OPPORTUNITY_INDEX)
                 .locale(LocaleContextHolder.getLocale())
-                .orgId(OrganizationContext.getOrganizationId())
-                .userId(SessionUtils.getUserId())
+                .orgId(orgId)
+                .userId(userId)
                 .deptDataPermission(deptDataPermission)
                 .selectIds(request.getIds())
                 .selectRequest(request)

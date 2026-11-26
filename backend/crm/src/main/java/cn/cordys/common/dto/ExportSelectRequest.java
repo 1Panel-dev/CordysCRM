@@ -21,4 +21,7 @@ public class ExportSelectRequest {
     @Schema(description = "勾选的数据id集合")
     @NotEmpty(message = "{export_select_ids_is_empty}")
     private List<String> ids;
+
+    @Schema(description = "勾选记录所在的列表视图")
+    private String viewId;
 }

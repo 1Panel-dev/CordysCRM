@@ -1,7 +1,6 @@
 package cn.cordys.crm.contract.service;
 
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.FieldExportMeta;
 import cn.cordys.common.dto.stage.StageConfigResponse;
@@ -81,9 +80,7 @@ public class ContractExportService extends BaseExportService {
         var deptDataPermission = exportParam.getDeptDataPermission();
         List<ContractListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            var request = new ContractPageRequest();
-            exportList = loadSelectedVisibleRows(exportParam, request, InternalUserView.COLLABORATION_VISIBLE,
-                    scope -> extContractMapper.list(request, orgId, userId, scope, false), ContractListResponse::getId);
+            exportList = extContractMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
             List<ContractListResponse> contractListResponses = filterExportPermission(exportList, orgId);
             return Pair.of(contractListResponses, contractListResponses.size());
         } else {
