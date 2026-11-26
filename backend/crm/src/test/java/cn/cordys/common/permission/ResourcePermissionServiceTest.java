@@ -819,6 +819,32 @@ class ResourcePermissionServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
+    void roleScopeStillAppliesWhenApprovalGrantIsIsolated(boolean taskGrant) {
+        String permission = PermissionConstants.CLUE_MANAGEMENT_READ;
+        if (taskGrant) {
+            ApprovalTask task = pendingTask("task-id");
+            bindApprovalTask(task, pendingInstance(task));
+            withApprovalTaskHeader(task.getId());
+            permission = PermissionConstants.CLUE_MANAGEMENT_UPDATE;
+        } else {
+            bindCommentMention("GET", true);
+        }
+        String rolePermission = permission;
+        when(relatedPermissions.isIsolatedData(FormKeyConstants.CLUE, clue.getId(), "sales", "org")).thenReturn(true);
+        try (MockedStatic<PermissionUtils> roles = mockPermissions()) {
+            Runnable check = () -> service.checkResourcePermission(
+                    rolePermission, clue.getId(), FormKeyConstants.CLUE, "sales", "org");
+            assertThrows(GenericException.class, check::run);
+            roles.when(() -> PermissionUtils.hasPermission(rolePermission)).thenReturn(true);
+            doReturn(true).when(dataScope).hasDataPermission("sales", "org", clue.getOwner(), rolePermission);
+            assertDoesNotThrow(check::run);
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
     void effectiveCommentMentionGrantsOnlyTheMentionedResourceReadWithoutRolePermission(boolean header) {
         bindCommentMention("GET", header);
         try (MockedStatic<PermissionUtils> roles = mockPermissions()) {

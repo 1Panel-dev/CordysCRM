@@ -472,18 +472,18 @@ public class CustomerContactService {
         if (originCustomerContact == null) {
             return;
         }
-        checkContactDeleteScope(originCustomerContact, userId, orgId);
+        Customer customer = checkContactOrganization(originCustomerContact, userId, orgId);
         String contactDelete = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE;
-        String owner = originCustomerContact.getOwner();
-        if (!PermissionUtils.hasPermission(contactDelete) || StringUtils.isBlank(owner)
-                || !dataScopeService.hasDataPermission(userId, orgId, owner, contactDelete)) {
-            String customerId = originCustomerContact.getCustomerId();
-            if (StringUtils.isBlank(customerId)) {
+        String customerDelete = PermissionConstants.CUSTOMER_MANAGEMENT_DELETE;
+        if (!hasRoleDataPermission(contactDelete, originCustomerContact.getOwner(), userId, orgId)) {
+            if (customer == null) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-            resourcePermissionService.checkResourcePermissionWithoutApprovalStatus(
-                    PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, customerId,
-                    FormKeyConstants.CUSTOMER, userId, orgId);
+            if (!hasRoleDataPermission(customerDelete, customer.getOwner(), userId, orgId)) {
+                relatedResourcePermissionService.checkIsolatedData(FormKeyConstants.CONTACT, id, userId, orgId);
+                resourcePermissionService.checkResourcePermissionWithoutApprovalStatus(
+                        customerDelete, customer.getId(), FormKeyConstants.CUSTOMER, userId, orgId);
+            }
         }
         // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等删完才准
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
@@ -509,7 +509,7 @@ public class CustomerContactService {
         if (CollectionUtils.isEmpty(contacts)) {
             return;
         }
-        contacts.forEach(contact -> checkContactDeleteScope(contact, userId, orgId));
+        contacts.forEach(contact -> checkContactOrganization(contact, userId, orgId));
 
         List<String> contactIds = contacts.stream().map(CustomerContact::getId).toList();
         List<Opportunity> relatedOpportunities = opportunityMapper.selectListByLambda(
@@ -543,18 +543,24 @@ public class CustomerContactService {
         logService.batchAdd(logs);
     }
 
-    private void checkContactDeleteScope(CustomerContact contact, String userId, String orgId) {
+    private Customer checkContactOrganization(CustomerContact contact, String userId, String orgId) {
         if (StringUtils.isAnyBlank(userId, orgId) || !orgId.equals(contact.getOrganizationId())) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
         String customerId = contact.getCustomerId();
-        if (StringUtils.isNotBlank(customerId)) {
-            Customer customer = customerMapper.selectByPrimaryKey(customerId);
-            if (customer == null || !orgId.equals(customer.getOrganizationId())) {
-                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-            }
+        if (StringUtils.isBlank(customerId)) {
+            return null;
         }
-        relatedResourcePermissionService.checkIsolatedData(FormKeyConstants.CONTACT, contact.getId(), userId, orgId);
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (customer == null || !orgId.equals(customer.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        return customer;
+    }
+
+    private boolean hasRoleDataPermission(String permission, String owner, String userId, String orgId) {
+        return PermissionUtils.hasPermission(permission) && StringUtils.isNotBlank(owner)
+                && dataScopeService.hasDataPermission(userId, orgId, owner, permission);
     }
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.UPDATE, resourceId = "{#id}")
@@ -640,9 +646,12 @@ public class CustomerContactService {
 
     public CustomerContactListAllResponse getOpportunityContactList(String contactId, String orgId) {
         CustomerContactListAllResponse response = new CustomerContactListAllResponse();
-        List<CustomerContactListResponse> list = extCustomerContactMapper.getById(contactId).stream()
-                .filter(item -> !relatedResourcePermissionService.isIsolatedData(FormKey.CONTACT.getKey(), item.getId(),
-                        SessionUtils.getUserId(), orgId))
+        String userId = SessionUtils.getUserId();
+        List<CustomerContactListResponse> list = extCustomerContactMapper.getById(contactId, orgId).stream()
+                .filter(item -> hasRoleDataPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ,
+                        item.getOwner(), userId, orgId)
+                        || !relatedResourcePermissionService.isIsolatedData(FormKey.CONTACT.getKey(), item.getId(),
+                                userId, orgId))
                 .toList();
         list = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);

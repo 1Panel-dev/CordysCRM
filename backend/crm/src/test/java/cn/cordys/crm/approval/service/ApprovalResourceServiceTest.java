@@ -6,6 +6,7 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
@@ -85,6 +86,7 @@ class ApprovalResourceServiceTest {
     private ApprovalFlowService flowService;
     private ApprovalActionService actionService;
     private DataScopeService dataScopeService;
+    private final ResourcePermissionService resourcePermissions = mock(ResourcePermissionService.class);
     private CustomFormDataService customFormDataService;
     private BaseMapper<CustomFormData> customFormDataMapper;
     private ApprovalResourceQueryService resourceQueryService;
@@ -125,6 +127,7 @@ class ApprovalResourceServiceTest {
         ReflectionTestUtils.setField(service, "approvalFlowService", flowService);
         ReflectionTestUtils.setField(service, "approvalActionService", actionService);
         ReflectionTestUtils.setField(service, "dataScopeService", dataScopeService);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", resourcePermissions);
         ReflectionTestUtils.setField(service, "relatedResourcePermissionService",
                 mock(RelatedResourcePermissionService.class));
         ReflectionTestUtils.setField(service, "customFormDataService", customFormDataService);
@@ -522,6 +525,25 @@ class ApprovalResourceServiceTest {
         verifyNoInteractions(extTaskMapper, customFormDataService);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void isolatedApprovalUsesIndependentRolePermissionEvenForParticipants(boolean roleRead) {
+        ApprovalInstance instance = instanceForView();
+        when(extTaskMapper.selectLatestInstanceByResourceId("resource-a")).thenReturn(instance);
+        RelatedResourcePermissionService related = mock(RelatedResourcePermissionService.class);
+        when(related.isIsolatedData("contract", "resource-a", "reader", "org-a")).thenReturn(true);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", related);
+        when(resourcePermissions.hasRoleResourcePermission(PermissionConstants.CONTRACT_READ, "resource-a",
+                "contract", "reader", "org-a")).thenReturn(roleRead);
+
+        assertEquals(roleRead, service.hasViewPermission("resource-a", "reader", "org-a"));
+        assertEquals(roleRead, service.hasInstanceViewPermission(instance, "reader", "org-a"));
+        when(extTaskMapper.existsResourceParticipant("resource-a", "reader", "org-a")).thenReturn(true);
+        instance.setSubmitterId("reader");
+        assertEquals(roleRead, service.hasViewPermission("resource-a", "reader", "org-a"));
+        assertEquals(roleRead, service.hasInstanceViewPermission(instance, "reader", "org-a"));
+    }
+
     @Test
     void latestInstanceParticipantDoesNotGainPermissionOnOlderInstance() {
         ApprovalInstance instance = instanceForView();
@@ -565,10 +587,13 @@ class ApprovalResourceServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = { true, false })
-    void customFormInstanceReusesCustomFormDataViewPermission(boolean permitted) {
+    @CsvSource({ "true,true", "false,true", "true,false", "false,false" })
+    void customFormInstanceReusesCustomFormDataViewPermission(boolean permitted, boolean isolated) {
         ApprovalInstance instance = instanceForView();
         instance.setType("custom-form-a");
+        RelatedResourcePermissionService related = mock(RelatedResourcePermissionService.class);
+        when(related.isIsolatedData("custom-form-a", "resource-a", "reader", "org-a")).thenReturn(isolated);
+        ReflectionTestUtils.setField(service, "relatedResourcePermissionService", related);
         when(customFormDataService.hasViewPermission("resource-a", "reader", "org-a")).thenReturn(permitted);
         try (MockedStatic<PermissionUtils> permissions = mockStatic(PermissionUtils.class,
                 withSettings().mockMaker(MockMakers.INLINE))) {

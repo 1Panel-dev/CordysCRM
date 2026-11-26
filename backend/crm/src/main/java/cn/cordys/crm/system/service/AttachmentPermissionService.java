@@ -99,23 +99,22 @@ public class AttachmentPermissionService {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
             resourceId = comment.getResourceId();
-            if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)
-                    || (readOnly && extApprovalCommentMapper.existsMention(resourceId, userId, orgId))) {
-                checkIsolatedApprovalResource(resourceId, userId, orgId);
+            if ((extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)
+                    || (readOnly && extApprovalCommentMapper.existsMention(resourceId, userId, orgId)))
+                    && !isIsolatedApprovalResource(resourceId, userId, orgId)) {
                 return;
             }
-        } else if (extApprovalTaskMapper.existsAttachmentParticipant(attachment.getId(), resourceId, userId, orgId)) {
-            checkIsolatedApprovalResource(resourceId, userId, orgId);
+        } else if (extApprovalTaskMapper.existsAttachmentParticipant(attachment.getId(), resourceId, userId, orgId)
+                && !isIsolatedApprovalResource(resourceId, userId, orgId)) {
             return;
         }
         checkBusinessPermission(resourceId, userId, orgId);
     }
 
-    private void checkIsolatedApprovalResource(String resourceId, String userId, String orgId) {
+    private boolean isIsolatedApprovalResource(String resourceId, String userId, String orgId) {
         ApprovalInstance instance = extApprovalCommentMapper.selectLatestInstance(resourceId, orgId);
-        if (instance != null) {
-            relatedResourcePermissionService.checkIsolatedData(instance.getType(), resourceId, userId, orgId);
-        }
+        return instance != null && relatedResourcePermissionService.isIsolatedData(instance.getType(), resourceId,
+                userId, orgId);
     }
 
     private void checkBusinessPermission(String resourceId, String userId, String orgId) {

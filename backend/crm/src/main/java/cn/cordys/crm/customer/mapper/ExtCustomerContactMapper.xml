@@ -388,7 +388,7 @@
         select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
                cc.enable, cc.owner, cc.disable_reason, cc.phone
         from customer_contact cc
-        where cc.id = #{id}
+        where cc.id = #{id} and cc.organization_id = #{orgId}
     </select>
 
 

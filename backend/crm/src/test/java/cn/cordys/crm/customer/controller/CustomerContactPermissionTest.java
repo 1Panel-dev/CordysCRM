@@ -240,19 +240,57 @@ class CustomerContactPermissionTest {
         verify(contactFields).deleteByResourceId(record.getId());
     }
 
-    @Test
-    void 批量删除含隔离联系人时整批拦截() {
-        CustomerContact allowed = detail("allowed", USER);
-        CustomerContact isolated = detail("isolated", "owner");
-        List<String> ids = List.of(allowed.getId(), isolated.getId());
-        when(contactRecords.selectByIds(ids)).thenReturn(List.of(allowed, isolated));
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void 部门数据范围允许删除受协作隔离的联系人(boolean batch) {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(CONTACT_DELETE));
+        scope.setSelf(false);
+        scope.setDeptIds(Set.of("dept-a"));
+        CustomerContact record = detail("department-contact", "owner");
         doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(relatedPermissions)
-                .checkIsolatedData(FormKeyConstants.CONTACT, isolated.getId(), USER, ORG);
+                .checkIsolatedData(FormKeyConstants.CONTACT, record.getId(), USER, ORG);
 
-        GenericException error = assertThrows(GenericException.class, () -> service.batchDelete(ids, USER, ORG));
+        if (batch) {
+            configureBatchDelete(List.of(record));
+            controller.batchDelete(List.of(record.getId()));
+            verify(contactRecords).deleteByIds(List.of(record.getId()));
+        } else {
+            OperationLogContext.putEmptySpan();
+            try {
+                controller.delete(record.getId());
+            } finally {
+                OperationLogContext.clear();
+            }
+            verify(contactRecords).deleteByPrimaryKey(record.getId());
+        }
+    }
 
-        assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
+    @Test
+    void 批量删除包含超出角色范围的联系人时整批拒绝() {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(CONTACT_DELETE));
+        scope.setSelf(false);
+        scope.setDeptIds(Set.of("dept-a"));
+        CustomerContact allowed = detail("allowed", "owner");
+        CustomerContact outside = detail("outside", "collaborator");
+        configureBatchDelete(List.of(allowed, outside));
+
+        assertThrows(GenericException.class, () -> controller.batchDelete(List.of(allowed.getId(), outside.getId())));
+
         verify(contactRecords, never()).deleteByIds(anyList());
+        verifyNoInteractions(contactFields, statistics, notices);
+    }
+
+    @Test
+    void 仅凭客户协作授权仍不能删除隔离联系人() {
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(Set.of(DELETE));
+        configureCollaboration("JOINT_FOLLOW");
+        CustomerContact record = detail("isolated", "owner");
+        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(relatedPermissions)
+                .checkIsolatedData(FormKeyConstants.CONTACT, record.getId(), USER, ORG);
+
+        assertForbidden(() -> controller.delete(record.getId()));
+
+        verify(contactRecords, never()).deleteByPrimaryKey(record.getId());
         verifyNoInteractions(contactFields, statistics, notices);
     }
 
@@ -311,13 +349,7 @@ class CustomerContactPermissionTest {
         standalone.setCustomerId(null);
         CustomerContact linked = detail("linked", USER);
         List<String> ids = List.of(standalone.getId(), linked.getId());
-        when(contactRecords.selectByIds(ids)).thenReturn(List.of(standalone, linked));
-        CustomerContactResourceAccessContextProvider contactProvider = new CustomerContactResourceAccessContextProvider();
-        ReflectionTestUtils.setField(contactProvider, "contactMapper", contactRecords);
-        ReflectionTestUtils.setField(resourcePermissions, "contextProviders", List.of(provider, contactProvider));
-        ReflectionTestUtils.invokeMethod(resourcePermissions, "initializeProviders");
-        ReflectionTestUtils.setField(service, "opportunityMapper", mock(BaseMapper.class));
-        ReflectionTestUtils.setField(service, "logService", mock(LogService.class));
+        configureBatchDelete(List.of(standalone, linked));
 
         controller.batchDelete(ids);
 
@@ -347,6 +379,17 @@ class CustomerContactPermissionTest {
 
         verify(contactRecords).deleteByPrimaryKey(record.getId());
         verify(contactFields).deleteByResourceId(record.getId());
+    }
+
+    private void configureBatchDelete(List<CustomerContact> records) {
+        List<String> ids = records.stream().map(CustomerContact::getId).toList();
+        when(contactRecords.selectByIds(ids)).thenReturn(records);
+        CustomerContactResourceAccessContextProvider contactProvider = new CustomerContactResourceAccessContextProvider();
+        ReflectionTestUtils.setField(contactProvider, "contactMapper", contactRecords);
+        ReflectionTestUtils.setField(resourcePermissions, "contextProviders", List.of(provider, contactProvider));
+        ReflectionTestUtils.invokeMethod(resourcePermissions, "initializeProviders");
+        ReflectionTestUtils.setField(service, "opportunityMapper", mock(BaseMapper.class));
+        ReflectionTestUtils.setField(service, "logService", mock(LogService.class));
     }
 
     @AfterEach
@@ -809,5 +852,21 @@ class CustomerContactPermissionTest {
         result.setOwner(owner);
         result.setCustomerId(CUSTOMER);
         return result;
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "owner,true,true,true", "collaborator,true,true,false", "owner,false,true,false",
+            "collaborator,false,false,true" })
+    void 商机联系人按联系人角色范围或商机关联可见(String owner, boolean contactRead, boolean isolated, boolean visible) {
+        CustomerContactListResponse contact = contact("linked", owner);
+        when(contacts.getById(contact.getId(), ORG)).thenReturn(List.of(contact));
+        when(permissions.getPermissionIds(USER, ORG)).thenReturn(contactRead ? Set.of(CONTACT_READ) : Set.of());
+        scope.setSelf(false);
+        scope.setDeptIds(Set.of("dept-a"));
+        when(relatedPermissions.isIsolatedData(FormKeyConstants.CONTACT, contact.getId(), USER, ORG))
+                .thenReturn(isolated);
+
+        assertEquals(visible ? List.of(contact) : List.of(), service.getOpportunityContactList(contact.getId(), ORG)
+                .getList());
     }
 }
