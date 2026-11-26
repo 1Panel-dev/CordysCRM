@@ -15,8 +15,19 @@ VALUES
 
 INSERT INTO `sys_organization` ( `id`, `name`, `create_time`, `update_time`, `create_user`, `update_user` )
 VALUES
-    ( '100001', 'default', 1736152274610, 1736152274610, 'admin', 'admin' );-- 初始化组织管理员
+    ( '100001', 'default', 1736152274610, 1736152274610, 'admin', 'admin' );
 
+-- 初始化默认组织的基础模块
+INSERT INTO sys_module (id, organization_id, module_key, enable, pos, create_user, create_time, update_user, update_time)
+VALUES
+    (UUID_SHORT(), '100001', 'home', true, 10, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000),
+    (UUID_SHORT(), '100001', 'clue', true, 30, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000),
+    (UUID_SHORT(), '100001', 'customer', true, 40, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000),
+    (UUID_SHORT(), '100001', 'business', true, 50, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000),
+    (UUID_SHORT(), '100001', 'product', true, 80, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000),
+    (UUID_SHORT(), '100001', 'setting', true, 130, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
+
+-- 初始化组织管理员
 INSERT INTO sys_role ( id, NAME, internal, data_scope, create_time, update_time, create_user, update_user, description, organization_id )
 VALUES
     ( 'org_admin', 'org_admin', 1, 'ALL', UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin', '', '100001' );-- 初始化销售经理

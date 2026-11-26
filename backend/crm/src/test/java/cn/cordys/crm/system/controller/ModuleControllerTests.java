@@ -7,7 +7,6 @@ import cn.cordys.crm.system.domain.Module;
 import cn.cordys.crm.system.dto.request.ModuleRequest;
 import cn.cordys.crm.system.dto.request.ModuleSortRequest;
 import cn.cordys.crm.system.dto.response.ModuleDTO;
-import cn.cordys.crm.system.service.ModuleService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -20,6 +19,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -32,23 +32,26 @@ public class ModuleControllerTests extends BaseTest {
     private static final String SORT = "/module/sort";
 
     @Resource
-    private ModuleService moduleService;
-    @Resource
     private BaseMapper<Module> moduleMapper;
 
     @Test
     @Order(1)
     void testInitModuleList() {
-        moduleService.initModule("default");
-        List<Module> modules = moduleMapper.selectAll("pos");
-        assert !modules.isEmpty();
+        List<Module> modules = moduleMapper.selectAll("pos").stream()
+                .filter(module -> DEFAULT_ORGANIZATION_ID.equals(module.getOrganizationId()))
+                .toList();
+        assertEquals(List.of("home", "follow", "clue", "customer", "business", "contract", "order", "product",
+                "customForm", "dashboard", "agent", "tender", "setting"),
+                modules.stream().map(Module::getModuleKey).toList());
+        assertEquals(List.of(10L, 20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L, 110L, 120L, 130L),
+                modules.stream().map(Module::getPos).toList());
     }
 
     @Test
     @Order(2)
     void testGetModuleListAndSwitch() throws Exception {
         ModuleRequest request = new ModuleRequest();
-        request.setOrganizationId("default");
+        request.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(LIST_ALL, request);
         List<ModuleDTO> modules = getResultDataArray(mvcResult, ModuleDTO.class);
         assert !modules.isEmpty();
@@ -61,11 +64,11 @@ public class ModuleControllerTests extends BaseTest {
         assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.not_exist"));
         ModuleSortRequest sortRequest = new ModuleSortRequest();
         sortRequest.setDragModuleId(param);
-        sortRequest.setStart(1L);
-        sortRequest.setEnd(3L);
+        sortRequest.setStart(modules.getFirst().getPos());
+        sortRequest.setEnd(modules.get(2).getPos());
         this.requestPostWithOk(SORT, sortRequest);
-        sortRequest.setStart(3L);
-        sortRequest.setEnd(1L);
+        sortRequest.setStart(modules.get(2).getPos());
+        sortRequest.setEnd(modules.getFirst().getPos());
         this.requestPostWithOk(SORT, sortRequest);
         // permission check
         requestPostPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SORT, sortRequest);

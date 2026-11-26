@@ -59,7 +59,6 @@ public class DataInitService {
         RLock lock = redisson.getLock("init_data_lock");
         lock.lock();
         try {
-            initOneTime(moduleService::initDefaultOrgModule, "init.module");
             initOneTime(moduleFormService::initForm, "init.form");
             initOneTime(moduleFieldService::modifyDateProp, "modify.form.date");
             initOneTime(moduleFormService::modifyFormLinkProp, "modify.form.link");
