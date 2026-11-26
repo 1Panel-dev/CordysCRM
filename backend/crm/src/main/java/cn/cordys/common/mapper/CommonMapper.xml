@@ -705,6 +705,7 @@
         <if test="refSubId != null and refSubId != ''">
             and t.ref_sub_id = #{refSubId}
         </if>
+        limit 1
     </select>
 
     <update id="updateCustomerField">
