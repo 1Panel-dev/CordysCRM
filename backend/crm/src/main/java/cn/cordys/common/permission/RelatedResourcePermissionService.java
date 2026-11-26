@@ -5,7 +5,6 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.CustomerTabRow;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
@@ -111,31 +110,6 @@ public class RelatedResourcePermissionService {
         merged.getExcludedOwnerIds().removeIf(owner -> departments.containsKey(owner)
                 && roleScope.getDeptIds().contains(departments.get(owner).getDeptId()));
         return merged;
-    }
-
-    /** 按合并前的角色查看范围标记仅通过客户关联关系可见的记录。 */
-    public void markCustomerTabRows(List<? extends CustomerTabRow> rows, DeptDataPermissionDTO roleScope,
-            String userId, String orgId) {
-        if (rows.isEmpty()) {
-            return;
-        }
-        Set<String> departments = roleScope.getDeptIds();
-        Map<String, UserDeptDTO> ownerDepartments = Map.of();
-        if (!roleScope.getAll() && !departments.isEmpty()) {
-            List<String> owners = rows.stream().map(CustomerTabRow::getOwner)
-                    .filter(StringUtils::isNotBlank).distinct().toList();
-            if (!owners.isEmpty()) {
-                ownerDepartments = userQueryService.getUserDeptMapByUserIds(owners, orgId);
-            }
-        }
-        for (CustomerTabRow row : rows) {
-            String owner = row.getOwner();
-            UserDeptDTO ownerDepartment = owner == null ? null : ownerDepartments.get(owner);
-            boolean roleVisible = roleScope.getAll() || !roleScope.getInvisible()
-                    && ((roleScope.getSelf() || !departments.isEmpty()) && userId.equals(owner)
-                        || ownerDepartment != null && departments.contains(ownerDepartment.getDeptId()));
-            row.setCollaborationOnly(!roleVisible);
-        }
     }
 
     private DeptDataPermissionDTO getCustomerDataPermission(String customerId, String userId, String orgId,

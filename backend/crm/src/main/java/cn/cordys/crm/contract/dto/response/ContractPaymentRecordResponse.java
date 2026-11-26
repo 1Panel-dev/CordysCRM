@@ -1,9 +1,7 @@
 package cn.cordys.crm.contract.dto.response;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.CustomerTabRow;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -13,11 +11,7 @@ import java.util.List;
  * @author song-cc-rock
  */
 @Data
-public class ContractPaymentRecordResponse extends ContractPaymentRecord implements CustomerTabRow {
-
-    @Schema(description = "是否仅通过客户协作可见")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Boolean collaborationOnly;
+public class ContractPaymentRecordResponse extends ContractPaymentRecord {
 
     @Schema(description = "创建人名称")
     private String createUserName;

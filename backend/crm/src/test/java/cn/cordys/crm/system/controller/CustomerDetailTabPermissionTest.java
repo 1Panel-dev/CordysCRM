@@ -77,7 +77,6 @@ import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,7 +86,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -95,7 +93,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -304,20 +301,9 @@ class CustomerDetailTabPermissionTest {
 
     @Test
     void 标准标签采用客户协作范围并保留固定父客户过滤() {
-        OpportunityListResponse mine = new OpportunityListResponse();
-        mine.setOwner(USER);
-        OpportunityListResponse collaborationOnly = new OpportunityListResponse();
-        collaborationOnly.setOwner("another-owner");
         PagerWithOption<List<OpportunityListResponse>> result = new PagerWithOption<>();
-        result.setList(List.of(mine, collaborationOnly));
-        doCallRealMethod().when(relatedPermissions).markCustomerTabRows(any(), same(relatedScope), eq(USER), eq(ORG));
         when(opportunities.list(any(), eq(USER), eq(ORG), same(customerTabScope), eq(false))).thenReturn(result);
         assertSame(result, tabController.customerPage(CUSTOMER, pageRequest("opportunity")));
-        assertFalse(mine.getCollaborationOnly());
-        assertTrue(collaborationOnly.getCollaborationOnly());
-        var jsonMapper = JsonMapper.builder().build();
-        assertFalse(jsonMapper.valueToTree(new OpportunityListResponse()).has("collaborationOnly"));
-        assertTrue(jsonMapper.valueToTree(mine).has("collaborationOnly"));
         ArgumentCaptor<OpportunityPageRequest> query = ArgumentCaptor.forClass(OpportunityPageRequest.class);
         verify(opportunities).list(query.capture(), eq(USER), eq(ORG), same(customerTabScope), eq(false));
         assertTrue(customerTabScope.getAll());

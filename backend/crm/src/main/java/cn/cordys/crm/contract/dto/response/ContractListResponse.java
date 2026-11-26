@@ -1,9 +1,7 @@
 package cn.cordys.crm.contract.dto.response;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.dto.CustomerTabRow;
 import cn.cordys.crm.contract.domain.Contract;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -11,11 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class ContractListResponse extends Contract implements CustomerTabRow {
-
-    @Schema(description = "是否仅通过客户协作可见")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Boolean collaborationOnly;
+public class ContractListResponse extends Contract {
 
     @Schema(description = "客户名称")
     private String customerName;
