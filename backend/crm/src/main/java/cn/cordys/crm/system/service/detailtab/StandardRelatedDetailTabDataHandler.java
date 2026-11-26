@@ -4,6 +4,7 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.CustomerTabRow;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.FilterCondition;
@@ -55,6 +56,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * 标准表单自定义关联字段查询。
@@ -123,21 +125,61 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     public PagerWithOption<?> page(DetailTabQueryContext context) {
         FormKey relatedForm = FormKey.ofKey(context.tab().getRelatedForm().getIdAsString());
         return switch (relatedForm) {
-        case CLUE -> clues(context);
-        case CUSTOMER -> customers(context);
-        case CONTACT -> contacts(context);
-        case OPPORTUNITY -> opportunities(context);
+        case CLUE -> relatedPage(context, relatedForm, PermissionConstants.CLUE_MANAGEMENT_READ,
+                new CluePageRequest(), (request, scope) -> clueService.list(request, context.userId(),
+                        context.organizationId(), scope, false));
+        case CUSTOMER -> relatedPage(context, relatedForm, PermissionConstants.CUSTOMER_MANAGEMENT_READ,
+                new CustomerPageRequest(), (request, scope) -> customerService.list(request, context.userId(),
+                        context.organizationId(), scope));
+        case CONTACT -> relatedPage(context, relatedForm, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ,
+                new CustomerContactPageRequest(), (request, scope) -> customerContactService.list(request,
+                        context.userId(), context.organizationId(), scope));
+        case OPPORTUNITY -> relatedPage(context, relatedForm, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ,
+                new OpportunityPageRequest(), (request, scope) -> opportunityService.list(request, context.userId(),
+                        context.organizationId(), scope, false));
         case PRODUCT -> products(context);
         case PRICE -> prices(context);
         case QUOTATION -> quotations(context);
-        case CONTRACT -> contracts(context);
-        case INVOICE -> invoices(context);
-        case CONTRACT_PAYMENT_PLAN -> paymentPlans(context);
-        case CONTRACT_PAYMENT_RECORD -> paymentRecords(context);
-        case ORDER -> orders(context);
-        case FOLLOW_RECORD -> followRecords(context);
-        case FOLLOW_PLAN -> followPlans(context);
+        case CONTRACT -> relatedPage(context, relatedForm, PermissionConstants.CONTRACT_READ,
+                new ContractPageRequest(), (request, scope) -> contractService.list(request, context.userId(),
+                        context.organizationId(), scope, false));
+        case INVOICE -> relatedPage(context, relatedForm, PermissionConstants.CONTRACT_INVOICE_READ,
+                new ContractInvoicePageRequest(), (request, scope) -> contractInvoiceService.list(request,
+                        context.userId(), context.organizationId(), scope));
+        case CONTRACT_PAYMENT_PLAN -> relatedPage(context, relatedForm, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ,
+                new ContractPaymentPlanPageRequest(), (request, scope) -> contractPaymentPlanService.list(request,
+                        context.userId(), context.organizationId(), scope));
+        case CONTRACT_PAYMENT_RECORD -> relatedPage(context, relatedForm,
+                PermissionConstants.CONTRACT_PAYMENT_RECORD_READ, new ContractPaymentRecordPageRequest(),
+                (request, scope) -> contractPaymentRecordService.list(request, context.userId(),
+                        context.organizationId(), scope));
+        case ORDER -> relatedPage(context, relatedForm, PermissionConstants.ORDER_READ,
+                new OrderPageRequest(), (request, scope) -> orderService.list(request, context.userId(),
+                        context.organizationId(), scope, false));
+        case FOLLOW_RECORD -> relatedPage(context, relatedForm, PermissionConstants.FOLLOW_RECORD_READ,
+                new RecordHomePageRequest(), (request, scope) -> followUpRecordService.totalList(request,
+                        context.userId(), context.organizationId(), scope));
+        case FOLLOW_PLAN -> relatedPage(context, relatedForm, PermissionConstants.FOLLOW_PLAN_READ,
+                new PlanHomePageRequest(), (request, scope) -> followUpPlanService.totalList(request,
+                        context.userId(), context.organizationId(), scope));
         };
+    }
+
+    private <T extends BaseCondition, R extends CustomerTabRow> PagerWithOption<List<R>> relatedPage(
+            DetailTabQueryContext context, FormKey relatedForm, String permission, T target,
+            BiFunction<T, DeptDataPermissionDTO, PagerWithOption<List<R>>> query) {
+        replaceSearchBusinessKey(context);
+        if (relatedForm != FormKey.FOLLOW_RECORD && relatedForm != FormKey.FOLLOW_PLAN) {
+            checkPermission(context, permission);
+        }
+        DetailTabScope scope = dataScopes(context, permission);
+        T request = prepare(target, relatedForm, context, scope.effective());
+        PagerWithOption<List<R>> page = query.apply(request, scope.effective());
+        if (page != null && scope.role() != null) {
+            relatedResourcePermissionService.markCustomerTabRows(page.getList(), scope.role(), context.userId(),
+                    context.organizationId());
+        }
+        return page;
     }
 
     @Override
@@ -202,22 +244,6 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
                 scope);
     }
 
-    private PagerWithOption<?> followRecords(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.FOLLOW_RECORD_READ);
-        RecordHomePageRequest request = prepare(new RecordHomePageRequest(), FormKey.FOLLOW_RECORD, context, scope);
-        return followUpRecordService.totalList(request, context.userId(), context.organizationId(),
-                scope);
-    }
-
-    private PagerWithOption<?> followPlans(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.FOLLOW_PLAN_READ);
-        PlanHomePageRequest request = prepare(new PlanHomePageRequest(), FormKey.FOLLOW_PLAN, context, scope);
-        return followUpPlanService.totalList(request, context.userId(), context.organizationId(),
-                scope);
-    }
-
     private void replaceSearchBusinessKey(DetailTabQueryContext context) {
         String fieldId = context.tab().getRelatedField().getIdAsString();
         ModuleField moduleField = moduleFieldBaseMapper.selectByPrimaryKey(fieldId);
@@ -235,42 +261,6 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
                 }
             }
         }
-    }
-
-    private PagerWithOption<?> clues(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.CLUE_MANAGEMENT_READ);
-        CluePageRequest request = prepare(new CluePageRequest(), FormKey.CLUE, context, scope);
-        return clueService.list(request, context.userId(), context.organizationId(),
-                scope, false);
-    }
-
-    private PagerWithOption<?> customers(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        CustomerPageRequest request = prepare(new CustomerPageRequest(), FormKey.CUSTOMER, context, scope);
-        return customerService.list(request, context.userId(), context.organizationId(),
-                scope);
-    }
-
-    private PagerWithOption<?> contacts(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        CustomerContactPageRequest request = prepare(new CustomerContactPageRequest(), FormKey.CONTACT, context, scope);
-        return customerContactService.list(request, context.userId(), context.organizationId(),
-                scope);
-    }
-
-    private PagerWithOption<?> opportunities(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        OpportunityPageRequest request = prepare(new OpportunityPageRequest(), FormKey.OPPORTUNITY, context, scope);
-        return opportunityService.list(request, context.userId(), context.organizationId(),
-                scope, false);
     }
 
     private PagerWithOption<?> products(DetailTabQueryContext context) {
@@ -294,53 +284,6 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         OpportunityQuotationPageRequest request = prepare(new OpportunityQuotationPageRequest(), FormKey.QUOTATION,
                 context, scope);
         return opportunityQuotationService.list(request, context.organizationId(), context.userId(),
-                scope, false);
-    }
-
-    private PagerWithOption<?> contracts(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.CONTRACT_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.CONTRACT_READ);
-        ContractPageRequest request = prepare(new ContractPageRequest(), FormKey.CONTRACT, context, scope);
-        return contractService.list(request, context.userId(), context.organizationId(),
-                scope, false);
-    }
-
-    private PagerWithOption<?> invoices(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.CONTRACT_INVOICE_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.CONTRACT_INVOICE_READ);
-        ContractInvoicePageRequest request = prepare(new ContractInvoicePageRequest(), FormKey.INVOICE, context, scope);
-        return contractInvoiceService.list(request, context.userId(), context.organizationId(),
-                scope);
-    }
-
-    private PagerWithOption<?> paymentPlans(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        ContractPaymentPlanPageRequest request = prepare(new ContractPaymentPlanPageRequest(),
-                FormKey.CONTRACT_PAYMENT_PLAN, context, scope);
-        return contractPaymentPlanService.list(request, context.userId(), context.organizationId(),
-                scope);
-    }
-
-    private PagerWithOption<?> paymentRecords(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        ContractPaymentRecordPageRequest request = prepare(new ContractPaymentRecordPageRequest(),
-                FormKey.CONTRACT_PAYMENT_RECORD, context, scope);
-        return contractPaymentRecordService.list(request, context.userId(), context.organizationId(),
-                scope);
-    }
-
-    private PagerWithOption<?> orders(DetailTabQueryContext context) {
-        replaceSearchBusinessKey(context);
-        checkPermission(context, PermissionConstants.ORDER_READ);
-        DeptDataPermissionDTO scope = dataPermission(context, PermissionConstants.ORDER_READ);
-        OrderPageRequest request = prepare(new OrderPageRequest(), FormKey.ORDER, context, scope);
-        return orderService.list(request, context.userId(), context.organizationId(),
                 scope, false);
     }
 
@@ -378,33 +321,40 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     }
 
     private DeptDataPermissionDTO dataPermission(DetailTabQueryContext context, String permission) {
-        if (FormKey.CUSTOMER.getKey().equals(context.formKey())) {
+        return dataScopes(context, permission).effective();
+    }
+
+    private DetailTabScope dataScopes(DetailTabQueryContext context, String permission) {
+        boolean customerTab = FormKey.CUSTOMER.getKey().equals(context.formKey());
+        if (customerTab) {
             DeptDataPermissionDTO customerScope = relatedResourcePermissionService.getCustomerTabDataPermission(
                     context.resourceId(), context.userId(), context.organizationId());
             if (customerScope != null) {
                 if (FormKey.QUOTATION.getKey().equals(context.tab().getRelatedForm().getIdAsString())) {
                     DeptDataPermissionDTO all = new DeptDataPermissionDTO();
                     all.setAll(true);
-                    return all;
+                    return new DetailTabScope(all, null);
                 }
                 DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(context.userId(),
                         context.organizationId(), InternalUserView.ALL.name(), permission);
-                return relatedResourcePermissionService.mergeCustomerTabDataPermission(roleScope, customerScope,
-                        context.organizationId());
+                DeptDataPermissionDTO effective = relatedResourcePermissionService.mergeCustomerTabDataPermission(
+                        roleScope, customerScope, context.organizationId());
+                return new DetailTabScope(effective, roleScope);
             }
         }
-        if (PermissionConstants.FOLLOW_RECORD_READ.equals(permission)
-                || PermissionConstants.FOLLOW_PLAN_READ.equals(permission)) {
-            return dataScopeService.getDeptDataPermission(context.userId(), context.organizationId(),
-                    InternalUserView.ALL.name(), permission);
-        }
-        if (relatedResourcePermissionService.isOwner(context.formKey(), context.resourceId(), context.userId(),
-                context.organizationId())) {
+        if (!PermissionConstants.FOLLOW_RECORD_READ.equals(permission)
+                && !PermissionConstants.FOLLOW_PLAN_READ.equals(permission)
+                && relatedResourcePermissionService.isOwner(context.formKey(), context.resourceId(), context.userId(),
+                        context.organizationId())) {
             DeptDataPermissionDTO all = new DeptDataPermissionDTO();
             all.setAll(true);
-            return all;
+            return new DetailTabScope(all, null);
         }
-        return dataScopeService.getDeptDataPermission(context.userId(), context.organizationId(),
-                InternalUserView.ALL.name(), permission);
+        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(context.userId(),
+                context.organizationId(), InternalUserView.ALL.name(), permission);
+        return new DetailTabScope(roleScope, customerTab ? roleScope : null);
+    }
+
+    private record DetailTabScope(DeptDataPermissionDTO effective, DeptDataPermissionDTO role) {
     }
 }

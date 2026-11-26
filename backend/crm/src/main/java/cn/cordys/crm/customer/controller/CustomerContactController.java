@@ -13,6 +13,7 @@ import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -68,6 +69,8 @@ public class CustomerContactController {
     @Resource
     private DataScopeService dataScopeService;
     @Resource
+    private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
     private CustomerContactExportService customerContactExportService;
 
     @GetMapping("/module/form")
@@ -105,10 +108,13 @@ public class CustomerContactController {
     @Operation(summary = "客户下的联系人列表")
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     public CustomerContactListAllResponse list(@Validated @PathVariable String customerId) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        return customerContactService.listByCustomerId(customerId, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), deptDataPermission);
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, orgId,
+                PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        var response = customerContactService.listByCustomerId(customerId, userId, orgId, roleScope);
+        relatedResourcePermissionService.markCustomerTabRows(response.getList(), roleScope, userId, orgId);
+        return response;
     }
 
     @GetMapping("/get/{id}")
