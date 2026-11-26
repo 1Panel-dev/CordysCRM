@@ -103,12 +103,6 @@
                 (!dataPermission.all and !dataPermission.self and !dataPermission.visible and dataPermission.deptIds.isEmpty()))">
             and 0 = 1
         </if>
-        <if test="request.exportIds != null and !request.exportIds.isEmpty()">
-            and c.id in
-            <foreach collection="request.exportIds" item="id" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
         <if test="request.poolId == null and !request.transition">
             and c.in_shared_pool is false
         </if>
@@ -645,6 +639,16 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        <if test="!pool">
+            and c.organization_id = #{orgId} and c.in_shared_pool is false
+            <if test="collaborationView">
+                and c.owner != #{userId}
+                and exists (
+                    select 1 from customer_collaboration cc
+                    where cc.customer_id = c.id and cc.user_id = #{userId}
+                )
+            </if>
+        </if>
         order by c.create_time desc
     </select>
     <select id="selectCustomerCount" resultType="java.lang.Long">
@@ -1024,5 +1028,35 @@
                 #{excludedOwnerId}
             </foreach>
         </if>
+    </sql>
+
+    <sql id="selectedBusinessExportScope">
+        <choose>
+            <when test="dataPermission != null and dataPermission.visible
+                    and dataPermission.viewId == 'COLLABORATION_VISIBLE'">
+                <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
+                    <property name="userParameter" value="userId"/>
+                    <property name="orgParameter" value="orgId"/>
+                </include>
+            </when>
+            <when test="dataPermission != null and !dataPermission.invisible and dataPermission.all"/>
+            <when test="dataPermission != null and !dataPermission.invisible
+                    and (dataPermission.self or !dataPermission.deptIds.isEmpty())">
+                and (${ownerColumn} = #{userId}
+                <if test="!dataPermission.deptIds.isEmpty()">
+                    or exists (
+                        select 1 from sys_organization_user scope_user
+                        where scope_user.organization_id = #{orgId}
+                        and scope_user.user_id = ${ownerColumn}
+                        and scope_user.department_id in
+                        <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                            #{deptId}
+                        </foreach>
+                    )
+                </if>
+                )
+            </when>
+            <otherwise>and 0</otherwise>
+        </choose>
     </sql>
 </mapper>

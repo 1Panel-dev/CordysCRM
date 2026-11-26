@@ -286,16 +286,23 @@ public class CustomerController {
     @Operation(summary = "导出选中客户")
     @RequiresPermissions({ PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT })
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        boolean collaborationView = InternalUserView.CUSTOMER_COLLABORATION.name().equals(request.getViewId());
+        if (!collaborationView) {
+            resourcePermissionService.checkBatchResourcePermission(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT,
+                    request.getIds(), FormKeyConstants.CUSTOMER, userId, orgId);
+        }
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(userId, orgId,
+                collaborationView ? request.getViewId() : null, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CUSTOMER.name())
                 .fileName(request.getFileName())
                 .headList(request.getHeadList())
                 .logModule(LogModule.CUSTOMER_INDEX)
                 .locale(LocaleContextHolder.getLocale())
-                .orgId(OrganizationContext.getOrganizationId())
-                .userId(SessionUtils.getUserId())
+                .orgId(orgId)
+                .userId(userId)
                 .deptDataPermission(deptDataPermission)
                 .selectIds(request.getIds())
                 .selectRequest(request)

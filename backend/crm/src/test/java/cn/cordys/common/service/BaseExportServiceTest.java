@@ -1,9 +1,5 @@
 package cn.cordys.common.service;
 
-import cn.cordys.common.constants.InternalUserView;
-import cn.cordys.common.dto.BasePageRequest;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.FieldExportMeta;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.SelectMultipleResolver;
@@ -13,49 +9,19 @@ import cn.cordys.crm.system.dto.field.SelectMultipleField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BaseExportServiceTest {
 
     private final BaseExportService exportService = new BaseExportService() {
     };
-
-    @ParameterizedTest
-    @ValueSource(booleans = { true, false })
-    void selectedExportIncludesOnlyRoleOrCollaborationVisibleRows(boolean roleCanRead) {
-        DeptDataPermissionDTO roleScope = new DeptDataPermissionDTO();
-        roleScope.setSelf(roleCanRead);
-        ExportDTO export = ExportDTO.builder().deptDataPermission(roleScope)
-                .selectIds(List.of("collaborative", "role-owned", "inaccessible", "collaborative")).build();
-        BasePageRequest request = new BasePageRequest();
-
-        List<String> result = exportService.loadSelectedVisibleRows(export, request,
-                InternalUserView.CUSTOMER_COLLABORATION, scope -> {
-                    if (scope == roleScope) {
-                        assertTrue(roleCanRead);
-                        assertEquals(List.of("collaborative", "role-owned", "inaccessible"), request.getExportIds());
-                        return List.of("role-owned");
-                    }
-                    assertTrue(scope.getVisible());
-                    assertEquals(InternalUserView.CUSTOMER_COLLABORATION.name(), scope.getViewId());
-                    assertEquals(roleCanRead ? List.of("collaborative", "inaccessible")
-                            : List.of("collaborative", "role-owned", "inaccessible"), request.getExportIds());
-                    return List.of("collaborative", "collaborative", "unselected");
-                }, Function.identity());
-
-        assertEquals(roleCanRead ? List.of("collaborative", "role-owned") : List.of("collaborative"), result);
-    }
 
     @Test
     void shouldConvertSystemOptionCodesToLabels() {

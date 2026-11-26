@@ -54,12 +54,6 @@
             )
         </if>
         where so.organization_id = #{orgId}
-        <if test="request.exportIds != null and !request.exportIds.isEmpty()">
-            and so.id in
-            <foreach collection="request.exportIds" item="id" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
         <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
             <property name="ownerColumn" value="so.owner"/>
             <property name="customerColumn" value="so.customer_id"/>
@@ -111,6 +105,37 @@
                 <property name="sort" value="request.sort"/>
             </include>
         </if>
+    </select>
+
+    <select id="getListByIds" resultType="cn.cordys.crm.order.dto.response.OrderListResponse">
+        SELECT
+        so.id,
+        so.name,
+        so.customer_id,
+        so.contract_id,
+        so.number,
+        c.`name` AS contractName,
+        cc.name as customerName,
+        so.amount,
+        so.approval_status,
+        so.stage,
+        so.`owner`,
+        so.create_user,
+        so.create_time,
+        so.update_user,
+        so.update_time
+        FROM sales_order so
+        LEFT JOIN contract c ON so.contract_id = c.id
+        LEFT JOIN customer cc ON so.customer_id = cc.id
+        where so.organization_id = #{orgId}
+        and so.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.selectedBusinessExportScope">
+            <property name="ownerColumn" value="so.owner"/>
+            <property name="customerColumn" value="so.customer_id"/>
+        </include>
     </select>
 
     <update id="batchUpdate">

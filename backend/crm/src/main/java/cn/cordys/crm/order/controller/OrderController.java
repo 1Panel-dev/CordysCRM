@@ -3,6 +3,7 @@ package cn.cordys.crm.order.controller;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
@@ -13,6 +14,7 @@ import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -62,6 +64,8 @@ public class OrderController {
     private OrderService orderService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
@@ -184,16 +188,25 @@ public class OrderController {
     @Operation(summary = "导出选中订单")
     @RequiresPermissions({ PermissionConstants.ORDER_READ, PermissionConstants.ORDER_EXPORT })
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.ORDER_READ);
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        DeptDataPermissionDTO deptDataPermission;
+        if (InternalUserView.isVisible(request.getViewId(), PermissionConstants.ORDER_READ)) {
+            deptDataPermission = dataScopeService.getDeptDataPermission(userId, orgId, request.getViewId(),
+                    PermissionConstants.ORDER_READ);
+        } else {
+            resourcePermissionService.checkBatchResourcePermission(PermissionConstants.ORDER_EXPORT, request.getIds(),
+                    FormKeyConstants.ORDER, userId, orgId);
+            deptDataPermission = dataScopeService.getDeptDataPermission(userId, orgId, PermissionConstants.ORDER_READ);
+        }
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.ORDER.name())
                 .fileName(request.getFileName())
                 .headList(request.getHeadList())
                 .logModule(LogModule.ORDER_INDEX)
                 .locale(LocaleContextHolder.getLocale())
-                .orgId(OrganizationContext.getOrganizationId())
-                .userId(SessionUtils.getUserId())
+                .orgId(orgId)
+                .userId(userId)
                 .deptDataPermission(deptDataPermission)
                 .selectIds(request.getIds())
                 .selectRequest(request)

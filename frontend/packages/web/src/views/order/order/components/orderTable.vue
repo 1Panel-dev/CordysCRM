@@ -703,11 +703,7 @@
     },
     containerClass: `.crm-order-table-${props.formKey}`,
     orderStage: stageConfig.value?.stageConfigList || [],
-    permission: [
-      ...(!props.isContractTab && !props.isCustomerTab && !props.detailTabResourceId ? ['ORDER:EXPORT'] : []),
-      'ORDER:UPDATE',
-      'ORDER:DELETE',
-    ],
+    permission: ['ORDER:UPDATE', 'ORDER:DELETE'],
     enableApproval,
     showApprovalStatus,
   });

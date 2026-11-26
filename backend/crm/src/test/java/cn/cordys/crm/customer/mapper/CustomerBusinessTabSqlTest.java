@@ -200,31 +200,42 @@ class CustomerBusinessTabSqlTest {
 
     @ParameterizedTest
     @MethodSource("selectedExportQueries")
-    void selectedExportUsesListVisibilityAndFiltersByRequestedIds(Class<?> mapper, String alias, String view)
+    void selectedExportUsesItsIdsAndOnlyAppliesCollaborationScopeInCollaborationView(
+            Class<?> mapper, String alias, String view)
             throws Exception {
         DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
-        Map<String, Object> request = new HashMap<>(Map.of("exportIds", List.of("selected-a", "selected-b")));
-        Map<String, Object> parameters = Map.of("request", request, "userId", "reader-a", "orgId", "org-a",
-                "source", false, "dataPermission", scope);
-        var statement = configuration.getMappedStatement(mapper.getName() + ".list");
+        Map<String, Object> parameters = new HashMap<>(Map.of("ids", List.of("selected-a", "selected-b"),
+                "userId", "reader-a", "orgId", "org-a", "dataPermission", scope, "pool", false,
+                "collaborationView", false));
+        var statement = configuration.getMappedStatement(mapper.getName() + ".getListByIds");
 
         scope.setDeptIds(Set.of("department-a"));
         BoundSql roleQuery = statement.getBoundSql(parameters);
         CCJSqlParserUtil.parse(roleQuery.getSql());
         String roleSql = roleQuery.getSql().replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
         assertTrue(roleSql.contains(alias + ".organization_id=?"));
-        assertTrue(roleSql.contains("and" + alias + ".idin(?,?)"));
-        assertTrue(roleSql.contains(".department_idin(?)"));
+        assertTrue(roleSql.contains(alias + ".idin(?,?)"));
+        assertFalse(roleSql.contains("customer_collaboration"));
+        assertEquals(mapper != ExtCustomerMapper.class, roleSql.contains(".department_idin(?)"));
 
         scope.setDeptIds(Set.of());
         scope.setViewId(view);
         scope.setVisible(true);
+        parameters.put("collaborationView", true);
         BoundSql collaborationQuery = statement.getBoundSql(parameters);
         CCJSqlParserUtil.parse(collaborationQuery.getSql());
         String collaborationSql = collaborationQuery.getSql().replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
         assertTrue(collaborationSql.contains(alias + ".organization_id=?"));
-        assertTrue(collaborationSql.contains("and" + alias + ".idin(?,?)"));
+        assertTrue(collaborationSql.contains(alias + ".idin(?,?)"));
         assertTrue(collaborationSql.contains("customer_collaboration"));
+        assertFalse(collaborationSql.contains(".department_idin("));
+        assertTrue(collaborationSql.contains(alias + ".owner!=?"));
+        if (mapper == ExtCustomerMapper.class) {
+            assertTrue(collaborationSql.contains("c.in_shared_poolisfalse"));
+        } else {
+            assertTrue(collaborationSql.contains("collaboration_member.expire_time"));
+            assertTrue(collaborationSql.contains("isolated_member.user_id=" + alias + ".owner"));
+        }
         List<Object> selectedIds = collaborationQuery.getParameterMappings().stream()
                 .filter(mapping -> mapping.getProperty().startsWith("__frch_id_"))
                 .map(mapping -> collaborationQuery.getAdditionalParameter(mapping.getProperty())).toList();

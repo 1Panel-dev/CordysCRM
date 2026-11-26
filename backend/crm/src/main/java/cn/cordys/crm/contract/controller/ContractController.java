@@ -14,6 +14,7 @@ import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -80,6 +81,8 @@ public class ContractController {
     private ContractExportService contractExportService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
     @Resource
@@ -211,16 +214,25 @@ public class ContractController {
     @Operation(summary = "导出选中合同")
     @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_EXPORT })
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_READ);
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        DeptDataPermissionDTO deptDataPermission;
+        if (InternalUserView.isVisible(request.getViewId(), PermissionConstants.CONTRACT_READ)) {
+            deptDataPermission = dataScopeService.getDeptDataPermission(userId, orgId, request.getViewId(),
+                    PermissionConstants.CONTRACT_READ);
+        } else {
+            resourcePermissionService.checkBatchResourcePermission(PermissionConstants.CONTRACT_EXPORT, request.getIds(),
+                    FormKeyConstants.CONTRACT, userId, orgId);
+            deptDataPermission = dataScopeService.getDeptDataPermission(userId, orgId, PermissionConstants.CONTRACT_READ);
+        }
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CONTRACT.name())
                 .fileName(request.getFileName())
                 .headList(request.getHeadList())
                 .logModule(LogModule.CONTRACT_INDEX)
                 .locale(LocaleContextHolder.getLocale())
-                .orgId(OrganizationContext.getOrganizationId())
-                .userId(SessionUtils.getUserId())
+                .orgId(orgId)
+                .userId(userId)
                 .deptDataPermission(deptDataPermission)
                 .selectIds(request.getIds())
                 .selectRequest(request)
