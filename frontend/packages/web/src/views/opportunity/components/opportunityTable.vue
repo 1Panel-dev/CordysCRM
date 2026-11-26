@@ -817,7 +817,12 @@
           },
         }),
     },
-    permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE', 'OPPORTUNITY_MANAGEMENT:TRANSFER'],
+    permission: [
+      ...(!props.isCustomerTab && !props.detailTabResourceId ? ['OPPORTUNITY_MANAGEMENT:EXPORT'] : []),
+      'OPPORTUNITY_MANAGEMENT:UPDATE',
+      'OPPORTUNITY_MANAGEMENT:DELETE',
+      'OPPORTUNITY_MANAGEMENT:TRANSFER',
+    ],
     hiddenTotal: computed(() => !!props.hiddenTotal),
     readonly: props.readonly,
     opportunityStage: stageConfig.value?.stageConfigList || [],

@@ -97,11 +97,8 @@ public class DataScopeService {
             return deptDataPermission;
         }
 
-        List<RolePermissionDTO> userDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_AND_CHILD.name());
-        List<RolePermissionDTO> customDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name());
-
-        if (CollectionUtils.isEmpty(userDeptRoles)
-                && CollectionUtils.isEmpty(customDeptRoles)) {
+        if (!hasDataScopePermission(dataScopeRoleMap, RoleDataScope.DEPT_AND_CHILD.name(), permission)
+                && !hasDataScopePermission(dataScopeRoleMap, RoleDataScope.DEPT_CUSTOM.name(), permission)) {
             // 如果没有部门权限,则默认只能查看自己的数据
             if (hasDataScopePermission(dataScopeRoleMap, RoleDataScope.SELF.name(), permission)) {
                 deptDataPermission.setSelf(true);
@@ -111,7 +108,12 @@ public class DataScopeService {
             return deptDataPermission;
         }
 
-        return getDeptDataPermissionForDept(userId, orgId, dataScopeRoleMap, permission);
+        DeptDataPermissionDTO departmentScope = getDeptDataPermissionForDept(userId, orgId, dataScopeRoleMap,
+                permission);
+        if (departmentScope.getDeptIds().isEmpty()) {
+            departmentScope.setSelf(true);
+        }
+        return departmentScope;
     }
 
     private DeptDataPermissionDTO getDeptDataPermissionForAllPermission(String userId, String orgId) {

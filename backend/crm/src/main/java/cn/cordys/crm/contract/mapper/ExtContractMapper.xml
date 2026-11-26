@@ -60,6 +60,12 @@
             )
         </if>
         where ct.organization_id = #{orgId}
+        <if test="request.exportIds != null and !request.exportIds.isEmpty()">
+            and ct.id in
+            <foreach collection="request.exportIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
             <property name="ownerColumn" value="ct.owner"/>
             <property name="customerColumn" value="ct.customer_id"/>
@@ -106,56 +112,6 @@
             <include refid="sort">
                 <property name="sort" value="request.sort"/>
             </include>
-        </if>
-    </select>
-
-    <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractListResponse">
-        SELECT
-        ct.id,
-        ct.NAME,
-        ct.customer_id,
-        c.`name` AS customerName,
-        c.in_shared_pool AS inCustomerPool,
-        c.pool_id,
-        ct.amount,
-        ct.number,
-        ct.approval_status,
-        ct.stage,
-        ct.`owner`,
-        ct.void_reason,
-        ct.create_user,
-        ct.create_time,
-        ct.update_user,
-        ct.update_time,
-        ct.start_time,
-        ct.end_time,
-        ct.alreadyPayAmount
-        FROM (
-            SELECT ctt.*, IFNULL(SUM(cpr.record_amount), 0) AS alreadyPayAmount
-            FROM contract ctt
-            LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
-            GROUP BY ctt.id
-        ) ct
-        LEFT JOIN customer c ON ct.customer_id = c.id
-
-        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
-            join sys_organization_user on ct.owner = sys_organization_user.user_id
-            and (
-            sys_organization_user.department_id in
-            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                #{deptId}
-            </foreach>
-            )
-        </if>
-
-        where ct.organization_id = #{orgId}
-        and ct.id in
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-
-        <if test="dataPermission != null and dataPermission.self">
-            and ct.owner = #{userId}
         </if>
     </select>
 

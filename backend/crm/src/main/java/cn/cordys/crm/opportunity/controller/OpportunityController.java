@@ -197,7 +197,7 @@ public class OpportunityController {
 
     @PostMapping("/export-all")
     @Operation(summary = "商机导出全部")
-    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
+    @RequiresPermissions({ PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT })
     public String opportunityExportAll(@Validated @RequestBody OpportunityExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -220,7 +220,7 @@ public class OpportunityController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中商机")
-    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
+    @RequiresPermissions({ PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT })
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);

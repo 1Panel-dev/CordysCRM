@@ -54,6 +54,12 @@
             )
         </if>
         where so.organization_id = #{orgId}
+        <if test="request.exportIds != null and !request.exportIds.isEmpty()">
+            and so.id in
+            <foreach collection="request.exportIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
             <property name="ownerColumn" value="so.owner"/>
             <property name="customerColumn" value="so.customer_id"/>
@@ -104,47 +110,6 @@
             <include refid="sort">
                 <property name="sort" value="request.sort"/>
             </include>
-        </if>
-    </select>
-
-    <select id="getListByIds" resultType="cn.cordys.crm.order.dto.response.OrderListResponse">
-        SELECT
-        so.id,
-        so.name,
-        so.customer_id,
-        so.contract_id,
-        so.number,
-        c.`name` AS contractName,
-        cc.name as customerName,
-        so.amount,
-        so.approval_status,
-        so.stage,
-        so.`owner`,
-        so.create_user,
-        so.create_time,
-        so.update_user,
-        so.update_time
-        FROM sales_order so
-        LEFT JOIN contract c ON so.contract_id = c.id
-        LEFT JOIN customer cc ON so.customer_id = cc.id
-        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
-            join sys_organization_user on so.owner = sys_organization_user.user_id
-            and (
-            sys_organization_user.department_id in
-            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                #{deptId}
-            </foreach>
-            )
-        </if>
-
-        where so.organization_id = #{orgId}
-        and so.id in
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-
-        <if test="dataPermission != null and dataPermission.self">
-            and so.owner = #{userId}
         </if>
     </select>
 

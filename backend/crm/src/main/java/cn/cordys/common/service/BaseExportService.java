@@ -2,10 +2,12 @@ package cn.cordys.common.service;
 
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.context.CustomFunction;
 import cn.cordys.common.context.ExportTaskFunction;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.BasePageRequest;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportFieldParam;
 import cn.cordys.common.dto.ExportHeadDTO;
@@ -277,6 +279,32 @@ public abstract class BaseExportService {
                         exportParam.getFileName(),
                         mergeColumns, exportParam.getPageRequest(),
                         t -> getExportMergeData(task.getId(), exportParam)));
+    }
+
+    /**
+     * 勾选导出复用普通列表与协作视图的查询，只处理两者可见范围内的勾选记录。
+     */
+    protected <T> List<T> loadSelectedVisibleRows(ExportDTO exportParam, BasePageRequest request,
+            InternalUserView collaborationView, Function<DeptDataPermissionDTO, List<T>> query,
+            Function<T, String> getId) {
+        List<String> selectedIds = exportParam.getSelectIds().stream().distinct().toList();
+        Map<String, T> visibleRows = new HashMap<>();
+        DeptDataPermissionDTO roleScope = exportParam.getDeptDataPermission();
+        if (roleScope != null && !roleScope.getInvisible()
+                && (roleScope.getAll() || roleScope.getSelf() || !roleScope.getDeptIds().isEmpty())) {
+            request.setExportIds(selectedIds);
+            query.apply(roleScope).forEach(row -> visibleRows.putIfAbsent(getId.apply(row), row));
+        }
+
+        List<String> remaining = selectedIds.stream().filter(id -> !visibleRows.containsKey(id)).toList();
+        if (!remaining.isEmpty()) {
+            DeptDataPermissionDTO collaborationScope = new DeptDataPermissionDTO();
+            collaborationScope.setViewId(collaborationView.name());
+            collaborationScope.setVisible(true);
+            request.setExportIds(remaining);
+            query.apply(collaborationScope).forEach(row -> visibleRows.putIfAbsent(getId.apply(row), row));
+        }
+        return selectedIds.stream().map(visibleRows::get).filter(Objects::nonNull).toList();
     }
 
     /**

@@ -190,6 +190,47 @@ class CustomerBusinessTabSqlTest {
                 .contains("cpr.record_amount=?"));
     }
 
+    static Stream<Arguments> selectedExportQueries() {
+        return Stream.of(
+                Arguments.of(ExtCustomerMapper.class, "c", "CUSTOMER_COLLABORATION"),
+                Arguments.of(ExtOpportunityMapper.class, "o", "COLLABORATION_VISIBLE"),
+                Arguments.of(ExtContractMapper.class, "ct", "COLLABORATION_VISIBLE"),
+                Arguments.of(ExtOrderMapper.class, "so", "COLLABORATION_VISIBLE"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("selectedExportQueries")
+    void selectedExportUsesListVisibilityAndFiltersByRequestedIds(Class<?> mapper, String alias, String view)
+            throws Exception {
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        Map<String, Object> request = new HashMap<>(Map.of("exportIds", List.of("selected-a", "selected-b")));
+        Map<String, Object> parameters = Map.of("request", request, "userId", "reader-a", "orgId", "org-a",
+                "source", false, "dataPermission", scope);
+        var statement = configuration.getMappedStatement(mapper.getName() + ".list");
+
+        scope.setDeptIds(Set.of("department-a"));
+        BoundSql roleQuery = statement.getBoundSql(parameters);
+        CCJSqlParserUtil.parse(roleQuery.getSql());
+        String roleSql = roleQuery.getSql().replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+        assertTrue(roleSql.contains(alias + ".organization_id=?"));
+        assertTrue(roleSql.contains("and" + alias + ".idin(?,?)"));
+        assertTrue(roleSql.contains(".department_idin(?)"));
+
+        scope.setDeptIds(Set.of());
+        scope.setViewId(view);
+        scope.setVisible(true);
+        BoundSql collaborationQuery = statement.getBoundSql(parameters);
+        CCJSqlParserUtil.parse(collaborationQuery.getSql());
+        String collaborationSql = collaborationQuery.getSql().replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+        assertTrue(collaborationSql.contains(alias + ".organization_id=?"));
+        assertTrue(collaborationSql.contains("and" + alias + ".idin(?,?)"));
+        assertTrue(collaborationSql.contains("customer_collaboration"));
+        List<Object> selectedIds = collaborationQuery.getParameterMappings().stream()
+                .filter(mapping -> mapping.getProperty().startsWith("__frch_id_"))
+                .map(mapping -> collaborationQuery.getAdditionalParameter(mapping.getProperty())).toList();
+        assertEquals(List.of("selected-a", "selected-b"), selectedIds);
+    }
+
     @Test
     void paymentPlanListFiltersByContractWhenProvided() {
         ContractDetailPaymentPlanPageRequest detailRequest = new ContractDetailPaymentPlanPageRequest();

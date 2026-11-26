@@ -209,7 +209,7 @@ public class ContractController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中合同")
-    @CsBatchPermission(value = PermissionConstants.CONTRACT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT)
+    @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_EXPORT })
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_READ);
@@ -231,7 +231,7 @@ public class ContractController {
 
     @PostMapping("/export-all")
     @Operation(summary = "导出全部合同")
-    @RequiresPermissions(PermissionConstants.CONTRACT_EXPORT)
+    @RequiresPermissions({ PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_EXPORT })
     public String exportAll(@Validated @RequestBody ContractExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),

@@ -22,9 +22,6 @@ public interface ExtOrderMapper extends StatisticSqlMapper {
 
     OrderGetResponse getDetail(@Param("id") String id);
 
-    List<OrderListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId,
-            @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
-
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     int countByStage(@Param("stage") String stage);

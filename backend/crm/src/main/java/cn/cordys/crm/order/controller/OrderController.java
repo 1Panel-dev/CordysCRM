@@ -40,6 +40,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -181,7 +182,7 @@ public class OrderController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中订单")
-    @CsBatchPermission(value = PermissionConstants.ORDER_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.ORDER)
+    @RequiresPermissions({ PermissionConstants.ORDER_READ, PermissionConstants.ORDER_EXPORT })
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.ORDER_READ);
@@ -203,7 +204,7 @@ public class OrderController {
 
     @PostMapping("/export-all")
     @Operation(summary = "导出全部订单")
-    @CsPermission(PermissionConstants.ORDER_EXPORT)
+    @RequiresPermissions({ PermissionConstants.ORDER_READ, PermissionConstants.ORDER_EXPORT })
     public String exportAll(@Validated @RequestBody OrderExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),

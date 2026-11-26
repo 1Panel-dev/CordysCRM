@@ -64,6 +64,12 @@
         </if>
 
         where o.organization_id = #{orgId}
+        <if test="request.exportIds != null and !request.exportIds.isEmpty()">
+            and o.id in
+            <foreach collection="request.exportIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <include refid="cn.cordys.crm.customer.mapper.ExtCustomerMapper.isolatedBusinessRead">
             <property name="ownerColumn" value="o.owner"/>
             <property name="customerColumn" value="o.customer_id"/>
@@ -732,41 +738,6 @@
         </foreach>
     </select>
 
-    <select id="getListByIds" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityListResponse">
-    SELECT
-    o.id,
-    o.NAME,
-    c.id AS customerId,
-    c.NAME AS customerName,
-    c.in_shared_pool AS inCustomerPool,
-    c.pool_id,
-    o.create_time,
-    o.update_time,
-    o.create_user,
-    o.update_user,
-    o.owner,
-    o.follower,
-    o.follow_time,
-    o.amount,
-    o.possible,
-    o.products,
-    o.last_stage,
-    o.stage,
-    o.contact_id,
-    o.expected_end_time,
-    o.actual_end_time,
-    o.failure_reason,
-    o.approval_status,
-    o.approved
-    FROM
-    opportunity o
-    LEFT JOIN customer c ON o.customer_id = c.id
-        where o.id in
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-        order by o.create_time desc
-    </select>
     <select id="selectOpportunityCount" resultType="java.lang.Long">
         select
         <if test="amount">
