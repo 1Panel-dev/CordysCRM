@@ -3,6 +3,7 @@
  */
 export enum ResultEnum {
   SUCCESS = 100200,
+  DATA_PERMISSION_FORBIDDEN_ERROR = 100433,
   ERROR = 1,
   TIMEOUT = 401,
   TYPE = 'success',

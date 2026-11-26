@@ -1,3 +1,4 @@
+import { ResultEnum } from '@lib/shared/enums/httpEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import useDiscreteApi from '@/hooks/useDiscreteApi';
@@ -36,7 +37,11 @@ export default function checkStatus(
       break;
     }
     case 403:
-      if (router.currentRoute.value.name !== NO_RESOURCE_ROUTE_NAME) {
+      errMessage = msg || t('api.errMsg403');
+      if (
+        code !== ResultEnum.DATA_PERMISSION_FORBIDDEN_ERROR &&
+        router.currentRoute.value.name !== NO_RESOURCE_ROUTE_NAME
+      ) {
         router.push({ name: NO_RESOURCE_ROUTE_NAME });
       }
       break;
