@@ -474,6 +474,7 @@ public class CommonNoticeSendService {
         MessageDetailDTO messageDetail = new MessageDetailDTO();
         messageDetail.setId(task.getId());
         messageDetail.setEvent(task.getEvent());
+        messageDetail.setName(task.getName());
         messageDetail.setTaskType(task.getTaskType());
         messageDetail.setFormType(task.getFormType());
         messageDetail.setTriggerType(context.getTriggerType());

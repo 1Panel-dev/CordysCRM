@@ -41,11 +41,13 @@ public abstract class AbstractNoticeSender implements NoticeSender {
             return MessageTemplateUtils.getContent(messageDetailDTO.getSubject(), noticeModel.getParamMap());
         }
         Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
+        // 系统事件取事件名；自定义事件无系统事件名，退回使用自定义通知名称
         String eventText = eventMap.get(messageDetailDTO.getEvent());
-        String context = eventText + Translator.get("notice.event.subject");
-        if (StringUtils.isBlank(context)) {
-            context = noticeModel.getSubject();
+        if (StringUtils.isBlank(eventText)) {
+            eventText = messageDetailDTO.getName();
         }
+        String context = StringUtils.isBlank(eventText) ? noticeModel.getSubject()
+                : eventText + Translator.get("notice.event.subject");
         return MessageTemplateUtils.getContent(context, noticeModel.getParamMap());
     }
 
