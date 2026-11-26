@@ -49,6 +49,10 @@ public enum CrmHttpResultCode implements IResultCode {
      * 验证失败
      */
     VALIDATE_FAILED(100400, "http_result_validate"),
+    /**
+     * 数据权限报错，返回 403 http 状态码，但是给个 区别于 100400 的 code ，前端特殊处理，避免关联的数据没有权限，打开详情跳转无权限页面
+     */
+    DATA_PERMISSION_FORBIDDEN_ERROR(100433, "batch.operate.reason"),
 
     /**
      * 未授权，需登录

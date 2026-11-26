@@ -124,6 +124,11 @@ public class RestControllerExceptionHandler {
             if (errorCode.equals(CrmHttpResultCode.NOT_FOUND)) {
                 message = getNotFoundMessage(message);
             }
+            if (errorCode.equals(CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR)) {
+                // 有权限位，但是没有数据权限，返回 403
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ResultHolder.error(code, message, messageDetail));
+            }
             return ResponseEntity.status(code % 1000)
                     .body(ResultHolder.error(code, message, messageDetail));
         } else {

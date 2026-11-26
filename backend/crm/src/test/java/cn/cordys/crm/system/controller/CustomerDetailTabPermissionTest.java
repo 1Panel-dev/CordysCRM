@@ -616,7 +616,9 @@ class CustomerDetailTabPermissionTest {
 
     private void assertForbidden(Executable action) {
         GenericException error = assertThrows(GenericException.class, action);
-        assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
+        var code = error.getErrorCode();
+        assertTrue(code == CrmHttpResultCode.FORBIDDEN || code == CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR,
+                () -> "Unexpected permission error code: " + code);
     }
 
     private <T> T proxy(T target) {

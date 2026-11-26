@@ -904,7 +904,9 @@ class ResourcePermissionServiceTest {
     private void assertConversionDenied() {
         GenericException error = assertThrows(GenericException.class,
                 () -> conversion.transitionCustomer(conversionRequest, "sales", "org"));
-        assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
+        var code = error.getErrorCode();
+        assertTrue(code == CrmHttpResultCode.FORBIDDEN || code == CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR,
+                () -> "Unexpected permission error code: " + code);
         verifyNoInteractions(customers, contactMapper, notices, extClueMapper);
         assertNull(clue.getTransitionId());
     }

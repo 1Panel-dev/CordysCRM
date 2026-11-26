@@ -131,7 +131,7 @@ public class ResourcePermissionService {
                 context, provider, true);
 
         if (!permitted) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            throw new GenericException(CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR);
         }
     }
 
