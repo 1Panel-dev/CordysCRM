@@ -17,7 +17,6 @@ import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
-import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -66,37 +65,34 @@ public class BaseFollowUpService {
         return false;
     }
 
-    protected void checkCustomerFollowWritePermission(String customerId, String userId, String orgId) {
+    protected boolean hasFollowDataPermission(String orgId, String userId, String permission, String owner) {
+        return StringUtils.isNotBlank(owner)
+                && (userId.equals(owner) || dataScopeService.hasDataPermission(userId, orgId, owner, permission));
+    }
+
+    protected Customer getFollowCustomer(String customerId, String orgId) {
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (customer == null || !orgId.equals(customer.getOrganizationId())
+                || BooleanUtils.isTrue(customer.getInSharedPool())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        return customer;
+    }
+
+    protected void checkCustomerFollowWritePermission(String customerId, String userId, String orgId,
+            boolean allowJointFollow) {
         if (StringUtils.isBlank(customerId)) {
             return;
         }
-        Customer customer = customerMapper.selectByPrimaryKey(customerId);
-        if (customer == null || !orgId.equals(customer.getOrganizationId())
-                || BooleanUtils.isTrue(customer.getInSharedPool())
-                || (!userId.equals(customer.getOwner())
-                        && !hasCustomerCollaborationPermission(customerId, userId, false))) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
-    }
-
-    /**
-     * 共同跟进成员只能维护自己负责的计划，客户负责人保留原角色范围。
-     */
-    public void checkJointFollowPlanOwner(FollowUpPlan plan, String targetOwner, String orgId, String userId) {
-        if (plan == null || StringUtils.isBlank(orgId) || !orgId.equals(plan.getOrganizationId())) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
-        if (!Strings.CI.equals("CUSTOMER", plan.getType())
-                || (Strings.CS.equals(plan.getOwner(), userId) && Strings.CS.equals(targetOwner, userId))
-                || StringUtils.isBlank(plan.getCustomerId())) {
+        Customer customer = getFollowCustomer(customerId, orgId);
+        if (hasFollowDataPermission(orgId, userId, PermissionConstants.CUSTOMER_MANAGEMENT_READ, customer.getOwner())) {
             return;
         }
-        Customer customer = customerMapper.selectByPrimaryKey(plan.getCustomerId());
-        if (customer != null && orgId.equals(customer.getOrganizationId())
-                && !BooleanUtils.isTrue(customer.getInSharedPool()) && !Strings.CS.equals(customer.getOwner(), userId)
-                && customerCollaborationService.selectByCustomerIdAndUserId(plan.getCustomerId(), userId).stream()
-                        .anyMatch(member -> CustomerCollaborationType.JOINT_FOLLOW.name()
-                                .equals(member.getCollaborationType()))) {
+        boolean canCollaborate = customerCollaborationService.selectByCustomerIdAndUserId(customerId, userId).stream()
+                .map(CustomerCollaboration::getCollaborationType)
+                .anyMatch(type -> CustomerCollaborationType.COLLABORATION.name().equals(type)
+                        || allowJointFollow && CustomerCollaborationType.JOINT_FOLLOW.name().equals(type));
+        if (!canCollaborate) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
     }

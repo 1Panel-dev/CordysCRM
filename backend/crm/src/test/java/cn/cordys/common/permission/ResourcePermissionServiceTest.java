@@ -9,6 +9,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
@@ -29,6 +30,14 @@ import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactResourceAccessContextProvider;
 import cn.cordys.crm.customer.service.CustomerResourceAccessContextProvider;
 import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.follow.controller.FollowUpPlanController;
+import cn.cordys.crm.follow.controller.FollowUpRecordController;
+import cn.cordys.crm.follow.domain.FollowUpPlan;
+import cn.cordys.crm.follow.domain.FollowUpRecord;
+import cn.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
+import cn.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import cn.cordys.crm.follow.service.FollowUpPlanResourceAccessContextProvider;
+import cn.cordys.crm.follow.service.FollowUpRecordResourceAccessContextProvider;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationResourceAccessContextProvider;
@@ -39,11 +48,16 @@ import cn.cordys.crm.product.service.ProductResourceAccessContextProvider;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockMakers;
@@ -62,6 +76,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -365,6 +380,66 @@ class ResourcePermissionServiceTest {
             doReturn(false).when(dataScope).hasDataPermission("reader", "org", "sales", permission);
             assertThrows(GenericException.class, () -> service.checkResourcePermissionWithoutApprovalTask(
                     permission, opportunity.getId(), form, "reader", "org"));
+        }
+    }
+
+    private static Stream<Arguments> followWriteOperations() {
+        FollowUpPlanUpdateRequest plan = new FollowUpPlanUpdateRequest();
+        plan.setId("plan-id");
+        FollowUpRecordUpdateRequest record = new FollowUpRecordUpdateRequest();
+        record.setId("record-id");
+        return Stream.of(
+                Arguments.of(FollowUpPlanController.class, "update", plan, PermissionConstants.FOLLOW_PLAN_UPDATE),
+                Arguments.of(FollowUpPlanController.class, "delete", plan.getId(),
+                        PermissionConstants.FOLLOW_PLAN_DELETE),
+                Arguments.of(FollowUpRecordController.class, "update", record, PermissionConstants.FOLLOW_RECORD_UPDATE),
+                Arguments.of(FollowUpRecordController.class, "delete", record.getId(),
+                        PermissionConstants.FOLLOW_RECORD_DELETE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("followWriteOperations")
+    @SuppressWarnings("unchecked")
+    void followWritesUseTheRoleScopeOfTheStoredOwner(Class<?> controller, String operation, Object argument,
+            String permission) throws NoSuchMethodException {
+        FollowUpPlan plan = new FollowUpPlan();
+        plan.setOwner("other-sales");
+        plan.setOrganizationId("org");
+        BaseMapper<FollowUpPlan> plans = mock(BaseMapper.class);
+        when(plans.selectByPrimaryKey("plan-id")).thenReturn(plan);
+        FollowUpPlanResourceAccessContextProvider planProvider = new FollowUpPlanResourceAccessContextProvider();
+        ReflectionTestUtils.setField(planProvider, "followUpPlanMapper", plans);
+        FollowUpRecord record = new FollowUpRecord();
+        record.setOwner("other-sales");
+        record.setOrganizationId("org");
+        BaseMapper<FollowUpRecord> records = mock(BaseMapper.class);
+        when(records.selectByPrimaryKey("record-id")).thenReturn(record);
+        FollowUpRecordResourceAccessContextProvider recordProvider = new FollowUpRecordResourceAccessContextProvider();
+        ReflectionTestUtils.setField(recordProvider, "followUpRecordMapper", records);
+        register(List.of(planProvider, recordProvider));
+
+        CsPermissionAspect aspect = new CsPermissionAspect();
+        ReflectionTestUtils.setField(aspect, "resourcePermissionService", service);
+        JoinPoint call = mock(JoinPoint.class);
+        MethodSignature signature = mock(MethodSignature.class);
+        when(call.getSignature()).thenReturn(signature);
+        when(signature.getMethod()).thenReturn(controller.getMethod(operation, argument.getClass()));
+        when(call.getArgs()).thenReturn(new Object[] { argument });
+
+        DeptDataPermissionDTO scope = new DeptDataPermissionDTO();
+        scope.setAll(true);
+        doReturn(scope).when(dataScope).getDeptDataPermission("sales", "org", permission);
+        try (var roles = mockPermissions();
+                var session = mockStatic(SessionUtils.class, withSettings().mockMaker(MockMakers.INLINE));
+                var org = mockStatic(OrganizationContext.class, withSettings().mockMaker(MockMakers.INLINE))) {
+            session.when(SessionUtils::getUserId).thenReturn("sales");
+            org.when(OrganizationContext::getOrganizationId).thenReturn("org");
+            assertThrows(GenericException.class, () -> aspect.checkPermission(call));
+            roles.when(() -> PermissionUtils.hasPermission(permission)).thenReturn(true);
+            assertDoesNotThrow(() -> aspect.checkPermission(call));
+            scope.setAll(false);
+            scope.setSelf(true);
+            assertThrows(GenericException.class, () -> aspect.checkPermission(call));
         }
     }
 
