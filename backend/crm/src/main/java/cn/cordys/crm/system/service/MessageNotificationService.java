@@ -573,7 +573,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_EXPIRED_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")),"OPPORTUNITY_QUOTATION");
+                            buildScheduleConfigValue(buildScheduleValue("untilTime", "0", "08：00：00", "ONLY_ONE")),"OPPORTUNITY_QUOTATION");
 
                 }
                 // 报价即将到期
@@ -596,7 +596,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_EXPIRING_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")),"OPPORTUNITY_QUOTATION");
+                            buildScheduleConfigValue(buildScheduleValue("untilTime", "0", "08：00：00", "ONLY_ONE")),"OPPORTUNITY_QUOTATION");
 
                 }
                 // 报价审批
@@ -656,10 +656,10 @@ public class MessageNotificationService {
                         scopeId.add("SUPERVISOR");
                     }
                     messageTask.setSysEnable(false);
-                    updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_VOID_TEXT.name()), config, eventNameMap,
+                    updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_ARCHIVED_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.FIELD.name(),
-                            buildFieldConfigValue(buildCondition("stage", List.of("VOID"), true, "IN",
+                            buildFieldConfigValue(buildCondition("stage", List.of("ARCHIVED"), true, "IN",
                                     "SELECT_MULTIPLE")),"CONTRACT");
                 }
                 // 合同到期
@@ -681,7 +681,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRED_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")),"CONTRACT");
+                            buildScheduleConfigValue(buildScheduleValue("endTime", "0", "08：00：00", "ONLY_ONE")),"CONTRACT");
                 }
                 // 合同即将到期
                 case NotificationConstants.Event.CONTRACT_EXPIRING -> {
@@ -702,7 +702,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRING_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")),"CONTRACT");
+                            buildScheduleConfigValue(buildScheduleValue("endTime", "0", "08：00：00", "ONLY_ONE")),"CONTRACT");
                 }
                 // 合同审批
                 case NotificationConstants.Event.CONTRACT_APPROVAL ->
@@ -1008,7 +1008,7 @@ public class MessageNotificationService {
                 NotificationConstants.Event.FOLLOW_UP_PLAN_DUE, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.SCHEDULE.name(),
-                buildScheduleConfigValue(buildScheduleValue("estimated_time", "0", "08：00：00", "ONLY_ONE")),"FOLLOW_UP_PLAN");
+                buildScheduleConfigValue(buildScheduleValue("estimatedTime", "0", "08：00：00", "ONLY_ONE")),"FOLLOW_UP_PLAN");
 
         //-----代办-------
         // 单据被评论

@@ -1,7 +1,11 @@
 package cn.cordys.crm.system.notice;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
@@ -20,6 +24,7 @@ import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.MessageDetailDTO;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.message.TriggerTypeConfigDTO;
 import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
@@ -27,6 +32,7 @@ import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.notice.common.NoticeModel;
 import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.notice.common.Receiver;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.crm.system.utils.MessageTemplateUtils;
 import cn.cordys.mybatis.BaseMapper;
@@ -296,7 +302,7 @@ public class CommonNoticeSendService {
                     sendTaskNotice(task, context);
                 } else if (config != null && matchTrigger(config, context)) {
                     context.setTriggerType(config.getTriggerType());
-                    sendTaskNotice(task, context);
+                    sendTaskNotice(task, context, buildFieldTriggerParams(config, context));
                 }
             }
         } catch (Exception e) {
@@ -410,6 +416,10 @@ public class CommonNoticeSendService {
     }
 
     private void sendTaskNotice(MessageTask task, NoticeSendContext context) {
+        sendTaskNotice(task, context, null);
+    }
+
+    private void sendTaskNotice(MessageTask task, NoticeSendContext context, Map<String, Object> extraParams) {
         List<ReceiverGroup> receiverGroups = resolveReceiverGroups(task.getScopeId(), context);
         if (CollectionUtils.isEmpty(receiverGroups)) {
             return;
@@ -427,6 +437,9 @@ public class CommonNoticeSendService {
         }
         if (context.getParamMap() != null) {
             paramMap.putAll(context.getParamMap());
+        }
+        if (extraParams != null) {
+            paramMap.putAll(extraParams);
         }
         if (StringUtils.isNotBlank(context.getResourceName())) {
             paramMap.putIfAbsent("name", context.getResourceName());
@@ -701,15 +714,69 @@ public class CommonNoticeSendService {
         if (CollectionUtils.isEmpty(templateNames)) {
             return null;
         }
+        // 系统模板存枚举名、自定义模板存字面量：枚举名翻译成文案，非枚举按字面量模板直接渲染 ${...}
         String content = templateNames.stream()
                 .map(name -> {
                     TemplateEnum templateEnum = TemplateEnum.get(name);
-                    return templateEnum == null ? null
-                            : MessageTemplateUtils.getContent(Translator.get(templateEnum.getDescription()), paramMap);
+                    String template = templateEnum == null ? name
+                            : Translator.get(templateEnum.getDescription());
+                    return MessageTemplateUtils.getContent(template, paramMap);
                 })
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.joining("\n"));
         return StringUtils.isBlank(content) ? null : content;
+    }
+
+    /**
+     * 字段条件触发时，把被触发字段的显示名与值塞入模板参数，
+     * 供用户自定义模板里的 ${fieldId} / ${fieldValue} 渲染。解析失败则回退为字段id与原始值，不影响发送。
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private Map<String, Object> buildFieldTriggerParams(MessageTaskConfig config, NoticeSendContext context) {
+        if (config == null || !Strings.CI.equals(config.getTriggerType(), TriggerTypeEnum.FIELD.name())) {
+            return Map.of();
+        }
+        TriggerTypeConfigDTO triggerConfig = JSON.parseObject(config.getValue(), TriggerTypeConfigDTO.class);
+        List<FilterCondition> conditions = triggerConfig == null ? null : triggerConfig.getFieldTypeConfig();
+        if (CollectionUtils.isEmpty(conditions)) {
+            return Map.of();
+        }
+        FilterCondition condition = conditions.stream().filter(FilterCondition::valid).findFirst().orElse(null);
+        if (condition == null) {
+            return Map.of();
+        }
+        String fieldId = condition.getName();
+        Map<String, Object> newValues = context.getNewValues();
+        Object rawValue = newValues == null ? null : newValues.get(fieldId);
+        String label = fieldId;
+        String display = rawValue instanceof List<?> ? JSON.toJSONString(rawValue)
+                : rawValue == null ? StringUtils.EMPTY : rawValue.toString();
+        try {
+            FormKey formKey = FormKey.ofKey(context.getTaskType());
+            String form = formKey != null ? formKey.getKey() : context.getTaskType();
+            ModuleFormCacheService formCacheService = CommonBeanFactory.getBean(ModuleFormCacheService.class);
+            if (formCacheService != null && StringUtils.isNotBlank(form)) {
+                BaseField field = formCacheService.getBusinessFormConfig(form, context.getOrganizationId())
+                        .getFields().stream()
+                        .filter(f -> fieldId.equals(f.getId()))
+                        .findFirst().orElse(null);
+                if (field != null) {
+                    label = StringUtils.defaultIfBlank(field.getName(), fieldId);
+                    String rawStr = rawValue instanceof List<?> ? JSON.toJSONString(rawValue)
+                            : rawValue == null ? null : rawValue.toString();
+                    if (rawStr != null) {
+                        AbstractModuleFieldResolver resolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                        display = Objects.toString(resolver.transformToValue(field, rawStr), display);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("解析字段条件模板参数失败, fieldId:{}", fieldId, e);
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("fieldId", label);
+        params.put("fieldValue", display);
+        return params;
     }
 
     private List<String> parseStringList(String json) {
