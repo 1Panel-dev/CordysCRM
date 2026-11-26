@@ -1,6 +1,6 @@
 <template>
   <div class="h-full overflow-auto" :class="props.class">
-    <van-pull-refresh v-model="refreshing" @refresh="handleRefresh">
+    <van-pull-refresh v-model="refreshing" :disabled="props.disablePullRefresh" @refresh="handleRefresh">
       <van-empty v-if="list.length === 0 && !loading && !error" :description="t('common.noData')" />
       <van-list
         v-model:loading="loading"
@@ -42,6 +42,7 @@
       closeInitLoad?: boolean; // 关闭首次加载
       notShowLoadingToast?: boolean;
       immediateCheck?: boolean; // 是否立即检查是否需要加载数据, 适用于列表高度不够时, 不会触发load事件
+      disablePullRefresh?: boolean; // 禁用下拉刷新，交由外层滚动容器处理手势
     }>(),
     {
       immediateCheck: true,

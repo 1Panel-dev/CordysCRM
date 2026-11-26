@@ -23,6 +23,7 @@
         :item-gap="0"
         :load-list-api="handleLoadCommentList"
         :close-init-load="!props.sourceId"
+        :disable-pull-refresh="props.embedded || props.disablePullRefresh"
         @update:model-value="handleCommentsUpdate"
       >
         <template #item="{ item }">
@@ -125,6 +126,7 @@
       canCreate?: boolean;
       canReply?: boolean;
       embedded?: boolean; // 由外层容器统一滚动
+      disablePullRefresh?: boolean; // 外层页面统一处理滚动手势时禁用评论下拉刷新
       enableAttachment?: boolean;
       showTimeSort?: boolean;
       actionsInMore?: boolean;
@@ -135,6 +137,7 @@
       canCreate: true,
       canReply: true,
       embedded: false,
+      disablePullRefresh: false,
       enableAttachment: false,
       showTimeSort: false,
       actionsInMore: false,

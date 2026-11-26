@@ -24,32 +24,16 @@
         :source-id="sourceId"
         :can-create="canComment"
         :can-reply="canComment"
+        disable-pull-refresh
         @change-editor="commentEditing = Boolean($event)"
       />
     </div>
     <template v-if="(canEditDetail || canDeleteDetail) && !commentEditing" #footer>
-      <div class="flex items-center justify-center gap-[16px]">
-        <div v-if="canDeleteDetail" class="flex w-[100px] items-center">
-          <CrmTextButton
-            color="var(--text-n1)"
-            icon="iconicon_delete"
-            :text="t('common.delete')"
-            icon-size="18px"
-            direction="column"
-            class="flex-1"
-            @click="handleDelete"
-          />
-        </div>
-        <van-button
-          v-if="canEditDetail"
-          type="primary"
-          class="flex-1 !rounded-[var(--border-radius-small)] !text-[16px]"
-          plain
-          @click="handleEdit"
-        >
-          {{ t('common.edit') }}
-        </van-button>
-      </div>
+      <CrmActionButtons
+        :show-edit-button="canEditDetail"
+        :actions="canDeleteDetail ? [{ key: 'delete', text: t('common.delete'), color: 'var(--error-red)' }] : []"
+        @select="handleFooterAction"
+      />
     </template>
   </CrmPageWrapper>
 </template>
@@ -63,7 +47,7 @@
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
-  import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+  import CrmActionButtons from '@/components/business/crm-action-buttons/index.vue';
   import CrmComment from '@/components/business/crm-comment/index.vue';
   import type { MobileCommentResourceType } from '@/components/business/crm-comment/useCommentResource';
 
@@ -144,6 +128,16 @@
             },
           }),
     });
+  }
+
+  function handleFooterAction(action: string) {
+    if (action === 'edit') {
+      handleEdit();
+      return;
+    }
+    if (action === 'delete') {
+      handleDelete();
+    }
   }
 </script>
 
