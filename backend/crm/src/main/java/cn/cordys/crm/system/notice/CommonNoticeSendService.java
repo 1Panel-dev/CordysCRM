@@ -582,8 +582,8 @@ public class CommonNoticeSendService {
                     users.addAll(context.getMentionedUserIds());
                 }
             }
-            case CUSTOMER_SEAS_OWNER -> addIfNotBlank(users, getPoolOwner(context, true));
-            case CLUE_SEAS_OWNER -> addIfNotBlank(users, getPoolOwner(context, false));
+            case CUSTOMER_SEAS_OWNER -> users.addAll(getPoolOwnerIds(context, true));
+            case CLUE_SEAS_OWNER -> users.addAll(getPoolOwnerIds(context, false));
             default -> {
             }
         }
@@ -651,22 +651,30 @@ public class CommonNoticeSendService {
     }
 
     /**
-     * 公海管理员：优先取更新后的公海ID，取不到再取更新前的
+     * 公海/线索池管理员：优先取更新后的池ID，取不到再取更新前的。
+     * owner_id 存的是管理员范围(用户/角色/部门 id 的 JSON 数组)，需解析成真实用户 id。
      */
-    private String getPoolOwner(NoticeSendContext context, boolean customerPool) {
+    private List<String> getPoolOwnerIds(NoticeSendContext context, boolean customerPool) {
         String poolId = getStringValue(context.getNewValues(), POOL_ID_FIELD);
         if (StringUtils.isBlank(poolId)) {
             poolId = getStringValue(context.getOldValues(), POOL_ID_FIELD);
         }
         if (StringUtils.isBlank(poolId)) {
-            return null;
+            return List.of();
         }
+        String ownerScopeJson;
         if (customerPool) {
             CustomerPool pool = customerPoolMapper.selectByPrimaryKey(poolId);
-            return pool == null ? null : pool.getOwnerId();
+            ownerScopeJson = pool == null ? null : pool.getOwnerId();
+        } else {
+            CluePool pool = cluePoolMapper.selectByPrimaryKey(poolId);
+            ownerScopeJson = pool == null ? null : pool.getOwnerId();
         }
-        CluePool pool = cluePoolMapper.selectByPrimaryKey(poolId);
-        return pool == null ? null : pool.getOwnerId();
+        List<String> scopeIds = parseStringList(ownerScopeJson);
+        if (CollectionUtils.isEmpty(scopeIds)) {
+            return List.of();
+        }
+        return userExtendService.getScopeOwnerIds(scopeIds, context.getOrganizationId());
     }
 
     private String getStringValue(Map<String, Object> values, String key) {
