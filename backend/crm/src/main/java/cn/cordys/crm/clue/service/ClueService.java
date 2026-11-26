@@ -1333,6 +1333,7 @@ public class ClueService implements ApprovalResourceHandler {
                 .resourceId(clue.getId())
                 .resourceName(clue.getName())
                 .paramMap(customerParamMap)
+                .oldValues(clueValues)
                 .newValues(clueValues)
                 .templateNames(List.of(createNewCustomer
                         ? TemplateEnum.CLUE_CONVERT_CUSTOMER_ADD_TEXT.name()
@@ -1359,6 +1360,7 @@ public class ClueService implements ApprovalResourceHandler {
                     .resourceId(clue.getId())
                     .resourceName(clue.getName())
                     .paramMap(businessParamMap)
+                    .oldValues(clueValues)
                     .newValues(clueValues)
                     .templateNames(List.of(TemplateEnum.CLUE_CONVERT_BUSINESS_TEXT.name()))
                     .excludeSelf(true)
