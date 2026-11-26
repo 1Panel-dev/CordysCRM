@@ -10,7 +10,13 @@ const contract: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'module.contract',
-    permissions: ['CONTRACT:READ', 'CONTRACT_PAYMENT_PLAN:READ'],
+    permissions: [
+      'CONTRACT:READ',
+      'CONTRACT_PAYMENT_PLAN:READ',
+      'CONTRACT_PAYMENT_RECORD:READ',
+      'CONTRACT_INVOICE:READ',
+      'CONTRACT_BUSINESS_TITLE:READ',
+    ],
     icon: 'iconicon_contract',
     hideChildrenInMenu: true,
     collapsedLocale: 'module.contract',

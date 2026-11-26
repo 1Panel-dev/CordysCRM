@@ -45,6 +45,7 @@ export interface AnnouncementItemDetail {
 
 export interface MessageTaskCountDTO {
   taskType: string;
+  formType?: string;
   count: number;
   name?: string;
 }
@@ -53,6 +54,7 @@ export interface MessageTaskPageParams {
   current: number;
   pageSize: number;
   taskType: string;
+  formType?: string;
   sort: Record<string, unknown>;
   combineSearch: {
     searchMode: string;
@@ -91,6 +93,7 @@ export interface MessageTaskResponse {
   id: string;
   name: string;
   taskType: string;
+  formType?: string;
   type: 'SYSTEM' | 'CUSTOM';
   sysEnable?: boolean;
   triggerType: string;
@@ -114,6 +117,7 @@ export interface MessageTaskSaveParams {
   id?: string;
   name: string;
   taskType: string;
+  formType: string;
   scopeId: string[];
   receiveMethod: string;
   triggerType: string;
@@ -139,6 +143,7 @@ export interface MessageCenterItem {
   organizationId: string;
   resourceId: string;
   resourceType: string; // 资源类型
+  formType?: string;
   resourceName: string; // 资源名称
   content: string; // 通知内容
   createUser: string;

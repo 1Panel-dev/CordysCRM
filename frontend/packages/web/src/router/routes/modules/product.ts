@@ -11,7 +11,7 @@ const product: AppRouteRecordRaw = {
   meta: {
     hideChildrenInMenu: true,
     locale: 'module.productManagement',
-    permissions: ['PRODUCT_MANAGEMENT:READ'],
+    permissions: ['PRODUCT_MANAGEMENT:READ', 'PRICE:READ'],
     icon: 'iconicon_product',
     collapsedLocale: 'menu.collapsedProduct',
   },

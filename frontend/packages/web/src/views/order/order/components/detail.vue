@@ -250,7 +250,8 @@
         initStageConfig();
         initDetailTabConfig();
       }
-    }
+    },
+    { immediate: true }
   );
 
   const currentStatus = ref<string>(stageConfig.value?.stageConfigList[0]?.id || '');

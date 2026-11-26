@@ -198,7 +198,12 @@
   </n-layout-header>
   <agentDrawer v-if="initAgentDrawer" v-model:visible="showAgentDrawer" />
   <CrmFollowDrawer v-if="initFollowDrawer" v-model:visible="showFollowDrawer" />
-  <CrmTaskDrawer v-if="initTaskDrawer" v-model:show="showTaskDrawer" />
+  <CrmTaskDrawer
+    v-if="initTaskDrawer"
+    v-model:show="showTaskDrawer"
+    :type="ApprovalListTypeEnum.PENDING"
+    :resource-type="activeTaskResourceType"
+  />
 </template>
 
 <script setup lang="ts">
@@ -206,6 +211,7 @@
   import { NBadge, NButton, NDivider, NLayoutHeader, NPopover, NPopselect, useMessage } from 'naive-ui';
   import { LanguageOutline } from '@vicons/ionicons5';
 
+  import { ApprovalListTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { LOCALE_OPTIONS } from '@lib/shared/locale';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -332,8 +338,10 @@
   const showFollowDrawer = ref(false);
   const initTaskDrawer = ref(false);
   const showTaskDrawer = ref(false);
+  const activeTaskResourceType = ref('');
 
-  function openApprovalTodo() {
+  function openApprovalTodo(formType = '') {
+    activeTaskResourceType.value = formType;
     initTaskDrawer.value = true;
     showTaskDrawer.value = true;
   }

@@ -251,6 +251,7 @@ export default {
   'common.copySuccessToClipboard': 'Copied to clipboard',
   'common.currentUser': 'Current user',
   'common.type': 'Type',
+  'common.resourceType': 'Resource type',
   'common.batchUpdate': 'Updated to',
   'common.checkDetail': 'View details',
   'common.operator': 'Operator',
