@@ -222,7 +222,6 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -266,7 +265,6 @@
     hideOperationColumn?: boolean;
     hideBoard?: boolean;
   }>();
-  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
     (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
@@ -610,7 +608,6 @@
     detailTabPageFormId: props.detailTabPageFormId,
     detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
-    rowReadonly: isCustomerRelatedReadonly,
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',

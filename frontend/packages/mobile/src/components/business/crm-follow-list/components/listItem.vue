@@ -145,22 +145,11 @@
     }))
   );
 
-  const isOwner = (item: FollowDetailItem) => item.owner === userStore.userInfo?.id;
-
   const permissionPrefix = computed(() => (isPlan.value ? 'FOLLOW_PLAN' : 'FOLLOW_RECORD'));
-  const canEdit = computed(
-    () => !props.readonly && isOwner(props.item) && hasAnyPermission([`${permissionPrefix.value}:UPDATE`])
-  );
-  const canDelete = computed(
-    () => !props.readonly && isOwner(props.item) && hasAnyPermission([`${permissionPrefix.value}:DELETE`])
-  );
+  const canEdit = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:UPDATE`]));
+  const canDelete = computed(() => !props.readonly && hasAnyPermission([`${permissionPrefix.value}:DELETE`]));
   const canUpdatePlan = computed(
-    () =>
-      isPlan.value &&
-      !props.readonly &&
-      !props.item.converted &&
-      isOwner(props.item) &&
-      hasAnyPermission(['FOLLOW_PLAN:UPDATE'])
+    () => isPlan.value && !props.readonly && !props.item.converted && hasAnyPermission(['FOLLOW_PLAN:UPDATE'])
   );
   const isShowAction = computed(() => canEdit.value || canDelete.value);
 
@@ -180,7 +169,7 @@
         sourceId: props.sourceId,
         sourceName: props.sourceName,
         commentCount: item.commentCount || 0,
-        readonly: String(props.readonly || !isOwner(item)),
+        readonly: String(props.readonly),
       },
     });
   }

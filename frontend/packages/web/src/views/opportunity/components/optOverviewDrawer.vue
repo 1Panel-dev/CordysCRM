@@ -80,7 +80,7 @@
             :source-id="sourceId"
             :refresh-key="refreshKey"
             :approval-status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE"
-            :readonly="effectiveReadonly"
+            :readonly="props.readonly"
             left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
@@ -98,7 +98,7 @@
                 :set-loading="setLoading"
                 :set-editing="setEditing"
                 :readonly="
-                  effectiveReadonly || !hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])
+                  props.readonly || !hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_MANAGEMENT:UPDATE'])
                 "
                 @init="handleDescriptionInit"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
@@ -200,7 +200,6 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -262,12 +261,6 @@
 
   const transferLoading = ref(false);
   const detailInfo = ref<Record<string, any>>({});
-  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
-  const effectiveReadonly = computed(
-    () =>
-      props.readonly ||
-      isCustomerRelatedReadonly(detailInfo.value?.id === sourceId.value ? detailInfo.value : undefined)
-  );
 
   const opportunityDataActionMap = computed<Record<string, ActionsItem>>(() => ({
     edit: {
@@ -334,7 +327,7 @@
   }
 
   const canUpdateStage = computed(() => {
-    if (effectiveReadonly.value || !detailInfo.value) {
+    if (props.readonly || !detailInfo.value) {
       return false;
     }
 
@@ -353,7 +346,7 @@
     groupList: ActionsItem[];
     moreList: ActionsItem[];
   }>(() => {
-    if (effectiveReadonly.value) {
+    if (props.readonly) {
       return { groupList: [], moreList: [] };
     }
     const detailAction = resolveRowOperation(detailInfo.value);

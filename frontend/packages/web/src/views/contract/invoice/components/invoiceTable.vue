@@ -140,7 +140,6 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -167,7 +166,6 @@
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
-  const isCustomerRelatedDataReadonly = useCustomerRelatedDataReadonly();
   const emit = defineEmits<{
     (e: 'openBusinessTitleDrawer', params: { id: string }): void;
     (e: 'openContractDrawer', params: { id: string }): void;
@@ -436,7 +434,6 @@
     formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
     listApi: props.customerId ? getCustomerInvoiceList : undefined,
     readonly: props.readonly,
-    rowReadonly: isCustomerRelatedDataReadonly,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
     detailTabPageFormId: props.detailTabPageFormId,

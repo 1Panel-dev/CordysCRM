@@ -147,7 +147,6 @@
   import { batchDeletePaymentPlan, deletePaymentPlan, getAccountPayment, updatePaymentPlan } from '@/api/modules';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
   import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -183,7 +182,6 @@
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
-  const isCustomerRelatedDataReadonly = useCustomerRelatedDataReadonly();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
   }>();
@@ -410,7 +408,6 @@
     formKey: props.formKey,
     listApi: props.customerId ? getAccountPayment : undefined,
     readonly: props.readonly,
-    rowReadonly: isCustomerRelatedDataReadonly,
     tableKey: props.tableKey,
     detailTabResourceId: props.detailTabResourceId,
     detailTabPageFormId: props.detailTabPageFormId,
@@ -461,8 +458,7 @@
       status: (row: PaymentPlanItem) =>
         h(StatusTagSelect, {
           'status': row.planStatus as ContractPaymentPlanEnum,
-          'disabled':
-            props.readonly || isCustomerRelatedDataReadonly(row) || !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE']),
+          'disabled': props.readonly || !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE']),
           'statusTagComponent': ContractStatus,
           'onUpdate:status': (val) => {
             row.planStatus = val;

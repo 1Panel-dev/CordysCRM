@@ -207,7 +207,6 @@
     enableCustomerContact,
   } from '@/api/modules';
   import { getModuleFilterConfigList } from '@/config/messageFilterConfig';
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -442,7 +441,6 @@
     handleAdvanceFilter,
     handleSearchData,
   });
-  const isCustomerRelatedDataReadonly = useCustomerRelatedDataReadonly();
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     tableKey: props.tableKey,
@@ -452,7 +450,6 @@
     hideOperationColumn: props.hideOperationColumn,
     showPagination: !props.sourceId,
     readonly: props.readonly,
-    rowReadonly: isCustomerRelatedDataReadonly,
     containerClass: '.crm-contact-table',
     hiddenTotal: ref(!!props.hiddenTotal),
     operationColumn: props.readonly
@@ -471,17 +468,9 @@
       status: (row: CustomerContractListItem) => {
         return h(NSwitch, {
           value: row.enable,
-          disabled:
-            !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) ||
-            props.readonly ||
-            isCustomerRelatedDataReadonly(row),
+          disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) || props.readonly,
           onClick: () => {
-            if (
-              !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) ||
-              props.readonly ||
-              isCustomerRelatedDataReadonly(row)
-            )
-              return;
+            if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) || props.readonly) return;
             handleToggleStatus(row);
           },
         });

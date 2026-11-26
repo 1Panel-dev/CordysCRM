@@ -34,7 +34,7 @@
         :disabled-open-detail="props.followApiKey !== 'myPlan'"
         :type="props.activeType"
         :empty-text="emptyText"
-        :get-disabled-fun="(item) => canEdit && getShowAction(item) && !isCustomerRelatedDataReadonly(item)"
+        :get-disabled-fun="(item) => canEdit && getShowAction(item)"
         :readonly="props.readonly"
         @reach-bottom="handleReachBottom"
         @change="changePlanStatus"
@@ -44,22 +44,11 @@
             <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
               {{ t('common.detail') }}
             </n-button>
-            <n-button
-              v-if="canEdit && !isCustomerRelatedDataReadonly(item)"
-              type="primary"
-              class="text-btn-primary"
-              quaternary
-              @click="handleEdit(item)"
-            >
+            <n-button v-if="canEdit" type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
               {{ t('common.edit') }}
             </n-button>
             <n-button
-              v-if="
-                canConvert &&
-                !isCustomerRelatedDataReadonly(item) &&
-                [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) &&
-                !item.converted
-              "
+              v-if="canConvert && [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) && !item.converted"
               type="primary"
               class="text-btn-primary"
               quaternary
@@ -67,13 +56,7 @@
             >
               {{ t('common.convertPlanToRecord') }}
             </n-button>
-            <n-button
-              v-if="canDelete && !isCustomerRelatedDataReadonly(item)"
-              type="error"
-              class="text-btn-error"
-              quaternary
-              @click="handleDelete(item)"
-            >
+            <n-button v-if="canDelete" type="error" class="text-btn-error" quaternary @click="handleDelete(item)">
               {{ t('common.delete') }}
             </n-button>
           </div>
@@ -109,7 +92,7 @@
       :source-id="sourceId"
       :source-name="sourceName"
       :refresh-key="refreshDetailKey"
-      :readonly="detailReadonly"
+      :readonly="props.readonly"
       :detail="activeItem"
       @delete="handleDelete(activeItem as FollowDetailItem)"
       @edit="handleEdit(activeItem as FollowDetailItem)"
@@ -138,7 +121,6 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import FollowRecord from './followRecord.vue';
 
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { notifyRelatedDataChanged } from '@/hooks/useRelatedDataRefresh';
   import { hasAnyPermission } from '@/utils/permission';
@@ -186,8 +168,6 @@
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
   const activeItem = ref<FollowDetailItem>();
-  const isCustomerRelatedDataReadonly = useCustomerRelatedDataReadonly();
-  const detailReadonly = computed(() => props.readonly || isCustomerRelatedDataReadonly(activeItem.value));
   function notifyParentDataChanged() {
     if (props.parentFormKey && props.sourceId) {
       notifyRelatedDataChanged(props.parentFormKey, props.sourceId);
