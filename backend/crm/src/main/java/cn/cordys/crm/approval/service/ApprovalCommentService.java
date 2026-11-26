@@ -220,7 +220,9 @@ public class ApprovalCommentService {
     private boolean hasCommentPermission(ApprovalInstance instance, String userId, String orgId) {
         // 评论权限: 业务审批数据的查看权限或评论被@用户
         return approvalResourceService.hasViewPermission(instance.getResourceId(), userId, orgId)
-                || extCommentMapper.existsMention(instance.getResourceId(), userId, orgId);
+                || (extCommentMapper.existsMention(instance.getResourceId(), userId, orgId)
+                        && !relatedResourcePermissionService.isIsolatedData(instance.getType(), instance.getResourceId(),
+                                userId, orgId));
     }
 
     private void checkPermission(String resourceId, String userId, String orgId) {
@@ -232,7 +234,6 @@ public class ApprovalCommentService {
         if (instance == null) {
             throw new GenericException(Translator.get("approval.comment.instance_not_found"));
         }
-        relatedResourcePermissionService.checkIsolatedData(instance.getType(), resourceId, userId, orgId);
         if (!hasCommentPermission(instance, userId, orgId)
                 && !(readOnly && relatedResourcePermissionService.hasRelatedReadPermission(instance.getType(),
                         resourceId, userId, orgId))) {

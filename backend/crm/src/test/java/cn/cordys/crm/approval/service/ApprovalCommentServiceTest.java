@@ -221,6 +221,21 @@ class ApprovalCommentServiceTest {
     }
 
     @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void isolatedCommentPageRequiresBusinessAccessEvenForMentionedUsers(boolean roleRead) {
+        when(approvalResourceService.hasViewPermission(RESOURCE, USER, ORG)).thenReturn(roleRead);
+        when(extCommentMapper.existsMention(RESOURCE, USER, ORG)).thenReturn(true);
+        when(relatedResourcePermissionService.isIsolatedData("contract", RESOURCE, USER, ORG)).thenReturn(true);
+
+        assertEquals(roleRead, service.hasCommentPermission(RESOURCE, USER, ORG));
+        if (roleRead) {
+            assertTrue(service.page(pageRequest(), USER, ORG).getList().isEmpty());
+        } else {
+            assertThrows(GenericException.class, () -> service.page(pageRequest(), USER, ORG));
+        }
+    }
+
+    @ParameterizedTest
     @ValueSource(booleans = { false, true })
     void rejectsUnknownResourceOrMissingAllPermissions(boolean knownResource) {
         if (!knownResource) {

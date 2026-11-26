@@ -32,7 +32,7 @@ public interface ExtCustomerContactMapper extends StatisticSqlMapper {
 
     List<CustomerContactListResponse> listByCustomerId(@Param("customerId") String customerId);
 
-    List<CustomerContactListResponse> getById(@Param("id") String id);
+    List<CustomerContactListResponse> getById(@Param("id") String id, @Param("orgId") String orgId);
 
     List<OptionDTO> selectContactPhoneOptionByIds(@Param("contactIds") List<String> contactIds);
 

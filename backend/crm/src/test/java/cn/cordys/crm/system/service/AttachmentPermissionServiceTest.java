@@ -252,7 +252,7 @@ class AttachmentPermissionServiceTest {
             "COMMENT,contract", "MENTION,contract", "OPERATION,contract",
             "COMMENT,custom-form", "MENTION,custom-form", "OPERATION,custom-form"
     })
-    void 业务数据隔离优先于附件审批参与和评论提及授权(String source, String formType) {
+    void 附件命中协作隔离时须有独立的业务数据权限(String source, String formType) {
         String resourceId = "OPERATION".equals(source) ? "resource" : "business";
         if ("OPERATION".equals(source)) {
             when(tasks.existsAttachmentParticipant("attachment", resourceId, "user", "org")).thenReturn(true);
@@ -269,11 +269,23 @@ class AttachmentPermissionServiceTest {
         when(mentions.selectLatestInstance(resourceId, "org")).thenReturn(instance);
 
         assertDoesNotThrow(() -> service.checkReadPermission(attachment));
-        verify(relatedPermissions).checkIsolatedData(formType, resourceId, "user", "org");
-        doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).when(relatedPermissions)
-                .checkIsolatedData(formType, resourceId, "user", "org");
+        when(relatedPermissions.isIsolatedData(formType, resourceId, "user", "org")).thenReturn(true);
+        if ("contract".equals(formType)) {
+            when(provider.getAccessContext(resourceId, "org")).thenReturn(new ResourceAccessContext());
+            when(provider.getFormType()).thenReturn(formType);
+            doThrow(new GenericException(CrmHttpResultCode.FORBIDDEN)).doNothing().when(permissions)
+                    .checkResourcePermissionWithoutApprovalTask(PermissionConstants.CONTRACT_READ, resourceId,
+                            formType, "user", "org");
+        } else {
+            CustomFormData data = new CustomFormData();
+            data.setCustomFormId(formType);
+            data.setOrganizationId("org");
+            when(customData.selectByPrimaryKey(resourceId)).thenReturn(data);
+            when(customForms.hasViewPermission(resourceId, "user", "org")).thenReturn(false, true);
+        }
         assertEquals(CrmHttpResultCode.FORBIDDEN,
                 assertThrows(GenericException.class, () -> service.checkReadPermission(attachment)).getErrorCode());
+        assertDoesNotThrow(() -> service.checkReadPermission(attachment));
     }
 
     @Test

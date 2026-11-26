@@ -13,6 +13,7 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.permission.RelatedResourcePermissionService;
 import cn.cordys.common.permission.ResourceAccessContext;
 import cn.cordys.common.permission.ResourceAccessContextProvider;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -141,6 +142,8 @@ public class ApprovalResourceService {
     private CustomFormDataService customFormDataService;
     @Resource
     private RelatedResourcePermissionService relatedResourcePermissionService;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     @Resource
     private List<ApprovalResourceHandler> approvalResourceHandlers;
@@ -1500,8 +1503,9 @@ public class ApprovalResourceService {
         }
         // 历史任一审批实例中作为提交人或审批人/抄送人参与过, 直接放行
         if (extApprovalTaskMapper.existsResourceParticipant(resourceId, userId, orgId)) {
-            return !relatedResourcePermissionService.isIsolatedData(getFormTypeByResourceId(resourceId), resourceId,
-                    userId, orgId);
+            String formType = getFormTypeByResourceId(resourceId);
+            return !relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)
+                    || hasRoleViewPermission(formType, resourceId, userId, orgId);
         }
 
         // 未参与过任何审批实例时，再校验资源权限
@@ -1521,7 +1525,7 @@ public class ApprovalResourceService {
         }
         if (relatedResourcePermissionService.isIsolatedData(instance.getType(), instance.getResourceId(),
                 userId, orgId)) {
-            return false;
+            return hasRoleViewPermission(instance.getType(), instance.getResourceId(), userId, orgId);
         }
         if (userId.equals(instance.getSubmitterId()) || hasApprovalTaskPermission(instance, userId)) {
             // 审批流程实例的经办人放行 (提审人, 当前或历史节点的审批人, 抄送人;)
@@ -1586,7 +1590,7 @@ public class ApprovalResourceService {
         }
 
         if (relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)) {
-            return false;
+            return hasRoleViewPermission(formType, resourceId, userId, orgId);
         }
         String readPermission = getReadPermissionByFormType(formType);
         if (StringUtils.isBlank(readPermission) || !PermissionUtils.hasPermission(readPermission)) {
@@ -1600,6 +1604,18 @@ public class ApprovalResourceService {
         }
 
         return true;
+    }
+
+    private boolean hasRoleViewPermission(String formType, String resourceId, String userId, String orgId) {
+        String permission = getReadPermissionByFormType(formType);
+        if (StringUtils.isBlank(permission)) {
+            return false;
+        }
+        if (FormKey.ofKey(formType) == null) {
+            return PermissionUtils.hasPermission(permission)
+                    && customFormDataService.hasViewPermission(resourceId, userId, orgId);
+        }
+        return resourcePermissionService.hasRoleResourcePermission(permission, resourceId, formType, userId, orgId);
     }
 
     private boolean hasResourceDataPermission(ResourceAccessContextProvider provider, ResourceAccessContext context,

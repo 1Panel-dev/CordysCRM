@@ -88,7 +88,7 @@ public class ResourcePermissionService {
         // 评论@只授权当前GET请求读取该实例对应的业务数据。
         if (permission != null && permission.endsWith(":READ")
                 && hasApprovalCommentMentionPermission(resourceId, userId, orgId, formType)) {
-            relatedResourcePermissionService.checkIsolatedData(formType, resourceId, userId, orgId);
+            checkApprovalGrantIsolation(permission, resourceId, formType, userId, orgId);
             return;
         }
 
@@ -102,12 +102,36 @@ public class ResourcePermissionService {
             // 审批待办只能替代审批过程中查看、编辑资源的权限;
             // 删除、转移等业务操作仍须按角色权限位和数据权限校验
             if (isApprovalTaskReviewPermission(permission)) {
-                relatedResourcePermissionService.checkIsolatedData(formType, resourceId, userId, orgId);
+                checkApprovalGrantIsolation(permission, resourceId, formType, userId, orgId);
                 return;
             }
         }
 
         checkResourcePermissionWithoutApprovalTask(permission, resourceId, formType, userId, orgId);
+    }
+
+    private void checkApprovalGrantIsolation(String permission, String resourceId, String formType, String userId,
+            String orgId) {
+        if (relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)
+                && !hasRoleResourcePermission(permission, resourceId, formType, userId, orgId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
+    /**
+     * 只判断角色功能权限、资源数据范围及审批状态权限。
+     */
+    public boolean hasRoleResourcePermission(String permission, String resourceId, String formType, String userId,
+            String orgId) {
+        if (StringUtils.isAnyBlank(permission, resourceId, formType, userId, orgId)
+                || !PermissionUtils.hasPermission(permission)) {
+            return false;
+        }
+        ResourceAccessContextProvider provider = providersByFormType.get(formType);
+        ResourceAccessContext context = provider == null ? null : provider.getAccessContext(resourceId, orgId);
+        return context != null
+                && hasOwnerDataPermission(permission, userId, orgId, context.getOwnerId(), provider.requiresOwner())
+                && checkStatusPermission(permission, formType, context.getApprovalStatus(), orgId);
     }
 
     /**
@@ -316,8 +340,8 @@ public class ResourcePermissionService {
         String approvalStatus = context != null ? context.getApprovalStatus() : null;
 
         boolean rolePermitted = PermissionUtils.hasPermission(permission);
-        boolean roleDataPermitted = rolePermitted && (!requiresOwner || ownerId == null
-                || dataScopeService.hasDataPermission(userId, orgId, ownerId, permission));
+        boolean roleDataPermitted = rolePermitted && (context == null
+                || hasOwnerDataPermission(permission, userId, orgId, ownerId, requiresOwner));
         if (permission != null && permission.endsWith(":READ") && !roleDataPermitted
                 && relatedResourcePermissionService.isIsolatedData(formType, resourceId, userId, orgId)) {
             return false;
@@ -338,6 +362,12 @@ public class ResourcePermissionService {
         }
 
         return true;
+    }
+
+    private boolean hasOwnerDataPermission(String permission, String userId, String orgId, String ownerId,
+            boolean requiresOwner) {
+        return !requiresOwner || StringUtils.isNotBlank(ownerId)
+                && dataScopeService.hasDataPermission(userId, orgId, ownerId, permission);
     }
 
     /**
