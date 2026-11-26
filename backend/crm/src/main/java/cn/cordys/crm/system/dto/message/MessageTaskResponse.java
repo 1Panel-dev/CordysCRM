@@ -20,8 +20,11 @@ public class MessageTaskResponse {
     @Schema(description = "场景名称")
     private String name;
 
-    @Schema(description = "所属分类")
+    @Schema(description = "类型")
     private String taskType;
+
+    @Schema(description = "所属分类(表单类型)")
+    private String formType;
 
     @Schema(description = "类型(系统SYSTEM/自定义CUSTOM)")
     private String type;

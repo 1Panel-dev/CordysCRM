@@ -192,6 +192,7 @@ public class MessageNotificationService {
         task.setEnable(true);
         task.setScopeId(JSON.toJSONString(request.getScopeId()));
         task.setReceiveMethod(request.getReceiveMethod());
+        task.setFormType(request.getFormType());
         messageTaskMapper.insert(task);
 
         MessageTaskConfig taskConfig = new MessageTaskConfig();
@@ -361,44 +362,45 @@ public class MessageNotificationService {
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_ADD_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_ADD));
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_ADD), "CUSTOMER");
                 // 删除客户
                 case NotificationConstants.Event.CUSTOMER_DELETED ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_DELETED_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_DELETED));
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_DELETED), "CUSTOMER");
                 // 新建协作人(系统)
                 case NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_COLLABORATION_ADD_TEXT.name()),
                                 eventNameMap, messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD));
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD),
+                                "CUSTOMER");
                 // 转移客户
-                case NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER -> updateTaskAndAddConfig(
-                        List.of(TemplateEnum.CUSTOMER_TRANSFERRED_CUSTOMER_OWNER_TEXT.name(),
-                                TemplateEnum.CUSTOMER_TRANSFERRED_CUSTOMER_OLD_OWNER_TEXT.name()), eventNameMap,
-                        messageTask, List.of("OLD_OWNER", "OWNER"), receiveMethod,
-                        TriggerTypeEnum.ACTION.name(),
-                        buildActionConfigValue(NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER));
+                case NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER ->
+                        updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_TRANSFERRED_CUSTOMER_OWNER_TEXT.name(),
+                                        TemplateEnum.CUSTOMER_TRANSFERRED_CUSTOMER_OLD_OWNER_TEXT.name()), eventNameMap,
+                                messageTask, List.of("OLD_OWNER", "OWNER"), receiveMethod,
+                                TriggerTypeEnum.ACTION.name(),
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER),"CUSTOMER");
                 // 客户自动移入公海（到时间）
                 case NotificationConstants.Event.CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS_TEXT.name()),
                                 eventNameMap, messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS));
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS),"CUSTOMER");
                 // 客户被动移入公海
                 case NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_MOVED_HIGH_SEAS_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS));
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS),"CUSTOMER");
                 // 公海客户被分配
                 case NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.HIGH_SEAS_CUSTOMER_DISTRIBUTED_TEXT.name()),
                                 eventNameMap, messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED));
+                                buildActionConfigValue(NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED),"CUSTOMER_POOL");
                 // 客户审批
                 case NotificationConstants.Event.CUSTOMER_APPROVAL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_APPROVAL_TEXT.name()), eventNameMap,
@@ -406,13 +408,13 @@ public class MessageNotificationService {
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                                "SELECT_MULTIPLE")));
+                                                "SELECT_MULTIPLE")),"CUSTOMER");
                 // 新建联系人
                 case NotificationConstants.Event.CUSTOMER_CONCAT_ADD ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_CONCAT_ADD_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_ADD));
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_ADD),"CUSTOMER_CONTRACT");
 
                 // -----线索管理----
                 // 新建线索
@@ -420,51 +422,51 @@ public class MessageNotificationService {
                         updateTaskAndAddConfig(List.of(TemplateEnum.CLUE_ADD_TEXT.name()), eventNameMap, messageTask,
                                 List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CLUE_ADD));
+                                buildActionConfigValue(NotificationConstants.Event.CLUE_ADD),"CLUE");
                 // 删除线索
                 case NotificationConstants.Event.CLUE_DELETED ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CLUE_DELETED_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CLUE_DELETED));
+                                buildActionConfigValue(NotificationConstants.Event.CLUE_DELETED),"CLUE");
                 // 移入线索池(系统)
                 case NotificationConstants.Event.CLUE_AUTOMATIC_MOVE_POOL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CLUE_AUTOMATIC_MOVE_POOL_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CLUE_AUTOMATIC_MOVE_POOL));
+                                buildActionConfigValue(NotificationConstants.Event.CLUE_AUTOMATIC_MOVE_POOL),"CLUE");
                 // 移入线索池(手动)
                 case NotificationConstants.Event.CLUE_MOVED_POOL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CLUE_MOVED_POOL_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CLUE_MOVED_POOL));
+                                buildActionConfigValue(NotificationConstants.Event.CLUE_MOVED_POOL),"CLUE");
                 // 转为客户
                 case NotificationConstants.Event.CLUE_CONVERT_CUSTOMER -> updateTaskAndAddConfig(
                         List.of(TemplateEnum.CLUE_CONVERT_CUSTOMER_ADD_TEXT.name(),
                                 TemplateEnum.CLUE_CONVERT_CUSTOMER_RELATE_TEXT.name()), eventNameMap, messageTask,
                         List.of("OLD_OWNER"), receiveMethod,
                         TriggerTypeEnum.ACTION.name(),
-                        buildActionConfigValue(NotificationConstants.Event.CLUE_CONVERT_CUSTOMER));
+                        buildActionConfigValue(NotificationConstants.Event.CLUE_CONVERT_CUSTOMER),"CLUE");
                 // 转为商机
                 case NotificationConstants.Event.CLUE_CONVERT_BUSINESS ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CLUE_CONVERT_BUSINESS_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CLUE_CONVERT_BUSINESS));
+                                buildActionConfigValue(NotificationConstants.Event.CLUE_CONVERT_BUSINESS),"CLUE");
                 // 转移线索
                 case NotificationConstants.Event.TRANSFER_CLUE -> updateTaskAndAddConfig(
                         List.of(TemplateEnum.TRANSFER_CLUE_OWNER_TEXT.name(),
                                 TemplateEnum.TRANSFER_CLUE_OLD_OWNER_TEXT.name()), eventNameMap, messageTask,
                         List.of("OLD_OWNER", "OWNER"), receiveMethod,
                         TriggerTypeEnum.ACTION.name(),
-                        buildActionConfigValue(NotificationConstants.Event.TRANSFER_CLUE));
+                        buildActionConfigValue(NotificationConstants.Event.TRANSFER_CLUE),"CLUE");
                 // 分配线索
                 case NotificationConstants.Event.CLUE_DISTRIBUTED ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CLUE_DISTRIBUTED_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CLUE_DISTRIBUTED));
+                                buildActionConfigValue(NotificationConstants.Event.CLUE_DISTRIBUTED),"CLUE");
                 // 线索审批
                 case NotificationConstants.Event.CLUE_APPROVAL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CLUE_APPROVAL_TEXT.name()), eventNameMap,
@@ -472,7 +474,7 @@ public class MessageNotificationService {
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                                "SELECT_MULTIPLE")));
+                                                "SELECT_MULTIPLE")),"CLUE");
 
                 // -----商机-----
                 // 新建商机
@@ -480,20 +482,20 @@ public class MessageNotificationService {
                         updateTaskAndAddConfig(List.of(TemplateEnum.BUSINESS_ADD_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.BUSINESS_ADD));
+                                buildActionConfigValue(NotificationConstants.Event.BUSINESS_ADD),"OPPORTUNITY");
                 // 商机删除
                 case NotificationConstants.Event.BUSINESS_DELETED ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.BUSINESS_DELETED_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.BUSINESS_DELETED));
+                                buildActionConfigValue(NotificationConstants.Event.BUSINESS_DELETED),"OPPORTUNITY");
                 // 商机转移
                 case NotificationConstants.Event.BUSINESS_TRANSFER -> updateTaskAndAddConfig(
                         List.of(TemplateEnum.BUSINESS_TRANSFER_OLD_OWNER_TEXT.name(),
                                 TemplateEnum.BUSINESS_TRANSFER_OWNER_TEXT.name()), eventNameMap, messageTask,
                         List.of("OLD_OWNER", "OWNER"), receiveMethod,
                         TriggerTypeEnum.ACTION.name(),
-                        buildActionConfigValue(NotificationConstants.Event.BUSINESS_TRANSFER));
+                        buildActionConfigValue(NotificationConstants.Event.BUSINESS_TRANSFER),"OPPORTUNITY");
                 // 商机审批
                 case NotificationConstants.Event.BUSINESS_APPROVAL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.BUSINESS_APPROVAL_TEXT.name()), eventNameMap,
@@ -501,13 +503,13 @@ public class MessageNotificationService {
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                                "SELECT_MULTIPLE")));
+                                                "SELECT_MULTIPLE")),"OPPORTUNITY");
                 // 删除报价
                 case NotificationConstants.Event.BUSINESS_QUOTATION_DELETED ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_DELETED_TEXT.name()),
                                 eventNameMap, messageTask, List.of("OLD_OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_DELETED));
+                                buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_DELETED),"OPPORTUNITY_QUOTATION");
                 // 报价到期
                 case NotificationConstants.Event.BUSINESS_QUOTATION_EXPIRED -> {
                     List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
@@ -530,7 +532,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_EXPIRED_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")),"OPPORTUNITY_QUOTATION");
 
                 }
                 // 报价即将到期
@@ -551,7 +553,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_EXPIRING_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("until_time", "0", "08：00：00", "ONLY_ONE")),"OPPORTUNITY_QUOTATION");
 
                 }
                 // 报价审批
@@ -561,7 +563,7 @@ public class MessageNotificationService {
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                                "SELECT_MULTIPLE")));
+                                                "SELECT_MULTIPLE")),"OPPORTUNITY_QUOTATION");
 
                 //-------订单-----
                 // 审批订单
@@ -571,7 +573,7 @@ public class MessageNotificationService {
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                                "SELECT_MULTIPLE")));
+                                                "SELECT_MULTIPLE")),"ORDER");
 
                 //-----合同-----
                 // 合同作废
@@ -593,7 +595,7 @@ public class MessageNotificationService {
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.FIELD.name(),
                             buildFieldConfigValue(buildCondition("stage", List.of("VOID"), true, "IN",
-                                    "SELECT_MULTIPLE")));
+                                    "SELECT_MULTIPLE")),"CONTRACT");
                 }
                 case NotificationConstants.Event.CONTRACT_ARCHIVED -> {
                     List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
@@ -613,7 +615,7 @@ public class MessageNotificationService {
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.FIELD.name(),
                             buildFieldConfigValue(buildCondition("stage", List.of("VOID"), true, "IN",
-                                    "SELECT_MULTIPLE")));
+                                    "SELECT_MULTIPLE")),"CONTRACT");
                 }
                 // 合同到期
                 case NotificationConstants.Event.CONTRACT_EXPIRED -> {
@@ -633,7 +635,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRED_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")),"CONTRACT");
                 }
                 // 合同即将到期
                 case NotificationConstants.Event.CONTRACT_EXPIRING -> {
@@ -653,7 +655,7 @@ public class MessageNotificationService {
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRING_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
-                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")));
+                            buildScheduleConfigValue(buildScheduleValue("end_time", "0", "08：00：00", "ONLY_ONE")),"CONTRACT");
                 }
                 // 合同审批
                 case NotificationConstants.Event.CONTRACT_APPROVAL ->
@@ -662,7 +664,7 @@ public class MessageNotificationService {
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                                "SELECT_MULTIPLE")));
+                                                "SELECT_MULTIPLE")),"CONTRACT");
                 // 回款计划到期
                 /*case NotificationConstants.Event.CONTRACT_PAYMENT_EXPIRED -> {
                     List<MessageTaskConfig> configs = messageTaskConfigMapper.selectListByLambda(
@@ -710,7 +712,7 @@ public class MessageNotificationService {
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
-                                                "SELECT_MULTIPLE")));
+                                                "SELECT_MULTIPLE")),"CONTRACT_INVOICE");
 
                 //-----跟进-------
 
@@ -720,13 +722,13 @@ public class MessageNotificationService {
                         updateTaskAndAddConfig(List.of(TemplateEnum.APPROVAL_TODO_TEXT.name()), eventNameMap,
                                 messageTask, List.of("APPROVER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.APPROVAL_TODO));
+                                buildActionConfigValue(NotificationConstants.Event.APPROVAL_TODO),"APPROVAL");
                 // 抄送代办
                 case NotificationConstants.Event.APPROVAL_CC ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.APPROVAL_CC_TEXT.name()), eventNameMap, messageTask,
                                 List.of("CC"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.APPROVAL_CC));
+                                buildActionConfigValue(NotificationConstants.Event.APPROVAL_CC),"APPROVAL");
 
                 default -> {
                 }
@@ -739,146 +741,145 @@ public class MessageNotificationService {
         addTaskAndConfig(List.of(TemplateEnum.CUSTOMER_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CUSTOMER_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.CUSTOMER, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CUSTOMER_UPDATE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CUSTOMER_UPDATE),"CUSTOMER");
         // 领取客户
         addTaskAndConfig(List.of(TemplateEnum.CUSTOMER_RECEIVE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CUSTOMER_RECEIVE, List.of("CUSTOMER_SEAS_OWNER"),
                 NotificationConstants.Module.CUSTOMER, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CUSTOMER_RECEIVE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CUSTOMER_RECEIVE),"CUSTOMER");
         // 编辑联系人
         addTaskAndConfig(List.of(TemplateEnum.CUSTOMER_CONCAT_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CUSTOMER_CONCAT_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.CUSTOMER, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_UPDATE));
+                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_UPDATE),"CUSTOMER_CONTACT");
         // 删除联系人
         addTaskAndConfig(List.of(TemplateEnum.CUSTOMER_CONCAT_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CUSTOMER_CONCAT_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.CUSTOMER, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_DELETE));
+                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_DELETE),"CUSTOMER_CONTACT");
         // 新建协作人(手动)
         addTaskAndConfig(List.of(TemplateEnum.CUSTOMER_COLLABORATION_ADD_MANUAL_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL, List.of("COLLABORATION"),
                 NotificationConstants.Module.CUSTOMER, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL));
-
+                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL),"CUSTOMER");
 
         //------线索 -----
         // 编辑线索
         addTaskAndConfig(List.of(TemplateEnum.CLUE_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CLUE_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.CLUE, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CLUE_UPDATE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CLUE_UPDATE),"CLUE");
         // 领取线索
         addTaskAndConfig(List.of(TemplateEnum.CLUE_RECEIVE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CLUE_RECEIVE, List.of("CLUE_SEAS_OWNER"),
                 NotificationConstants.Module.CLUE, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CLUE_RECEIVE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CLUE_RECEIVE),"CLUE");
 
         //------商机------
         // 编辑商机
         addTaskAndConfig(List.of(TemplateEnum.BUSINESS_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.BUSINESS_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.OPPORTUNITY, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.BUSINESS_UPDATE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.BUSINESS_UPDATE),"OPPORTUNITY");
         // 新建报价
         addTaskAndConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_ADD_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.BUSINESS_QUOTATION_ADD, List.of("OWNER"),
                 NotificationConstants.Module.OPPORTUNITY, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_ADD));
+                buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_ADD),"OPPORTUNITY_QUOTATION");
         // 编辑报价
         addTaskAndConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.OPPORTUNITY, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE));
+                buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE),"OPPORTUNITY_QUOTATION");
 
         //------订单------
         // 新建订单
         addTaskAndConfig(List.of(TemplateEnum.ORDER_ADD_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.ORDER_ADD, List.of("OWNER"),
                 NotificationConstants.Module.ORDER, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.ORDER_ADD));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.ORDER_ADD),"ORDER");
         // 编辑订单
         addTaskAndConfig(List.of(TemplateEnum.ORDER_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.ORDER_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.ORDER, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.ORDER_UPDATE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.ORDER_UPDATE),"ORDER");
         // 删除订单
         addTaskAndConfig(List.of(TemplateEnum.ORDER_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.ORDER_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.ORDER, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.ORDER_DELETE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.ORDER_DELETE),"ORDER");
 
         //------合同-------
         // 新建合同
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_ADD_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_ADD, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_ADD));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_ADD),"CONTRACT");
         // 编辑合同
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_UPDATE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_UPDATE),"CONTRACT");
         // 删除合同
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_DELETE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_DELETE),"CONTRACT");
         // 新建回款计划
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_PAYMENT_ADD_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_PAYMENT_ADD, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CONTRACT_PAYMENT_ADD));
+                buildActionConfigValue(NotificationConstants.Event.CONTRACT_PAYMENT_ADD),"CONTRACT_PAYMENT");
         // 编辑回款计划
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_PAYMENT_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_PAYMENT_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CONTRACT_PAYMENT_UPDATE));
+                buildActionConfigValue(NotificationConstants.Event.CONTRACT_PAYMENT_UPDATE),"CONTRACT_PAYMENT");
         // 删除回款计划
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_PAYMENT_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_PAYMENT_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CONTRACT_PAYMENT_DELETE));
+                buildActionConfigValue(NotificationConstants.Event.CONTRACT_PAYMENT_DELETE),"CONTRACT_PAYMENT");
         // 新建回款记录
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_RECORD_ADD_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_RECORD_ADD, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_RECORD_ADD));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.CONTRACT_RECORD_ADD),"CONTRACT_RECORD");
         // 编辑回款记录
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_RECORD_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_RECORD_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CONTRACT_RECORD_UPDATE));
+                buildActionConfigValue(NotificationConstants.Event.CONTRACT_RECORD_UPDATE),"CONTRACT_RECORD");
         // 删除回款记录
         addTaskAndConfig(List.of(TemplateEnum.CONTRACT_RECORD_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.CONTRACT_RECORD_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.CONTRACT_RECORD_DELETE));
+                buildActionConfigValue(NotificationConstants.Event.CONTRACT_RECORD_DELETE),"CONTRACT_RECORD");
         // 新建发票记录
         addTaskAndConfig(List.of(TemplateEnum.INVOICE_ADD_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.INVOICE_ADD, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.INVOICE_ADD));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.INVOICE_ADD),"CONTRACT_INVOICE");
         // 编辑发票记录
         addTaskAndConfig(List.of(TemplateEnum.INVOICE_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.INVOICE_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.INVOICE_UPDATE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.INVOICE_UPDATE),"CONTRACT_INVOICE");
         // 删除发票记录
         addTaskAndConfig(List.of(TemplateEnum.INVOICE_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.INVOICE_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.CONTRACT, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.INVOICE_DELETE));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.INVOICE_DELETE),"CONTRACT_INVOICE");
 
         //-------跟进--------
         // 新建跟进记录
@@ -886,100 +887,100 @@ public class MessageNotificationService {
                 NotificationConstants.Event.FOLLOW_UP_RECORD_ADD, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_ADD));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_ADD),"FOLLOW_UP_RECORD");
         // 编辑跟进记录
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_RECORD_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_RECORD_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_UPDATE));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_UPDATE),"FOLLOW_UP_RECORD");
         // 删除跟进记录
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_RECORD_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_RECORD_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_DELETE));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_DELETE),"FOLLOW_UP_RECORD");
         // 跟进记录被评论
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_RECORD_COMMENT_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT),"FOLLOW_UP_RECORD");
         // 评论被回复
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_RECORD_COMMENT_REPALY_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_REPALY,
                 List.of("REPLY_USER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_REPALY));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_REPALY),"FOLLOW_UP_RECORD");
         // 评论@我
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_MENTIONED,
                 List.of("MENTION_USER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_MENTIONED));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_RECORD_COMMENT_MENTIONED),"FOLLOW_UP_RECORD");
         // 新建跟进计划
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_ADD_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_ADD, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_ADD));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_ADD),"FOLLOW_UP_PLAN");
         // 编辑跟进计划
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_UPDATE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_UPDATE, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_UPDATE));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_UPDATE),"FOLLOW_UP_PLAN");
         // 删除跟进计划
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_DELETE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_DELETE, List.of("OLD_OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_DELETE));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_DELETE),"FOLLOW_UP_PLAN");
         // 跟进计划被评论
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_COMMENT_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT),"FOLLOW_UP_PLAN");
         // 计划评论被回复
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_COMMENT_REPALY_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_REPALY, List.of("REPLY_USER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_REPALY));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_REPALY),"FOLLOW_UP_PLAN");
         // 计划评论@我
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_MENTIONED,
                 List.of("MENTION_USER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_MENTIONED));
+                buildActionConfigValue(NotificationConstants.Event.FOLLOW_UP_PLAN_COMMENT_MENTIONED),"FOLLOW_UP_PLAN");
         // 跟进计划到期提醒
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_DUE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_DUE, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildScheduleConfigValue(buildScheduleValue("estimated_time", "0", "08：00：00", "ONLY_ONE")));
+                buildScheduleConfigValue(buildScheduleValue("estimated_time", "0", "08：00：00", "ONLY_ONE")),"FOLLOW_UP_PLAN");
 
         //-----代办-------
         // 单据被评论
         addTaskAndConfig(List.of(TemplateEnum.APPROVAL_COMMENT_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.APPROVAL_COMMENT, List.of("OWNER"),
                 NotificationConstants.Module.APPROVAL, receiveMethod,
-                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.APPROVAL_COMMENT));
+                TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.APPROVAL_COMMENT),"APPROVAL");
         // 回复
         addTaskAndConfig(List.of(TemplateEnum.APPROVAL_COMMENT_REPALY_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.APPROVAL_COMMENT_REPALY, List.of("REPLY_USER"),
                 NotificationConstants.Module.APPROVAL, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.APPROVAL_COMMENT_REPALY));
+                buildActionConfigValue(NotificationConstants.Event.APPROVAL_COMMENT_REPALY),"APPROVAL");
         // 评论@
         addTaskAndConfig(List.of(TemplateEnum.APPROVAL_COMMENT_MENTIONED_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED, List.of("MENTION_USER"),
                 NotificationConstants.Module.APPROVAL, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
-                buildActionConfigValue(NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED));
+                buildActionConfigValue(NotificationConstants.Event.APPROVAL_COMMENT_MENTIONED),"APPROVAL");
 
         //自定义表单
         List<CustomForm> customForms = customFormMapper.selectAll(null);
@@ -1044,6 +1045,7 @@ public class MessageNotificationService {
         messageTask.setUpdateUser(userId);
         messageTask.setUpdateTime(System.currentTimeMillis());
         messageTask.setTemplate(JSON.toJSONString(templates));
+        messageTask.setFormType(customForm.getId());
         messageTaskMapper.insert(messageTask);
 
         MessageTaskConfig messageTaskConfig = new MessageTaskConfig();
@@ -1070,7 +1072,7 @@ public class MessageNotificationService {
      */
     private void addTaskAndConfig(List<String> templates, Map<String, String> eventNameMap, String event,
             List<String> owners, String taskType,
-            String receiveMethod, String triggerType, String value) {
+            String receiveMethod, String triggerType, String value,String formType) {
         String taskId = IDGenerator.nextStr();
         MessageTask messageTask = new MessageTask();
         messageTask.setId(taskId);
@@ -1088,6 +1090,7 @@ public class MessageNotificationService {
         messageTask.setUpdateUser(InternalUser.ADMIN.getValue());
         messageTask.setUpdateTime(System.currentTimeMillis());
         messageTask.setTemplate(JSON.toJSONString(templates));
+        messageTask.setFormType(formType);
         messageTaskMapper.insert(messageTask);
 
         MessageTaskConfig messageTaskConfig = new MessageTaskConfig();
@@ -1113,13 +1116,14 @@ public class MessageNotificationService {
      */
     private void updateTaskAndAddConfig(List<String> templates, Map<String, String> eventNameMap,
             MessageTask messageTask, List<String> owners,
-            String receiveMethod, String triggerType, String value) {
+            String receiveMethod, String triggerType, String value, String formType) {
         messageTask.setName(eventNameMap.get(messageTask.getEvent()));
         messageTask.setEnable(true);
         messageTask.setType("SYSTEM");
         messageTask.setScopeId(JSON.toJSONString(owners));
         messageTask.setReceiveMethod(receiveMethod);
         messageTask.setTemplate(JSON.toJSONString(templates));
+        messageTask.setFormType(formType);
         messageTaskMapper.update(messageTask);
 
         MessageTaskConfig config = new MessageTaskConfig();
@@ -1146,13 +1150,14 @@ public class MessageNotificationService {
      */
     private void updateTaskAndUpdateConfig(List<String> templates, MessageTaskConfig config,
             Map<String, String> eventNameMap,
-            MessageTask messageTask, List<String> owners, String receiveMethod, String triggerType, String value) {
+            MessageTask messageTask, List<String> owners, String receiveMethod, String triggerType, String value,String formType) {
         messageTask.setName(eventNameMap.get(messageTask.getEvent()));
         messageTask.setEnable(true);
         messageTask.setType("SYSTEM");
         messageTask.setScopeId(JSON.toJSONString(owners));
         messageTask.setReceiveMethod(receiveMethod);
         messageTask.setTemplate(JSON.toJSONString(templates));
+        messageTask.setFormType(formType);
         messageTaskMapper.update(messageTask);
 
         config.setMessageTaskId(messageTask.getId());

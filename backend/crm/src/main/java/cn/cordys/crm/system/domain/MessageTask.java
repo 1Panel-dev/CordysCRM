@@ -14,6 +14,9 @@ public class MessageTask extends BaseModel {
     @Schema(description = "任务类型")
     private String taskType;
 
+    @Schema(description = "任务类型")
+    private String formType;
+
     @Schema(description = "系统启用")
     private Boolean sysEnable;
 

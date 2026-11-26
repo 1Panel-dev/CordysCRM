@@ -11,6 +11,8 @@ ALTER TABLE sys_message_task ADD `enable` BIT(1) NOT NULL DEFAULT 1 COMMENT '状
 ALTER TABLE sys_message_task ADD `scope_id` text NOT NULL COMMENT '范围id';
 ALTER TABLE sys_message_task ADD `receive_method` VARCHAR(255) NOT NULL COMMENT '接收方式';
 ALTER TABLE sys_notification ADD `trigger_type` VARCHAR(50) NULL COMMENT '触发类型';
+ALTER TABLE sys_notification ADD `form_type` VARCHAR(50) NULL COMMENT '表单类型(所属分类)';
+ALTER TABLE sys_message_task ADD `form_type` VARCHAR(50) NULL COMMENT '表单类型(所属分类)';
 
 
 ALTER TABLE sys_message_task_config DROP COLUMN task_type;
