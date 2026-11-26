@@ -400,7 +400,7 @@ public class MessageNotificationService {
                         updateTaskAndAddConfig(List.of(TemplateEnum.HIGH_SEAS_CUSTOMER_DISTRIBUTED_TEXT.name()),
                                 eventNameMap, messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED),"CUSTOMER_POOL");
+                                buildActionConfigValue(NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED),"CUSTOMER");
                 // 客户审批
                 case NotificationConstants.Event.CUSTOMER_APPROVAL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_APPROVAL_TEXT.name()), eventNameMap,
@@ -529,6 +529,8 @@ public class MessageNotificationService {
                     if (dto.getOwnerLevel() != 0) {
                         scopeId.add("SUPERVISOR");
                     }
+                    scopeId.add("CREATE_USER");
+                    messageTask.setSysEnable(false);
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_EXPIRED_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
@@ -550,6 +552,8 @@ public class MessageNotificationService {
                     if (dto.getOwnerLevel() != 0) {
                         scopeId.add("SUPERVISOR");
                     }
+                    scopeId.add("CREATE_USER");
+                    messageTask.setSysEnable(false);
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_EXPIRING_TEXT.name()), config,
                             eventNameMap, messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
@@ -559,7 +563,7 @@ public class MessageNotificationService {
                 // 报价审批
                 case NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_APPROVAL_TEXT.name()),
-                                eventNameMap, messageTask, List.of("SUBMITTER", "OWNER"), receiveMethod,
+                                eventNameMap, messageTask, List.of("SUBMITTER", "CREATE_USER"), receiveMethod,
                                 TriggerTypeEnum.FIELD.name(),
                                 buildFieldConfigValue(
                                         buildCondition("approvalStatus", List.of("APPROVED", "UNAPPROVED"), true, "IN",
@@ -591,6 +595,7 @@ public class MessageNotificationService {
                     if (dto.getOwnerLevel() != 0) {
                         scopeId.add("SUPERVISOR");
                     }
+                    messageTask.setSysEnable(false);
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_VOID_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.FIELD.name(),
@@ -611,6 +616,7 @@ public class MessageNotificationService {
                     if (dto.getOwnerLevel() != 0) {
                         scopeId.add("SUPERVISOR");
                     }
+                    messageTask.setSysEnable(false);
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_VOID_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.FIELD.name(),
@@ -632,6 +638,7 @@ public class MessageNotificationService {
                     if (dto.getOwnerLevel() != 0) {
                         scopeId.add("SUPERVISOR");
                     }
+                    messageTask.setSysEnable(false);
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRED_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
@@ -652,6 +659,7 @@ public class MessageNotificationService {
                     if (dto.getOwnerLevel() != 0) {
                         scopeId.add("SUPERVISOR");
                     }
+                    messageTask.setSysEnable(false);
                     updateTaskAndUpdateConfig(List.of(TemplateEnum.CONTRACT_EXPIRING_TEXT.name()), config, eventNameMap,
                             messageTask, scopeId, receiveMethod,
                             TriggerTypeEnum.SCHEDULE.name(),
@@ -786,13 +794,13 @@ public class MessageNotificationService {
                 TriggerTypeEnum.ACTION.name(), buildActionConfigValue(NotificationConstants.Event.BUSINESS_UPDATE),"OPPORTUNITY");
         // 新建报价
         addTaskAndConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_ADD_TEXT.name()), eventNameMap,
-                NotificationConstants.Event.BUSINESS_QUOTATION_ADD, List.of("OWNER"),
+                NotificationConstants.Event.BUSINESS_QUOTATION_ADD, List.of("CREATE_USER"),
                 NotificationConstants.Module.OPPORTUNITY, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
                 buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_ADD),"OPPORTUNITY_QUOTATION");
         // 编辑报价
         addTaskAndConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_UPDATE_TEXT.name()), eventNameMap,
-                NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE, List.of("OWNER"),
+                NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE, List.of("CREATE_USER"),
                 NotificationConstants.Module.OPPORTUNITY, receiveMethod,
                 TriggerTypeEnum.ACTION.name(),
                 buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_UPDATE),"OPPORTUNITY_QUOTATION");
@@ -960,7 +968,7 @@ public class MessageNotificationService {
         addTaskAndConfig(List.of(TemplateEnum.FOLLOW_UP_PLAN_DUE_TEXT.name()), eventNameMap,
                 NotificationConstants.Event.FOLLOW_UP_PLAN_DUE, List.of("OWNER"),
                 NotificationConstants.Module.FOLLOW_UP, receiveMethod,
-                TriggerTypeEnum.ACTION.name(),
+                TriggerTypeEnum.SCHEDULE.name(),
                 buildScheduleConfigValue(buildScheduleValue("estimated_time", "0", "08：00：00", "ONLY_ONE")),"FOLLOW_UP_PLAN");
 
         //-----代办-------
