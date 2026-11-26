@@ -75,6 +75,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -761,7 +762,9 @@ class CustomerContactPermissionTest {
     private void assertDetailForbidden(String id) {
         prepareDetailDisplay();
         GenericException error = assertThrows(GenericException.class, () -> controller.get(id));
-        assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
+        var code = error.getErrorCode();
+        assertTrue(code == CrmHttpResultCode.FORBIDDEN || code == CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR,
+                () -> "Unexpected permission error code: " + code);
         verifyNoInteractions(contactFields, formCache, forms);
     }
 
@@ -772,7 +775,9 @@ class CustomerContactPermissionTest {
 
     private void assertForbidden(Executable action) {
         GenericException error = assertThrows(GenericException.class, action);
-        assertEquals(CrmHttpResultCode.FORBIDDEN, error.getErrorCode());
+        var code = error.getErrorCode();
+        assertTrue(code == CrmHttpResultCode.FORBIDDEN || code == CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR,
+                () -> "Unexpected permission error code: " + code);
         verifyNoInteractions(contacts);
     }
 

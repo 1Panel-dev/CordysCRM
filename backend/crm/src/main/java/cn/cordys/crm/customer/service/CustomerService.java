@@ -433,7 +433,7 @@ public class CustomerService implements ApprovalResourceHandler {
                 || relatedResourcePermissionService.hasRelatedReadPermission(
                 FormKey.CUSTOMER.getKey(), id, userId, orgId);
         if (!hasPermission && CollectionUtils.isEmpty(collaborations)) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            throw new GenericException(CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR);
         }
 
         return getResponse;
