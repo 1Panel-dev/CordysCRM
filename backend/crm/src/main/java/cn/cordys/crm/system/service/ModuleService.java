@@ -6,14 +6,11 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.InternalUser;
-import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.RoleUserTreeNode;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.Module;
@@ -37,13 +34,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -251,33 +246,6 @@ public class ModuleService {
                 .modifiedValue(modifiedVal)
                 .resourceId(parameter.getParamKey())
                 .build());
-    }
-
-    /**
-     * 初始化系统(组织或公司)模块数据
-     */
-    public void initModule(String organizationId) {
-        // init module data
-        List<Module> modules = new ArrayList<>();
-        AtomicLong pos = new AtomicLong(1L);
-        Arrays.stream(ModuleKey.values()).forEach(moduleConstant -> {
-            Module module = new Module();
-            module.setId(IDGenerator.nextStr());
-            module.setModuleKey(moduleConstant.getKey());
-            module.setOrganizationId(organizationId);
-            module.setEnable(true);
-            module.setPos(pos.getAndIncrement());
-            module.setCreateUser(InternalUser.ADMIN.getValue());
-            module.setCreateTime(System.currentTimeMillis());
-            module.setUpdateUser(InternalUser.ADMIN.getValue());
-            module.setUpdateTime(System.currentTimeMillis());
-            modules.add(module);
-        });
-        moduleMapper.batchInsert(modules);
-    }
-
-    public void initDefaultOrgModule() {
-        initModule(DEFAULT_ORGANIZATION_ID);
     }
 
     /**

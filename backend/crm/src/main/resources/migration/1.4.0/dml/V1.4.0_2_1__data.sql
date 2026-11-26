@@ -2,10 +2,10 @@
 
 SET SESSION innodb_lock_wait_timeout = 7200;
 
-insert into sys_module value (UUID_SHORT(), '100001', 'contract', true, 9,
+insert into sys_module value (UUID_SHORT(), '100001', 'contract', true, 60,
                               'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
 
-insert into sys_module value (UUID_SHORT(), '100001', 'tender', true, 10,
+insert into sys_module value (UUID_SHORT(), '100001', 'tender', true, 120,
                               'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
 
 SET @customer_addID = UUID_SHORT();-- 初始化消息通知
