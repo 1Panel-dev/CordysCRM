@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModel;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.BaseResourceFieldService;
@@ -48,8 +49,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /** 跟进记录和跟进计划共用的自定义字段导入处理。 */
@@ -157,10 +160,9 @@ public class FollowUpImportService {
                         importType, orgId, userId, LogModule.FOLLOW_UP_RECORD,
                         record -> record.setCommentCount(0L),
                         () -> {
-                            followUpRecordFieldMapper.batchInsert(values.stream()
-                                    .map(value -> BeanUtils.copyBean(new FollowUpRecordField(), value)).toList());
-                            followUpRecordFieldBlobMapper.batchInsert(blobs.stream()
-                                    .map(blob -> BeanUtils.copyBean(new FollowUpRecordFieldBlob(), blob)).toList());
+                            saveImportedFields(values, followUpRecordFieldMapper, FollowUpRecordField::new, importType);
+                            saveImportedFields(blobs, followUpRecordFieldBlobMapper, FollowUpRecordFieldBlob::new,
+                                    importType);
                         });
         return read(file, fields, FollowUpRecord.class, orgId, userId, "follow_up_record_field",
                 "follow_up_record_field_blob", afterDo, request.getImportType(), FormKey.FOLLOW_RECORD);
@@ -179,10 +181,9 @@ public class FollowUpImportService {
                             plan.setStatus(FollowUpPlanStatusType.PREPARED.name());
                         },
                         () -> {
-                            followUpPlanFieldMapper.batchInsert(values.stream()
-                                    .map(value -> BeanUtils.copyBean(new FollowUpPlanField(), value)).toList());
-                            followUpPlanFieldBlobMapper.batchInsert(blobs.stream()
-                                    .map(blob -> BeanUtils.copyBean(new FollowUpPlanFieldBlob(), blob)).toList());
+                            saveImportedFields(values, followUpPlanFieldMapper, FollowUpPlanField::new, importType);
+                            saveImportedFields(blobs, followUpPlanFieldBlobMapper, FollowUpPlanFieldBlob::new,
+                                    importType);
                         });
         return read(file, fields, FollowUpPlan.class, orgId, userId, "follow_up_plan_field", "follow_up_plan_field_blob",
                 afterDo, request.getImportType(), FormKey.FOLLOW_PLAN);
@@ -196,9 +197,6 @@ public class FollowUpImportService {
         Map<String, T> originalResources = add ? Map.of() : getResources(mapper, ids, organizationId, orgId);
         Map<String, List<BaseModuleFieldValue>> originalFields = add ? Map.of()
                 : fieldService.getResourceFieldMap(new ArrayList<>(originalResources.keySet()), true);
-        if (importType == ImportType.UPDATE) {
-            fieldService.deleteByResourceIds(ids);
-        }
 
         List<String> savedIds = new ArrayList<>();
         for (T resource : resources) {
@@ -216,6 +214,30 @@ public class FollowUpImportService {
         saveFields.run();
         writeImportLogs(savedIds.stream().distinct().toList(), mapper, fieldService, organizationId,
                 orgId, userId, module, add, originalResources, originalFields);
+    }
+
+    private <T extends BaseResourceField> void saveImportedFields(List<BaseResourceSubField> values,
+            BaseMapper<T> mapper, Supplier<T> newField, ImportType importType) {
+        if (values.isEmpty()) {
+            return;
+        }
+
+        Set<String> existingIds = importType == ImportType.UPDATE
+                ? mapper.selectByIds(values.stream().map(BaseResourceSubField::getId).distinct().toList()).stream()
+                        .map(BaseResourceField::getId).collect(Collectors.toSet())
+                : Set.of();
+        List<T> inserts = new ArrayList<>();
+        for (BaseResourceSubField value : values) {
+            T field = BeanUtils.copyBean(newField.get(), value);
+            if (existingIds.contains(field.getId())) {
+                mapper.update(field);
+            } else {
+                inserts.add(field);
+            }
+        }
+        if (!inserts.isEmpty()) {
+            mapper.batchInsert(inserts);
+        }
     }
 
     private <T extends BaseModel> void writeImportLogs(List<String> ids, BaseMapper<T> mapper,
