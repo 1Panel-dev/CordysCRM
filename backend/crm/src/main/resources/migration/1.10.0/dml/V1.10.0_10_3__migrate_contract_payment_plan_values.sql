@@ -1,3 +1,6 @@
+SET SESSION innodb_lock_wait_timeout = 7200;
+
+-- Migrate contract payment plan business field => custom field
 INSERT INTO contract_payment_plan_field (id, resource_id, field_id, field_value)
 SELECT UUID_SHORT(), p.id, (
     SELECT f.id FROM sys_module_form form
@@ -14,3 +17,5 @@ SELECT UUID_SHORT(), p.id, (
       AND f.internal_key = 'contractPaymentPlanPlanEndTime'
 ), CAST(p.plan_end_time AS CHAR)
 FROM contract_payment_plan p WHERE p.plan_end_time IS NOT NULL;
+
+SET SESSION innodb_lock_wait_timeout = DEFAULT;
