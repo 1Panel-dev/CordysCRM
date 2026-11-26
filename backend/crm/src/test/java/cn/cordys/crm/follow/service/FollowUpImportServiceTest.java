@@ -4,7 +4,11 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.domain.BaseModel;
+import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.ResourceLogService;
 import cn.cordys.common.uid.IDGenerator;
@@ -14,6 +18,8 @@ import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.dto.field.InputField;
+import cn.cordys.crm.system.dto.field.TextAreaField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -34,7 +40,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class FollowUpImportServiceTest {
@@ -112,6 +121,71 @@ class FollowUpImportServiceTest {
         }
 
         assertLog(type, LogModule.FOLLOW_UP_PLAN);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = FormKey.class, names = {"FOLLOW_RECORD", "FOLLOW_PLAN"})
+    void updateImportWritesOnlyProvidedCustomValues(FormKey formKey) {
+        boolean record = formKey == FormKey.FOLLOW_RECORD;
+        String mapperPrefix = record ? "followUpRecord" : "followUpPlan";
+        String fieldTable = record ? "follow_up_record_field" : "follow_up_plan_field";
+        configureService(formKey, record ? "recordDescription" : "planContent");
+        InputField changed = new InputField();
+        InputField blank = new InputField();
+        TextAreaField omitted = new TextAreaField();
+        configureCustomField(changed, "Changed", "INPUT");
+        configureCustomField(blank, "Blank", "INPUT");
+        configureCustomField(omitted, "Omitted", "TEXTAREA");
+        when(formService.getAllFields(formKey.getKey(), ORG_ID)).thenReturn(List.of(changed, blank, omitted));
+
+        @SuppressWarnings("unchecked")
+        BaseMapper<BaseModel> mapper = mock(BaseMapper.class);
+        @SuppressWarnings("unchecked")
+        BaseMapper<BaseResourceField> fieldMapper = mock(BaseMapper.class);
+        BaseMapper<?> blobMapper = mock(BaseMapper.class);
+        BaseResourceFieldService<?, ?> fieldService = record
+                ? mock(FollowUpRecordFieldService.class) : mock(FollowUpPlanFieldService.class);
+        ReflectionTestUtils.setField(service, mapperPrefix + "Mapper", mapper);
+        ReflectionTestUtils.setField(service, mapperPrefix + "FieldMapper", fieldMapper);
+        ReflectionTestUtils.setField(service, mapperPrefix + "FieldBlobMapper", blobMapper);
+        ReflectionTestUtils.setField(service, mapperPrefix + "FieldService", fieldService);
+        when(mapper.update(any())).thenReturn(1);
+        BaseResourceSubField existing = new BaseResourceSubField();
+        existing.setId("existing-field");
+        when(commonMapper.getResourceField(fieldTable, RESOURCE_ID, "Changed", null, null)).thenReturn(existing);
+        when(fieldMapper.selectByIds(List.of(existing.getId()))).thenReturn(List.of(existing));
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        FastExcelFactory.write(output).head(List.of(List.of("唯一ID"), List.of("Changed"), List.of("Blank")))
+                .sheet().doWrite(List.of(List.of(RESOURCE_ID, "After", "")));
+        MockMultipartFile file = new MockMultipartFile("file", "follow-up.xlsx", null, output.toByteArray());
+        ImportRequest request = request(ImportType.UPDATE);
+        try (MockedStatic<CommonBeanFactory> beans = mockStatic(CommonBeanFactory.class);
+                MockedStatic<IDGenerator> ids = mockStatic(IDGenerator.class);
+                MockedStatic<Translator> translator = mockStatic(Translator.class, call -> call.getArgument(0))) {
+            ids.when(IDGenerator::nextStr).thenReturn("generated");
+            beans.when(() -> CommonBeanFactory.getBean(CommonMapper.class)).thenReturn(commonMapper);
+            assertEquals(1, (record ? service.importRecord(file, request, ORG_ID, USER_ID)
+                    : service.importPlan(file, request, ORG_ID, USER_ID)).getSuccessCount());
+        }
+
+        ArgumentCaptor<BaseResourceField> updated = ArgumentCaptor.forClass(BaseResourceField.class);
+        verify(fieldMapper).selectByIds(List.of(existing.getId()));
+        verify(fieldMapper).update(updated.capture());
+        assertEquals(existing.getId(), updated.getValue().getId());
+        assertEquals("Changed", updated.getValue().getFieldId());
+        assertEquals("After", updated.getValue().getFieldValue());
+        verifyNoMoreInteractions(fieldMapper);
+        verifyNoInteractions(blobMapper);
+        verify(fieldService, never()).deleteByResourceIds(any());
+    }
+
+    private void configureCustomField(BaseField field, String name, String type) {
+        field.setId(name);
+        field.setName(name);
+        field.setType(type);
+        field.setReadable(true);
+        field.setEditable(true);
     }
 
     private void configureService(FormKey formKey, String internalKey) {
