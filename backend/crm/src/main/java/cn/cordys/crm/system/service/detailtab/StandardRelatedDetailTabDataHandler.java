@@ -4,7 +4,6 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.CustomerTabRow;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.FilterCondition;
@@ -165,21 +164,15 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
         };
     }
 
-    private <T extends BaseCondition, R extends CustomerTabRow> PagerWithOption<List<R>> relatedPage(
+    private <T extends BaseCondition, R> PagerWithOption<List<R>> relatedPage(
             DetailTabQueryContext context, FormKey relatedForm, String permission, T target,
             BiFunction<T, DeptDataPermissionDTO, PagerWithOption<List<R>>> query) {
         replaceSearchBusinessKey(context);
         if (relatedForm != FormKey.FOLLOW_RECORD && relatedForm != FormKey.FOLLOW_PLAN) {
             checkPermission(context, permission);
         }
-        DetailTabScope scope = dataScopes(context, permission);
-        T request = prepare(target, relatedForm, context, scope.effective());
-        PagerWithOption<List<R>> page = query.apply(request, scope.effective());
-        if (page != null && scope.role() != null) {
-            relatedResourcePermissionService.markCustomerTabRows(page.getList(), scope.role(), context.userId(),
-                    context.organizationId());
-        }
-        return page;
+        DeptDataPermissionDTO scope = dataPermission(context, permission);
+        return query.apply(prepare(target, relatedForm, context, scope), scope);
     }
 
     @Override
@@ -321,25 +314,19 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     }
 
     private DeptDataPermissionDTO dataPermission(DetailTabQueryContext context, String permission) {
-        return dataScopes(context, permission).effective();
-    }
-
-    private DetailTabScope dataScopes(DetailTabQueryContext context, String permission) {
-        boolean customerTab = FormKey.CUSTOMER.getKey().equals(context.formKey());
-        if (customerTab) {
+        if (FormKey.CUSTOMER.getKey().equals(context.formKey())) {
             DeptDataPermissionDTO customerScope = relatedResourcePermissionService.getCustomerTabDataPermission(
                     context.resourceId(), context.userId(), context.organizationId());
             if (customerScope != null) {
                 if (FormKey.QUOTATION.getKey().equals(context.tab().getRelatedForm().getIdAsString())) {
                     DeptDataPermissionDTO all = new DeptDataPermissionDTO();
                     all.setAll(true);
-                    return new DetailTabScope(all, null);
+                    return all;
                 }
                 DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(context.userId(),
                         context.organizationId(), InternalUserView.ALL.name(), permission);
-                DeptDataPermissionDTO effective = relatedResourcePermissionService.mergeCustomerTabDataPermission(
+                return relatedResourcePermissionService.mergeCustomerTabDataPermission(
                         roleScope, customerScope, context.organizationId());
-                return new DetailTabScope(effective, roleScope);
             }
         }
         if (!PermissionConstants.FOLLOW_RECORD_READ.equals(permission)
@@ -348,13 +335,9 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
                         context.organizationId())) {
             DeptDataPermissionDTO all = new DeptDataPermissionDTO();
             all.setAll(true);
-            return new DetailTabScope(all, null);
+            return all;
         }
-        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(context.userId(),
+        return dataScopeService.getDeptDataPermission(context.userId(),
                 context.organizationId(), InternalUserView.ALL.name(), permission);
-        return new DetailTabScope(roleScope, customerTab ? roleScope : null);
-    }
-
-    private record DetailTabScope(DeptDataPermissionDTO effective, DeptDataPermissionDTO role) {
     }
 }

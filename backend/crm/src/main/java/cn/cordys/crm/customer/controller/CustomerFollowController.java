@@ -59,9 +59,7 @@ public class CustomerFollowController {
         DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, orgId,
                 InternalUserView.ALL.name(), PermissionConstants.FOLLOW_PLAN_READ);
         request.setCustomerTabScope(customerTabScope(request.getSourceId(), roleScope, userId, orgId));
-        var page = followUpPlanService.list(request, userId, orgId, "CUSTOMER", "CUSTOMER");
-        relatedResourcePermissionService.markCustomerTabRows(page.getList(), roleScope, userId, orgId);
-        return page;
+        return followUpPlanService.list(request, userId, orgId, "CUSTOMER", "CUSTOMER");
     }
 
     @PostMapping("/record/page")
@@ -76,9 +74,7 @@ public class CustomerFollowController {
         DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, orgId,
                 InternalUserView.ALL.name(), PermissionConstants.FOLLOW_RECORD_READ);
         request.setCustomerTabScope(customerTabScope(request.getSourceId(), roleScope, userId, orgId));
-        var page = followUpRecordService.list(request, userId, orgId, "CUSTOMER", "CUSTOMER");
-        relatedResourcePermissionService.markCustomerTabRows(page.getList(), roleScope, userId, orgId);
-        return page;
+        return followUpRecordService.list(request, userId, orgId, "CUSTOMER", "CUSTOMER");
     }
 
     @PostMapping("/record/pool/page")

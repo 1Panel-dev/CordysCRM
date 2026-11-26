@@ -7,7 +7,6 @@ import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.ChartAnalysisRequest;
-import cn.cordys.common.dto.CustomerTabRow;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
@@ -469,19 +468,6 @@ public class CustomerController {
     }
 
     private DeptDataPermissionDTO getRelatedDataPermission(String customerId, String viewId, String permission) {
-        return getRelatedReadScope(customerId, viewId, permission).effectiveScope();
-    }
-
-    private <T extends CustomerTabRow> PagerWithOption<List<T>> relatedPage(String customerId, String permission,
-            Function<DeptDataPermissionDTO, PagerWithOption<List<T>>> query) {
-        RelatedReadScope scope = getRelatedReadScope(customerId, InternalUserView.ALL.name(), permission);
-        PagerWithOption<List<T>> page = query.apply(scope.effectiveScope());
-        relatedResourcePermissionService.markCustomerTabRows(page.getList(), scope.roleScope(),
-                SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        return page;
-    }
-
-    private RelatedReadScope getRelatedReadScope(String customerId, String viewId, String permission) {
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
         DeptDataPermissionDTO permissionScope = relatedResourcePermissionService.getCustomerTabDataPermission(
@@ -492,13 +478,14 @@ public class CustomerController {
         }
         DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, organizationId,
                 viewId == null ? InternalUserView.ALL.name() : viewId, permission);
-        DeptDataPermissionDTO effectiveScope = permissionScope == null ? roleScope
+        return permissionScope == null ? roleScope
                 : relatedResourcePermissionService.mergeCustomerTabDataPermission(roleScope, permissionScope,
                         organizationId);
-        return new RelatedReadScope(roleScope, effectiveScope);
     }
 
-    private record RelatedReadScope(DeptDataPermissionDTO roleScope, DeptDataPermissionDTO effectiveScope) {
+    private <T> PagerWithOption<List<T>> relatedPage(String customerId, String permission,
+            Function<DeptDataPermissionDTO, PagerWithOption<List<T>>> query) {
+        return query.apply(getRelatedDataPermission(customerId, InternalUserView.ALL.name(), permission));
     }
 
     @GetMapping("/invoice/statistic/{accountId}")
