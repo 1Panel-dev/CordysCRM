@@ -137,7 +137,7 @@ public class CustomerCollaborationService {
         // 添加协作人通知
         if (StringUtils.isNotBlank(customer.getOwner()) && !customer.getInSharedPool()) {
             // 公海客户添加协作人无需通知
-            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
+            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CUSTOMER,
                     NotificationConstants.Event.CUSTOMER_COLLABORATION_ADD_MANUAL, userId, orgId, true, true,
                     customer, null, customer, null, List.of(request.getUserId()));
         }
