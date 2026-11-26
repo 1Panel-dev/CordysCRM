@@ -66,7 +66,6 @@ export interface FormCreateTableProps {
   listApi?: (data: any) => Promise<any>;
   containerClass: string; // 容器元素类名
   disabledSelection?: (row: any) => boolean;
-  rowReadonly?: (row: any) => boolean;
   operationColumn?: CrmDataTableColumn;
   specialRender?: Record<string, (row: any) => void>;
   showPagination?: boolean;
@@ -559,7 +558,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           width: 46,
           multiple: !props.radio,
           disabled(row) {
-            return !!props.rowReadonly?.(row) || !!props.disabledSelection?.(row);
+            return !!props.disabledSelection?.(row);
           },
           ...(props.formKey === FormDesignKeyEnum.CLUE
             ? {
@@ -584,14 +583,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       });
       const actionColumn = operationColumn || props.operationColumn;
       if (!_readOnly && !props.readonly && !props.hideOperationColumn && actionColumn) {
-        columns.value.push(
-          props.rowReadonly
-            ? {
-                ...actionColumn,
-                render: (row, rowIndex) => (props.rowReadonly?.(row) ? '-' : actionColumn.render?.(row, rowIndex)),
-              }
-            : actionColumn
-        );
+        columns.value.push(actionColumn);
       }
       customFieldsFilterConfig.value = getFilterListConfig(res);
     } catch (error) {

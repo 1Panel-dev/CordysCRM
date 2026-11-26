@@ -64,7 +64,7 @@
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus"
-            :readonly="effectiveReadonly"
+            :readonly="props.readonly"
             left-loading
             @saveApproval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
@@ -227,7 +227,6 @@
   } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
@@ -262,12 +261,6 @@
   const { getUpdateReviewExtraParams } = useUpdateReviewChange();
   const title = ref('');
   const detailInfo = ref();
-  const isCustomerRelatedReadonly = useCustomerRelatedDataReadonly();
-  const effectiveReadonly = computed(
-    () =>
-      props.readonly ||
-      isCustomerRelatedReadonly(detailInfo.value?.id === props.sourceId ? detailInfo.value : undefined)
-  );
   const detailTabConfig = ref<FormConfig>();
 
   const activeTab = ref('contract');
@@ -403,7 +396,7 @@
     groupList: ActionsItem[];
     moreList: ActionsItem[];
   }>(() => {
-    if (effectiveReadonly.value || !detailInfo.value) {
+    if (props.readonly || !detailInfo.value) {
       return { groupList: [], moreList: [] };
     }
 
@@ -469,7 +462,7 @@
   }
 
   const canUpdateStage = computed(() => {
-    if (effectiveReadonly.value || !detailInfo.value) {
+    if (props.readonly || !detailInfo.value) {
       return false;
     }
 

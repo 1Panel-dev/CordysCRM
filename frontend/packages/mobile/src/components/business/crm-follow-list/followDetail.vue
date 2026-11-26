@@ -53,14 +53,12 @@
 
   import { followPlanApiMap, followRecordApiMap, PlanEnumType, RecordEnumType } from '@/config/follow';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import useUserStore from '@/store/modules/user';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
   import { hasAnyPermission } from '@/utils/permission';
 
   const route = useRoute();
   const router = useRouter();
-  const userStore = useUserStore();
   const { t } = useI18n();
 
   const formKey = computed(() => (route.query.formKey?.toString() as RecordEnumType | PlanEnumType) || '');
@@ -77,9 +75,7 @@
   });
 
   const permissionPrefix = computed(() => (isPlan.value ? 'FOLLOW_PLAN' : 'FOLLOW_RECORD'));
-  const canManageDetail = computed(
-    () => route.query.readonly?.toString() !== 'true' && detail.value.owner === userStore.userInfo.id
-  );
+  const canManageDetail = computed(() => route.query.readonly?.toString() !== 'true');
   const canEditDetail = computed(() => canManageDetail.value && hasAnyPermission([`${permissionPrefix.value}:UPDATE`]));
   const canDeleteDetail = computed(
     () => canManageDetail.value && hasAnyPermission([`${permissionPrefix.value}:DELETE`])

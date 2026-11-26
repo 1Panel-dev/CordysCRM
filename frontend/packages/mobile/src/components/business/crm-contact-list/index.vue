@@ -67,13 +67,13 @@
               </div>
               <div class="flex items-center gap-[16px]">
                 <CrmTextButton
-                  v-if="canOperate(item) && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])"
+                  v-if="canOperate() && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])"
                   icon="iconicon_edit"
                   icon-size="16px"
                   @click="() => handleEdit(item)"
                 />
                 <CrmTextButton
-                  v-if="canOperate(item) && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE'])"
+                  v-if="canOperate() && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE'])"
                   icon="iconicon_delete"
                   icon-size="16px"
                   color="var(--error-red)"
@@ -129,7 +129,6 @@
   } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
-  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
@@ -152,7 +151,6 @@
 
   const { t } = useI18n();
   const router = useRouter();
-  const userStore = useUserStore();
   const { copy, isSupported } = useClipboard({ legacy: true });
 
   const loadApiMap: Record<
@@ -207,12 +205,12 @@
     }
   }
 
-  function canOperate(item: { owner?: string }) {
-    return !props.readonly && item.owner === userStore.userInfo.id;
+  function canOperate() {
+    return !props.readonly;
   }
 
-  function handleDelete(item: { id: string; owner?: string }) {
-    if (!canOperate(item)) return;
+  function handleDelete(item: { id: string }) {
+    if (!canOperate()) return;
     showConfirmDialog({
       title: t('contact.deleteTitle'),
       message: t('contact.deleteTip'),
@@ -257,7 +255,7 @@
         id: item.id,
         name: item.name,
         needInitDetail: 'Y',
-        readonly: canOperate(item) ? 'N' : 'Y',
+        readonly: canOperate() ? 'N' : 'Y',
       },
     });
   }

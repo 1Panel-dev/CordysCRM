@@ -17,7 +17,7 @@
         />
       </div>
     </template>
-    <template v-if="!detailReadonly" #titleRight>
+    <template v-if="!props.readonly" #titleRight>
       <CrmOperationButton
         class="gap-[12px]"
         :not-show-divider="true"
@@ -55,7 +55,7 @@
             :source-id="props.sourceId"
             :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus"
-            :readonly="detailReadonly"
+            :readonly="props.readonly"
             left-loading
             @save-approval="handleSaveApproval"
             @delete-approved="handleDeleteApproved"
@@ -74,7 +74,7 @@
                 :comment-mention-id="props.commentMentionId"
                 :set-loading="setLoading"
                 :set-editing="setEditing"
-                :readonly="detailReadonly || !hasApprovalScopedPermission(detailInfo, ['CONTRACT_INVOICE:UPDATE'])"
+                :readonly="props.readonly || !hasApprovalScopedPermission(detailInfo, ['CONTRACT_INVOICE:UPDATE'])"
                 @init="handleInit"
                 @open-contract-detail="emit('openContractDrawer', $event)"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
@@ -137,7 +137,6 @@
   import { deleteInvoiceContentMap } from '@/config/contract';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useCustomerRelatedDataReadonly from '@/hooks/useCustomerRelatedDataReadonly';
   import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
@@ -167,12 +166,6 @@
   const { t } = useI18n();
 
   const detailInfo = ref();
-  const isCustomerRelatedDataReadonly = useCustomerRelatedDataReadonly();
-  const detailReadonly = computed(
-    () =>
-      props.readonly ||
-      isCustomerRelatedDataReadonly(detailInfo.value?.id === props.sourceId ? detailInfo.value : undefined)
-  );
   const detailTabConfig = ref<FormConfig>();
   const formViewSize = ref<FormViewSize>('large');
 

@@ -72,7 +72,6 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
           :initial-source-name="sourceName"
-          :readonly="collaborationType === 'READ_ONLY'"
           :hide-create="collaborationReadonly"
           @data-changed="refreshDetail"
         />
