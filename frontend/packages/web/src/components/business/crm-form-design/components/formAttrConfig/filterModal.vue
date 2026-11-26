@@ -55,7 +55,8 @@
     fieldConfig: FormCreateField;
     formFields: FormCreateField[];
     formKey: FormDesignKeyEnum;
-    customDataSourceForms: CustomFormItem[];
+    customDataSourceForms: Pick<CustomFormItem, 'id' | 'name'>[];
+    currentCustomFormId?: string;
     fieldSource?: 'dataSource' | 'statisticTarget' | 'currentForm';
     matchValueOnly?: boolean;
     combineSearchFieldKey?: keyof FormCreateField;
@@ -74,11 +75,17 @@
     cloneDeep(props.fieldConfig[props.combineSearchFieldKey || 'combineSearch']) || cloneDeep(defaultFormModel)
   );
   const fieldSource = computed(() => props.fieldSource || 'dataSource');
-  const dataSourceType = computed(() =>
-    fieldSource.value === 'statisticTarget'
-      ? getDataSourceType(props.fieldConfig.targetFormId, dataSourceFilterFormKeyMap) || props.fieldConfig.targetFormId
-      : props.fieldConfig.dataSourceType
-  );
+  const dataSourceType = computed(() => {
+    if (fieldSource.value === 'statisticTarget') {
+      return (
+        getDataSourceType(props.fieldConfig.targetFormId, dataSourceFilterFormKeyMap) || props.fieldConfig.targetFormId
+      );
+    }
+    if (fieldSource.value === 'currentForm' && props.currentCustomFormId) {
+      return props.currentCustomFormId;
+    }
+    return props.fieldConfig.dataSourceType;
+  });
   const isCustomForm = computed(() => isCustomDataSourceType(dataSourceType.value));
   const formKey = computed<FormDesignKeyEnum>(() =>
     fieldSource.value === 'currentForm'

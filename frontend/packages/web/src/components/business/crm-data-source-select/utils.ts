@@ -8,7 +8,10 @@ export interface DataSourceOption extends SelectOption {
   dataSourceType?: FieldDataSourceTypeEnum | string;
 }
 
-export function getCustomDataSourceName(dataSourceType: string | undefined, customDataSourceForms: CustomFormItem[]) {
+export function getCustomDataSourceName(
+  dataSourceType: string | undefined,
+  customDataSourceForms: Pick<CustomFormItem, 'id' | 'name'>[]
+) {
   if (!dataSourceType) {
     return '';
   }
