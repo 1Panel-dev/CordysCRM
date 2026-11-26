@@ -83,6 +83,7 @@ import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -210,6 +211,7 @@ class CustomerContactPermissionTest {
         doAnswer(invocation -> invocation.getArgument(0)).when(service).buildListData(anyList(), eq(ORG));
         doReturn(Map.of()).when(service).getListOptionMap(eq(ORG), anyList());
         CustomerContactController target = new CustomerContactController();
+        ReflectionTestUtils.setField(target, "relatedResourcePermissionService", relatedPermissions);
         ReflectionTestUtils.setField(target, "customerContactService", service);
         ReflectionTestUtils.setField(target, "dataScopeService", dataScope);
         CsPermissionAspect aspect = new CsPermissionAspect();
@@ -473,6 +475,18 @@ class CustomerContactPermissionTest {
     void 协作客户通过权限切面且保留原联系人过滤(String type, String expected) {
         configureCollaboration(type);
         assertContacts(expected);
+    }
+
+    @Test
+    void 联系人列表按合并前的角色范围标记仅协作可见行() {
+        configureCollaboration("READ_ONLY");
+        doCallRealMethod().when(relatedPermissions).markCustomerTabRows(anyList(), any(), eq(USER), eq(ORG));
+
+        var rows = controller.list(CUSTOMER).getList();
+        assertEquals(List.of("mine", "owner", "read-only"), rows.stream().map(CustomerContactListResponse::getId)
+                .toList());
+        assertEquals(List.of(false, true, true), rows.stream().map(CustomerContactListResponse::getCollaborationOnly)
+                .toList());
     }
 
     @ParameterizedTest

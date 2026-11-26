@@ -1,13 +1,19 @@
 package cn.cordys.crm.follow.dto.response;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.CustomerTabRow;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class FollowUpPlanListResponse {
+public class FollowUpPlanListResponse implements CustomerTabRow {
+
+    @Schema(description = "是否仅通过客户协作可见")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean collaborationOnly;
 
     @Schema(description = "ID")
     private String id;

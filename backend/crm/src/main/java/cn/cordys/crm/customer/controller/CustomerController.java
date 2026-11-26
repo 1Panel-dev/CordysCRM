@@ -7,6 +7,7 @@ import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.ChartAnalysisRequest;
+import cn.cordys.common.dto.CustomerTabRow;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
@@ -93,6 +94,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author jianxing
@@ -249,10 +251,9 @@ public class CustomerController {
             @Validated @RequestBody CustomerOpportunityPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         request.setViewId("ALL");
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(),
-                request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                deptDataPermission, false);
+        return relatedPage(request.getCustomerId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ,
+                scope -> opportunityService.list(request, SessionUtils.getUserId(),
+                        OrganizationContext.getOrganizationId(), scope, false));
     }
 
     @PostMapping("/export-all")
@@ -361,10 +362,9 @@ public class CustomerController {
             @Validated @RequestBody CustomerContractPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         request.setViewId(InternalUserView.ALL.name());
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(),
-                request.getViewId(), PermissionConstants.CONTRACT_READ);
-        return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                deptDataPermission, false);
+        return relatedPage(request.getCustomerId(), PermissionConstants.CONTRACT_READ,
+                scope -> contractService.list(request, SessionUtils.getUserId(),
+                        OrganizationContext.getOrganizationId(), scope, false));
     }
 
     @GetMapping("/contract/statistic/{accountId}")
@@ -384,10 +384,9 @@ public class CustomerController {
             @Validated @RequestBody CustomerContractPaymentPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         request.setViewId(InternalUserView.ALL.name());
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(),
-                request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        return contractPaymentPlanService.list(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), deptDataPermission);
+        return relatedPage(request.getCustomerId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ,
+                scope -> contractPaymentPlanService.list(request, SessionUtils.getUserId(),
+                        OrganizationContext.getOrganizationId(), scope));
     }
 
     @PostMapping("/contract/payment-record/page")
@@ -397,10 +396,9 @@ public class CustomerController {
             @Validated @RequestBody ContractPaymentRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
         request.setViewId(InternalUserView.ALL.name());
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(),
-                request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        return contractPaymentRecordService.list(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), deptDataPermission);
+        return relatedPage(request.getCustomerId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ,
+                scope -> contractPaymentRecordService.list(request, SessionUtils.getUserId(),
+                        OrganizationContext.getOrganizationId(), scope));
     }
 
     @PostMapping("/contract/payment-record/statistic")
@@ -423,10 +421,9 @@ public class CustomerController {
             @Validated @RequestBody CustomerContractInvoicePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         request.setViewId(InternalUserView.ALL.name());
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(),
-                request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
-        return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                deptDataPermission);
+        return relatedPage(request.getCustomerId(), PermissionConstants.CONTRACT_INVOICE_READ,
+                scope -> contractInvoiceService.list(request, SessionUtils.getUserId(),
+                        OrganizationContext.getOrganizationId(), scope));
     }
 
     @PostMapping("/order/page")
@@ -436,10 +433,9 @@ public class CustomerController {
             @Validated @RequestBody CustomerOrderPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         request.setViewId(InternalUserView.ALL.name());
-        DeptDataPermissionDTO deptDataPermission = getRelatedDataPermission(request.getCustomerId(),
-                request.getViewId(), PermissionConstants.ORDER_READ);
-        return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                deptDataPermission, false);
+        return relatedPage(request.getCustomerId(), PermissionConstants.ORDER_READ,
+                scope -> orderService.list(request, SessionUtils.getUserId(),
+                        OrganizationContext.getOrganizationId(), scope, false));
     }
 
     @PostMapping("/order/statistic/{accountId}")
@@ -463,6 +459,19 @@ public class CustomerController {
     }
 
     private DeptDataPermissionDTO getRelatedDataPermission(String customerId, String viewId, String permission) {
+        return getRelatedReadScope(customerId, viewId, permission).effectiveScope();
+    }
+
+    private <T extends CustomerTabRow> PagerWithOption<List<T>> relatedPage(String customerId, String permission,
+            Function<DeptDataPermissionDTO, PagerWithOption<List<T>>> query) {
+        RelatedReadScope scope = getRelatedReadScope(customerId, InternalUserView.ALL.name(), permission);
+        PagerWithOption<List<T>> page = query.apply(scope.effectiveScope());
+        relatedResourcePermissionService.markCustomerTabRows(page.getList(), scope.roleScope(),
+                SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return page;
+    }
+
+    private RelatedReadScope getRelatedReadScope(String customerId, String viewId, String permission) {
         String userId = SessionUtils.getUserId();
         String organizationId = OrganizationContext.getOrganizationId();
         DeptDataPermissionDTO permissionScope = relatedResourcePermissionService.getCustomerTabDataPermission(
@@ -473,9 +482,13 @@ public class CustomerController {
         }
         DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, organizationId,
                 viewId == null ? InternalUserView.ALL.name() : viewId, permission);
-        return permissionScope == null ? roleScope
+        DeptDataPermissionDTO effectiveScope = permissionScope == null ? roleScope
                 : relatedResourcePermissionService.mergeCustomerTabDataPermission(roleScope, permissionScope,
                         organizationId);
+        return new RelatedReadScope(roleScope, effectiveScope);
+    }
+
+    private record RelatedReadScope(DeptDataPermissionDTO roleScope, DeptDataPermissionDTO effectiveScope) {
     }
 
     @GetMapping("/invoice/statistic/{accountId}")

@@ -54,9 +54,14 @@ public class CustomerFollowController {
     public PagerWithOption<List<FollowUpPlanListResponse>> planPage(
             @Validated @RequestBody FollowUpPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
-        request.setCustomerTabScope(customerTabScope(request.getSourceId(), PermissionConstants.FOLLOW_PLAN_READ));
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                "CUSTOMER", "CUSTOMER");
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, orgId,
+                InternalUserView.ALL.name(), PermissionConstants.FOLLOW_PLAN_READ);
+        request.setCustomerTabScope(customerTabScope(request.getSourceId(), roleScope, userId, orgId));
+        var page = followUpPlanService.list(request, userId, orgId, "CUSTOMER", "CUSTOMER");
+        relatedResourcePermissionService.markCustomerTabRows(page.getList(), roleScope, userId, orgId);
+        return page;
     }
 
     @PostMapping("/record/page")
@@ -66,9 +71,14 @@ public class CustomerFollowController {
     public PagerWithOption<List<FollowUpRecordListResponse>> recordPage(
             @Validated @RequestBody FollowUpRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
-        request.setCustomerTabScope(customerTabScope(request.getSourceId(), PermissionConstants.FOLLOW_RECORD_READ));
-        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                "CUSTOMER", "CUSTOMER");
+        String userId = SessionUtils.getUserId();
+        String orgId = OrganizationContext.getOrganizationId();
+        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, orgId,
+                InternalUserView.ALL.name(), PermissionConstants.FOLLOW_RECORD_READ);
+        request.setCustomerTabScope(customerTabScope(request.getSourceId(), roleScope, userId, orgId));
+        var page = followUpRecordService.list(request, userId, orgId, "CUSTOMER", "CUSTOMER");
+        relatedResourcePermissionService.markCustomerTabRows(page.getList(), roleScope, userId, orgId);
+        return page;
     }
 
     @PostMapping("/record/pool/page")
@@ -82,11 +92,8 @@ public class CustomerFollowController {
                 OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
     }
 
-    private DeptDataPermissionDTO customerTabScope(String customerId, String permission) {
-        String userId = SessionUtils.getUserId();
-        String orgId = OrganizationContext.getOrganizationId();
-        DeptDataPermissionDTO roleScope = dataScopeService.getDeptDataPermission(userId, orgId,
-                InternalUserView.ALL.name(), permission);
+    private DeptDataPermissionDTO customerTabScope(String customerId, DeptDataPermissionDTO roleScope, String userId,
+            String orgId) {
         DeptDataPermissionDTO collaborationScope = relatedResourcePermissionService.getCustomerTabDataPermission(
                 customerId, userId, orgId);
         return relatedResourcePermissionService.mergeCustomerTabDataPermission(roleScope, collaborationScope, orgId);
