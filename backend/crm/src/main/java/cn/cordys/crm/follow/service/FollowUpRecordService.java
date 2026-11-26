@@ -146,19 +146,21 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         if (StringUtils.isNotBlank(clueId)) {
             Clue clue = clueMapper.selectByPrimaryKey(clueId);
-            if (clue == null || !orgId.equals(clue.getOrganizationId()) || !userId.equals(clue.getOwner())
-                    || BooleanUtils.isTrue(clue.getInSharedPool())) {
+            if (clue == null || !orgId.equals(clue.getOrganizationId()) || BooleanUtils.isTrue(clue.getInSharedPool())
+                    || !hasFollowDataPermission(orgId, userId, PermissionConstants.CLUE_MANAGEMENT_READ,
+                            clue.getOwner())) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
         }
         if (StringUtils.isBlank(opportunityId)) {
-            checkCustomerFollowWritePermission(customerId, userId, orgId);
+            checkCustomerFollowWritePermission(customerId, userId, orgId, true);
             return;
         }
 
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
         if (opportunity == null || !orgId.equals(opportunity.getOrganizationId())
-                || !userId.equals(opportunity.getOwner())) {
+                || !hasFollowDataPermission(orgId, userId, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ,
+                        opportunity.getOwner())) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 

@@ -1,8 +1,10 @@
 package cn.cordys.crm.follow.service;
 
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
@@ -43,6 +45,7 @@ class FollowUpRecordAddPermissionTest {
     private static final String OPPORTUNITY = "opportunity-a";
 
     private final FollowUpRecordService service = new FollowUpRecordService();
+    private final DataScopeService dataScope = mock(DataScopeService.class);
     private final CustomerCollaborationService collaborations = mock(CustomerCollaborationService.class);
     private final BaseMapper<FollowUpRecord> records = mock(BaseMapper.class);
     private final BaseMapper<Customer> customers = mock(BaseMapper.class);
@@ -54,6 +57,7 @@ class FollowUpRecordAddPermissionTest {
 
     @BeforeEach
     void configureDependencies() {
+        ReflectionTestUtils.setField(service, "dataScopeService", dataScope);
         ReflectionTestUtils.setField(service, "customerCollaborationService", collaborations);
         ReflectionTestUtils.setField(service, BaseFollowUpService.class, "customerMapper", customers, null);
         ReflectionTestUtils.setField(service, "followUpRecordMapper", records);
@@ -85,7 +89,7 @@ class FollowUpRecordAddPermissionTest {
     }
 
     @Test
-    void rejectsForeignClueEvenWhenCustomerIsOwnedByCurrentUser() {
+    void rejectsClueOutsideRoleScopeEvenWhenCustomerIsOwnedByCurrentUser() {
         FollowUpRecordAddRequest request = customerRequest();
         request.setClueId(CLUE);
         stubCustomer(USER, ORG, false);
@@ -95,7 +99,7 @@ class FollowUpRecordAddPermissionTest {
     }
 
     @Test
-    void rejectsForeignOpportunityEvenWhenCustomerIsOwnedByCurrentUser() {
+    void rejectsOpportunityOutsideRoleScopeEvenWhenCustomerIsOwnedByCurrentUser() {
         FollowUpRecordAddRequest request = customerRequest();
         request.setOpportunityId(OPPORTUNITY);
         stubCustomer(USER, ORG, false);
@@ -156,6 +160,42 @@ class FollowUpRecordAddPermissionTest {
         assertRecordAdded(customerRequest());
     }
 
+    @Test
+    void readOnlyCollaborationDoesNotOverrideCustomerRoleScopeWhenAssigningAnotherOwner() {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setOwner("assigned-user");
+        stubCustomer("other-user", ORG, false);
+        stubCollaboration(CustomerCollaborationType.READ_ONLY);
+        when(dataScope.hasDataPermission(USER, ORG, "other-user", PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+                .thenReturn(true);
+
+        assertRecordAdded(request);
+    }
+
+    @Test
+    void canAddForClueInRoleScope() {
+        FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
+        request.setType("CLUE");
+        request.setClueId(CLUE);
+        stubClue("other-user");
+        when(dataScope.hasDataPermission(USER, ORG, "other-user", PermissionConstants.CLUE_MANAGEMENT_READ))
+                .thenReturn(true);
+
+        assertRecordAdded(request);
+    }
+
+    @Test
+    void canAddForOpportunityInRoleScope() {
+        FollowUpRecordAddRequest request = customerRequest();
+        request.setOpportunityId(OPPORTUNITY);
+        stubOpportunity("other-user", CUSTOMER);
+        stubCustomer("another-customer-owner", ORG, false);
+        when(dataScope.hasDataPermission(USER, ORG, "other-user", PermissionConstants.OPPORTUNITY_MANAGEMENT_READ))
+                .thenReturn(true);
+
+        assertRecordAdded(request);
+    }
+
     @ParameterizedTest
     @ValueSource(strings = { "CUSTOMER", "CLUE" })
     void addsRecordForMyRelatedResources(String type) {
@@ -179,7 +219,7 @@ class FollowUpRecordAddPermissionTest {
             ids.when(IDGenerator::nextStr).thenReturn("record-a");
             FollowUpRecord result = service.add(request, USER, ORG);
 
-            assertEquals(USER, result.getOwner());
+            assertEquals(request.getOwner() == null ? USER : request.getOwner(), result.getOwner());
             verify(records).insert(result);
         }
     }
@@ -210,7 +250,7 @@ class FollowUpRecordAddPermissionTest {
         CustomerCollaboration member = new CustomerCollaboration();
         member.setUserId(USER);
         member.setCollaborationType(type.name());
-        when(collaborations.selectByCustomerId(CUSTOMER)).thenReturn(List.of(member));
+        when(collaborations.selectByCustomerIdAndUserId(CUSTOMER, USER)).thenReturn(List.of(member));
     }
 
     private void stubOpportunity(String owner, String customerId) {

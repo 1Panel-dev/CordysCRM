@@ -121,7 +121,6 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (StringUtils.isBlank(request.getOwner())) {
             followUpPlan.setOwner(userId);
         }
-        checkJointFollowPlanOwner(followUpPlan, followUpPlan.getOwner(), orgId, userId);
         //保存自定义字段
         followUpPlanFieldService.saveModuleField(followUpPlan, orgId, userId, request.getModuleFields(), false);
         followUpPlanMapper.insert(followUpPlan);
@@ -142,17 +141,30 @@ public class FollowUpPlanService extends BaseFollowUpService {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
         String customerId = request.getCustomerId();
-        checkCustomerFollowWritePermission(customerId, userId, orgId);
+        boolean allowJointFollow = !Strings.CI.equals("CUSTOMER", request.getType())
+                || StringUtils.isBlank(request.getOwner()) || userId.equals(request.getOwner());
         String opportunityId = request.getOpportunityId();
         if (StringUtils.isBlank(opportunityId)) {
+            checkCustomerFollowWritePermission(customerId, userId, orgId, allowJointFollow);
             return;
         }
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
         if (opportunity == null || !orgId.equals(opportunity.getOrganizationId())) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
-        if (!Strings.CS.equals(customerId, opportunity.getCustomerId())) {
-            checkCustomerFollowWritePermission(opportunity.getCustomerId(), userId, orgId);
+        String relatedCustomerId = opportunity.getCustomerId();
+        // 商机在角色范围内时，关联客户的协作身份不参与授权。
+        if ((StringUtils.isBlank(customerId) || Strings.CS.equals(customerId, relatedCustomerId))
+                && hasFollowDataPermission(orgId, userId, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ,
+                        opportunity.getOwner())) {
+            if (StringUtils.isNotBlank(relatedCustomerId)) {
+                getFollowCustomer(relatedCustomerId, orgId);
+            }
+            return;
+        }
+        checkCustomerFollowWritePermission(customerId, userId, orgId, allowJointFollow);
+        if (!Strings.CS.equals(customerId, relatedCustomerId)) {
+            checkCustomerFollowWritePermission(relatedCustomerId, userId, orgId, true);
         }
     }
 
@@ -163,11 +175,12 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public FollowUpPlan update(FollowUpPlanUpdateRequest request, String userId, String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpPlan).ifPresentOrElse(plan -> {
+            if (StringUtils.isBlank(orgId) || !orgId.equals(plan.getOrganizationId())) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
             //更新跟进计划
             FollowUpPlan newPlan = BeanUtils.copyBean(new FollowUpPlan(), plan);
             FollowUpPlan updateFollowUpPlan = newPlan(newPlan, request, userId);
-            checkJointFollowPlanOwner(plan, updateFollowUpPlan.getOwner(), orgId, userId);
-            checkJointFollowPlanOwner(updateFollowUpPlan, updateFollowUpPlan.getOwner(), orgId, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService
                     .getModuleFieldValuesByResourceId(request.getId());
@@ -472,7 +485,9 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (oldPlan == null) {
             throw new GenericException(Translator.get("plan_not_found"));
         }
-        checkJointFollowPlanOwner(oldPlan, oldPlan.getOwner(), orgId, userId);
+        if (StringUtils.isBlank(orgId) || !orgId.equals(oldPlan.getOrganizationId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
         if (oldPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && oldPlan.getConverted()) {
             return;
         }

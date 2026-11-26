@@ -1,8 +1,10 @@
 package cn.cordys.crm.follow.service;
 
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.domain.Customer;
@@ -18,7 +20,6 @@ import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -27,7 +28,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +45,7 @@ class FollowUpPlanJointFollowPermissionTest {
     private static final String CUSTOMER = "customer-a";
     private final FollowUpPlanService service = new FollowUpPlanService();
     private final CustomerCollaborationService collaborations = new CustomerCollaborationService();
+    private final DataScopeService dataScope = mock(DataScopeService.class);
     @SuppressWarnings("unchecked")
     private final BaseMapper<Customer> customers = mock(BaseMapper.class);
     @SuppressWarnings("unchecked")
@@ -90,6 +91,7 @@ class FollowUpPlanJointFollowPermissionTest {
         when(plans.selectByPrimaryKey("plan-a")).thenReturn(plan);
         ReflectionTestUtils.setField(collaborations, "customerCollaborationMapper", members);
         ReflectionTestUtils.setField(service, "customerCollaborationService", collaborations);
+        ReflectionTestUtils.setField(service, "dataScopeService", dataScope);
         ReflectionTestUtils.setField(service, BaseFollowUpService.class, "customerMapper", customers, null);
         ReflectionTestUtils.setField(service, "opportunityMapper", opportunities);
         ReflectionTestUtils.setField(service, "followUpPlanMapper", plans);
@@ -105,51 +107,77 @@ class FollowUpPlanJointFollowPermissionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "JOINT_FOLLOW,,true", "JOINT_FOLLOW,9223372036854775807,true", "JOINT_FOLLOW,1,false",
-            "READ_ONLY,,false", "COLLABORATION,,false" })
-    void onlyEffectiveJointFollowRestrictsPlanOwner(String type, Long expiry, boolean restricted) {
-        member.setCollaborationType(type);
-        member.setExpireTime(expiry);
-        assertDoesNotThrow(() -> service.checkJointFollowPlanOwner(plan, USER, ORG, USER));
-        plan.setOwner("other-user");
-        Executable editOther = () -> service.checkJointFollowPlanOwner(plan, "other-user", ORG, USER);
-        if (restricted) {
-            assertThrows(GenericException.class, editOther);
-        } else {
-            assertDoesNotThrow(editOther, "未生效的共同跟进关系不额外限缩原角色范围");
-        }
+    @ValueSource(strings = { "READ_ONLY", "JOINT_FOLLOW" })
+    void canAssignPlanToAnotherUserWithinCustomerRoleScope(String collaboration) {
+        member.setCollaborationType(collaboration);
+        when(dataScope.hasDataPermission(USER, ORG, customer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+                .thenReturn(true);
+        FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
+        request.setCustomerId(CUSTOMER);
+        request.setType("CUSTOMER");
+        request.setOwner("other-user");
+
+        FollowUpPlan result = service.add(request, USER, ORG);
+
+        assertEquals("other-user", result.getOwner());
+        verify(plans).insert(result);
+    }
+
+    @Test
+    void canAssignOpportunityPlanToAnotherUserWhenItsCustomerIsReadOnly() {
+        member.setCollaborationType("READ_ONLY");
+        Opportunity opportunity = new Opportunity();
+        opportunity.setOrganizationId(ORG);
+        opportunity.setCustomerId(CUSTOMER);
+        opportunity.setOwner("opportunity-owner");
+        when(opportunities.selectByPrimaryKey("opportunity-a")).thenReturn(opportunity);
+        when(dataScope.hasDataPermission(USER, ORG, opportunity.getOwner(),
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)).thenReturn(true);
+        FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
+        request.setType("CUSTOMER");
+        request.setOpportunityId("opportunity-a");
+        request.setCustomerId(CUSTOMER);
+        request.setOwner("other-user");
+
+        FollowUpPlan result = service.add(request, USER, ORG);
+
+        assertEquals("other-user", result.getOwner());
+        verify(plans).insert(result);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "OWNER", "NO_RELATION", "POOL", "MISSING_CUSTOMER", "CLUE" })
-    void ordinaryRoleScopeAndCustomerOwnerRemainUnchanged(String scenario) {
+    @ValueSource(strings = { "CUSTOMER", "customer" })
+    void jointFollowAloneCannotAssignAnotherOwnersPlan(String type) {
+        FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
+        request.setCustomerId(CUSTOMER);
+        request.setType(type);
+        request.setOwner("other-user");
+
+        GenericException exception = assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
+
+        assertEquals(CrmHttpResultCode.FORBIDDEN, exception.getErrorCode());
+        verifyNoInteractions(plans, fields, statistics);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "MISSING", "OTHER_ORG", "POOL" })
+    void roleScopeCannotAuthorizeInvalidCustomer(String scenario) {
+        when(dataScope.hasDataPermission(USER, ORG, customer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ))
+                .thenReturn(true);
         switch (scenario) {
-        case "OWNER" -> customer.setOwner(USER);
-        case "NO_RELATION" -> when(members.select(any(CustomerCollaboration.class))).thenReturn(List.of());
+        case "MISSING" -> when(customers.selectByPrimaryKey(CUSTOMER)).thenReturn(null);
+        case "OTHER_ORG" -> customer.setOrganizationId("other-org");
         case "POOL" -> customer.setInSharedPool(true);
-        case "MISSING_CUSTOMER" -> when(customers.selectByPrimaryKey(CUSTOMER)).thenReturn(null);
-        case "CLUE" -> plan.setType("CLUE");
         default -> throw new AssertionError(scenario);
         }
-        plan.setOwner("other-user");
+        FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
+        request.setCustomerId(CUSTOMER);
+        request.setType("CUSTOMER");
 
-        assertDoesNotThrow(() -> service.checkJointFollowPlanOwner(plan, "other-user", ORG, USER));
-    }
+        GenericException exception = assertThrows(GenericException.class, () -> service.add(request, USER, ORG));
 
-    @Test
-    void planFromAnotherOrganizationIsRejectedEvenWhenOwnedByCurrentUser() {
-        plan.setOrganizationId("other-org");
-
-        assertThrows(GenericException.class, () -> service.checkJointFollowPlanOwner(plan, USER, ORG, USER));
-    }
-
-    @Test
-    void lowercaseCustomerTypeCannotBypassAnotherOwnersPlanRestriction() {
-        plan.setType("customer");
-        plan.setOwner("other-user");
-
-        assertThrows(GenericException.class,
-                () -> service.checkJointFollowPlanOwner(plan, "other-user", ORG, USER));
+        assertEquals(CrmHttpResultCode.FORBIDDEN, exception.getErrorCode());
+        verifyNoInteractions(plans, fields, statistics);
     }
 
     @ParameterizedTest
@@ -184,6 +212,7 @@ class FollowUpPlanJointFollowPermissionTest {
             Opportunity opportunity = new Opportunity();
             opportunity.setOrganizationId(ORG);
             opportunity.setCustomerId(CUSTOMER);
+            opportunity.setOwner("opportunity-owner");
             when(opportunities.selectByPrimaryKey("opportunity-a")).thenReturn(opportunity);
             request.setOpportunityId("opportunity-a");
         }
@@ -195,61 +224,37 @@ class FollowUpPlanJointFollowPermissionTest {
     }
 
     @Test
-    void jointFollowCanEditOwnPlanAndChangeItsStatus() {
+    void jointFollowCanEditAnotherOwnersPlanAndChangeItsStatus() {
+        plan.setOwner("other-user");
         FollowUpPlanUpdateRequest update = new FollowUpPlanUpdateRequest();
         update.setId("plan-a");
         update.setCustomerId(CUSTOMER);
         update.setType("CUSTOMER");
-        update.setOwner(USER);
+        update.setOwner("new-owner");
         FollowUpPlanStatusRequest status = new FollowUpPlanStatusRequest();
         status.setId("plan-a");
         status.setStatus("UNDERWAY");
 
-        assertDoesNotThrow(() -> service.update(update, USER, ORG));
-        assertDoesNotThrow(() -> service.updateStatus(status, USER, ORG));
+        service.update(update, USER, ORG);
+        service.updateStatus(status, USER, ORG);
 
         verify(plans, times(2)).update(any(FollowUpPlan.class));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { "ADD", "UPDATE_OLD_OWNER", "UPDATE_NEW_OWNER", "UPDATE_DETACH_AND_TRANSFER",
-            "UPDATE_INTO_JOINT_CUSTOMER", "STATUS" })
-    void jointFollowCannotCreateOrChangeAnotherOwnersPlanBeforeAnyWrites(String operation) {
+    @Test
+    void cannotEditAnotherOrganizationsPlanOrChangeItsStatus() {
+        plan.setOrganizationId("other-org");
         FollowUpPlanUpdateRequest update = new FollowUpPlanUpdateRequest();
-        update.setId("plan-a");
-        update.setCustomerId(CUSTOMER);
-        update.setType("CUSTOMER");
-        update.setOwner("other-user");
-        Executable write = switch (operation) {
-        case "ADD" -> () -> service.add(update, USER, ORG);
-        case "UPDATE_OLD_OWNER" -> {
-            plan.setOwner("other-user");
-            update.setOwner(USER);
-            yield () -> service.update(update, USER, ORG);
-        }
-        case "UPDATE_NEW_OWNER" -> () -> service.update(update, USER, ORG);
-        case "UPDATE_DETACH_AND_TRANSFER" -> {
-            update.setCustomerId("unrelated-customer");
-            update.setType("CLUE");
-            yield () -> service.update(update, USER, ORG);
-        }
-        case "UPDATE_INTO_JOINT_CUSTOMER" -> {
-            plan.setCustomerId("unrelated-customer");
-            yield () -> service.update(update, USER, ORG);
-        }
-        case "STATUS" -> {
-            plan.setOwner("other-user");
-            FollowUpPlanStatusRequest status = new FollowUpPlanStatusRequest();
-            status.setId("plan-a");
-            status.setStatus("UNDERWAY");
-            yield () -> service.updateStatus(status, USER, ORG);
-        }
-        default -> throw new AssertionError(operation);
-        };
+        update.setId(plan.getId());
+        FollowUpPlanStatusRequest status = new FollowUpPlanStatusRequest();
+        status.setId(plan.getId());
+        status.setStatus("UNDERWAY");
 
-        assertThrows(GenericException.class, write);
+        assertEquals(CrmHttpResultCode.FORBIDDEN,
+                assertThrows(GenericException.class, () -> service.update(update, USER, ORG)).getErrorCode());
+        assertEquals(CrmHttpResultCode.FORBIDDEN,
+                assertThrows(GenericException.class, () -> service.updateStatus(status, USER, ORG)).getErrorCode());
 
-        verify(plans, never()).insert(any());
         verify(plans, never()).update(any());
         verifyNoInteractions(fields, statistics, base);
     }
