@@ -80,6 +80,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -258,8 +259,10 @@ public class CustomerController {
 
     @PostMapping("/export-all")
     @Operation(summary = "客户导出全部")
-    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
+    @RequiresPermissions({ PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT })
     public String opportunityExportAll(@Validated @RequestBody CustomerExportRequest request) {
+        request.setPoolId(null);
+        request.setTransition(false);
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(),
@@ -281,7 +284,7 @@ public class CustomerController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中客户")
-    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
+    @RequiresPermissions({ PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT })
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);

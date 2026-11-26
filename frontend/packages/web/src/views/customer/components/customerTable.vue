@@ -706,6 +706,7 @@
         }),
     },
     permission: [
+      ...(!props.detailTabResourceId ? ['CUSTOMER_MANAGEMENT:EXPORT'] : []),
       'CUSTOMER_MANAGEMENT:RECYCLE',
       'CUSTOMER_MANAGEMENT:UPDATE',
       'CUSTOMER_MANAGEMENT:DELETE',

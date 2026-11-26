@@ -1,6 +1,7 @@
 package cn.cordys.crm.customer.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
@@ -8,6 +9,7 @@ import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.utils.PoolCustomerFieldUtils;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.excel.domain.MergeResult;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -55,8 +57,13 @@ public class CustomerExportService extends BaseExportService {
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
         List<CustomerListResponse> exportList;
-        if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
+        if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())
+                && ExportConstants.ExportType.CUSTOMER_POOL.name().equals(exportParam.getExportType())) {
             exportList = extCustomerMapper.getListByIds(exportParam.getSelectIds());
+        } else if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
+            var request = new CustomerPageRequest();
+            exportList = loadSelectedVisibleRows(exportParam, request, InternalUserView.CUSTOMER_COLLABORATION,
+                    scope -> extCustomerMapper.list(request, orgId, userId, scope), CustomerListResponse::getId);
         } else {
             var request = (CustomerPageRequest) exportParam.getPageRequest();
             PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);

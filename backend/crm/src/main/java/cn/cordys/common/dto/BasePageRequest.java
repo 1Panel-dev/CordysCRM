@@ -1,11 +1,14 @@
 package cn.cordys.common.dto;
 
 import cn.cordys.common.dto.condition.BaseCondition;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * <p>
@@ -36,4 +39,7 @@ public class BasePageRequest extends BaseCondition {
     @Valid
     @Schema(description = "排序字段")
     private SortRequest sort;
+
+    @JsonIgnore
+    private List<String> exportIds;
 }

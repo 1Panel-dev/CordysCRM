@@ -1,6 +1,7 @@
 package cn.cordys.crm.opportunity.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportFieldParam;
@@ -88,7 +89,9 @@ public class OpportunityExportService extends BaseExportService {
         var deptDataPermission = exportParam.getDeptDataPermission();
         List<OpportunityListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            exportList = extOpportunityMapper.getListByIds(exportParam.getSelectIds());
+            var request = new OpportunityPageRequest();
+            exportList = loadSelectedVisibleRows(exportParam, request, InternalUserView.COLLABORATION_VISIBLE,
+                    scope -> extOpportunityMapper.list(request, orgId, userId, scope, false), OpportunityListResponse::getId);
         } else {
             var request = (OpportunityPageRequest) exportParam.getPageRequest();
             PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);

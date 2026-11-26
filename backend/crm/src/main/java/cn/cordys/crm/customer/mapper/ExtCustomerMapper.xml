@@ -52,6 +52,7 @@
 
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on c.owner = sou.user_id
+            and sou.organization_id = #{orgId}
             and (
                 sou.department_id in
                 <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
@@ -98,6 +99,16 @@
 
         where c.organization_id = #{orgId}
 
+        <if test="dataPermission != null and (dataPermission.invisible or
+                (!dataPermission.all and !dataPermission.self and !dataPermission.visible and dataPermission.deptIds.isEmpty()))">
+            and 0 = 1
+        </if>
+        <if test="request.exportIds != null and !request.exportIds.isEmpty()">
+            and c.id in
+            <foreach collection="request.exportIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <if test="request.poolId == null and !request.transition">
             and c.in_shared_pool is false
         </if>
