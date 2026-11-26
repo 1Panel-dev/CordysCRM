@@ -44,25 +44,32 @@
             </div>
             <div class="flex flex-col pl-[48px]">
               <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
-                <template v-for="(part, index) in getMessageContentParts(item)" :key="index">
-                  <n-button
-                    v-if="part.isResourceName"
-                    class="!h-auto !p-0"
-                    type="primary"
-                    text
-                    @click.stop="openResourceDetail(item)"
-                  >
-                    {{ part.text }}
-                  </n-button>
-                  <span v-else>{{ part.text }}</span>
+                <div v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE" class="whitespace-pre-line">
+                  {{ getMessageContent(item) }}
+                </div>
+                <template v-else>
+                  <template v-for="(part, index) in getMessageContentParts(item)" :key="index">
+                    <n-button
+                      v-if="part.isResourceName && !isDeleteAction(item)"
+                      class="!h-auto !p-0"
+                      type="primary"
+                      text
+                      @click.stop="openResourceDetail(item)"
+                    >
+                      {{ part.text }}
+                    </n-button>
+                    <span v-else>{{ part.text }}</span>
+                  </template>
                 </template>
-                <span
-                  v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
-                  class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
+                <n-button
+                  v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE && parseMessageContent(item)?.url"
+                  class="ml-[8px] !h-auto !p-0"
+                  type="primary"
+                  text
                   @click.stop="goUrl(item.contentText)"
                 >
                   {{ parseMessageContent(item)?.renameUrl ?? parseMessageContent(item)?.url }}
-                </span>
+                </n-button>
               </div>
               <div class="mt-[8px] flex items-center justify-between gap-[12px] text-[12px] text-[var(--text-n4)]">
                 <span class="one-line-text">{{ getResourceTypeLabel(item.resourceType) }}</span>
@@ -165,7 +172,7 @@
   const emit = defineEmits<{
     (e: 'refreshCount'): void;
     (e: 'resourceTypesChange', resourceTypes: string[]): void;
-    (e: 'openApprovalTodo'): void;
+    (e: 'openApprovalTodo', formType: string): void;
   }>();
 
   function openNewPageQuotation(item: MessageCenterItem) {
@@ -313,9 +320,9 @@
   }
 
   function openResourceDetail(item: MessageCenterItem) {
-    const resourceType = item.resourceType?.toUpperCase() ?? '';
-    if (resourceType === 'APPROVAL') {
-      emit('openApprovalTodo');
+    const resourceTypes = [item.formType, item.resourceType].map((type) => type?.toUpperCase() ?? '').filter(Boolean);
+    if (resourceTypes.includes('APPROVAL')) {
+      emit('openApprovalTodo', item.formType ?? '');
       return;
     }
     const drawerConfig: Record<string, { type: string; permission: string[] }> = {
@@ -325,15 +332,19 @@
       CONTRACT: { type: 'CONTRACT', permission: ['CONTRACT:READ'] },
       ORDER: { type: 'ORDER', permission: ['ORDER:READ'] },
     };
-    if (resourceType === 'FOLLOW_RECORD' || resourceType === 'FOLLOW_PLAN') {
+    const matchedResourceType = resourceTypes.find(
+      (resourceType) =>
+        resourceType === 'FOLLOW_RECORD' || resourceType === 'FOLLOW_PLAN' || Boolean(drawerConfig[resourceType])
+    );
+    if (matchedResourceType === 'FOLLOW_RECORD' || matchedResourceType === 'FOLLOW_PLAN') {
       if (!hasAnyPermission(followPermission)) return;
       openFollowDetail(
         item,
-        resourceType === 'FOLLOW_RECORD' ? FormDesignKeyEnum.FOLLOW_RECORD : FormDesignKeyEnum.FOLLOW_PLAN
+        matchedResourceType === 'FOLLOW_RECORD' ? FormDesignKeyEnum.FOLLOW_RECORD : FormDesignKeyEnum.FOLLOW_PLAN
       );
       return;
     }
-    const config = drawerConfig[resourceType];
+    const config = matchedResourceType ? drawerConfig[matchedResourceType] : undefined;
     if (config) {
       if (!hasAnyPermission(config.permission)) return;
       activeResourceItem.value = item;
@@ -367,8 +378,16 @@
     }
   }
 
+  function getMessageContent(item: MessageCenterItem) {
+    return String(parseMessageContent(item)?.content ?? item.content ?? item.contentText ?? '');
+  }
+
+  function isDeleteAction(item: MessageCenterItem) {
+    return /(?:^|_)DELETE(?:D)?(?:_|$)/i.test(item.operation ?? '');
+  }
+
   function getMessageContentParts(item: MessageCenterItem) {
-    const content = String(parseMessageContent(item)?.content ?? item.content ?? item.contentText ?? '');
+    const content = getMessageContent(item);
     const resourceName = item.resourceName?.trim();
     if (!resourceName) return [{ text: content }];
 

@@ -5,6 +5,7 @@
     :title="t('system.message.notify')"
     width="1200"
     :footer="false"
+    @cancel="resetMessageFilters"
   >
     <template #titleRight>
       <div class="flex items-center gap-[8px]">
@@ -89,7 +90,7 @@
           :load-params="loadParams"
           virtual-scroll-height="calc(100vh - 162px)"
           key-field="id"
-          @open-approval-todo="emit('openApprovalTodo')"
+          @open-approval-todo="(formType) => emit('openApprovalTodo', formType)"
           @refresh-count="() => initMessageCount()"
         />
       </div>
@@ -128,7 +129,7 @@
     required: true,
   });
   const emit = defineEmits<{
-    (e: 'openApprovalTodo'): void;
+    (e: 'openApprovalTodo', formType: string): void;
   }>();
 
   const keyword = ref('');
@@ -246,7 +247,9 @@
 
   function searchData(val: string) {
     keyword.value = val;
-    messageListRef.value?.loadMessageList();
+    nextTick(() => {
+      messageListRef.value?.loadMessageList();
+    });
   }
 
   const messageCount = ref<Record<string, string>>({});
@@ -339,6 +342,16 @@
     });
   }
 
+  function resetMessageFilters() {
+    activeTab.value = '';
+    activeMessageType.value = '';
+    keyword.value = '';
+    triggerType.value = '';
+    timeDays.value = '3';
+    unReadEnable.value = false;
+    range.value = undefined;
+  }
+
   function changeMessageType(value: string) {
     activeMessageType.value = value;
     refresh();
@@ -382,7 +395,7 @@
     (val) => {
       if (val) {
         appStore.initModuleConfig();
-        initMessageCount();
+        refresh(true);
       }
     }
   );

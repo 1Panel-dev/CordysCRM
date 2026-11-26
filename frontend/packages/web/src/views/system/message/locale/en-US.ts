@@ -214,6 +214,8 @@ export default {
     '【Approval result】{operator} initiated {type} document {name}; approval {state}.',
   'system.message.settings.preview.nameSuffix': ' name',
   'system.message.settings.preview.operator': '“Operator”',
+  'system.message.settings.preview.userName': 'User name',
+  'system.message.settings.preview.customerName': 'Customer name',
   'system.message.settings.preview.customReminder':
     'Follow up when {recordName} has "{dateField}" set to "{fieldValue}".',
   'system.message.settings.preview.customCondition':

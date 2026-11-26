@@ -98,7 +98,7 @@
                   :message-list="messageList"
                   :virtual-scroll-height="`calc(100vh - ${!showAlert ? 168 : 230}px)`"
                   key-field="id"
-                  @open-approval-todo="openTaskDrawer(ApprovalListTypeEnum.PENDING)"
+                  @open-approval-todo="(formType) => openTaskDrawer(ApprovalListTypeEnum.PENDING, formType)"
                 />
               </div>
             </CrmCard>
@@ -106,7 +106,7 @@
           <PersonalInfoDrawer v-model:visible="showPersonalInfo" v-model:active-tab-value="personalTab" />
           <MessageDrawer
             v-model:show="showMessageDrawer"
-            @open-approval-todo="openTaskDrawer(ApprovalListTypeEnum.PENDING)"
+            @open-approval-todo="(formType) => openTaskDrawer(ApprovalListTypeEnum.PENDING, formType)"
           />
         </div>
       </div>

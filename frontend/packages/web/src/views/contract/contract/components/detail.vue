@@ -637,7 +637,8 @@
       } else {
         detailInfo.value = {};
       }
-    }
+    },
+    { immediate: true }
   );
 
   function showBusinessTitleDetail(params: { id: string }) {
