@@ -145,7 +145,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
-    :readonly="props.readonly || isCollaborationView"
+    :readonly="props.readonly"
     :disable-customer-link="props.disableCustomerLink"
     isContractTableDetail
     @approval-success="() => initApprovalPermission(true)"
@@ -190,7 +190,7 @@
 
   import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { CirculationTypeEnum, OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum.js';
+  import { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum.js';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
@@ -284,7 +284,6 @@
 
   const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
-  const isCollaborationView = computed(() => activeTab.value === OpportunitySearchTypeEnum.COLLABORATION_VISIBLE);
   const keyword = ref('');
 
   // 操作
@@ -666,8 +665,6 @@
       width: 180,
       fixed: 'right',
       render: (row: ContractItem) => {
-        if (isCollaborationView.value) return '-';
-
         const operation = resolveRowOperation(row);
         return operation.groupList.length
           ? h(CrmOperationButton, {
@@ -851,17 +848,6 @@
   const batchEditApprovalTip = computed(() => getApprovalActionTip(['CONTRACT:UPDATE'], 'common.batchEditApprovalTip'));
 
   const actionConfig = computed(() => {
-    if (isCollaborationView.value) {
-      return {
-        baseAction: [
-          {
-            label: t('common.exportChecked'),
-            key: 'exportChecked',
-            permission: ['CONTRACT:EXPORT'],
-          },
-        ],
-      };
-    }
     return {
       baseAction: [
         {

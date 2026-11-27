@@ -227,11 +227,6 @@
   ];
 
   function getListItemActions(item: CustomerListItem & { collaborationType: CollaborationType }) {
-    if (activeFilter.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
-      const collaborationActions = item.collaborationType === 'JOINT_FOLLOW' ? actions : [];
-
-      return resolveRowActions(item, collaborationActions);
-    }
     return resolveRowActions(item, actions);
   }
 
