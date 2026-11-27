@@ -151,20 +151,32 @@ public class OrganizationUserService {
     /**
      * 员工列表查询
      */
-    public List<UserPageResponse> list(UserPageRequest request) {
+    public List<UserPageResponse> list(UserPageRequest request, String orgId) {
+        String departmentId = null;
+        if (CollectionUtils.isNotEmpty(request.getDepartmentIds())) {
+            List<String> departmentIds = request.getDepartmentIds().stream()
+                    .filter(id -> id.chars().allMatch(Character::isDigit))
+                    .toList();
+            if (departmentIds.isEmpty()) {
+                return List.of();
+            }
+            request.setDepartmentIds(departmentIds);
+            departmentId = departmentIds.getFirst();
+        }
         String orderByClause = buildOrderByFieldClause(request.getDepartmentIds());
-        request.setDepartmentIds(
-                request.getDepartmentIds().stream().filter(id -> id.chars().allMatch(Character::isDigit)).toList());
-        List<UserPageResponse> list = extOrganizationUserMapper.list(request, orderByClause);
-        handleData(list, request.getDepartmentIds().getFirst());
+        List<UserPageResponse> list = extOrganizationUserMapper.list(request, orgId, orderByClause);
+        handleData(list, departmentId);
         return list;
     }
 
     private String buildOrderByFieldClause(List<String> departmentIds) {
-        if (departmentIds == null || departmentIds.isEmpty()) {
+        if (CollectionUtils.isEmpty(departmentIds)) {
             return "1"; // 默认排序，如果无部门ID传入
         }
         departmentIds = departmentIds.stream().filter(id -> id.chars().allMatch(Character::isDigit)).toList();
+        if (departmentIds.isEmpty()) {
+            return "1";
+        }
         StringJoiner sj = new StringJoiner(",", "FIELD(department_id, ", ")");
         for (String deptId : departmentIds) {
             sj.add("'" + deptId + "'");
@@ -208,10 +220,12 @@ public class OrganizationUserService {
                     .toList();
             List<Department> departmentList = departmentMapper.selectByIds(departmentIds.toArray(new String[0]));
             Map<String, String> departmentMap = departmentList.stream()
+                    .filter(department -> Strings.CS.equals(department.getOrganizationId(), orgId))
                     .collect(Collectors.toMap(Department::getId, Department::getName));
             //部门负责人
-            List<String> commanderIds = extDepartmentCommanderMapper.selectCommander(departmentId,
-                    list.getFirst().getOrganizationId());
+            List<String> commanderIds = departmentId == null
+                    ? List.of()
+                    : extDepartmentCommanderMapper.selectCommander(departmentId, orgId);
 
             //todo 暂无用户组 后续需求再处理
             list.forEach(user -> {
@@ -241,7 +255,7 @@ public class OrganizationUserService {
      * 添加员工
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.ADD, operator = "{#operatorId}")
-    public void addUser(UserAddRequest request, String organizationId, String operatorId) {
+    public UserResponse addUser(UserAddRequest request, String organizationId, String operatorId) {
         String id = IDGenerator.nextStr();
         //邮箱和手机号唯一性校验
         checkEmailAndPhone(request.getEmail(), request.getPhone(), id);
@@ -249,7 +263,7 @@ public class OrganizationUserService {
         User user = addUserBaseData(request, operatorId, id);
         user.setLastOrganizationId(organizationId);
         //add user info
-        addUserInfo(request, organizationId, operatorId, user.getId());
+        String organizationUserId = addUserInfo(request, organizationId, operatorId, user.getId());
         //add user role
         addUserRole(request.getRoleIds(), user.getId(), operatorId);
         //todo add user group
@@ -260,6 +274,7 @@ public class OrganizationUserService {
                 .resourceName(user.getName())
                 .resourceId(user.getId())
                 .build());
+        return getUserDetail(organizationUserId);
     }
 
     /**
@@ -286,7 +301,7 @@ public class OrganizationUserService {
     /**
      * 添加用戶信息
      */
-    private void addUserInfo(UserAddRequest request, String organizationId, String operatorId, String userId) {
+    private String addUserInfo(UserAddRequest request, String organizationId, String operatorId, String userId) {
         OrganizationUser orgUser = new OrganizationUser();
         BeanUtils.copyBean(orgUser, request);
         orgUser.setId(IDGenerator.nextStr());
@@ -298,6 +313,7 @@ public class OrganizationUserService {
         orgUser.setUpdateUser(operatorId);
         orgUser.setOnboardingDate(request.getOnboardingDate());
         organizationUserMapper.insert(orgUser);
+        return orgUser.getId();
     }
 
     /**
@@ -791,12 +807,14 @@ public class OrganizationUserService {
      * 获取系统用户options
      *
      * @param orgId 组织ID
+     * @param includeDisabled 是否包含已禁用用户
+     * @param keyword 员工姓名关键词
      * @return 用户选项列表
      */
-    public List<EnableOptionDTO> getUserOptions(String orgId, Boolean includeDisabled) {
+    public List<EnableOptionDTO> getUserOptions(String orgId, Boolean includeDisabled, String keyword) {
         List<String> allDpIds = getSortDepartmentIds(orgId);
         String defaultOrder = CollectionUtils.isEmpty(allDpIds) ? StringUtils.EMPTY : buildOrderByFieldClause(allDpIds);
-        return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder, includeDisabled);
+        return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder, includeDisabled, StringUtils.trimToNull(keyword));
     }
 
     /**

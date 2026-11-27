@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -74,8 +75,22 @@ public class OrganizationUserControllerTests extends BaseTest {
         UserPageRequest request = new UserPageRequest();
         request.setCurrent(1);
         request.setPageSize(10);
+        request.setKeyword("用户2");
+        this.requestPost(USER_LIST, request)
+                .andExpect(jsonPath("$.data.total").value(1))
+                .andExpect(jsonPath("$.data.list[0].id").value("u_2"))
+                .andExpect(jsonPath("$.data.list[0].organizationId").value(DEFAULT_ORGANIZATION_ID));
+
+        request.setDepartmentIds(List.of());
+        this.requestPost(USER_LIST, request)
+                .andExpect(jsonPath("$.data.total").value(1))
+                .andExpect(jsonPath("$.data.list[0].id").value("u_2"));
+
         request.setDepartmentIds(List.of("8"));
-        this.requestPost(USER_LIST, request).andExpect(status().isOk());
+        this.requestPost(USER_LIST, request).andExpect(jsonPath("$.data.total").value(0));
+
+        request.setDepartmentIds(List.of("invalid"));
+        this.requestPost(USER_LIST, request).andExpect(jsonPath("$.data.total").value(0));
     }
 
     @Test
@@ -87,9 +102,16 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setGender(true);
         request.setEnable(true);
         request.setEmail("1@Cordys.com");
-        request.setDepartmentId("1");
+        request.setDepartmentId("9");
         request.setRoleIds(List.of("1", "2"));
-        this.requestPost(USER_ADD, request).andExpect(status().isOk());
+        this.requestPost(USER_ADD, request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").isNotEmpty())
+                .andExpect(jsonPath("$.data.userId").isNotEmpty())
+                .andExpect(jsonPath("$.data.userName").value(request.getName()))
+                .andExpect(jsonPath("$.data.departmentId").value(request.getDepartmentId()))
+                .andExpect(jsonPath("$.data.enable").value(true))
+                .andExpect(jsonPath("$.data.password").doesNotExist());
 
         //格式错误
         request.setEmail("1234");
@@ -207,7 +229,13 @@ public class OrganizationUserControllerTests extends BaseTest {
     @Test
     @Order(13)
     public void testUserOption() throws Exception {
-        this.requestGet(USER_OPTION).andExpect(status().isOk());
+        this.requestGet(USER_OPTION)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.id == '2')]").isNotEmpty());
+        this.mockMvc.perform(getRequestBuilder(USER_OPTION).param("keyword", " 户2 "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].id").value("2"));
     }
 
     @Test

@@ -68,7 +68,7 @@
                sd.`name` departmentName
         FROM sys_user su
                  INNER JOIN sys_organization_user sou ON su.id = sou.user_id
-                 INNER JOIN sys_department sd on sd.id = sou.department_id
+                 LEFT JOIN sys_department sd on sd.id = sou.department_id and sd.organization_id = sou.organization_id
         WHERE sou.id = #{id}
     </select>
 
@@ -188,6 +188,9 @@
         WHERE sou.organization_id = #{orgId}
         <if test="!includeDisabled">
             and sou.enable = true
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and su.name like concat('%', #{keyword}, '%')
         </if>
         ORDER BY sou.enable DESC,
         <if test="defaultOrder != null and defaultOrder != ''">

@@ -50,7 +50,8 @@ public interface ExtUserMapper {
     int countByPhone(@Param("phone") String phone, @Param("id") String id);
 
     List<EnableOptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId,
-            @Param("defaultOrder") String defaultOrder, @Param("includeDisabled") Boolean includeDisabled);
+            @Param("defaultOrder") String defaultOrder, @Param("includeDisabled") Boolean includeDisabled,
+            @Param("keyword") String keyword);
 
     List<UserDTO> selectNameAndEmail(@Param("orgId") String orgId);
 

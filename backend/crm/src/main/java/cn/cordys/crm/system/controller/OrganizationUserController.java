@@ -61,15 +61,17 @@ public class OrganizationUserController {
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_READ)
     public Pager<List<UserPageResponse>> list(@Validated @RequestBody UserPageRequest request) {
         ConditionFilterUtils.parseCondition(request);
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, organizationUserService.list(request));
+        String orgId = OrganizationContext.getOrganizationId();
+        try (Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize())) {
+            return PageUtils.setPageInfo(page, organizationUserService.list(request, orgId));
+        }
     }
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_ADD)
     @Operation(summary = "用户(员工)-添加员工")
-    public void addUser(@Validated @RequestBody UserAddRequest request) {
-        organizationUserService.addUser(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public UserResponse addUser(@Validated @RequestBody UserAddRequest request) {
+        return organizationUserService.addUser(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @GetMapping("/detail/{id}")
@@ -149,8 +151,9 @@ public class OrganizationUserController {
     @GetMapping(value = "/option")
     @Operation(summary = "获取用户下拉option")
     public List<EnableOptionDTO> getUserList(
-            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
-        return organizationUserService.getUserOptions(OrganizationContext.getOrganizationId(), includeDisabled);
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled,
+            @RequestParam(required = false) String keyword) {
+        return organizationUserService.getUserOptions(OrganizationContext.getOrganizationId(), includeDisabled, keyword);
     }
 
     @GetMapping(value = "/admin/option")
