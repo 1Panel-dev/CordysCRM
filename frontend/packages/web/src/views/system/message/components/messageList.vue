@@ -716,20 +716,12 @@
 
   function getScheduleReminderTooltip(row: SceneRow) {
     const schedule = row.config?.scheduleTypeConfig;
-    const dateFieldId = schedule?.fieldId ?? 'estimatedTime';
+    const dateFieldId = schedule?.fieldId;
     const formType = row.formType || row.sceneCategoryType;
     const fieldsKey = `${row.group}:${formType}`;
     const configuredFieldName = tableTriggerFields.value
       .get(fieldsKey)
       ?.find((field) => field.id === dateFieldId || field.businessKey === dateFieldId)?.name;
-    const dateFieldLabelMap: Record<string, string> = {
-      estimatedTime: t('system.message.settings.dateField.expiration'),
-      estimated_time: t('system.message.settings.dateField.expiration'),
-      untilTime: t('system.message.settings.dateField.expiration'),
-      until_time: t('system.message.settings.dateField.expiration'),
-      nextFollowUp: t('system.message.settings.dateField.nextFollowUp'),
-      createdAt: t('system.message.settings.dateField.createdAt'),
-    };
     const frequencyMap: Record<string, string> = {
       ONLY_ONE: t('system.message.settings.reminderFrequency.once'),
       EVERY_DAY: t('system.message.settings.reminderFrequency.daily'),
@@ -737,7 +729,7 @@
     const time = schedule?.time?.slice(0, 5) || '--:--';
 
     return t('system.message.settings.reminderScheduleTooltip', {
-      dateField: dateFieldLabelMap[dateFieldId] ?? configuredFieldName ?? dateFieldId,
+      dateField: configuredFieldName ?? dateFieldId,
       days: Number(schedule?.day ?? 0),
       dayUnit: t('system.message.settings.reminderUnit.day'),
       time,
@@ -992,9 +984,9 @@
   function getCustomActionOptions(templateId: string): SceneActionOption[] {
     const suffix = templateId ? `_${templateId}` : '';
     return [
-      { value: `create${suffix}`, labelKey: 'create' },
-      { value: `update${suffix}`, labelKey: 'update' },
-      { value: `delete${suffix}`, labelKey: 'delete' },
+      { value: `create${suffix}`, labelKey: 'createCategory' },
+      { value: `update${suffix}`, labelKey: 'updateCategory' },
+      { value: `delete${suffix}`, labelKey: 'deleteCategory' },
     ];
   }
 
@@ -1234,9 +1226,9 @@
         .filter(
           (field) =>
             [FieldTypeEnum.DATE_TIME, FieldTypeEnum.TIME_RANGE_PICKER].includes(field.type) &&
-            !expirationDateFieldAliases.includes(field.id)
+            !expirationDateFieldAliases.includes(field.businessKey || field.id)
         )
-        .map((field) => ({ label: field.name, value: field.id })),
+        .map((field) => ({ label: field.name, value: field.businessKey || field.id })),
     ];
     const isExpirationField = expirationDateFieldAliases.includes(editor.scheduleFieldId);
     if (
@@ -1833,7 +1825,7 @@
     ];
   }
 
-  async function refreshAfterMutation() {
+  async function refreshCategoryCounts() {
     const [systemTypes, customTypes] = await Promise.all([
       getMessageTaskSystemTypes(),
       getMessageTaskCustomFormTypes(),
@@ -1844,6 +1836,10 @@
       label: item.name || item.taskType,
       count: Number(item.count ?? 0),
     }));
+  }
+
+  async function refreshAfterMutation() {
+    await refreshCategoryCounts();
     if (!categoryList.value.some((item) => item.key === activeCategory.value)) {
       activeCategory.value = categoryList.value[0]?.key ?? '';
     }
@@ -1905,6 +1901,7 @@
             try {
               await enableMessageTask(row.id);
               row.enable = enabled;
+              await refreshCategoryCounts();
             } catch {
               Message.error(t('common.saveFailed'));
             } finally {
@@ -2094,16 +2091,7 @@
 
   async function loadTaskCategories() {
     try {
-      const [systemTypes, customTypes] = await Promise.all([
-        getMessageTaskSystemTypes(),
-        getMessageTaskCustomFormTypes(),
-      ]);
-      systemCategories.value = mapSystemCategories(systemTypes ?? []);
-      customFormCategories.value = (customTypes ?? []).map((item: MessageTaskCountDTO) => ({
-        key: item.taskType,
-        label: item.name || item.taskType,
-        count: Number(item.count ?? 0),
-      }));
+      await refreshCategoryCounts();
       const categories = categoryList.value;
       if (!categories.some((item) => item.key === activeCategory.value)) {
         activeCategory.value = categories[0]?.key ?? '';
