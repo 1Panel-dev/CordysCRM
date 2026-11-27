@@ -776,7 +776,7 @@ public class CommonNoticeSendService {
         }
         Map<String, Object> params = new HashMap<>();
         params.put("fieldId", label);
-        params.put("fieldValue", display);
+        params.put("value", display);
         return params;
     }
 

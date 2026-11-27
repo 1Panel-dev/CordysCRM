@@ -78,7 +78,6 @@ import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
-import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
@@ -94,6 +93,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -819,10 +819,33 @@ public class ContractService implements ApprovalResourceHandler {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> newFields = contractFieldService
                 .getModuleFieldValuesByResourceId(request.getId());
-        // 消息通知: 阶段变更按编辑发送, old 取改前实体与改前字段值, new 取改后实体与改后字段值
-        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CONTRACT,
-                NotificationConstants.Event.CONTRACT_UPDATE, userId, orgId, true, false,
-                oldContract, originCustomerFields, contract, newFields);
+        // 合同阶段非表单字段, 无法由字段值解析, 单独注入模板占位符: stage=合同阶段, stageName=阶段显示名
+        Map<String, Object> stageNameMap = extContractStageConfigMapper.getStageConfigList(orgId).stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        Map<String, Object> oldValues = new HashMap<>(3);
+        oldValues.put("stage", oldContract.getStage());
+        oldValues.put("name", contract.getName());
+        oldValues.put("owner", contract.getOwner());
+
+        Map<String, Object> newValue = new HashMap<>(3);
+        newValue.put("stage", contract.getStage());
+        newValue.put("name", contract.getName());
+        newValue.put("owner", contract.getOwner());
+
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.CONTRACT)
+                .action(NotificationConstants.Event.CONTRACT_UPDATE)
+                .operatorId(userId)
+                .organizationId(orgId)
+                .resourceId(contract.getId())
+                .resourceName(contract.getName())
+                .paramMap(Map.of("stage", Translator.get("log.contractStage"), "stageName",
+                        stageNameMap.getOrDefault(request.getStage(), request.getStage())))
+                .oldValues(oldValues)
+                .newValues(newValue)
+                .excludeSelf(true)
+                .eventOnly(false)
+                .build());
 
         baseService.handleUpdateLogWithSubTable(oldContract, contract, originCustomerFields, newFields,
                 request.getId(), contract.getName(), Translator.get("products_info"), getFormConfig(orgId));
@@ -925,7 +948,8 @@ public class ContractService implements ApprovalResourceHandler {
         if (contract == null) {
             return null;
         }
-        List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceIdStrict(resourceId);
+        List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceIdStrict(
+                resourceId);
         contractFieldService.normalizeAttachmentReferences(orgId, resourceId, contractFields,
                 getAttachmentOriginFields(resourceId, contractFields));
         ContractApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new ContractApprovalSnapshotRequest(),
@@ -950,7 +974,8 @@ public class ContractService implements ApprovalResourceHandler {
         List<BaseModuleFieldValue> snapshotFields = request.getModuleFields() == null ? List.of()
                 : request.getModuleFields();
         contractFieldService.normalizeAttachmentReferences(orgId, resourceId, snapshotFields,
-                snapshotFields.stream().map(field -> new BaseModuleFieldValue(field.getFieldId(), field.getFieldValue()))
+                snapshotFields.stream()
+                        .map(field -> new BaseModuleFieldValue(field.getFieldId(), field.getFieldValue()))
                         .toList());
         CommonBeanFactory.getBean(ContractService.class).update(request, userId, orgId);
         // 阶段变更不走编辑接口, 需按快照单独回退
@@ -986,7 +1011,7 @@ public class ContractService implements ApprovalResourceHandler {
      *
      * @param postFieldParam 参数
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         List<BaseField> fields = formConfig.getFields();
@@ -1613,135 +1638,139 @@ public class ContractService implements ApprovalResourceHandler {
             List<LogDTO> logs = new ArrayList<>();
             ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
             switch (importType) {
-            case ADD -> {
-                String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(FormKey.CONTRACT.getKey(),
-                        currentOrg);
-                Optional<BaseField> serialOptional = fields.stream().filter(
-                        field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_NO.getKey()))
-                        .findAny();
-                //获取当前表单中公式类型输入字段公式包含合同编号的所有字段（排除显示字段中的字段）
-                List<BaseField> formulaFields = serialOptional
-                        .map(serial -> serialNumberFormulaService.serialNumberFormulaFields(fields, serial))
-                        .orElseGet(List::of);
-                for (int i = 0; i < contracts.size(); i++) {
-                    Contract contract = contracts.get(i);
-                    if (serialOptional.isPresent()) {
-                        String serialNo = serialNumGenerator.generateByRules(
-                                serialNumberRules(contract, (SerialNumberField) serialOptional.get()),
-                                currentOrg, FormKey.CONTRACT.getKey());
-                        contract.setNumber(serialNo);
-                        fillSerialNumberFormulas(contract, serialOptional.get(), formulaFields, contractFields,
-                                serialNo);
+                case ADD -> {
+                    String initialApprovalStatus = approvalFlowService.getInitialApprovalStatus(
+                            FormKey.CONTRACT.getKey(),
+                            currentOrg);
+                    Optional<BaseField> serialOptional = fields.stream().filter(
+                                    field -> Strings.CI.equals(field.getInternalKey(),
+                                            BusinessModuleField.CONTRACT_NO.getKey()))
+                            .findAny();
+                    //获取当前表单中公式类型输入字段公式包含合同编号的所有字段（排除显示字段中的字段）
+                    List<BaseField> formulaFields = serialOptional
+                            .map(serial -> serialNumberFormulaService.serialNumberFormulaFields(fields, serial))
+                            .orElseGet(List::of);
+                    for (int i = 0; i < contracts.size(); i++) {
+                        Contract contract = contracts.get(i);
+                        if (serialOptional.isPresent()) {
+                            String serialNo = serialNumGenerator.generateByRules(
+                                    serialNumberRules(contract, (SerialNumberField) serialOptional.get()),
+                                    currentOrg, FormKey.CONTRACT.getKey());
+                            contract.setNumber(serialNo);
+                            fillSerialNumberFormulas(contract, serialOptional.get(), formulaFields, contractFields,
+                                    serialNo);
+                        }
+                        contract.setApprovalStatus(initialApprovalStatus);
+                        contract.setStage(stageConfigList.getFirst().getId());
+                        contract.setPos(nextPos + i);
+                        logs.add(new LogDTO(currentOrg, contract.getId(), currentUser, LogType.ADD,
+                                LogModule.CONTRACT_INDEX, contract.getName()));
                     }
-                    contract.setApprovalStatus(initialApprovalStatus);
-                    contract.setStage(stageConfigList.getFirst().getId());
-                    contract.setPos(nextPos + i);
-                    logs.add(new LogDTO(currentOrg, contract.getId(), currentUser, LogType.ADD,
-                            LogModule.CONTRACT_INDEX, contract.getName()));
+                    contractMapper.batchInsert(contracts);
+                    contractFieldMapper.batchInsert(
+                            contractFields.stream().map(field -> BeanUtils.copyBean(new ContractField(), field))
+                                    .toList());
+                    contractFieldBlobMapper.batchInsert(contractFieldBlobs.stream()
+                            .map(field -> BeanUtils.copyBean(new ContractFieldBlob(), field)).toList());
+                    // record logs
+                    logService.batchAdd(logs);
                 }
-                contractMapper.batchInsert(contracts);
-                contractFieldMapper.batchInsert(
-                        contractFields.stream().map(field -> BeanUtils.copyBean(new ContractField(), field)).toList());
-                contractFieldBlobMapper.batchInsert(contractFieldBlobs.stream()
-                        .map(field -> BeanUtils.copyBean(new ContractFieldBlob(), field)).toList());
-                // record logs
-                logService.batchAdd(logs);
-            }
-            case UPDATE -> {
-                List<String> ids = contracts.stream().map(Contract::getId).toList();
-                if (CollectionUtils.isEmpty(ids)) {
-                    break;
-                }
-                //原数据
-                List<Contract> originList = contractMapper.selectByIds(ids);
-                if (CollectionUtils.isEmpty(originList)) {
-                    break;
-                }
-                Map<String, Contract> originMaps = originList.stream()
-                        .collect(Collectors.toMap(Contract::getId, Function.identity()));
-                Map<String, List<BaseModuleFieldValue>> originFieldValueMap = contractFieldService
-                        .getResourceFieldMap(ids, true);
+                case UPDATE -> {
+                    List<String> ids = contracts.stream().map(Contract::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
+                    }
+                    //原数据
+                    List<Contract> originList = contractMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originList)) {
+                        break;
+                    }
+                    Map<String, Contract> originMaps = originList.stream()
+                            .collect(Collectors.toMap(Contract::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = contractFieldService
+                            .getResourceFieldMap(ids, true);
 
-                List<ContractField> insertField = new ArrayList<>();
-                List<ContractFieldBlob> insertFieldBlob = new ArrayList<>();
-                SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-                ExtContractMapper batchMapper = sqlSession.getMapper(ExtContractMapper.class);
-                CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                    List<ContractField> insertField = new ArrayList<>();
+                    List<ContractFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtContractMapper batchMapper = sqlSession.getMapper(ExtContractMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
 
-                if (CollectionUtils.isNotEmpty(contracts)) {
-                    contracts.forEach(contract -> {
-                        batchMapper.updateContract(contract);
-                    });
-                }
+                    if (CollectionUtils.isNotEmpty(contracts)) {
+                        contracts.forEach(contract -> {
+                            batchMapper.updateContract(contract);
+                        });
+                    }
 
-                if (CollectionUtils.isNotEmpty(contractFields)) {
-                    List<ContractField> fieldList = contractFieldMapper
-                            .selectByIds(contractFields.stream().map(BaseResourceSubField::getId).toList());
-                    Map<String, ContractField> fieldMap = fieldList.stream()
-                            .collect(Collectors.toMap(ContractField::getId, Function.identity()));
-                    contractFields.forEach(contractField -> {
-                        if (fieldMap.containsKey(contractField.getId())) {
-                            commonMapper.updateCustomerField("contract_field", contractField);
-                        } else {
-                            insertField.add(BeanUtils.copyBean(new ContractField(), contractField));
+                    if (CollectionUtils.isNotEmpty(contractFields)) {
+                        List<ContractField> fieldList = contractFieldMapper
+                                .selectByIds(contractFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractField> fieldMap = fieldList.stream()
+                                .collect(Collectors.toMap(ContractField::getId, Function.identity()));
+                        contractFields.forEach(contractField -> {
+                            if (fieldMap.containsKey(contractField.getId())) {
+                                commonMapper.updateCustomerField("contract_field", contractField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new ContractField(), contractField));
+                            }
+                        });
+                    }
+
+                    if (CollectionUtils.isNotEmpty(contractFieldBlobs)) {
+                        List<ContractFieldBlob> blobList = contractFieldBlobMapper
+                                .selectByIds(contractFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractFieldBlob> blobMap = blobList.stream()
+                                .collect(Collectors.toMap(ContractFieldBlob::getId, Function.identity()));
+                        contractFieldBlobs.forEach(contractFieldBlob -> {
+                            if (blobMap.containsKey(contractFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("contract_field_blob", contractFieldBlob);
+                            } else {
+                                insertFieldBlob.add(BeanUtils.copyBean(new ContractFieldBlob(), contractFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        contractFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        contractFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, Contract> modifiedMaps = contractMapper.selectByIds(ids).stream()
+                            .collect(Collectors.toMap(Contract::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = contractFieldService
+                            .getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        Contract originDate = originMaps.get(id);
+                        Contract modifiedDate = modifiedMaps.get(id);
+                        baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id),
+                                modifiedFieldValueMap.get(id), id, modifiedDate.getName(),
+                                Translator.get("products_info"),
+                                moduleFormConfigDTO);
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
+                                    LogModule.CONTRACT_INDEX, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
                         }
                     });
+                    logService.batchAdd(logs);
+                    //删除快照
+                    LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.in(ContractSnapshot::getContractId, ids);
+                    snapshotBaseMapper.deleteByLambda(wrapper);
                 }
-
-                if (CollectionUtils.isNotEmpty(contractFieldBlobs)) {
-                    List<ContractFieldBlob> blobList = contractFieldBlobMapper
-                            .selectByIds(contractFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
-                    Map<String, ContractFieldBlob> blobMap = blobList.stream()
-                            .collect(Collectors.toMap(ContractFieldBlob::getId, Function.identity()));
-                    contractFieldBlobs.forEach(contractFieldBlob -> {
-                        if (blobMap.containsKey(contractFieldBlob.getId())) {
-                            commonMapper.updateCustomerField("contract_field_blob", contractFieldBlob);
-                        } else {
-                            insertFieldBlob.add(BeanUtils.copyBean(new ContractFieldBlob(), contractFieldBlob));
-                        }
-                    });
-                }
-
-                sqlSession.flushStatements();
-                SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-
-                if (CollectionUtils.isNotEmpty(insertField)) {
-                    contractFieldMapper.batchInsert(insertField);
-                }
-                if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
-                    contractFieldBlobMapper.batchInsert(insertFieldBlob);
-                }
-
-                SqlSession currentSession = SqlSessionUtils.getSqlSession(sqlSessionFactory);
-                currentSession.clearCache();
-
-                Map<String, Contract> modifiedMaps = contractMapper.selectByIds(ids).stream()
-                        .collect(Collectors.toMap(Contract::getId, Function.identity()));
-                Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = contractFieldService
-                        .getResourceFieldMap(ids, true);
-
-                ids.forEach(id -> {
-                    Contract originDate = originMaps.get(id);
-                    Contract modifiedDate = modifiedMaps.get(id);
-                    baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id),
-                            modifiedFieldValueMap.get(id), id, modifiedDate.getName(), Translator.get("products_info"),
-                            moduleFormConfigDTO);
-                    LogContextInfo contextInfo = OperationLogContext.getContext();
-                    if (contextInfo != null) {
-                        LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE,
-                                LogModule.CONTRACT_INDEX, modifiedDate.getName());
-                        logDTO.setOriginalValue(contextInfo.getOriginalValue());
-                        logDTO.setModifiedValue(contextInfo.getModifiedValue());
-                        logs.add(logDTO);
-                        OperationLogContext.clear();
-                    }
-                });
-                logService.batchAdd(logs);
-                //删除快照
-                LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
-                wrapper.in(ContractSnapshot::getContractId, ids);
-                snapshotBaseMapper.deleteByLambda(wrapper);
-            }
             }
 
             List<ContractGetResponse> contractGetResponses = batchGetSimpleByIds(
