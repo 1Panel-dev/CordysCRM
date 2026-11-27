@@ -139,7 +139,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
-    :readonly="(props.readonly && !props.independentDetail) || isCollaborationView"
+    :readonly="props.readonly && !props.independentDetail"
     @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
@@ -181,7 +181,6 @@
   import { DataTableRowKey, NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -272,7 +271,6 @@
 
   const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
-  const isCollaborationView = computed(() => activeTab.value === OpportunitySearchTypeEnum.COLLABORATION_VISIBLE);
   const keyword = ref('');
   const tableRefreshId = ref(0);
   const billboardTotalCount = ref(0);
@@ -295,18 +293,6 @@
   const showExportModal = ref(false);
   const isExportAll = ref(false);
   const actionConfig = computed(() => {
-    if (isCollaborationView.value) {
-      return {
-        baseAction: [
-          {
-            label: t('common.exportChecked'),
-            key: 'exportChecked',
-            permission: ['ORDER:EXPORT'],
-          },
-        ],
-      };
-    }
-
     return {
       baseAction: props.readonly
         ? []
@@ -614,8 +600,6 @@
       width: currentLocale.value === 'en-US' ? 180 : 170,
       fixed: 'right',
       render: (row: OrderItem) => {
-        if (isCollaborationView.value) return '-';
-
         const operation = resolveRowOperation(row);
         return operation.groupList.length
           ? h(CrmOperationButton, {

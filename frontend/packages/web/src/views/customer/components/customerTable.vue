@@ -141,7 +141,6 @@
   import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
-  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
@@ -279,12 +278,7 @@
   const tableRemoveRefreshId = ref('');
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferLoading = ref(false);
-  const isCollaborationView = computed(() => activeTab.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION);
-  const tableActionConfig = computed(() => {
-    if (props.readonly) return undefined;
-    if (isCollaborationView.value) return { baseAction: [actionConfig.baseAction[0]] };
-    return actionConfig;
-  });
+  const tableActionConfig = computed(() => (props.readonly ? undefined : actionConfig));
   const transferForm = ref<any>({
     owner: null,
   });
@@ -298,36 +292,34 @@
       },
     };
 
-    if (!isCollaborationView.value || row.collaborationType === 'JOINT_FOLLOW') {
-      actions.edit = {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      };
-      actions.transfer = {
-        label: t('common.transfer'),
-        key: 'transfer',
-        popConfirmProps: {
-          loading: transferLoading.value,
-          title: t('common.transfer'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary' as CrmPopConfirmIconType,
-        },
-        popSlotName: 'transferPopTitle',
-        popSlotContent: 'transferPopContent',
-        permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
-      };
-      actions.moveToOpenSea = {
-        label: t('customer.moveToOpenSea'),
-        key: 'moveToOpenSea',
-        permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
-      };
-      actions.delete = {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CUSTOMER_MANAGEMENT:DELETE'],
-      };
-    }
+    actions.edit = {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+    };
+    actions.transfer = {
+      label: t('common.transfer'),
+      key: 'transfer',
+      popConfirmProps: {
+        loading: transferLoading.value,
+        title: t('common.transfer'),
+        positiveText: t('common.confirm'),
+        iconType: 'primary' as CrmPopConfirmIconType,
+      },
+      popSlotName: 'transferPopTitle',
+      popSlotContent: 'transferPopContent',
+      permission: ['CUSTOMER_MANAGEMENT:TRANSFER'],
+    };
+    actions.moveToOpenSea = {
+      label: t('customer.moveToOpenSea'),
+      key: 'moveToOpenSea',
+      permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
+    };
+    actions.delete = {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+    };
 
     return actions;
   };
@@ -344,8 +336,6 @@
   } = useApprovalOperation<Record<string, any>>({
     formType: FormDesignKeyEnum.CUSTOMER,
     dataActionMap: customerDataActionMap,
-    specialActionFilter: (row, actionKeys) =>
-      row.collaborationType === 'COLLABORATION' ? actionKeys.filter((key) => key === 'followUp') : actionKeys,
   });
   const batchEditApprovalTip = computed(() =>
     getApprovalActionTip(['CUSTOMER_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')
@@ -596,9 +586,6 @@
     detailTabPageFormId: props.detailTabPageFormId,
     detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
-    disabledSelection: (row: any) => {
-      return !isCollaborationView.value && ['READ_ONLY', 'COLLABORATION'].includes(row.collaborationType);
-    },
     operationColumn: props.readonly
       ? undefined
       : {
@@ -606,11 +593,7 @@
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
           render: (row: any) => {
-            if (
-              ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||
-              (isCollaborationView.value && row.collaborationType !== 'JOINT_FOLLOW') ||
-              row.collaborationType === 'READ_ONLY'
-            ) {
+            if (['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value)) {
               return '-';
             }
 

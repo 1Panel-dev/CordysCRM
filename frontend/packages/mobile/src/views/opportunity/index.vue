@@ -131,7 +131,6 @@
     },
   ];
   const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.BUSINESS);
-  const isCollaborationVisible = computed(() => activeFilter.value === OpportunitySearchTypeEnum.COLLABORATION_VISIBLE);
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.BUSINESS,
   });
@@ -168,8 +167,6 @@
 
   const actions = computed(() => {
     return (row: OpportunityItem) => {
-      if (isCollaborationVisible.value) return [];
-
       const transferAction = [
         {
           key: 'transfer',
@@ -302,7 +299,6 @@
       query: {
         id,
         name,
-        collaborationVisible: isCollaborationVisible.value ? 'Y' : undefined,
       },
     });
   }

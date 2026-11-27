@@ -142,7 +142,7 @@
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
     :detail="activeOpportunity"
-    :readonly="props.readonly || isCollaborationView"
+    :readonly="props.readonly"
     @approval-success="() => initApprovalPermission(true)"
     @refresh="() => searchData(undefined, activeOpportunity?.id)"
     @remove="removeItemFromList(activeOpportunity?.id || '')"
@@ -297,7 +297,6 @@
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
-  const isCollaborationView = computed(() => activeTab.value === OpportunitySearchTypeEnum.COLLABORATION_VISIBLE);
   const keyword = ref('');
   const tableRefreshId = ref(0);
   const billboardTotalCount = ref(0);
@@ -400,7 +399,7 @@
   });
 
   const actionConfig = computed<BatchActionConfig>(() => {
-    if (props.readonly || isCollaborationView.value) {
+    if (props.readonly) {
       return {
         baseAction: [
           {
@@ -719,8 +718,6 @@
           width: currentLocale.value === 'en-US' ? 250 : 200,
           fixed: 'right',
           render: (row: OpportunityItem) => {
-            if (isCollaborationView.value) return '-';
-
             const operation = resolveRowOperation(row);
             return operation.groupList.length
               ? h(
