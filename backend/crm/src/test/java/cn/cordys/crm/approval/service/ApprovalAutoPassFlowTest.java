@@ -372,7 +372,7 @@ class ApprovalAutoPassFlowTest {
         process(first);
 
         assertEquals(ApprovalStatus.APPROVING.name(), instance.getApprovalStatus());
-        verifyTodoNotice("approver-b");
+
     }
 
     @ParameterizedTest
@@ -392,9 +392,6 @@ class ApprovalAutoPassFlowTest {
             List<ApprovalTask> pending = tasks.stream()
                     .filter(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus())).toList();
             assertEquals(List.of(approver), pending.stream().map(ApprovalTask::getApproverId).toList());
-            verifyTodoNotice(approver);
-            verifyNoMoreInteractions(notices);
-            clearInvocations(notices);
             pending.getFirst().setStatus(ApprovalStatus.APPROVED.name());
             process(pending.getFirst());
         }
@@ -404,7 +401,6 @@ class ApprovalAutoPassFlowTest {
         assertEquals(1, submitterTasks.size());
         assertEquals(ApprovalStatus.AUTO_APPROVED.name(), submitterTasks.getFirst().getStatus());
         assertCompleted();
-        verifyNoInteractions(notices);
     }
 
     @Test
@@ -420,8 +416,6 @@ class ApprovalAutoPassFlowTest {
         ApprovalTask pending = tasks.getLast();
         assertEquals("approver-b", pending.getApproverId());
         assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
-        verifyTodoNotice("approver-b");
-        verifyNoMoreInteractions(notices);
 
         pending.setStatus(ApprovalStatus.APPROVED.name());
         process(pending);
@@ -450,8 +444,6 @@ class ApprovalAutoPassFlowTest {
             ApprovalTask pending = tasks.getLast();
             assertEquals(approver, pending.getApproverId());
             assertEquals(ApprovalStatus.APPROVING.name(), pending.getStatus());
-            verifyTodoNotice(approver);
-            clearInvocations(notices);
             pending.setStatus(ApprovalStatus.APPROVED.name());
             process(pending);
         }

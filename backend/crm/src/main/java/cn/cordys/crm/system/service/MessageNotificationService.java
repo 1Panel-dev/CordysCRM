@@ -454,7 +454,7 @@ public class MessageNotificationService {
                         updateTaskAndAddConfig(List.of(TemplateEnum.CUSTOMER_CONCAT_ADD_TEXT.name()), eventNameMap,
                                 messageTask, List.of("OWNER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
-                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_ADD),"CUSTOMER_CONTRACT");
+                                buildActionConfigValue(NotificationConstants.Event.CUSTOMER_CONCAT_ADD),"CUSTOMER_CONTACT");
 
                 // -----线索管理----
                 // 新建线索
@@ -547,7 +547,7 @@ public class MessageNotificationService {
                 // 删除报价
                 case NotificationConstants.Event.BUSINESS_QUOTATION_DELETED ->
                         updateTaskAndAddConfig(List.of(TemplateEnum.BUSINESS_QUOTATION_DELETED_TEXT.name()),
-                                eventNameMap, messageTask, List.of("OLD_OWNER"), receiveMethod,
+                                eventNameMap, messageTask, List.of("CREATE_USER"), receiveMethod,
                                 TriggerTypeEnum.ACTION.name(),
                                 buildActionConfigValue(NotificationConstants.Event.BUSINESS_QUOTATION_DELETED),"OPPORTUNITY_QUOTATION");
                 // 报价到期

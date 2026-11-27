@@ -74,6 +74,9 @@
         <if test="request.keyword != null and request.keyword != ''">
             and smt.name like concat('%', #{request.keyword},'%')
         </if>
+        <if test="request.formType != null and request.formType != ''">
+            and smt.form_type = #{request.formType}
+        </if>
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>

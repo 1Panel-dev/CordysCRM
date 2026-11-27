@@ -1813,14 +1813,14 @@ public class ApprovalActionService {
         commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
                 .taskType(module)
                 .action(event)
-                .operatorId(userId)
+                .operatorId(instance.getSubmitterId())
                 .organizationId(orgId)
                 .resourceId(instance.getResourceId())
                 .resourceName(resourceName)
                 .paramMap(Map.of("type", type, "state", state))
                 .oldValues(values)
                 .newValues(values)
-                .excludeSelf(true)
+                .excludeSelf(false)
                 .eventOnly(true)
                 .build());
     }
@@ -1907,7 +1907,7 @@ public class ApprovalActionService {
                 .resourceName(resourceName)
                 .paramMap(paramMap)
                 .approverIds(approvers)
-                .excludeSelf(true)
+                .excludeSelf(false)
                 .eventOnly(true)
                 .build());
     }
