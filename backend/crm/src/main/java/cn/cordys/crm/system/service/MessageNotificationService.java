@@ -259,6 +259,7 @@ public class MessageNotificationService {
                 new LambdaQueryWrapper<MessageTaskConfig>()
                         .eq(MessageTaskConfig::getMessageTaskId, request.getId())).getFirst();
         config.setValue(JSON.toJSONString(request.getConfig()));
+        config.setTriggerType(request.getTriggerType());
         messageTaskConfigMapper.update(config);
 
         MessageTask newTask = messageTaskMapper.selectByPrimaryKey(request.getId());

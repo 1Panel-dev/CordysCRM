@@ -42,7 +42,7 @@
     <select id="getTaskTypeCount" resultType="cn.cordys.crm.system.dto.message.MessageTaskCountDTO">
         select task_type as taskType, count(*) as `count`
         from sys_message_task
-        where type = #{type} and organization_id = #{organizationId}
+        where type = #{type} and organization_id = #{organizationId} and enable = 1
         group by task_type order by task_type desc;
     </select>
 
