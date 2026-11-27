@@ -435,12 +435,15 @@ public class CommonNoticeSendService {
             paramMap.put(NotificationConstants.RelatedUser.OPERATOR, Translator.get("setting"));
             paramMap.put("Language", "zh-CN");
         }
-        if (context.getParamMap() != null) {
-            paramMap.putAll(context.getParamMap());
-        }
+
         if (extraParams != null) {
             paramMap.putAll(extraParams);
         }
+        // 特殊的字段(不是系统字段，也不是自定义字段) 主表内置的字段放在下面覆盖解析值
+        if (context.getParamMap() != null) {
+            paramMap.putAll(context.getParamMap());
+        }
+
         if (StringUtils.isNotBlank(context.getResourceName())) {
             paramMap.putIfAbsent("name", context.getResourceName());
         }
@@ -776,7 +779,7 @@ public class CommonNoticeSendService {
         }
         Map<String, Object> params = new HashMap<>();
         params.put("fieldId", label);
-        params.put("value", display);
+        params.put("fieldValue", display);
         return params;
     }
 

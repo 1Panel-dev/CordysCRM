@@ -19,6 +19,7 @@ import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.RolePermissionDTO;
 import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
@@ -100,6 +101,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -959,9 +961,32 @@ public class OpportunityService implements ApprovalResourceHandler {
                 getFormConfig(orgId));
 
         // 更新商机阶段通知：阶段作为字段参与字段触发条件比较
-        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.OPPORTUNITY,
-                NotificationConstants.Event.BUSINESS_UPDATE, userId, orgId, true, false,
-                oldOpportunity, originCustomerFields, opportunity, newFields);
+        Map<String, Object> stageNameMap = extOpportunityStageConfigMapper.getStageConfigList(orgId).stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        Map<String, Object> oldValues = new HashMap<>(3);
+        oldValues.put("stage", oldOpportunity.getStage());
+        oldValues.put("name", opportunity.getName());
+        oldValues.put("owner", opportunity.getOwner());
+
+        Map<String, Object> newValue = new HashMap<>(3);
+        newValue.put("stage", opportunity.getStage());
+        newValue.put("name", opportunity.getName());
+        newValue.put("owner", opportunity.getOwner());
+
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.OPPORTUNITY)
+                .action(NotificationConstants.Event.BUSINESS_UPDATE)
+                .operatorId(userId)
+                .organizationId(orgId)
+                .resourceId(opportunity.getId())
+                .resourceName(opportunity.getName())
+                .paramMap(Map.of("fieldId", Translator.get("log.stage"), "fieldValue",
+                        stageNameMap.getOrDefault(request.getStage(), request.getStage())))
+                .oldValues(oldValues)
+                .newValues(newValue)
+                .excludeSelf(true)
+                .eventOnly(false)
+                .build());
     }
 
     private void updateField(Opportunity opportunity, List<BaseModuleFieldValue> requestFields, String userId) {
