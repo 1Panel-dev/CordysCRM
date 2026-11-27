@@ -27,6 +27,9 @@ public class CustomerGetResponse {
     @Schema(description = "负责人名称")
     private String ownerName;
 
+    @Schema(description = "负责人头像")
+    private String ownerAvatar;
+
     @Schema(description = "创建人")
     private String createUser;
 

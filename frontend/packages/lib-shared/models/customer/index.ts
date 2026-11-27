@@ -66,6 +66,7 @@ export interface CustomerDetail {
   id: string;
   name: string;
   owner: string;
+  ownerAvatar?: string | null;
   createUser: string;
   updateUser: string;
   createTime: number;
