@@ -236,6 +236,23 @@ public class OrganizationUserControllerTests extends BaseTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(1))
                 .andExpect(jsonPath("$.data[0].id").value("2"));
+        this.mockMvc.perform(getRequestBuilder(USER_OPTION).param("keyword", "223456"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].id").value("2"))
+                .andExpect(jsonPath("$.data[0].phone").doesNotExist());
+        this.mockMvc.perform(getRequestBuilder(USER_OPTION).param("keyword", "__不存在的关键字__"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(0));
+        this.mockMvc.perform(getPermissionRequestBuilder(USER_OPTION).param("keyword", "户2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].id").value("2"));
+        this.mockMvc.perform(getPermissionRequestBuilder(USER_OPTION).param("keyword", "223456"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(0));
     }
 
     @Test

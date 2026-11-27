@@ -190,7 +190,12 @@
             and sou.enable = true
         </if>
         <if test="keyword != null and keyword != ''">
-            and su.name like concat('%', #{keyword}, '%')
+            and (
+                su.name like concat('%', #{keyword}, '%')
+                <if test="canSearchPhone">
+                    or su.phone like concat('%', #{keyword}, '%')
+                </if>
+            )
         </if>
         ORDER BY sou.enable DESC,
         <if test="defaultOrder != null and defaultOrder != ''">
