@@ -37,7 +37,7 @@
             @import-success="() => searchData()"
           />
           <n-button
-            v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:EXPORT'])"
+            v-if="!props.detailTabResourceId && hasAnyPermission(['PRODUCT_MANAGEMENT:EXPORT'])"
             type="primary"
             ghost
             class="n-btn-outline-primary"

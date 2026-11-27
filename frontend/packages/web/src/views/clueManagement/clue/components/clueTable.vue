@@ -35,7 +35,9 @@
         />
         <n-button
           v-if="
-            hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
+            !props.detailTabResourceId &&
+            hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) &&
+            activeTab !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
           "
           type="primary"
           ghost
