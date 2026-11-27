@@ -191,6 +191,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    currentCustomerId?: string;
     readonly?: boolean;
     approvalTaskId?: string;
     commentMentionId?: string;
@@ -478,6 +479,10 @@
   const poolId = ref<string>('');
   const activeCustomerSourceId = ref<string>('');
   function handleOpenCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    if (props.currentCustomerId && params.customerId === props.currentCustomerId) {
+      visible.value = false;
+      return;
+    }
     activeCustomerSourceId.value = params.customerId;
     if (params.inCustomerPool) {
       showCustomerOpenseaOverviewDrawer.value = true;

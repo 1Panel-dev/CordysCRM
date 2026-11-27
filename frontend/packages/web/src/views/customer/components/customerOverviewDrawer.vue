@@ -193,6 +193,7 @@
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             :hide-create="collaborationReadonly"
             hideBoard
+            @open-customer-drawer="handleOpenRelatedCustomerDrawer"
           />
         </div>
         <div v-if="activeTab === 'collaborator'" class="h-full px-[24px] pt-[24px]">
@@ -860,8 +861,12 @@
     emit('deleted');
   }
 
-  function handleOpenCustomerDrawer() {
-    showContractDetailDrawer.value = false;
+  function handleOpenCustomerDrawer(params: { customerId: string }) {
+    if (params.customerId === props.sourceId) {
+      showContractDetailDrawer.value = false;
+      return;
+    }
+    handleOpenRelatedCustomerDrawer(params);
   }
 
   async function initCollaborators() {

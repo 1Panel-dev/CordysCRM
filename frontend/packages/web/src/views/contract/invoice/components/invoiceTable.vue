@@ -409,6 +409,10 @@
   }
 
   function showCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    if (props.customerId && params.customerId === props.customerId) {
+      showDetailDrawer.value = false;
+      return;
+    }
     emit('openCustomerDrawer', {
       customerId: params.customerId,
       inCustomerPool: params.inCustomerPool,

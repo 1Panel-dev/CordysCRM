@@ -139,6 +139,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
+    :current-customer-id="props.isCustomerTab ? props.sourceId : undefined"
     :readonly="props.readonly && !props.independentDetail"
     @approval-success="() => initApprovalPermission(true)"
     @refresh="searchData(undefined, activeSourceId)"
@@ -557,6 +558,10 @@
   }
 
   function showCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    if (props.isCustomerTab && params.customerId === props.sourceId) {
+      showDetailDrawer.value = false;
+      return;
+    }
     emit('openCustomerDrawer', {
       customerId: params.customerId,
       inCustomerPool: params.inCustomerPool,
