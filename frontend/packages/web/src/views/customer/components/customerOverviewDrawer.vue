@@ -207,6 +207,7 @@
         <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
           <ContractTable
             :key="String(detailReadonly)"
+            :customer-id="props.sourceId"
             :parent-resource-id="props.sourceId"
             :parent-form-id="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-query="contractTabStatisticQuery"
@@ -262,6 +263,7 @@
             :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
             :sourceId="props.sourceId"
             isCustomerTab
+            :detail-tab-query="orderTabStatisticQuery"
             :detail-tab-statistic-form-key="FormDesignKeyEnum.CUSTOMER"
             :detail-tab-statistic-query="orderTabStatisticQuery"
             :detail-tab-resource-id="props.sourceId"

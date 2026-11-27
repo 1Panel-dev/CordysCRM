@@ -301,6 +301,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
   import type {
+    CustomFormTemplateId,
     MessageTaskCountDTO,
     MessageTaskPageParams,
     MessageTaskResponse,
@@ -334,10 +335,13 @@
     getClueFormConfig,
     getContractFormConfig,
     getContractStatusConfig,
+    getCustomerContactFormConfig,
+    getCustomerFollowPlanFormConfig,
     getCustomerFollowRecordFormConfig,
     getCustomerFormConfig,
     getCustomFormDetail,
     getFieldDeptTree,
+    getInvoicedFormConfig,
     getMessageTaskCustomFormTypes,
     getMessageTaskPage,
     getMessageTaskSystemTypes,
@@ -345,6 +349,9 @@
     getOptFormConfig,
     getOrderFormConfig,
     getOrderStatusConfig,
+    getPaymentPlanFormConfig,
+    getPaymentRecordFormConfig,
+    getQuotationFormConfig,
     getUserOptions,
     updateMessageTask,
   } from '@/api/modules/index.js';
@@ -507,6 +514,8 @@
     ],
   }));
   const triggerFields = ref<FormCreateField[]>([]);
+  const tableTriggerFields = ref(new Map<string, FormCreateField[]>());
+  const tableTriggerFieldLoads = new Map<string, Promise<FormCreateField[]>>();
 
   function isFollowPlanCategory(categoryType: string) {
     return ['FOLLOW_UP_PLAN', 'FOLLOW_PLAN'].includes(categoryType.toUpperCase());
@@ -533,37 +542,26 @@
     { name: 'custom', tab: t('system.message.settings.customForms') },
   ]);
 
-  const systemCategoryLabelKeyMap: Record<string, string> = {
-    [MessageNotificationSubcategoryEnum.CLUE]: 'lead',
-    [MessageNotificationSubcategoryEnum.CUSTOMER]: 'customer',
-    CUSTOMER_CONTACT: 'contact',
-    CUSTOMER_CONTRACT: 'contact',
-    CUSTOMER_CONCAT: 'contact',
-    [MessageNotificationSubcategoryEnum.OPPORTUNITY]: 'opportunity',
-    BUSINESS: 'opportunity',
-    BUSINESS_QUOTATION: 'quotation',
-    OPPORTUNITY_QUOTATION: 'quotation',
-    QUOTATION: 'quotation',
-    [MessageNotificationSubcategoryEnum.CONTRACT]: 'contract',
-    CONTRACT_PAYMENT_RECORD: 'paymentRecord',
-    CONTRACT_RECORD: 'paymentRecord',
-    CONTRACT_PAYMENT_PLAN: 'paymentPlan',
-    CONTRACT_PAYMENT: 'paymentPlan',
+  type SystemMessageCategoryType = `${MessageNotificationCategoryEnum}` | `${MessageNotificationSubcategoryEnum}`;
+
+  const systemCategoryLabelKeyMap: Partial<Record<SystemMessageCategoryType, string>> = {
+    [MessageNotificationCategoryEnum.CLUE]: 'lead',
+    [MessageNotificationCategoryEnum.CUSTOMER]: 'customer',
+    [MessageNotificationSubcategoryEnum.CUSTOMER_CONTACT]: 'contact',
+    [MessageNotificationCategoryEnum.OPPORTUNITY]: 'opportunity',
+    [MessageNotificationSubcategoryEnum.OPPORTUNITY_QUOTATION]: 'quotation',
+    [MessageNotificationCategoryEnum.CONTRACT]: 'contract',
+    [MessageNotificationSubcategoryEnum.CONTRACT_RECORD]: 'paymentRecord',
+    [MessageNotificationSubcategoryEnum.CONTRACT_PAYMENT]: 'paymentPlan',
     [MessageNotificationSubcategoryEnum.CONTRACT_INVOICE]: 'invoice',
-    [MessageNotificationSubcategoryEnum.ORDER]: 'order',
-    [MessageNotificationSubcategoryEnum.APPROVAL]: 'todo',
+    [MessageNotificationCategoryEnum.ORDER]: 'order',
+    [MessageNotificationCategoryEnum.APPROVAL]: 'todo',
     [MessageNotificationCategoryEnum.FOLLOW_UP]: 'follow',
-    FOLLOW_RECORD: 'followRecord',
     [MessageNotificationSubcategoryEnum.FOLLOW_UP_RECORD]: 'followRecord',
-    FOLLOW_PLAN: 'followPlan',
     [MessageNotificationSubcategoryEnum.FOLLOW_UP_PLAN]: 'followPlan',
   };
   const systemSubcategoryMap: Record<string, string[]> = {
-    customer: [
-      MessageNotificationSubcategoryEnum.CUSTOMER,
-      MessageNotificationSubcategoryEnum.CUSTOMER_CONTRACT,
-      MessageNotificationSubcategoryEnum.CUSTOMER_CONTACT,
-    ],
+    customer: [MessageNotificationSubcategoryEnum.CUSTOMER, MessageNotificationSubcategoryEnum.CUSTOMER_CONTACT],
     opportunity: [
       MessageNotificationSubcategoryEnum.OPPORTUNITY,
       MessageNotificationSubcategoryEnum.OPPORTUNITY_QUOTATION,
@@ -577,22 +575,14 @@
     follow: [MessageNotificationSubcategoryEnum.FOLLOW_UP_RECORD, MessageNotificationSubcategoryEnum.FOLLOW_UP_PLAN],
   };
   const sceneCategoryFilterKey = 'formType';
-  const systemCategoryActionKeyMap: Record<string, string> = {
-    CUSTOMER_CONTACT: 'customer',
-    CUSTOMER_CONTRACT: 'customer',
-    CUSTOMER_CONCAT: 'customer',
-    BUSINESS_QUOTATION: 'opportunity',
-    OPPORTUNITY_QUOTATION: 'opportunity',
-    QUOTATION: 'opportunity',
-    CONTRACT_PAYMENT_RECORD: 'contract',
-    CONTRACT_RECORD: 'contract',
-    CONTRACT_PAYMENT_PLAN: 'contract',
-    CONTRACT_PAYMENT: 'contract',
-    CONTRACT_INVOICE: 'contract',
-    FOLLOW_RECORD: 'follow',
-    FOLLOW_UP_RECORD: 'follow',
-    FOLLOW_PLAN: 'follow',
-    FOLLOW_UP_PLAN: 'follow',
+  const systemCategoryActionKeyMap: Partial<Record<MessageNotificationSubcategoryEnum, string>> = {
+    [MessageNotificationSubcategoryEnum.CUSTOMER_CONTACT]: 'customer',
+    [MessageNotificationSubcategoryEnum.OPPORTUNITY_QUOTATION]: 'opportunity',
+    [MessageNotificationSubcategoryEnum.CONTRACT_RECORD]: 'contract',
+    [MessageNotificationSubcategoryEnum.CONTRACT_PAYMENT]: 'contract',
+    [MessageNotificationSubcategoryEnum.CONTRACT_INVOICE]: 'contract',
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_RECORD]: 'follow',
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_PLAN]: 'follow',
   };
   const systemCategories = ref<SceneCategoryOption[]>([]);
   const customFormCategories = ref<SceneCategoryOption[]>([]);
@@ -622,8 +612,8 @@
   function getCategoryActionKey(taskType: string) {
     const normalizedTaskType = taskType.toUpperCase();
     return (
-      systemCategoryActionKeyMap[normalizedTaskType] ??
-      systemCategoryLabelKeyMap[normalizedTaskType] ??
+      systemCategoryActionKeyMap[normalizedTaskType as MessageNotificationSubcategoryEnum] ??
+      systemCategoryLabelKeyMap[normalizedTaskType as SystemMessageCategoryType] ??
       taskType.toLowerCase()
     );
   }
@@ -633,8 +623,8 @@
     { label: t('system.message.settings.receiver.manager'), value: MessageNotificationReceiverEnum.SUPERVISOR },
     { label: t('system.message.settings.receiver.departmentLead'), value: MessageNotificationReceiverEnum.COMMANDER },
   ]);
-  const customReceiverOptions = computed(() =>
-    triggerFields.value
+  function getCustomReceiverOptions(fields: FormCreateField[]) {
+    return fields
       .filter((field) =>
         [
           FieldTypeEnum.MEMBER,
@@ -643,8 +633,9 @@
           FieldTypeEnum.USER_SELECT,
         ].includes(field.type)
       )
-      .map((field) => ({ label: field.name, value: field.id }))
-  );
+      .map((field) => ({ label: field.name, value: field.id }));
+  }
+  const customReceiverOptions = computed(() => getCustomReceiverOptions(triggerFields.value));
   const scopeOptionGroups = computed(() => [
     {
       key: 'system',
@@ -671,7 +662,7 @@
   function getCategoryLabel(taskType: string) {
     const category = categoryList.value.find((item) => item.key === taskType);
     if (category?.label) return category.label;
-    const key = systemCategoryLabelKeyMap[taskType.toUpperCase()];
+    const key = systemCategoryLabelKeyMap[taskType.toUpperCase() as SystemMessageCategoryType];
     return key ? t(`system.message.settings.category.${key}`) : taskType;
   }
 
@@ -708,7 +699,7 @@
   function mapSystemCategories(items: MessageTaskCountDTO[] = []) {
     return items.map((item) => {
       const taskType = item.taskType.toUpperCase();
-      const categoryKey = systemCategoryLabelKeyMap[taskType];
+      const categoryKey = systemCategoryLabelKeyMap[taskType as SystemMessageCategoryType];
       return {
         key: item.taskType,
         label: categoryKey ? t(`system.message.settings.category.${categoryKey}`) : item.name || item.taskType,
@@ -726,6 +717,11 @@
   function getScheduleReminderTooltip(row: SceneRow) {
     const schedule = row.config?.scheduleTypeConfig;
     const dateFieldId = schedule?.fieldId ?? 'estimatedTime';
+    const formType = row.formType || row.sceneCategoryType;
+    const fieldsKey = `${row.group}:${formType}`;
+    const configuredFieldName = tableTriggerFields.value
+      .get(fieldsKey)
+      ?.find((field) => field.id === dateFieldId || field.businessKey === dateFieldId)?.name;
     const dateFieldLabelMap: Record<string, string> = {
       estimatedTime: t('system.message.settings.dateField.expiration'),
       estimated_time: t('system.message.settings.dateField.expiration'),
@@ -741,7 +737,7 @@
     const time = schedule?.time?.slice(0, 5) || '--:--';
 
     return t('system.message.settings.reminderScheduleTooltip', {
-      dateField: dateFieldLabelMap[dateFieldId] ?? dateFieldId,
+      dateField: dateFieldLabelMap[dateFieldId] ?? configuredFieldName ?? dateFieldId,
       days: Number(schedule?.day ?? 0),
       dayUnit: t('system.message.settings.reminderUnit.day'),
       time,
@@ -958,22 +954,14 @@
     follow: ['FOLLOW_UP_'],
     todo: ['APPROVAL_'],
   };
-  const categorySpecificEventPrefixes: Record<string, string[]> = {
-    CUSTOMER_CONTRACT: ['CUSTOMER_CONCAT_'],
-    CUSTOMER_CONTACT: ['CUSTOMER_CONCAT_'],
-    CUSTOMER_CONCAT: ['CUSTOMER_CONCAT_'],
-    OPPORTUNITY_QUOTATION: ['BUSINESS_QUOTATION_'],
-    BUSINESS_QUOTATION: ['BUSINESS_QUOTATION_'],
-    QUOTATION: ['BUSINESS_QUOTATION_'],
-    CONTRACT_RECORD: ['CONTRACT_RECORD_'],
-    CONTRACT_PAYMENT_RECORD: ['CONTRACT_RECORD_'],
-    CONTRACT_PAYMENT: ['CONTRACT_PAYMENT_'],
-    CONTRACT_PAYMENT_PLAN: ['CONTRACT_PAYMENT_'],
-    CONTRACT_INVOICE: ['INVOICE_'],
-    FOLLOW_UP_RECORD: ['FOLLOW_UP_RECORD_'],
-    FOLLOW_RECORD: ['FOLLOW_UP_RECORD_'],
-    FOLLOW_UP_PLAN: ['FOLLOW_UP_PLAN_'],
-    FOLLOW_PLAN: ['FOLLOW_UP_PLAN_'],
+  const categorySpecificEventPrefixes: Partial<Record<MessageNotificationSubcategoryEnum, string[]>> = {
+    [MessageNotificationSubcategoryEnum.CUSTOMER_CONTACT]: ['CUSTOMER_CONCAT_'],
+    [MessageNotificationSubcategoryEnum.OPPORTUNITY_QUOTATION]: ['BUSINESS_QUOTATION_'],
+    [MessageNotificationSubcategoryEnum.CONTRACT_RECORD]: ['CONTRACT_RECORD_'],
+    [MessageNotificationSubcategoryEnum.CONTRACT_PAYMENT]: ['CONTRACT_PAYMENT_'],
+    [MessageNotificationSubcategoryEnum.CONTRACT_INVOICE]: ['INVOICE_'],
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_RECORD]: ['FOLLOW_UP_RECORD_'],
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_PLAN]: ['FOLLOW_UP_PLAN_'],
   };
   const categoryExcludedEventPrefixes: Record<string, string[]> = {
     CUSTOMER: ['CUSTOMER_CONCAT_'],
@@ -983,7 +971,10 @@
   function isCategoryEvent(event: string, categoryType: string) {
     const normalizedCategory = categoryType.toUpperCase();
     const categoryKey = getCategoryActionKey(categoryType);
-    const prefixes = categorySpecificEventPrefixes[normalizedCategory] ?? categoryEventPrefixes[categoryKey] ?? [];
+    const prefixes =
+      categorySpecificEventPrefixes[normalizedCategory as MessageNotificationSubcategoryEnum] ??
+      categoryEventPrefixes[categoryKey] ??
+      [];
     const excludedPrefixes = categoryExcludedEventPrefixes[normalizedCategory] ?? [];
     return (
       prefixes.some((prefix) => event.startsWith(prefix)) &&
@@ -1126,6 +1117,8 @@
             const dataSourceProps = [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)
               ? { dataSourceType: field.dataSourceType, maxTagCount: 'responsive' as const }
               : undefined;
+            const treeSelectProps =
+              field.type === FieldTypeEnum.TREE_SELECT ? { keyField: 'id', labelField: 'name' } : undefined;
 
             return {
               dataIndex: field.id,
@@ -1134,6 +1127,7 @@
               filterDisplayType,
               ...(selectProps ? { selectProps } : {}),
               ...(dataSourceProps ? { dataSourceProps } : {}),
+              ...(treeSelectProps ? { treeSelectProps } : {}),
             };
           })
       : [];
@@ -1274,6 +1268,38 @@
     );
   }
 
+  function getDefaultCustomTemplate() {
+    const variable = (name: string) => `${String.fromCharCode(36)}{${name}}`;
+    if (editor.triggerType === MessageNotificationTriggerEnum.SCHEDULE) {
+      return JSON.stringify([
+        t('system.message.settings.preview.customReminder', {
+          recordName: variable('name'),
+          dateField: variable('fieldId'),
+          fieldValue: variable('fieldValue'),
+        }),
+      ]);
+    }
+    if (editor.triggerType === MessageNotificationTriggerEnum.FIELD) {
+      return JSON.stringify([
+        t('system.message.settings.preview.customCondition', {
+          recordName: variable('name'),
+          conditionField: variable('fieldId'),
+          fieldValue: variable('fieldValue'),
+        }),
+      ]);
+    }
+    return '[]';
+  }
+
+  function getTemplateForSave() {
+    const template = editor.template.trim();
+    const isNewScene = editorMode.value === 'create' || editorMode.value === 'copy';
+    if (isNewScene && (!template || template === '[]')) {
+      return getDefaultCustomTemplate();
+    }
+    return template || '[]';
+  }
+
   const scenePreviewText = computed(() => {
     const selectedCategoryType = editorFormType.value || editor.formType || editor.taskType;
     const category = getCategoryLabel(selectedCategoryType);
@@ -1394,22 +1420,74 @@
     return 'default';
   }
 
-  const standardFormConfigApis: Partial<Record<string, () => Promise<{ fields: FormCreateField[] }>>> = {
-    CUSTOMER: getCustomerFormConfig,
-    CLUE: getClueFormConfig,
-    OPPORTUNITY: getOptFormConfig,
-    BUSINESS: getOptFormConfig,
-    CONTRACT: getContractFormConfig,
-    ORDER: getOrderFormConfig,
-    FOLLOW_UP: getCustomerFollowRecordFormConfig,
+  function getNotificationSubcategory(formType: string | undefined) {
+    return Object.values(MessageNotificationSubcategoryEnum).find((subcategory) => subcategory === formType);
+  }
+
+  function requireNotificationSubcategory(formType: string | undefined) {
+    const subcategory = getNotificationSubcategory(formType);
+    if (!subcategory) throw new Error(`Unsupported notification formType: ${formType ?? ''}`);
+    return subcategory;
+  }
+
+  const standardFormConfigApis: Partial<
+    Record<SystemMessageCategoryType, () => Promise<{ fields: FormCreateField[] }>>
+  > = {
+    [MessageNotificationCategoryEnum.CUSTOMER]: getCustomerFormConfig,
+    [MessageNotificationSubcategoryEnum.CUSTOMER_CONTACT]: getCustomerContactFormConfig,
+    [MessageNotificationCategoryEnum.CLUE]: getClueFormConfig,
+    [MessageNotificationCategoryEnum.OPPORTUNITY]: getOptFormConfig,
+    [MessageNotificationSubcategoryEnum.OPPORTUNITY_QUOTATION]: getQuotationFormConfig,
+    [MessageNotificationCategoryEnum.CONTRACT]: getContractFormConfig,
+    [MessageNotificationSubcategoryEnum.CONTRACT_PAYMENT]: getPaymentPlanFormConfig,
+    [MessageNotificationSubcategoryEnum.CONTRACT_RECORD]: getPaymentRecordFormConfig,
+    [MessageNotificationSubcategoryEnum.CONTRACT_INVOICE]: getInvoicedFormConfig,
+    [MessageNotificationCategoryEnum.ORDER]: getOrderFormConfig,
+    [MessageNotificationCategoryEnum.FOLLOW_UP]: getCustomerFollowRecordFormConfig,
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_RECORD]: getCustomerFollowRecordFormConfig,
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_PLAN]: getCustomerFollowPlanFormConfig,
   };
+
+  function getStandardFormConfig(formType: string, fallbackType: string) {
+    const formConfigApi =
+      standardFormConfigApis[formType.toUpperCase() as SystemMessageCategoryType] ??
+      standardFormConfigApis[fallbackType.toUpperCase() as SystemMessageCategoryType];
+    return formConfigApi?.();
+  }
+
+  function getTableTriggerFieldsKey(row: SceneRow, formType: string) {
+    return `${row.group}:${formType}`;
+  }
+
+  async function loadTableTriggerFields(row: SceneRow, formType: string) {
+    const key = getTableTriggerFieldsKey(row, formType);
+    if (tableTriggerFields.value.has(key)) return;
+
+    let request = tableTriggerFieldLoads.get(key);
+    if (!request) {
+      request = (async () => {
+        const formConfig =
+          row.group === 'custom'
+            ? await getCustomFormDetail(formType)
+            : await getStandardFormConfig(formType, row.taskType);
+        return formConfig?.fields ?? [];
+      })().finally(() => tableTriggerFieldLoads.delete(key));
+      tableTriggerFieldLoads.set(key, request);
+    }
+
+    try {
+      tableTriggerFields.value.set(key, await request);
+    } catch {
+      tableTriggerFields.value.set(key, []);
+    }
+  }
 
   async function loadTriggerFields() {
     try {
       const formConfig =
         editor.group === 'custom'
           ? await getCustomFormDetail(editor.formType)
-          : await standardFormConfigApis[editor.taskType.toUpperCase()]?.();
+          : await getStandardFormConfig(editor.formType, editor.taskType);
       triggerFields.value = formConfig?.fields ?? [];
     } catch {
       triggerFields.value = [];
@@ -1427,6 +1505,9 @@
     const channelKeys = Object.entries(channelKeyToEnum)
       .filter(([, channel]) => receiveMethods.includes(channel))
       .map(([key]) => key);
+    const defaultFormType =
+      group === 'standard' ? getSceneCategoryType(task.taskType, task.config?.actionTypeConfig) : task.taskType;
+    const formType = task.formType ?? defaultFormType;
     return {
       ...task,
       members: task.members ?? [],
@@ -1434,8 +1515,9 @@
       template: task.template ?? '[]',
       templateValue: task.templateValue ?? [],
       formType:
-        task.formType ??
-        (group === 'standard' ? getSceneCategoryType(task.taskType, task.config?.actionTypeConfig) : task.taskType),
+        group === 'custom'
+          ? (formType as CustomFormTemplateId)
+          : (getNotificationSubcategory(formType) as MessageNotificationSubcategoryEnum | undefined),
       group,
       channelKeys,
       sceneCategoryType:
@@ -1467,7 +1549,7 @@
       current: Number(request?.current ?? 1),
       pageSize: Number(request?.pageSize ?? 20),
       taskType: requestedTaskType,
-      ...(activeGroup.value === 'custom' ? {} : { formType: formType || undefined }),
+      ...(activeGroup.value === 'custom' ? {} : { formType: getNotificationSubcategory(formType) }),
       sort: request?.sort ?? {},
       combineSearch: request?.combineSearch ?? { searchMode: 'AND', conditions: [] },
       keyword: String(request?.keyword ?? ''),
@@ -1532,10 +1614,10 @@
     return [...new Set([...channelKeys.map((key) => channelKeyToEnum[key]).filter(Boolean), ...preservedMethods])];
   }
 
-  function getScopeEditorState(task: SceneRow) {
+  function getScopeEditorState(task: SceneRow, fields = triggerFields.value) {
     const scopeIds = parseJsonArray(task.scopeId ?? '[]');
     const members = task.members ?? [];
-    const customReceiverIds = new Set(customReceiverOptions.value.map((option) => option.value));
+    const customReceiverIds = new Set(getCustomReceiverOptions(fields).map((option) => option.value));
     const specialKeys = scopeIds.filter((id) => specialScopeIds.has(id));
     const customKeys = scopeIds.filter((id) => customReceiverIds.has(id));
     const userMembers = members.filter(
@@ -1588,13 +1670,70 @@
     await loadTriggerFields();
 
     const config = task.config ?? {};
-    const fieldConditions = (config.fieldTypeConfig ?? []).map((condition) => ({
-      dataIndex: condition.name,
-      operator: condition.operator as OperatorEnum,
-      type: (condition.type as FieldTypeEnum) ?? FieldTypeEnum.INPUT,
-      value: condition.value,
-      containChildIds: condition.containChildIds,
-    }));
+    const savedConditions = config.fieldTypeConfig ?? [];
+    const savedConditionTypes = savedConditions.map(
+      (condition) => triggerFields.value.find((field) => field.id === condition.name)?.type
+    );
+    if (
+      savedConditionTypes.some((type) =>
+        [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.USER_SELECT].includes(type as FieldTypeEnum)
+      )
+    ) {
+      await loadUserNameOptions();
+    }
+    if (
+      savedConditionTypes.some((type) =>
+        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE, FieldTypeEnum.TREE_SELECT].includes(
+          type as FieldTypeEnum
+        )
+      )
+    ) {
+      await loadDepartmentNameOptions();
+    }
+    const fieldConditions = (config.fieldTypeConfig ?? []).map((condition) => {
+      const fieldType = triggerFields.value.find((field) => field.id === condition.name)?.type;
+      let ids: string[] = [];
+      if (Array.isArray(condition.value)) {
+        ids = condition.value.map(String);
+      } else if (typeof condition.value === 'string' && condition.value) {
+        const parsedIds = parseJsonArray(condition.value);
+        ids = parsedIds.length ? parsedIds : [condition.value];
+      }
+
+      let selectedValueProps = {};
+      if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldType as FieldTypeEnum)) {
+        selectedValueProps = {
+          selectedUserList: ids.map((id) => ({
+            id,
+            name: userNameById.value[id] ?? id,
+            scope: MemberSelectTypeEnum.MEMBER,
+          })),
+        };
+      } else if ([FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldType as FieldTypeEnum)) {
+        selectedValueProps = {
+          selectedUserList: ids.map((id) => ({
+            id,
+            name: departmentNameById.value[id] ?? id,
+            scope: MemberSelectTypeEnum.ONLY_ORG,
+          })),
+        };
+      } else if (fieldType === FieldTypeEnum.USER_SELECT) {
+        selectedValueProps = {
+          selectProps: {
+            options: ids.map((id) => ({ id, name: userNameById.value[id] ?? id })),
+          },
+        };
+      }
+
+      return {
+        dataIndex: condition.name,
+        operator: condition.operator as OperatorEnum,
+        type: (condition.type as FieldTypeEnum) ?? FieldTypeEnum.INPUT,
+        value: condition.value,
+        containChildIds: condition.containChildIds,
+        ...selectedValueProps,
+      };
+    });
     const scopeState = getScopeEditorState(task);
     const receiveMethods = parseJsonArray(task.receiveMethod ?? '[]');
 
@@ -1638,7 +1777,12 @@
     return {
       name: task.name,
       taskType: task.group === 'custom' ? MessageNotificationCategoryEnum.CUSTOM_FORM : task.taskType,
-      formType: task.formType ?? getSceneCategoryType(task.taskType, task.config?.actionTypeConfig),
+      formType:
+        task.group === 'custom'
+          ? ((task.formType ?? task.taskType) as CustomFormTemplateId)
+          : requireNotificationSubcategory(
+              task.formType ?? getSceneCategoryType(task.taskType, task.config?.actionTypeConfig)
+            ),
       scopeId: parseJsonArray(task.scopeId),
       receiveMethod: JSON.stringify(getReceiveMethods(channelKeys, preservedMethods)),
       triggerType: task.triggerType,
@@ -1797,7 +1941,15 @@
                 NTooltip,
                 {},
                 {
-                  trigger: () => h(CrmIcon, { type: 'iconicon_time', size: 16, class: 'message-reminder-icon' }),
+                  trigger: () =>
+                    h(
+                      'span',
+                      {
+                        class: 'inline-flex h-4 shrink-0 items-center justify-center leading-none',
+                        onMouseenter: () => loadTableTriggerFields(row, row.formType || row.sceneCategoryType),
+                      },
+                      h(CrmIcon, { type: 'iconicon_time', size: 16, class: 'message-reminder-icon block' })
+                    ),
                   default: () => getScheduleReminderTooltip(row),
                 }
               )
@@ -1834,12 +1986,21 @@
       key: 'members',
       width: 170,
       render: (row) => {
-        const scopeState = getScopeEditorState(row);
+        const formType = row.formType || row.sceneCategoryType;
+        const fieldsKey = getTableTriggerFieldsKey(row, formType);
+        const fields = tableTriggerFields.value.get(fieldsKey) ?? [];
+        const scopeState = getScopeEditorState(row, fields);
+        const customOptions = getCustomReceiverOptions(fields);
+        const groups = scopeOptionGroups.value.map((group) =>
+          group.key === 'custom' ? { ...group, options: customOptions } : group
+        );
         return h(MessageReceiverSelector, {
-          groups: scopeOptionGroups.value,
+          groups,
           variant: 'table',
           disabled: !canUpdate.value,
           placeholder: t('common.pleaseSelect'),
+          formType,
+          beforeOpen: () => loadTableTriggerFields(row, formType),
           specifiedUsersLabel: t('system.message.settings.receiver.specifiedUsers'),
           specifiedRolesLabel: t('system.message.settings.receiver.specifiedRoles'),
           receiverKeys: scopeState.scopeKeys,
@@ -1848,7 +2009,7 @@
           receiverRoleIds: scopeState.receiverRoleIds,
           receiverRoles: scopeState.receiverRoles,
           onChangeOnClose: (value: { keys: string[]; memberIds: string[]; roleIds: string[] }) => {
-            const customReceiverIds = new Set(customReceiverOptions.value.map((option) => option.value));
+            const customReceiverIds = new Set(customOptions.map((option) => option.value));
             const scopeIds = [
               ...value.keys.filter((key) => specialScopeIds.has(key) || customReceiverIds.has(key)),
               ...value.memberIds,
@@ -2157,12 +2318,15 @@
     const params: MessageTaskSaveParams = {
       name,
       taskType: editor.group === 'custom' ? MessageNotificationCategoryEnum.CUSTOM_FORM : editor.taskType,
-      formType: editor.formType,
+      formType:
+        editor.group === 'custom'
+          ? (editor.formType as CustomFormTemplateId)
+          : requireNotificationSubcategory(editor.formType),
       scopeId: getScopeIdsFromEditor(),
       receiveMethod: JSON.stringify(getReceiveMethods(editor.channelKeys, editor.preservedReceiveMethods)),
       triggerType: editorMode.value === 'update' && source?.sysEnable ? source.triggerType : editor.triggerType,
       config: editorMode.value === 'update' && source?.sysEnable ? source.config : getEditorConfig(),
-      template: editorMode.value === 'update' && source?.sysEnable ? source.template : editor.template || '[]',
+      template: editorMode.value === 'update' && source?.sysEnable ? source.template : getTemplateForSave(),
       ...(isCustomScene.value ? { templateValue: editor.templateValue } : {}),
       type: saveType,
     };
@@ -2175,8 +2339,9 @@
       showEditor.value = false;
       Message.success(t('system.message.settings.sceneSaved'));
       await refreshAfterMutation();
-    } catch {
-      Message.error(t('common.saveFailed'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
     }
   }
 </script>

@@ -90,7 +90,6 @@
           :load-params="loadParams"
           virtual-scroll-height="calc(100vh - 162px)"
           key-field="id"
-          @open-approval-todo="(formType) => emit('openApprovalTodo', formType)"
           @refresh-count="() => initMessageCount()"
         />
       </div>
@@ -128,10 +127,6 @@
   const showMessageDrawer = defineModel<boolean>('show', {
     required: true,
   });
-  const emit = defineEmits<{
-    (e: 'openApprovalTodo', formType: string): void;
-  }>();
-
   const keyword = ref('');
 
   const tabList = [
@@ -192,7 +187,6 @@
     [ModuleConfigEnum.BUSINESS_MANAGEMENT]: { resourceType: 'OPPORTUNITY', label: 'module.businessManagement' },
     [ModuleConfigEnum.CONTRACT]: { resourceType: 'CONTRACT', label: 'module.contract' },
     [ModuleConfigEnum.ORDER]: { resourceType: 'ORDER', label: 'module.order' },
-    [ModuleConfigEnum.PRODUCT_MANAGEMENT]: { resourceType: 'PRODUCT', label: 'module.productManagement' },
     [ModuleConfigEnum.CUSTOM_FORM]: { resourceType: 'CUSTOM_FORM', label: 'module.customForm' },
   };
 
@@ -274,8 +268,8 @@
 
   function getCategoryCount(isPublic: boolean) {
     if (activeTab.value === 'MENTION') return undefined;
-    if (isPublic) return messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE];
-    return messageCount.value.total;
+    if (isPublic) return messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE] ?? '0';
+    return messageCount.value.total ?? '0';
   }
 
   const messageTypeList = computed(() => {
@@ -298,9 +292,7 @@
         const category = moduleCategoryConfig[module.moduleKey as ModuleConfigEnum];
         const route = findRouteByName(getModuleRouteName(module.moduleKey));
         if ((!module.enable && activeTab.value !== 'MENTION') || !category) return [];
-        if (activeTab.value !== 'MENTION' && (!route || !hasAnyPermission(route.meta?.permissions as string[]))) {
-          return [];
-        }
+        if (!route || !hasAnyPermission(route.meta?.permissions as string[])) return [];
         return [
           {
             value: category.resourceType,
@@ -322,11 +314,9 @@
         endTime: null,
         triggerType: loadParams.value.triggerType,
       });
-      if (result) {
-        result.forEach(({ key, count }) => {
-          messageCount.value[key] = count > 99 ? `99+` : `${count ?? 0}`;
-        });
-      }
+      messageCount.value = Object.fromEntries(
+        (result ?? []).map(({ key, count }) => [key, count > 99 ? '99+' : `${count ?? 0}`])
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

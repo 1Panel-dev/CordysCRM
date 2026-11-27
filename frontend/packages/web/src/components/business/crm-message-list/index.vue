@@ -87,62 +87,19 @@
       {{ props.emptyText || t('common.noData') }}
     </div>
   </n-spin>
-  <DetailDrawer
-    v-model:show="showFollowDetailDrawer"
-    :form-key="followDetailFormKey"
-    :source-id="followDetailSourceId"
-    :source-name="followDetailSourceName"
-    :refresh-key="followDetailRefreshKey"
-    readonly
-  />
-  <ClueOverviewDrawer
-    v-if="resourceDrawerType === 'CLUE'"
-    v-model:show="showResourceDetailDrawer"
-    :detail="resourceDetail"
-  />
-  <CustomerOverviewDrawer
-    v-if="resourceDrawerType === 'CUSTOMER'"
-    v-model:show="showResourceDetailDrawer"
-    :source-id="activeResourceItem?.resourceId ?? ''"
-    readonly
-  />
-  <OptOverviewDrawer
-    v-if="resourceDrawerType === 'OPPORTUNITY'"
-    v-model:show="showResourceDetailDrawer"
-    :detail="resourceDetail"
-    readonly
-  />
-  <ContractDetailDrawer
-    v-if="resourceDrawerType === 'CONTRACT'"
-    v-model:visible="showResourceDetailDrawer"
-    :source-id="activeResourceItem?.resourceId ?? ''"
-    readonly
-  />
-  <OrderDetailDrawer
-    v-if="resourceDrawerType === 'ORDER'"
-    v-model:visible="showResourceDetailDrawer"
-    :source-id="activeResourceItem?.resourceId ?? ''"
-    readonly
-  />
 </template>
 
 <script lang="ts" setup>
   import { NBadge, NButton, NSpin, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { MessageNotificationSubcategoryEnum } from '@lib/shared/enums/messageNotificationEnum';
   import { SystemMessageStatusEnum, SystemMessageTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MessageCenterItem, MessageCenterSubsetParams } from '@lib/shared/models/system/message';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import DetailDrawer from '@/components/business/crm-follow-drawer/components/detailDrawer.vue';
-  import ClueOverviewDrawer from '@/views/clueManagement/clue/components/clueOverviewDrawer.vue';
-  import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
-  import CustomerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
-  import OptOverviewDrawer from '@/views/opportunity/components/optOverviewDrawer.vue';
-  import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
 
   import { getNotificationList, setNotificationRead } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
@@ -172,7 +129,6 @@
   const emit = defineEmits<{
     (e: 'refreshCount'): void;
     (e: 'resourceTypesChange', resourceTypes: string[]): void;
-    (e: 'openApprovalTodo', formType: string): void;
   }>();
 
   function openNewPageQuotation(item: MessageCenterItem) {
@@ -193,37 +149,73 @@
     });
   }
 
-  const showFollowDetailDrawer = ref(false);
-  const followDetailSourceId = ref('');
-  const followDetailSourceName = ref('');
-  const followDetailRefreshKey = ref(0);
-  const followDetailFormKey = ref(FormDesignKeyEnum.FOLLOW_RECORD);
-  const activeResourceItem = ref<MessageCenterItem>();
-  const resourceDrawerType = ref('');
-  const showResourceDetailDrawer = ref(false);
-  const resourceDetail = computed(() =>
-    activeResourceItem.value ? { id: activeResourceItem.value.resourceId } : undefined
-  );
-
-  function openFollowDetail(
-    item: MessageCenterItem,
-    formKey: FormDesignKeyEnum.FOLLOW_RECORD | FormDesignKeyEnum.FOLLOW_PLAN
-  ) {
-    followDetailSourceId.value = item.resourceId;
-    followDetailSourceName.value = item.resourceName || '';
-    followDetailFormKey.value = formKey;
-    followDetailRefreshKey.value += 1;
-    showFollowDetailDrawer.value = true;
+  function openNewPageContractPaymentRecord(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CONTRACT_PAYMENT_RECORD, {
+      recordId: item.resourceId,
+    });
   }
 
-  function openFollowRecordDetail(item: MessageCenterItem) {
-    openFollowDetail(item, FormDesignKeyEnum.FOLLOW_RECORD);
+  function openNewPageContractInvoice(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CONTRACT_INVOICE, {
+      id: item.resourceId,
+    });
   }
 
-  function openFollowPlanDetail(item: MessageCenterItem) {
-    openFollowDetail(item, FormDesignKeyEnum.FOLLOW_PLAN);
+  function openNewPageContractBusinessTitle(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CONTRACT_BUSINESS_NAME, {
+      id: item.resourceId,
+    });
   }
-  const followPermission = ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'];
+
+  function openNewPageClue(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CLUE_MANAGEMENT_CLUE, { id: item.resourceId });
+  }
+
+  function openNewPageCluePool(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CLUE_MANAGEMENT_POOL, { id: item.resourceId });
+  }
+
+  function openNewPageCustomer(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CUSTOMER_INDEX, { id: item.resourceId });
+  }
+
+  function openNewPageCustomerPool(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CUSTOMER_OPEN_SEA, { id: item.resourceId });
+  }
+
+  function openNewPageCustomerContact(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CUSTOMER_CONTACT, { id: item.resourceId });
+  }
+
+  function openNewPageOpportunity(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.OPPORTUNITY_OPT, { id: item.resourceId });
+  }
+
+  function openNewPageOrder(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.ORDER_INDEX, { id: item.resourceId });
+  }
+
+  function openNewPageFollowRecord(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.FOLLOW_MANAGEMENT_RECORD, { id: item.resourceId });
+  }
+
+  function openNewPageFollowPlan(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.FOLLOW_MANAGEMENT_PLAN, { id: item.resourceId });
+  }
+
+  function openNewPageCustomForm(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.CUSTOM_FORM_INDEX, {
+      id: item.resourceId,
+      customFormId: item.formType,
+    });
+  }
+
+  function openNewPagePendingTodo(item: MessageCenterItem) {
+    openNewPage(AppRouteEnum.WORKBENCH, {
+      todoType: 'pending',
+      resourceType: item.formType?.toUpperCase() === 'APPROVAL' ? '' : item.formType,
+    });
+  }
 
   const resourceTypeLabelMap: Record<string, string> = {
     CLUE: 'system.message.settings.category.lead',
@@ -245,6 +237,10 @@
   function getResourceTypeLabel(resourceType: string) {
     const labelKey = resourceTypeLabelMap[resourceType.toUpperCase()];
     return labelKey ? t(labelKey) : '';
+  }
+
+  function getNotificationSubcategory(formType?: string) {
+    return Object.values(MessageNotificationSubcategoryEnum).find((subcategory) => subcategory === formType);
   }
 
   function getMessageTag(item: MessageCenterItem) {
@@ -276,13 +272,13 @@
   const followCommentDetailConfig = [
     {
       operation: 'FOLLOW_UP_RECORD_COMMENT',
-      permission: followPermission,
-      action: openFollowRecordDetail,
+      permission: ['FOLLOW_RECORD:READ'],
+      action: openNewPageFollowRecord,
     },
     {
       operation: 'FOLLOW_UP_PLAN_COMMENT',
-      permission: followPermission,
-      action: openFollowPlanDetail,
+      permission: ['FOLLOW_PLAN:READ'],
+      action: openNewPageFollowPlan,
     },
   ];
 
@@ -313,6 +309,96 @@
     },
   };
 
+  const formTypeDetailConfig: Partial<Record<MessageNotificationSubcategoryEnum, MessageDetailAction>> = {
+    [MessageNotificationSubcategoryEnum.CLUE]: {
+      permission: ['CLUE_MANAGEMENT:READ'],
+      action: openNewPageClue,
+    },
+    [MessageNotificationSubcategoryEnum.CUSTOMER]: {
+      permission: ['CUSTOMER_MANAGEMENT:READ'],
+      action: openNewPageCustomer,
+    },
+    [MessageNotificationSubcategoryEnum.CUSTOMER_CONTRACT]: {
+      permission: ['CONTRACT:READ'],
+      action: openNewPageContract,
+    },
+    [MessageNotificationSubcategoryEnum.CUSTOMER_CONTACT]: {
+      permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
+      action: openNewPageCustomerContact,
+    },
+    [MessageNotificationSubcategoryEnum.OPPORTUNITY]: {
+      permission: ['OPPORTUNITY_MANAGEMENT:READ'],
+      action: openNewPageOpportunity,
+    },
+    [MessageNotificationSubcategoryEnum.OPPORTUNITY_QUOTATION]: {
+      permission: permissionConfig.OPPORTUNITY_QUOTATION_READ,
+      action: openNewPageQuotation,
+    },
+    [MessageNotificationSubcategoryEnum.CONTRACT]: {
+      permission: ['CONTRACT:READ'],
+      action: openNewPageContract,
+    },
+    [MessageNotificationSubcategoryEnum.ORDER]: {
+      permission: ['ORDER:READ'],
+      action: openNewPageOrder,
+    },
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_RECORD]: {
+      permission: ['FOLLOW_RECORD:READ'],
+      action: openNewPageFollowRecord,
+    },
+    [MessageNotificationSubcategoryEnum.FOLLOW_UP_PLAN]: {
+      permission: ['FOLLOW_PLAN:READ'],
+      action: openNewPageFollowPlan,
+    },
+    [MessageNotificationSubcategoryEnum.CONTRACT_PAYMENT]: {
+      permission: permissionConfig.CONTRACT_PAYMENT_PLAN_READ,
+      action: openNewPageContractPaymentPlan,
+    },
+    [MessageNotificationSubcategoryEnum.CONTRACT_RECORD]: {
+      permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+      action: openNewPageContractPaymentRecord,
+    },
+    [MessageNotificationSubcategoryEnum.CONTRACT_INVOICE]: {
+      permission: ['CONTRACT_INVOICE:READ'],
+      action: openNewPageContractInvoice,
+    },
+  };
+
+  const resourceTypeDetailConfig: Record<string, MessageDetailAction> = {
+    CLUE: { permission: ['CLUE_MANAGEMENT:READ'], action: openNewPageClue },
+    CLUE_POOL: { permission: ['CLUE_MANAGEMENT_POOL:READ'], action: openNewPageCluePool },
+    CUSTOMER: { permission: ['CUSTOMER_MANAGEMENT:READ'], action: openNewPageCustomer },
+    CUSTOMER_POOL: { permission: ['CUSTOMER_MANAGEMENT_POOL:READ'], action: openNewPageCustomerPool },
+    CUSTOMER_OPEN_SEA: { permission: ['CUSTOMER_MANAGEMENT_POOL:READ'], action: openNewPageCustomerPool },
+    CUSTOMER_CONTACT: { permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'], action: openNewPageCustomerContact },
+    OPPORTUNITY: { permission: ['OPPORTUNITY_MANAGEMENT:READ'], action: openNewPageOpportunity },
+    BUSINESS: { permission: ['OPPORTUNITY_MANAGEMENT:READ'], action: openNewPageOpportunity },
+    CONTRACT: { permission: ['CONTRACT:READ'], action: openNewPageContract },
+    ORDER: { permission: ['ORDER:READ'], action: openNewPageOrder },
+    FOLLOW_RECORD: { permission: ['FOLLOW_RECORD:READ'], action: openNewPageFollowRecord },
+    FOLLOW_PLAN: { permission: ['FOLLOW_PLAN:READ'], action: openNewPageFollowPlan },
+    CONTRACT_PAYMENT_PLAN: {
+      permission: permissionConfig.CONTRACT_PAYMENT_PLAN_READ,
+      action: openNewPageContractPaymentPlan,
+    },
+    CONTRACT_PAYMENT: {
+      permission: permissionConfig.CONTRACT_PAYMENT_PLAN_READ,
+      action: openNewPageContractPaymentPlan,
+    },
+    CONTRACT_PAYMENT_RECORD: {
+      permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+      action: openNewPageContractPaymentRecord,
+    },
+    CONTRACT_RECORD: {
+      permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+      action: openNewPageContractPaymentRecord,
+    },
+    CONTRACT_INVOICE: { permission: ['CONTRACT_INVOICE:READ'], action: openNewPageContractInvoice },
+    INVOICE: { permission: ['CONTRACT_INVOICE:READ'], action: openNewPageContractInvoice },
+    BUSINESS_TITLE: { permission: ['CONTRACT_BUSINESS_TITLE:READ'], action: openNewPageContractBusinessTitle },
+    CUSTOM_FORM: { permission: ['CUSTOM_FORM_DATA:READ'], action: openNewPageCustomForm },
+  };
+
   function getMessageDetailAction(operation: string) {
     return (
       followCommentDetailConfig.find((item) => operation.includes(item.operation)) || messageDetailConfig[operation]
@@ -322,34 +408,20 @@
   function openResourceDetail(item: MessageCenterItem) {
     const resourceTypes = [item.formType, item.resourceType].map((type) => type?.toUpperCase() ?? '').filter(Boolean);
     if (resourceTypes.includes('APPROVAL')) {
-      emit('openApprovalTodo', item.formType ?? '');
+      openNewPagePendingTodo(item);
       return;
     }
-    const drawerConfig: Record<string, { type: string; permission: string[] }> = {
-      CLUE: { type: 'CLUE', permission: ['CLUE_MANAGEMENT:READ'] },
-      CUSTOMER: { type: 'CUSTOMER', permission: ['CUSTOMER_MANAGEMENT:READ'] },
-      OPPORTUNITY: { type: 'OPPORTUNITY', permission: ['OPPORTUNITY_MANAGEMENT:READ'] },
-      CONTRACT: { type: 'CONTRACT', permission: ['CONTRACT:READ'] },
-      ORDER: { type: 'ORDER', permission: ['ORDER:READ'] },
-    };
-    const matchedResourceType = resourceTypes.find(
-      (resourceType) =>
-        resourceType === 'FOLLOW_RECORD' || resourceType === 'FOLLOW_PLAN' || Boolean(drawerConfig[resourceType])
-    );
-    if (matchedResourceType === 'FOLLOW_RECORD' || matchedResourceType === 'FOLLOW_PLAN') {
-      if (!hasAnyPermission(followPermission)) return;
-      openFollowDetail(
-        item,
-        matchedResourceType === 'FOLLOW_RECORD' ? FormDesignKeyEnum.FOLLOW_RECORD : FormDesignKeyEnum.FOLLOW_PLAN
-      );
+    const subcategory = getNotificationSubcategory(item.formType);
+    const formTypeAction = subcategory ? formTypeDetailConfig[subcategory] : undefined;
+    if (formTypeAction) {
+      if (hasAnyPermission(formTypeAction.permission)) formTypeAction.action(item);
       return;
     }
-    const config = matchedResourceType ? drawerConfig[matchedResourceType] : undefined;
-    if (config) {
-      if (!hasAnyPermission(config.permission)) return;
-      activeResourceItem.value = item;
-      resourceDrawerType.value = config.type;
-      showResourceDetailDrawer.value = true;
+    const resourceTypeAction = item.resourceType
+      ? resourceTypeDetailConfig[item.resourceType.toUpperCase()]
+      : undefined;
+    if (resourceTypeAction) {
+      if (hasAnyPermission(resourceTypeAction.permission)) resourceTypeAction.action(item);
       return;
     }
     const detailAction = getMessageDetailAction(item.operation);

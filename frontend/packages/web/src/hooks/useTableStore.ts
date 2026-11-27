@@ -86,7 +86,7 @@ export default function useTableStore() {
       if (!tableColumnsMap) {
         // 如果没有在indexDB里初始化
         column = columnsTransform(column);
-        setTableColumnsMap(tableKey, {
+        await setTableColumnsMap(tableKey, {
           column,
           columnBackup: cloneDeep(column),
         });
@@ -119,7 +119,7 @@ export default function useTableStore() {
             }
             return e;
           });
-          setTableColumnsMap(tableKey, {
+          await setTableColumnsMap(tableKey, {
             ...tableColumnsMap,
             column: newColumns,
             columnBackup: cloneDeep(column),

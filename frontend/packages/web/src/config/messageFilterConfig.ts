@@ -207,8 +207,6 @@ export function getNotificationTriggerFilterConfigList(
   const categoryMap: Record<string, string> = {
     CUSTOMER: 'customer',
     CUSTOMER_CONTACT: 'contact',
-    CUSTOMER_CONTRACT: 'contact',
-    CUSTOMER_CONCAT: 'contact',
     OPPORTUNITY: 'opportunity',
     BUSINESS: 'opportunity',
     BUSINESS_QUOTATION: 'quotation',

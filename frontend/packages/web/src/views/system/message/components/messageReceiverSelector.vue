@@ -114,12 +114,16 @@
       groups: ReceiverOptionGroup[];
       disabled?: boolean;
       placeholder: string;
+      formType?: string;
+      beforeOpen?: (formType: string) => Promise<void>;
       specifiedUsersLabel?: string;
       specifiedRolesLabel?: string;
       variant?: 'dialog' | 'table';
     }>(),
     {
       disabled: false,
+      formType: '',
+      beforeOpen: undefined,
       specifiedUsersLabel: '',
       specifiedRolesLabel: '',
       variant: 'dialog',
@@ -141,6 +145,7 @@
   const initialReceiverKeys = ref<string[]>([]);
   const initialReceiverMemberIds = ref<string[]>([]);
   const initialReceiverRoleIds = ref<string[]>([]);
+  let loadedFormType = '';
 
   const { t } = useI18n();
   const visibleGroups = computed(() => props.groups.filter((group) => group.options.length > 0));
@@ -165,9 +170,13 @@
     }
   }
 
-  function handlePopoverVisibleChange(visible: boolean) {
+  async function handlePopoverVisibleChange(visible: boolean) {
     if (!visible && drawerVisible.value) return;
     if (visible) {
+      if (props.formType && props.formType !== loadedFormType) {
+        await props.beforeOpen?.(props.formType);
+        loadedFormType = props.formType;
+      }
       initialReceiverKeys.value = [...receiverKeys.value];
       initialReceiverMemberIds.value = [...receiverMemberIds.value];
       initialReceiverRoleIds.value = [...receiverRoleIds.value];
