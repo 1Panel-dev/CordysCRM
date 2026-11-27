@@ -31,8 +31,19 @@
               class="flex flex-shrink-0 cursor-pointer items-center -space-x-[4px]"
               @click="activeTab = 'collaborator'"
             >
-              <n-avatar round :size="24" class="bg-[var(--primary-1)] text-white ring-2 ring-white">
-                {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
+              <n-avatar
+                round
+                :size="24"
+                :src="detailInfo.ownerAvatar || undefined"
+                :img-props="{ alt: detailInfo.ownerName || '' }"
+                class="bg-[var(--primary-1)] text-white ring-2 ring-white"
+              >
+                <template v-if="!detailInfo.ownerAvatar" #default>
+                  {{ detailInfo.ownerName?.slice(0, 1) || '?' }}
+                </template>
+                <template #fallback>
+                  <span class="m-auto">{{ detailInfo.ownerName?.slice(0, 1) || '?' }}</span>
+                </template>
               </n-avatar>
               <CrmAvatar
                 v-for="person in displayedCollaborators"

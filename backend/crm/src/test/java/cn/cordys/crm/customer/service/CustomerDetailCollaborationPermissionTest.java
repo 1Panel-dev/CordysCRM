@@ -8,6 +8,7 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
+import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -25,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class CustomerDetailCollaborationPermissionTest {
@@ -35,6 +38,7 @@ class CustomerDetailCollaborationPermissionTest {
     private final DataScopeService dataScope = mock(DataScopeService.class);
     private final ResourcePermissionService permissions = mock(ResourcePermissionService.class);
     private final RelatedResourcePermissionService relatedPermissions = mock(RelatedResourcePermissionService.class);
+    private final UserExtendService userExtendService = mock(UserExtendService.class);
     private final CustomerGetResponse customer = new CustomerGetResponse();
 
     @BeforeEach
@@ -43,6 +47,7 @@ class CustomerDetailCollaborationPermissionTest {
         ReflectionTestUtils.setField(service, "dataScopeService", dataScope);
         ReflectionTestUtils.setField(service, "resourcePermissionService", permissions);
         ReflectionTestUtils.setField(service, "relatedResourcePermissionService", relatedPermissions);
+        ReflectionTestUtils.setField(service, "userExtendService", userExtendService);
         ReflectionTestUtils.setField(collaborations, "customerCollaborationMapper", collaborationMapper);
         customer.setId("customer");
         customer.setOwner("owner");
@@ -52,16 +57,18 @@ class CustomerDetailCollaborationPermissionTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "role", "related", "approval", "collaboration" })
-    void everyReadPathReturnsTheEffectiveCollaborationRestriction(String readSource) {
+    void everyReadPathReturnsTheEffectiveCollaborationRestrictionAndOwnerAvatar(String readSource) {
         when(dataScope.hasDataPermission("member", "org", "owner", PermissionConstants.CUSTOMER_MANAGEMENT_READ))
                 .thenReturn("role".equals(readSource));
         when(relatedPermissions.hasRelatedReadPermission(FormKey.CUSTOMER.getKey(), "customer", "member", "org"))
                 .thenReturn("related".equals(readSource));
         when(permissions.hasApprovalViewPermission("customer", "member", "org", FormKey.CUSTOMER.getKey()))
                 .thenReturn("approval".equals(readSource));
+        when(userExtendService.getUserAvatarMap(List.of("owner"))).thenReturn(Map.of("owner", "owner-avatar"));
 
-        assertEquals("COLLABORATION", service.getWithDataPermissionCheck("customer", "member", "org")
-                .getCollaborationType());
+        CustomerGetResponse detail = service.getWithDataPermissionCheck("customer", "member", "org");
+        assertEquals("COLLABORATION", detail.getCollaborationType());
+        assertEquals("owner-avatar", detail.getOwnerAvatar());
     }
 
     @ParameterizedTest
@@ -90,9 +97,18 @@ class CustomerDetailCollaborationPermissionTest {
     void unrelatedUserStillRequiresAReadPermission() {
         when(collaborationMapper.select(any(CustomerCollaboration.class))).thenReturn(List.of());
         assertThrows(GenericException.class, () -> service.getWithDataPermissionCheck("customer", "member", "org"));
+        verifyNoInteractions(userExtendService);
         when(dataScope.hasDataPermission("member", "org", "owner", PermissionConstants.CUSTOMER_MANAGEMENT_READ))
                 .thenReturn(true);
         assertNull(service.getWithDataPermissionCheck("customer", "member", "org").getCollaborationType());
+    }
+
+    @Test
+    void detailWithoutOwnerDoesNotLookUpAnAvatar() {
+        customer.setOwner(null);
+
+        assertNull(service.getWithDataPermissionCheck("customer", "member", "org").getOwnerAvatar());
+        verifyNoInteractions(userExtendService);
     }
 
     private void collaboration(String type, Long expireTime) {

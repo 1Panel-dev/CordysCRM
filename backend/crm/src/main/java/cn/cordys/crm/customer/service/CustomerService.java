@@ -425,15 +425,19 @@ public class CustomerService implements ApprovalResourceHandler {
             getResponse.setCollaborationType(collaborations.getFirst().getCollaborationType());
         }
         // 待办审批人和有效评论@用户可查看对应资源详情。
-        if (resourcePermissionService.hasApprovalViewPermission(id, userId, orgId, FormKey.CUSTOMER.getKey())) {
-            return getResponse;
+        if (!resourcePermissionService.hasApprovalViewPermission(id, userId, orgId, FormKey.CUSTOMER.getKey())) {
+            boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(),
+                    PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+                    || relatedResourcePermissionService.hasRelatedReadPermission(
+                    FormKey.CUSTOMER.getKey(), id, userId, orgId);
+            if (!hasPermission && CollectionUtils.isEmpty(collaborations)) {
+                throw new GenericException(CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR);
+            }
         }
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(),
-                PermissionConstants.CUSTOMER_MANAGEMENT_READ)
-                || relatedResourcePermissionService.hasRelatedReadPermission(
-                FormKey.CUSTOMER.getKey(), id, userId, orgId);
-        if (!hasPermission && CollectionUtils.isEmpty(collaborations)) {
-            throw new GenericException(CrmHttpResultCode.DATA_PERMISSION_FORBIDDEN_ERROR);
+
+        String owner = getResponse.getOwner();
+        if (StringUtils.isNotBlank(owner)) {
+            getResponse.setOwnerAvatar(userExtendService.getUserAvatarMap(List.of(owner)).get(owner));
         }
 
         return getResponse;
