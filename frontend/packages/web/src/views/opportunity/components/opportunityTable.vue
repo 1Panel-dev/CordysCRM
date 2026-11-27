@@ -1109,11 +1109,11 @@
   });
 
   function handleOpenCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
-    if (props.isCustomerTab) {
+    if (props.isCustomerTab && props.sourceId && params.customerId === props.sourceId) {
       showOverviewDrawer.value = false;
-    } else {
-      emit('openCustomerDrawer', params, true);
+      return;
     }
+    emit('openCustomerDrawer', params, true);
   }
 
   function handleOpenDetail(type: OpenDetailType, item: any) {
