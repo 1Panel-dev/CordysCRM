@@ -26,6 +26,7 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   isDetail?: boolean;
   maxVisibleActions?: number;
   forceMoreActionKeys?: string[]; // 强制收纳到更多操作的操作 key
+  approvalStatusIndependentActionKeys?: string[]; // 不受审批状态权限限制的操作 key
   getApprovalStatus?: (row: Row) => ProcessStatusEnum;
   getBizStatus?: (row: Row) => string | undefined;
   identityResolver?: {
@@ -213,6 +214,9 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return Object.values(dataActionMap).filter((action) => {
       if (!action.key || !action.permission?.length) {
         return false;
+      }
+      if (options.approvalStatusIndependentActionKeys?.includes(String(action.key))) {
+        return hasRolePermission(action.permission);
       }
 
       return (

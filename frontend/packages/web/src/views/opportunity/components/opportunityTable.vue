@@ -377,6 +377,7 @@
   } = useApprovalOperation<OpportunityItem>({
     formType: FormDesignKeyEnum.BUSINESS,
     dataActionMap: () => opportunityDataActionMap.value,
+    approvalStatusIndependentActionKeys: ['followUp'],
     specialActionFilter: (row, actionKeys) => {
       if (row.stage === failureStage.value?.id) {
         return actionKeys.filter((key) => ['review', 'revoke', 'transfer', 'delete'].includes(key));

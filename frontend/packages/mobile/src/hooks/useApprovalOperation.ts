@@ -29,6 +29,7 @@ interface UseApprovalOperationOptions<Row extends Record<string, any>> {
     isOwner?: (row: Row, currentUserId: string) => boolean;
   };
   ignoreRolePermissionCheck?: boolean;
+  approvalStatusIndependentActionKeys?: string[];
   shouldUseRolePermissionOnly?: (row: Row) => boolean;
   onReview?: (row: Row) => void;
   onRevoke?: (row: Row) => void;
@@ -186,6 +187,9 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
   function resolveDataActions<T extends ApprovalActionLike>(row: Row, actions: T[]) {
     return actions.filter((action) => {
+      if (options.approvalStatusIndependentActionKeys?.includes(action.key)) {
+        return hasRolePermission(action.permission ?? []);
+      }
       return hasApprovalScopedPermission(row, action.permission ?? []);
     });
   }
