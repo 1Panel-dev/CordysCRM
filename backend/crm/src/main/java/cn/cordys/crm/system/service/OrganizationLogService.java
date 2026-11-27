@@ -74,12 +74,9 @@ public class OrganizationLogService extends BaseModuleLogService {
             }
 
             if (Strings.CS.equals(differ.getColumn(), "enable")) {
-                differ.setOldValueName(
-                        Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true")
-                                : Translator.get("log.enable.false"));
-                differ.setNewValueName(
-                        Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true")
-                                : Translator.get("log.enable.false"));
+                differ.setColumnName(Translator.get("log.enable"));
+                differ.setOldValueName(toEnableText(differ.getOldValue()));
+                differ.setNewValueName(toEnableText(differ.getNewValue()));
             }
 
             if (Strings.CS.equals(differ.getColumn(), "gender")) {
@@ -136,9 +133,12 @@ public class OrganizationLogService extends BaseModuleLogService {
         BaseModuleLogService.translatorDifferInfo(jsonDifferenceDTO);
     }
 
-    // 通用 Boolean / Object 转译方法
-    private String toText(Object value, String trueKey, String falseKey) {
-        return Translator.get(Boolean.parseBoolean(value.toString()) ? trueKey : falseKey);
+    private String toEnableText(Object value) {
+        return switch (String.valueOf(value)) {
+        case "true" -> Translator.get("log.enable.true");
+        case "false" -> Translator.get("log.enable.false");
+        default -> null;
+        };
     }
 
     protected void setDepartmentName(JsonDifferenceDTO differ) {

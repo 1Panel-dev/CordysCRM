@@ -68,10 +68,13 @@
         ) uc ON su.id = uc.user_id
         LEFT JOIN sys_user su_create ON sou.create_user = su_create.id
         LEFT JOIN sys_user su_update ON sou.update_user = su_update.id
-        where sou.department_id in
-        <foreach collection="request.departmentIds" item="departmentId" open="(" separator="," close=")">
-            #{departmentId}
-        </foreach>
+        where sou.organization_id = #{orgId}
+        <if test="request.departmentIds != null and !request.departmentIds.isEmpty()">
+            and sou.department_id in
+            <foreach collection="request.departmentIds" item="departmentId" open="(" separator="," close=")">
+                #{departmentId}
+            </foreach>
+        </if>
         <if test="request.keyword != null and request.keyword != ''">
             and (
             su.name like concat('%', #{request.keyword},'%')

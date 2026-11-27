@@ -23,7 +23,7 @@ public interface ExtOrganizationUserMapper {
 
     int countUserByDepartmentIds(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId);
 
-    List<UserPageResponse> list(@Param("request") UserPageRequest request,
+    List<UserPageResponse> list(@Param("request") UserPageRequest request, @Param("orgId") String orgId,
             @Param("orderByClause") String orderByClause);
 
     void enable(@Param("request") UserBatchEnableRequest request, @Param("operatorId") String operatorId,
