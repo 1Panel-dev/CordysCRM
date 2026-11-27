@@ -88,6 +88,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -979,9 +980,34 @@ public class OrderService implements ApprovalResourceHandler {
                 request.getId(), order.getName(), Translator.get("products_info"), getFormConfig(orgId));
 
         // 消息通知: 阶段变更按编辑订单发送, old 取改前实体, new 取改后实体
-        commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.ORDER,
-                NotificationConstants.Event.ORDER_UPDATE, userId, orgId, true, false,
-                oldOrder, originCustomerFields, order, newFields);
+        Map<String, Object> stageNameMap = extOrderStageConfigMapper.getStageConfigList(orgId).stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        Map<String, Object> oldValues = new HashMap<>(3);
+        oldValues.put("stage", oldOrder.getStage());
+        oldValues.put("name", order.getName());
+        oldValues.put("owner", order.getOwner());
+
+        Map<String, Object> newValue = new HashMap<>(3);
+        newValue.put("stage", order.getStage());
+        newValue.put("name", order.getName());
+        newValue.put("owner", order.getOwner());
+
+        commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                .taskType(NotificationConstants.Module.ORDER)
+                .action(NotificationConstants.Event.ORDER_UPDATE)
+                .operatorId(userId)
+                .organizationId(orgId)
+                .resourceId(order.getId())
+                .resourceName(order.getName())
+                .paramMap(Map.of("fieldId", Translator.get("log.orderStage"), "fieldValue",
+                        stageNameMap.getOrDefault(request.getStage(), request.getStage())))
+                .oldValues(oldValues)
+                .newValues(newValue)
+                .excludeSelf(true)
+                .eventOnly(false)
+                .build());
+
+
     }
 
     private void updateFieldAndSnapshot(Order order, List<BaseModuleFieldValue> requestFields, String userId) {
