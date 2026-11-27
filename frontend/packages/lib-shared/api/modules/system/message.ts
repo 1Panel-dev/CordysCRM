@@ -13,6 +13,7 @@ import {
   GetMessageTaskCustomFormTypesUrl,
   GetMessageTaskPageUrl,
   GetMessageTaskSystemTypesUrl,
+  GetNotificationCategoriesUrl,
   GetNotificationCountUrl,
   GetNotificationListUrl,
   GetUnReadAnnouncement,
@@ -33,6 +34,7 @@ import type {
   MessageTaskPageParams,
   MessageTaskResponse,
   MessageTaskSaveParams,
+  NotificationCategory,
 } from '@lib/shared/models/system/message';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -66,6 +68,10 @@ export default function useProductApi(CDR: CordysAxios) {
   // 消息列表
   function getNotificationList(data: MessageCenterQueryParams) {
     return CDR.post<CommonList<MessageCenterItem>>({ url: GetNotificationListUrl, data });
+  }
+
+  function getNotificationCategories(data: MessageCenterQueryParams) {
+    return CDR.post<NotificationCategory[]>({ url: GetNotificationCategoriesUrl, data });
   }
 
   // 具体消息类型具体状态的数量
@@ -137,6 +143,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getAnnouncementDetail,
     deleteAnnouncement,
     getNotificationList,
+    getNotificationCategories,
     getNotificationCount,
     setNotificationRead,
     setAllNotificationRead,

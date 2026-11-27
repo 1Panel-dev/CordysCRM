@@ -9,7 +9,7 @@
   >
     <template #titleRight>
       <div class="flex items-center gap-[8px]">
-        <n-switch v-model:value="unReadEnable" :rubber-band="false" size="small" @update:value="changeHandler" />
+        <n-switch v-model:value="unReadEnable" :rubber-band="false" size="small" @update:value="refresh()" />
         <div class="text-[14px] font-normal">{{ t('system.message.unreadOnly') }}</div>
         <n-divider class="!mx-0" vertical />
         <n-button text type="primary" @click="setAllMessageStatus">
@@ -20,7 +20,7 @@
     </template>
     <div class="message-wrapper">
       <div class="message-count">
-        <div class="p-[24px]">
+        <div class="min-h-0 flex-1 overflow-y-auto p-[24px]">
           <div class="w-full overflow-hidden">
             <CrmTab
               v-model:active-tab="activeTab"
@@ -39,8 +39,8 @@
             }`"
             @click="changeMessageType(item.value)"
           >
-            <div>{{ item.label }}</div>
-            <div v-if="item.count !== undefined" class="text-[var(--text-n4)]">{{ item.count }}</div>
+            <div class="truncate" :title="item.label">{{ item.label }}</div>
+            <div class="ml-[8px] shrink-0 text-[var(--text-n4)]">{{ item.count }}</div>
           </div>
         </div>
         <div class="message-footer flex items-center px-[24px]">
@@ -60,7 +60,7 @@
               class="w-[160px]"
               :options="triggerTypeOptions"
               :disabled="activeTab === 'PUBLIC'"
-              @update:value="refresh"
+              @update:value="refresh(true)"
             />
             <n-select
               v-model:value="timeDays"
@@ -102,19 +102,17 @@
   import { NButton, NDatePicker, NDivider, NSelect, NSwitch, SelectOption } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { SystemMessageStatusEnum, SystemMessageTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { MessageCenterSubsetParams } from '@lib/shared/models/system/message';
+  import type { MessageCenterSubsetParams, NotificationCategory } from '@lib/shared/models/system/message';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmMessageList from '@/components/business/crm-message-list/index.vue';
 
-  import { getNotificationCount, setAllNotificationRead } from '@/api/modules';
+  import { getNotificationCategories, setAllNotificationRead } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
-  import { findRouteByName, hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -180,16 +178,6 @@
     { label: t('system.message.triggerType.schedule'), value: 'SCHEDULE' },
   ]);
 
-  const moduleCategoryConfig: Partial<Record<ModuleConfigEnum, { resourceType: string; label: string }>> = {
-    [ModuleConfigEnum.CUSTOMER_MANAGEMENT]: { resourceType: 'CUSTOMER', label: 'system.message.customerMessage' },
-    [ModuleConfigEnum.FOLLOW_MANAGEMENT]: { resourceType: 'FOLLOW', label: 'module.followManagement' },
-    [ModuleConfigEnum.CLUE_MANAGEMENT]: { resourceType: 'CLUE', label: 'menu.clue' },
-    [ModuleConfigEnum.BUSINESS_MANAGEMENT]: { resourceType: 'OPPORTUNITY', label: 'module.businessManagement' },
-    [ModuleConfigEnum.CONTRACT]: { resourceType: 'CONTRACT', label: 'module.contract' },
-    [ModuleConfigEnum.ORDER]: { resourceType: 'ORDER', label: 'module.order' },
-    [ModuleConfigEnum.CUSTOM_FORM]: { resourceType: 'CUSTOM_FORM', label: 'module.customForm' },
-  };
-
   const messageListRef = ref<InstanceType<typeof CrmMessageList>>();
 
   const getTimeRange = computed<{ startTime: number; endTime: number } | null>(() => {
@@ -223,7 +211,6 @@
 
   function getActiveMessageType() {
     if (activeTab.value === 'PUBLIC') return SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE;
-    if (activeTab.value === 'MENTION') return SystemMessageTypeEnum.COMMENT_MENTIONED;
     return '';
   }
 
@@ -239,65 +226,51 @@
     };
   });
 
-  function searchData(val: string) {
-    keyword.value = val;
-    nextTick(() => {
-      messageListRef.value?.loadMessageList();
-    });
-  }
+  const resourceTypeLabelMap: Record<string, string> = {
+    CLUE: 'system.message.settings.category.lead',
+    CUSTOMER: 'system.message.customerMessage',
+    OPPORTUNITY: 'system.message.opportunityMessage',
+    CONTRACT: 'module.contract',
+    ORDER: 'module.order',
+    FOLLOW_RECORD: 'system.message.settings.category.followRecord',
+    FOLLOW_PLAN: 'system.message.settings.category.followPlan',
+    CONTRACT_PAYMENT_PLAN: 'system.message.settings.category.paymentPlan',
+    CONTRACT_PAYMENT_RECORD: 'system.message.settings.category.paymentRecord',
+    CONTRACT_INVOICE: 'system.message.settings.category.invoice',
+    BUSINESS_TITLE: 'system.message.settings.category.quotation',
+    APPROVAL: 'system.message.settings.category.todo',
+    ANNOUNCEMENT_NOTICE: 'system.message.announcement',
+    FOLLOW: 'module.followManagement',
+    FOLLOW_UP: 'module.followManagement',
+    PRODUCT: 'module.productManagement',
+    CUSTOM_FORM: 'module.customForm',
+    SYSTEM: 'menu.settings.messageSetting',
+  };
 
-  const messageCount = ref<Record<string, string>>({});
-
-  function getModuleRouteName(moduleKey: string) {
-    const routeNames: Partial<Record<ModuleConfigEnum, string>> = {
-      [ModuleConfigEnum.CUSTOMER_MANAGEMENT]: 'account',
-      [ModuleConfigEnum.FOLLOW_MANAGEMENT]: 'followManagement',
-      [ModuleConfigEnum.CLUE_MANAGEMENT]: 'leadManagement',
-      [ModuleConfigEnum.BUSINESS_MANAGEMENT]: 'opportunity',
-      [ModuleConfigEnum.PRODUCT_MANAGEMENT]: 'product',
-      [ModuleConfigEnum.SYSTEM_SETTINGS]: 'system',
-      [ModuleConfigEnum.DASHBOARD]: 'dashboard',
-      [ModuleConfigEnum.AGENT]: 'agent',
-      [ModuleConfigEnum.CONTRACT]: 'contract',
-      [ModuleConfigEnum.ORDER]: 'order',
-      [ModuleConfigEnum.TENDER]: 'tender',
-      [ModuleConfigEnum.CUSTOM_FORM]: 'customForm',
-    };
-    return routeNames[moduleKey as ModuleConfigEnum] ?? moduleKey;
-  }
-
-  function getCategoryCount(isPublic: boolean) {
-    if (activeTab.value === 'MENTION') return undefined;
-    if (isPublic) return messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE] ?? '0';
-    return messageCount.value.total ?? '0';
-  }
+  const categories = ref<NotificationCategory[]>([]);
+  let categoryRequest = 0;
 
   const messageTypeList = computed(() => {
+    const unread = categories.value.reduce((sum, item) => sum + item.unreadCount, 0);
+    const total = categories.value.reduce((sum, item) => sum + item.totalCount, 0);
     const isPublic = activeTab.value === 'PUBLIC';
     const allCategory = {
       value: '',
-      label: isPublic ? t('system.message.announcement') : t('system.message.allMessage'),
-      count: getCategoryCount(isPublic),
+      label: t(isPublic ? 'system.message.announcement' : 'system.message.allMessage'),
+      count: `${unread}/${total}`,
     };
     if (isPublic) return [allCategory];
 
     return [
       allCategory,
-      {
-        value: 'APPROVAL',
-        label: t('system.message.settings.category.todo'),
-        count: activeTab.value === 'MENTION' ? undefined : messageCount.value.APPROVAL ?? 0,
-      },
-      ...appStore.moduleConfigList.flatMap((module) => {
-        const category = moduleCategoryConfig[module.moduleKey as ModuleConfigEnum];
-        const route = findRouteByName(getModuleRouteName(module.moduleKey));
-        if ((!module.enable && activeTab.value !== 'MENTION') || !category) return [];
-        if (!route || !hasAnyPermission(route.meta?.permissions as string[])) return [];
+      ...categories.value.flatMap(({ key, formName, unreadCount, totalCount }) => {
+        if (!key) return [];
+        const labelKey = resourceTypeLabelMap[key];
         return [
           {
-            value: category.resourceType,
-            label: t(category.label),
-            count: activeTab.value === 'MENTION' ? undefined : messageCount.value[category.resourceType] ?? 0,
+            value: key,
+            label: formName || (labelKey ? t(labelKey) : key),
+            count: `${unreadCount}/${totalCount}`,
           },
         ];
       }),
@@ -305,18 +278,20 @@
   });
 
   async function initMessageCount() {
+    const request = ++categoryRequest;
     try {
-      const result = await getNotificationCount({
-        type: loadParams.value.type,
+      const result = await getNotificationCategories({
+        ...loadParams.value,
+        keyword: keyword.value,
+        resourceType: '',
         status: '',
-        resourceType: activeMessageType.value,
-        createTime: null,
-        endTime: null,
-        triggerType: loadParams.value.triggerType,
       });
-      messageCount.value = Object.fromEntries(
-        (result ?? []).map(({ key, count }) => [key, count > 99 ? '99+' : `${count ?? 0}`])
-      );
+      if (request !== categoryRequest) return;
+      categories.value = result ?? [];
+      if (activeMessageType.value && !categories.value.some(({ key }) => key === activeMessageType.value)) {
+        activeMessageType.value = '';
+        nextTick(() => messageListRef.value?.loadMessageList());
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -332,7 +307,14 @@
     });
   }
 
+  function searchData(val: string) {
+    keyword.value = val;
+    refresh(true);
+  }
+
   function resetMessageFilters() {
+    categoryRequest += 1;
+    categories.value = [];
     activeTab.value = '';
     activeMessageType.value = '';
     keyword.value = '';
@@ -348,15 +330,16 @@
   }
 
   function handleChangeType() {
+    categories.value = [];
     activeMessageType.value = '';
     triggerType.value = '';
     refresh(true);
   }
 
-  function changeHandler(val: boolean | string) {
+  function changeHandler(val: string) {
     range.value = undefined;
     if (val !== 'custom') {
-      refresh();
+      refresh(true);
     }
   }
 
@@ -365,7 +348,7 @@
     _formattedValue: string | [string, string] | null
   ) {
     range.value = value;
-    refresh();
+    refresh(true);
   }
 
   async function setAllMessageStatus() {
@@ -384,7 +367,6 @@
     () => showMessageDrawer.value,
     (val) => {
       if (val) {
-        appStore.initModuleConfig();
         refresh(true);
       }
     }
@@ -397,13 +379,11 @@
     .message-count {
       width: 268px;
       border-right: 1px solid var(--text-n8);
-      @apply h-full;
+      @apply flex h-full flex-col;
     }
     .message-footer {
-      position: absolute;
-      bottom: 0;
-      width: 268px;
       height: 56px;
+      @apply shrink-0;
     }
     .message-content {
       width: calc(100% - 268px);
