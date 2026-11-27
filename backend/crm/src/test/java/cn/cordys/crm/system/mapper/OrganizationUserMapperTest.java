@@ -45,19 +45,28 @@ class OrganizationUserMapperTest {
     }
 
     @Test
-    void optionsBindNameKeywordAndRespectIncludeDisabled() {
+    void optionsBindKeywordByPermissionAndRespectIncludeDisabled() {
         var statement = CONFIGURATION.getMappedStatement(ExtUserMapper.class.getName() + ".selectUserOptionByOrgId");
         BoundSql enabledOnly = statement.getBoundSql(Map.of("orgId", "org-a", "defaultOrder", "",
-                "includeDisabled", false));
+                "includeDisabled", false, "canSearchPhone", false));
         assertTrue(enabledOnly.getSql().contains("and sou.enable = true"));
         assertFalse(enabledOnly.getSql().contains("su.name like"));
 
         BoundSql filtered = statement.getBoundSql(Map.of("orgId", "org-a", "defaultOrder", "",
-                "includeDisabled", true, "keyword", "员工"));
+                "includeDisabled", true, "keyword", "员工", "canSearchPhone", false));
         assertFalse(filtered.getSql().contains("and sou.enable = true"));
-        assertTrue(filtered.getSql().contains("and su.name like concat('%', ?, '%')"));
+        assertTrue(filtered.getSql().contains("su.name like concat('%', ?, '%')"));
+        assertFalse(filtered.getSql().contains("su.phone like"));
         assertEquals(List.of("orgId", "keyword"),
                 filtered.getParameterMappings().stream().map(mapping -> mapping.getProperty()).toList());
+
+        BoundSql phoneFiltered = statement.getBoundSql(Map.of("orgId", "org-a", "defaultOrder", "",
+                "includeDisabled", false, "keyword", "223456", "canSearchPhone", true));
+        assertTrue(phoneFiltered.getSql().replaceAll("\\s+", " ").contains(
+                "WHERE sou.organization_id = ? and sou.enable = true and ( su.name like concat('%', ?, '%')"
+                        + " or su.phone like concat('%', ?, '%') )"));
+        assertEquals(List.of("orgId", "keyword", "keyword"),
+                phoneFiltered.getParameterMappings().stream().map(mapping -> mapping.getProperty()).toList());
     }
 
     private String listSql(Map<String, Object> parameters) {

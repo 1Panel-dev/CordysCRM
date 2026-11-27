@@ -234,7 +234,7 @@ public abstract class BaseTest {
         requestPermissionsTest(permissionIds, url, () -> getPermissionRequestBuilder(url, uriVariables), mockMvc);
     }
 
-    private MockHttpServletRequestBuilder getPermissionRequestBuilder(String url, Object... uriVariables) {
+    protected MockHttpServletRequestBuilder getPermissionRequestBuilder(String url, Object... uriVariables) {
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(getBasePath() + url, uriVariables);
         return setRequestBuilderHeader(requestBuilder, permissionAuthInfo);
     }

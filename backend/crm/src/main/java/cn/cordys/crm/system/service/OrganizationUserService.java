@@ -8,11 +8,13 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.InternalRole;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -808,13 +810,16 @@ public class OrganizationUserService {
      *
      * @param orgId 组织ID
      * @param includeDisabled 是否包含已禁用用户
-     * @param keyword 员工姓名关键词
+     * @param keyword 员工姓名或手机号关键词
      * @return 用户选项列表
      */
     public List<EnableOptionDTO> getUserOptions(String orgId, Boolean includeDisabled, String keyword) {
         List<String> allDpIds = getSortDepartmentIds(orgId);
         String defaultOrder = CollectionUtils.isEmpty(allDpIds) ? StringUtils.EMPTY : buildOrderByFieldClause(allDpIds);
-        return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder, includeDisabled, StringUtils.trimToNull(keyword));
+        String searchKeyword = StringUtils.trimToNull(keyword);
+        boolean canSearchPhone = searchKeyword != null
+                && PermissionUtils.hasPermission(PermissionConstants.SYS_ORGANIZATION_READ);
+        return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder, includeDisabled, searchKeyword, canSearchPhone);
     }
 
     /**

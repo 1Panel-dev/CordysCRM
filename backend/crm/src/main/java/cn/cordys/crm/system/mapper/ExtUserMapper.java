@@ -51,7 +51,7 @@ public interface ExtUserMapper {
 
     List<EnableOptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId,
             @Param("defaultOrder") String defaultOrder, @Param("includeDisabled") Boolean includeDisabled,
-            @Param("keyword") String keyword);
+            @Param("keyword") String keyword, @Param("canSearchPhone") boolean canSearchPhone);
 
     List<UserDTO> selectNameAndEmail(@Param("orgId") String orgId);
 
