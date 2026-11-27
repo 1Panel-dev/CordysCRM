@@ -3,6 +3,7 @@
     ref="tableFullRef"
     class="relative flex h-full flex-col overflow-hidden"
     :class="[isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] px-[16px] pt-[16px]' : '', props.class]"
+    @mousedown.capture="handleColumnResizeStart"
   >
     <BatchAction
       v-if="props.actionConfig"
@@ -91,6 +92,7 @@
         ref="tableRef"
         v-bind="{ scrollX: scrollXWidth, ...$attrs }"
         v-model:checked-row-keys="checkedRowKeys"
+        :on-unstable-column-resize="handleColumnResize"
         :columns="currentColumns as TableColumns"
         :row-key="getRowKey"
         flex-height
@@ -162,7 +164,7 @@
 
 <script lang="ts" setup>
   import { NButton, NCheckbox, NDataTable, NTooltip } from 'naive-ui';
-  import { cloneDeep, debounce } from 'lodash-es';
+  import { cloneDeep, isEqual } from 'lodash-es';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -232,6 +234,8 @@
 
   const tableFullRef = ref<HTMLElement | null>(null);
   const tableRef = ref();
+  const pendingColumnWidths = new Map<string, number>();
+  let previousColumnsWithoutWidth: CrmDataTableColumn[] | undefined;
   let pendingSortScrollLeft: number | null = null;
   // 实际使用的全屏目标
   const actualTargetRef = computed<HTMLElement | null>(() => {
@@ -413,6 +417,15 @@
     }
     if (attrs.showSetting) {
       columns = await tableStore.getShowInTableColumns(realTableKey.value);
+    } else if (realTableKey.value) {
+      const storedColumns = await getItem<TableStorageConfigItem>(realTableKey.value);
+      const storedWidths = new Map(
+        (storedColumns?.column ?? []).map((column) => [String(column.key), column.width] as const)
+      );
+      columns = columns.map((column) => ({
+        ...column,
+        width: storedWidths.get(String(column.key)) ?? column.width,
+      }));
     }
 
     currentColumns.value = columns.map((column) => {
@@ -597,76 +610,59 @@
     initPaginationType(true);
   }
 
-  function patchColKeys() {
-    if (!realTableKey.value) return;
-    const colElements = tableFullRef.value?.querySelectorAll('table col');
-    if (!colElements || !currentColumns.value) return;
-
-    colElements.forEach((colEl, index) => {
-      const colKey = (currentColumns.value[index] as CrmDataTableColumn)?.key;
-      if (colKey !== undefined && colKey !== null) {
-        colEl.setAttribute('data-col-key', String(colKey));
-      }
-    });
+  function handleColumnResizeStart(event: MouseEvent) {
+    const { target } = event;
+    if (target instanceof Element && target.closest('[data-data-table-resizable]')) {
+      pendingColumnWidths.clear();
+    }
   }
 
-  /**
-   * 监听列宽变化，更新缓存的列配置，以记住列宽
-   * 这里使用 ResizeObserver 来监听 col 元素的宽度变化
-   */
-  function listenColWidthChange() {
-    let isFirstResize = true;
-    // 监听表格 col 元素的宽度变化
-    const colElements = tableFullRef.value?.querySelectorAll('table col');
-    const handleResize = debounce(async () => {
-      const tableColumnsMap = await getItem<TableStorageConfigItem>(realTableKey.value);
-      if (realTableKey.value && tableColumnsMap) {
-        if (isFirstResize) {
-          isFirstResize = false; // 第一次触发，跳过
-          return;
-        }
-        // 按colKey更新宽度，避免隐藏列后，实际DOM的col数量、位置、顺序发生改变，导致列宽度错乱
-        colElements?.forEach((e) => {
-          const key = e.getAttribute('data-col-key');
-          const col = tableColumnsMap.column.find((c) => c.key === key);
-          if (col) {
-            const width = Number.parseFloat(getComputedStyle(e).width);
-            if (Number.isFinite(width) && width > 0) {
-              col.width = width;
-            }
-          }
-        });
-        setItem(realTableKey.value, tableColumnsMap);
-        currentColumns.value = currentColumns.value.map((col) => {
-          const cachedColumn = tableColumnsMap.column.find((c) => c.key === col.key);
-          return {
-            ...col,
-            width: cachedColumn?.width || col.width,
-          };
-        });
+  function handleColumnResize(_resizedWidth: number, limitedWidth: number, column: DataTableBaseColumn) {
+    if (column.key !== undefined && Number.isFinite(limitedWidth) && limitedWidth > 0) {
+      pendingColumnWidths.set(String(column.key), Math.round(limitedWidth));
+    }
+  }
+
+  async function saveResizedColumnWidths() {
+    if (!realTableKey.value || !pendingColumnWidths.size) return;
+
+    const resizedWidths = new Map(pendingColumnWidths);
+    pendingColumnWidths.clear();
+    const tableColumnsMap = await getItem<TableStorageConfigItem>(realTableKey.value);
+    if (!tableColumnsMap) return;
+
+    let hasChanges = false;
+    resizedWidths.forEach((width, key) => {
+      const column = tableColumnsMap.column.find((item) => String(item.key) === key);
+      const currentWidth = Number.parseFloat(String(column?.width ?? ''));
+      if (column && width !== Math.round(currentWidth)) {
+        column.width = width;
+        hasChanges = true;
       }
-    }, 300);
-    const observer = new ResizeObserver((entries) => {
-      entries.forEach(() => {
-        handleResize();
-      });
     });
-    // 批量注册
-    colElements?.forEach((col) => observer.observe(col));
+    if (hasChanges) await setItem(realTableKey.value, tableColumnsMap);
   }
 
   watch(
     () => props.columns,
-    async () => {
+    async (columns) => {
+      const columnsWithoutWidth = cloneDeep(columns).map((column) => {
+        delete column.width;
+        return column;
+      });
+      if (previousColumnsWithoutWidth && isEqual(previousColumnsWithoutWidth, columnsWithoutWidth)) return;
+      previousColumnsWithoutWidth = cloneDeep(columnsWithoutWidth);
       await initColumn();
-      await nextTick();
-      patchColKeys();
-      listenColWidthChange();
       initLayoutType();
       initPaginationType();
     },
-    { immediate: true }
+    { deep: true, immediate: true }
   );
+
+  onMounted(() => window.addEventListener('mouseup', saveResizedColumnWidths));
+  onBeforeUnmount(() => {
+    window.removeEventListener('mouseup', saveResizedColumnWidths);
+  });
 
   watch(
     () => props.notShowTableFilter,

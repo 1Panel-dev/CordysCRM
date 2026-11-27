@@ -139,7 +139,19 @@
           [props.valueField]: item[props.valueField],
           disabled: props.disabledIds?.includes(item[props.valueField] as string),
         }))
-      : optionsList.value
+      : Array.from(
+          new Map(
+            [...(props.options ?? []), ...optionsList.value].map((item) => [
+              String(item[props.valueField]),
+              {
+                ...item,
+                [props.labelField]: item[props.labelField],
+                [props.valueField]: item[props.valueField],
+                disabled: props.disabledIds?.includes(item[props.valueField] as string),
+              },
+            ])
+          ).values()
+        )
   );
 
   const computedOptions = computed<SelectMixedOption[]>(() => {

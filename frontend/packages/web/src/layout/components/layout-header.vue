@@ -190,7 +190,7 @@
         </CrmButtonGroup>
       </div>
     </div>
-    <MessageDrawer v-model:show="showMessageDrawer" @open-approval-todo="openApprovalTodo" />
+    <MessageDrawer v-model:show="showMessageDrawer" />
     <licenseDrawer v-model:visible="showLicenseDrawer" />
     <Suspense>
       <CrmDuplicateCheckDrawer v-if="initDuplicateCheckDrawer" v-model:visible="showDuplicateCheckDrawer" />
@@ -198,12 +198,7 @@
   </n-layout-header>
   <agentDrawer v-if="initAgentDrawer" v-model:visible="showAgentDrawer" />
   <CrmFollowDrawer v-if="initFollowDrawer" v-model:visible="showFollowDrawer" />
-  <CrmTaskDrawer
-    v-if="initTaskDrawer"
-    v-model:show="showTaskDrawer"
-    :type="ApprovalListTypeEnum.PENDING"
-    :resource-type="activeTaskResourceType"
-  />
+  <CrmTaskDrawer v-if="initTaskDrawer" v-model:show="showTaskDrawer" :type="ApprovalListTypeEnum.PENDING" />
 </template>
 
 <script setup lang="ts">
@@ -338,13 +333,6 @@
   const showFollowDrawer = ref(false);
   const initTaskDrawer = ref(false);
   const showTaskDrawer = ref(false);
-  const activeTaskResourceType = ref('');
-
-  function openApprovalTodo(formType = '') {
-    activeTaskResourceType.value = formType;
-    initTaskDrawer.value = true;
-    showTaskDrawer.value = true;
-  }
 
   const { legacyCopy } = useLegacyCopy();
   function copyVersion(version: string) {

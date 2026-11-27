@@ -211,6 +211,7 @@
                 multiple
                 mode="remote"
                 :fetch-api="getUserOptions"
+                :options="item.selectProps?.options"
                 show-include-disabled
                 max-tag-count="responsive"
                 @update:value="valueChange"

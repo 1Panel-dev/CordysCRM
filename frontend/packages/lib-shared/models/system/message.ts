@@ -1,5 +1,9 @@
 import type { TableQueryParams } from '../common';
+import { MessageNotificationSubcategoryEnum } from '@lib/shared/enums/messageNotificationEnum';
 import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
+export type CustomFormTemplateId = string & { readonly __customFormTemplateId: unique symbol };
+export type MessageNotificationFormType = MessageNotificationSubcategoryEnum | CustomFormTemplateId;
 
 export interface AnnouncementSaveParams {
   id?: string;
@@ -45,7 +49,7 @@ export interface AnnouncementItemDetail {
 
 export interface MessageTaskCountDTO {
   taskType: string;
-  formType?: string;
+  formType?: MessageNotificationSubcategoryEnum;
   count: number;
   name?: string;
 }
@@ -54,7 +58,7 @@ export interface MessageTaskPageParams {
   current: number;
   pageSize: number;
   taskType: string;
-  formType?: string;
+  formType?: MessageNotificationSubcategoryEnum;
   sort: Record<string, unknown>;
   combineSearch: {
     searchMode: string;
@@ -93,7 +97,7 @@ export interface MessageTaskResponse {
   id: string;
   name: string;
   taskType: string;
-  formType?: string;
+  formType?: MessageNotificationFormType;
   type: 'SYSTEM' | 'CUSTOM';
   sysEnable?: boolean;
   triggerType: string;
@@ -117,7 +121,7 @@ export interface MessageTaskSaveParams {
   id?: string;
   name: string;
   taskType: string;
-  formType: string;
+  formType: MessageNotificationFormType;
   scopeId: string[];
   receiveMethod: string;
   triggerType: string;
@@ -143,7 +147,7 @@ export interface MessageCenterItem {
   organizationId: string;
   resourceId: string;
   resourceType: string; // 资源类型
-  formType?: string;
+  formType?: MessageNotificationFormType;
   resourceName: string; // 资源名称
   content: string; // 通知内容
   createUser: string;
