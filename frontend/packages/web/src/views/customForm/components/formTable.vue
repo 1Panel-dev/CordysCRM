@@ -28,7 +28,7 @@
           @import-success="handleDataChanged"
         />
         <n-button
-          v-if="canExportCustomFormData"
+          v-if="!props.detailTabResourceId && canExportCustomFormData"
           type="primary"
           ghost
           class="n-btn-outline-primary"

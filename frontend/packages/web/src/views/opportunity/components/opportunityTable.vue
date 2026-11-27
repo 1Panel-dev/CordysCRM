@@ -44,7 +44,12 @@
           @import-success="() => searchData()"
         />
         <n-button
-          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT']) && !props.readonly"
+          v-if="
+            !props.detailTabResourceId &&
+            !props.isCustomerTab &&
+            hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT']) &&
+            !props.readonly
+          "
           type="primary"
           ghost
           class="n-btn-outline-primary"

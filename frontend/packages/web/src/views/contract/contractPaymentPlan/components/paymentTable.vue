@@ -37,6 +37,7 @@
           @import-success="() => searchData()"
         />
         <n-button
+          v-if="!props.detailTabResourceId && !props.isContractTab && !props.customerId"
           v-permission="['CONTRACT_PAYMENT_PLAN:EXPORT']"
           type="primary"
           ghost

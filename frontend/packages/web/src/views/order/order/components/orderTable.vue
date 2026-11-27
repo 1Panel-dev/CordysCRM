@@ -36,7 +36,7 @@
             @import-success="() => searchData()"
           />
           <n-button
-            v-if="!props.readonly && !props.isContractTab"
+            v-if="!props.detailTabResourceId && !props.isCustomerTab && !props.readonly && !props.isContractTab"
             v-permission="['ORDER:EXPORT']"
             type="primary"
             ghost
@@ -297,15 +297,11 @@
       baseAction: props.readonly
         ? []
         : [
-            ...(!props.isContractTab && !props.isCustomerTab
-              ? [
-                  {
-                    label: t('common.exportChecked'),
-                    key: 'exportChecked',
-                    permission: ['ORDER:EXPORT'],
-                  },
-                ]
-              : []),
+            {
+              label: t('common.exportChecked'),
+              key: 'exportChecked',
+              permission: ['ORDER:EXPORT'],
+            },
             {
               label: t('common.batchEdit'),
               key: 'batchEdit',
@@ -684,7 +680,7 @@
     },
     containerClass: `.crm-order-table-${props.formKey}`,
     orderStage: stageConfig.value?.stageConfigList || [],
-    permission: ['ORDER:UPDATE', 'ORDER:DELETE'],
+    permission: ['ORDER:UPDATE', 'ORDER:DELETE', 'ORDER:EXPORT'],
     enableApproval,
     showApprovalStatus,
   });

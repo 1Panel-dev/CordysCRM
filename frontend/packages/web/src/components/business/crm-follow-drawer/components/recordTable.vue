@@ -7,7 +7,7 @@
       class="crm-record-table"
       :not-show-table="activeShowType === 'timeline'"
       :hiddenBackToTop="activeShowType === 'timeline'"
-      :action-config="props.detailTabResourceId ? { baseAction: [] } : actionConfig"
+      :action-config="actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="handleSorterChange"
@@ -450,7 +450,7 @@
     detailTabQuery: props.detailTabQuery,
     tableKey: props.tableKey,
     hideOperationColumn: props.hideOperationColumn,
-    permission: props.detailTabResourceId ? [] : ['FOLLOW_RECORD:EXPORT'],
+    permission: ['FOLLOW_RECORD:EXPORT'],
     operationColumn: {
       key: 'operation',
       width: 140,
