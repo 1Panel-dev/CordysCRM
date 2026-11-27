@@ -11,4 +11,7 @@ public class MessageRequest extends BasePageRequest {
 
     @Schema(description = "任务类型")
     private String taskType;
+
+    @Schema(description = "所属类型")
+    private String formType;
 }
