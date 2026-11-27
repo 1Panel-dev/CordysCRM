@@ -79,7 +79,13 @@
 
   const isSystemMessage = computed(() => props.item.type === SystemMessageTypeEnum.COMMENT_MENTIONED);
 
-  const parseMessageContent = computed(() => JSON.parse(props.item.contentText || '{}'));
+  const parseMessageContent = computed(() => {
+    try {
+      return JSON.parse(props.item.contentText || '{}');
+    } catch {
+      return { content: props.item.contentText || props.item.content || '' };
+    }
+  });
 
   // TODO 跳转过去可能回不来要加提示
   function goUrl() {
