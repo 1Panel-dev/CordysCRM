@@ -139,6 +139,7 @@
   const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<OpportunityItem>({
       formType: FormDesignKeyEnum.BUSINESS,
+      approvalStatusIndependentActionKeys: ['writeRecord'],
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
       onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
     });

@@ -117,6 +117,7 @@
   const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<ClueListItem>({
       formType: FormDesignKeyEnum.CLUE,
+      approvalStatusIndependentActionKeys: ['writeRecord'],
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: refreshList }),
       onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: refreshList }),
     });

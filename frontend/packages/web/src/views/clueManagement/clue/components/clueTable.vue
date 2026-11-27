@@ -356,6 +356,7 @@
   } = useApprovalOperation<ClueListItem>({
     formType: FormDesignKeyEnum.CLUE,
     dataActionMap: () => clueDataActionMap.value,
+    approvalStatusIndependentActionKeys: ['followUp'],
   });
   const batchEditApprovalTip = computed(() =>
     getApprovalActionTip(['CLUE_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')

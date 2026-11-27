@@ -336,6 +336,7 @@
   } = useApprovalOperation<Record<string, any>>({
     formType: FormDesignKeyEnum.CUSTOMER,
     dataActionMap: customerDataActionMap,
+    approvalStatusIndependentActionKeys: ['followUp'],
   });
   const batchEditApprovalTip = computed(() =>
     getApprovalActionTip(['CUSTOMER_MANAGEMENT:UPDATE'], 'common.batchEditApprovalTip')

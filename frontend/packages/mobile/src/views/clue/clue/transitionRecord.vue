@@ -60,6 +60,7 @@
   const { resolveRowActions, hasApprovalScopedPermission, initApprovalPermission, deleteExecute, showApprovalStatus } =
     useApprovalOperation<CustomerListItem>({
       formType: FormDesignKeyEnum.CUSTOMER,
+      approvalStatusIndependentActionKeys: ['writeRecord'],
       onReview: (row) => reviewByResourceId(row.id, { onSuccess: loadTransitionRecordList }),
       onRevoke: (row) => revokeByResourceId(row.id, { onSuccess: loadTransitionRecordList }),
     });

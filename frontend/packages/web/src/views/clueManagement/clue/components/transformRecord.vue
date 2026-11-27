@@ -162,6 +162,7 @@
   } = useApprovalOperation<Record<string, any>>({
     formType: FormDesignKeyEnum.CUSTOMER,
     dataActionMap: () => customerDataActionMap.value,
+    approvalStatusIndependentActionKeys: ['followUp'],
   });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
