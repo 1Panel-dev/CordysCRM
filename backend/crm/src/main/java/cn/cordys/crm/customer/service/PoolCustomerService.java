@@ -73,6 +73,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.notice.common.NoticeSendContext;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -100,6 +101,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -635,16 +637,28 @@ public class PoolCustomerService {
         logService.add(new LogDTO(currentOrgId, customer.getId(), operateUserId, logType,
                 LogModule.CUSTOMER_POOL, customer.getName()));
 
-        if (Strings.CS.equals(logType, LogType.ASSIGN)) {
-            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
-                    NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED, operateUserId, currentOrgId, true, true,
-                    customer, null, customer, null);
-        }
-
-        if (Strings.CS.equals(logType, LogType.PICK)) {
-            commonNoticeSendService.sendNoticeByConfig(NotificationConstants.Module.CLUE,
-                    NotificationConstants.Event.CUSTOMER_RECEIVE, operateUserId, currentOrgId, true, true,
-                    customer, null, customer, null);
+        // 领取/分配通知: 分配通知新负责人(CLUE_DISTRIBUTED), 领取通知线索池管理员(CLUE_RECEIVE)
+        if (Strings.CS.equals(logType, LogType.ASSIGN) || Strings.CS.equals(logType, LogType.PICK)) {
+            String event = Strings.CS.equals(logType, LogType.ASSIGN)
+                    ? NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED
+                    : NotificationConstants.Event.CUSTOMER_RECEIVE;
+            Map<String, Object> values = new HashMap<>(4);
+            values.put("id", customer.getId());
+            values.put("name", customer.getName());
+            values.put("owner", customer.getOwner());
+            // 客户已移出池, 保留原池ID供线客户管理员(CUSTOMER_SEAS_OWNER)接收人解析
+            values.put("poolId", poolId);
+            commonNoticeSendService.sendNoticeByConfig(NoticeSendContext.builder()
+                    .taskType(NotificationConstants.Module.CUSTOMER)
+                    .action(event)
+                    .operatorId(operateUserId)
+                    .organizationId(currentOrgId)
+                    .resourceId(customer.getId())
+                    .resourceName(customer.getName())
+                    .newValues(values)
+                    .excludeSelf(true)
+                    .eventOnly(true)
+                    .build());
         }
     }
 
