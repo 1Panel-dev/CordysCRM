@@ -10,6 +10,7 @@ import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Notification;
 import cn.cordys.crm.system.dto.request.NotificationRequest;
+import cn.cordys.crm.system.dto.response.NotificationCategoryDTO;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.mybatis.BaseMapper;
@@ -45,6 +46,10 @@ public class NotificationControllerTests extends BaseTest {
     private BaseMapper<Notification> notificationMapper;
 
     void saveNotice(String type) {
+        notificationMapper.insert(newNotice(type));
+    }
+
+    private Notification newNotice(String type) {
         Notification notification = new Notification();
         notification.setId(IDGenerator.nextStr());
         notification.setSubject("功能用例更新通知");
@@ -62,7 +67,7 @@ public class NotificationControllerTests extends BaseTest {
         notification.setUpdateUser("admin");
         notification.setUpdateTime(System.currentTimeMillis());
         notification.setResourceId("dd");
-        notificationMapper.insert(notification);
+        return notification;
     }
 
     @Test
@@ -131,6 +136,62 @@ public class NotificationControllerTests extends BaseTest {
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
         List<OptionDTO> options = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), OptionDTO.class);
         Assertions.assertFalse(options.isEmpty());
+    }
+
+    @Test
+    void listCategoriesSeparatesCustomFormsAndCountsReadMessages() throws Exception {
+        String resourceId = IDGenerator.nextStr();
+        String firstFormId = IDGenerator.nextStr();
+        String secondFormId = IDGenerator.nextStr();
+        Notification firstUnread = newNotice("CUSTOM_FORM");
+        firstUnread.setFormType(firstFormId);
+        Notification firstRead = newNotice(firstFormId);
+        firstRead.setStatus(NotificationConstants.Status.READ.name());
+        Notification secondRead = newNotice("CUSTOM_FORM");
+        secondRead.setFormType(secondFormId);
+        secondRead.setStatus(NotificationConstants.Status.READ.name());
+        Notification otherReceiver = newNotice(firstFormId);
+        otherReceiver.setReceiver(IDGenerator.nextStr());
+
+        try {
+            for (Notification notice : List.of(firstUnread, firstRead, secondRead, otherReceiver)) {
+                notice.setSubject(resourceId);
+                notice.setResourceId(resourceId);
+                notificationMapper.insert(notice);
+            }
+            NotificationRequest request = new NotificationRequest();
+            request.setSubject(resourceId);
+            request.setReceiver(otherReceiver.getReceiver());
+            MvcResult result = requestPostWithOkAndReturn("/notification/categories", request);
+            ResultHolder response = JSON.parseObject(
+                    result.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class);
+            List<NotificationCategoryDTO> categories =
+                    JSON.parseArray(JSON.toJSONString(response.getData()), NotificationCategoryDTO.class);
+
+            Assertions.assertEquals(2, categories.size());
+            NotificationCategoryDTO first = categories.stream()
+                    .filter(category -> firstFormId.equals(category.getKey()))
+                    .findFirst().orElseThrow();
+            Assertions.assertEquals(1, first.getUnreadCount());
+            Assertions.assertEquals(2, first.getTotalCount());
+            NotificationCategoryDTO second = categories.stream()
+                    .filter(category -> secondFormId.equals(category.getKey()))
+                    .findFirst().orElseThrow();
+            Assertions.assertEquals(0, second.getUnreadCount());
+            Assertions.assertEquals(1, second.getTotalCount());
+
+            request.setReceiver(null);
+            request.setResourceType(firstFormId);
+            request.setCurrent(1);
+            request.setPageSize(10);
+            result = requestPostWithOkAndReturn(NOTIFICATION_LIST_PAGE, request);
+            response = JSON.parseObject(result.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                    ResultHolder.class);
+            Pager<?> page = JSON.parseObject(JSON.toJSONString(response.getData()), Pager.class);
+            Assertions.assertEquals(2, ((List<?>) page.getList()).size());
+        } finally {
+            extNotificationMapper.deleteByResourceId(resourceId);
+        }
     }
 
     @Test

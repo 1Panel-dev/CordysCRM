@@ -2,6 +2,7 @@ package cn.cordys.crm.system.mapper;
 
 import cn.cordys.crm.system.domain.Notification;
 import cn.cordys.crm.system.dto.request.NotificationRequest;
+import cn.cordys.crm.system.dto.response.NotificationCategoryDTO;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -10,6 +11,9 @@ import java.util.List;
 public interface ExtNotificationMapper {
 
     List<NotificationDTO> listNotification(@Param("request") NotificationRequest notificationRequest,
+            @Param("organizationId") String organizationId);
+
+    List<NotificationCategoryDTO> listCategories(@Param("request") NotificationRequest request,
             @Param("organizationId") String organizationId);
 
     void deleteByTime(@Param("timestamp") long timestamp);

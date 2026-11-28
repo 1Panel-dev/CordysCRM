@@ -2,9 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="cn.cordys.crm.system.mapper.ExtNotificationMapper">
 
-    <select id="listNotification" parameterType="cn.cordys.crm.system.dto.request.NotificationRequest"
-            resultType="cn.cordys.crm.system.dto.response.NotificationDTO">
-        SELECT * FROM sys_notification
+    <sql id="notificationCategory">
+        CASE
+            WHEN sys_notification.resource_type = 'CUSTOM_FORM'
+                THEN COALESCE(NULLIF(sys_notification.form_type, ''), sys_notification.resource_type)
+            WHEN SUBSTRING_INDEX(sys_notification.resource_type, '_', 1) IN ('CUSTOMER', 'CLUE', 'OPPORTUNITY')
+                THEN SUBSTRING_INDEX(sys_notification.resource_type, '_', 1)
+            ELSE sys_notification.resource_type
+        END
+    </sql>
+
+    <sql id="notificationFilters">
         WHERE sys_notification.receiver = #{request.receiver} and sys_notification.organization_id = #{organizationId}
         <if test='request.subject != null and request.subject != ""'>
             AND ( sys_notification.subject LIKE CONCAT('%', #{request.subject},'%') OR sys_notification.content LIKE CONCAT('%', #{request.subject},'%') )
@@ -17,6 +25,9 @@
         </if>
         <if test='request.triggerType != null and request.triggerType != ""'>
           <choose>
+              <when test="request.triggerType == 'MENTION'">
+                  AND (sys_notification.trigger_type = 'MENTION' OR LOCATE('MENTION', sys_notification.operation) &gt; 0)
+              </when>
               <when test="request.triggerType == 'COMMENT_MENTIONED'">
                   AND sys_notification.trigger_type IN ('FOLLOW_UP_RECORD_COMMENT_MENTIONED', 'FOLLOW_UP_PLAN_COMMENT_MENTIONED', 'APPROVAL_COMMENT_MENTIONED')
               </when>
@@ -25,22 +36,43 @@
               </otherwise>
           </choose>
         </if>
-        <if test='request.status != null and request.status != ""'>
-            AND sys_notification.status = #{request.status}
-        </if>
-        <if test='request.resourceType != null and request.resourceType != ""'>
-            AND sys_notification.resource_type LIKE CONCAT('%', #{request.resourceType},'%')
-        </if>
         <if test='request.operation != null and request.operation != ""'>
-            AND sys_notification.operation = #{operation}
+            AND sys_notification.operation = #{request.operation}
         </if>
         <if test='request.createTime != null and request.endTime == null'>
             AND sys_notification.create_time &gt;= #{request.createTime}
         </if>
         <if test='request.createTime != null and request.endTime != null'>
-            AND sys_notification.create_time &gt;= #{request.createTime} AND sys_notification.create_time &lt;= #{request.endTime} 
+            AND sys_notification.create_time &gt;= #{request.createTime} AND sys_notification.create_time &lt;= #{request.endTime}
+        </if>
+    </sql>
+
+    <select id="listNotification" parameterType="cn.cordys.crm.system.dto.request.NotificationRequest"
+            resultType="cn.cordys.crm.system.dto.response.NotificationDTO">
+        SELECT * FROM sys_notification
+        <include refid="notificationFilters"/>
+        <if test='request.status != null and request.status != ""'>
+            AND sys_notification.status = #{request.status}
+        </if>
+        <if test='request.resourceType != null and request.resourceType != ""'>
+            AND (<include refid="notificationCategory"/>) = #{request.resourceType}
         </if>
         ORDER BY sys_notification.status DESC, sys_notification.create_time DESC
+    </select>
+
+    <select id="listCategories" resultType="cn.cordys.crm.system.dto.response.NotificationCategoryDTO">
+        SELECT counts.category_key AS `key`, custom_form.name AS form_name, counts.unread_count, counts.total_count
+        FROM (
+            SELECT <include refid="notificationCategory"/> AS category_key,
+                COUNT(CASE WHEN sys_notification.status = 'UNREAD' THEN 1 END) AS unread_count,
+                COUNT(*) AS total_count,
+                MAX(sys_notification.create_time) AS latest_time
+            FROM sys_notification
+            <include refid="notificationFilters"/>
+            GROUP BY category_key
+        ) counts
+        LEFT JOIN custom_form ON custom_form.id = counts.category_key AND custom_form.organization_id = #{organizationId}
+        ORDER BY counts.latest_time DESC, counts.category_key
     </select>
 
     <delete id="deleteByTime" parameterType="java.lang.Long">

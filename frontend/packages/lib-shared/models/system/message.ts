@@ -158,6 +158,13 @@ export interface MessageCenterItem {
   triggerType?: string;
 }
 
+export interface NotificationCategory {
+  key: string | null;
+  formName?: string | null;
+  unreadCount: number;
+  totalCount: number;
+}
+
 export interface MessageCenterQueryParams extends TableQueryParams {
   type: string;
   status: string;

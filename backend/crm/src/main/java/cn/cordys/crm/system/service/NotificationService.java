@@ -7,6 +7,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Notification;
 import cn.cordys.crm.system.dto.request.NotificationRequest;
+import cn.cordys.crm.system.dto.response.NotificationCategoryDTO;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.crm.system.notice.NoticeRedisSync;
@@ -59,9 +60,6 @@ public class NotificationService {
     private static void buildParam(NotificationRequest notificationRequest, String userId) {
         if (StringUtils.isNotBlank(notificationRequest.getSubject())) {
             notificationRequest.setSubject("%" + notificationRequest.getSubject() + "%");
-        }
-        if (StringUtils.isNotBlank(notificationRequest.getResourceType())) {
-            notificationRequest.setResourceType("%" + notificationRequest.getResourceType() + "%");
         }
         if (StringUtils.isBlank(notificationRequest.getReceiver())) {
             notificationRequest.setReceiver(userId);
@@ -135,6 +133,12 @@ public class NotificationService {
             messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
         });
         return update;
+    }
+
+    public List<NotificationCategoryDTO> listCategories(NotificationRequest request, String userId,
+            String organizationId) {
+        request.setReceiver(userId);
+        return extNotificationMapper.listCategories(request, organizationId);
     }
 
     public List<OptionCountDTO> countNotification(NotificationRequest notificationRequest, String organizationId,

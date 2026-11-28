@@ -751,6 +751,7 @@ export const {
   getAnnouncementList,
   getNotificationList,
   setNotificationRead,
+  getNotificationCategories,
   getNotificationCount,
   getAnnouncementDetail,
   closeMessageSubscribe,

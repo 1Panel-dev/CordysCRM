@@ -5,6 +5,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.request.NotificationRequest;
+import cn.cordys.crm.system.dto.response.NotificationCategoryDTO;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.service.NotificationService;
 import cn.cordys.security.SessionUtils;
@@ -65,6 +66,13 @@ public class NotificationController {
     @Operation(summary = "消息中心-将消息中心所有信息设置为已读消息")
     public Integer readAll() {
         return notificationService.readAll(OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+    @PostMapping(value = "/categories")
+    @Operation(summary = "消息中心-获取当前用户有消息的分类及数量")
+    public List<NotificationCategoryDTO> listCategories(@RequestBody NotificationRequest notificationRequest) {
+        return notificationService.listCategories(notificationRequest, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping(value = "/count")

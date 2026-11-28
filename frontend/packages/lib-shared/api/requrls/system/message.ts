@@ -7,6 +7,7 @@ export const DeleteAnnouncementUrl = '/announcement/delete'; // 删除公告
 
 // 消息中心
 export const GetNotificationListUrl = '/notification/list/all/page'; // 消息中心列表
+export const GetNotificationCategoriesUrl = '/notification/categories';
 export const GetNotificationCountUrl = '/notification/count'; // 具体类型具体状态的数量
 export const SetNotificationReadUrl = '/notification/read'; // 设置消息已读
 export const SetAllNotificationReadUrl = '/notification/read/all'; // 所有信息设置为已读消息
